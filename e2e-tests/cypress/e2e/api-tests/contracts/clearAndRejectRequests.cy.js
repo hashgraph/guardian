@@ -60,12 +60,10 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     authorization,
                 },
                 timeout: 180000
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                policyId = response.body.at(0).id;
             })
-                .then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId = response.body.at(0).id;
-                })
-
             //Get token(Irec token) draft id to update it
             cy.request({
                 method: METHOD.GET,
@@ -102,86 +100,101 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         authorization
                     },
                     timeout: 600000
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
                 })
-                    .then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                    })
-            })
 
-            //Register new user
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccountRegister,
-                body: {
-                    username: username,
-                    password: "test",
-                    password_confirmation: "test",
-                    role: "USER",
-                }
-            }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-            })
-            //Login and get PT
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccountsLogin,
-                body: {
-                    username: username,
-                    password: "test"
-                }
-            }).then((response) => {
-                //Get AT
+                //Register new user
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.AccessToken,
+                    url: API.ApiServer + API.AccountRegister,
                     body: {
-                        refreshToken: response.body.refreshToken
+                        username: username,
+                        password: "test",
+                        password_confirmation: "test",
+                        role: "USER",
                     }
                 }).then((response) => {
-                    let accessToken = "Bearer " + response.body.accessToken
-                    //Get SR did
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                })
+                //Login and get PT
+                cy.request({
+                    method: METHOD.POST,
+                    url: API.ApiServer + API.AccountsLogin,
+                    body: {
+                        username: username,
+                        password: "test"
+                    }
+                }).then((response) => {
+                    //Get AT
                     cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.StandardRegistriesAggregated,
-                        headers: {
-                            authorization: accessToken
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.AccessToken,
+                        body: {
+                            refreshToken: response.body.refreshToken
                         }
                     }).then((response) => {
-                        let SRDid = response.body[0].did
-                        //Get generated hedera creds
+                        let accessToken = "Bearer " + response.body.accessToken
+                        //Get SR did
                         cy.request({
                             method: METHOD.GET,
-                            url: API.ApiServer + API.RandomKey,
-                            headers: { authorization },
+                            url: API.ApiServer + API.StandardRegistriesAggregated,
+                            headers: {
+                                authorization: accessToken
+                            }
                         }).then((response) => {
-                            hederaId = response.body.id
-                            //Update profile
-                            cy.wait(3000)
+                            let SRDid = response.body[0].did
+                            //Get generated hedera creds
                             cy.request({
-                                method: METHOD.PUT,
-                                url: API.ApiServer + API.Profiles + username,
-                                body: {
-                                    parent: SRDid,
-                                    hederaAccountId: response.body.id,
-                                    hederaAccountKey: response.body.key,
-                                    useFireblocksSigning: false,
-                                    fireblocksConfig:
-                                    {
-                                        fireBlocksVaultId: "",
-                                        fireBlocksAssetId: "",
-                                        fireBlocksApiKey: "",
-                                        fireBlocksPrivateiKey: ""
-                                    }
-                                },
-                                headers: {
-                                    authorization: accessToken
-                                },
-                                timeout: 180000
+                                method: METHOD.GET,
+                                url: API.ApiServer + API.RandomKey,
+                                headers: { authorization },
+                            }).then((response) => {
+                                hederaId = response.body.id
+                                //Update profile
+                                cy.wait(3000)
+                                cy.request({
+                                    method: METHOD.PUT,
+                                    url: API.ApiServer + API.Profiles + username,
+                                    body: {
+                                        parent: SRDid,
+                                        hederaAccountId: response.body.id,
+                                        hederaAccountKey: response.body.key,
+                                        useFireblocksSigning: false,
+                                        fireblocksConfig:
+                                        {
+                                            fireBlocksVaultId: "",
+                                            fireBlocksAssetId: "",
+                                            fireBlocksApiKey: "",
+                                            fireBlocksPrivateiKey: ""
+                                        }
+                                    },
+                                    headers: {
+                                        authorization: accessToken
+                                    },
+                                    timeout: 180000
+                                })
+                                cy.request({
+                                    method: METHOD.POST,
+                                    url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                    body: {
+                                        policyIds: [
+                                            policyId
+                                        ],
+                                        assign: true
+                                    },
+                                    headers: {
+                                        authorization
+                                    },
+                                }).then((response) => {
+                                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                                })
                             })
                         })
                     })
                 })
             })
+
         })
 
         before("Get blocks for waiting(approve app, device grid, issue grid) and token id", () => {
@@ -539,7 +552,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 method: METHOD.GET,
                 url: API.ApiServer + API.Policies + policyId + "/" + API.GetIssues,
                 headers: {
-                    authorization   
+                    authorization
                 }
             }).then((response) => {
                 issueRow = response.body.data
@@ -618,7 +631,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         }
                     }
 
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
             cy.request({
@@ -646,7 +659,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         }
                     }
 
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -760,7 +773,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 expect(response.body.at(0)).to.not.exist;
             })
         })
-        
+
     })
 
 
@@ -801,7 +814,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
         })
 
         before("Set second pool", () => {
-            
+
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.ListOfContracts,
@@ -833,7 +846,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 })
-            });            
+            });
 
             let requestForRetireRequestCreationProgress = {
                 method: METHOD.GET,

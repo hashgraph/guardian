@@ -131,6 +131,8 @@ const API = {
     Disable: "disable/",
     Enable: "enable/",
     Preview: "preview/",
-    Validate: "validate/"
+    Validate: "validate/",
+    Users: "users/",
+    Assign: "assign/"
 };
 export default API;

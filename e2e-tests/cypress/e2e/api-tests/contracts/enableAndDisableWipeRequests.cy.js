@@ -176,6 +176,22 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                             },
                             timeout: 180000
                         })
+                        
+                        cy.request({
+                            method: METHOD.POST,
+                            url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                            body: {
+                                policyIds: [
+                                    policyId
+                                ],
+                                assign: true
+                            },
+                            headers: {
+                                authorization
+                            },
+                        }).then((response) => {
+                            expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        })
                     })
                 })
             })
@@ -616,7 +632,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
             })
             
             cy.request({
@@ -636,7 +652,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }
 
-                Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
             })
         })
     })

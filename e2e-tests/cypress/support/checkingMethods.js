@@ -128,7 +128,7 @@ export const whileIssueRequestApproving = (dataToCompare, request, attempts) => 
     }
 }
 
-export const whileBalanceVerifying = (dataToCompare, request, attempts) => {
+export const whileBalanceVerifying = (dataToCompare, request, attempts, tokenId) => {
     if (attempts < 100) {
         attempts++
         let balance

@@ -2,13 +2,13 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Checks from "../../../support/checkingMethods";
 
-context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
+context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
     let username = Math.floor(Math.random() * 999) + "User";
     let contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
     let contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
     const optionKey = "option"
-    let wContractId, rContractId, tokenId, tokenid2, policyId, hederaId, rConractUuid
+    let wContractId, rContractId, tokenId, tokenId2, policyId, hederaId, rConractUuid
     let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId, approveRegistrantBtnBlockId
 
     describe("Flow for one NFT token and get requests", () => {
@@ -47,22 +47,22 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                 wContractId = response.body.contractId;
             });
 
-        //Import policy and save id
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportMsg,
-            body: {
-                "messageId": Cypress.env('policy_for_compare1')//iRec 4
-            },
-            headers: {
-                authorization,
-            },
-            timeout: 180000
-        })
-            .then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
+            //Import policy and save id
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportMsg,
+                body: {
+                    "messageId": Cypress.env('policy_for_compare1')//iRec 4
+                },
+                headers: {
+                    authorization,
+                },
+                timeout: 180000
             })
+                .then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                    policyId = response.body.at(0).id;
+                })
 
             //Get token(Irec token) draft id to update it
             cy.request({
@@ -150,7 +150,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.wait(3000)
                             hederaId = response.body.id
@@ -176,6 +176,22 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
+                            })
+
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                body: {
+                                    policyIds: [
+                                        policyId
+                                    ],
+                                    assign: true
+                                },
+                                headers: {
+                                    authorization
+                                },
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                             })
                         })
                     })
@@ -616,7 +632,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
                 cy.request({
                     method: METHOD.POST,
@@ -634,7 +650,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
                 cy.request({
                     method: METHOD.POST,
@@ -652,7 +668,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -671,7 +687,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -1027,7 +1043,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.wait(3000)
                             hederaId = response.body.id
@@ -1053,6 +1069,23 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
+                            })
+
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                body: {
+                                    policyIds: [
+                                        policyId,
+                                        policyId2
+                                    ],
+                                    assign: true
+                                },
+                                headers: {
+                                    authorization
+                                },
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                             })
                         })
                     })
@@ -1530,7 +1563,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -1549,7 +1582,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -1920,7 +1953,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -1939,7 +1972,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -2253,7 +2286,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.wait(3000)
                             hederaId = response.body.id
@@ -2279,6 +2312,22 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
+                            })
+
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                body: {
+                                    policyIds: [
+                                        policyId
+                                    ],
+                                    assign: true
+                                },
+                                headers: {
+                                    authorization
+                                },
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                             })
                         })
                     })
@@ -2719,7 +2768,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -2737,7 +2786,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -3097,7 +3146,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.wait(3000)
                             hederaId = response.body.id
@@ -3123,6 +3172,23 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
+                            })
+
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                body: {
+                                    policyIds: [
+                                        policyId,
+                                        policyId2
+                                    ],
+                                    assign: true
+                                },
+                                headers: {
+                                    authorization
+                                },
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                             })
                         })
                     })
@@ -3600,7 +3666,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -3619,7 +3685,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -3991,7 +4057,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         }
                     }
 
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
                 cy.request({
@@ -4011,7 +4077,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         }
                     }
 
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
@@ -4384,7 +4450,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                         cy.request({
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
-                            headers: {authorization},
+                            headers: { authorization },
                         }).then((response) => {
                             cy.wait(3000)
                             hederaId = response.body.id
@@ -4410,6 +4476,23 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                                     authorization: accessToken
                                 },
                                 timeout: 180000
+                            })
+
+                            cy.request({
+                                method: METHOD.POST,
+                                url: API.ApiServer + API.ContractPermissions + API.Users + username + "/" + API.Policies + API.Assign,
+                                body: {
+                                    policyIds: [
+                                        policyId,
+                                        policyId2
+                                    ],
+                                    assign: true
+                                },
+                                headers: {
+                                    authorization
+                                },
+                            }).then((response) => {
+                                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                             })
                         })
                     })
@@ -4887,10 +4970,10 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
 
-                
+
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.AccessToken,
@@ -4907,7 +4990,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] },() => {
                             authorization: accessToken
                         }
                     }
-                    Checks.whileBalanceVerifying("10", requestForBalance, 91)
+                    Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
                 })
             })
         })
