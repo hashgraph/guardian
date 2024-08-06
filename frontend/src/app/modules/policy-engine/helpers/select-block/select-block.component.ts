@@ -2,6 +2,8 @@ import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlock, PolicyFolder } from '../../structures';
 
+type ValueType = string | PolicyBlock | null | undefined;
+
 /**
  * SelectBlock.
  */
@@ -14,12 +16,13 @@ export class SelectBlock {
     @Input('root') root!: PolicyFolder;
     @Input('blocks') blocks!: PolicyBlock[];
     @Input('readonly') readonly!: boolean;
-    @Input('value') value: string | PolicyBlock | null | undefined;
+    @Input('value') value: ValueType | ValueType[];
     @Input('type') type!: string;
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
+    @Input() multiple: boolean = false;
 
-    public text: string | null | undefined;
+    public text: string | null | undefined | string[];
     public search: string = '';
     public searchData?: any[];
     private searchTimeout!: any;
@@ -29,13 +32,29 @@ export class SelectBlock {
     }
 
     onChange() {
-        this.text = this.getText(this.value);
+        this.text = this.multiple
+            ? (this.value as ValueType[])
+                  ?.map((item: ValueType) =>
+                      this.getText(item)
+                  )
+                  .join(', ')
+            : this.getText(
+                  this.value as ValueType
+              );
         this.valueChange.emit(this.value);
         this.change.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.text = this.getText(this.value);
+        this.text = this.multiple
+            ? (this.value as any[])
+                  ?.map((item: ValueType) =>
+                      this.getText(item)
+                  )
+                  .join(', ')
+            : this.getText(
+                  this.value as ValueType
+              );
         setTimeout(() => {
             this.data = [];
             if (this.blocks) {

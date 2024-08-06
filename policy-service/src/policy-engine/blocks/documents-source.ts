@@ -5,8 +5,10 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { StateField } from '../helpers/decorators/index.js';
-import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
+import { BlockActionError } from '../errors/index.js';
+import { setOptions } from '../helpers/set-options.js';
 
 /**
  * Document source block with UI
@@ -58,6 +60,46 @@ export class InterfaceDocumentsSource {
         }
     }
 
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, options?: {
+        field: string,
+        value: string;
+    }) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+            field?.bindBlocks?.includes(tag)
+        );
+        const sourceAddons = fields
+            ?.filter((field) => field.bindGroup)
+            .map((field) => field.bindGroup);
+        const documents = (await this._getData(user, ref)) as any[];
+        let document = documents.find(
+            // tslint:disable-next-line:no-shadowed-variable
+            (document) =>
+                document.id === documentId &&
+                (sourceAddons.length === 0 ||
+                    sourceAddons.includes(document.__sourceTag__))
+        );
+        if (!document) {
+            throw new BlockActionError(
+                'Document is not found.',
+                ref.blockType,
+                ref.uuid
+            );
+        }
+
+        if (options) {
+            document = setOptions(document, options.field, options.value);
+        }
+        const state = { data: document };
+        ref.triggerEvents(tag, user, state);
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Set, ref, user, {
+                button: ref.tag,
+                documents: ExternalDocuments(document),
+            })
+        );
+    }
+
     /**
      * Set block data
      * @param user
@@ -72,6 +114,12 @@ export class InterfaceDocumentsSource {
 
         PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
+    }
+
+    private async _getData(user: PolicyUser, ref: IPolicySourceBlock, sortState = {}, paginationData? , history?) {
+        return ref.options.uiMetaData.enableSorting
+            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
+            : await ref.getGlobalSources(user, paginationData);
     }
 
     /**
@@ -135,15 +183,10 @@ export class InterfaceDocumentsSource {
         const history = commonAddonBlocks.find((addon) => {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
-
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting;
         const sortState = this.state[user.id] || {};
-        let data: any = enableCommonSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
-            : await ref.getGlobalSources(user, paginationData);
-
+        let data: any = await this._getData(user, ref, sortState, paginationData, history);
         if (
-            !enableCommonSorting && history
+            !ref.options.uiMetaData.enableSorting && history
         ) {
             for (const document of data) {
                 document.history = (
