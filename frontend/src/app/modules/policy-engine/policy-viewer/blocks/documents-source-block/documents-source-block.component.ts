@@ -120,8 +120,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 element.names = element.name.split('.');
                 element.index = String(i);
                 if (element.bindBlock) {
-                    element._block = await this.getBindBlock(element);
+                    element._block = await this.getBindBlock(element.bindBlock);
                 }
+
+                element._blocks = element.bindBlocks ? await Promise.all(
+                    element.bindBlocks.map(
+                        async (item: any) => await this.getBindBlock(item)
+                    )
+                ) : [];
+
                 if (_fieldMap[element.title]) {
                     _fieldMap[element.title].push(element);
                 } else {
@@ -188,9 +195,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    async getBindBlock(element: any) {
+    async getBindBlock(blockTag: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(element.bindBlock, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
                 reject();

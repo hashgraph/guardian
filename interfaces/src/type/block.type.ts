@@ -30,6 +30,8 @@ export enum BlockType {
     RevocationBlock = 'revocationBlock',
     SetRelationshipsBlock = 'setRelationshipsBlock',
     ButtonBlock = 'buttonBlock',
+    ButtonBlockAddon = 'buttonBlockAddon',
+    DropdownBlockAddon = 'dropdownBlockAddon',
     TokenActionBlock = 'tokenActionBlock',
     DocumentValidatorBlock = 'documentValidatorBlock',
     TokenConfirmationBlock = 'tokenConfirmationBlock',

@@ -114,6 +114,20 @@
                                     >
                                     </render-block>
                                 </div>
+                                <div
+                                    (click)="$event.stopImmediatePropagation()"
+                                    *ngIf="option.type == 'blocks'"
+                                    class="col-btn col-blocks"
+                                >
+                                    <render-block
+                                        *ngFor="let block of option._blocks"
+                                        [block]="block"
+                                        [dryRun]="dryRun"
+                                        [policyId]="policyId"
+                                        [static]="getConfig(element, option, block)"
+                                    >
+                                    </render-block>
+                                </div>
                             </div>
                         </div>
                     </td>

@@ -47,3 +47,5 @@ export { MessagesReportBlock } from './messages-report-block.js';
 export { NotificationBlock } from './notification.block.js';
 export { ToolBlock } from './tool.js';
 export { ExtractDataBlock } from './extract-data-block.js';
+export { ButtonBlockAddon } from './button-block-addon.js';
+export { DropdownBlockAddon } from './dropdown-block-addon.js';

@@ -111,8 +111,8 @@ export class CommonPropertyComponent implements OnInit {
                 this.property.type !== 'Array'
             ) {
                 if (
-                    this.property.default &&
-                    !this.data.hasOwnProperty(this.property.name)
+                    (this.property.default !== undefined) &&
+                    (!this.data.hasOwnProperty(this.property.name))
                 ) {
                     this.data[this.property.name] = this.property.default;
                 }

@@ -22,6 +22,8 @@ export const nameGroupKeywords = [
     'optionName',
     'dialogContent',
     'content',
+    'dialogTitle',
+    'dialogDescription',
 ];
 export const typeGroupKeywords = [
     'status',
@@ -64,7 +66,7 @@ export const tagGroupKeywords = [
     'bindGroup',
     'bindBlock',
 ];
-export const complexObjGroupKeywords = ['config', 'uiMetaData'];
+export const complexObjGroupKeywords = ['config', 'uiMetaData', 'dialogOptions'];
 export const simplePropertiesGroupKeywords = [
     'memoObj',
     'width',
@@ -129,6 +131,7 @@ export const arrayGroupKeywords = [
     'privateFields',
     'outputFields',
     'equations',
+    'bindBlocks',
 ];
 export const flagsGroupKeywords = [
     'static',
@@ -151,5 +154,6 @@ export const flagsGroupKeywords = [
     'canBeEmpty',
     'onlyAssignDocuments',
     'onlyAssignByGroupDocuments',
+    'dialog',
 ];
 export const errorGroupKeywords = ['errorFallbackTag', 'onErrorAction'];

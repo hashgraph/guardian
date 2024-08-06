@@ -44,6 +44,8 @@ import { ExternalTopicBlockComponent } from '../policy-viewer/blocks/external-to
 import { UploadDocumentBlockComponent } from '../policy-viewer/blocks/upload-document-block/upload-document-block.component';
 import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-block/tags-manager-block.component';
 import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-report-block/messages-report-block.component';
+import { ButtonBlockAddonComponent } from '../policy-viewer/blocks/button-block-addon/button-block-addon.component';
+import { DropdownBlockAddonComponent } from '../policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
 import { BlockGroup, BlockHeaders, IBlockSetting, PolicyBlock } from '../structures';
 import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
@@ -221,6 +223,24 @@ const ButtonBlock: IBlockSetting = {
     }
 }
 
+const ButtonBlockAddon: IBlockSetting = {
+    type: BlockType.ButtonBlockAddon,
+    icon: BlockIcons[BlockType.ButtonBlockAddon],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: ButtonBlockAddonComponent,
+    property: null
+}
+
+const DropdownBlockAddon: IBlockSetting = {
+    type: BlockType.DropdownBlockAddon,
+    icon: BlockIcons[BlockType.DropdownBlockAddon],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: DropdownBlockAddonComponent,
+    property: null
+}
+
 const Switch: IBlockSetting = {
     type: BlockType.Switch,
     icon: BlockIcons[BlockType.Switch],
@@ -275,9 +295,32 @@ const DocumentsViewer: IBlockSetting = {
         {
             type: BlockType.HistoryAddon,
             group: BlockGroup.UnGrouped,
+        },
+        {
+            type: BlockType.ButtonBlockAddon,
+            group: BlockGroup.UnGrouped,
+        },
+        {
+            type: BlockType.DropdownBlockAddon,
+            group: BlockGroup.UnGrouped,
         }
     ],
-}
+    about: {
+        output: (value: any, block: PolicyBlock) => {
+            const result = value ? value.slice() : [];
+            const buttons = block.children.filter((child) =>
+                [
+                    BlockType.ButtonBlockAddon,
+                    BlockType.DropdownBlockAddon,
+                ].includes(child.blockType as any)
+            );
+            for (const button of buttons) {
+                result.push(button.tag);
+            }
+            return result;
+        },
+    },
+};
 
 const Request: IBlockSetting = {
     type: BlockType.Request,
@@ -691,5 +734,7 @@ export default [
     ExternalTopic,
     AutoReport,
     NotificationBlock,
-    ExtractData
+    ExtractData,
+    ButtonBlockAddon,
+    DropdownBlockAddon,
 ];

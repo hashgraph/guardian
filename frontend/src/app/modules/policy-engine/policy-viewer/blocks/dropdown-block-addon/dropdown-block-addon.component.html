@@ -1,0 +1,13 @@
+<div class="content-dropdown">
+    <mat-select [disabled]="disabled" [(value)]="currentValue" (selectionChange)="onDropdown($event.value)">
+        <mat-option *ngFor="let item of documents" [value]="item.value">{{item.name}}</mat-option>
+    </mat-select>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

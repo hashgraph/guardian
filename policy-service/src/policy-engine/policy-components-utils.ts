@@ -741,6 +741,9 @@ export class PolicyComponentsUtils {
                 if (field.bindBlock) {
                     field.bindBlock = tagHelper.getTag(field.bindBlock);
                 }
+                if (field.bindBlocks) {
+                    field.bindBlocks = field.bindBlocks.map(item => tagHelper.getTag(item));
+                }
             }
         }
         if (block.finalBlocks) {

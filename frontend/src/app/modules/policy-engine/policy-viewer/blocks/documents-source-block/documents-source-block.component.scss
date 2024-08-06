@@ -175,6 +175,11 @@
     white-space: nowrap;
 }
 
+.col-blocks {
+    display: flex;
+    gap: 5px;
+}
+
 .table .mat-header-cell {
     padding: 0 10px;
 }

@@ -2,6 +2,7 @@ import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
 import { PolicyUser } from '../../policy-user.js';
+import { BlockActionError } from '../../errors/index.js';
 
 /**
  * Datasource block decorator
@@ -19,6 +20,11 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'DataSourceBlock';
 
             /**
+             * Access block addon method map
+             */
+            private readonly _accessAddonMap = new Map<string, boolean>();
+
+            /**
              * Get block data
              * @param args
              */
@@ -27,6 +33,35 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     return super.getData(...args);
                 }
                 return {}
+            }
+
+            /**
+             * On addon event
+             * @param args
+             * @returns
+             */
+            async onAddonEvent(...args: any[]): Promise<void> {
+                if (typeof super.onAddonEvent !== 'function') {
+                    return;
+                }
+
+                const user = args[0];
+                if (this._accessAddonMap.get(user?.did) === true) {
+                    throw new BlockActionError(
+                        'Already processing',
+                        this.blockType,
+                        this.uuid
+                    );
+                }
+
+                this._accessAddonMap.set(user?.did, true);
+                try {
+                    await super.onAddonEvent(...args);
+                } catch (error) {
+                    throw error;
+                } finally {
+                    this._accessAddonMap.delete(user?.did);
+                }
             }
 
             /**
