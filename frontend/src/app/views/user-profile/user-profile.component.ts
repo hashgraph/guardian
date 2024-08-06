@@ -17,6 +17,7 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
@@ -332,7 +333,7 @@ export class UserProfileComponent implements OnInit {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
                         const { id, key } = task.result;
-                        this.hederaCredentialsForm.patchValue({id, key});
+                        this.hederaCredentialsForm.patchValue({ id, key });
                         this.loading = false;
                     });
                     break;
@@ -704,5 +705,18 @@ export class UserProfileComponent implements OnInit {
                 console.error(message);
             }
         );
+    }
+
+    public changePassword(profile: any) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Change password',
+            width: '640px',
+            modal: true,
+            data: {
+                login: profile?.username,
+            }
+        }).onClose.subscribe((data) => {
+            this.loadDate();
+        });
     }
 }

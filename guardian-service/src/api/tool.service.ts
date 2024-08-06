@@ -3,7 +3,7 @@ import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageE
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
-import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
+import { deleteSchema, incrementSchemaVersion } from '../api/helpers/schema-helper.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
@@ -481,6 +481,15 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Tool published');
                 }
                 await DatabaseServer.removeTool(item);
+                const schemasToDelete = await DatabaseServer.getSchemas({
+                    topicId: item.topicId,
+                    readonly: false
+                });
+                for (const schema of schemasToDelete) {
+                    if (schema.status === SchemaStatus.DRAFT) {
+                        await deleteSchema(schema.id, owner, emptyNotifier());
+                    }
+                }
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
