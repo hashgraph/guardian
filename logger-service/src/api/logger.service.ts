@@ -1,4 +1,4 @@
-import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse, Log } from '@guardian/common';
+import { LargePayloadContainer, MessageError, MessageResponse, Log, DatabaseServer } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
@@ -14,13 +14,13 @@ export class LoggerService {
      */
     @MessagePattern(MessageAPI.WRITE_LOG, Transport.NATS)
     async writeLog(@Payload() message: any, @Ctx() context: NatsContext) {
-        const logRepository = new DataBaseHelper(Log);
+        const logRepository = new DatabaseServer();
         try {
             if (!message) {
                 throw new Error('Log message is empty');
             }
 
-            await logRepository.save(message);
+            await logRepository.save(Log, message);
 
             // if (message.type === LogType.ERROR) {
             //     channel.publish(ExternalMessageEvents.ERROR_LOG, message);
@@ -35,7 +35,7 @@ export class LoggerService {
     @MessagePattern(MessageAPI.GET_LOGS, Transport.NATS)
     async getLogs(@Payload() msg: any, @Ctx() context: NatsContext) {
         try {
-            const logRepository = new DataBaseHelper(Log);
+            const logRepository = new DatabaseServer();
 
             const filters = msg && msg.filters || {};
             if (filters.datetime && filters.datetime.$gte && filters.datetime.$lt) {
@@ -46,13 +46,13 @@ export class LoggerService {
             // if (!pageParameters.limit) {
             //     pageParameters.limit = 2000;
             // }
-            const logs = await logRepository.find(filters, {
+            const logs = await logRepository.find(Log, filters, {
                     orderBy: {
                         datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
                     },
                     ...pageParameters
             });
-            const totalCount = await logRepository.count(filters as any);
+            const totalCount = await logRepository.count(Log, filters as any);
             const directLink = new LargePayloadContainer().addObject(Buffer.from(JSON.stringify(logs)));
             return new MessageResponse({
                 directLink,
@@ -66,12 +66,12 @@ export class LoggerService {
 
     @MessagePattern(MessageAPI.GET_ATTRIBUTES, Transport.NATS)
     async getAttributes(@Payload() msg: any, @Ctx() context: NatsContext) {
-        const logRepository = new DataBaseHelper(Log);
+        const logRepository = new DatabaseServer();
 
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
-            const aggregateAttrResult = await logRepository.aggregate([
+            const aggregateAttrResult = await logRepository.aggregate(Log, [
                 { $project: { attributes: '$attributes' } },
                 { $unwind: { path: '$attributes' } },
                 { $match: { attributes: { $regex: nameFilter, $options: 'i' } } },
