@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageAction, PinoLogger } from '@guardian/common';
+import { DatabaseServer, MessageAction, PinoLogger } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
@@ -59,19 +59,23 @@ export class ReportService {
      * @param restartDate
      */
     public static async init(root: string, restartDate: Date): Promise<void> {
-        const report = await new DataBaseHelper(Status).findOne({
+        const databaseServer = new DatabaseServer();
+
+        const report = await databaseServer.findOne(Status, {
             root,
             createDate: { $gt: restartDate }
         });
+
         if (!report) {
-            const row = new DataBaseHelper(Status).create({
+            const row = await databaseServer.create(Status, {
                 uuid: GenerateUUIDv4(),
                 root,
                 status: ReportStatus.NONE,
                 type: ReportType.ALL,
                 steep: '',
             });
-            await new DataBaseHelper(Status).save(row);
+
+            await databaseServer.save(Status, row);
         }
     }
 
@@ -81,10 +85,11 @@ export class ReportService {
      * @param restartDate
      */
     public static async restart(root: string, restartDate: Date): Promise<Status> {
-        const report = await new DataBaseHelper(Status).findOne({
+        const report = await new DatabaseServer().findOne(Status, {
             root,
             createDate: { $gt: restartDate }
         });
+
         if (report && report.status !== ReportStatus.FINISHED) {
             await AnalyticsUtils.updateStatus(report, null, ReportStatus.NONE);
             return await ReportService.run(root, restartDate);
@@ -98,7 +103,7 @@ export class ReportService {
      * @param restartDate
      */
     public static async run(root: string, restartDate: Date): Promise<Status> {
-        const report = await new DataBaseHelper(Status).findOne({
+        const report = await new DatabaseServer().findOne(Status, {
             root,
             createDate: { $gt: restartDate }
         });
@@ -197,19 +202,22 @@ export class ReportService {
      * @param uuid
      */
     private static async loadData(uuid: string): Promise<any> {
+        const databaseServer = new DatabaseServer();
+
         //Total
-        const topics = await new DataBaseHelper(TopicCache).find({ uuid });
-        const rowTokens = await new DataBaseHelper(Token).find({ uuid }) as any[];
-        const balances = await new DataBaseHelper(TokenCache).find({ uuid });
-        const policies = await new DataBaseHelper(Policy).find({ uuid }) as any[];
-        const instances = await new DataBaseHelper(PolicyInstance).find({ uuid }) as any[];
-        const modules = await new DataBaseHelper(Module).find({ uuid });
-        const users = await new DataBaseHelper(User).find({ uuid });
-        const tags = await new DataBaseHelper(Tag).find({ uuid, action: MessageAction.PublishTag });
-        const userTopicCount = await new DataBaseHelper(Topic).count({ uuid });
-        const schemaCount = await new DataBaseHelper(Schema).count({ uuid, action: MessageAction.PublishSchema });
-        const systemSchemaCount = await new DataBaseHelper(Schema).count({ uuid, action: MessageAction.PublishSystemSchema });
-        const docByPolicy = await new DataBaseHelper(Document).aggregate([
+        const topics = await databaseServer.find(TopicCache, { uuid });
+        const rowTokens = await databaseServer.find(Token, { uuid });
+        const balances = await databaseServer.find(TokenCache, { uuid });
+        const policies = await databaseServer.find(Policy, { uuid });
+        const instances = await databaseServer.find(PolicyInstance, { uuid });
+        const modules = await databaseServer.find(Module, { uuid });
+        const users = await databaseServer.find(User, { uuid });
+        const tags = await databaseServer.find(Tag, { uuid, action: MessageAction.PublishTag });
+        const userTopicCount = await databaseServer.find(Topic, { uuid });
+        const schemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSchema });
+        const systemSchemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSystemSchema });
+
+        const docByPolicy = await databaseServer.aggregate(Document, [
             { $match: { uuid, } },
             {
                 $group: {
@@ -221,7 +229,8 @@ export class ReportService {
                 }
             }
         ]);
-        const docByInstance = await new DataBaseHelper(Document).aggregate([
+
+        const docByInstance = await databaseServer.aggregate(Document, [
             { $match: { uuid } },
             {
                 $group: {
@@ -233,10 +242,12 @@ export class ReportService {
                 }
             }
         ]);
-        const docsGroups = await new DataBaseHelper(Document).aggregate([
+
+        const docsGroups = await databaseServer.aggregate(Document, [
             { $match: { uuid } },
             { $group: { _id: { type: '$type', action: '$action' }, count: { $sum: 1 } } }
         ]);
+
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)
             .reduce((sum, g) => sum + g.count, 0);
@@ -469,7 +480,8 @@ export class ReportService {
                 value: item.balance
             }
         }), size);
-        const schemasByName = await new DataBaseHelper(Schema).aggregate([
+
+        const schemasByName = await new DatabaseServer().aggregate(Document, [
             { $match: { uuid: report.uuid } },
             {
                 $group: {
@@ -481,6 +493,7 @@ export class ReportService {
             },
             { $sort: { count: -1 } }
         ]);
+
         const topAllSchemasByName = [];
         const topSystemSchemasByName = [];
         const topSchemasByName = [];
@@ -562,13 +575,19 @@ export class ReportService {
         }
 
         const data = await ReportService.createSnapshot(report, 10);
-        const row = new DataBaseHelper(Dashboard).create({
+
+        const row = {
             uuid: report.uuid,
             root: report.root,
             date: Date.now(),
             report: data
-        });
-        return await new DataBaseHelper(Dashboard).save(row);
+        };
+
+        const databaseServer = new DatabaseServer();
+
+        const entity = await databaseServer.create(Dashboard, row);
+
+        return  await databaseServer.save(Dashboard, entity);
     }
 
     /**
@@ -576,14 +595,14 @@ export class ReportService {
      * @param id
      */
     public static async getDashboard(id: string): Promise<Dashboard> {
-        return await new DataBaseHelper(Dashboard).findOne(id);
+        return  await new DatabaseServer().findOne(Dashboard, id);
     }
 
     /**
      * Get all snapshots
      */
     public static async getDashboards(): Promise<Dashboard[]> {
-        return await new DataBaseHelper(Dashboard).find(null, {
+        return new DatabaseServer().find(Dashboard, null, {
             sort: { date: 1 },
             limit: 10,
             fields: [
@@ -598,7 +617,7 @@ export class ReportService {
      * Get all reports
      */
     public static async getReports(): Promise<Status[]> {
-        return await new DataBaseHelper(Status).find();
+        return new DatabaseServer().find(Status, null);
     }
 
     /**
@@ -610,7 +629,7 @@ export class ReportService {
         root: string,
         restartDate: Date
     ): Promise<Status> {
-        return await new DataBaseHelper(Status).findOne({
+        return new DatabaseServer().findOne(Status, {
             root,
             createDate: { $gt: restartDate }
         });
@@ -622,7 +641,8 @@ export class ReportService {
      * @param size
      */
     public static async getReport(uuid: string, size: number = 10): Promise<any> {
-        const item = await new DataBaseHelper(Status).findOne({ uuid });
+        const item = await new DatabaseServer().findOne(Status, { uuid });
+
         if (!item) {
             throw new Error('Report does not exist');
         }
@@ -645,7 +665,7 @@ export class ReportService {
      * @param uuid
      */
     public static async csv(uuid: string): Promise<any> {
-        const item = await new DataBaseHelper(Status).findOne({ uuid });
+        const item = await new DatabaseServer().findOne(Status, { uuid });
 
         if (!item) {
             throw new Error('Report does not exist');
