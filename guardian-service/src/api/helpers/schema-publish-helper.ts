@@ -3,8 +3,8 @@ import { checkForCircularDependency, incrementSchemaVersion, updateSchemaDefs, u
 import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaMessage, schemasToContext, TopicConfig, UrlType } from '@guardian/common';
 import { emptyNotifier, INotifier } from '../../helpers/notifier.js';
 import { publishSchemaTags } from './../tag.service.js';
-import { exportSchemas } from './schema-import-export-helper.js';
 import { IRootConfig } from '../../interfaces/root-config.interface.js';
+import { SchemaImportExportHelper } from './schema-import-export-helper.js';
 
 /**
  * Check access
@@ -43,14 +43,12 @@ export async function accessSchema(
  * @param user
  * @param messageServer
  * @param type
- * @param userId
  */
 export async function publishSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    type?: MessageAction,
-    userId?: string
+    type: MessageAction
 ): Promise<SchemaCollection> {
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
@@ -82,13 +80,13 @@ export async function publishSchema(
 
     item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
 
-    const relationships = await exportSchemas([item.id], user);
+    const relationships = await SchemaImportExportHelper.exportSchemas([item.id]);
 
     const message = new SchemaMessage(type || MessageAction.PublishSchema);
     message.setDocument(item);
     message.setRelationships(relationships);
     const result = await messageServer
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, true, null, user.id);
 
     const messageId = result.getId();
     const topicId = result.getTopicId();
@@ -112,13 +110,11 @@ export async function publishSchema(
  * @param defs Definitions
  * @param user
  * @param root HederaAccount
- * @param userId
  */
 export async function publishDefsSchemas(
     defs: any,
     user: IOwner,
-    root: IRootConfig,
-    userId?: string
+    root: IRootConfig
 ) {
     if (!defs) {
         return;
@@ -130,7 +126,7 @@ export async function publishDefsSchemas(
         });
         if (schema && schema.status !== SchemaStatus.PUBLISHED) {
             schema = await incrementSchemaVersion(schema.iri, user);
-            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier(), userId);
+            await findAndPublishSchema(schema.id, schema.version, user, root, emptyNotifier());
         }
     }
 }
@@ -142,15 +138,13 @@ export async function publishDefsSchemas(
  * @param user
  * @param root
  * @param notifier
- * @param userId
  */
 export async function findAndPublishSchema(
     id: string,
     version: string,
     user: IOwner,
     root: IRootConfig,
-    notifier: INotifier,
-    userId?: string
+    notifier: INotifier
 ): Promise<SchemaCollection> {
     notifier.start('Load schema');
 
@@ -166,7 +160,7 @@ export async function findAndPublishSchema(
 
     notifier.completedAndStart('Publishing related schemas');
     const oldSchemaIri = item.iri;
-    await publishDefsSchemas(item.document?.$defs, user, root, userId);
+    await publishDefsSchemas(item.document?.$defs, user, root);
     item = await DatabaseServer.getSchema(id);
 
     notifier.completedAndStart('Resolve topic');
@@ -176,10 +170,10 @@ export async function findAndPublishSchema(
     notifier.completedAndStart('Publish schema');
 
     SchemaHelper.updateVersion(item, version);
-    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema, userId);
+    item = await publishSchema(item, user, messageServer, MessageAction.PublishSchema);
 
     notifier.completedAndStart('Publish tags');
-    await publishSchemaTags(item, root, userId);
+    await publishSchemaTags(item, user, root);
 
     notifier.completedAndStart('Update in DB');
     await updateSchemaDocument(item);
@@ -195,15 +189,13 @@ export async function findAndPublishSchema(
  * @param messageServer
  * @param type
  * @param notifier
- * @param userId
  */
 export async function publishSystemSchema(
     item: SchemaCollection,
     user: IOwner,
     messageServer: MessageServer,
-    type?: MessageAction,
-    notifier?: INotifier,
-    userId?: string
+    type: MessageAction,
+    notifier: INotifier
 ): Promise<SchemaCollection> {
     delete item.id;
     delete item._id;
@@ -213,7 +205,7 @@ export async function publishSystemSchema(
     item.version = undefined;
     item.topicId = messageServer.getTopic();
     SchemaHelper.setVersion(item, undefined, undefined);
-    const result = await publishSchema(item, user, messageServer, type, userId);
+    const result = await publishSchema(item, user, messageServer, type);
     if (notifier) {
         notifier.info(`Schema ${result.name || '-'} published`);
     }
@@ -226,14 +218,12 @@ export async function publishSystemSchema(
  * @param messageServer
  * @param user
  * @param notifier
- * @param userId
  */
 export async function publishSystemSchemas(
     systemSchemas: SchemaCollection[],
     messageServer: MessageServer,
     user: IOwner,
-    notifier: INotifier,
-    userId?: string
+    notifier: INotifier
 ): Promise<void> {
     const tasks = [];
     for (const schema of systemSchemas) {
@@ -245,8 +235,7 @@ export async function publishSystemSchemas(
                 user,
                 messageServer,
                 MessageAction.PublishSystemSchema,
-                notifier,
-                userId
+                notifier
             ));
         }
     }
@@ -284,7 +273,7 @@ export async function findAndDryRunSchema(
     for (const name of names) {
         const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
         if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}`);
+            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
         }
         if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
             throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);

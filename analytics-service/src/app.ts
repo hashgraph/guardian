@@ -2,10 +2,12 @@ import {
     COMMON_CONNECTION_CONFIG,
     DataBaseHelper,
     LargePayloadContainer,
-    Logger,
     MessageBrokerChannel,
     Migration,
-    Workers
+    mongoForLoggingInitialization,
+    PinoLogger,
+    pinoLoggerInitialization,
+    Workers,
 } from '@guardian/common';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -25,21 +27,22 @@ Promise.all([
         ...COMMON_CONNECTION_CONFIG,
         migrations: {
             path: 'dist/migrations',
-            transactional: false
+            transactional: false,
         },
         driverOptions: {
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
         },
-        ensureIndexes: true
+        ensureIndexes: true,
     }, [
-        'v2-21-0'
+        'v2-21-0',
     ]),
     NestFactory.create(AppModule, {
         rawBody: true,
-        bodyParser: false
+        bodyParser: false,
     }),
     MessageBrokerChannel.connect('ANALYTICS_SERVICE'),
-]).then(async ([db, app, cn]) => {
+    mongoForLoggingInitialization(),
+]).then(async ([db, app, cn, loggerMongo]) => {
     try {
         DataBaseHelper.orm = db;
         app.connectMicroservice<MicroserviceOptions>({
@@ -47,13 +50,15 @@ Promise.all([
             options: {
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
-                    `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                    `nats://${process.env.MQ_ADDRESS}:4222`,
+                ],
             },
         });
         app.useGlobalPipes(new ValidationPipe({
-            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
         }));
+
+        const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
         app.use(express.static('public'));
         app.use(express.json({ limit: '2mb' }));
@@ -61,7 +66,6 @@ Promise.all([
         AnalyticsUtils.DEBUG_LVL = parseInt(process.env.ANALYTICS_DEBUG_LVL || '3', 10);
         AnalyticsUtils.REQUEST_LIMIT = parseInt(process.env.ANALYTICS_REQUEST_LIMIT || '30', 10);
 
-        new Logger().setConnection(cn);
         const workersHelper = new Workers();
         await workersHelper.setConnection(cn).init();
         workersHelper.initListeners();
@@ -76,7 +80,7 @@ Promise.all([
 
         const mask: string = process.env.ANALYTICS_SCHEDULER || '0 0 * * 1';
         const job = new CronJob(mask, () => {
-            ReportService.run(ReportService.getRootTopic(), ReportService.getRestartDate())
+            ReportService.run(ReportService.getRootTopic(), ReportService.getRestartDate());
         }, null, false, 'UTC');
         job.start();
 
@@ -86,7 +90,7 @@ Promise.all([
         app.listen(PORT, async () => {
             const url = await app.getUrl();
             console.log(`URL: ${url}`);
-            new Logger().info(`Started on ${PORT}`, ['ANALYTICS_SERVICE']);
+            logger.info(`Started on ${PORT}`, ['ANALYTICS_SERVICE']);
         });
     } catch (error) {
         console.error(error.message);

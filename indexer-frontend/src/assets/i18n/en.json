@@ -40,9 +40,7 @@
         "search_placeholder": "Search by keyword"
     },
     "home": {
-        "header": "Indexer",
-        "description": "Guardian Indexer by",
-        "bold_description": "Managed Guardian Service"
+        "header": "Indexer"
     },
     "filter": {
         "placeholder": "placeholder",
@@ -290,6 +288,21 @@
                 "total_supply": "Total Supply",
                 "serial_number": "Serial Number",
                 "view_serials": "View serials"
+            }
+        },
+        "contract": {
+            "header": "Contract",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "contract_id": "Contract Id",
+                "topic_id": "Topic Id",
+                "type": "Type",
+                "description": "Desription",
+                "owner": "Owner",
+                "owner_did": "Owner DID"
             }
         },
         "not_found": "Not found"

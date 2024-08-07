@@ -1,4 +1,4 @@
-import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
@@ -99,7 +99,7 @@ export class RoleService extends NatsService {
     /**
      * Register listeners
      */
-    registerListeners(): void {
+    registerListeners(logger: PinoLogger): void {
         /**
          * Get permissions
          *
@@ -109,7 +109,7 @@ export class RoleService extends NatsService {
             try {
                 return new MessageResponse(permissionList);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -178,7 +178,7 @@ export class RoleService extends NatsService {
 
                     return new MessageResponse({ items, count });
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -212,7 +212,7 @@ export class RoleService extends NatsService {
                     item = await new DataBaseHelper(DynamicRole).save(item);
                     return new MessageResponse(item);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -247,7 +247,7 @@ export class RoleService extends NatsService {
                     const result = await new DataBaseHelper(DynamicRole).update(item);
                     return new MessageResponse(result);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -269,7 +269,7 @@ export class RoleService extends NatsService {
                     const item = await new DataBaseHelper(DynamicRole).findOne({ id });
                     return new MessageResponse(item);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -298,7 +298,7 @@ export class RoleService extends NatsService {
                     await new DataBaseHelper(DynamicRole).remove(item);
                     return new MessageResponse(item);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -325,7 +325,7 @@ export class RoleService extends NatsService {
                     const result = items.find((role) => role.default);
                     return new MessageResponse(result);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -374,7 +374,7 @@ export class RoleService extends NatsService {
                     const result = await new DataBaseHelper(User).update(target);
                     return new MessageResponse(getRequiredProps(result, USER_REQUIRED_PROPS));
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -440,7 +440,7 @@ export class RoleService extends NatsService {
                     const result = await new DataBaseHelper(User).update(target);
                     return new MessageResponse(getRequiredProps(result, USER_REQUIRED_PROPS));
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -484,7 +484,7 @@ export class RoleService extends NatsService {
                     const result = users?.map((row) => getRequiredProps(row, USER_REQUIRED_PROPS));
                     return new MessageResponse(result);
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -559,7 +559,7 @@ export class RoleService extends NatsService {
                     await new DataBaseHelper(User).update(target);
                     return new MessageResponse(getRequiredProps(target, USER_REQUIRED_PROPS));
                 } catch (error) {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     return new MessageError(error);
                 }
             });
@@ -574,7 +574,7 @@ export class RoleService extends NatsService {
                 const user = await new DataBaseHelper(User).findOne({ username })
                 return new MessageResponse(getRequiredProps(user, USER_REQUIRED_PROPS));
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });

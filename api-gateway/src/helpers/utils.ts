@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { IAuthUser, Logger } from '@guardian/common';
-import { IOwner, PolicyType, UserRole } from '@guardian/interfaces';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { IOwner, PolicyHelper, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from './policy-engine.js';
 
 /**
@@ -89,9 +89,10 @@ export const ONLY_SR = ' Only users with the Standard Registry role are allowed 
 /**
  * Generate HttpException
  * @param error
+ * @param logger
  */
-export async function InternalException(error: HttpException | Error | string) {
-    await (new Logger()).error(error, ['API_GATEWAY']);
+export async function InternalException(error: HttpException | Error | string, logger: PinoLogger) {
+    await logger.error(error, ['API_GATEWAY']);
     if (error instanceof HttpException) {
         throw error;
     } else if (typeof error === 'string') {
@@ -106,9 +107,9 @@ export async function InternalException(error: HttpException | Error | string) {
  * @param policyId
  * @param owner
  */
-export async function checkPolicy(policyId: string, owner: IOwner): Promise<any> {
+export async function checkPolicyByRecord(policyId: string, owner: IOwner): Promise<any> {
     const policy = await (new PolicyEngine().accessPolicy(policyId, owner, 'read'));
-    if (policy.status !== PolicyType.DRY_RUN) {
+    if (!PolicyHelper.isDryRunMode(policy)) {
         throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
     }
     return policy;

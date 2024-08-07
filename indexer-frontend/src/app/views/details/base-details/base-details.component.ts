@@ -1,12 +1,8 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-    IDetailsResults,
-    IRelationshipsResults,
-} from '@services/search.service';
 import { Subscription } from 'rxjs';
-import { MatTabChangeEvent } from '@angular/material/tabs';
 import { Activity } from '@components/activity/activity.component';
+import { Relationships } from '@indexer/interfaces';
 
 @Component({
     selector: 'base-details',
@@ -24,7 +20,7 @@ export abstract class BaseDetailsComponent {
     public last: any = null;
     public target: any = null;
     public row: any = null;
-    public relationships: IRelationshipsResults | null = null;
+    public relationships: Relationships | null = null;
     public schema?: any;
     public tab: string = '';
     public tabIndex: number = 0;
@@ -179,7 +175,7 @@ export abstract class BaseDetailsComponent {
         }
     }
 
-    protected setResult(result?: IDetailsResults): void {
+    protected setResult(result?: any): void {
         this.uuid = '';
         this.history = [];
         this.first = null;
@@ -206,7 +202,7 @@ export abstract class BaseDetailsComponent {
         this.tabIndex = this.getTabIndex(this.tab);
     }
 
-    protected setRelationships(result: IRelationshipsResults): void {
+    protected setRelationships(result: Relationships): void {
         this.relationships = result;
     }
 

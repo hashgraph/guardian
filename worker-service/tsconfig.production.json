@@ -14,6 +14,7 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
+          "#constants": ["constants/index.js"]
         }
     },
     "include": [

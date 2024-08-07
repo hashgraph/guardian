@@ -1,5 +1,5 @@
 import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '#middlewares';
@@ -10,7 +10,7 @@ import { CACHE } from '#constants';
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -107,7 +107,7 @@ export class ProfileApi {
                 vcDocument
             };
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -208,7 +208,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.createUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -307,7 +307,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -358,7 +358,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -403,7 +403,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidDocument(document);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -453,7 +453,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidKeys(document, keys);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

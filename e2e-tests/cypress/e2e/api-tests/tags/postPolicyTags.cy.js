@@ -2,7 +2,7 @@ import {STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context("Tags", {tags: '@tags'}, () => {
+context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
     const policyTag = "Tag_16850108144002" + Math.floor(Math.random() * 999999);
     const tagName = "policyTagAPI" + Math.floor(Math.random() * 999999);
@@ -13,7 +13,7 @@ context("Tags", {tags: '@tags'}, () => {
     before(() => {
         //create a policy for tag addition
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.Policies,
             headers: {
                 authorization,

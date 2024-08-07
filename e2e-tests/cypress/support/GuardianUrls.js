@@ -3,7 +3,6 @@ const PORT = 4200;
 const URL = {
     // Web
     Root: "http://localhost:"+PORT+"",
-
   
     //Tabs
     Policies: "/policy-viewer",

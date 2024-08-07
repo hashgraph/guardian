@@ -1,12 +1,13 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Contracts", { tags: '@contracts' },() => {
+context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
     before(() => {
+
         const contractNameR = Math.floor(Math.random() * 999) + "RCon4RequestsTests";
         const contractNameW = Math.floor(Math.random() * 999) + "WCon4RequestsTests";
-        let policyid
+
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.ListOfContracts,
@@ -17,8 +18,8 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameR,
                 "type": "RETIRE",
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
         cy.request({
             method: METHOD.POST,
@@ -30,43 +31,52 @@ context("Contracts", { tags: '@contracts' },() => {
                 "description": contractNameW,
                 "type": "WIPE",
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.SUCCESS);
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.SUCCESS);
         });
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportMsg,
-            body: {
-                "messageId": Cypress.env('policy_for_compare1')//iRec 4
-            },
-            headers: {
-                authorization,
-            },
-            timeout: 180000
-        })
-            .then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyid = response.body.at(-1).id;
-            })
     })
 
-    it("Get list of contracts", () => {
+    it("Get list of retire contracts", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfContracts,
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body.at(-1)).to.have.property("_id");
-            expect(resp.body.at(-1)).to.have.property("contractId");
-            expect(resp.body.at(-1)).to.have.property("type");
-            expect(resp.body.at(-1)).to.have.property("description");
-            expect(resp.body.at(-1)).to.have.property("owner");
+            qs: {
+                type: "RETIRE"
+            }
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.at(-1)).to.have.property("_id");
+            expect(response.body.at(-1)).to.have.property("contractId");
+            expect(response.body.at(-1)).to.have.property("type");
+            expect(response.body.at(-1).type).eql("RETIRE");
+            expect(response.body.at(-1)).to.have.property("description");
+            expect(response.body.at(-1)).to.have.property("owner");
         });
     });
 
+    it("Get list of wipe contracts", () => {
+        cy.request({
+            method: METHOD.GET,
+            url: API.ApiServer + API.ListOfContracts,
+            headers: {
+                authorization,
+            },
+            qs: {
+                type: "WIPE"
+            }
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body.at(-1)).to.have.property("_id");
+            expect(response.body.at(-1)).to.have.property("contractId");
+            expect(response.body.at(-1)).to.have.property("type");
+            expect(response.body.at(-1).type).eql("WIPE");
+            expect(response.body.at(-1)).to.have.property("description");
+            expect(response.body.at(-1)).to.have.property("owner");
+        });
+    });
 
     it("Get list of contracts without auth token - Negative", () => {
         cy.request({
@@ -101,6 +111,38 @@ context("Contracts", { tags: '@contracts' },() => {
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+        });
+    });
+
+    it("Get list of contracts as User - Negative", () => {
+        cy.request({
+            method: METHOD.POST,
+            url: API.ApiServer + API.AccountsLogin,
+            body: {
+                username: "Registrant",
+                password: "test"
+            }
+        }).then((response) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
+                body: {
+                    refreshToken: response.body.refreshToken
+                }
+            }).then((response) => {
+                let accessToken = "Bearer " + response.body.accessToken
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.ListOfContracts,
+                    headers: {
+                        authorization: accessToken
+                    },
+                    failOnStatusCode: false,
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.ERROR);
+                    //expect(response.status).eql(STATUS_CODE.FORBIDDEN);
+                });
+            });
         });
     });
 });

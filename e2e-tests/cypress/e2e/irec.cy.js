@@ -1,4 +1,4 @@
-import { METHOD, STATUS_CODE } from "../support/api/api-const";
+import { METHOD, STATUS_CODE } from "../../support/api/api-const";
 import API from "../support/ApiUrls";
 
 context("IREC e2e test", { tags: "@e2e" }, () => {
@@ -13,7 +13,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
             role: "STANDARD_REGISTRY",
         })
             .should((response) => {
-                expect(response.status).to.eq(201);
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 expect(response.body).to.have.property("username", name);
                 expect(response.body).to.have.property(
                     "role",
@@ -26,7 +26,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                     username: name,
                     password: "test",
                 }).should((response) => {
-                    expect(response.status).to.eq(200);
+                    expect(response.status).to.eq(STATUS_CODE.OK);
                     expect(response.body).to.have.property("username", name);
                     expect(response.body).to.have.property(
                         "role",
@@ -73,7 +73,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                     authorization: accessToken,
                                 },
                             }).should((response) => {
-                                expect(response.status).to.eq(200);
+                                expect(response.status).to.eq(STATUS_CODE.OK);
                                 expect(response.body).to.have.property(
                                     "confirmed"
                                 );
@@ -99,7 +99,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
 
     it("Policy", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + "policies/import/message",
             body: { messageId: "1678461680.254393969" }, //iRec
             headers: {
@@ -107,7 +107,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
             },
             timeout: 180000,
         }).then((response) => {
-            expect(response.status).to.eq(201);
+            expect(response.status).to.eq(STATUS_CODE.SUCCESS);
 
             let firstPolicyId = response.body[0].id;
             let firstPolicyStatus = response.body[0].status;
@@ -121,7 +121,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
             }).should((response) => {
                 let secondPolicyId = response.body.policies[0].id;
                 let policyStatus = response.body.policies[0].status;
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, ""]);
                 expect(firstPolicyId).to.equal(secondPolicyId);
                 expect(policyStatus).to.equal("PUBLISH");
@@ -138,7 +138,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
             role: "USER",
         }) .then(() => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + "accounts/login",
             body: {
                 username: installer,
@@ -181,7 +181,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                     authorization: accessTokenInstaller,
                                 },
                             }).should((response) => {
-                                expect(response.status).to.eq(200);
+                                expect(response.status).to.eq(STATUS_CODE.OK);
                                 expect(response.body).to.have.property(
                                     "confirmed"
                                 );
@@ -221,7 +221,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
                                 authorization: accessTokenInstaller,
                             },
                         }).then((response) => {
-                            expect(response.status).to.eq(200);
+                            expect(response.status).to.eq(STATUS_CODE.OK);
                             cy.request({
                                 method: METHOD.PUT,
                                 url:
@@ -269,7 +269,7 @@ context("IREC e2e test", { tags: "@e2e" }, () => {
     //                 authorization: accessToken,
     //             },
     //         }).then((response) => {
-    //             expect(response.status).to.eq(200);
+    //             expect(response.status).to.eq(STATUS_CODE.OK);
 
     //             const roleUuid = response.body.id;
 

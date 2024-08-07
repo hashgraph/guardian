@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, Logger, MessageBrokerChannel, Migration, } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -35,14 +35,15 @@ Promise.all([
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
         },
     }),
+    mongoForLoggingInitialization()
 ]).then(
     async (values) => {
-        const [_, db, mqConnection, app] = values;
+        const [_, db, mqConnection, app, loggerMongo] = values;
         DataBaseHelper.orm = db;
 
         app.listen();
 
-        new Logger().setConnection(mqConnection);
+        const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
         const state = new ApplicationState();
         await state
@@ -52,7 +53,7 @@ Promise.all([
         state.updateState(ApplicationStates.STARTED);
         state.updateState(ApplicationStates.INITIALIZING);
         state.updateState(ApplicationStates.READY);
-        await new Logger().info('notification service started', ['NOTIFICATION_SERVICE']);
+        await logger.info('notification service started', ['NOTIFICATION_SERVICE']);
     },
     (reason) => {
         console.log(reason);

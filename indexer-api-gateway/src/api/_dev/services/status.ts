@@ -1,17 +1,18 @@
 import { Controller, HttpCode, HttpStatus, Get, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern } from '@nestjs/microservices';
-import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
     ApiInternalServerErrorResponse,
     ApiForbiddenResponse,
     ApiOkResponse,
     ApiOperation,
-    ApiTags
+    ApiTags,
+    ApiExcludeController
 } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 
 @Controller('status')
 @ApiTags('status')
+@ApiExcludeController()
 export class StatusApi {
     private readonly workers: Map<string, any>;
     private readonly indexers: Map<string, any>;
@@ -51,10 +52,6 @@ export class StatusApi {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
     })
     @HttpCode(HttpStatus.OK)
     async getStatus(): Promise<any> {

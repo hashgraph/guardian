@@ -280,10 +280,36 @@ export class RecordItemStack {
      * Current index
      */
     private _index: number;
+    /**
+     * List of actions
+     */
+    private _source: RecordItem[];
 
     constructor() {
         this._items = [];
+        this._source = [];
         this._index = 0;
+    }
+
+    /**
+     * Copy actions
+     * @param items
+     */
+    private _copy(items: RecordItem[]): RecordItem[] {
+        if (Array.isArray(items)) {
+            const result = new Array(items.length);
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                if (item && typeof item === 'object') {
+                    result[i] = JSON.parse(JSON.stringify(item));
+                } else {
+                    result[i] = item;
+                }
+            }
+            return result;
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -293,10 +319,20 @@ export class RecordItemStack {
      */
     public setItems(items: RecordItem[]): void {
         if (Array.isArray(items)) {
-            this._items = items;
+            this._source = items;
         } else {
-            this._items = [];
+            this._source = [];
         }
+        this._items = this._copy(this._source);;
+        this._index = 0;
+    }
+
+    /**
+     * Clear
+     * @public
+     */
+    public clear(): void {
+        this._items = this._copy(this._source);;
         this._index = 0;
     }
 

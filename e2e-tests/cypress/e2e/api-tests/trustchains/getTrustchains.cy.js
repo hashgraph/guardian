@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Trustchains", { tags: '@trustchains' },() => {
+context("Trustchains", { tags: ['trustchains', 'thirdPool'] },() => {
     let username = 'Auditor'
     before(() => {
         cy.request({
@@ -13,8 +13,8 @@ context("Trustchains", { tags: '@trustchains' },() => {
             }
         }).then((responseWithRT) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer + "accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: responseWithRT.body.refreshToken
                 }
@@ -44,8 +44,8 @@ context("Trustchains", { tags: '@trustchains' },() => {
             }
         }).then((responseWithRT) => {
             cy.request({
-                method: "POST",
-                url: API.ApiServer+"accounts/access-token",
+                method: METHOD.POST,
+                url: API.ApiServer+API.AccessToken,
                 body: {
                     refreshToken: responseWithRT.body.refreshToken
                 }

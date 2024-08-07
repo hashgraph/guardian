@@ -6,9 +6,9 @@ import {
     MessageError,
     DataBaseHelper,
     Message,
-    IPage,
 } from '@indexer/common';
 import { parsePageParams } from '../utils/parse-page-params.js';
+import { Page, SearchItem } from '@indexer/interfaces';
 
 @Controller()
 export class SearchService {
@@ -26,7 +26,7 @@ export class SearchService {
             const { search } = msg;
 
             const em = DataBaseHelper.getEntityManager();
-            const [results, count] = await em.findAndCount(
+            const [results, count] = (await em.findAndCount(
                 Message,
                 {
                     $text: {
@@ -34,7 +34,7 @@ export class SearchService {
                     },
                 } as any,
                 options
-            );
+            )) as any as [SearchItem[], number];
 
             const result = {
                 items: results,
@@ -44,7 +44,7 @@ export class SearchService {
                 order: options.orderBy,
             };
 
-            return new MessageResponse<IPage<Message>>(result);
+            return new MessageResponse<Page<SearchItem>>(result);
         } catch (error) {
             return new MessageError(error);
         }

@@ -5,6 +5,10 @@ import { AccessType } from '../type/access.type.js'
  */
 export interface IOwner {
     /**
+     * User ID
+     */
+    id: string
+    /**
      * Current user username
      */
     username: string

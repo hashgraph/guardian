@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
+import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 
@@ -59,9 +59,11 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
  * Demo API
  * @param channel
  * @param settingsRepository
+ * logger pino logger
  */
 export async function demoAPI(
-    settingsRepository: DataBaseHelper<Settings>
+    settingsRepository: DataBaseHelper<Settings>,
+    logger: PinoLogger
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
         async (msg: { role: string, userId: string }) => {
@@ -71,7 +73,7 @@ export async function demoAPI(
                 const result = await generateDemoKey(role, settingsRepository, emptyNotifier(), userId);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -85,7 +87,7 @@ export async function demoAPI(
                 const result = await generateDemoKey(role, settingsRepository, notifier, userId);
                 notifier.result(result);
             }, async (error) => {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 notifier.error(error);
             });
 
@@ -111,7 +113,7 @@ export async function demoAPI(
                 };
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         })

@@ -107,12 +107,7 @@ export class FiltersAddonBlock {
         return block;
     }
 
-    /**
-     * Set block data
-     * @param user
-     * @param data
-     */
-    async setData(user: PolicyUser, data: any) {
+    async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
         if (!data) {
@@ -134,6 +129,16 @@ export class FiltersAddonBlock {
             this.state[user.id] = blockState;
         }
         ref.setFilters(filter, user);
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    async setData(user: PolicyUser, data: any) {
+        await this.setFilterState(user, data);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 }

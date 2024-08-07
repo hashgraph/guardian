@@ -8,3 +8,4 @@ export * from './geojson-schema/index.js';
 export * from './generate-document.js';
 export * from './sentinel-hub/index.js';
 export * from './permissions-helper.js';
+export * from './policy-helper.js';
