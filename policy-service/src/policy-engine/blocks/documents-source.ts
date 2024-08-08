@@ -127,8 +127,11 @@ export class InterfaceDocumentsSource {
         let paginationData = null;
 
         if (pagination) {
-            if (itemsPerPage && page) {
-                await pagination.setState(user, {itemsPerPage, page, size});
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.setState(user, {
+                    itemsPerPage: parseInt(itemsPerPage, 10),
+                    page: parseInt(page, 10),
+                });
             }
 
             paginationData = await pagination.getState(user);
