@@ -1,5 +1,5 @@
 import { User } from '../entity/user.js';
-import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -184,13 +184,16 @@ export class AccountService extends NatsService {
         this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS,
             async (_: any) => {
                 try {
-                    const userAccounts = (await new DataBaseHelper(User)
-                        .find({ role: UserRole.USER }))
-                        .map((e) => ({
+                    const userRepository = new DatabaseServer()
+
+                    const users = userRepository.find(User, { role: UserRole.USER })
+
+                    const userAccounts = users.map((e) => ({
                             username: e.username,
                             parent: e.parent,
                             did: e.did
                         }));
+
                     return new MessageResponse(userAccounts);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -204,12 +207,15 @@ export class AccountService extends NatsService {
         this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS,
             async (_: any) => {
                 try {
-                    const userAccounts = (await new DataBaseHelper(User)
-                        .find({ role: UserRole.STANDARD_REGISTRY }))
-                        .map((e) => ({
-                            username: e.username,
-                            did: e.did
-                        }));
+                    const userRepository = new DatabaseServer()
+
+                    const users = userRepository.find(User, { role: UserRole.STANDARD_REGISTRY })
+
+                    const userAccounts = users.map((e) => ({
+                        username: e.username,
+                        did: e.did
+                    }));
+
                     return new MessageResponse(userAccounts);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -223,15 +229,17 @@ export class AccountService extends NatsService {
         this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO,
             async (_: any) => {
                 try {
-                    const userAccounts = (await new DataBaseHelper(User)
-                        .find({
-                            template: { $ne: true }
-                        })).map((e) => ({
-                            parent: e.parent,
-                            did: e.did,
-                            username: e.username,
-                            role: e.role
-                        }));
+                    const userRepository = new DatabaseServer()
+
+                    const users = userRepository.find(User, { template: { $ne: true } })
+
+                    const userAccounts = users.map((e) => ({
+                        parent: e.parent,
+                        did: e.did,
+                        username: e.username,
+                        role: e.role
+                    }));
+
                     return new MessageResponse(userAccounts);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE']);
@@ -244,7 +252,8 @@ export class AccountService extends NatsService {
                 try {
                     const { username, password, role } = msg;
 
-                    const checkUserName = await new DataBaseHelper(User).count({ username });
+                    const checkUserName =  new DatabaseServer().count(User, { username })
+
                     if (checkUserName) {
                         return new MessageError('An account with the same name already exists.');
                     }
@@ -318,7 +327,8 @@ export class AccountService extends NatsService {
                                 const userAccessTokenService = await UserAccessTokenService.New();
                                 const token = userAccessTokenService.generateRefreshToken(user);
                                 user.refreshToken = token.id;
-                                await new DataBaseHelper(User).save(user);
+
+                                await new DatabaseServer().save(User, user);
                                 return new MessageResponse({
                                     username: user.username,
                                     did: user.did,
@@ -357,7 +367,7 @@ export class AccountService extends NatsService {
                     user.passwordVersion = passwordDigest.passwordVersion;
                     user.refreshToken = token.id;
 
-                    await new DataBaseHelper(User).save(user);
+                    await new DatabaseServer().save(User, user);
 
                     return new MessageResponse({
                         username: user.username,
@@ -382,7 +392,7 @@ export class AccountService extends NatsService {
                     return new MessageResponse({})
                 }
 
-                const user = await new DataBaseHelper(User).findOne({
+                const user = await new DatabaseServer().findOne(User, {
                     refreshToken: decryptedToken.id,
                     username: decryptedToken.name,
                     template: { $ne: true }
@@ -399,21 +409,22 @@ export class AccountService extends NatsService {
             async (msg: { username: string, item: any }) => {
                 const { username, item } = msg;
                 try {
-                    const user = await (new DataBaseHelper(User))
-                        .findOne({ username });
+                    const usersRepository = new DatabaseServer();
+
+                    const user = await usersRepository.findOne(User, { username })
+
                     if (!user) {
                         return new MessageResponse(null);
                     }
 
                     Object.assign(user, item);
-                    const template = await (new DataBaseHelper(User))
-                        .findOne({ did: item.did, template: true });
+                    const template = await usersRepository.findOne(User,{ did: item.did, template: true });
                     if (template) {
                         user.permissions = template.permissions;
                         user.permissionsGroup = template.permissionsGroup;
-                        await new DataBaseHelper(User).delete(template);
+                        await usersRepository.deleteEntity(User, template);
                     }
-                    const result = await new DataBaseHelper(User).update(user);
+                    const result = await usersRepository.update(User, user);
 
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
@@ -468,7 +479,7 @@ export class AccountService extends NatsService {
                             options.did = filters.did;
                         }
                     }
-                    const [items, count] = await new DataBaseHelper(User).findAndCount(options, otherOptions);
+                    const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
                     return new MessageResponse({ items, count });
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);

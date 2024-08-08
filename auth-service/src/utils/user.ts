@@ -10,7 +10,7 @@ import {
 import { USER_REQUIRED_PROPS, USER_KEYS_PROPS } from '#constants';
 import { User } from '../entity/user.js';
 import { DynamicRole } from '../entity/dynamic-role.js';
-import { DataBaseHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
 
 export enum UserProp {
     RAW = 'RAW',
@@ -85,7 +85,9 @@ export class UserUtils {
         providerId?: string,
         walletToken?: string,
     }): Promise<User> {
-        const defaultRole = await new DataBaseHelper(DynamicRole).findOne({
+        const entityRepository = new DatabaseServer();
+
+        const defaultRole = await entityRepository.findOne(DynamicRole, {
             owner: null,
             default: true,
             readonly: true
@@ -97,12 +99,12 @@ export class UserUtils {
             owner: null
         }] : [];
         const permissions = defaultRole ? defaultRole.permissions : [];
-        const row = (new DataBaseHelper(User)).create({
+        const row = entityRepository.create(User, {
             ...user,
             permissionsGroup,
             permissions
         });
-        const result = await (new DataBaseHelper(User)).save(row);
+        const result = await entityRepository.save(User, row);
 
         return UserUtils.updateUserFields(result, UserProp.REQUIRED);
     }
@@ -112,25 +114,27 @@ export class UserUtils {
         parent: string,
         did: string
     ): Promise<IUser> {
+        const entityRepository = new DatabaseServer();
+
         const username = `template_${Date.now()}${Math.round(Math.random() * 1000)}`;
-        const row = (new DataBaseHelper(User)).create({
+        const row = entityRepository.create(User, {
             username,
             role,
             parent,
             did,
             template: true
         });
-        const result = await (new DataBaseHelper(User)).save(row);
+        const result = await entityRepository.save(User, row);
         return UserUtils.updateUserFields(result, UserProp.REQUIRED);
     }
 
     public static async getUser(filters: any, prop: UserProp): Promise<User | undefined> {
-        const user = await new DataBaseHelper(User).findOne(filters);
+        const user = await new DatabaseServer().findOne(User, filters);
         return UserUtils.updateUserFields(user, prop);
     }
 
     public static async getUsers(filters: any, prop: UserProp): Promise<User[]> {
-        const users = await new DataBaseHelper(User).find(filters);
+        const users = await new DatabaseServer().find(User, filters);
         return UserUtils.updateUsersFields(users, prop);
     }
 }

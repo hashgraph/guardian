@@ -1,15 +1,15 @@
 import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
-import { DataBaseHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
 import { UserPassword } from '#utils';
 
 /**
  * Create default users
  */
 export async function fixtures(): Promise<void> {
-    const usersRepository = new DataBaseHelper(User);
+    const usersRepository = new DatabaseServer();
     // Fixture user
-    if ((await usersRepository.count()) === 0) {
+    if ((await usersRepository.count(User, null)) === 0) {
         const users = [{
             username: 'StandardRegistry',
             role: UserRole.STANDARD_REGISTRY,
@@ -19,13 +19,13 @@ export async function fixtures(): Promise<void> {
 
         for (const user of users) {
             const password = await UserPassword.generatePasswordV2('test');
-            const row = usersRepository.create({
+            const row = usersRepository.create(User, {
                 ...user,
                 password: password.password,
                 salt: password.salt,
                 passwordVersion: password.passwordVersion,
             });
-            await usersRepository.save(row);
+            await usersRepository.save(User, row);
         }
     }
 }
