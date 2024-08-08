@@ -22,12 +22,12 @@ jobs:
           egress-policy: audit
 
       - name: Conditional values for Github Action
-        uses: haya14busa/action-cond@94f77f7a80cd666cb3155084e428254fea4281fd # v1.2.1
+        uses: step-security/action-cond@667d0aa72b2bd9513536eb0ca8acd5549757bd3d # v1.2.1
         id: latestTag
         with:
           cond: ${{ github.event.release.target_commitish == 'main' }}
-          if_true: "latest"
-          if_false: "hotfix"
+          if_true: 'latest'
+          if_false: 'hotfix'
 
       - name: Checkout
         uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
