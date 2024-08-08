@@ -133,7 +133,6 @@ export class TokensApi {
     })
     @ApiExtraModels(TokenDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    // @UseCache()
     async getTokens(
         @AuthUser() user: IAuthUser,
         @Response() res: any,

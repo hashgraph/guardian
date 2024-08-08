@@ -29,7 +29,6 @@ export class DemoApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
-    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
