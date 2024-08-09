@@ -1,8 +1,7 @@
 import { DefaultRoles, DidDocumentStatus, DocumentStatus, EntityOwner, GenerateUUIDv4, IOwner, ISignOptions, MessageAPI, Permissions, Schema, SchemaEntity, SchemaHelper, SignType, TopicType, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
-    CommonDidDocument,
-    DataBaseHelper,
+    CommonDidDocument, DatabaseServer,
     DidDocument as DidDocumentCollection,
     DIDMessage,
     Environment,
@@ -74,10 +73,12 @@ interface IDidKey {
 // tslint:disable-next-line:completed-docs
 async function getGlobalTopic(): Promise<TopicConfig | null> {
     try {
-        const topicId = await new DataBaseHelper(Settings).findOne({
+        const dataBaseServer = new DatabaseServer();
+
+        const topicId = await dataBaseServer.findOne(Settings, {
             name: 'INITIALIZATION_TOPIC_ID'
         });
-        const topicKey = await new DataBaseHelper(Settings).findOne({
+        const topicKey = await dataBaseServer.findOne(Settings, {
             name: 'INITIALIZATION_TOPIC_KEY'
         });
         const INITIALIZATION_TOPIC_ID = topicId?.value || process.env.INITIALIZATION_TOPIC_ID;
@@ -184,13 +185,15 @@ async function checkAndPublishSchema(
     logger: PinoLogger,
     notifier: INotifier
 ): Promise<void> {
-    let schema = await new DataBaseHelper(SchemaCollection).findOne({
+    const dataBaseServer = new DatabaseServer();
+
+    let schema = await dataBaseServer.findOne(SchemaCollection, {
         entity,
         readonly: true,
         topicId: topicConfig.topicId
     });
     if (!schema) {
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
+        schema = await dataBaseServer.findOne(SchemaCollection,{
             entity,
             system: true,
             active: true
@@ -201,7 +204,7 @@ async function checkAndPublishSchema(
             schema.creator = userDID;
             schema.owner = userDID;
             const item = await publishSystemSchema(schema, srUser, messageServer, MessageAction.PublishSystemSchema, notifier);
-            await new DataBaseHelper(SchemaCollection).save(item);
+            await dataBaseServer.save(SchemaCollection, item);
         }
     }
 }
@@ -272,9 +275,12 @@ async function createUserProfile(
     let topicConfig: TopicConfig = null;
     let newTopic: Topic = null;
     const globalTopic = await getGlobalTopic();
+
+    const dataBaseServer = new DatabaseServer();
+
     if (parent) {
         topicConfig = await TopicConfig.fromObject(
-            await new DataBaseHelper(Topic).findOne({
+            await dataBaseServer.findOne(Topic, {
                 owner: parent,
                 type: TopicType.UserTopic
             }), true);
@@ -292,7 +298,7 @@ async function createUserProfile(
             policyUUID: null
         });
         await topicHelper.oneWayLink(topicConfig, globalTopic, user.id.toString());
-        newTopic = await new DataBaseHelper(Topic).save(topicConfig.toObject());
+        newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
     }
     messageServer.setTopicObject(topicConfig);
     // ------------------------
@@ -314,7 +320,7 @@ async function createUserProfile(
     }
     const userDID = currentDidDocument.getDid();
 
-    const existingUser = await new DataBaseHelper(DidDocumentCollection).findOne({ did: userDID });
+    const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did: userDID });
     if (existingUser) {
         notifier.completedAndStart('User restored');
         notifier.completed();
@@ -332,7 +338,7 @@ async function createUserProfile(
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didMessageResult.getId();
         didRow.topicId = didMessageResult.getTopicId();
-        await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        await dataBaseServer.update(DidDocumentCollection, didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
         // didRow.status = DidDocumentStatus.FAILED;
@@ -395,7 +401,7 @@ async function createUserProfile(
             notifier
         );
         if (entity) {
-            const schema = await new DataBaseHelper(SchemaCollection).findOne({
+            const schema = await dataBaseServer.findOne(SchemaCollection, {
                 entity,
                 readonly: true,
                 topicId: topicConfig.topicId
@@ -427,7 +433,7 @@ async function createUserProfile(
         const vcObject = await vcHelper.createVerifiableCredential(credentialSubject, currentDidDocument, null, null);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(vcObject);
-        const vcDoc = await new DataBaseHelper(VcDocumentCollection).save({
+        const vcDoc = await dataBaseServer.save(VcDocumentCollection, {
             hash: vcMessage.hash,
             owner: userDID,
             document: vcMessage.document,
@@ -441,11 +447,11 @@ async function createUserProfile(
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
-            await new DataBaseHelper(VcDocumentCollection).update(vcDoc);
+            await dataBaseServer.update(VcDocumentCollection, vcDoc);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE']);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
-            await new DataBaseHelper(VcDocumentCollection).update(vcDoc);
+            await dataBaseServer.update(VcDocumentCollection, vcDoc);
         }
     }
     // -----------------------
@@ -456,7 +462,7 @@ async function createUserProfile(
     if (newTopic) {
         newTopic.owner = userDID;
         newTopic.parent = globalTopic?.topicId;
-        await new DataBaseHelper(Topic).update(newTopic);
+        await dataBaseServer.update(Topic, newTopic);
         topicConfig.owner = userDID;
         topicConfig.parent = globalTopic?.topicId;
         await topicConfig.saveKeysByUser(user);
@@ -551,6 +557,8 @@ async function createDefaultRoles(
         permissions: DefaultRoles,
     }];
     const ids: string[] = [];
+    const dataBaseServer = new DatabaseServer();
+
     for (const config of roles) {
         notifier.info(`Create role (${config.name})`);
         const role = await users.createRole(config, owner);
@@ -561,7 +569,8 @@ async function createDefaultRoles(
             description: role.description,
             permissions: role.permissions
         }
-        const schema = await new DataBaseHelper(SchemaCollection).findOne({
+
+        const schema = await dataBaseServer.findOne(SchemaCollection, {
             entity: SchemaEntity.ROLE,
             readonly: true,
             topicId: messageServer.getTopic()
@@ -578,7 +587,7 @@ async function createDefaultRoles(
         message.setRole(credentialSubject);
         message.setDocument(document);
         await messageServer.sendMessage(message, true, null, userId);
-        await new DataBaseHelper(VcDocumentCollection).save({
+        await dataBaseServer.save(VcDocumentCollection, {
             hash: message.hash,
             owner: owner.owner,
             creator: owner.creator,

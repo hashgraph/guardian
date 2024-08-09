@@ -4,7 +4,6 @@ import {
     BlockState,
     Contract,
     ContractMessage,
-    DataBaseHelper,
     DatabaseServer,
     DidDocument,
     DocumentState,
@@ -659,6 +658,9 @@ export class PolicyDataMigrator {
         tokenTemplates: { [key: string]: string }
     ) {
         const result: any = {};
+
+        const dataBaseServer = new DatabaseServer();
+
         for (const [tokenTemplate, tokenId] of Object.entries(tokenTemplates)) {
             const newTokenTemplate = this._tokens[tokenTemplate];
             if (!newTokenTemplate) {
@@ -671,7 +673,7 @@ export class PolicyDataMigrator {
                 delete existingToken._id;
                 delete existingToken.id;
                 existingToken.policyId = this._policyId;
-                await new DataBaseHelper(Token).save(existingToken);
+                await dataBaseServer.save(Token, existingToken);
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -692,7 +694,7 @@ export class PolicyDataMigrator {
                 }) as any
             );
             tokenObject.policyId = this._policyId;
-            await new DataBaseHelper(Token).save(tokenObject);
+            await dataBaseServer.save(Token, tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
         }
@@ -705,7 +707,10 @@ export class PolicyDataMigrator {
      * @returns Wipe contract identifier
      */
     async createWipeContract(wipeContractId: string) {
-        const existingWipeContract = await new DataBaseHelper(Contract).findOne(
+        const dataBaseServer = new DatabaseServer();
+
+        const existingWipeContract = await dataBaseServer.findOne(
+            Contract,
             {
                 type: ContractType.WIPE,
                 wipeContractId,
@@ -753,7 +758,7 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
-        const contract = await new DataBaseHelper(Contract).save({
+        const contract = await dataBaseServer.save(Contract, {
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,

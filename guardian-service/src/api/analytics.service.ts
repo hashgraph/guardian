@@ -22,7 +22,6 @@ import {
     SchemaLoader
 } from '../analytics/index.js';
 import {
-    DataBaseHelper,
     DatabaseServer,
     IAuthUser,
     MessageError,
@@ -104,15 +103,17 @@ async function localSearch(
         });
     }
 
-    let policies: any[] = await new DataBaseHelper(Policy).find(filter);
+    const dataBaseServer = new DatabaseServer();
+
+    let policies: any[] = await dataBaseServer.find(Policy, filter);
     for (const policy of policies) {
-        policy.vcCount = await new DataBaseHelper(VcDocumentCollection).count({ policyId: policy.id });
+        policy.vcCount = await dataBaseServer.count(VcDocumentCollection, { policyId: policy.id });
     }
     if (options.minVcCount) {
         policies = policies.filter((policy) => policy.vcCount >= options.minVcCount);
     }
     for (const policy of policies) {
-        policy.vpCount = await new DataBaseHelper(VpDocumentCollection).count({ policyId: policy.id });
+        policy.vpCount = await new dataBaseServer.count(VpDocumentCollection, { policyId: policy.id });
     }
     if (options.minVpCount) {
         policies = policies.filter((policy) => policy.vpCount >= options.minVpCount);

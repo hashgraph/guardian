@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
+import { DatabaseServer, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 
@@ -7,13 +7,12 @@ import { AccountId, PrivateKey } from '@hashgraph/sdk';
  * Connecting to the message broker methods of working with root address book.
  */
 export async function configAPI(
-    settingsRepository: DataBaseHelper<Settings>,
-    topicRepository: DataBaseHelper<Topic>,
+    dataBaseServer: DatabaseServer,
     logger: PinoLogger,
 ): Promise<void> {
 
     ApiResponse(MessageAPI.GET_TOPIC, async (msg) => {
-        const topic = await topicRepository.findOne(msg);
+        const topic = await dataBaseServer.findOne(Topic, msg);
         return new MessageResponse(topic);
     });
 

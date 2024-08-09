@@ -1,5 +1,5 @@
 import { BlockType, ConfigType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyTestStatus, PolicyToolMetadata, PolicyType, SchemaCategory, SchemaEntity, TagType, TopicType } from '@guardian/interfaces';
-import { DataBaseHelper, DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, IPolicyComponents, PinoLogger, MessageAction, MessageServer, MessageType, Policy, PolicyMessage, PolicyTool, RecordImportExport, regenerateIds, replaceAllEntities, replaceAllVariables, replaceArtifactProperties, Schema, SchemaFields, Tag, Token, Topic, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { ImportArtifactResult, ImportTokenMap, ImportTokenResult, ImportToolMap, ImportToolResults, ImportSchemaMap, ImportSchemaResult, importArtifactsByFiles, importSubTools, importTokensByFiles, publishSystemSchemas, importTag, SchemaImportExportHelper } from '../../api/helpers/index.js';
 import { PolicyConverterUtils } from '../policy-converter-utils.js';
 import { INotifier, emptyNotifier } from '../../helpers/notifier.js';
@@ -322,16 +322,22 @@ export class PolicyImport {
 
     private async savePolicy(policy: Policy): Promise<Policy> {
         this.notifier.completedAndStart('Saving policy in DB');
-        const model = new DataBaseHelper(Policy).create(policy as Policy);
-        return await new DataBaseHelper(Policy).save(model);
+
+        const dataBaseServer = new DatabaseServer();
+
+        const model = dataBaseServer.create(Policy, policy as Policy);
+        return await dataBaseServer.save(Policy, model);
     }
 
     private async saveTopic(policy: Policy) {
         this.notifier.completedAndStart('Saving topic in DB');
-        const row = await new DataBaseHelper(Topic).findOne({ topicId: this.topicRow.topicId })
+
+        const dataBaseServer = new DatabaseServer();
+
+        const row = await dataBaseServer.findOne(Topic, { topicId: this.topicRow.topicId })
         row.policyId = policy.id.toString();
         row.policyUUID = policy.uuid;
-        await new DataBaseHelper(Topic).update(row);
+        await dataBaseServer.update(Topic, row);
     }
 
     private async saveArtifacts(policy: Policy) {
@@ -525,7 +531,7 @@ export class PolicyImportExportHelper {
         tokenMap: any[],
         tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
     ) {
-        if (await new DataBaseHelper(Policy).findOne({ name: policy.name })) {
+        if (await new DatabaseServer().findOne(Policy, { name: policy.name })) {
             policy.name = policy.name + '_' + Date.now();
         }
 

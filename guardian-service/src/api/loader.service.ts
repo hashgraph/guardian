@@ -1,17 +1,15 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DidDocument, DidURL, MessageError, MessageResponse, PinoLogger, Schema } from '@guardian/common';
+import { DatabaseServer, DidDocument, DidURL, MessageError, MessageResponse, PinoLogger, Schema } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
  *
- * @param didDocumentLoader - DID Documents Loader
- * @param schemaDocumentLoader - Schema Documents Loader
+ * @param dataBaseServer - Data base server
  * @param logger - pino logger
  */
 export async function loaderAPI(
-    didDocumentRepository: DataBaseHelper<DidDocument>,
-    schemaRepository: DataBaseHelper<Schema>,
+    dataBaseServer: DatabaseServer,
     logger: PinoLogger,
 ): Promise<void> {
     /**
@@ -27,7 +25,7 @@ export async function loaderAPI(
             const iri = msg.did;
             const did = DidURL.getController(iri);
             const reqObj = { where: { did: { $eq: did } } };
-            const didDocuments = await didDocumentRepository.findOne(reqObj);
+            const didDocuments = await dataBaseServer.findOne(DidDocument, reqObj);
             if (didDocuments) {
                 return new MessageResponse(didDocuments.document);
             }
@@ -51,12 +49,12 @@ export async function loaderAPI(
             }
 
             if (Array.isArray(msg)) {
-                const schema = await schemaRepository.find({
+                const schema = await dataBaseServer.find(Schema, {
                     where: { documentURL: { $in: msg } }
                 });
                 return new MessageResponse(schema);
             } else {
-                const schema = await schemaRepository.findOne({
+                const schema = await dataBaseServer.findOne(Schema, {
                     where: { documentURL: { $eq: msg } }
                 });
                 return new MessageResponse(schema);
@@ -80,12 +78,12 @@ export async function loaderAPI(
                 return new MessageError('Document not found');
             }
             if (Array.isArray(msg)) {
-                const schema = await schemaRepository.find({
+                const schema = await dataBaseServer.find(Schema, {
                     where: { contextURL: { $in: msg } }
                 });
                 return new MessageResponse(schema);
             } else {
-                const schema = await schemaRepository.findOne({
+                const schema = await dataBaseServer.findOne(Schema, {
                     where: { contextURL: { $eq: msg } }
                 });
                 return new MessageResponse(schema);

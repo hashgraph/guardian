@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 
@@ -20,11 +20,10 @@ interface DemoKey {
 /**
  * Create demo key
  * @param role
- * @param settingsRepository
  * @param notifier
  * @param userId
  */
-async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier, userId: string): Promise<DemoKey> {
+async function generateDemoKey(role: any, notifier: INotifier, userId: string): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
@@ -57,12 +56,11 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
 
 /**
  * Demo API
- * @param channel
- * @param settingsRepository
- * logger pino logger
+ * @param dataBaseServer
+ * @param logger
  */
 export async function demoAPI(
-    settingsRepository: DataBaseHelper<Settings>,
+    dataBaseServer: DatabaseServer,
     logger: PinoLogger
 ): Promise<void> {
     ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
@@ -70,7 +68,7 @@ export async function demoAPI(
             try {
                 const role = msg?.role;
                 const userId = msg?.userId
-                const result = await generateDemoKey(role, settingsRepository, emptyNotifier(), userId);
+                const result = await generateDemoKey(role, emptyNotifier(), userId);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -84,7 +82,7 @@ export async function demoAPI(
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await generateDemoKey(role, settingsRepository, notifier, userId);
+                const result = await generateDemoKey(role, notifier, userId);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -98,7 +96,7 @@ export async function demoAPI(
         async (msg: { did: string }) => {
             try {
                 const did = msg.did;
-                const policies = await new DataBaseHelper(Policy).findAll();
+                const policies = await dataBaseServer.findAll(Policy, null);
                 const result = [];
                 for (const p of policies) {
                     const roles = await DatabaseServer.getUserRole(p.id.toString(), did);

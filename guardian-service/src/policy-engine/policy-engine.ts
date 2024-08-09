@@ -1,7 +1,6 @@
 import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
-    DataBaseHelper,
     DatabaseServer,
     findAllEntities,
     getArtifactType,
@@ -561,7 +560,7 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.completedAndStart('Delete artifacts');
-        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
@@ -610,7 +609,8 @@ export class PolicyEngine extends NatsService {
             }
         }
         notifier.completedAndStart('Delete artifacts');
-        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
@@ -754,7 +754,8 @@ export class PolicyEngine extends NatsService {
                 if (token.draftToken) {
                     const oldId = token.tokenId;
                     const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
-                    _token = await new DataBaseHelper(Token).update(newToken, token?.id);
+
+                    _token = await new DatabaseServer().update(Token, newToken, token?.id);
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
