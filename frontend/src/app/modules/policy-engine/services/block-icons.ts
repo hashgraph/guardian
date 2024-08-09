@@ -14,6 +14,7 @@ BlockIcons[BlockType.Switch] = 'rule';
 BlockIcons[BlockType.HttpRequest] = 'http';
 BlockIcons[BlockType.DocumentsViewer] = 'table_view';
 BlockIcons[BlockType.Request] = 'dynamic_form';
+BlockIcons[BlockType.RequestBlockAddon] = 'dynamic_form';
 BlockIcons[BlockType.Upload] = 'dynamic_form';
 BlockIcons[BlockType.MultiSignBlock] = 'done_all';
 BlockIcons[BlockType.SendToGuardian] = 'send';

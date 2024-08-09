@@ -7,6 +7,7 @@ export enum BlockType {
     Information = 'informationBlock',
     PolicyRoles = 'policyRolesBlock',
     Request = 'requestVcDocumentBlock',
+    RequestBlockAddon = 'requestVcDocumentBlockAddon',
     Upload = 'uploadVcDocumentBlock',
     SendToGuardian = 'sendToGuardianBlock',
     Action = 'interfaceActionBlock',

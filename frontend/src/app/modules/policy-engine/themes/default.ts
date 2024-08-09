@@ -84,6 +84,7 @@ export const defaultTheme = {
                 'documentValidatorBlock',
                 'buttonBlockAddon',
                 'dropdownBlockAddon',
+                'requestVcDocumentBlockAddon',
             ]
         }
     ],

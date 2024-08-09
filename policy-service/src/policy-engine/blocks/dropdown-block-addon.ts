@@ -12,6 +12,7 @@ import {
 import { PolicyUser } from '../policy-user.js';
 import { findOptions } from '../helpers/find-options.js';
 import { BlockActionError } from '../errors/index.js';
+import { setOptions } from '../helpers/set-options.js';
 
 /**
  * Dropdown with UI
@@ -25,7 +26,7 @@ import { BlockActionError } from '../errors/index.js';
         post: true,
         get: true,
         children: ChildrenType.Special,
-        control: ControlType.Special,
+        control: ControlType.UI,
         input: null,
         output: null,
         defaultEvent: false,
@@ -94,11 +95,11 @@ export class DropdownBlockAddon {
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const documents: any[] = await ref.getSources(user, null);
-        const document = documents.find(
+        const dropdownDocument = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) => document.id === blockData.dropdownDocumentId
         );
-        if (!document) {
+        if (!dropdownDocument) {
             throw new BlockActionError(
                 `Document doesn't exist in dropdown options`,
                 ref.blockType,
@@ -108,9 +109,20 @@ export class DropdownBlockAddon {
         const parent = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(
             ref.parent
         );
-        await parent.onAddonEvent(user, ref.tag, blockData.documentId, {
-            field: ref.options.field,
-            value: findOptions(document, ref.options.optionValue),
-        });
+        await parent.onAddonEvent(
+            user,
+            ref.tag,
+            blockData.documentId,
+            (document: any) => {
+                document = setOptions(
+                    document,
+                    ref.options.field,
+                    findOptions(dropdownDocument, ref.options.optionValue)
+                );
+                return {
+                    data: document,
+                };
+            }
+        );
     }
 }

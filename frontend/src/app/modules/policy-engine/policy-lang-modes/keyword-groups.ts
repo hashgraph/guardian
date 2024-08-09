@@ -24,6 +24,7 @@ export const nameGroupKeywords = [
     'content',
     'dialogTitle',
     'dialogDescription',
+    'buttonName',
 ];
 export const typeGroupKeywords = [
     'status',

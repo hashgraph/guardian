@@ -1,6 +1,6 @@
 import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyEventState, IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
@@ -8,7 +8,6 @@ import { StateField } from '../helpers/decorators/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
 import { BlockActionError } from '../errors/index.js';
-import { setOptions } from '../helpers/set-options.js';
 
 /**
  * Document source block with UI
@@ -60,10 +59,7 @@ export class InterfaceDocumentsSource {
         }
     }
 
-    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, options?: {
-        field: string,
-        value: unknown;
-    }) {
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
         const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
@@ -72,7 +68,7 @@ export class InterfaceDocumentsSource {
             ?.filter((field) => field.bindGroup)
             .map((field) => field.bindGroup);
         const documents = (await this._getData(user, ref)) as any[];
-        let document = documents.find(
+        const document = documents.find(
             // tslint:disable-next-line:no-shadowed-variable
             (document) =>
                 document.id === documentId &&
@@ -86,16 +82,12 @@ export class InterfaceDocumentsSource {
                 ref.uuid
             );
         }
-
-        if (options) {
-            document = setOptions(document, options.field, options.value);
-        }
-        const state = { data: document };
+        const state = await handler(document);
         ref.triggerEvents(tag, user, state);
         PolicyComponentsUtils.ExternalEventFn(
             new ExternalEvent(ExternalEventType.Set, ref, user, {
                 button: ref.tag,
-                documents: ExternalDocuments(document),
+                documents: ExternalDocuments(state.data),
             })
         );
     }

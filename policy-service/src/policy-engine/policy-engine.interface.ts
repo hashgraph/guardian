@@ -539,12 +539,16 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * @param user
      * @param tag
      * @param documentId
-     * @param options
+     * @param handler
      */
-    onAddonEvent(user: PolicyUser, tag: string, documentId: string, options?: {
-        field: string,
-        value: unknown;
-    }) : Promise<void>
+    onAddonEvent(
+        user: PolicyUser,
+        tag: string,
+        documentId: string,
+        handler: (
+            document: any
+        ) => Promise<IPolicyEventState> | IPolicyEventState
+    ): Promise<void>;
 }
 
 /**

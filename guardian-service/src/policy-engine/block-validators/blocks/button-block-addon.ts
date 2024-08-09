@@ -25,9 +25,6 @@ export class ButtonBlockAddon {
                 if (!ref.options.dialogOptions?.dialogTitle) {
                     validator.addError('Dialog title is empty');
                 }
-                if (!ref.options.dialogOptions?.dialogDescription) {
-                    validator.addError('Dialog description is empty');
-                }
                 if (!ref.options.dialogOptions?.dialogResultFieldPath) {
                     validator.addError('Dialog result field path is empty');
                 }

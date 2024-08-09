@@ -53,6 +53,7 @@ import { ToolBlock } from './blocks/tool.js';
 import { ExtractDataBlock } from './blocks/extract-data.js';
 import { ButtonBlockAddon } from './blocks/button-block-addon.js';
 import { DropdownBlockAddon } from './blocks/dropdown-block-addon.js';
+import { RequestVcDocumentBlockAddon } from './blocks/request-vc-document-block-addon.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -103,6 +104,7 @@ export const validators = [
     ExtractDataBlock,
     ButtonBlockAddon,
     DropdownBlockAddon,
+    RequestVcDocumentBlockAddon,
 ];
 
 /**

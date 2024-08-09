@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
@@ -29,17 +29,16 @@ export class ButtonBlockAddonComponent implements OnInit {
     uiClass?: string;
     dialog!: boolean;
     dialogOptions?: {
-        dialogTitle?: string;
+        dialogTitle: string;
         dialogDescription?: string;
-        dialogResultFieldPath?: string;
-    }
+        dialogResultFieldPath: string;
+    };
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private dialogService: DialogService,
-    ) {
-    }
+        private dialogService: DialogService
+    ) {}
 
     ngOnInit(): void {
         if (!this.static) {
@@ -106,11 +105,11 @@ export class ButtonBlockAddonComponent implements OnInit {
         this.policyEngineService
             .setBlockData(this.id, this.policyId, {
                 documentId: this.data?.id,
-                dialogResult
+                dialogResult,
             })
             .subscribe(
                 // tslint:disable-next-line:no-empty
-                () => { },
+                () => {},
                 (e) => {
                     console.error(e.error);
                     this.loading = false;
@@ -155,9 +154,10 @@ export class ButtonBlockAddonComponent implements OnInit {
                 if (Array.isArray(comments)) {
                     comments.push(result);
                 } else {
-                    comments = typeof comments === 'string'
-                        ? [comments, result]
-                        : [result];
+                    comments =
+                        typeof comments === 'string'
+                            ? [comments, result]
+                            : [result];
                 }
                 this.onSelect(comments);
             }

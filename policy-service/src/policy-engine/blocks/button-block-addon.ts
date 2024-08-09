@@ -10,6 +10,7 @@ import {
     PropertyType,
 } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
+import { setOptions } from '../helpers/set-options.js';
 
 /**
  * Button with UI
@@ -22,8 +23,8 @@ import { PolicyUser } from '../policy-user.js';
         title: `Add 'Button' Block`,
         post: true,
         get: true,
-        children: ChildrenType.Special,
-        control: ControlType.Special,
+        children: ChildrenType.None,
+        control: ControlType.UI,
         input: null,
         output: null,
         defaultEvent: false,
@@ -66,7 +67,6 @@ import { PolicyUser } from '../policy-user.js';
                         label: 'Dialog Description',
                         title: 'Dialog Description',
                         type: PropertyType.Input,
-                        required: true,
                     },
                     {
                         name: 'dialogResultFieldPath',
@@ -118,12 +118,18 @@ export class ButtonBlockAddon {
             user,
             ref.tag,
             blockData.documentId,
-            ref.options.dialog
-                ? {
-                      field: ref.options.dialogOptions.dialogResultFieldPath,
-                      value: blockData.dialogResult,
-                  }
-                : null
+            (document: any) => {
+                if (ref.options.dialog) {
+                    document = setOptions(
+                        document,
+                        ref.options.dialogOptions.dialogResultFieldPath,
+                        blockData.dialogResult
+                    );
+                }
+                return {
+                    data: document,
+                };
+            }
         );
     }
 }

@@ -46,6 +46,8 @@ import { TagsManagerBlockComponent } from '../policy-viewer/blocks/tags-manager-
 import { MessagesReportBlockComponent } from '../policy-viewer/blocks/messages-report-block/messages-report-block.component';
 import { ButtonBlockAddonComponent } from '../policy-viewer/blocks/button-block-addon/button-block-addon.component';
 import { DropdownBlockAddonComponent } from '../policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
+import { RequestDocumentBlockAddonComponent } from '../policy-viewer/blocks/request-document-block-addon/request-document-block-addon.component';
+import { RequestAddonConfigComponent } from '../policy-configuration/blocks/documents/request-addon-config/request-addon-config.component';
 import { BlockGroup, BlockHeaders, IBlockSetting, PolicyBlock } from '../structures';
 import { BlockType } from '@guardian/interfaces';
 import BlockIcons from './block-icons';
@@ -238,7 +240,22 @@ const DropdownBlockAddon: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: DropdownBlockAddonComponent,
-    property: null
+    property: null,
+    allowedChildren: [
+        {
+            type: BlockType.DocumentsSourceAddon,
+            group: BlockGroup.UnGrouped,
+        },
+    ]
+}
+
+const RequestBlockAddon: IBlockSetting = {
+    type: BlockType.RequestBlockAddon,
+    icon: BlockIcons[BlockType.RequestBlockAddon],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: RequestDocumentBlockAddonComponent,
+    property: RequestAddonConfigComponent,
 }
 
 const Switch: IBlockSetting = {
@@ -310,6 +327,7 @@ const DocumentsViewer: IBlockSetting = {
             const result = value ? value.slice() : [];
             const buttons = block.children.filter((child) =>
                 [
+                    BlockType.RequestBlockAddon,
                     BlockType.ButtonBlockAddon,
                     BlockType.DropdownBlockAddon,
                 ].includes(child.blockType as any)
@@ -737,4 +755,5 @@ export default [
     ExtractData,
     ButtonBlockAddon,
     DropdownBlockAddon,
+    RequestBlockAddon,
 ];
