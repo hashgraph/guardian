@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
 import { TaskEntity } from '../entity/task';
 
@@ -34,7 +34,9 @@ export class QueueService extends NatsService{
         });
 
         this.getMessages(WorkerEvents.TASK_COMPLETE, async (data: any) => {
-            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.id});
+            const dataBaseServer = new DatabaseServer();
+
+            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.id});
             if (!data.error || !task.isRetryableTask) {
                 await this.completeTaskInQueue(data.id, data.data, data.error);
                 return;
@@ -59,7 +61,7 @@ export class QueueService extends NatsService{
                 }
             }
 
-            await new DataBaseHelper(TaskEntity).save(task);
+            await dataBaseServer.save(TaskEntity, task);
         });
 
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: { userId: string, pageIndex: number, pageSize: number }) => {
@@ -78,7 +80,7 @@ export class QueueService extends NatsService{
                             processedTime: OrderDirection.DESC,
                         },
                     };
-            const result = await new DataBaseHelper(TaskEntity).findAndCount({userId}, options);
+            const result = await new DatabaseServer().findAndCount(TaskEntity, {userId}, options);
             for (const task of result[0]) {
                 if (task.data) {
                     delete task.data;
@@ -93,7 +95,9 @@ export class QueueService extends NatsService{
         })
 
         this.getMessages(QueueEvents.RESTART_TASK, async (data: { taskId: string, userId: string }) => {
-            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            const dataBaseServer = new DatabaseServer();
+
+            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.taskId});
             if (data.userId !== task.userId) {
                 throw new MessageError('Wrong user')
             }
@@ -102,27 +106,33 @@ export class QueueService extends NatsService{
             task.sent = false;
             task.processedTime = null;
             task.errorReason = undefined;
-            await new DataBaseHelper(TaskEntity).save(task);
+            await dataBaseServer.save(TaskEntity, task);
         });
 
         this.getMessages(QueueEvents.DELETE_TASK, async (data: { taskId: string, userId: string }) => {
-            const task = await new DataBaseHelper(TaskEntity).findOne({taskId: data.taskId});
+            const dataBaseServer = new DatabaseServer();
+
+            const task = await dataBaseServer.findOne(TaskEntity, {taskId: data.taskId});
             if (data.userId !== task.userId) {
                 throw new MessageError('Wrong user')
             }
             await this.completeTaskInQueue(data.taskId, null, task.errorReason);
-            await new DataBaseHelper(TaskEntity).delete({taskId: data.taskId});
+            await new dataBaseServer.deleteEntity(TaskEntity, {taskId: data.taskId});
         });
     }
 
     async addTaskToQueue(task: ITask): Promise<void> {
-        const te = new DataBaseHelper(TaskEntity).create(this.iTaskToTaskEntity(task));
+        const dataBaseServer = new DatabaseServer();
+
+        const te = dataBaseServer.create(TaskEntity, this.iTaskToTaskEntity(task));
         te.processedTime = null;
-        await new DataBaseHelper(TaskEntity).save(te);
+        await dataBaseServer.save(TaskEntity, te);
     }
 
     async completeTaskInQueue(taskId: string, data: any, error: any): Promise<void> {
-        const task = await new DataBaseHelper(TaskEntity).findOne({taskId});
+        const dataBaseServer = new DatabaseServer();
+
+        const task = await dataBaseServer.findOne(TaskEntity, {taskId});
         if (!task) {
             return;
         }
@@ -132,7 +142,7 @@ export class QueueService extends NatsService{
         } else {
             task.done = true;
         }
-        await new DataBaseHelper(TaskEntity).save(task);
+        await dataBaseServer.save(TaskEntity, task);
 
         await this.publish(QueueEvents.TASK_COMPLETE, {
             id: taskId,
@@ -159,8 +169,10 @@ export class QueueService extends NatsService{
 
     private async refreshAndReassignTasks() {
         const workers = await this.getFreeWorkers();
+
+        const dataBaseServer = new DatabaseServer();
         for (const worker of workers) {
-            const task = await new DataBaseHelper(TaskEntity).findOne({
+            const task = await dataBaseServer.findOne(TaskEntity, {
                 priority: {
                     $gte: worker.minPriority,
                     $lte: worker.maxPriority
@@ -174,7 +186,7 @@ export class QueueService extends NatsService{
             if (r?.result) {
                 task.processedTime = new Date();
                 task.sent = true;
-                await new DataBaseHelper(TaskEntity).save(task);
+                await dataBaseServer.save(TaskEntity, task);
             } else {
                 console.log('task sent error')
             }
@@ -182,7 +194,7 @@ export class QueueService extends NatsService{
     }
 
     private async clearOldTasks() {
-        await new DataBaseHelper(TaskEntity).delete({
+        await new DatabaseServer().deleteEntity(TaskEntity, {
             processedTime: {
                 $lte: new Date(new Date().getTime() - 30 * 60000)
             },
@@ -191,7 +203,9 @@ export class QueueService extends NatsService{
     }
 
     private async clearLongPendingTasks() {
-        const tasks = await new DataBaseHelper(TaskEntity).find({
+        const dataBaseServer = new DatabaseServer();
+
+        const tasks = await dataBaseServer.find(TaskEntity, {
             $where: '(this.processedTime - this.createDate) > ( 1 * 60 * 60000)',
             sent: true,
             done: {$ne: true}
@@ -199,7 +213,7 @@ export class QueueService extends NatsService{
         for (const task of tasks) {
             task.processedTime = null;
             task.sent = false;
-            await new DataBaseHelper(TaskEntity).save(task);
+            await dataBaseServer.save(TaskEntity, task);
         }
     }
 
