@@ -191,7 +191,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    private async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any): Promise<T> {
+    public async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
                 return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
@@ -216,7 +216,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    private async count<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<number> {
+    public async count<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<number> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -238,7 +238,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    private async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
+    public async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -254,13 +254,32 @@ export class DatabaseServer {
         }
     }
 
+
+    /**
+     * Overriding the findAndCount method
+     * @param entityClass
+     * @param filters
+     */
+    public async findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
+        return await new DataBaseHelper(entityClass).findAndCount(filters, options);
+    }
+
+    /**
+     * Overriding the findAll method
+     * @param entityClass
+     * @param options
+     */
+    public async findAll<T extends BaseEntity>(entityClass: new () => T, options?: any): Promise<T[]> {
+        return await new DataBaseHelper(entityClass).findAll(options);
+    }
+
     /**
      * Find data by aggregation
      * @param entityClass Entity class
      * @param aggregation aggregate filter
      * @returns
      */
-    private async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<T[]> {
+    public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<any[]> {
         if (this.dryRun) {
             if (Array.isArray(aggregation)) {
                 aggregation.unshift({
@@ -317,7 +336,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private create<T extends BaseEntity>(entityClass: new () => T, item: any): T {
+    public create<T extends BaseEntity>(entityClass: new () => T, item: any): T {
         if (this.dryRun) {
             return (new DataBaseHelper(DryRun).create(item)) as any;
         } else {
@@ -354,7 +373,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
+    async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
             return await new DataBaseHelper(DryRun).save(item) as any;
@@ -369,7 +388,7 @@ export class DatabaseServer {
      * @param criteria
      * @param row
      */
-    private async update<T extends BaseEntity>(
+    async update<T extends BaseEntity>(
         entityClass: new () => T,
         criteria: any,
         row: any
@@ -387,7 +406,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param entities
      */
-    private async remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void> {
+    public async remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void> {
         if (this.dryRun) {
             await new DataBaseHelper(DryRun).remove(entities as any);
         } else {
@@ -3649,5 +3668,14 @@ export class DatabaseServer {
      */
     public static async removePolicyTests(tests: PolicyTest[]): Promise<void> {
         await new DataBaseHelper(PolicyTest).remove(tests);
+    }
+
+    /**
+     * Overriding the create method
+     * @param entityClass
+     * @param filters
+     */
+    public deleteEntity<T extends BaseEntity>(entityClass: new () => T, filters: any | string | ObjectId): Promise<number> {
+        return new DataBaseHelper(entityClass).delete(filters);
     }
 }
