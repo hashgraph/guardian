@@ -34,7 +34,6 @@ import {
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
 import { Singleton } from '../decorators/singleton.js';
-import { DataBaseHelper } from './db-helper.js';
 import {
     Schema as SchemaCollection,
     DidDocument as DidDocumentCollection
@@ -45,12 +44,15 @@ import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
 import bs58 from 'bs58';
+import { DatabaseServer } from '../database-modules';
 
 /**
  * Configured VCHelper
  */
 @Singleton
 export class VcHelper extends VCJS {
+    dataBaseServer: DatabaseServer
+
     constructor() {
         super();
         //Documents
@@ -94,6 +96,8 @@ export class VcHelper extends VCJS {
         //Build
         this.buildDocumentLoader();
         this.buildSchemaLoader();
+
+        this.dataBaseServer =  new DatabaseServer()
     }
 
     /**
@@ -112,17 +116,19 @@ export class VcHelper extends VCJS {
                 throw new Error('Type is not defined');
             }
             const iri = '#' + type?.split('&')[0];
+
+            const dataBaseServer = new DatabaseServer();
             if (context && context.length) {
                 for (const c of context) {
                     if (c.startsWith('schema#') || c.startsWith('schema:')) {
                         return new Schema(
-                            await new DataBaseHelper(SchemaCollection).findOne({
+                            await dataBaseServer.findOne(SchemaCollection, {
                                 iri,
                             })
                         );
                     }
                     return new Schema(
-                        await new DataBaseHelper(SchemaCollection).findOne({
+                        await dataBaseServer.findOne(SchemaCollection, {
                             where: {
                                 contextURL: { $in: context },
                             },
@@ -145,7 +151,7 @@ export class VcHelper extends VCJS {
         if (!did) {
             return null;
         }
-        const row = await new DataBaseHelper(DidDocumentCollection).findOne({ did });
+        const row = await this.dataBaseServer.findOne(DidDocumentCollection, { did });
         if (!row) {
             return null;
         }
@@ -207,7 +213,7 @@ export class VcHelper extends VCJS {
             await wallet.setKey(walletToken, KeyType.DID_KEYS, id, key);
         }
 
-        const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
+        const didDoc = await this.dataBaseServer.save(DidDocumentCollection, {
             did: document.getDid(),
             document: document.getDocument(),
             verificationMethods

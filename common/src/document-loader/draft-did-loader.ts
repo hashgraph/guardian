@@ -1,18 +1,24 @@
 import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { DidDocument, DryRun } from '../entity/index.js';
+import { DatabaseServer } from '../database-modules';
 
 /**
  * Dry Run loader
  */
 export class DraftDidLoader extends DocumentLoader {
+    dataBaseServer: DatabaseServer
+
+    constructor() {
+        super();
+        this.dataBaseServer =  new DatabaseServer()
+    }
     /**
      * Has context
      * @param iri
      */
     public async has(iri: string): Promise<boolean> {
         const did = DidURL.getController(iri);
-        const document = await new DataBaseHelper(DryRun).findOne({
+        const document = await this.dataBaseServer.findOne(DryRun, {
             did,
             dryRunClass: 'DidDocumentCollection',
         });
@@ -25,7 +31,7 @@ export class DraftDidLoader extends DocumentLoader {
      */
     public async get(iri: string): Promise<IDocumentFormat> {
         const did = DidURL.getController(iri);
-        const document = await new DataBaseHelper(DryRun).findOne({
+        const document = await this.dataBaseServer.findOne(DryRun, {
             did,
             dryRunClass: 'DidDocumentCollection',
         });
@@ -41,7 +47,7 @@ export class DraftDidLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const did = DidURL.getController(iri);
-        const didDocuments = await new DataBaseHelper(DidDocument).findOne({
+        const didDocuments = await this.dataBaseServer.findOne(DidDocument, {
             did,
         });
         if (didDocuments) {

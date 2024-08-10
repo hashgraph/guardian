@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { PolicyModule, Schema, Tag } from '../entity/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 
 /**
@@ -32,7 +31,7 @@ export class ModuleImportExport {
             .filter(v => v.type === 'Schema')
             .map(v => v.baseSchema);
 
-        const schemas = await new DataBaseHelper(Schema).find({ iri: { $in: schemaIRIs } });
+        const schemas = await new DatabaseServer().find(Schema, { iri: { $in: schemaIRIs } });
 
         const tagTargets: string[] = [];
         tagTargets.push(module.id.toString());

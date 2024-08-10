@@ -1,5 +1,5 @@
 import { PolicyCategory } from '../entity/index.js';
-import { DataBaseHelper } from './db-helper.js';
+import { DatabaseServer } from '../database-modules';
 
 export function GetGroupedCategories(categories: PolicyCategory[]) {
     const groupedCategories = categories.reduce((result, item: PolicyCategory) => {
@@ -20,7 +20,7 @@ export async function GetConditionsPoliciesByCategories(categoryIds: string[], t
     }
 
     if (categoryIds?.length) {
-        const currentCategories: PolicyCategory[] = await new DataBaseHelper(PolicyCategory).find({
+        const currentCategories: PolicyCategory[] = await new DatabaseServer().find(PolicyCategory, {
             where: {
                 id: { $in: categoryIds },
             }

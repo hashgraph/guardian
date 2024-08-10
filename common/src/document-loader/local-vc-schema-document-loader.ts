@@ -1,14 +1,17 @@
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
 import { SchemaLoader } from '../hedera-modules/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules';
 
 /**
  * VC schema loader
  */
 export class LocalVcSchemaDocumentLoader extends SchemaLoader {
+    dataBaseServer: DatabaseServer
+
     constructor(filters?: string | string[]) {
         super('vc', filters);
+        this.dataBaseServer =  new DatabaseServer()
     }
 
     /**
@@ -43,7 +46,7 @@ export class LocalVcSchemaDocumentLoader extends SchemaLoader {
     protected async loadSchemaContexts(contexts: string[], iri: string): Promise<ISchema[]> {
         try {
             if (contexts && contexts.length) {
-                return await new DataBaseHelper(Schema).find({
+                return await this.dataBaseServer.find(Schema, {
                     contextURL: { $in: contexts },
                     iri: { $eq: iri },
                 });

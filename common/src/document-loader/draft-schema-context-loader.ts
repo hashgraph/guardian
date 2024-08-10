@@ -1,13 +1,20 @@
 import { DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
+import { DatabaseServer } from '../database-modules';
 
 /**
  * Schema Documents Loader
  * Used for signatures validation.
  */
 export class DraftSchemaContextLoader extends DocumentLoader {
+    dataBaseServer: DatabaseServer
+
+    constructor(filters?: string | string[]) {
+        super(filters);
+        this.dataBaseServer =  new DatabaseServer()
+    }
+
     /**
      * Get formatted document
      * @param iri
@@ -45,7 +52,7 @@ export class DraftSchemaContextLoader extends DocumentLoader {
                 return null;
             }
             const _iri = '#' + iri.substring(7);
-            return await new DataBaseHelper(Schema).findOne({ iri: _iri });
+            return await this.dataBaseServer.findOne(Schema, { iri: _iri });
         }
         catch (error) {
             return null;
