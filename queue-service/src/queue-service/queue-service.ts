@@ -117,7 +117,7 @@ export class QueueService extends NatsService{
                 throw new MessageError('Wrong user')
             }
             await this.completeTaskInQueue(data.taskId, null, task.errorReason);
-            await new dataBaseServer.deleteEntity(TaskEntity, {taskId: data.taskId});
+            await dataBaseServer.deleteEntity(TaskEntity, {taskId: data.taskId});
         });
     }
 
