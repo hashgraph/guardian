@@ -1,6 +1,6 @@
 import { DidDocument } from '../entity/index.js';
 import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
-import { DatabaseServer } from '../database-modules';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * DID Documents Loader

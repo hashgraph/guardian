@@ -1,7 +1,7 @@
 import { DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
-import { DatabaseServer } from '../database-modules';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * Schema Documents Loader
