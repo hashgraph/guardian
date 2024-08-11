@@ -190,11 +190,12 @@ export class DatabaseServer {
      * Overriding the findOne method
      * @param entityClass
      * @param filters
+     * @param options
      */
-    public async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any): Promise<T> {
+    public async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any, options: any = {}): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
-                return (await new DataBaseHelper(DryRun).findOne(filters)) as any;
+                return (await new DataBaseHelper(DryRun).findOne(filters, options)) as any;
             }
             const _filters: any = { ...filters };
             if (_filters.where) {
@@ -204,9 +205,9 @@ export class DatabaseServer {
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
             }
-            return (await new DataBaseHelper(DryRun).findOne(_filters)) as any;
+            return (await new DataBaseHelper(DryRun).findOne(_filters, options)) as any;
         } else {
-            return await new DataBaseHelper(entityClass).findOne(filters);
+            return await new DataBaseHelper(entityClass).findOne(filters, options) as any;
         }
     }
 
@@ -372,13 +373,14 @@ export class DatabaseServer {
      * Overriding the save method
      * @param entityClass
      * @param item
+     * @param filter
      */
-    async save<T extends BaseEntity>(entityClass: new () => T, item: any): Promise<T> {
+    async save<T extends BaseEntity>(entityClass: new () => T, item: any, filter?: any): Promise<T> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
-            return await new DataBaseHelper(DryRun).save(item) as any;
+            return await new DataBaseHelper(DryRun).save(item, filter) as any;
         } else {
-            return await new DataBaseHelper(entityClass).save(item);
+            return await new DataBaseHelper(entityClass).save(item, filter);
         }
     }
 
