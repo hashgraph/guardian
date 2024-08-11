@@ -21,6 +21,10 @@ docker compose -f "docker-compose-indexer.yml" up -d --build
 
 Once the above command is successfully executed and all the docker containers are running, Indexer can be launched at [http://localhost:3005](http://localhost:3005)
 
+{% hint style="info" %}
+Please note that it would take minimum 6 hours to load complete Indexer data.
+{% endhint %}
+
 ### Landing page includes following information:
 
 * _Registries_, _Methodologies_, _Total Documents_, _Total Issuance_. All cards are clickable. Also there is an ability to check charts with count and date.
