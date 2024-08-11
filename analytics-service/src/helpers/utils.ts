@@ -1,4 +1,4 @@
-import { DataBaseServer, Workers } from '@guardian/common';
+import { DatabaseServer, Workers } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache.js';
@@ -133,7 +133,7 @@ export class AnalyticsUtils {
         } else {
             report.progress++;
         }
-        return await new DataBaseServer().save(Status, report);
+        return await new DatabaseServer().save(Status, report);
     }
 
     /**
@@ -149,7 +149,7 @@ export class AnalyticsUtils {
     ): Promise<Status> {
         report.steep = steep;
         report.status = status;
-        return await new DataBaseServer().save(Status, report);
+        return await new DatabaseServer().save(Status, report);
     }
 
     /**
@@ -166,14 +166,16 @@ export class AnalyticsUtils {
         if (!topicId) {
             return null;
         }
-        const topicCache = await new DataBaseServer().findOne(TopicCache, { uuid, topicId });
+        const dataBaseServer = new DatabaseServer();
+
+        const topicCache = await dataBaseServer.findOne(TopicCache, { uuid, topicId });
         if (topicCache) {
             if (skip && !topicCache.error) {
                 return null;
             }
             return topicCache;
         } else {
-            return new DataBaseServer().create(TopicCache, {
+            return dataBaseServer.create(TopicCache, {
                 uuid,
                 topicId,
                 index: 0
@@ -186,7 +188,7 @@ export class AnalyticsUtils {
      * @param topicCache
      */
     public static async updateTopicCache(topicCache: TopicCache): Promise<TopicCache> {
-        return await new DataBaseServer().save(TopicCache, topicCache);
+        return await new DatabaseServer().save(TopicCache, topicCache);
     }
 
     /**

@@ -206,10 +206,10 @@ export class ReportService {
 
         //Total
         const topics = await databaseServer.find(TopicCache, { uuid });
-        const rowTokens = await databaseServer.find(Token, { uuid });
+        const rowTokens = await databaseServer.find(Token, { uuid }) as any[] ;
         const balances = await databaseServer.find(TokenCache, { uuid });
-        const policies = await databaseServer.find(Policy, { uuid });
-        const instances = await databaseServer.find(PolicyInstance, { uuid });
+        const policies = await databaseServer.find(Policy, { uuid }) as any[];
+        const instances = await databaseServer.find(PolicyInstance, { uuid }) as any[];
         const modules = await databaseServer.find(Module, { uuid });
         const users = await databaseServer.find(User, { uuid });
         const tags = await databaseServer.find(Tag, { uuid, action: MessageAction.PublishTag });
