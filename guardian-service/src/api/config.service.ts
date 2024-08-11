@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Settings, Topic, ValidateConfiguration, Workers } from '@guardian/common';
+import { DatabaseServer, Environment, MessageError, MessageResponse, PinoLogger, SecretManager, Topic, ValidateConfiguration, Workers } from '@guardian/common';
 import { CommonSettings, MessageAPI } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 

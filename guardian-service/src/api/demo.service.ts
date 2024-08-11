@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 

@@ -255,7 +255,6 @@ export class DatabaseServer {
         }
     }
 
-
     /**
      * Overriding the findAndCount method
      * @param entityClass
