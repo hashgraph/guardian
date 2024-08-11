@@ -186,7 +186,7 @@ export class AccountService extends NatsService {
                 try {
                     const userRepository = new DatabaseServer()
 
-                    const users = userRepository.find(User, { role: UserRole.USER })
+                    const users = await userRepository.find(User, { role: UserRole.USER })
 
                     const userAccounts = users.map((e) => ({
                             username: e.username,
@@ -209,7 +209,7 @@ export class AccountService extends NatsService {
                 try {
                     const userRepository = new DatabaseServer()
 
-                    const users = userRepository.find(User, { role: UserRole.STANDARD_REGISTRY })
+                    const users = await userRepository.find(User, { role: UserRole.STANDARD_REGISTRY })
 
                     const userAccounts = users.map((e) => ({
                         username: e.username,
@@ -231,7 +231,7 @@ export class AccountService extends NatsService {
                 try {
                     const userRepository = new DatabaseServer()
 
-                    const users = userRepository.find(User, { template: { $ne: true } })
+                    const users = await userRepository.find(User, { template: { $ne: true } })
 
                     const userAccounts = users.map((e) => ({
                         parent: e.parent,
@@ -424,7 +424,7 @@ export class AccountService extends NatsService {
                         user.permissionsGroup = template.permissionsGroup;
                         await usersRepository.deleteEntity(User, template);
                     }
-                    const result = await usersRepository.update(User, user);
+                    const result = await usersRepository.update(User, null, user);
 
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {

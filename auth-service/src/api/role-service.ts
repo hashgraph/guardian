@@ -249,7 +249,7 @@ export class RoleService extends NatsService {
                     item.name = role.name;
                     item.description = role.description;
                     item.permissions = ListPermissions.unique(role.permissions);
-                    const result = await entityRepository.update(DynamicRole, item);
+                    const result = await entityRepository.update(DynamicRole, null, item);
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -330,7 +330,7 @@ export class RoleService extends NatsService {
                     for (const item of items) {
                         item.default = item.id === id;
                     }
-                    await entityRepository.update(DynamicRole, items);
+                    await entityRepository.update(DynamicRole, null, items);
                     const result = items.find((role) => role.default);
                     return new MessageResponse(result);
                 } catch (error) {
@@ -382,7 +382,7 @@ export class RoleService extends NatsService {
                         target.permissionsGroup = [];
                         target.permissions = [];
                     }
-                    const result = await entityRepository.update(User, target);
+                    const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -447,7 +447,7 @@ export class RoleService extends NatsService {
                         });
                     }
                     target.permissions = Array.from(permissions);
-                    const result = await entityRepository.update(User, target);
+                    const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -491,7 +491,7 @@ export class RoleService extends NatsService {
                         }
                         user.permissionsGroup = permissionsGroup;
                         user.permissions = Array.from(permissions);
-                        await entityRepository.update(User, user);
+                        await entityRepository.update(User, null, user);
                     }
                     return new MessageResponse(UserUtils.updateUsersFields(users, UserProp.REQUIRED));
                 } catch (error) {
@@ -567,7 +567,7 @@ export class RoleService extends NatsService {
 
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
-                    await entityRepository.update(User, target);
+                    await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
