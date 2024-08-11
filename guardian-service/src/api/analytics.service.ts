@@ -113,7 +113,7 @@ async function localSearch(
         policies = policies.filter((policy) => policy.vcCount >= options.minVcCount);
     }
     for (const policy of policies) {
-        policy.vpCount = await new dataBaseServer.count(VpDocumentCollection, { policyId: policy.id });
+        policy.vpCount = await dataBaseServer.count(VpDocumentCollection, { policyId: policy.id });
     }
     if (options.minVpCount) {
         policies = policies.filter((policy) => policy.vpCount >= options.minVpCount);

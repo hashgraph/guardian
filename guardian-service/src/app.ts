@@ -389,7 +389,7 @@ Promise.all([
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });
-            await dataBaseServer.update(Policy, policiesToDiscontunie.map(policy => {
+            await dataBaseServer.update(Policy, null, policiesToDiscontunie.map(policy => {
                 policy.status = PolicyType.DISCONTINUED;
                 return policy;
             }));

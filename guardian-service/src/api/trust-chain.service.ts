@@ -1,4 +1,4 @@
-import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
+import { IChainItem, IVP, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
 
@@ -227,7 +227,7 @@ export async function trustChainAPI(
                 return new MessageResponse(chain);
             }
 
-            root = await dataBaseServer.findOne(VcDocument, { hash });
+            root = await dataBaseServer.findOne(VpDocument, { hash });
             if (root) {
                 const policyId = root.policyId;
                 chain.push({

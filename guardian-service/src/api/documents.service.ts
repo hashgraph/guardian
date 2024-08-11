@@ -48,7 +48,7 @@ export async function documentsAPI(
                 const vcDocuments: IVCDocument[] = await dataBaseServer.find(VcDocument, reqObj);
                 return new MessageResponse(vcDocuments);
             } else {
-                const vcDocuments: IVCDocument[] = await dataBaseServer.findAll(VcDocument, null);
+                const vcDocuments: IVCDocument[] = await dataBaseServer.findAll(VcDocument);
                 return new MessageResponse(vcDocuments);
             }
         }

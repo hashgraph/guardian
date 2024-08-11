@@ -33,7 +33,7 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
      * @returns {Branding} - branding object
      */
     ApiResponse(MessageAPI.GET_BRANDING, async () => {
-        const brandingJSON: Branding[] = await dataBaseServer.findAll(Branding, null);
+        const brandingJSON: Branding[] = await dataBaseServer.findAll(Branding);
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
             const initialBranding = JSON.stringify({
@@ -46,7 +46,7 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
                 termsAndConditions
             });
             await dataBaseServer.save(Branding, { config: initialBranding });
-            newBrandingJSON = await dataBaseServer.findAll(Branding, null);
+            newBrandingJSON = await dataBaseServer.findAll(Branding);
         }
         return new MessageResponse(brandingJSON.length ? brandingJSON[brandingJSON.length - 1] : newBrandingJSON[newBrandingJSON.length - 1]);
     });

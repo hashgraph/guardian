@@ -193,22 +193,22 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * Update token
  * @param oldToken
  * @param newToken
- * @param tokenRepository
+ * @param user
+ * @param dataBaseServer
  * @param notifier
  * @param log
- */
-async function updateToken(
+ */async function updateToken(
     oldToken: Token,
     newToken: Token,
     user: IOwner,
-    dataBaseServer,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier,
     log: PinoLogger
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
         const tokenObject = Object.assign(oldToken, newToken);
-        const result = await dataBaseServer.update(Token, tokenObject, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
         notifier.completed();
 
         return result;
@@ -222,7 +222,7 @@ async function updateToken(
         const newTokenObject = await createHederaToken(newToken, root);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
-        const result = await dataBaseServer.update(Token, tokenObject, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
 
         notifier.completedAndStart('Publish tags');
         try {
@@ -286,7 +286,7 @@ async function updateToken(
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
-        const result = await dataBaseServer.update(Token, oldToken, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, oldToken);
 
         const saveKeys = [];
         if (changes.enableFreeze) {
@@ -589,7 +589,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 await createToken(item, owner, dataBaseServer, emptyNotifier());
 
-                const tokens = await dataBaseServer.findAll(Token, null);
+                const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

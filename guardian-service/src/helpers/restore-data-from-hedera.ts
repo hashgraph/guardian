@@ -614,7 +614,7 @@ export class RestoreDataFromHedera {
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didDocumentMessage.id;
         didRow.topicId = didDocumentMessage.topicId.toString();
-        await dataBaseServer.update(DidDocumentCollection, didRow);
+        await dataBaseServer.update(DidDocumentCollection, null, didRow);
 
         if (vcDocumentMessage) {
             await this.loadIPFS(vcDocumentMessage);

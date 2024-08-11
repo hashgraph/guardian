@@ -130,8 +130,7 @@ async function setPool(
         })
     );
 
-    const contract = await dataBaseServer.findOne({
-        Contract,
+    const contract = await dataBaseServer.findOne(Contract,{
         contractId,
     });
 
@@ -177,6 +176,9 @@ async function setContractWiperPermissions(
 
     await dataBaseServer.update(
         Contract,
+        {
+            contractId,
+        },
         await Promise.all(
             contracts.map(async (contract) => {
                 contract.wipeContractIds = contract.wipeContractIds.filter(
@@ -189,9 +191,6 @@ async function setContractWiperPermissions(
                 return contract;
             })
         ),
-        {
-            contractId,
-        }
     );
     const pools = await dataBaseServer.find(RetirePool, {
         contractId,
@@ -481,6 +480,7 @@ export async function syncWipeContract(
         contractId,
     });
     await dataBaseServer.update(Contract,
+       null,
         contracts.map((contract) => {
             contract.lastSyncEventTimeStamp = lastTimeStamp;
             contract.syncDisabled = false;
@@ -815,6 +815,7 @@ export async function syncRetireContract(
     });
     await dataBaseServer.update(
         Contract,
+        null,
         contracts.map((contract) => {
             contract.lastSyncEventTimeStamp = lastTimeStamp;
             contract.syncDisabled = false;
@@ -1300,11 +1301,11 @@ export async function contractAPI(
             await dataBaseServer.update(
                 Contract,
                 {
-                    permissions,
-                },
-                {
                     contractId,
                     owner: owner.creator,
+                },
+                {
+                    permissions,
                 }
             );
             return new MessageResponse(permissions);
@@ -2158,7 +2159,7 @@ export async function contractAPI(
                         ) < 0;
                 }
 
-                await dataBaseServer.update(RetirePool, pools);
+                await dataBaseServer.update(RetirePool, null, pools);
 
                 const syncDate = new Date();
 
@@ -2168,6 +2169,7 @@ export async function contractAPI(
 
                 await dataBaseServer.update(
                     Contract,
+                    null,
                     // tslint:disable-next-line:no-shadowed-variable
                     contracts.map((contract) => {
                         contract.syncPoolsDate = syncDate;

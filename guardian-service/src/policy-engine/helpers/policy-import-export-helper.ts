@@ -337,7 +337,7 @@ export class PolicyImport {
         const row = await dataBaseServer.findOne(Topic, { topicId: this.topicRow.topicId })
         row.policyId = policy.id.toString();
         row.policyUUID = policy.uuid;
-        await dataBaseServer.update(Topic, row);
+        await dataBaseServer.update(Topic, null, row);
     }
 
     private async saveArtifacts(policy: Policy) {

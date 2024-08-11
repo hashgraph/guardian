@@ -96,7 +96,7 @@ export async function demoAPI(
         async (msg: { did: string }) => {
             try {
                 const did = msg.did;
-                const policies = await dataBaseServer.findAll(Policy, null);
+                const policies = await dataBaseServer.findAll(Policy);
                 const result = [];
                 for (const p of policies) {
                     const roles = await DatabaseServer.getUserRole(p.id.toString(), did);

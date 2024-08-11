@@ -338,7 +338,7 @@ async function createUserProfile(
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didMessageResult.getId();
         didRow.topicId = didMessageResult.getTopicId();
-        await dataBaseServer.update(DidDocumentCollection, didRow);
+        await dataBaseServer.update(DidDocumentCollection, null, didRow);
     } catch (error) {
         logger.error(error, ['GUARDIAN_SERVICE']);
         // didRow.status = DidDocumentStatus.FAILED;
@@ -447,11 +447,11 @@ async function createUserProfile(
             vcDoc.hederaStatus = DocumentStatus.ISSUE;
             vcDoc.messageId = vcMessageResult.getId();
             vcDoc.topicId = vcMessageResult.getTopicId();
-            await dataBaseServer.update(VcDocumentCollection, vcDoc);
+            await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         } catch (error) {
             logger.error(error, ['GUARDIAN_SERVICE']);
             vcDoc.hederaStatus = DocumentStatus.FAILED;
-            await dataBaseServer.update(VcDocumentCollection, vcDoc);
+            await dataBaseServer.update(VcDocumentCollection, null, vcDoc);
         }
     }
     // -----------------------
@@ -462,7 +462,7 @@ async function createUserProfile(
     if (newTopic) {
         newTopic.owner = userDID;
         newTopic.parent = globalTopic?.topicId;
-        await dataBaseServer.update(Topic, newTopic);
+        await dataBaseServer.update(Topic, null, newTopic);
         topicConfig.owner = userDID;
         topicConfig.parent = globalTopic?.topicId;
         await topicConfig.saveKeysByUser(user);
