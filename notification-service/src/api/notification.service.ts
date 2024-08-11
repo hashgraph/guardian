@@ -36,16 +36,16 @@ export class NotificationService {
                         await dataBaseServer.update(
                             Notification,
                             {
-                                old: true,
-                            },
-                            {
                                 updateDate: {
                                     $lt: new Date(
                                         now.getTime() - 60 * 60 * 1000
                                     ),
                                 },
                                 read: true,
-                            }
+                            },
+                            {
+                                old: true,
+                            },
                         );
                     if (updatedNotifications) {
                         const notifications = Array.isArray(
@@ -400,7 +400,7 @@ export class NotificationService {
             if (!msg) {
                 throw new Error('Invalid notification update message');
             }
-            const notification = await new DatabaseServer().update(Notification, msg);
+            const notification = await new DatabaseServer().update(Notification, null, msg);
             await this.updateNotificationWS(notification);
             return new MessageResponse(notification);
         } catch (error) {
@@ -445,7 +445,7 @@ export class NotificationService {
                 throw new Error('Invalid progress update message');
             }
             const progress = Math.floor(msg.progress);
-            const notification = await new DatabaseServer().update(Progress, msg, {
+            const notification = await new DatabaseServer().update(Progress,{
                 $or: [
                     {
                         id: msg.id,
@@ -456,7 +456,8 @@ export class NotificationService {
                         progress,
                     },
                 ],
-            });
+            },
+                msg);
             if (notification) {
                 await this.updateProgressWS(notification);
             }
