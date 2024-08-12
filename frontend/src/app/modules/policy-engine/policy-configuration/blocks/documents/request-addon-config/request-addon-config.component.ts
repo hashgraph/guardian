@@ -14,7 +14,7 @@ import {
 } from '../../../../structures';
 
 /**
- * Settings for block of 'requestVcDocument' type.
+ * Settings for block of 'requestVcDocumentBlockAddon' type.
  */
 @Component({
     selector: 'request-addon-config',

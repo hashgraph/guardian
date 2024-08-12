@@ -43,7 +43,7 @@ import deepEqual from 'deep-equal';
         title: `Add 'Request' Block`,
         post: true,
         get: true,
-        children: ChildrenType.None,
+        children: ChildrenType.Special,
         control: ControlType.UI,
         input: null,
         output: null,

@@ -744,7 +744,7 @@ export const BlockAbout = {
         'title': `Add 'Request' Block`,
         'post': true,
         'get': true,
-        'children': 'None',
+        'children': 'Special',
         'control': 'UI',
         'input': null,
         'output': null,

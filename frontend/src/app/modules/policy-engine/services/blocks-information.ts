@@ -320,6 +320,10 @@ const DocumentsViewer: IBlockSetting = {
         {
             type: BlockType.DropdownBlockAddon,
             group: BlockGroup.UnGrouped,
+        },
+        {
+            type: BlockType.RequestBlockAddon,
+            group: BlockGroup.UnGrouped,
         }
     ],
     about: {

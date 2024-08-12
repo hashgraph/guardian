@@ -5,13 +5,12 @@ import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.c
 import { DialogService } from 'primeng/dynamicdialog';
 
 /**
- * Component for display block of 'Buttons' type.
+ * Component for display block of 'buttonBlockAddon' type.
  */
 @Component({
     selector: 'button-block-addon',
     templateUrl: './button-block-addon.component.html',
     styleUrls: ['./button-block-addon.component.scss'],
-    //changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ButtonBlockAddonComponent implements OnInit {
     @Input('id') id!: string;

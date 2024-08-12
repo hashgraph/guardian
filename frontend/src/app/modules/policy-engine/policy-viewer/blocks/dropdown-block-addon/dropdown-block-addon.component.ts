@@ -3,7 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 /**
- * Component for display block of 'Dropdown' type.
+ * Component for display block of 'dropdownBlockAddon' type.
  */
 @Component({
     selector: 'dropdown-block-addon',

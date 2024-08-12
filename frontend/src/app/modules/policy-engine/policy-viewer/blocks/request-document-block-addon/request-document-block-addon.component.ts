@@ -17,7 +17,7 @@ import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 
 /**
- * Component for display block of 'requestVcDocument' types.
+ * Component for display block of 'requestVcDocumentBlockAddon' types.
  */
 @Component({
     selector: 'request-document-block-addon',

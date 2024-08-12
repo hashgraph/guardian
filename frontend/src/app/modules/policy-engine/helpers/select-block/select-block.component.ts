@@ -22,7 +22,7 @@ export class SelectBlock {
     @Output('change') change = new EventEmitter<any>();
     @Input() multiple: boolean = false;
 
-    public text: string | null | undefined | string[];
+    public text: string | null | undefined;
     public search: string = '';
     public searchData?: any[];
     private searchTimeout!: any;
