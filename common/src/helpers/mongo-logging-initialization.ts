@@ -7,7 +7,8 @@ import process from 'process';
 import { Log } from '../entity/log.js';
 
 //helpers
-import { DataBaseNamingStrategy } from '../helpers/index.js';
+import { DataBaseNamingStrategy } from './db-naming-strategy.js';
+import fixConnectionString from './fix-connection-string.js';
 
 export const DEFAULT = {
     MIN_POOL_SIZE: '1',
@@ -22,7 +23,7 @@ export async function mongoForLoggingInitialization(options: Record<string, any>
         return await MikroORM.init<MongoDriver>({
             driver: MongoDriver,
             namingStrategy: DataBaseNamingStrategy,
-            dbName: process.env.DB_LOGGER_NAME,
+            dbName: fixConnectionString(process.env.DB_LOGGER_NAME),
             clientUrl: `mongodb://${process.env.DB_LOGGER_HOST}`,
             driverOptions: {
                 useUnifiedTopology: true,
