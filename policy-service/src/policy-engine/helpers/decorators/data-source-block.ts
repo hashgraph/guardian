@@ -175,11 +175,28 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 let totalCount = 0;
                 let currentPosition = 0;
 
+                const _globalFilters = {} as any;
+                for (const key in globalFilters) {
+                    if (!isNaN(globalFilters[key].$eq)) {
+                        if (!_globalFilters.$or) {
+                            _globalFilters.$or = [];
+                        }
+                        const filter1 = {} as any;
+                        filter1[key] = {eq: String(globalFilters[key].$eq)};
+                        _globalFilters.$or.push(filter1);
+                        const filter2 = {} as any;
+                        filter2[key] = {eq: Number(globalFilters[key].$eq)};
+                        _globalFilters.$or.push(filter2);
+                    } else {
+                        _globalFilters[key] = globalFilters[key];
+                    }
+                }
+
                 const resultsCountArray = [];
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
 
                 for (const addon of sourceAddons) {
-                    const resultCount = await addon.getFromSource(user, globalFilters, true);
+                    const resultCount = await addon.getFromSource(user, _globalFilters, true);
                     totalCount += resultCount;
                     resultsCountArray.push(resultCount);
                 }

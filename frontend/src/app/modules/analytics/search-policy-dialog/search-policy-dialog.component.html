@@ -88,12 +88,14 @@
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
                         </p-dropdown>
-                        <p-inputNumber 
-                            [hidden]="!filtersForm.value.tokens"
-                            class="type-number"
-                            formControlName="tokensCount"
-                            mode="decimal" 
-                            [min]="0" ></p-inputNumber>
+                        <div [attr.hidden]="!filtersForm.value.tokens">
+                            <span>Min Amount:</span>
+                            <p-inputNumber 
+                                class="type-number"
+                                formControlName="tokensCount"
+                                mode="decimal" 
+                                [min]="1" ></p-inputNumber>
+                        </div>
                     </div>
                     <div class="filter">
                         <p-dropdown
@@ -109,12 +111,14 @@
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
                         </p-dropdown>
-                        <p-inputNumber 
-                            [hidden]="!filtersForm.value.vcDocuments"
-                            class="type-number"
-                            formControlName="vcDocumentsCount"
-                            mode="decimal" 
-                            [min]="0" ></p-inputNumber>
+                        <div [attr.hidden]="!filtersForm.value.vcDocuments">
+                            <span>Min Amount:</span>
+                            <p-inputNumber 
+                                class="type-number"
+                                formControlName="vcDocumentsCount"
+                                mode="decimal" 
+                                [min]="1" ></p-inputNumber>
+                        </div>
                     </div>
                 </div>
                 <div class="filter-row">
@@ -132,12 +136,14 @@
                                 <span>{{ filterSelectedProperty.name }}</span>
                             </ng-template>
                         </p-dropdown>
-                        <p-inputNumber 
-                            [hidden]="!filtersForm.value.vpDocuments"
-                            class="type-number"
-                            formControlName="vpDocumentsCount"
-                            mode="decimal" 
-                            [min]="0" ></p-inputNumber>
+                        <div [attr.hidden]="!filtersForm.value.vpDocuments">
+                            <span>Min Amount:</span>
+                            <p-inputNumber 
+                                class="type-number"
+                                formControlName="vpDocumentsCount"
+                                mode="decimal" 
+                                [min]="1" ></p-inputNumber>
+                        </div>
                     </div>
                     <div class="filter">
                         <span class="p-input-icon-right">

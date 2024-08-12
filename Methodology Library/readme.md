@@ -28,7 +28,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Agricultural soils of Western Australia
    - MMCM
      
-5. CDM Methodologies (17) - Envision
+5. CDM Methodologies (18) - Envision
 
    - ACM0007
    - AMS-II.G
@@ -47,6 +47,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - ACM0001
    - ACM0018
    - AMS-I.A
+   - AMS-I.E
 
 6. Tolam Earth - OCI
 7. Improved Cookstove - OCI
