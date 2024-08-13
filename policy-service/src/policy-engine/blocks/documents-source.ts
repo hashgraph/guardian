@@ -100,7 +100,7 @@ export class InterfaceDocumentsSource {
 
         if (filterIds) {
             for (const filterId of Object.keys(filterIds)) {
-                const filterValue = isNaN(filterIds[filterId]) ? filterIds[filterId] : Number(filterIds[filterId]);
+                const filterValue = filterIds[filterId];
 
                 const filter = filterAddons.find((_filter) => {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);

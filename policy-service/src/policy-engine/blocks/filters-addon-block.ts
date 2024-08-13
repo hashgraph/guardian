@@ -123,7 +123,9 @@ export class FiltersAddonBlock {
                 await this.getData(user);
             }
 
-            if (!(value === '' || value === undefined)) {
+            console.log('value', value);
+
+            if (value) {
                 filter[ref.options.field] = value;
             }
 
@@ -148,7 +150,7 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            const selectItem = blockState.lastData.find((e: any) => e.value === value);
+            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value === value) : null;
             if (selectItem) {
                 filter[ref.options.field] = selectItem.value;
             } else if (!ref.options.canBeEmpty) {
