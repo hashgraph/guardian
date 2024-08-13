@@ -123,7 +123,9 @@ export class FiltersAddonBlock {
                 await this.getData(user);
             }
 
-            filter[ref.options.field] = value;
+            if (value !== '') {
+                filter[ref.options.field] = value;
+            }
 
             if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
