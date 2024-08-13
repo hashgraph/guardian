@@ -27,7 +27,9 @@ services:
       - 4222
     ports:
       - '8222:8222'
-    command: '--http_port 8222'
+    command: '-c /etc/nats/nats.conf --http_port 8222'
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
 
   indexer-worker-service:
     env_file:
