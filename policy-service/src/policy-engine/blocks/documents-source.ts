@@ -87,7 +87,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, ...filterIds} = queryParams;
+        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds} = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -106,7 +106,11 @@ export class InterfaceDocumentsSource {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                    } else {
+                        await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    }
                 }
             }
         }
