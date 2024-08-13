@@ -110,6 +110,30 @@ export class FiltersAddonBlock {
         return block;
     }
 
+    async setFiltersStrict(user: PolicyUser, data: any) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const filter: any = {};
+        if (!data) {
+            throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+        }
+        if (ref.options.type === 'dropdown') {
+            const value = data.filterValue;
+            const blockState = this.state[user.id] || {};
+            if (!blockState.lastData) {
+                await this.getData(user);
+            }
+
+            filter[ref.options.field] = value;
+
+            if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+            blockState.lastValue = value;
+            this.state[user.id] = blockState;
+        }
+        ref.setFilters(filter, user);
+    }
+
     async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filter: any = {};
