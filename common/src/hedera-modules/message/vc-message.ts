@@ -193,7 +193,7 @@ export class VCMessage extends Message {
                 serialized: documents[0],
                 passphrase: key,
             });
-            this.document = bytesToUtf8(decrypted);
+            this.document = JSON.parse(bytesToUtf8(decrypted));
             return this;
         }
         this.document = JSON.parse(documents[0]);
