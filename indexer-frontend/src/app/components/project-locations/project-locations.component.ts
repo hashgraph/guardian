@@ -115,76 +115,79 @@ function activeStyleFunction(feature: any) {
     styleUrl: './project-locations.component.scss',
 })
 export class ProjectLocationsComponent {
-    public map!: Map;
+    @Input() projectLocations: { coordinates: string; projectId: string }[] =
+        [];
 
-    @Input() projectLocations!: { coordinates: string; projectId: string }[];
+    public map!: Map;
+    private vectorSource: VectorSource = new VectorSource();
 
     constructor(private router: Router) {}
 
-    ngOnChanges() {
-        setTimeout(() => {
-            const features = this.projectLocations.map((item) => {
-                const coordinates = item.coordinates
-                    .split('|')
-                    .map((coordinate: string) => parseFloat(coordinate));
-                return {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates,
-                    },
-                    properties: {
-                        projectId: item.projectId,
-                    },
-                };
-            });
-            const vectorSource = new VectorSource({
-                features: new GeoJSON({
-                    featureProjection: 'EPSG:3857',
-                }).readFeatures({
-                    type: 'FeatureCollection',
-                    features,
+    ngAfterViewInit() {
+        const clusterSource = new Cluster({
+            distance: CLUSTER_DISTANCE.distance,
+            minDistance: CLUSTER_DISTANCE.minDistance,
+            source: this.vectorSource,
+        });
+        const clusters = new VectorLayer({
+            source: clusterSource,
+            style: styleFunction,
+        });
+        this.map = new Map({
+            layers: [
+                new TileLayer({
+                    source: new OSM(),
                 }),
-            });
-            const clusterSource = new Cluster({
-                distance: CLUSTER_DISTANCE.distance,
-                minDistance: CLUSTER_DISTANCE.minDistance,
-                source: vectorSource,
-            });
-            const clusters = new VectorLayer({
-                source: clusterSource,
-                style: styleFunction,
-            });
-            this.map = new Map({
-                layers: [
-                    new TileLayer({
-                        source: new OSM(),
-                    }),
-                    clusters,
-                ],
-                target: 'map',
-                view: new View(MAP_OPTIONS),
-            });
-            const selectHover = new Select({
-                condition: pointerMove,
-                style: activeStyleFunction,
-            });
-            const selectClick = new Select({
-                condition: doubleClick,
-            });
-            selectClick.getFeatures().on('add', (event) => {
-                // tslint:disable-next-line:no-shadowed-variable
-                const features = event.element.get('features');
-                if (features?.length !== 1) {
-                    return;
-                }
-                this.router.navigate([
-                    '/vc-documents',
-                    features[0].get('projectId'),
-                ]);
-            });
-            this.map.addInteraction(selectHover);
-            this.map.addInteraction(selectClick);
-        }, 100);
+                clusters,
+            ],
+            target: 'map',
+            view: new View(MAP_OPTIONS),
+        });
+        const selectHover = new Select({
+            condition: pointerMove,
+            style: activeStyleFunction,
+        });
+        const selectClick = new Select({
+            condition: doubleClick,
+        });
+        selectClick.getFeatures().on('add', (event) => {
+            // tslint:disable-next-line:no-shadowed-variable
+            const features = event.element.get('features');
+            if (features?.length !== 1) {
+                return;
+            }
+            this.router.navigate([
+                '/vc-documents',
+                features[0].get('projectId'),
+            ]);
+        });
+        this.map.addInteraction(selectHover);
+        this.map.addInteraction(selectClick);
+    }
+
+    ngOnChanges() {
+        const features = new GeoJSON({
+            featureProjection: 'EPSG:3857',
+        }).readFeatures({
+            type: 'FeatureCollection',
+            features:
+                this.projectLocations?.map((item) => {
+                    const coordinates = item.coordinates
+                        .split('|')
+                        .map((coordinate: string) => parseFloat(coordinate));
+                    return {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates,
+                        },
+                        properties: {
+                            projectId: item.projectId,
+                        },
+                    };
+                }) || [],
+        });
+        this.vectorSource?.clear(true);
+        this.vectorSource.addFeatures(features);
     }
 }
