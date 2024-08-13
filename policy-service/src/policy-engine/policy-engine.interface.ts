@@ -612,6 +612,11 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Get selective attributes addons
      */
     getSelectiveAttributes(): IPolicyAddonBlock[];
+
+    /**
+     * Set strict filters
+     */
+    setFiltersStrict(user: PolicyUser | null, data: any): Promise<void>;
 }
 
 /**
