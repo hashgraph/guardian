@@ -96,6 +96,9 @@ export class FiltersAddonBlock {
                     name: findOptions(e, ref.options.optionName),
                     value: findOptions(e, ref.options.optionValue),
                 }
+            }).filter((value, index, array) => {
+                const i = array.findIndex(v => v.value === value.value);
+                return i === index;
             });
             block.data = blockState.lastData;
             block.optionName = ref.options.optionName;
