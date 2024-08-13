@@ -123,7 +123,7 @@ export class FiltersAddonBlock {
                 await this.getData(user);
             }
 
-            if (value !== '') {
+            if (!(value === '' || value === undefined)) {
                 filter[ref.options.field] = value;
             }
 

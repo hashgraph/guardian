@@ -106,7 +106,7 @@ export class InterfaceDocumentsSource {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    if (useStrict === "true") {
+                    if (useStrict === 'true') {
                       await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
                     } else {
                       await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
