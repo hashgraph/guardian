@@ -23,8 +23,8 @@ export async function mongoForLoggingInitialization(options: Record<string, any>
         return await MikroORM.init<MongoDriver>({
             driver: MongoDriver,
             namingStrategy: DataBaseNamingStrategy,
-            dbName: fixConnectionString(process.env.DB_LOGGER_NAME),
-            clientUrl: `mongodb://${process.env.DB_LOGGER_HOST}`,
+            dbName: process.env.DB_LOGGER_NAME,
+            clientUrl: fixConnectionString(process.env.DB_LOGGER_HOST),
             driverOptions: {
                 useUnifiedTopology: true,
                 minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT.MIN_POOL_SIZE, 10),
