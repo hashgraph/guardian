@@ -12,6 +12,8 @@ import {
     Workers
 } from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { IPolicyReportBlock } from '../policy-engine.interface.js';
+import { PolicyUtils } from './utils.js';
 
 /**
  * Trust Chain interface
@@ -64,7 +66,7 @@ export class MessagesReport {
      */
     private readonly users: Map<string, any>;
 
-    constructor() {
+    constructor(private _ref: IPolicyReportBlock) {
         this.topics = new Map<string, any>();
         this.messages = new Map<string, any>();
         this.schemas = new Map<string, any>();
@@ -110,7 +112,15 @@ export class MessagesReport {
         }
 
         if (this.needDocument(message)) {
-            await MessageServer.loadDocument(message, userKey);
+            try {
+                await MessageServer.loadDocument(message, userKey)
+            } catch (error) {
+                this._ref.error(
+                    `Message report - load document: ${PolicyUtils.getErrorMessage(
+                        error
+                    )}`
+                );
+            }
         }
 
         this.messages.set(timestamp, message.toJson());

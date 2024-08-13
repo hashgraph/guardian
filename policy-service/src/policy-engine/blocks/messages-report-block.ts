@@ -65,7 +65,7 @@ export class MessagesReportBlock {
     private async createReport(user: PolicyUser, messageId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
-            const report = new MessagesReport();
+            const report = new MessagesReport(ref);
             const userWithCredentials = await PolicyUtils.getUserCredentials(
                 ref,
                 user.did
