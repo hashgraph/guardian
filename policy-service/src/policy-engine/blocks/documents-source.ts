@@ -200,6 +200,19 @@ export class InterfaceDocumentsSource {
             data = [doc];
         }
 
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).resetFilters(user);
+                    }
+                }
+            }
+        }
+
         return Object.assign(
             {
                 data,
