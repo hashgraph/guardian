@@ -617,6 +617,11 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Set strict filters
      */
     setFiltersStrict(user: PolicyUser | null, data: any): Promise<void>;
+
+    /**
+     * Restore filters
+     */
+    resetFilters(user: PolicyUser): Promise<void>;
 }
 
 /**
