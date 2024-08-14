@@ -19,7 +19,7 @@ export async function documentsAPI(
      * @returns {IDidDocument[]} - DID Documents
      */
     ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg: any) => {
-        const reqObj = { where: { did: { $eq: msg.did } } };
+        const reqObj = { did: { $eq: msg.did } };
         const didDocuments: IDidObject[] = await dataBaseServer.find(DidDocument, reqObj);
         return new MessageResponse(didDocuments);
     });
@@ -84,11 +84,7 @@ export async function documentsAPI(
                 });
                 if (policies && policies.length) {
                     const policyIds = policies.map(p => p.id.toString());
-                    const [items, count] = await dataBaseServer.findAndCount(VpDocument, {
-                        where: {
-                            policyId: { $in: policyIds }
-                        }
-                    }, otherOptions);
+                    const [items, count] = await dataBaseServer.findAndCount(VpDocument, { policyId: { $in: policyIds } }, otherOptions);
                     return new MessageResponse({ items, count });
                 } else {
                     return new MessageResponse({ items: [], count: 0 });

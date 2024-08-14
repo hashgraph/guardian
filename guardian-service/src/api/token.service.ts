@@ -387,7 +387,7 @@ async function associateToken(
     notifier: INotifier
 ): Promise<{ tokenName: string; status: boolean }> {
     notifier.start('Find token data');
-    const token = await dataBaseServer.findOne(Token, { where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -442,7 +442,7 @@ async function grantKycToken(
     notifier: INotifier
 ): Promise<any> {
     notifier.start('Find token data');
-    const token = await dataBaseServer.findOne(Token, { where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -512,7 +512,7 @@ async function freezeToken(
     notifier: INotifier
 ): Promise<any> {
     notifier.start('Find token data');
-    const token = await dataBaseServer.findOne(Token, { where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -835,12 +835,10 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
 
                 const [tokens, count] = await dataBaseServer.findAndCount(Token,user.parent
                     ? {
-                        where: {
-                            $or: [
-                                { owner: { $eq: user.parent } },
-                                { owner: { $exists: false } }
-                            ]
-                        }
+                         $or: [
+                             { owner: { $eq: user.parent } },
+                             { owner: { $exists: false } }
+                         ]
                     }
                     : {}
                 );
@@ -882,18 +880,16 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
         async (msg: { filters: any, owner: IOwner }) => {
             const { filters, owner } = msg;
             const option: any = {
-                where: {
-                    $or: [
-                        { owner: { $eq: owner.owner } },
-                        { owner: { $exists: false } }
-                    ]
-                }
+                $or: [
+                    { owner: { $eq: owner.owner } },
+                    { owner: { $exists: false } }
+                ]
             }
             if (filters.tokenId) {
-                option.where.tokenId = filters.tokenId;
+                option.tokenId = filters.tokenId;
             }
             if (filters.ids) {
-                option.where.tokenId = { $in: filters.ids };
+                option.tokenId = { $in: filters.ids };
             }
             const tokens = await dataBaseServer.find(Token, option);
             return new MessageResponse(tokens);

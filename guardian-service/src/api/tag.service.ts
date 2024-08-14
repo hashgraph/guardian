@@ -207,13 +207,9 @@ export async function deleteTag(
  * @param entity
  */
 export async function exportTag(targets: string[], entity?: TagType): Promise<any[]> {
-    const filter: any = {
-        where: {
-            localTarget: { $in: targets }
-        }
-    }
+    const filter: any = { localTarget: { $in: targets } }
     if (entity) {
-        filter.where.entity = entity;
+        filter.entity = entity;
     }
     const items = await DatabaseServer.getTags(filter);
     for (const item of items) {
@@ -404,10 +400,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
@@ -425,10 +419,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
@@ -555,10 +547,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {

@@ -91,7 +91,7 @@ export async function trustChainAPI(
             label: 'HASH'
         });
 
-        const didDocuments = await dataBaseServer.find(DidDocument, { where: { did: { $eq: issuer } } });
+        const didDocuments = await dataBaseServer.find(DidDocument, { did: { $eq: issuer } });
 
         chain.push({
             type: 'DID',
@@ -105,9 +105,7 @@ export async function trustChainAPI(
         });
 
         let parents = await dataBaseServer.find(VcDocument, {
-            where: {
-                'document.credentialSubject.id': { $eq: issuer }
-            }
+            'document.credentialSubject.id': { $eq: issuer }
         });
 
         if (policyId) {
@@ -131,17 +129,13 @@ export async function trustChainAPI(
             let issuer: string;
 
             const policyCreated = await dataBaseServer.findOne(VcDocument, {
-                where: {
-                    type: { $eq: SchemaEntity.POLICY },
-                    policyId: { $eq: policyId }
-                }
+                type: { $eq: SchemaEntity.POLICY },
+                policyId: { $eq: policyId }
             });
 
             const policyImported = await dataBaseServer.findOne(VcDocument, {
-                where: {
-                    type: { $eq: 'POLICY_IMPORTED' },
-                    policyId: { $eq: policyId }
-                }
+                type: { $eq: 'POLICY_IMPORTED' },
+                policyId: { $eq: policyId }
             });
 
             if (policyCreated) {
@@ -171,12 +165,10 @@ export async function trustChainAPI(
             }
 
             if (issuer) {
-                const didDocuments = await dataBaseServer.find(DidDocument, { where: { did: { $eq: issuer } } });
+                const didDocuments = await dataBaseServer.find(DidDocument, { did: { $eq: issuer } });
                 const standardRegistries = await dataBaseServer.find(VcDocument, {
-                    where: {
-                        type: { $eq: SchemaEntity.STANDARD_REGISTRY },
-                        owner: { $eq: issuer }
-                    }
+                    type: { $eq: SchemaEntity.STANDARD_REGISTRY },
+                    owner: { $eq: issuer }
                 });
                 if (didDocuments) {
                     chain.push({
@@ -249,7 +241,7 @@ export async function trustChainAPI(
                 return new MessageResponse(chain);
             }
 
-            root = await dataBaseServer.findOne(VpDocument, { where: { 'document.id': { $eq: hash } } });
+            root = await dataBaseServer.findOne(VpDocument, { 'document.id': { $eq: hash } });
             if (root) {
                 const policyId = root.policyId;
                 chain.push({

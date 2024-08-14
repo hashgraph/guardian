@@ -913,11 +913,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { pageIndex, pageSize } = msg;
-                const filter: any = {
-                    where: {
-                        system: true
-                    }
-                }
+                const filter: any = { system: true }
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
@@ -955,11 +951,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const { fields, pageIndex, pageSize } = msg;
-                const filter: any = {
-                    where: {
-                        system: true
-                    }
-                }
+                const filter: any = { system: true }
                 const otherOptions: any = { fields };
                 const _pageSize = parseInt(pageSize, 10);
                 const _pageIndex = parseInt(pageIndex, 10);
