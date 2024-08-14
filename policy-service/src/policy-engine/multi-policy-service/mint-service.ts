@@ -583,9 +583,9 @@ export class MintService {
     private static async updateDocuments(ids: string | string[], value: any, ref: AnyBlockType) {
         const dryRunId = ref ? ref.dryRun : null;
         const filter = Array.isArray(ids) ? {
-            where: { messageId: { $in: ids } }
+            messageId: { $in: ids }
         } : {
-            where: { messageId: { $eq: ids } }
+            messageId: { $eq: ids }
         }
         await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }

@@ -201,10 +201,8 @@ export class TagsManagerBlock {
                 }
 
                 const items = await ref.databaseServer.getTags({
-                    where: {
-                        localTarget: { $in: targets },
-                        entity: TagType.PolicyDocument
-                    }
+                    localTarget: { $in: targets },
+                    entity: TagType.PolicyDocument
                 });
                 return items;
             }
