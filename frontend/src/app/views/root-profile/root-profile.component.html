@@ -27,24 +27,20 @@
 
 <ng-template #userInfo>
     <div class="user-info-container">
+        <div class="item-header">Account</div>
         <div class="item">
-            <span>DID Document</span>
-            <div (click)="openDIDDocument(profile!.didDocument, 'DID')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
-                <span>View document</span>
+            <span>User Name</span>
+            <span class="value-text">{{ profile!.username }}</span>
+        </div>
+        <div class="item">
+            <span>Password</span>
+            <div (click)="changePassword(profile)" class="view-document-button">
+                <span>Change Password</span>
             </div>
         </div>
-        <div class="item">
-            <span>VC Document</span>
-            <div (click)="openVCDocument(profile!.vcDocument, 'VC')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
-                <span>View document</span>
-            </div>
-        </div>
-        <div class="item">
-            <span>Balance</span>
-            <span>{{ balance }}</span>
-        </div>
+
+
+        <div class="item-header">Hedera</div>
         <div class="item">
             <span>Hedera Account ID</span>
             <div>
@@ -52,10 +48,6 @@
                     {{ profile!.hederaAccountId }}
                 </hedera-explorer>
             </div>
-        </div>
-        <div class="item">
-            <span>DID</span>
-            <span>{{ profile!.did }}</span>
         </div>
         <div *ngIf="profile!.topicId" class="item">
             <span>User Topic</span>
@@ -71,6 +63,31 @@
                 <hedera-explorer [params]="profile!.parentTopicId" type="topics">
                     {{ profile!.parentTopicId }}
                 </hedera-explorer>
+            </div>
+        </div>
+        <div class="item">
+            <span>Balance</span>
+            <span class="value-text">{{ balance }}</span>
+        </div>
+
+
+        <div class="item-header">Documents</div>
+        <div class="item">
+            <span>DID</span>
+            <span class="value-text">{{ profile!.did }}</span>
+        </div>
+        <div class="item">
+            <span>DID Document</span>
+            <div (click)="openDIDDocument(profile!.didDocument, 'DID')" class="view-document-button">
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                <span>View document</span>
+            </div>
+        </div>
+        <div class="item">
+            <span>VC Document</span>
+            <div (click)="openVCDocument(profile!.vcDocument, 'VC')" class="view-document-button">
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                <span>View document</span>
             </div>
         </div>
     </div>

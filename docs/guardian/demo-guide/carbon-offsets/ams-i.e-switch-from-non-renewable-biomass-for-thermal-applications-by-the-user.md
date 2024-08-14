@@ -20,6 +20,8 @@
 
 [Available Roles](ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md#toc2036936887)
 
+[Tools Referenced](ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md#toc160021936)
+
 [Token (Carbon Emission Reduction)](ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md#toc1726502648)
 
 [Step By Step](ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md#toc63891396)
@@ -77,6 +79,15 @@ This policy is published to Hedera network and can either be imported via Github
 * Project Participant - The project participant is responsible for executing the emission reduction project. The project participant must adhere to the requirements outlined by the CDM and provide evidence of the emission reductions achieved. Upon successful verification, the project participant receives certified emission reduction (CER) tokens as an incentive for their emission reductions.
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.
 * Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.
+
+### Tools Referenced <a href="#toc160021936" id="toc160021936"></a>
+
+* Methodological Tool 03 - Tool to calculate project or leakage CO2 emissions from fossil fuel combustion.&#x20;
+* Methodological Tool 16 - Project and leakage emissions from biomass.&#x20;
+* Methodological Tool 19 - Demonstration of additionality of microscale project activities
+* Methodological Tool 21 - Demonstration of additionality of small-scale project activities
+* Methodological Tool 30 - Calculation of the fraction of non-renewable biomass
+* Methodological Tool 33 - Default values for common parameters.
 
 ### Token (Carbon Emission Reduction) <a href="#toc1726502648" id="toc1726502648"></a>
 
