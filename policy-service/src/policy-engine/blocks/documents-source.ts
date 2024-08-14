@@ -87,7 +87,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, ...filterIds} = queryParams;
+        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds} = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -100,13 +100,17 @@ export class InterfaceDocumentsSource {
 
         if (filterIds) {
             for (const filterId of Object.keys(filterIds)) {
-                const filterValue = isNaN(filterIds[filterId]) ? filterIds[filterId] : Number(filterIds[filterId]);
+                const filterValue = filterIds[filterId];
 
                 const filter = filterAddons.find((_filter) => {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    if (useStrict === 'true') {
+                      await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                    } else {
+                      await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    }
                 }
             }
         }
@@ -194,6 +198,19 @@ export class InterfaceDocumentsSource {
         if (filterByUUID) {
             const doc = data.find(d => d.document.id === filterByUUID);
             data = [doc];
+        }
+
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).resetFilters(user);
+                    }
+                }
+            }
         }
 
         return Object.assign(

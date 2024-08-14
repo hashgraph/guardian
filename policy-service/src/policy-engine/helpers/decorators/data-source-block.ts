@@ -147,10 +147,10 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                             _globalFilters.$or = [];
                         }
                         const filter1 = {} as any;
-                        filter1[key] = {eq: String(globalFilters[key].$eq)};
+                        filter1[key] = {$eq: String(globalFilters[key].$eq)};
                         _globalFilters.$or.push(filter1);
                         const filter2 = {} as any;
-                        filter2[key] = {eq: Number(globalFilters[key].$eq)};
+                        filter2[key] = {$eq: Number(globalFilters[key].$eq)};
                         _globalFilters.$or.push(filter2);
                     } else {
                         _globalFilters[key] = globalFilters[key];
@@ -175,7 +175,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                     // If pagination block is not set
                     if (!paginationData) {
-                        for (const item of await currentSource.getFromSource(user, globalFilters, false, null)) {
+                        for (const item of await currentSource.getFromSource(user, _globalFilters, false, null)) {
                             (data as any[]).push(item);
                         }
                         continue;
@@ -200,7 +200,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     skip = Math.max(start - previousCount, 0);
                     limit = paginationData.itemsPerPage - Math.min((previousCount - start), 0);
 
-                    const childData = await currentSource.getFromSource(user, globalFilters, false, {
+                    const childData = await currentSource.getFromSource(user, _globalFilters, false, {
                         offset: skip,
                         limit: limit - currentPosition
                     });
