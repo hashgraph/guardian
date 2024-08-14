@@ -7,12 +7,20 @@ paths:
       description: Full-text indexer search
       parameters:
         - name: pageIndex
-          required: false
+          required: true
           in: query
           description: Page index
           example: 0
           schema:
             type: number
+        - name: pageSize
+          required: true
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
         - name: search
           required: true
           in: query
@@ -1840,7 +1848,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.27.0
+  version: 2.27.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
