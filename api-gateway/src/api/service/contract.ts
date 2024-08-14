@@ -404,7 +404,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -454,7 +453,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -504,7 +502,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -562,7 +559,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -616,7 +612,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -674,7 +669,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -732,7 +726,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -790,7 +783,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -848,7 +840,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -906,7 +897,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
@@ -964,7 +954,6 @@ export class ContractsApi {
 
             const invalidedCacheTags = [
                 `${PREFIXES.CONTRACTS}wipe/requests`,
-                `${PREFIXES.CONTRACTS}retire/requests`,
             ];
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
