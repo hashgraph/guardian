@@ -1,7 +1,6 @@
-version: "3.8"
 services:
   mongo:
-    image: mongo:6.0.13
+    image: mongo:6.0.16
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
@@ -19,10 +18,10 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:latest
+    image: ipfs/kubo:v0.29.0
 
   message-broker:
-    image: nats:2.9.24
+    image: nats:2.9.25
     expose:
       - 4222
     ports:
@@ -47,10 +46,10 @@ services:
     expose:
       - 6555
     volumes:
-      - ./indexer-worker-service/tls:/usr/local/indexer-worker-service/tls:ro
-      - ./indexer-worker-service/configs:/usr/local/indexer-worker-service/configs:ro
+      - ./indexer-worker-service/tls:/usr/local/app/tls:ro
+      - ./indexer-worker-service/configs:/usr/local/app/configs:ro
     deploy:
-      replicas: 5
+      replicas: 3
 
   indexer-api-gateway:
     env_file:
@@ -69,7 +68,7 @@ services:
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     volumes:
-      - ./indexer-api-gateway/configs:/usr/local/indexer-api-gateway/configs:ro
+      - ./indexer-api-gateway/configs:/usr/local/app/configs:ro
 
   indexer-service:
     env_file:
@@ -79,8 +78,8 @@ services:
       dockerfile: ./indexer-service/Dockerfile
     init: true
     volumes:
-      - ./indexer-service/tls:/usr/local/indexer-service/tls:ro
-      - ./indexer-service/configs:/usr/local/indexer-service/configs:ro
+      - ./indexer-service/tls:/usr/local/app/tls:ro
+      - ./indexer-service/configs:/usr/local/app/configs:ro
     depends_on:
       - mongo
       - message-broker
