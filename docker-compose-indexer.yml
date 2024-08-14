@@ -41,6 +41,7 @@ services:
     depends_on:
       - mongo
       - message-broker
+      - indexer-service
     environment:
       - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
