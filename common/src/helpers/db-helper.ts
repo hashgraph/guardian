@@ -1,17 +1,26 @@
-import { MikroORM, CreateRequestContext, wrap } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
 import { GridFSBucket } from 'mongodb';
+import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 function fixConnectionString(cs: string) {
     return /.+\:\/\/.+/.test(cs) ? cs : `mongodb://${cs}`;
 }
 
+interface ICommonConnectionConfig {
+    driver: typeof MongoDriver;
+    namingStrategy: typeof DataBaseNamingStrategy;
+    dbName: string;
+    clientUrl: string;
+    entities: string[];
+}
+
 /**
  * Common connection config
  */
-export const COMMON_CONNECTION_CONFIG: any = {
+export const COMMON_CONNECTION_CONFIG: ICommonConnectionConfig = {
     driver: MongoDriver,
     namingStrategy: DataBaseNamingStrategy,
     dbName: (process.env.GUARDIAN_ENV || (process.env.HEDERA_NET !== process.env.PREUSED_HEDERA_NET)) ?
@@ -93,7 +102,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async delete(filters: any | string | ObjectId): Promise<number> {
+    public async delete(filters: FilterObject<T> | string | ObjectId): Promise<number> {
         return await this._em.nativeDelete(this.entityClass, filters);
     }
 
@@ -110,13 +119,13 @@ export class DataBaseHelper<T extends BaseEntity> {
      * Create entity
      * @param entity Entity
      */
-    public create(entity: any): T;
+    public create(entity: FilterObject<T> & { _id?: ObjectId }): T;
     /**
      * Create entities
      * @param entities Entities
      */
-    public create(entities: any[]): T[];
-    public create(entity: any | any[]): T | T[] {
+    public create(entities: (FilterObject<T> & { _id?: ObjectId })[]): T[];
+    public create(entity: FilterObject<T> & { _id?: ObjectId } | (FilterObject<T> & { _id?: ObjectId })[]): T | T[] {
         if (Array.isArray(entity)) {
             const arrResult = [];
             for (const item of entity) {
@@ -136,7 +145,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async aggregate(pipeline: any[]): Promise<any[]> {
+    public async aggregate(pipeline: FilterObject<T>[]): Promise<T[]> {
         const aggregateEntities = await this._em.aggregate(
             this.entityClass,
             pipeline
@@ -168,7 +177,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities and count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
+    public async findAndCount(filters: FilterObject<T> | string | ObjectId, options?: FindOptions<T>): Promise<[T[], number]> {
         return await this._em.findAndCount(this.entityClass, filters, options);
     }
 
@@ -179,7 +188,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: any | string | ObjectId, options?: any): Promise<number> {
+    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<T>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 
@@ -190,8 +199,16 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async find(filters?: any | string | ObjectId, options?: any): Promise<T[]> {
-        return await this._em.getRepository<T>(this.entityClass).find(filters || {}, options);
+    public async find(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<T>): Promise<T[]> {
+        let query: FilterQuery<T>;
+
+        if (typeof filters === 'string' || filters instanceof ObjectId) {
+            query = { _id: filters } as FilterQuery<T>;
+        } else {
+            query = filters || {};
+        }
+
+        return await this._em.getRepository<T>(this.entityClass).find(query, options);
     }
 
     /**
@@ -200,7 +217,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findAll(options?: any): Promise<T[]> {
+    public async findAll(options?: FindAllOptions<T>): Promise<T[]> {
         return await this._em.getRepository<T>(this.entityClass).findAll(options);
     }
 
@@ -211,8 +228,16 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entity
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T | null> {
-        return await this._em.getRepository<T>(this.entityClass).findOne(filter, options);
+    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: unknown = {}): Promise<T | null> {
+        let query: FilterQuery<T>;
+
+        if (typeof filters === 'string' || filters instanceof ObjectId) {
+            query = { _id: filters } as FilterQuery<T>;
+        } else {
+            query = filters;
+        }
+
+        return await this._em.getRepository<T>(this.entityClass).findOne(query, options);
     }
 
     /**
@@ -221,17 +246,19 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filter Filter
      * @returns Entity
      */
-    public async save(entity: any, filter?: any): Promise<T>;
+    public async save(entity: T, filter?: FilterObject<T>): Promise<T>;
+
     /**
      * Save entities by ids
-     * @param entites Entities
+     * @param entities Entities
      * @returns Entities
      */
-    public async save(entites: any[]): Promise<T[]>;
+    public async save(entities: T[]): Promise<T[]>;
+
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async save(
-        entity: any,
-        filter?: any
+        entity: T | T[],
+        filter?: FilterObject<T>
     ): Promise<T | T[]> {
         if (Array.isArray(entity)) {
             const result = [];
@@ -248,14 +275,14 @@ export class DataBaseHelper<T extends BaseEntity> {
             return e;
         }
 
-        let entityToUpdateOrCreate: any = await repository.findOne(filter || entity.id || entity._id);
+        let entityToUpdateOrCreate = await repository.findOne(filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {
                     entity[systemFileField] = entityToUpdateOrCreate[systemFileField];
                 }
             });
-            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() }, { merge: false });
+            wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { merge: false });
         } else {
             entityToUpdateOrCreate = repository.create({ ...entity });
             this._em.persist(entityToUpdateOrCreate);
@@ -273,16 +300,18 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filter Filter
      * @returns Entity
      */
-    public async update(entity: any, filter?: any): Promise<T>;
+    public async update(entity: T, filter?: FilterObject<T>): Promise<T>;
+
     /**
      * Update entities by ids
      * @param entities Entities
      */
-    public async update(entities: any[]): Promise<T[]>;
+    public async update(entities: T[]): Promise<T[]>;
+
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async update(
-        entity: any | any[],
-        filter?: any
+        entity: T | T[],
+        filter?: FilterObject<T>
     ): Promise<T | T[]> {
         if (Array.isArray(entity)) {
             const result = [];
@@ -297,14 +326,14 @@ export class DataBaseHelper<T extends BaseEntity> {
         }
 
         const repository = this._em.getRepository(this.entityClass);
-        const entitiesToUpdate: any = await repository.find(filter || entity.id || entity._id);
+        const entitiesToUpdate = await repository.find(filter || entity.id || entity._id);
         for (const entityToUpdate of entitiesToUpdate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {
                     entity[systemFileField] = entityToUpdate[systemFileField];
                 }
             });
-            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() }, { mergeObjectProperties: false });
+            wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { mergeObjectProperties: false });
         }
         await this._em.flush();
         return entitiesToUpdate.length === 1
@@ -318,14 +347,14 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param amount Amount
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async createMuchData(data: any, amount: number): Promise<void> {
+    public async createMuchData(data: FilterObject<T> & { id: string, _id: string }, amount: number): Promise<void> {
         const repository: MongoEntityRepository<T> = this._em.getRepository(this.entityClass);
         delete data.id;
         delete data._id;
         while (amount > 0) {
             delete data.id;
             delete data._id;
-            await this._em.persist(repository.create(data));
+            this._em.persist(repository.create(data as RequiredEntityData<T>));
             amount--;
         }
         await this._em.flush();
