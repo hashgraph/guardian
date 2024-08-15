@@ -1,12 +1,13 @@
 import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyEventState, IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { StateField } from '../helpers/decorators/index.js';
-import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
+import { BlockActionError } from '../errors/index.js';
 
 /**
  * Document source block with UI
@@ -58,6 +59,39 @@ export class InterfaceDocumentsSource {
         }
     }
 
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+            field?.bindBlocks?.includes(tag)
+        );
+        const sourceAddons = fields
+            ?.filter((field) => field.bindGroup)
+            .map((field) => field.bindGroup);
+        const documents = (await this._getData(user, ref, ref.options.uiMetaData.enableSorting)) as any[];
+        const document = documents.find(
+            // tslint:disable-next-line:no-shadowed-variable
+            (document) =>
+                document.id === documentId &&
+                (sourceAddons.length === 0 ||
+                    sourceAddons.includes(document.__sourceTag__))
+        );
+        if (!document) {
+            throw new BlockActionError(
+                'Document is not found.',
+                ref.blockType,
+                ref.uuid
+            );
+        }
+        const state = await handler(document);
+        ref.triggerEvents(tag, user, state);
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Set, ref, user, {
+                button: ref.tag,
+                documents: ExternalDocuments(state.data),
+            })
+        );
+    }
+
     /**
      * Set block data
      * @param user
@@ -74,6 +108,25 @@ export class InterfaceDocumentsSource {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
+    private async _getData(
+        user: PolicyUser,
+        ref: IPolicySourceBlock,
+        enableCommonSorting: boolean,
+        sortState = {},
+        paginationData?,
+        history?
+    ) {
+        return enableCommonSorting
+            ? await this.getDataByAggregationFilters(
+                  ref,
+                  user,
+                  sortState,
+                  paginationData,
+                  history
+              )
+            : await ref.getGlobalSources(user, paginationData);
+    }
+
     /**
      * Get block data
      * @param user
@@ -87,7 +140,7 @@ export class InterfaceDocumentsSource {
             queryParams = {};
         }
 
-        const {itemsPerPage, page, size, filterByUUID, ...filterIds} = queryParams;
+        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds} = queryParams;
 
         const filterAddons = ref.getFiltersAddons();
         const filters = filterAddons.map(addon => {
@@ -100,11 +153,17 @@ export class InterfaceDocumentsSource {
 
         if (filterIds) {
             for (const filterId of Object.keys(filterIds)) {
+                const filterValue = filterIds[filterId];
+
                 const filter = filterAddons.find((_filter) => {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue: filterIds[filterId]});
+                    if (useStrict === 'true') {
+                      await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                    } else {
+                      await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    }
                 }
             }
         }
@@ -125,8 +184,11 @@ export class InterfaceDocumentsSource {
         let paginationData = null;
 
         if (pagination) {
-            if (itemsPerPage && page) {
-                await pagination.setState(user, {itemsPerPage, page, size});
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.setState(user, {
+                    itemsPerPage: parseInt(itemsPerPage, 10),
+                    page: parseInt(page, 10),
+                });
             }
 
             paginationData = await pagination.getState(user);
@@ -136,12 +198,16 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting;
-        const sortState = this.state[user.id] || {};
-        let data: any = enableCommonSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
-            : await ref.getGlobalSources(user, paginationData);
-
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField);
+        let sortState = this.state[user.id] || {};
+        if (sortDirection && sortField) {
+            sortState = {
+                orderDirection: sortDirection,
+                orderField: sortField
+            };
+            this.state[user.id] = sortState;
+        }
+        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history);
         if (
             !enableCommonSorting && history
         ) {
@@ -158,14 +224,14 @@ export class InterfaceDocumentsSource {
                                 state.document,
                                 history
                                     ? history.options.timelineLabelPath ||
-                                          'option.status'
+                                    'option.status'
                                     : 'option.status'
                             ),
                             comment: ObjGet(
                                 state.document,
                                 history
                                     ? history.options.timelineDescriptionPath ||
-                                          'option.comment'
+                                    'option.comment'
                                     : 'option.comment'
                             ),
                             created: state.createDate,
@@ -182,6 +248,19 @@ export class InterfaceDocumentsSource {
         if (filterByUUID) {
             const doc = data.find(d => d.document.id === filterByUUID);
             data = [doc];
+        }
+
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).resetFilters(user);
+                    }
+                }
+            }
         }
 
         return Object.assign(

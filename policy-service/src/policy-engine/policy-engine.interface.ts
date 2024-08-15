@@ -269,7 +269,7 @@ export interface IPolicyBlock {
      * @param data
      */
     triggerEvents<T>(
-        eventType: PolicyOutputEventType,
+        eventType: PolicyOutputEventType | string,
         user: PolicyUser,
         data: T
     ): void;
@@ -533,6 +533,22 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * Get common addons
      */
     getCommonAddons(): IPolicyBlock[];
+
+    /**
+     * On addon event
+     * @param user
+     * @param tag
+     * @param documentId
+     * @param handler
+     */
+    onAddonEvent(
+        user: PolicyUser,
+        tag: string,
+        documentId: string,
+        handler: (
+            document: any
+        ) => Promise<IPolicyEventState> | IPolicyEventState
+    ): Promise<void>;
 }
 
 /**
@@ -612,6 +628,16 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Get selective attributes addons
      */
     getSelectiveAttributes(): IPolicyAddonBlock[];
+
+    /**
+     * Set strict filters
+     */
+    setFiltersStrict(user: PolicyUser | null, data: any): Promise<void>;
+
+    /**
+     * Restore filters
+     */
+    resetFilters(user: PolicyUser): Promise<void>;
 }
 
 /**

@@ -2,6 +2,7 @@ import { BasicBlock } from '../../helpers/decorators/basic-block.js';
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
 import { PolicyUser } from '../../policy-user.js';
+import { BlockActionError } from '../../errors/index.js';
 
 /**
  * Datasource block decorator
@@ -19,6 +20,11 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'DataSourceBlock';
 
             /**
+             * Access block addon method map
+             */
+            private readonly _accessAddonMap = new Map<string, boolean>();
+
+            /**
              * Get block data
              * @param args
              */
@@ -27,6 +33,35 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     return super.getData(...args);
                 }
                 return {}
+            }
+
+            /**
+             * On addon event
+             * @param args
+             * @returns
+             */
+            async onAddonEvent(...args: any[]): Promise<void> {
+                if (typeof super.onAddonEvent !== 'function') {
+                    return;
+                }
+
+                const user = args[0];
+                if (this._accessAddonMap.get(user?.did) === true) {
+                    throw new BlockActionError(
+                        'Already processing',
+                        this.blockType,
+                        this.uuid
+                    );
+                }
+
+                this._accessAddonMap.set(user?.did, true);
+                try {
+                    await super.onAddonEvent(...args);
+                } catch (error) {
+                    throw error;
+                } finally {
+                    this._accessAddonMap.delete(user?.did);
+                }
             }
 
             /**
@@ -140,11 +175,28 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 let totalCount = 0;
                 let currentPosition = 0;
 
+                const _globalFilters = {} as any;
+                for (const key in globalFilters) {
+                    if (!isNaN(globalFilters[key].$eq)) {
+                        if (!_globalFilters.$or) {
+                            _globalFilters.$or = [];
+                        }
+                        const filter1 = {} as any;
+                        filter1[key] = {$eq: String(globalFilters[key].$eq)};
+                        _globalFilters.$or.push(filter1);
+                        const filter2 = {} as any;
+                        filter2[key] = {$eq: Number(globalFilters[key].$eq)};
+                        _globalFilters.$or.push(filter2);
+                    } else {
+                        _globalFilters[key] = globalFilters[key];
+                    }
+                }
+
                 const resultsCountArray = [];
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
 
                 for (const addon of sourceAddons) {
-                    const resultCount = await addon.getFromSource(user, globalFilters, true);
+                    const resultCount = await addon.getFromSource(user, _globalFilters, true);
                     totalCount += resultCount;
                     resultsCountArray.push(resultCount);
                 }
@@ -158,7 +210,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
 
                     // If pagination block is not set
                     if (!paginationData) {
-                        for (const item of await currentSource.getFromSource(user, globalFilters, false, null)) {
+                        for (const item of await currentSource.getFromSource(user, _globalFilters, false, null)) {
                             (data as any[]).push(item);
                         }
                         continue;
@@ -183,7 +235,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     skip = Math.max(start - previousCount, 0);
                     limit = paginationData.itemsPerPage - Math.min((previousCount - start), 0);
 
-                    const childData = await currentSource.getFromSource(user, globalFilters, false, {
+                    const childData = await currentSource.getFromSource(user, _globalFilters, false, {
                         offset: skip,
                         limit: limit - currentPosition
                     });
