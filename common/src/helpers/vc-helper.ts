@@ -129,9 +129,7 @@ export class VcHelper extends VCJS {
                     }
                     return new Schema(
                         await dataBaseServer.findOne(SchemaCollection, {
-                            where: {
-                                contextURL: { $in: context },
-                            },
+                            contextURL: { $in: context },
                         })
                     );
                 }
