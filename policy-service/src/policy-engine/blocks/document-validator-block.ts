@@ -70,10 +70,8 @@ export class DocumentValidatorBlock {
         if (ref.options.documentType === 'related-vc-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVcDocument({
-                    where: {
-                        'policyId': { $eq: ref.policyId },
-                        'document.credentialSubject.id': { $eq: documentRef }
-                    }
+                    'policyId': { $eq: ref.policyId },
+                    'document.credentialSubject.id': { $eq: documentRef }
                 });
             } else {
                 document = null;
@@ -83,10 +81,8 @@ export class DocumentValidatorBlock {
         if (ref.options.documentType === 'related-vp-document') {
             if (documentRef) {
                 document = await ref.databaseServer.getVpDocument({
-                    where: {
-                        'policyId': ref.policyId,
-                        'document.verifiableCredential.credentialSubject.id': { $eq: documentRef }
-                    }
+                    'policyId': ref.policyId,
+                    'document.verifiableCredential.credentialSubject.id': { $eq: documentRef }
                 });
             } else {
                 document = null;

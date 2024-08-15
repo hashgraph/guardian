@@ -21,9 +21,7 @@ export async function GetConditionsPoliciesByCategories(categoryIds: string[], t
 
     if (categoryIds?.length) {
         const currentCategories: PolicyCategory[] = await new DatabaseServer().find(PolicyCategory, {
-            where: {
-                id: { $in: categoryIds },
-            }
+            id: { $in: categoryIds },
         });
         const groupedCategories = GetGroupedCategories(currentCategories);
         conditions.push(...Object.keys(groupedCategories).map((categoryKey) => { return { categories: { $in: groupedCategories[categoryKey] } } }));

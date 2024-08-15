@@ -73,11 +73,9 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
-                where: {
-                    policyId: { $eq: ref.policyId },
-                    hash: { $eq: document.hash },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
+                policyId: { $eq: ref.policyId },
+                hash: { $eq: document.hash },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
             });
         }
         return old;
@@ -107,10 +105,8 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.did) {
             old = await ref.databaseServer.getVcDocument({
-                where: {
-                    did: { $eq: document.did },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
+                did: { $eq: document.did },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
             });
         }
         return old;
@@ -126,11 +122,9 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.hash) {
             old = await ref.databaseServer.getVpDocument({
-                where: {
-                    policyId: { $eq: ref.policyId },
-                    hash: { $eq: document.hash },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
+                policyId: { $eq: ref.policyId },
+                hash: { $eq: document.hash },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
             });
         }
         return old;

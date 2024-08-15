@@ -1020,13 +1020,11 @@ export class PolicyUtils {
             let documentRef: any = null;
             if (typeof (refId) === 'string') {
                 documentRef = await ref.databaseServer.getVcDocument({
-                    where: {
                         'policyId': { $eq: policyId },
                         $or: [
                             {'document.credentialSubject.id': {$eq: refId}},
                             {'document.credentialSubject.0.id': {$eq: refId}}
                         ]
-                    }
                 });
             } else if (typeof (refId) === 'object') {
                 const objectId = refId.id || refId._id;
@@ -1038,10 +1036,8 @@ export class PolicyUtils {
                 } else {
                     const id = PolicyUtils.getSubjectId(refId);
                     documentRef = await ref.databaseServer.getVcDocument({
-                        where: {
-                            'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: id }
-                        }
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: id }
                     });
                 }
             }

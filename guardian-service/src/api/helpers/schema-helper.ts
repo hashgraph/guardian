@@ -377,24 +377,23 @@ export async function createSchema(
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
-        where: {
             iri: {
-                $eq: schemaObject.iri
+                $eq: schemaObject.iri,
             },
             $or: [
                 {
                     topicId: {
-                        $ne: schemaObject.topicId
-                    }
+                        $ne: schemaObject.topicId,
+                    },
                 },
                 {
                     uuid: {
-                        $ne: schemaObject.uuid
-                    }
-                }
-            ]
-        }
-    });
+                        $ne: schemaObject.uuid,
+                    },
+                },
+            ],
+        },
+    );
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
