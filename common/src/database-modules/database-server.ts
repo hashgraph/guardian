@@ -198,13 +198,10 @@ export class DatabaseServer {
                 return (await new DataBaseHelper(DryRun).findOne(filters, options)) as any;
             }
             const _filters: any = { ...filters };
-            if (_filters.where) {
-                _filters.where.dryRunId = this.dryRun;
-                _filters.where.dryRunClass = this.classMap.get(entityClass);
-            } else {
+
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
-            }
+
             return (await new DataBaseHelper(DryRun).findOne(_filters, options)) as any;
         } else {
             return await new DataBaseHelper(entityClass).findOne(filters, options) as any;
@@ -220,13 +217,10 @@ export class DatabaseServer {
     public async count<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<number> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
-            if (_filters.where) {
-                _filters.where.dryRunId = this.dryRun;
-                _filters.where.dryRunClass = this.classMap.get(entityClass);
-            } else {
+
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
-            }
+
             return await new DataBaseHelper(DryRun).count(_filters, options);
         } else {
             return await new DataBaseHelper(entityClass).count(filters, options);
@@ -242,13 +236,10 @@ export class DatabaseServer {
     public async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
         if (this.dryRun) {
             const _filters: any = { ...filters };
-            if (_filters.where) {
-                _filters.where.dryRunId = this.dryRun;
-                _filters.where.dryRunClass = this.classMap.get(entityClass);
-            } else {
+
                 _filters.dryRunId = this.dryRun;
                 _filters.dryRunClass = this.classMap.get(entityClass);
-            }
+
             return (await new DataBaseHelper(DryRun).find(_filters, options)) as any;
         } else {
             return await new DataBaseHelper(entityClass).find(filters, options);
@@ -895,9 +886,7 @@ export class DatabaseServer {
      */
     public static async getPublishPolicies(): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find({
-            where: {
-                status: { $eq: 'PUBLISH' }
-            }
+            status: { $eq: 'PUBLISH' }
         });
     }
 
@@ -1505,12 +1494,10 @@ export class DatabaseServer {
      */
     public async getMultiSignDocuments(uuid: string, documentId: string, group: string): Promise<MultiDocuments[]> {
         return await this.find(MultiDocuments, {
-            where: {
-                uuid: { $eq: uuid },
-                documentId: { $eq: documentId },
-                group: { $eq: group },
-                userId: { $ne: 'Group' }
-            }
+            uuid: { $eq: uuid },
+            documentId: { $eq: documentId },
+            group: { $eq: group },
+            userId: { $ne: 'Group' }
         });
     }
 
@@ -1536,12 +1523,10 @@ export class DatabaseServer {
      */
     public async getMultiSignDocumentsByGroup(uuid: string, group: string): Promise<MultiDocuments[]> {
         return await this.find(MultiDocuments, {
-            where: {
-                uuid: { $eq: uuid },
-                group: { $eq: group },
-                userId: { $eq: 'Group' },
-                status: { $eq: 'NEW' }
-            }
+            uuid: { $eq: uuid },
+            group: { $eq: group },
+            userId: { $eq: 'Group' },
+            status: { $eq: 'NEW' }
         });
     }
 
@@ -1561,12 +1546,10 @@ export class DatabaseServer {
         status: string
     ): Promise<MultiDocuments> {
         let item = await this.findOne(MultiDocuments, {
-            where: {
-                uuid: { $eq: uuid },
-                documentId: { $eq: documentId },
-                group: { $eq: group },
-                userId: { $eq: 'Group' }
-            }
+            uuid: { $eq: uuid },
+            documentId: { $eq: documentId },
+            group: { $eq: group },
+            userId: { $eq: 'Group' }
         });
         if (item) {
             item.status = status;
@@ -1630,11 +1613,9 @@ export class DatabaseServer {
         userId: string
     ): Promise<SplitDocuments[]> {
         return await this.find(SplitDocuments, {
-            where: {
-                policyId: { $eq: policyId },
-                blockId: { $eq: blockId },
-                userId: { $eq: userId }
-            }
+            policyId: { $eq: policyId },
+            blockId: { $eq: blockId },
+            userId: { $eq: userId }
         });
     }
 
@@ -1705,11 +1686,9 @@ export class DatabaseServer {
         userId: string
     ): Promise<ExternalDocument | null> {
         return await this.findOne(ExternalDocument, {
-            where: {
-                policyId: { $eq: policyId },
-                blockId: { $eq: blockId },
-                owner: { $eq: userId }
-            }
+            policyId: { $eq: policyId },
+            blockId: { $eq: blockId },
+            owner: { $eq: userId }
         });
     }
 
@@ -1746,11 +1725,9 @@ export class DatabaseServer {
         blockId: string
     ): Promise<ExternalDocument[]> {
         return await this.find(ExternalDocument, {
-            where: {
-                policyId: { $eq: policyId },
-                blockId: { $eq: blockId },
-                active: { $eq: true }
-            }
+            policyId: { $eq: policyId },
+            blockId: { $eq: blockId },
+            active: { $eq: true }
         });
     }
 
@@ -2759,10 +2736,8 @@ export class DatabaseServer {
         pageSize?: string
     ): Promise<[any[], number]> {
         const filters: any = {
-            where: {
-                dryRunId: policyId,
-                dryRunClass: null
-            }
+            dryRunId: policyId,
+            dryRunClass: null
         }
         const otherOptions: any = {};
         const _pageSize = parseInt(pageSize, 10);
@@ -2773,7 +2748,7 @@ export class DatabaseServer {
             otherOptions.offset = _pageIndex * _pageSize;
         }
         if (type === 'artifacts') {
-            filters.where.dryRunClass = {
+            filters.dryRunClass = {
                 $in: [
                     'VcDocumentCollection',
                     'VpDocumentCollection',
@@ -2782,7 +2757,7 @@ export class DatabaseServer {
                 ]
             };
         } else if (type === 'transactions') {
-            filters.where.dryRunClass = { $eq: 'Transactions' };
+            filters.dryRunClass = { $eq: 'Transactions' };
             otherOptions.fields = [
                 'id',
                 'createDate',
@@ -2790,7 +2765,7 @@ export class DatabaseServer {
                 'hederaAccountId'
             ];
         } else if (type === 'ipfs') {
-            filters.where.dryRunClass = { $eq: 'Files' };
+            filters.dryRunClass = { $eq: 'Files' };
             otherOptions.fields = [
                 'id',
                 'createDate',
@@ -3382,13 +3357,9 @@ export class DatabaseServer {
      */
     public static async updateVpDocuments(value: any, filters: any, dryRun?: string): Promise<void> {
         if (dryRun) {
-            if (filters.where) {
-                filters.where.dryRunId = dryRun;
-                filters.where.dryRunClass = 'VpDocumentCollection';
-            } else {
                 filters.dryRunId = dryRun;
                 filters.dryRunClass = 'VpDocumentCollection';
-            }
+
             const items = await new DataBaseHelper(DryRun).find(filters);
             for (const item of items) {
                 Object.assign(item, value);
