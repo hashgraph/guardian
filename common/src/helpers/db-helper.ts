@@ -169,7 +169,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async findAndCount(filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
-        return await this._em.findAndCount(this.entityClass, filters?.where || filters, options);
+        return await this._em.findAndCount(this.entityClass, filters, options);
     }
 
     /**
@@ -180,7 +180,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async count(filters?: any | string | ObjectId, options?: any): Promise<number> {
-        return await this._em.count(this.entityClass, filters?.where || filters, options);
+        return await this._em.count(this.entityClass, filters, options);
     }
 
     /**
@@ -191,7 +191,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async find(filters?: any | string | ObjectId, options?: any): Promise<T[]> {
-        return await this._em.getRepository<T>(this.entityClass).find(filters?.where || filters || {}, options);
+        return await this._em.getRepository<T>(this.entityClass).find(filters || {}, options);
     }
 
     /**
@@ -212,7 +212,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async findOne(filter: any | string | ObjectId, options: any = {}): Promise<T | null> {
-        return await this._em.getRepository<T>(this.entityClass).findOne(filter?.where || filter, options);
+        return await this._em.getRepository<T>(this.entityClass).findOne(filter, options);
     }
 
     /**
@@ -248,7 +248,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             return e;
         }
 
-        let entityToUpdateOrCreate: any = await repository.findOne(filter?.where || filter || entity.id || entity._id);
+        let entityToUpdateOrCreate: any = await repository.findOne(filter || entity.id || entity._id);
         if (entityToUpdateOrCreate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {
@@ -297,7 +297,7 @@ export class DataBaseHelper<T extends BaseEntity> {
         }
 
         const repository = this._em.getRepository(this.entityClass);
-        const entitiesToUpdate: any = await repository.find(filter?.where || filter || entity.id || entity._id);
+        const entitiesToUpdate: any = await repository.find(filter || entity.id || entity._id);
         for (const entityToUpdate of entitiesToUpdate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {
