@@ -50,6 +50,10 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
+import { ButtonBlockAddonComponent } from './policy-viewer/blocks/button-block-addon/button-block-addon.component';
+import { DropdownBlockAddonComponent } from './policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
+import { RequestAddonConfigComponent } from './policy-configuration/blocks/documents/request-addon-config/request-addon-config.component';
+import { RequestDocumentBlockAddonComponent } from './policy-viewer/blocks/request-document-block-addon/request-document-block-addon.component';
 //Viewer
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
 import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
@@ -246,7 +250,11 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         MigrateData,
         JsonEditorDialogComponent,
         PolicyTestDialog,
-        NewImportFileDialog
+        NewImportFileDialog,
+        ButtonBlockAddonComponent,
+        DropdownBlockAddonComponent,
+        RequestAddonConfigComponent,
+        RequestDocumentBlockAddonComponent,
     ],
     imports: [
         CommonModule,

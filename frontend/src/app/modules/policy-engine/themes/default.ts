@@ -81,7 +81,10 @@ export const defaultTheme = {
                 'selectiveAttributes',
                 'documentsSourceAddon',
                 'timerBlock',
-                'documentValidatorBlock'
+                'documentValidatorBlock',
+                'buttonBlockAddon',
+                'dropdownBlockAddon',
+                'requestVcDocumentBlockAddon',
             ]
         }
     ],
