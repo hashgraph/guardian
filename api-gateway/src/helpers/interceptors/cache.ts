@@ -46,7 +46,13 @@ export class CacheInterceptor implements NestInterceptor {
                 const cachedResponse: string = await this.cacheService.get(cacheKey);
 
                 if (cachedResponse) {
-                    return JSON.parse(cachedResponse);
+                    let result = JSON.parse(cachedResponse);
+
+                    if (typeof result === 'string') {
+                        result = Buffer.from(result, 'base64');
+                    }
+
+                    return result;
                 }
             }),
             switchMap(resultResponse => {
@@ -64,6 +70,10 @@ export class CacheInterceptor implements NestInterceptor {
 
                         if (isFastify) {
                             result = request.locals;
+                        }
+
+                        if (Buffer.isBuffer(result)) {
+                            result = result.toString('base64');
                         }
 
                         await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);
