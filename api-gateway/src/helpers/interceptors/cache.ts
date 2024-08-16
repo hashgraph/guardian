@@ -23,7 +23,6 @@ export class CacheInterceptor implements NestInterceptor {
         const responseContext = httpContext.getResponse();
 
         const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
-        const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
         const isFastify = Reflect.getMetadata(META_DATA.FASTIFY, context.getHandler());
 
         const token = request.headers.authorization?.split(' ')[1];
@@ -47,12 +46,18 @@ export class CacheInterceptor implements NestInterceptor {
                 const cachedResponse: string = await this.cacheService.get(cacheKey);
 
                 if (cachedResponse) {
-                    return JSON.parse(cachedResponse);
+                    let result = JSON.parse(cachedResponse);
+
+                    if (typeof result === 'string') {
+                        result = Buffer.from(result, 'base64');
+                    }
+
+                    return result;
                 }
             }),
             switchMap(resultResponse => {
                 if (resultResponse) {
-                    if (isFastify || isExpress) {
+                    if (isFastify) {
                         return of(responseContext.send(resultResponse));
                     }
 
@@ -67,8 +72,8 @@ export class CacheInterceptor implements NestInterceptor {
                             result = request.locals;
                         }
 
-                        if (isExpress) {
-                            result = response.locals.data;
+                        if (Buffer.isBuffer(result)) {
+                            result = result.toString('base64');
                         }
 
                         await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);

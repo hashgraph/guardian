@@ -20,7 +20,7 @@
     <div class="header-nav">
         <div class="header-nav-search">
             <form (submit)="onSearch()" class="header-nav-search__form">
-                <p-iconField iconPosition="right" class="icon-field header-nav-search__field">
+                <p-iconField class="icon-field header-nav-search__field">
                     <p-inputIcon styleClass="pi pi-search icon-field__icon" (click)="search.focus()" />
                     <input #search class="icon-field__input" pInputText
                         [placeholder]="'header.search_placeholder' | transloco" type="text"

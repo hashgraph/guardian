@@ -15,13 +15,12 @@ export class SearchService {
     @MessagePattern(IndexerMessageAPI.GET_SEARCH_API)
     async search(
         @Payload()
-        msg: {
-            search: string;
-            pageSize?: number;
-        }
+        msg: { pageIndex: number, pageSize: number, search: string }
     ) {
         try {
-            msg.pageSize = 10;
+            if (!msg.pageIndex || !msg.pageSize) {
+                throw new Error('Invalid page parameters')
+            }
             const options = parsePageParams(msg);
             const { search } = msg;
 
