@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
@@ -10,6 +10,7 @@ import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js
 import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
 import { publishToolTags } from './tag.service.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Sha256
@@ -418,7 +419,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -457,7 +458,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {

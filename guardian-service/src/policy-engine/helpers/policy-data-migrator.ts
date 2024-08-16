@@ -32,7 +32,7 @@ import {
     VpDocumentDefinition,
     Wallet,
     Workers,
-    findAllEntities,
+    findAllEntities, PolicyCache,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -65,6 +65,7 @@ import {
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
 import { setPoolContract } from '../../api/contract.service.js';
+import { FilterObject, FilterQuery } from '@mikro-orm/core';
 
 /**
  * Document error
@@ -215,73 +216,73 @@ export class PolicyDataMigrator {
                 policyRoles = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'roles',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 policyStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'states',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'schemas',
                     cachePolicyId: userPolicy.id,
                     category: SchemaCategory.SYSTEM,
-                });
+                } as FilterObject<PolicyCache>);
                 srcVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vcs },
-                });
+                } as FilterObject<PolicyCache>);
                 srcRoleVcs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     schema: '#UserRole',
-                });
+                } as FilterObject<PolicyCache>);
                 srcVPs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vps',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vps },
-                });
+                } as FilterObject<PolicyCache>);
                 srcDids = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'dids',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 srcMintRequests = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintRequests',
                     cachePolicyId: userPolicy.id,
                     vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
-                });
+                } as FilterObject<PolicyCache>);
                 srcMintTransactions = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintTransactions',
                     cachePolicyId: userPolicy.id,
                     mintRequestId: {
                         $in: srcMintRequests.map((item) => item.id),
                     },
-                });
+                } as FilterObject<PolicyCache>);
                 srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'multiDocuments',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as FilterObject<PolicyCache>);
                 srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'aggregateVCs',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'splitDocuments',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 srcDocumentStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'documentStates',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as FilterObject<PolicyCache>);
                 srcTokens = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'tokens',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
                 srcRetirePools = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'retirePools',
                     cachePolicyId: userPolicy.id,
-                });
+                } as FilterObject<PolicyCache>);
             } else {
                 srcModel = await DatabaseServer.getPolicy({
                     id: src,
@@ -715,7 +716,7 @@ export class PolicyDataMigrator {
                 type: ContractType.WIPE,
                 wipeContractId,
                 owner: this._owner,
-            }
+            } as FilterQuery<Contract>
         );
         if (existingWipeContract) {
             return wipeContractId;

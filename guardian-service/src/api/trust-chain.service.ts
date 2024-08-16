@@ -1,6 +1,7 @@
 import { IChainItem, MessageAPI, SchemaEntity } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, DidDocument, MessageError, MessageResponse, PinoLogger, VcDocument, VpDocument, VpDocumentDefinition as HVpDocument } from '@guardian/common';
+import { FilterQuery } from '@mikro-orm/core';
 
 /**
  * Get field
@@ -106,7 +107,7 @@ export async function trustChainAPI(
 
         let parents = await dataBaseServer.find(VcDocument, {
             'document.credentialSubject.id': { $eq: issuer }
-        });
+        } as FilterQuery<VcDocument>);
 
         if (policyId) {
             parents = parents.filter(_vc => checkPolicy(_vc, policyId));
@@ -241,7 +242,7 @@ export async function trustChainAPI(
                 return new MessageResponse(chain);
             }
 
-            root = await dataBaseServer.findOne(VpDocument, { 'document.id': { $eq: hash } });
+            root = await dataBaseServer.findOne(VpDocument, { 'document.id': { $eq: hash } } as FilterQuery<VpDocument>);
             if (root) {
                 const policyId = root.policyId;
                 chain.push({

@@ -1,6 +1,7 @@
-import { DatabaseServer } from '@guardian/common';
+import { Artifact as ArtifactCollection, DatabaseServer } from '@guardian/common';
 import { CompareOptions, IArtifactRawData, IToolData } from '../compare/interfaces/index.js';
 import { FileModel, SchemaModel, ToolModel } from '../compare/index.js';
+import { FilterQuery } from '@mikro-orm/core';
 
 /**
  * Loader
@@ -20,7 +21,7 @@ export class ToolLoader {
         const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
 
         //Artifacts
-        const files = await DatabaseServer.getArtifacts({ toolId });
+        const files = await DatabaseServer.getArtifacts({ toolId } as FilterQuery<ArtifactCollection>);
         const artifacts: IArtifactRawData[] = [];
         for (const file of files) {
             const artifact: IArtifactRawData = file;
