@@ -119,13 +119,13 @@ export class DataBaseHelper<T extends BaseEntity> {
      * Create entity
      * @param entity Entity
      */
-    public create(entity: FilterObject<T> & { _id?: ObjectId }): T;
+    public create(entity: FilterObject<T>): T;
     /**
      * Create entities
      * @param entities Entities
      */
-    public create(entities: (FilterObject<T> & { _id?: ObjectId })[]): T[];
-    public create(entity: FilterObject<T> & { _id?: ObjectId } | (FilterObject<T> & { _id?: ObjectId })[]): T | T[] {
+    public create(entities: (FilterObject<T>)[]): T[];
+    public create(entity: FilterObject<T> | FilterObject<T>[]): T | T[] {
         if (Array.isArray(entity)) {
             const arrResult = [];
             for (const item of entity) {
@@ -133,8 +133,8 @@ export class DataBaseHelper<T extends BaseEntity> {
             }
             return arrResult;
         }
-        if (!entity._id) {
-            entity._id = new ObjectId(ObjectId.generate());
+        if (!entity['_id']) {
+            entity['_id'] = new ObjectId(ObjectId.generate());
         }
         return this._em.fork().create(this.entityClass, entity);
     }
@@ -177,7 +177,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entities and count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findAndCount(filters: FilterObject<T> | string | ObjectId, options?: FindOptions<T>): Promise<[T[], number]> {
+    public async findAndCount(filters: FilterObject<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
         return await this._em.findAndCount(this.entityClass, filters, options);
     }
 
@@ -246,18 +246,18 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filter Filter
      * @returns Entity
      */
-    public async save(entity: T, filter?: FilterObject<T>): Promise<T>;
+    public async save(entity: Partial<T>, filter?: FilterObject<T>): Promise<T>;
 
     /**
      * Save entities by ids
      * @param entities Entities
      * @returns Entities
      */
-    public async save(entities: T[]): Promise<T[]>;
+    public async save(entities: Partial<T>[]): Promise<T[]>;
 
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async save(
-        entity: T | T[],
+        entity: Partial<T> | Partial<T>[],
         filter?: FilterObject<T>
     ): Promise<T | T[]> {
         if (Array.isArray(entity)) {
@@ -300,7 +300,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @param filter Filter
      * @returns Entity
      */
-    public async update(entity: T, filter?: FilterObject<T>): Promise<T>;
+    public async update(entity: T, filter?: FilterQuery<T>): Promise<T>;
 
     /**
      * Update entities by ids
@@ -311,7 +311,7 @@ export class DataBaseHelper<T extends BaseEntity> {
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async update(
         entity: T | T[],
-        filter?: FilterObject<T>
+        filter?: FilterQuery<T>
     ): Promise<T | T[]> {
         if (Array.isArray(entity)) {
             const result = [];
