@@ -279,7 +279,7 @@ export class DatabaseServer {
      * @param aggregation aggregate filter
      * @returns
      */
-    public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: FilterObject<unknown>[]): Promise<unknown[]> {
+    public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: FilterObject<T>[]): Promise<T[]> {
         if (this.dryRun) {
             if (Array.isArray(aggregation)) {
                 aggregation.unshift({
