@@ -3,6 +3,7 @@ import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageRes
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishTokenTags } from './tag.service.js';
+import { FilterObject, FilterQuery } from '@mikro-orm/core';
 
 /**
  * Create token in Hedera network
@@ -839,7 +840,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                              { owner: { $eq: user.parent } },
                              { owner: { $exists: false } }
                          ]
-                    }
+                    } as FilterObject<Token>
                     : {}
                 );
 
@@ -931,7 +932,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     { owner: { $eq: owner.owner } },
                     { owner: { $exists: false } }
                 ]
-            }, options);
+            } as FilterObject<Token>, options);
             return new ArrayMessageResponse(tokens, count);
         })
 
@@ -973,7 +974,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     { owner: { $eq: owner.owner } },
                     { owner: { $exists: false } }
                 ]
-            }, options);
+            } as FilterObject<Token>, options);
             return new ArrayMessageResponse(tokens, count);
         })
 

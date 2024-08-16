@@ -44,7 +44,7 @@ import {
     GenerateUUIDv4,
     IVC,
     MintTransactionStatus,
-    PolicyTestStatus,
+    PolicyTestStatus, PolicyType,
     SchemaEntity,
     TokenType,
     TopicType,
@@ -55,7 +55,9 @@ import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
-import { ObjectId } from '@mikro-orm/mongodb';
+import { ObjectId, PopulatePath } from '@mikro-orm/mongodb';
+import { FilterObject, FilterQuery, FindAllOptions } from '@mikro-orm/core';
+import { IAuthUser } from '../interfaces';
 
 /**
  * Database server
@@ -192,19 +194,21 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async findOne<T extends BaseEntity>(entityClass: new () => T, filters: any, options: any = {}): Promise<T> {
+    public async findOne<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T>, options: unknown = {}): Promise<T> {
         if (this.dryRun) {
             if (typeof filters === 'string') {
-                return (await new DataBaseHelper(DryRun).findOne(filters, options)) as any;
+                return (await new DataBaseHelper(DryRun).findOne(filters, options)) as unknown as T;
             }
-            const _filters: any = { ...filters };
 
-                _filters.dryRunId = this.dryRun;
-                _filters.dryRunClass = this.classMap.get(entityClass);
+            const _filters = {
+                ...filters as FilterObject<T>,
+                dryRunId: this.dryRun,
+                dryRunClass: this.classMap.get(entityClass)
+            };
 
-            return (await new DataBaseHelper(DryRun).findOne(_filters, options)) as any;
+            return (await new DataBaseHelper(DryRun).findOne(_filters, options)) as unknown as T;
         } else {
-            return await new DataBaseHelper(entityClass).findOne(filters, options) as any;
+            return await new DataBaseHelper(entityClass).findOne(filters, options);
         }
     }
 
@@ -214,12 +218,14 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async count<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<number> {
+    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T>, options?: unknown): Promise<number> {
         if (this.dryRun) {
-            const _filters: any = { ...filters };
 
-                _filters.dryRunId = this.dryRun;
-                _filters.dryRunClass = this.classMap.get(entityClass);
+            const _filters = {
+                ...filters as FilterObject<T>,
+                dryRunId: this.dryRun,
+                dryRunClass: this.classMap.get(entityClass)
+            };
 
             return await new DataBaseHelper(DryRun).count(_filters, options);
         } else {
@@ -233,14 +239,16 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async find<T extends BaseEntity>(entityClass: new () => T, filters: any, options?: any): Promise<T[]> {
+    public async find<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T> | string | ObjectId, options?: unknown): Promise<any[]> {
         if (this.dryRun) {
-            const _filters: any = { ...filters };
 
-                _filters.dryRunId = this.dryRun;
-                _filters.dryRunClass = this.classMap.get(entityClass);
+            const _filters = {
+                ...filters as FilterObject<T>,
+                dryRunId: this.dryRun,
+                dryRunClass: this.classMap.get(entityClass)
+            };
 
-            return (await new DataBaseHelper(DryRun).find(_filters, options)) as any;
+            return (await new DataBaseHelper(DryRun).find(_filters, options)) as unknown as T[];
         } else {
             return await new DataBaseHelper(entityClass).find(filters, options);
         }
@@ -250,8 +258,9 @@ export class DatabaseServer {
      * Overriding the findAndCount method
      * @param entityClass
      * @param filters
+     * @param options
      */
-    public async findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: any | string | ObjectId, options?: any): Promise<[T[], number]> {
+    public async findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
         return await new DataBaseHelper(entityClass).findAndCount(filters, options);
     }
 
@@ -260,7 +269,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param options
      */
-    public async findAll<T extends BaseEntity>(entityClass: new () => T, options?: any): Promise<T[]> {
+    public async findAll<T extends BaseEntity>(entityClass: new () => T, options?: FindAllOptions<T>): Promise<T[]> {
         return await new DataBaseHelper(entityClass).findAll(options);
     }
 
@@ -270,17 +279,22 @@ export class DatabaseServer {
      * @param aggregation aggregate filter
      * @returns
      */
-    public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: any[]): Promise<any[]> {
+    public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: FilterObject<T>[]): Promise<T[]> {
         if (this.dryRun) {
             if (Array.isArray(aggregation)) {
                 aggregation.unshift({
                     $match: {
                         dryRunId: this.dryRun,
-                        dryRunClass: this.classMap.get(entityClass)
+                        dryRunClass: this.classMap.get(entityClass),
+                    },
+                } as FilterObject<unknown> & {
+                    $match?: {
+                        dryRunId?: string;
+                        dryRunClass?: string;
                     }
-                })
+                });
             }
-            return await new DataBaseHelper(DryRun).aggregate(aggregation);
+            return await new DataBaseHelper(DryRun).aggregate(aggregation) as unknown as T[];
         } else {
             return await new DataBaseHelper(entityClass).aggregate(aggregation);
         }
@@ -291,7 +305,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private addDryRunId(entityClass: any, item: any | any[]): any | any[] {
+    private addDryRunId<T extends BaseEntity>(entityClass: new () => T, item: unknown): Partial<T> | Partial<T>[] {
         return DatabaseServer.addDryRunId(
             item, this.dryRun, this.classMap.get(entityClass), this.systemMode
         );
@@ -299,15 +313,17 @@ export class DatabaseServer {
 
     /**
      * Add dry run id
-     * @param entityClass
      * @param item
+     * @param dryRunId
+     * @param dryRunClass
+     * @param systemMode
      */
-    private static addDryRunId(
+    private static addDryRunId<T extends BaseEntity>(
         item: any | any[],
         dryRunId: string,
         dryRunClass: string,
         systemMode: boolean
-    ): any | any[] {
+    ): any {
         if (Array.isArray(item)) {
             for (const i of item) {
                 i.systemMode = systemMode;
@@ -327,9 +343,9 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    public create<T extends BaseEntity>(entityClass: new () => T, item: any): T {
+    public create<T extends BaseEntity>(entityClass: new () => T, item: Partial<T>): T {
         if (this.dryRun) {
-            return (new DataBaseHelper(DryRun).create(item)) as any;
+            return (new DataBaseHelper(DryRun).create(item)) as unknown as T;
         } else {
             return new DataBaseHelper(entityClass).create(item);
         }
@@ -341,7 +357,7 @@ export class DatabaseServer {
      * @param item Item
      * @param amount Amount
      */
-    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: any, amount: number): Promise<void> {
+    private async createMuchData<T extends BaseEntity>(entityClass: new () => T, item: Partial<T> & { id: string; _id: string; }, amount: number): Promise<void> {
         const naturalCount = Math.floor((amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE));
         const restCount = (amount % DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
 
@@ -365,13 +381,14 @@ export class DatabaseServer {
      * @param item
      * @param filter
      */
-    async save<T extends BaseEntity>(entityClass: new () => T, item: any, filter?: any): Promise<T> {
+    async save<T extends BaseEntity>(entityClass: new () => T, item: any, filter?: FilterObject<T>): Promise<any> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
-            return await new DataBaseHelper(DryRun).save(item, filter) as any;
-        } else {
-            return await new DataBaseHelper(entityClass).save(item, filter);
+            return await new DataBaseHelper(DryRun).save(item as Partial<T>, filter) as unknown as T;
         }
+
+        return await new DataBaseHelper(entityClass).save(item, filter) as unknown as T
+
     }
 
     /**
@@ -382,14 +399,14 @@ export class DatabaseServer {
      */
     async update<T extends BaseEntity>(
         entityClass: new () => T,
-        criteria: any,
-        row: any
+        criteria: FilterQuery<T>,
+        row: unknown
     ): Promise<T> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, row);
-            return (await new DataBaseHelper(DryRun).update(row, criteria)) as any;
+            return (await new DataBaseHelper(DryRun).update(row as DryRun, criteria as FilterQuery<DryRun>)) as unknown as T;
         } else {
-            return await new DataBaseHelper(entityClass).update(row, criteria);
+            return await new DataBaseHelper(entityClass).update(row as T, criteria);
         }
     }
 
@@ -400,7 +417,7 @@ export class DatabaseServer {
      */
     public async remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void> {
         if (this.dryRun) {
-            await new DataBaseHelper(DryRun).remove(entities as any);
+            await new DataBaseHelper(DryRun).remove(entities as unknown as DryRun | DryRun[]);
         } else {
             await new DataBaseHelper(entityClass).remove(entities);
         }
@@ -412,12 +429,12 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVirtualUser(did: string): Promise<any | null> {
+    public async getVirtualUser(did: string): Promise<IAuthUser | null> {
         return (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'VirtualUsers',
             did
-        })) as any;
+        })) as unknown as IAuthUser;
     }
 
     /**
@@ -433,7 +450,7 @@ export class DatabaseServer {
             dryRunClass: 'VirtualKey',
             did,
             type: keyName
-        })) as any;
+        }));
         return item?.hederaAccountKey;
     }
 
@@ -442,10 +459,10 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Virtual keys
      */
-    public async getVirtualKeys(filters: any): Promise<any[]> {
-        filters.dryRunId = this.dryRun;
-        filters.dryRunClass = 'VirtualKey';
-        return await new DataBaseHelper(DryRun).find(filters);
+    public async getVirtualKeys(filters: FilterQuery<Object>): Promise<any[]> {
+        filters["dryRunId"] = this.dryRun;
+        filters["dryRunClass"] = 'VirtualKey';
+        return await new DataBaseHelper(DryRun).find(filters as DryRun);
     }
 
     /**
@@ -463,7 +480,7 @@ export class DatabaseServer {
             did,
             type: keyName,
             hederaAccountKey: key
-        });
+        } as Partial<DryRun>);
     }
 
     /**
@@ -472,12 +489,12 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVirtualHederaAccountInfo(hederaAccountId: string): Promise<any> {
+    public async getVirtualHederaAccountInfo(hederaAccountId: string): Promise<DryRun> {
         const item = (await new DataBaseHelper(DryRun).findOne({
             dryRunId: this.dryRun,
             dryRunClass: 'HederaAccountInfo',
             hederaAccountId
-        })) as any;
+        }));
         return item?.tokenMap || {};
     }
 
@@ -657,7 +674,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async saveBlockState(policyId: string, uuid: string, state: any): Promise<void> {
+    public async saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void> {
         let stateEntity = await this.findOne(BlockState, {
             policyId,
             blockId: uuid
@@ -712,7 +729,7 @@ export class DatabaseServer {
         blockId: string,
         did: string,
         name: string,
-        value: any,
+        value: unknown,
         isLongValue: boolean
     ): Promise<void> {
         let stateEntity = await this.findOne(BlockCache, {
@@ -751,7 +768,7 @@ export class DatabaseServer {
         blockId: string,
         did: string,
         name: string
-    ): Promise<any | null> {
+    ): Promise<BlockCache | null> {
         return await this.findOne(BlockCache, {
             policyId,
             blockId,
@@ -776,7 +793,7 @@ export class DatabaseServer {
      * @param token
      * @returns
      */
-    public async createToken(token: any): Promise<TokenCollection> {
+    public async createToken(token: unknown): Promise<TokenCollection> {
         const newToken = this.create(TokenCollection, token);
         return await this.save(TokenCollection, newToken);
     }
@@ -886,7 +903,7 @@ export class DatabaseServer {
      */
     public static async getPublishPolicies(): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find({
-            status: { $eq: 'PUBLISH' }
+            status: { $eq: PolicyType.PUBLISH }
         });
     }
 
@@ -896,7 +913,7 @@ export class DatabaseServer {
      * @virtual
      */
     public static async getPolicyCategories(): Promise<PolicyCategory[]> {
-        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory);
+        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory as FilterQuery<PolicyCategory>);
     }
 
     /**
@@ -905,7 +922,7 @@ export class DatabaseServer {
      * @virtual
      */
     public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty);
+        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty as FilterQuery<PolicyProperty>);
     }
 
     /**
@@ -923,15 +940,14 @@ export class DatabaseServer {
      * Get Aggregate Documents
      * @param policyId
      * @param blockId
-     * @param owner
-     * @param owner
+     * @param filters
      *
      * @virtual
      */
     public async getAggregateDocuments(
         policyId: string,
         blockId: string,
-        filters: any = {},
+        filters: FilterObject<unknown> = {},
     ): Promise<AggregateVC[]> {
         return await this.find(AggregateVC, { policyId, blockId, ...filters });
     }
@@ -976,8 +992,8 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async createAggregateDocuments(item: VcDocumentCollection, blockId: string): Promise<void> {
-        (item as any).blockId = blockId;
+    public async createAggregateDocuments(item: VcDocumentCollection & {blockId: string}, blockId: string): Promise<void> {
+        item.blockId = blockId;
         const newVC = this.create(AggregateVC, item);
         await this.save(AggregateVC, newVC);
     }
@@ -988,7 +1004,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVcDocument(filters: any): Promise<VcDocumentCollection | null> {
+    public async getVcDocument(filters: FilterQuery<VcDocumentCollection>): Promise<VcDocumentCollection | null> {
         return await this.findOne(VcDocumentCollection, filters);
     }
 
@@ -998,7 +1014,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getVpDocument(filters: any): Promise<VpDocumentCollection | null> {
+    public async getVpDocument(filters: FilterQuery<VpDocumentCollection>): Promise<VpDocumentCollection | null> {
         return await this.findOne(VpDocumentCollection, filters);
     }
 
@@ -1008,7 +1024,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getApprovalDocument(filters: any): Promise<ApprovalDocumentCollection | null> {
+    public async getApprovalDocument(filters: FilterQuery<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection | null> {
         return await this.findOne(ApprovalDocumentCollection, filters);
     }
 
@@ -1017,8 +1033,8 @@ export class DatabaseServer {
      * @param aggregation
      * @virtual
      */
-    public async getVcDocumentsByAggregation(aggregation: any[]): Promise<VcDocumentCollection[]> {
-        return await this.aggregate(VcDocumentCollection, aggregation);
+    public async getVcDocumentsByAggregation(aggregation: FilterObject<VcDocumentCollection>[]): Promise<VcDocumentCollection[]> {
+        return await this.aggregate(VcDocumentCollection, aggregation) as VcDocumentCollection[];
     }
 
     /**
@@ -1026,8 +1042,8 @@ export class DatabaseServer {
      * @param aggregation
      * @virtual
      */
-    public async getVpDocumentsByAggregation(aggregation: any[]): Promise<VpDocumentCollection[]> {
-        return await this.aggregate(VpDocumentCollection, aggregation);
+    public async getVpDocumentsByAggregation(aggregation: FilterObject<VpDocumentCollection>[]): Promise<VpDocumentCollection[]> {
+        return await this.aggregate(VpDocumentCollection, aggregation) as VpDocumentCollection[];
     }
 
     /**
@@ -1035,8 +1051,8 @@ export class DatabaseServer {
      * @param aggregation
      * @virtual
      */
-    public async getDidDocumentsByAggregation(aggregation: any[]): Promise<DidDocumentCollection[]> {
-        return await this.aggregate(DidDocumentCollection, aggregation);
+    public async getDidDocumentsByAggregation(aggregation: FilterObject<DidDocumentCollection>[]): Promise<DidDocumentCollection[]> {
+        return await this.aggregate(DidDocumentCollection, aggregation) as DidDocumentCollection[];
     }
 
     /**
@@ -1044,8 +1060,8 @@ export class DatabaseServer {
      * @param aggregation
      * @virtual
      */
-    public async getApprovalDocumentsByAggregation(aggregation: any[]): Promise<ApprovalDocumentCollection[]> {
-        return await this.aggregate(ApprovalDocumentCollection, aggregation);
+    public async getApprovalDocumentsByAggregation(aggregation: FilterObject<DidDocumentCollection>[]): Promise<ApprovalDocumentCollection[]> {
+        return await this.aggregate(ApprovalDocumentCollection, aggregation) as ApprovalDocumentCollection[];
     }
 
     /**
@@ -1056,7 +1072,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getVcDocuments<T extends VcDocumentCollection[] | number>(
-        filters: any,
+        filters: FilterObject<T>,
         options?: any,
         countResult?: boolean
     ): Promise<T> {
@@ -1075,7 +1091,7 @@ export class DatabaseServer {
      * @virtual
      */
     public async getVpDocuments<T extends VpDocumentCollection[] | number>(
-        filters: any,
+        filters: FilterObject<T>,
         options?: any,
         countResult?: boolean
     ): Promise<T> {
@@ -1093,7 +1109,7 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getDidDocuments(filters: any, options?: any, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
+    public async getDidDocuments(filters: FilterObject<DidDocumentCollection>, options?: any, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(DidDocumentCollection, filters, options);
         }
@@ -1115,7 +1131,7 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getApprovalDocuments(filters: any, options?: any, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
+    public async getApprovalDocuments(filters: FilterObject<ApprovalDocumentCollection>, options?: any, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(ApprovalDocumentCollection, filters, options);
         }
@@ -1128,7 +1144,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getDocumentStates(filters: any, options?: any): Promise<DocumentState[]> {
+    public async getDocumentStates(filters: FilterObject<DocumentState>, options?: any): Promise<DocumentState[]> {
         return await this.find(DocumentState, filters, options);
     }
 
@@ -1282,7 +1298,7 @@ export class DatabaseServer {
         for (const group of groups) {
             group.active = group.uuid === uuid;
         }
-        await this.save(PolicyRolesCollection, groups);
+        await this.save(PolicyRolesCollection, groups as unknown);
     }
 
     /**
@@ -1637,7 +1653,7 @@ export class DatabaseServer {
      * @param residue
      */
     public async setResidue(residue: SplitDocuments[]): Promise<void> {
-        await this.save(SplitDocuments, residue);
+        await this.save(SplitDocuments, residue as unknown);
     }
 
     /**
@@ -1745,7 +1761,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTags(filters?: any, options?: any): Promise<Tag[]> {
+    public async getTags(filters?: FilterQuery<Tag>, options?: any): Promise<Tag[]> {
         return await this.find(Tag, filters, options);
     }
 
@@ -1754,7 +1770,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTagCache(filters?: any, options?: any): Promise<TagCache[]> {
+    public async getTagCache(filters?: FilterObject<TagCache>, options?: any): Promise<TagCache[]> {
         return await this.find(TagCache, filters, options);
     }
 
@@ -1813,7 +1829,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Mint request
      */
-    public async getMintRequests(filters: any): Promise<MintRequest[]> {
+    public async getMintRequests(filters: FilterObject<MintRequest>): Promise<MintRequest[]> {
         return await this.find(MintRequest, filters);
     }
 
@@ -1841,7 +1857,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Mint transactions
      */
-    public async getMintTransactions(filters: any, options?: any): Promise<MintTransaction[]> {
+    public async getMintTransactions(filters: FilterObject<MintTransaction>, options?: any): Promise<MintTransaction[]> {
         return await this.find(MintTransaction, filters, options);
     }
 
@@ -1850,7 +1866,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Mint transaction
      */
-    public async getMintTransaction(filters: any): Promise<MintTransaction> {
+    public async getMintTransaction(filters: FilterObject<MintTransaction>): Promise<MintTransaction> {
         return await this.findOne(MintTransaction, filters);
     }
 
@@ -1930,7 +1946,7 @@ export class DatabaseServer {
                     secondaryVpIds: vpDocument.messageId,
                 },
             ],
-        });
+        } as FilterObject<MintRequest>);
         const serials = vpDocument.serials
             ? vpDocument.serials.map((serial) => ({
                 serial,
@@ -2097,7 +2113,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Policy caches
      */
-    public static async getPolicyCaches(filters?: any): Promise<PolicyCache[]> {
+    public static async getPolicyCaches(filters?: FilterObject<PolicyCache>): Promise<PolicyCache[]> {
         return await new DataBaseHelper(PolicyCache).find(filters);
     }
 
@@ -2115,7 +2131,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Policy cache
      */
-    public static async getPolicyCache(filters: any): Promise<PolicyCache> {
+    public static async getPolicyCache(filters: FilterObject<PolicyCache>): Promise<PolicyCache> {
         return await new DataBaseHelper(PolicyCache).findOne(filters);
     }
 
@@ -2126,7 +2142,7 @@ export class DatabaseServer {
      * @returns Policy cache data
      */
     public static async getPolicyCacheData(
-        filters?: any,
+        filters?: FilterObject<PolicyCache>,
         options?: any
     ): Promise<PolicyCacheData[]> {
         return await new DataBaseHelper(PolicyCacheData).find(filters, options);
@@ -2150,7 +2166,7 @@ export class DatabaseServer {
      * @returns Policy cache data and count
      */
     public static async getAndCountPolicyCacheData(
-        filters?: any,
+        filters?: FilterObject<PolicyCacheData>,
         options?: any
     ): Promise<[PolicyCacheData[], number]> {
         return await new DataBaseHelper(PolicyCacheData).findAndCount(
@@ -2163,7 +2179,7 @@ export class DatabaseServer {
      * Clear policy caches
      * @param filters Filters
      */
-    public static async clearPolicyCaches(filters?: any): Promise<void> {
+    public static async clearPolicyCaches(filters?: FilterObject<PolicyCache> | string): Promise<void> {
         const policyCaches = await new DataBaseHelper(PolicyCache).find(
             filters
         );
@@ -2241,8 +2257,9 @@ export class DatabaseServer {
     /**
      * Get schemas
      * @param filters
+     * @param options
      */
-    public static async getSchemas(filters?: any, options?: any): Promise<SchemaCollection[]> {
+    public static async getSchemas(filters?: FilterObject<SchemaCollection>, options?: any): Promise<SchemaCollection[]> {
         return await new DataBaseHelper(SchemaCollection).find(filters, options);
     }
 
@@ -2275,7 +2292,7 @@ export class DatabaseServer {
      * Get schemas
      * @param filters
      */
-    public static async getSchema(filters?: any): Promise<SchemaCollection | null> {
+    public static async getSchema(filters?: FilterObject<SchemaCollection> | string): Promise<SchemaCollection | null> {
         return await new DataBaseHelper(SchemaCollection).findOne(filters);
     }
 
@@ -2319,7 +2336,7 @@ export class DatabaseServer {
      * Get schema
      * @param filters
      */
-    public static async getSchemasAndCount(filters?: any, options?: any): Promise<[SchemaCollection[], number]> {
+    public static async getSchemasAndCount(filters?: FilterObject<SchemaCollection>, options?: any): Promise<[SchemaCollection[], number]> {
         return await new DataBaseHelper(SchemaCollection).findAndCount(filters, options);
     }
 
@@ -2346,7 +2363,7 @@ export class DatabaseServer {
      * Get schema
      * @param filters
      */
-    public static async getSchemasCount(filters?: any): Promise<number> {
+    public static async getSchemasCount(filters?: FilterObject<SchemaCollection>): Promise<number> {
         return await new DataBaseHelper(SchemaCollection).count(filters);
     }
 
@@ -2366,7 +2383,7 @@ export class DatabaseServer {
      * Get policy
      * @param filters
      */
-    public static async getPolicy(filters: any): Promise<Policy | null> {
+    public static async getPolicy(filters: FilterObject<Policy>): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(filters);
     }
 
@@ -2375,7 +2392,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getPolicies(filters?: any, options?: any): Promise<Policy[]> {
+    public static async getPolicies(filters?: FilterObject<Policy>, options?: any): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find(filters, options);
     }
 
@@ -2383,7 +2400,7 @@ export class DatabaseServer {
      * Get policies
      * @param filters
      */
-    public static async getListOfPolicies(filters?: any): Promise<Policy[]> {
+    public static async getListOfPolicies(filters?: FilterObject<Policy>): Promise<Policy[]> {
         const options: any = {
             fields: [
                 'id',
@@ -2442,7 +2459,7 @@ export class DatabaseServer {
      * Get policies and count
      * @param filters
      */
-    public static async getPoliciesAndCount(filters: any, options?: any): Promise<[Policy[], number]> {
+    public static async getPoliciesAndCount(filters: FilterObject<Policy>, options?: any): Promise<[Policy[], number]> {
         return await new DataBaseHelper(Policy).findAndCount(filters, options);
     }
 
@@ -2450,7 +2467,7 @@ export class DatabaseServer {
      * Get policy count
      * @param filters
      */
-    public static async getPolicyCount(filters: any): Promise<number> {
+    public static async getPolicyCount(filters: FilterObject<Policy>): Promise<number> {
         return await new DataBaseHelper(Policy).count(filters);
     }
 
@@ -2531,9 +2548,10 @@ export class DatabaseServer {
 
     /**
      * Get VC
-     * @param id
+     * @param filters
+     * @param options
      */
-    public static async getVC(filters?: any, options?: any): Promise<VcDocumentCollection | null> {
+    public static async getVC(filters?: FilterQuery<VcDocumentCollection>, options?: any): Promise<VcDocumentCollection | null> {
         return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
     }
 
@@ -2542,7 +2560,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVCs(filters?: any, options?: any): Promise<VcDocumentCollection[]> {
+    public static async getVCs(filters?: FilterQuery<VcDocumentCollection>, options?: any): Promise<VcDocumentCollection[]> {
         return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
     }
 
@@ -2556,9 +2574,10 @@ export class DatabaseServer {
 
     /**
      * Get VC
-     * @param id
+     * @param filters
+     * @param options
      */
-    public static async getVP(filters?: any, options?: any): Promise<VpDocumentCollection | null> {
+    public static async getVP(filters?: FilterQuery<VpDocumentCollection>, options?: any): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
     }
 
@@ -2567,7 +2586,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVPs(filters?: any, options?: any): Promise<VpDocumentCollection[]> {
+    public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: any): Promise<VpDocumentCollection[]> {
         return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
     }
 
@@ -2698,7 +2717,7 @@ export class DatabaseServer {
                 'username',
                 'hederaAccountId',
                 'active'
-            ]
+            ] as unknown as PopulatePath.ALL[]
         })) as any;
     }
 
@@ -2870,7 +2889,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Tokens
      */
-    public static async getTokens(filters?: any): Promise<TokenCollection[]> {
+    public static async getTokens(filters?: FilterQuery<TokenCollection>): Promise<TokenCollection[]> {
         return await new DataBaseHelper(TokenCollection).find(filters);
     }
 
@@ -2888,7 +2907,7 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Artifact
      */
-    public static async getArtifact(filters?: any): Promise<ArtifactCollection | null> {
+    public static async getArtifact(filters?: FilterQuery<ArtifactCollection>): Promise<ArtifactCollection | null> {
         return await new DataBaseHelper(ArtifactCollection).findOne(filters);
     }
 
@@ -2898,7 +2917,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifacts(filters?: any, options?: any): Promise<ArtifactCollection[]> {
+    public static async getArtifacts(filters?: FilterQuery<ArtifactCollection>, options?: any): Promise<ArtifactCollection[]> {
         return await new DataBaseHelper(ArtifactCollection).find(filters, options);
     }
 
@@ -2908,7 +2927,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifactsAndCount(filters?: any, options?: any): Promise<[ArtifactCollection[], number]> {
+    public static async getArtifactsAndCount(filters?: FilterObject<ArtifactCollection>, options?: any): Promise<[ArtifactCollection[], number]> {
         return await new DataBaseHelper(ArtifactCollection).findAndCount(filters, options);
     }
 
@@ -3023,7 +3042,7 @@ export class DatabaseServer {
      * Create MultiPolicyTransaction
      * @param transaction
      */
-    public static async createMultiPolicyTransaction(transaction: any): Promise<MultiPolicyTransaction> {
+    public static async createMultiPolicyTransaction(transaction: FilterObject<MultiPolicyTransaction>): Promise<MultiPolicyTransaction> {
         const item = new DataBaseHelper(MultiPolicyTransaction).create(transaction);
         return await new DataBaseHelper(MultiPolicyTransaction).save(item);
     }
@@ -3118,7 +3137,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getModules(filters?: any, options?: any): Promise<PolicyModule[]> {
+    public static async getModules(filters?: FilterQuery<PolicyModule>, options?: any): Promise<PolicyModule[]> {
         return await new DataBaseHelper(PolicyModule).find(filters, options);
     }
 
@@ -3155,7 +3174,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getToolsAndCount(filters?: any, options?: any): Promise<[PolicyTool[], number]> {
+    public static async getToolsAndCount(filters?: FilterObject<PolicyTool>, options?: any): Promise<[PolicyTool[], number]> {
         return await new DataBaseHelper(PolicyTool).findAndCount(filters, options);
     }
 
@@ -3169,7 +3188,7 @@ export class DatabaseServer {
 
     /**
      * Get Tool By ID
-     * @param uuid
+     * @param id
      */
     public static async getToolById(id: string): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne(id);
@@ -3179,7 +3198,7 @@ export class DatabaseServer {
      * Get Tool
      * @param filters
      */
-    public static async getTool(filters: any): Promise<PolicyTool | null> {
+    public static async getTool(filters: FilterQuery<PolicyTool>): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne(filters);
     }
 
@@ -3196,7 +3215,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTools(filters?: any, options?: any): Promise<PolicyTool[]> {
+    public static async getTools(filters?: FilterQuery<PolicyTool>, options?: any): Promise<PolicyTool[]> {
         return await new DataBaseHelper(PolicyTool).find(filters, options);
     }
 
@@ -3212,7 +3231,7 @@ export class DatabaseServer {
      * Create tag
      * @param tag
      */
-    public static async createTag(tag: any): Promise<Tag> {
+    public static async createTag(tag: FilterObject<Tag>): Promise<Tag> {
         const item = new DataBaseHelper(Tag).create(tag);
         return await new DataBaseHelper(Tag).save(item);
     }
@@ -3238,7 +3257,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTags(filters?: any, options?: any): Promise<Tag[]> {
+    public static async getTags(filters?: FilterQuery<Tag>, options?: any): Promise<Tag[]> {
         return await new DataBaseHelper(Tag).find(filters, options);
     }
 
@@ -3254,7 +3273,7 @@ export class DatabaseServer {
      * Create tag cache
      * @param tag
      */
-    public static async createTagCache(tag: any): Promise<TagCache> {
+    public static async createTagCache(tag: FilterObject<TagCache>): Promise<TagCache> {
         const item = new DataBaseHelper(TagCache).create(tag);
         return await new DataBaseHelper(TagCache).save(item);
     }
@@ -3264,7 +3283,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTagCache(filters?: any, options?: any): Promise<TagCache[]> {
+    public static async getTagCache(filters?: FilterQuery<TagCache> , options?: any): Promise<TagCache[]> {
         return await new DataBaseHelper(TagCache).find(filters, options);
     }
 
@@ -3280,7 +3299,7 @@ export class DatabaseServer {
      * Create Theme
      * @param theme
      */
-    public static async createTheme(theme: any): Promise<Theme> {
+    public static async createTheme(theme: FilterObject<Theme>): Promise<Theme> {
         const item = new DataBaseHelper(Theme).create(theme);
         return await new DataBaseHelper(Theme).save(item);
     }
@@ -3289,7 +3308,7 @@ export class DatabaseServer {
      * Get Theme
      * @param filters
      */
-    public static async getTheme(filters: any): Promise<Theme | null> {
+    public static async getTheme(filters: FilterQuery<Theme>): Promise<Theme | null> {
         return await new DataBaseHelper(Theme).findOne(filters);
     }
 
@@ -3297,7 +3316,7 @@ export class DatabaseServer {
      * Get Themes
      * @param filters
      */
-    public static async getThemes(filters: any): Promise<Theme[]> {
+    public static async getThemes(filters: FilterQuery<Theme>): Promise<Theme[]> {
         return await new DataBaseHelper(Theme).find(filters);
     }
 
@@ -3355,12 +3374,13 @@ export class DatabaseServer {
      * @param filters
      * @param dryRun
      */
-    public static async updateVpDocuments(value: any, filters: any, dryRun?: string): Promise<void> {
+    public static async updateVpDocuments(value: any, filters: FilterQuery<VpDocumentCollection>, dryRun?: string): Promise<void> {
         if (dryRun) {
-                filters.dryRunId = dryRun;
-                filters.dryRunClass = 'VpDocumentCollection';
+                filters['dryRunId'] = dryRun;
+                filters['dryRunClass'] = 'VpDocumentCollection';
 
-            const items = await new DataBaseHelper(DryRun).find(filters);
+            const items = await new DataBaseHelper(DryRun).find(filters as DryRun);
+
             for (const item of items) {
                 Object.assign(item, value);
             }
@@ -3378,7 +3398,7 @@ export class DatabaseServer {
      * Create Record
      * @param record
      */
-    public static async createRecord(record: any): Promise<Record> {
+    public static async createRecord(record: FilterObject<Record>): Promise<Record> {
         const item = new DataBaseHelper(Record).create(record);
         return await new DataBaseHelper(Record).save(item);
     }
@@ -3389,7 +3409,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Record
      */
-    public static async getRecord(filters?: any, options?: any): Promise<Record[]> {
+    public static async getRecord(filters?: FilterQuery<Record>, options?: any): Promise<Record[]> {
         return await new DataBaseHelper(Record).find(filters, options);
     }
 
@@ -3421,28 +3441,28 @@ export class DatabaseServer {
 
     /**
      * Save VCs
-     * @param VCs
+     * @param data
      *
      * @returns VCs
      */
     // tslint:disable-next-line:adjacent-overload-signatures
-    public static async saveVCs<T extends VcDocumentCollection | VcDocumentCollection[]>(data: T): Promise<T> {
+    public static async saveVCs<T extends VcDocumentCollection | VcDocumentCollection[]>(data: Partial<T>): Promise<T> {
         return (await new DataBaseHelper(VcDocumentCollection).save(data)) as any;
     }
 
     /**
      * Save VPs
-     * @param VPs
+     * @param data
      *
      * @returns VPs
      */
-    public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: T): Promise<T> {
+    public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: Partial<T>): Promise<T> {
         return (await new DataBaseHelper(VpDocumentCollection).save(data)) as any;
     }
 
     /**
      * Get Did Document
-     * @param topicId
+     * @param did
      */
     public static async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
         return await (new DataBaseHelper(DidDocumentCollection)).findOne({ did });
@@ -3454,6 +3474,7 @@ export class DatabaseServer {
      * @param entityId
      * @param assigned
      * @param did
+     * @param owner
      */
     public static async assignEntity(
         type: AssignedEntityType,
@@ -3494,6 +3515,7 @@ export class DatabaseServer {
      * @param type
      * @param entityId
      * @param did
+     * @param owner
      */
     public static async removeAssignEntity(
         type: AssignedEntityType,
@@ -3534,8 +3556,8 @@ export class DatabaseServer {
 
     /**
      * Save file
-     * @param uuid
-     * @param buffer
+     * @param id
+     *
      * @returns file ID
      */
     public static async loadFile(id: ObjectId): Promise<Buffer> {
@@ -3594,8 +3616,8 @@ export class DatabaseServer {
 
     /**
      * Get policy tests
-     * @param policyI
-     * @param id
+     * @param resultId
+     *
      * @returns tests
      */
     public static async getPolicyTestByRecord(resultId: string): Promise<PolicyTest> {
@@ -3614,8 +3636,8 @@ export class DatabaseServer {
 
     /**
      * Get policy tests
-     * @param policyId
-     * @param id
+     * @param test
+     *
      * @returns tests
      */
     public static async updatePolicyTest(test: PolicyTest): Promise<PolicyTest> {
@@ -3625,7 +3647,7 @@ export class DatabaseServer {
     /**
      * Get policy tests
      * @param policyId
-     * @param id
+     *
      * @returns tests
      */
     public static async deletePolicyTests(policyId: string): Promise<void> {
@@ -3634,8 +3656,6 @@ export class DatabaseServer {
 
     /**
      * Get policy tests
-     * @param policyId
-     * @param id
      * @returns tests
      */
     public static async removePolicyTests(tests: PolicyTest[]): Promise<void> {
@@ -3647,7 +3667,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param filters
      */
-    public deleteEntity<T extends BaseEntity>(entityClass: new () => T, filters: any | string | ObjectId): Promise<number> {
+    public deleteEntity<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T> | string | ObjectId): Promise<number> {
         return new DataBaseHelper(entityClass).delete(filters);
     }
 }

@@ -172,7 +172,7 @@ export class RecordImportExport {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        });
+        } as any);
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -185,7 +185,7 @@ export class RecordImportExport {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        });
+        } as any);
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,

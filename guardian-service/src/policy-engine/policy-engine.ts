@@ -15,7 +15,7 @@ import {
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
-    replaceArtifactProperties,
+    replaceArtifactProperties, Schema as SchemaCollection,
     SchemaFields,
     Singleton,
     SynchronizationMessage,
@@ -41,6 +41,7 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
 import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Result of publishing
@@ -295,7 +296,7 @@ export class PolicyEngine extends NatsService {
                     { topicId: 'draft' },
                     { owner: owner.owner },
                 ],
-            });
+            } as FilterObject<SchemaCollection>);
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
                 await sendSchemaMessage(

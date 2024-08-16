@@ -1,13 +1,14 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
-import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Users, XlsxToJson } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { SchemaImportExportHelper, checkForCircularDependency, deleteSchema, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import process from 'process';
+import { FilterObject } from '@mikro-orm/core';
 
 @Controller()
 export class SchemaService { }
@@ -515,7 +516,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         category: SchemaCategory.TOOL,
                         status: SchemaStatus.PUBLISHED
                     }]
-                });
+                } as FilterObject<SchemaCollection>);
                 for (const schema of schemas) {
                     (schema as any).__component = nameMaps.get(schema.topicId);
                 }
@@ -1021,7 +1022,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     entity: msg.entity,
                     system: true,
                     active: true
-                });
+                } as FilterObject<SchemaCollection>);
                 return new MessageResponse(schema);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

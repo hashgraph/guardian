@@ -27,6 +27,7 @@ import { AnalyticsDocumentService } from './document.service.js';
 import { AnalyticsUserService } from './user.service.js';
 import { AnalyticsPolicyService } from './policy.service.js';
 import moment from 'moment';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Report service
@@ -67,13 +68,13 @@ export class ReportService {
         });
 
         if (!report) {
-            const row = await databaseServer.create(Status, {
+            const row = databaseServer.create(Status, {
                 uuid: GenerateUUIDv4(),
                 root,
                 status: ReportStatus.NONE,
                 type: ReportType.ALL,
                 steep: '',
-            });
+            } as unknown as Partial<Status>);
 
             await databaseServer.save(Status, row);
         }
@@ -228,7 +229,7 @@ export class ReportService {
                     }, count: { $sum: 1 }
                 }
             }
-        ]);
+        ] as FilterObject<any>[]);
 
         const docByInstance = await databaseServer.aggregate(Document, [
             { $match: { uuid } },
@@ -241,12 +242,12 @@ export class ReportService {
                     }, count: { $sum: 1 }
                 }
             }
-        ]);
+        ] as FilterObject<any>[]);
 
         const docsGroups = await databaseServer.aggregate(Document, [
             { $match: { uuid } },
             { $group: { _id: { type: '$type', action: '$action' }, count: { $sum: 1 } } }
-        ]);
+        ] as FilterObject<any>[]);
 
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)
@@ -492,7 +493,7 @@ export class ReportService {
                 }
             },
             { $sort: { count: -1 } }
-        ]);
+        ] as FilterObject<any>[]);
 
         const topAllSchemasByName = [];
         const topSystemSchemasByName = [];
@@ -581,7 +582,7 @@ export class ReportService {
             root: report.root,
             date: Date.now(),
             report: data
-        };
+        } as unknown as Partial<Dashboard>;
 
         const databaseServer = new DatabaseServer();
 

@@ -1,5 +1,6 @@
 import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
+import { FilterQuery } from '@mikro-orm/core';
 import { TaskEntity } from '../entity/task';
 
 @Singleton

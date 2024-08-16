@@ -31,6 +31,7 @@ import { proto } from '@hashgraph/proto';
 import * as ethers from 'ethers';
 import { contractCall, contractQuery, createContract, customContractCall, publishSystemSchema } from './helpers/index.js';
 import { emptyNotifier } from '../helpers/notifier.js';
+import { FilterObject } from '@mikro-orm/core';
 
 const retireAbi = new ethers.Interface([
     'function retire(tuple(address, int64, int64[])[])',
@@ -292,7 +293,7 @@ async function setRetireRequest(
                     ],
                 },
             ],
-        }
+        } as FilterObject<RetireRequest>
     );
 }
 
@@ -676,7 +677,7 @@ export async function syncRetireContract(
                                 ],
                             },
                         ],
-                    });
+                    } as FilterObject<RetirePool>);
                     if (!sendNotifications) {
                         break;
                     }
@@ -755,14 +756,14 @@ export async function syncRetireContract(
                                 ],
                             },
                         ],
-                    });
+                    } as FilterObject<RetireRequest>);
                     break;
                 }
                 case 'PoolsCleared': {
                     const count = Number(data[0]);
                     await dataBaseServer.deleteEntity(RetirePool, {
                         tokens: { $size: count },
-                    });
+                    } as FilterObject<RetirePool>);
                     if (!sendNotifications) {
                         break;
                     }
@@ -782,7 +783,7 @@ export async function syncRetireContract(
                     const count = Number(data[0]);
                     await dataBaseServer.deleteEntity(RetireRequest, {
                         tokens: { $size: count },
-                    });
+                    } as FilterObject<RetireRequest>);
                     if (!sendNotifications) {
                         break;
                     }
