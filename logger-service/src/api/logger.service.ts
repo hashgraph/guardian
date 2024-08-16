@@ -3,6 +3,7 @@ import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
 import process from 'process';
+import { FilterObject } from '@mikro-orm/core';
 
 @Controller()
 export class LoggerService {
@@ -80,7 +81,7 @@ export class LoggerService {
                 { $unwind: { path: '$uniqueValues' } },
                 { $limit: 20 },
                 { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } },
-            ]) as unknown as Log & { uniqueValues: { sort: Function } };
+            ] as FilterObject<any>[]);
             return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
         }
         catch (error) {
