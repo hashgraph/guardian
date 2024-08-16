@@ -39,8 +39,8 @@ export class FiltersAddonBlock {
         }
     }
 
-    private previousState: { [key: string]: any } = {};
-    private previousFilters: { [key: string]: any } = {};
+    private readonly previousState: { [key: string]: any } = {};
+    private readonly previousFilters: { [key: string]: any } = {};
 
     /**
      * Block state

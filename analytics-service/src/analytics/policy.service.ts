@@ -23,7 +23,6 @@ import { ReportSteep } from '../interfaces/report-steep.type.js';
 import { UserType } from '../interfaces/user.type.js';
 import { Tasks } from '../helpers/tasks.js';
 import { AnalyticsUtils } from '../helpers/utils.js';
-import { AnalyticsTopic as Topic } from '@entity/analytics-topic';
 
 /**
  * Search policy\version\schemas\tokens in user topics
