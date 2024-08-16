@@ -1,9 +1,10 @@
-import { DatabaseServer, MintRequest, NotificationHelper, } from '@guardian/common';
+import { DatabaseServer, MintRequest, MintTransaction, NotificationHelper } from '@guardian/common';
 import { IHederaCredentials } from '../../policy-user.js';
 import { TokenConfig } from '../configs/token-config.js';
 import { MintService } from '../mint-service.js';
 import { PolicyUtils } from '../../helpers/utils.js';
 import { MintTransactionStatus, NotificationAction, TokenType } from '@guardian/interfaces';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Typed mint
@@ -151,7 +152,7 @@ export abstract class TypedMint {
                     ],
                 },
             ],
-        });
+        } as FilterObject<MintTransaction>);
         if (pendingTransactions.length === 0) {
             return false;
         }

@@ -9,6 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { getVCField, VcDocument, VpDocument } from '@guardian/common';
+import { FilterObject, FilterQuery } from '@mikro-orm/core';
 
 /**
  * Report block
@@ -219,7 +220,7 @@ export class ReportBlock {
                     messageIds.push(ids);
                 }
             }
-            const items = await ref.databaseServer.getVcDocuments<VcDocument[]>({ messageId: { $in: messageIds } });
+            const items = await ref.databaseServer.getVcDocuments<VcDocument[]>({ messageId: { $in: messageIds } } as FilterObject<VcDocument[]>);
             for (const item of items) {
                 documentIds.push(item.document.id);
                 documentSubjectIds.push(item.document.credentialSubject[0].id);
@@ -359,7 +360,7 @@ export class ReportBlock {
             const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
                 messageId: { $in: messageIds },
                 policyId: { $eq: ref.policyId }
-            });
+            } as FilterObject<VpDocument[]>);
             for (const additionalVp of additionalVps) {
                 [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
@@ -371,7 +372,7 @@ export class ReportBlock {
                 'document.verifiableCredential.credentialSubject.type': { $eq: 'TokenDataSource' },
                 'document.verifiableCredential.credentialSubject.relationships': { $eq: vp.messageId },
                 'policyId': { $eq: ref.policyId }
-            });
+            } as FilterQuery<VpDocument[]>);
             for (const additionalVp of additionalVps) {
                 [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);

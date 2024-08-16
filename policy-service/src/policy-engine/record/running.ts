@@ -6,10 +6,11 @@ import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument, VcHelper, VpDocument } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
 import { RecordItem } from './record-item.js';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+import { FilterQuery } from '@mikro-orm/core';
 
 interface RecordOptions {
     mode?: string;
@@ -317,7 +318,7 @@ export class Running {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        } as FilterQuery<any>);
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -330,7 +331,7 @@ export class Running {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        } as FilterQuery<any>);
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,
