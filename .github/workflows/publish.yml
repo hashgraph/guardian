@@ -11,7 +11,7 @@ permissions:
 jobs:
   docker:
     name: Publish to Docker
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: guardian-linux-medium
     permissions:
       id-token: write
       contents: read
