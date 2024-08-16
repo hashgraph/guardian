@@ -10,7 +10,7 @@ on:
 jobs:
   runService:
     name: Run Service
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: guardian-linux-medium
     strategy:
       matrix:
         node-version: [ 20.x ]
