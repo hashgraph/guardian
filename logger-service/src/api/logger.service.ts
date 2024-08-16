@@ -79,8 +79,8 @@ export class LoggerService {
                 { $group: { _id: null, uniqueValues: { $addToSet: '$attributes' } } },
                 { $unwind: { path: '$uniqueValues' } },
                 { $limit: 20 },
-                { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } }
-            ]);
+                { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } },
+            ]) as unknown as Log & { uniqueValues: { sort: Function } };
             return new MessageResponse(aggregateAttrResult[0].uniqueValues?.sort() || []);
         }
         catch (error) {
