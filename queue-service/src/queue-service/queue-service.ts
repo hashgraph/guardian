@@ -1,5 +1,6 @@
 import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
+import { FilterQuery } from '@mikro-orm/core';
 import { TaskEntity } from '../entity/task';
 
 @Singleton
@@ -209,7 +210,7 @@ export class QueueService extends NatsService{
             $where: '(this.processedTime - this.createDate) > ( 1 * 60 * 60000)',
             sent: true,
             done: {$ne: true}
-        });
+        } as FilterQuery<TaskEntity>);
         for (const task of tasks) {
             task.processedTime = null;
             task.sent = false;

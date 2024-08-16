@@ -244,7 +244,7 @@ export class PolicyDataImportExport {
         const zip = new JSZip();
         const virtualKeys = await new DatabaseServer(dryRunId).getVirtualKeys({
             did: { $ne: user.owner },
-        });
+        } as Object);
         zip.folder('virtualKeys');
         for (const virtualKey of virtualKeys) {
             zip.file(
