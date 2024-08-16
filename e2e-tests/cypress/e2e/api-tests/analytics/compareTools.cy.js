@@ -18,7 +18,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
             .then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                toolId1 = response.body.id;
+                toolId1 = response.body.tool.id;
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.ToolsImportMsg,
@@ -31,7 +31,7 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
                     timeout: 180000
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    toolId2 = response.body.id;
+                    toolId2 = response.body.tool.id;
                 })
             })
     })
