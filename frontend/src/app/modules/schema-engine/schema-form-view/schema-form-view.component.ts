@@ -32,8 +32,32 @@ export class SchemaFormViewComponent implements OnInit {
 
     constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
-
     ngOnInit(): void {
+        if (this.fields !== undefined) {
+            for (const item of this.fields) {
+                if (item.conditions) {
+                    for (const condition of item.conditions) {
+                        const values = this.values ? this.values[item.name] : {};
+                        const ifField = item.fields.find((f: any) => f.name === condition.ifCondition.field.name);
+                        const currentConditionValue = values && values[ifField.name];
+                        if (!currentConditionValue) {
+                            continue;
+                        }
+                        if (currentConditionValue !== condition.ifCondition.fieldValue) {
+                            for (const field of condition.thenFields) {
+                                const thenField = item.fields.find((f: any) => f.name === field.name);
+                                thenField.notCorrespondCondition = true;
+                            }
+                        } else {
+                            for (const field of condition.thenFields) {
+                                const thenField = item.fields.find((f: any) => f.name === field.name);
+                                thenField.notCorrespondCondition = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     isBooleanView(item: boolean | any): string {
