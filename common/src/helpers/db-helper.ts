@@ -276,6 +276,7 @@ export class DataBaseHelper<T extends BaseEntity> {
         }
 
         let entityToUpdateOrCreate = await repository.findOne(filter || entity.id || entity._id);
+
         if (entityToUpdateOrCreate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {
@@ -326,7 +327,9 @@ export class DataBaseHelper<T extends BaseEntity> {
         }
 
         const repository = this._em.getRepository(this.entityClass);
+
         const entitiesToUpdate = await repository.find(filter || entity.id || entity._id);
+
         for (const entityToUpdate of entitiesToUpdate) {
             DataBaseHelper._systemFileFields.forEach(systemFileField => {
                 if (entity[systemFileField]) {

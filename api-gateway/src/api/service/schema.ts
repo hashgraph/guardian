@@ -2392,11 +2392,12 @@ export class SchemaApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async exportTemplate(
         @AuthUser() user: IAuthUser,
-        @Response() res: any
+        @Req() req,
+        @Response() res
     ): Promise<any> {
         try {
             const filename = 'template.xlsx';
@@ -2405,7 +2406,9 @@ export class SchemaApi {
             const fileBuffer = Buffer.from(file, 'base64');
             res.header('Content-disposition', `attachment; filename=` + filename);
             res.header('Content-type', 'application/zip');
-            res.locals.data = fileBuffer
+
+            req.locals = fileBuffer
+
             return res.send(fileBuffer);
         } catch (error) {
             await InternalException(error, this.logger);

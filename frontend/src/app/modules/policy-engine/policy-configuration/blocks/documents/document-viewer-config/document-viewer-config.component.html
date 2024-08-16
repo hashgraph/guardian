@@ -65,6 +65,7 @@
                     <mat-option value="issuer">Issuer</mat-option>
                     <mat-option value="button">Button</mat-option>
                     <mat-option value="block">Block</mat-option>
+                    <mat-option value="blocks">Blocks</mat-option>
                     <mat-option value="array">Array</mat-option>
                     <mat-option value="serials">Serials</mat-option>
                 </mat-select>
@@ -198,6 +199,21 @@
                 </td>
                 <td class="propRowCell">
                     <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
+                        [blocks]="allBlocks"></select-block>
+                </td>
+            </tr>
+        </ng-container>
+        <ng-container *ngIf="field.type=='blocks'">
+            <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+                <td class="propRowCol"></td>
+                <td class="propRowCell cellName">
+                    <mat-icon class="icon-link">
+                        add_link
+                    </mat-icon>
+                    Bind Blocks
+                </td>
+                <td class="propRowCell">
+                    <select-block [root]="module" [(value)]="field.bindBlocks" [readonly]="readonly" [multiple]="true"
                         [blocks]="allBlocks"></select-block>
                 </td>
             </tr>

@@ -243,6 +243,7 @@ export async function trustChainAPI(
             }
 
             root = await dataBaseServer.findOne(VpDocument, { 'document.id': { $eq: hash } } as FilterQuery<VpDocument>);
+
             if (root) {
                 const policyId = root.policyId;
                 chain.push({

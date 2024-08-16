@@ -3380,6 +3380,7 @@ export class DatabaseServer {
                 filters['dryRunClass'] = 'VpDocumentCollection';
 
             const items = await new DataBaseHelper(DryRun).find(filters as DryRun);
+
             for (const item of items) {
                 Object.assign(item, value);
             }

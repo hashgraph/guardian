@@ -220,7 +220,9 @@ export class ReportBlock {
                     messageIds.push(ids);
                 }
             }
+
             const items = await ref.databaseServer.getVcDocuments<VcDocument[]>({ messageId: { $in: messageIds } } as FilterObject<VcDocument[]>);
+
             for (const item of items) {
                 documentIds.push(item.document.id);
                 documentSubjectIds.push(item.document.credentialSubject[0].id);
