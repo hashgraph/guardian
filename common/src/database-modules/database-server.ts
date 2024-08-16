@@ -459,10 +459,16 @@ export class DatabaseServer {
      * @param filters Filters
      * @returns Virtual keys
      */
-    public async getVirtualKeys(filters: FilterQuery<Object>): Promise<any[]> {
-        filters["dryRunId"] = this.dryRun;
-        filters["dryRunClass"] = 'VirtualKey';
-        return await new DataBaseHelper(DryRun).find(filters as DryRun);
+    public async getVirtualKeys(filters: FilterQuery<DryRun>): Promise<any[]> {
+        const extendedFilters = filters as FilterQuery<DryRun> & {
+            dryRunId?: string;
+            dryRunClass?: string;
+        };
+
+        extendedFilters.dryRunId = this.dryRun;
+        extendedFilters.dryRunClass = 'VirtualKey';
+
+        return await new DataBaseHelper(DryRun).find(filters);
     }
 
     /**
@@ -3376,10 +3382,15 @@ export class DatabaseServer {
      */
     public static async updateVpDocuments(value: any, filters: FilterQuery<VpDocumentCollection>, dryRun?: string): Promise<void> {
         if (dryRun) {
-                filters['dryRunId'] = dryRun;
-                filters['dryRunClass'] = 'VpDocumentCollection';
+            const extendedFilters = filters as FilterQuery<DryRun> & {
+                dryRunId?: string;
+                dryRunClass?: string;
+            };
 
-            const items = await new DataBaseHelper(DryRun).find(filters as DryRun);
+            extendedFilters.dryRunId = dryRun;
+            extendedFilters.dryRunClass = 'VpDocumentCollection';
+
+            const items = await new DataBaseHelper(DryRun).find(extendedFilters );
 
             for (const item of items) {
                 Object.assign(item, value);

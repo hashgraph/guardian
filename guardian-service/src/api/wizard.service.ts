@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, PolicyTool, RunFunctionAsync } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync } from '@guardian/common';
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';

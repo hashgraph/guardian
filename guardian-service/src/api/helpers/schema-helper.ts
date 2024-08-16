@@ -1,5 +1,5 @@
 import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { DatabaseServer, MessageAction, MessageServer, RetireRequest, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { INotifier } from '../../helpers/notifier.js';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { FilterObject } from '@mikro-orm/core';

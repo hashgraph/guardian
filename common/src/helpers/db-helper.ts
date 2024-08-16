@@ -130,10 +130,12 @@ export class DataBaseHelper<T extends BaseEntity> {
             }
             return arrResult;
         }
-        if (!entity['_id']) {
-            entity['_id'] = new ObjectId(ObjectId.generate());
+        const entityWithId = entity as FilterObject<T> & { _id?: ObjectId };
+
+        if (!entityWithId._id) {
+            entityWithId._id = new ObjectId(ObjectId.generate());
         }
-        return this._em.fork().create(this.entityClass, entity);
+        return this._em.fork().create(this.entityClass, entityWithId);
     }
 
     /**

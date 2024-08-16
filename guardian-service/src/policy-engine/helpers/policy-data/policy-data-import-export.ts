@@ -23,7 +23,7 @@ import {
     DidDocument,
     Policy,
     Users,
-    findAllEntities,
+    findAllEntities, DryRun,
 } from '@guardian/common';
 import { ObjectId } from 'bson';
 
@@ -244,7 +244,7 @@ export class PolicyDataImportExport {
         const zip = new JSZip();
         const virtualKeys = await new DatabaseServer(dryRunId).getVirtualKeys({
             did: { $ne: user.owner },
-        } as Object);
+        } as DryRun);
         zip.folder('virtualKeys');
         for (const virtualKey of virtualKeys) {
             zip.file(

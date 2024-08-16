@@ -6,7 +6,7 @@ import {
     Policy,
     VcDocument,
     VcDocumentDefinition,
-    PinoLogger, Schema as SchemaCollection,
+    PinoLogger,
 } from '@guardian/common';
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';

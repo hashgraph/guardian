@@ -3,7 +3,7 @@ import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageRes
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishTokenTags } from './tag.service.js';
-import { FilterObject, FilterQuery } from '@mikro-orm/core';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Create token in Hedera network

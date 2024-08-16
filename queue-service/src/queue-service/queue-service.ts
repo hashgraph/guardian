@@ -1,6 +1,6 @@
 import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
-import { FilterQuery } from '@mikro-orm/core';
+import { FilterObject, FilterQuery } from '@mikro-orm/core';
 import { TaskEntity } from '../entity/task';
 
 @Singleton
@@ -227,7 +227,7 @@ export class QueueService extends NatsService{
                     timeDifference: { $gt: this.processTimeout },
                 },
             },
-        ]);
+        ] as FilterObject<any>[]);
 
         for (const task of tasks) {
             task.processedTime = null;
