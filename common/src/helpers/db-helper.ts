@@ -3,10 +3,7 @@ import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
 import { GridFSBucket } from 'mongodb';
-
-function fixConnectionString(cs: string) {
-    return /.+\:\/\/.+/.test(cs) ? cs : `mongodb://${cs}`;
-}
+import fixConnectionString from './fix-connection-string.js';
 
 /**
  * Common connection config

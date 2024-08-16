@@ -40,6 +40,7 @@ export class FiltersAddonBlock {
     }
 
     private previousState: { [key: string]: any } = {};
+    private previousFilters: { [key: string]: any } = {};
 
     /**
      * Block state
@@ -113,15 +114,20 @@ export class FiltersAddonBlock {
     }
 
     async resetFilters(user: PolicyUser): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         if (this.previousState[user.id]) {
             this.state[user.id] = this.previousState[user.id];
             delete this.previousState[user.id];
+        }
+        if (this.previousFilters[user.id]) {
+            ref.filters[user.id] = this.previousFilters[user.id];
+            delete this.previousFilters[user.id];
         }
     }
 
     async setFiltersStrict(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        this.previousState[user.id] = this.state[user.id];
+        this.previousState[user.id] = {...this.state[user.id]};
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
@@ -142,7 +148,9 @@ export class FiltersAddonBlock {
             }
             blockState.lastValue = value;
             this.state[user.id] = blockState;
+
         }
+        this.previousFilters[user.id] = {...ref.filters[user.id]};
         ref.setFilters(filter, user);
     }
 
