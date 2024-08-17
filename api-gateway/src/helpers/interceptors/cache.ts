@@ -12,6 +12,14 @@ import { getCacheKey } from './utils/index.js';
 //constants
 import { CACHE, CACHE_PREFIXES, META_DATA } from '#constants';
 
+function isBase64(str: string): boolean {
+    try {
+        return Buffer.from(str, 'base64').toString('base64') === str;
+    } catch (err) {
+        return false;
+    }
+}
+
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
     constructor(private readonly cacheService: CacheService) {
@@ -48,7 +56,7 @@ export class CacheInterceptor implements NestInterceptor {
                 if (cachedResponse) {
                     let result = JSON.parse(cachedResponse);
 
-                    if (typeof result === 'string') {
+                    if (typeof result === 'string' && isBase64(result)) {
                         result = Buffer.from(result, 'base64');
                     }
 
