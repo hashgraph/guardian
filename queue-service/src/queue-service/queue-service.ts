@@ -8,6 +8,7 @@ export class QueueService extends NatsService{
     public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
 
     private readonly refreshInterval = 1 * 1000; // 1s
+    private readonly processTimeout = 1 * 60 * 60000; // 1 hour
 
     public async init() {
         await super.init();
@@ -191,16 +192,32 @@ export class QueueService extends NatsService{
     }
 
     private async clearLongPendingTasks() {
-        const tasks = await new DataBaseHelper(TaskEntity).find({
-            $where: '(this.processedTime - this.createDate) > ( 1 * 60 * 60000)',
-            sent: true,
-            done: {$ne: true}
-        });
+        const tasks = await new DataBaseHelper(TaskEntity).aggregate([
+            {
+                $match: {
+                    sent: true,
+                    done: { $ne: true },
+                },
+            },
+            {
+                $addFields: {
+                    timeDifference: {
+                        $subtract: ['$processedTime', '$createDate'],
+                    },
+                },
+            },
+            {
+                $match: {
+                    timeDifference: { $gt: this.processTimeout },
+                },
+            },
+        ]);
+
         for (const task of tasks) {
             task.processedTime = null;
             task.sent = false;
-            await new DataBaseHelper(TaskEntity).save(task);
         }
+        await new DataBaseHelper(TaskEntity).save(tasks);
     }
 
     /**
