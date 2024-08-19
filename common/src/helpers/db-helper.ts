@@ -139,6 +139,46 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
+     * Save file
+     * @param uuid
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                fileStream.write(buffer);
+                fileStream.end(() => {
+                    resolve(fileStream.id);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Load file
+     * @param id
+     *
+     * @returns file ID
+     */
+    public static async loadFile(id: ObjectId): Promise<Buffer> {
+        const files = await DataBaseHelper.gridFS.find(id).toArray();
+        if (files.length === 0) {
+            return null;
+        }
+        const file = files[0];
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        return Buffer.concat(bufferArray);
+    }
+
+    /**
      * Delete entities by filters
      * @param filters filters
      * @returns Count
