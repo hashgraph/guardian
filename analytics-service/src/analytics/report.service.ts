@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageAction, PinoLogger } from '@guardian/common';
+import { DatabaseServer, MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS, MessageAction, PinoLogger } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
@@ -218,36 +218,14 @@ export class ReportService {
         const schemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSchema });
         const systemSchemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSystemSchema });
 
-        const docByPolicy = await databaseServer.aggregate(Document, [
-            { $match: { uuid, } },
-            {
-                $group: {
-                    _id: {
-                        policyTopicId: '$policyTopicId',
-                        type: '$type',
-                        action: '$action'
-                    }, count: { $sum: 1 }
-                }
-            }
-        ] as FilterObject<any>[]);
+        const docByPolicy =
+            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_POLICY, uuid) as FilterObject<any>[])
 
-        const docByInstance = await databaseServer.aggregate(Document, [
-            { $match: { uuid } },
-            {
-                $group: {
-                    _id: {
-                        instanceTopicId: '$instanceTopicId',
-                        type: '$type',
-                        action: '$action'
-                    }, count: { $sum: 1 }
-                }
-            }
-        ] as FilterObject<any>[]);
+        const docByInstance =
+            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_INSTANCE, uuid) as FilterObject<any>[])
 
-        const docsGroups = await databaseServer.aggregate(Document, [
-            { $match: { uuid } },
-            { $group: { _id: { type: '$type', action: '$action' }, count: { $sum: 1 } } }
-        ] as FilterObject<any>[]);
+        const docsGroups =
+            await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOCS_GROUPS, uuid) as FilterObject<any>[])
 
         const didCount = docsGroups
             .filter(g => g._id.type === DocumentType.DID && g._id.action !== MessageAction.RevokeDocument)
@@ -482,18 +460,9 @@ export class ReportService {
             }
         }), size);
 
-        const schemasByName = await new DatabaseServer().aggregate(Document, [
-            { $match: { uuid: report.uuid } },
-            {
-                $group: {
-                    _id: {
-                        name: '$name',
-                        action: '$action',
-                    }, count: { $sum: 1 }
-                }
-            },
-            { $sort: { count: -1 } }
-        ] as FilterObject<any>[]);
+        const databaseServer = new DatabaseServer();
+
+        const schemasByName = await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.SCHEMA_BY_NAME, report.uuid) as FilterObject<any>[])
 
         const topAllSchemasByName = [];
         const topSystemSchemasByName = [];
