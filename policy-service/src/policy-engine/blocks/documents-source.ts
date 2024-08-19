@@ -287,7 +287,9 @@ export class InterfaceDocumentsSource {
      */
     private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
-        let aggregation = [...filtersAndDataType.filters] as unknown[];
+
+        const aggregation = [...filtersAndDataType.filters] as unknown[];
+
         ref.databaseServer.getDocumentAggregationFilters({
             aggregation,
             aggregateMethod: 'push',
