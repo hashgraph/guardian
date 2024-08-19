@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
+import { DatabaseServer, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { TaskEntity } from '../entity/task';
@@ -208,26 +208,8 @@ export class QueueService extends NatsService{
 
         const dataBaseServer = new DatabaseServer();
 
-        const tasks = await dataBaseServer.aggregate(TaskEntity, [
-            {
-                $match: {
-                    sent: true,
-                    done: { $ne: true },
-                },
-            },
-            {
-                $addFields: {
-                    timeDifference: {
-                        $subtract: ['$processedTime', '$createDate'],
-                    },
-                },
-            },
-            {
-                $match: {
-                    timeDifference: { $gt: this.processTimeout },
-                },
-            },
-        ] as FilterObject<any>[]);
+        const tasks =
+            await dataBaseServer.aggregate(TaskEntity, dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout) as FilterObject<any>[]);
 
         for (const task of tasks) {
             task.processedTime = null;
