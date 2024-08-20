@@ -162,7 +162,6 @@ export class DatabaseServer {
         DataBaseHelper.connectGridFS();
     }
 
-
     /**
      * Set Dry Run id
      * @param id
