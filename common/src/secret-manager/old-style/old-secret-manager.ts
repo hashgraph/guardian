@@ -39,9 +39,10 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return { IPFS_STORAGE_API_KEY: IPFS_STORAGE_API_KEY.key };
 
             case 'secretkey/auth':
-                const ACCESS_TOKEN_SECRET = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, { type: 'ACCESS_TOKEN_SECRET' });
+                const JWT_PRIVATE_KEY = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, {type: 'JWT_PRIVATE_KEY'});
+                const JWT_PUBLIC_KEY = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_GLOBAL_APPLICATION_KEY, {type: 'JWT_PUBLIC_KEY'});
 
-                return { ACCESS_TOKEN_SECRET: ACCESS_TOKEN_SECRET.key };
+                return {JWT_PRIVATE_KEY: JWT_PRIVATE_KEY.key, JWT_PUBLIC_KEY: JWT_PUBLIC_KEY.key};
 
             default:
                 const wallet = await this.sendMessage<IGetKeyResponse>(WalletEvents.GET_KEY, addition);
@@ -76,7 +77,8 @@ export class OldSecretManager extends NatsService implements SecretManagerBase {
                 return;
 
             case 'secretkey/auth':
-                await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, { type: 'ACCESS_TOKEN_SECRET',  key: data.ACCESS_TOKEN_SECRET });
+                await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, {type: 'JWT_PUBLIC_KEY', key: data.JWT_PUBLIC_KEY});
+                await this.sendMessage<IGetKeyResponse>(WalletEvents.SET_GLOBAL_APPLICATION_KEY, {type: 'JWT_PRIVATE_KEY', key: data.JWT_PRIVATE_KEY});
 
                 return;
 

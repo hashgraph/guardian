@@ -14,7 +14,8 @@ data:
     # Ecosystem Defined Variables
     HEDERA_NET="testnet"
     PREUSED_HEDERA_NET="testnet"
-    ACCESS_TOKEN_SECRET="youraccesstokensecret"
+    JWT_PRIVATE_KEY="..."
+    JWT_PUBLIC_KEY="..."
     MQ_ADDRESS="localhost"
     DB_HOST="localhost"
     MESSAGE_LANG="en-US"
