@@ -1,56 +1,71 @@
 import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
+import { SynchronizationTask } from '../synchronization-task.js';
 
-function filter() {
-    return {
-        $or: [
-            {
-                'analytics.textSearch': null,
-            },
-            {
-                'analytics.policyId': null,
-            },
-        ],
-    };
-}
+export class SynchronizationRoles extends SynchronizationTask {
+    public readonly name: string = 'roles';
 
-export async function syncRoles() {
-    const em = DataBaseHelper.getEntityManager();
-    const collection = em.getCollection('message');
-    const roles = await collection.find({
-        type: { $in: [MessageType.ROLE_DOCUMENT] },
-        ...filter(),
-    });
-    let index = 0;
-    const count = await roles.count();
-    while (await roles.hasNext()) {
-        index++;
-        console.log(`Sync roles ${index}/${count}`);
-        const document = await roles.next();
+    constructor(mask: string) {
+        super('roles', mask);
+    }
+
+    protected override async sync(): Promise<void> {
+        console.log('--- syncRoles ---');
+        console.time('--- syncRoles 1 ---');
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+
+        console.log(`Sync Roles: load policies`)
+        const policyMap = new Map<string, Message>();
+        const policies = collection.find({ type: MessageType.INSTANCE_POLICY });
+        while (await policies.hasNext()) {
+            const policy = await policies.next();
+            if (policy.options?.instanceTopicId) {
+                policyMap.set(policy.options.instanceTopicId, policy);
+            }
+        }
+
+        console.log(`Sync Roles: update data`)
+        const roles = collection.find({
+            type: MessageType.ROLE_DOCUMENT,
+            ...this.filter(),
+        });
+        while (await roles.hasNext()) {
+            const document = await roles.next();
+            const row = em.getReference(Message, document._id);
+            row.analytics = this.createAnalytics(document, policyMap);
+            em.persist(row);
+        }
+        await em.flush();
+        console.timeEnd('--- syncRoles 1 ---');
+    }
+
+    private createAnalytics(
+        document: Message,
+        policyMap: Map<string, Message>
+    ): any {
         const analytics: any = {
             textSearch: textSearch(document),
         };
-        const policyMessage = await em.findOne(Message, {
-            type: MessageType.INSTANCE_POLICY,
-            'options.instanceTopicId': document.topicId,
-        } as any);
+        const policyMessage = policyMap.get(document.topicId);
         if (policyMessage) {
             analytics.policyId = policyMessage.consensusTimestamp;
             analytics.textSearch += `|${policyMessage.consensusTimestamp}`;
         }
-        await collection.updateOne(
-            {
-                _id: document._id,
-            },
-            {
-                $set: {
-                    analytics,
+        return analytics;
+    }
+
+    private filter() {
+        return {
+            $or: [
+                {
+                    'analytics.textSearch': null,
                 },
-            },
-            {
-                upsert: false,
-            }
-        );
+                {
+                    'analytics.policyId': null,
+                },
+            ],
+        };
     }
 }

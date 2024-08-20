@@ -1,46 +1,53 @@
-import { DataBaseHelper } from '@indexer/common';
+import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType, MessageAction } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
+import { SynchronizationTask } from '../synchronization-task.js';
 
-function filter() {
-    return {
-        $or: [
-            {
-                'analytics.textSearch': null,
-            },
-        ],
-    };
-}
+export class SynchronizationTools extends SynchronizationTask {
+    public readonly name: string = 'tools';
 
-export async function syncTools() {
-    const em = DataBaseHelper.getEntityManager();
-    const collection = em.getCollection('message');
-    const tools = await collection.find({
-        type: { $in: [MessageType.TOOL] },
-        action: MessageAction.PublishTool,
-        ...filter(),
-    });
-    let index = 0;
-    const count = await tools.count();
-    while (await tools.hasNext()) {
-        index++;
-        console.log(`Sync tools ${index}/${count}`);
-        const document = await tools.next();
+    constructor(mask: string) {
+        super('tools', mask);
+    }
+
+    protected override async sync(): Promise<void> {
+        console.log('--- syncTools ---');
+        console.time('--- syncTools 1 ---');
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+
+        console.log(`Sync Tools: update data`)
+        const tools = collection.find({
+            type: { $in: [MessageType.TOOL] },
+            action: MessageAction.PublishTool,
+            ...this.filter(),
+        });
+        while (await tools.hasNext()) {
+            const tool = await tools.next();
+            const row = em.getReference(Message, tool._id);
+            row.analytics = this.createAnalytics(tool);
+            em.persist(row);
+        }
+        await em.flush();
+        console.timeEnd('--- syncTools 1 ---');
+    }
+
+    private createAnalytics(
+        tool: Message
+    ): any {
         const analytics: any = {
-            textSearch: textSearch(document),
+            textSearch: textSearch(tool),
         };
-        await collection.updateOne(
-            {
-                _id: document._id,
-            },
-            {
-                $set: {
-                    analytics,
+        return analytics;
+    }
+
+    private filter() {
+        return {
+            $or: [
+                {
+                    'analytics.textSearch': null,
                 },
-            },
-            {
-                upsert: false,
-            }
-        );
+            ],
+        };
     }
 }

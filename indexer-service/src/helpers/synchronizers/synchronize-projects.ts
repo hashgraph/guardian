@@ -1,0 +1,291 @@
+import {
+    DataBaseHelper,
+    Message,
+    Analytics,
+    ProjectCoordinates,
+} from '@indexer/common';
+import { safetyRunning } from '../../utils/safety-running.js';
+import {
+    MessageType,
+    MessageAction,
+    IPFS_CID_PATTERN,
+} from '@indexer/interfaces';
+import { SynchronizationTask } from '../synchronization-task.js';
+import { loadFiles } from '../load-files.js';
+
+interface ICoord {
+    coordinates: string,
+    projectId: string
+}
+
+enum Files {
+    DOCUMENT_FILE = 0,
+    SCHEMA_FILE = 0,
+    CONTEXT_FILE = 1
+}
+
+export class SynchronizationProjects extends SynchronizationTask {
+    public readonly name: string = 'projects';
+
+    constructor(mask: string) {
+        super('projects', mask);
+    }
+
+    protected override async sync(): Promise<void> {
+        console.log('--- syncAnalytics ---');
+        console.time('--- syncAnalytics 2 ---');
+        const em = DataBaseHelper.getEntityManager();
+        const projectLocations = await em
+            .getCollection('project_coordinates')
+            .distinct('projectId');
+
+        const collection = em.getCollection<Message>('message');
+        const documents = collection.find({
+            type: MessageType.VC_DOCUMENT,
+            action: MessageAction.CreateVC,
+            consensusTimestamp: { $nin: projectLocations },
+        });
+
+        console.log(`Sync VCs: load documents`)
+        const allDocuments: Message[] = [];
+        const fileIds: Set<string> = new Set<string>();
+        while (await documents.hasNext()) {
+            const document = await documents.next();
+            if (
+                Array.isArray(document.files) &&
+                document.files.length !== 0
+            ) {
+                allDocuments.push(document);
+                fileIds.add(document.files[Files.DOCUMENT_FILE]);
+            }
+        }
+
+        console.log(`Sync VPs: load schemas`)
+        const schemas = collection.find({ type: MessageType.SCHEMA });
+        while (await schemas.hasNext()) {
+            const schema = await schemas.next();
+            if (schema.files && schema.files[Files.CONTEXT_FILE]) {
+                fileIds.add(schema.files[Files.CONTEXT_FILE]);
+            }
+        }
+
+        console.log(`Sync VCs: load files`)
+        // const fileMap = new Map<string, string>();
+        // const files = DataBaseHelper.gridFS.find();
+        // while (await files.hasNext()) {
+        //     const file = await files.next();
+        //     if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
+        //         await safetyRunning(async () => {
+        //             const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        //             const bufferArray = [];
+        //             for await (const data of fileStream) {
+        //                 bufferArray.push(data);
+        //             }
+        //             const buffer = Buffer.concat(bufferArray);
+        //             fileMap.set(file.filename, buffer.toString());
+        //         });
+        //     }
+        // }
+
+        const fileMap = await loadFiles(fileIds);
+
+        console.log(`Sync VCs: update data`)
+        for (const document of allDocuments) {
+            const coords = this.updateGeoCoordinates(document, fileMap);
+            if (coords) {
+                for (const coord of coords) {
+                    const row = em.create(ProjectCoordinates, coord);
+                    await safetyRunning(async () => {
+                        await em.persistAndFlush(row);
+                    });
+                    // em.persist(row);
+                }
+            }
+        }
+        // await em.flush();
+        console.timeEnd('--- syncAnalytics 2 ---');
+    }
+
+    private updateGeoCoordinates(
+        document: Message,
+        fileMap: Map<string, string>
+    ): ICoord[] {
+        const storage: ICoord[] = [];
+        const documentFileId = document.files[Files.DOCUMENT_FILE];
+        const documentFileString = fileMap.get(documentFileId);
+        const documentFile = this.parseFile(documentFileString);
+        const subject = this.getSubject(documentFile);
+        if (!subject) {
+            return null;
+        }
+        const schemaContexts = this.getContexts(documentFile, fileMap);
+        for (const context of schemaContexts) {
+            this.checkForGeoJson(
+                storage,
+                documentFile,
+                context,
+                document.consensusTimestamp
+            );
+        }
+        return storage;
+    }
+
+    private parseFile(file: string | undefined): any | null {
+        try {
+            if (file) {
+                return JSON.parse(file);
+            } else {
+                return null;
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private getSubject(document: any): any {
+        if (document && document.credentialSubject) {
+            return document.credentialSubject[0] || document.credentialSubject
+        }
+        return null;
+    }
+
+    private getContexts(documentFile: any, fileMap: Map<string, string>): any[] {
+        const result: any[] = [];
+        let contexts = documentFile['@context'];
+        contexts = Array.isArray(contexts) ? contexts : [contexts];
+        for (const item of contexts) {
+            if (typeof item === 'string') {
+                const matches = item.match(IPFS_CID_PATTERN);
+                const contextCID = matches && matches[0];
+                const context = this.loadContext(contextCID, fileMap);
+                if (context) {
+                    result.push(context);
+                }
+            } else if (item) {
+                result.push(item);
+            }
+        }
+        return result;
+    }
+
+    private loadContext(cid: string, fileMap: Map<string, string>): any {
+        const schemaContextString = fileMap.get(cid);
+        const schemaContext = this.parseFile(schemaContextString);
+        return schemaContext;
+    }
+
+    private checkForGeoJson(
+        storage: ICoord[],
+        documentFile: any,
+        schemaContext: any,
+        projectId: string
+    ) {
+        if (this.schemaHasGeoJson(schemaContext)) {
+            const subject = this.getSubject(documentFile);
+            const geoFields = this.findGeoJsonFields(schemaContext);
+            const geoFieldsValues = this.findGeoJSONFieldsInDocument(subject, geoFields)
+            for (const geoFieldsValue of geoFieldsValues) {
+                if (Array.isArray(geoFieldsValue)) {
+                    for (const item of geoFieldsValue) {
+                        this.addCoordinates(storage, item, projectId);
+                    }
+                } else {
+                    this.addCoordinates(storage, geoFieldsValue, projectId);
+                }
+            }
+        }
+    }
+
+    private findGeoJSONFieldsInDocument(cs: any, map: any, result = []) {
+        if (map[cs.type] && cs[map[cs.type]]) {
+            const fields = map[cs.type];
+            for (const field of fields) {
+                result.push(cs[field]);
+            }
+        } else {
+            for (const field in cs) {
+                if (Object.prototype.toString.call(cs[field]) === '[object Object]') {
+                    this.findGeoJSONFieldsInDocument(cs[field], map, result);
+                }
+            }
+        }
+        return result;
+    }
+
+    private schemaHasGeoJson(context: any) {
+        return context['@context']
+            ? !!context['@context']['#GeoJSON']
+            : !!context['#GeoJSON'];
+    }
+
+    private findGeoJsonFields(context: any, result = {}) {
+        context = context['@context'] || context;
+        if (!context) {
+            return result;
+        }
+        // tslint:disable-next-line:forin
+        for (const schema of Object.keys(context)) {
+            result[schema] = [];
+            safetyRunning(() => {
+                for (const field of Object.keys(context[schema]['@context'])) {
+                    safetyRunning(() => {
+                        if (context[schema]['@context'][field]['@id'].indexOf('#GeoJSON') > -1) {
+                            result[schema].push(field);
+                        }
+                    });
+                }
+            });
+        }
+        return result;
+    }
+
+    private addCoordinates(
+        storage: ICoord[],
+        item: { type: string; coordinates: any[] },
+        projectId: string
+    ) {
+        switch (item.type) {
+            case 'Point': {
+                storage.push({
+                    coordinates: `${item.coordinates[0].toString(10)}|${item.coordinates[1].toString(10)}`,
+                    projectId,
+                })
+                break;
+            }
+            case 'MultiPoint':
+            case 'LineString': {
+                for (const point of item.coordinates) {
+                    this.addCoordinates(
+                        storage,
+                        { type: 'Point', coordinates: point },
+                        projectId
+                    );
+                }
+                break;
+            }
+            case 'Polygon':
+            case 'MultiLineString': {
+                for (const line of item.coordinates) {
+                    this.addCoordinates(
+                        storage,
+                        { type: 'MultiPoint', coordinates: line },
+                        projectId
+                    );
+                }
+                break;
+            }
+            case 'MultiPolygon': {
+                for (const polygon of item.coordinates) {
+                    this.addCoordinates(
+                        storage,
+                        { type: 'Polygon', coordinates: polygon },
+                        projectId
+                    );
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}

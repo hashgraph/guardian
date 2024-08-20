@@ -21,26 +21,76 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
-import { SynchronizationTask } from './helpers/synchronization-task.js';
 import {
-    syncAnalytics,
-    sychronizeSchemas,
-    sychronizeVCs,
-    synchronizePolicies,
-    syncDidDocuments,
-    sychronizeVPs,
-    syncModules,
-    syncRegistries,
-    syncRoles,
-    syncTools,
-    syncTopics,
-    syncContracts
+    SynchronizationSchemas,
+    SynchronizationVCs,
+    SynchronizationVPs,
+    SynchronizationPolicy,
+    SynchronizationTopics,
+    SynchronizationTools,
+    SynchronizationDid,
+    SynchronizationRoles,
+    SynchronizationRegistries,
+    SynchronizationModules,
+    SynchronizationContracts,
+    SynchronizationAnalytics,
+    SynchronizationProjects,
 } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
 ).toUpperCase();
+
+async function updateIndexes() {
+    const em = DataBaseHelper.getEntityManager();
+    const collection = em.getCollection('message');
+    const textSearchIndex = await collection.indexExists('text_search');
+    if (!textSearchIndex) {
+        await collection.createIndex(
+            {
+                'analytics.textSearch': 'text',
+            },
+            {
+                name: 'text_search',
+                sparse: true,
+            }
+        );
+    }
+    const instanceTopicIdIndex = await collection.indexExists('instance_topic_id');
+    if (!instanceTopicIdIndex) {
+        await collection.createIndex(
+            {
+                'options.instanceTopicId': 1,
+            },
+            {
+                name: 'instance_topic_id',
+                sparse: true,
+            }
+        );
+    }
+    const childIdIndex = await collection.indexExists('child_id');
+    if (!childIdIndex) {
+        await collection.createIndex(
+            {
+                'options.childId': 1,
+            },
+            {
+                name: 'child_id',
+                sparse: true,
+            }
+        );
+    }
+}
+
+function getMask(mask: string | undefined): string {
+    return (mask || '0 * * * *');
+}
+
+function getBoolean(flag: string | undefined): boolean {
+    return true;
+    return (flag?.toLowerCase() === 'true');
+}
 
 @Module({
     imports: [
@@ -105,46 +155,7 @@ Promise.all([
         /**
          * Indexes
          */
-        const em = await DataBaseHelper.getEntityManager();
-        const collection = await em.getCollection('message');
-        const textSearchIndex = await collection.indexExists('text_search');
-        if (!textSearchIndex) {
-            await collection.createIndex(
-                {
-                    'analytics.textSearch': 'text',
-                },
-                {
-                    name: 'text_search',
-                    sparse: true,
-                }
-            );
-        }
-        const instanceTopicIdIndex = await collection.indexExists(
-            'instance_topic_id'
-        );
-        if (!instanceTopicIdIndex) {
-            await collection.createIndex(
-                {
-                    'options.instanceTopicId': 1,
-                },
-                {
-                    name: 'instance_topic_id',
-                    sparse: true,
-                }
-            );
-        }
-        const childIdIndex = await collection.indexExists('child_id');
-        if (!childIdIndex) {
-            await collection.createIndex(
-                {
-                    'options.childId': 1,
-                },
-                {
-                    name: 'child_id',
-                    sparse: true,
-                }
-            );
-        }
+        await updateIndexes();
         /**
          * Fixtures
          */
@@ -156,97 +167,115 @@ Promise.all([
         /**
          * Sync tasks
          */
-        const analytics = new SynchronizationTask(
-            'analytics',
-            syncAnalytics,
-            process.env.SYNC_ANALYTICS_MASK || '0 * * * *'
-        );
-        analytics.start(
-            process.env.START_SYNC_ANALYTICS?.toLowerCase() === 'true'
-        );
-        const modulesSync = new SynchronizationTask(
-            'modules',
-            syncModules,
-            process.env.SYNC_MODULES_MASK || '0 * * * *'
-        );
-        modulesSync.start(
-            process.env.START_SYNC_MODULES?.toLowerCase() === 'true'
-        );
-        const registriesSync = new SynchronizationTask(
-            'registries',
-            syncRegistries,
-            process.env.SYNC_REGISTRIES_MASK || '0 * * * *'
-        );
-        registriesSync.start(
-            process.env.START_SYNC_REGISTRIES?.toLowerCase() === 'true'
-        );
-        const rolesSync = new SynchronizationTask(
-            'roles',
-            syncRoles,
-            process.env.SYNC_ROLES_MASK || '0 * * * *'
-        );
-        rolesSync.start(process.env.START_SYNC_ROLES?.toLowerCase() === 'true');
-        const toolsSync = new SynchronizationTask(
-            'tools',
-            syncTools,
-            process.env.SYNC_TOOLS_MASK || '0 * * * *'
-        );
-        toolsSync.start(process.env.START_SYNC_TOOLS?.toLowerCase() === 'true');
-        const topicsSync = new SynchronizationTask(
-            'topics',
-            syncTopics,
-            process.env.SYNC_TOPICS_MASK || '0 * * * *'
-        );
-        topicsSync.start(
-            process.env.START_SYNC_TOPICS?.toLowerCase() === 'true'
-        );
-        const schemasSync = new SynchronizationTask(
-            'schemas',
-            sychronizeSchemas,
-            process.env.SYNC_SCHEMAS_MASK || '0 * * * *'
-        );
-        schemasSync.start(
-            process.env.START_SYNC_SCHEMAS?.toLowerCase() === 'true'
-        );
-        const didDocumentsSync = new SynchronizationTask(
-            'dids',
-            syncDidDocuments,
-            process.env.SYNC_DID_DOCUMENTS_MASK || '0 * * * *'
-        );
-        didDocumentsSync.start(
-            process.env.START_SYNC_DID_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const vcDocumentsSync = new SynchronizationTask(
-            'vcs',
-            sychronizeVCs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
-        );
-        vcDocumentsSync.start(
-            process.env.START_SYNC_VC_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const vpDocumentsSync = new SynchronizationTask(
-            'vps',
-            sychronizeVPs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
-        );
-        vpDocumentsSync.start(
-            process.env.START_SYNC_VP_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const policy = new SynchronizationTask(
-            'policy',
-            synchronizePolicies,
-            process.env.SYNC_POLICIES_MASK || '0 * * * *'
-        );
-        policy.start(process.env.START_SYNC_POLICIES?.toLowerCase() === 'true');
-        const contractsSync = new SynchronizationTask(
-            'contracts',
-            syncContracts,
-            process.env.SYNC_CONTRACTS_MASK || '0 * * * *'
-        );
-        contractsSync.start(
-            process.env.START_SYNC_CONTRACTS?.toLowerCase() === 'true'
-        );
-        // synchronizePolicies()
+        // const analytics = new SynchronizationTask(
+        //     'analytics',
+        //     syncAnalytics,
+        //     getMask(process.env.SYNC_ANALYTICS_MASK)
+        // );
+        // analytics.start(getBoolean(process.env.START_SYNC_ANALYTICS));
+        (new SynchronizationAnalytics(getMask(process.env.SYNC_ANALYTICS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_ANALYTICS));
+        (new SynchronizationProjects(getMask(process.env.SYNC_ANALYTICS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_ANALYTICS));
+
+        // const modulesSync = new SynchronizationTask(
+        //     'modules',
+        //     syncModules,
+        //     getMask(process.env.SYNC_MODULES_MASK)
+        // );
+        // modulesSync.start(getBoolean(process.env.START_SYNC_MODULES));
+        (new SynchronizationModules(getMask(process.env.SYNC_MODULES_MASK)))
+            .start(getBoolean(process.env.START_SYNC_MODULES));
+
+        // const registriesSync = new SynchronizationTask(
+        //     'registries',
+        //     syncRegistries,
+        //     getMask(process.env.SYNC_REGISTRIES_MASK)
+        // );
+        // registriesSync.start(getBoolean(process.env.START_SYNC_REGISTRIES));
+        (new SynchronizationRegistries(getMask(process.env.SYNC_REGISTRIES_MASK)))
+            .start(getBoolean(process.env.START_SYNC_REGISTRIES));
+
+        // const rolesSync = new SynchronizationTask(
+        //     'roles',
+        //     syncRoles,
+        //     getMask(process.env.SYNC_ROLES_MASK)
+        // );
+        // rolesSync.start(getBoolean(process.env.START_SYNC_ROLES));
+        (new SynchronizationRoles(getMask(process.env.SYNC_ROLES_MASK)))
+            .start(getBoolean(process.env.START_SYNC_ROLES));
+
+        // const toolsSync = new SynchronizationTask(
+        //     'tools',
+        //     syncTools,
+        //     getMask(process.env.SYNC_TOOLS_MASK)
+        // );
+        // toolsSync.start(getBoolean(process.env.START_SYNC_TOOLS));
+        (new SynchronizationTools(getMask(process.env.SYNC_TOOLS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_TOOLS));
+
+        // const topicsSync = new SynchronizationTask(
+        //     'topics',
+        //     syncTopics,
+        //     getMask(process.env.SYNC_TOPICS_MASK)
+        // );
+        // topicsSync.start(getBoolean(process.env.START_SYNC_TOPICS));
+        (new SynchronizationTopics(getMask(process.env.SYNC_TOPICS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_TOPICS));
+
+        // const schemasSync = new SynchronizationTask(
+        //     'schemas',
+        //     syncSchemas,
+        //     getMask(process.env.SYNC_SCHEMAS_MASK)
+        // );
+        // schemasSync.start(getBoolean(process.env.START_SYNC_SCHEMAS));
+        (new SynchronizationSchemas(getMask(process.env.SYNC_SCHEMAS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_SCHEMAS));
+
+        // const didDocumentsSync = new SynchronizationTask(
+        //     'dids',
+        //     syncDidDocuments,
+        //     getMask(process.env.SYNC_DID_DOCUMENTS_MASK)
+        // );
+        // didDocumentsSync.start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
+        (new SynchronizationDid(getMask(process.env.SYNC_DID_DOCUMENTS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
+
+        // const vcDocumentsSync = new SynchronizationTask(
+        //     'vcs',
+        //     syncVCs,
+        //     getMask(process.env.SYNC_VC_DOCUMENTS_MASK)
+        // );
+        // vcDocumentsSync.start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
+        (new SynchronizationVCs(getMask(process.env.SYNC_VC_DOCUMENTS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
+
+        // const vpDocumentsSync = new SynchronizationTask(
+        //     'vps',
+        //     syncVPs,
+        //     getMask(process.env.SYNC_VC_DOCUMENTS_MASK)
+        // );
+        // vpDocumentsSync.start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
+        (new SynchronizationVPs(getMask(process.env.SYNC_VP_DOCUMENTS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
+
+        // const policy = new SynchronizationTask(
+        //     'policy',
+        //     synchronizePolicies,
+        //     getMask(process.env.SYNC_POLICIES_MASK)
+        // );
+        // policy.start(getBoolean(process.env.START_SYNC_POLICIES));
+        (new SynchronizationPolicy(getMask(process.env.SYNC_POLICIES_MASK)))
+            .start(getBoolean(process.env.START_SYNC_POLICIES));
+
+        // const contractsSync = new SynchronizationTask(
+        //     'contracts',
+        //     syncContracts,
+        //     getMask(process.env.SYNC_CONTRACTS_MASK)
+        // );
+        // contractsSync.start(getBoolean(process.env.START_SYNC_CONTRACTS));
+        (new SynchronizationContracts(getMask(process.env.SYNC_CONTRACTS_MASK)))
+            .start(getBoolean(process.env.START_SYNC_CONTRACTS));
     },
     (reason) => {
         console.log(reason);
