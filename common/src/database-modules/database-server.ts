@@ -148,6 +148,22 @@ export class DatabaseServer {
     }
 
     /**
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: any): void {
+        DataBaseHelper.connectBD(db);
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        DataBaseHelper.connectGridFS();
+    }
+
+
+    /**
      * Set Dry Run id
      * @param id
      */
@@ -1110,15 +1126,15 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getVcDocuments<T extends VcDocumentCollection[] | number>(
+    public async getVcDocuments<T extends VcDocumentCollection | number>(
         filters: FilterObject<T>,
         options?: any,
         countResult?: boolean
-    ): Promise<T> {
+    ): Promise<T[] | number> {
         if (countResult) {
-            return await this.count(VcDocumentCollection, filters, options) as T;
+            return await this.count(VcDocumentCollection, filters, options);
         }
-        return await this.find(VcDocumentCollection, filters, options) as T;
+        return await this.find(VcDocumentCollection, filters, options);
     }
 
     /**
@@ -1129,15 +1145,15 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getVpDocuments<T extends VpDocumentCollection[] | number>(
+    public async getVpDocuments<T extends VpDocumentCollection | number>(
         filters: FilterObject<T>,
         options?: any,
         countResult?: boolean
-    ): Promise<T> {
+    ): Promise<T[] | number> {
         if (countResult) {
-            return await this.count(VpDocumentCollection, filters, options) as T;
+            return await this.count(VpDocumentCollection, filters, options);
         }
-        return await this.find(VpDocumentCollection, filters, options) as T;
+        return await this.find(VpDocumentCollection, filters, options);
     }
 
     /**
@@ -3096,7 +3112,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getModulesAndCount(filters?: any, options?: any): Promise<[PolicyModule[], number]> {
+    public static async getModulesAndCount(filters?: FilterObject<PolicyModule>, options?: any): Promise<[PolicyModule[], number]> {
         return await new DataBaseHelper(PolicyModule).findAndCount(filters, options);
     }
 
@@ -3120,7 +3136,7 @@ export class DatabaseServer {
      * Get Module
      * @param filters
      */
-    public static async getModule(filters: any): Promise<PolicyModule | null> {
+    public static async getModule(filters: FilterQuery<PolicyModule>): Promise<PolicyModule | null> {
         return await new DataBaseHelper(PolicyModule).findOne(filters);
     }
 
@@ -3528,7 +3544,8 @@ export class DatabaseServer {
         did: string,
         owner?: string
     ): Promise<boolean> {
-        const filters: any = { type, entityId, did };
+        const filters: { type: AssignedEntityType, entityId: string, did: string, owner?: string } = { type, entityId, did };
+
         if (owner) {
             filters.owner = owner;
         }
@@ -3548,21 +3565,6 @@ export class DatabaseServer {
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
         return DataBaseHelper.saveFile(uuid, buffer);
-    }
-
-    /**
-     * Set MongoDriver
-     * @param db
-     */
-    public static connectBD(db: any): void {
-        DataBaseHelper.connectBD(db);
-    }
-
-    /**
-     * Grid fs connect
-     */
-    public static connectGridFS() {
-        DataBaseHelper.connectGridFS();
     }
 
     /**

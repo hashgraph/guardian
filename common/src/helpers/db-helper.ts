@@ -555,7 +555,7 @@ export class DataBaseHelper<T extends BaseEntity> {
         mintRequestId: string,
         transferStatus?: MintTransactionStatus | unknown
     ): unknown[] {
-        const match: any = {
+        const match: { mintRequestId: string, transferStatus?: MintTransactionStatus | unknown } = {
             mintRequestId,
         };
 

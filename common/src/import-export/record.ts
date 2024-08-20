@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Record } from '../entity/index.js';
+import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 
 /**
@@ -167,12 +167,13 @@ export class RecordImportExport {
     ): Promise<IRecordResult[]> {
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(policyId);
-        const vcs = await db.getVcDocuments<any[]>({
+        const vcs = await db.getVcDocuments<VcDocumentCollection>({
             updateDate: {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        } as any);
+        }) as VcDocumentCollection[];
+
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -180,12 +181,14 @@ export class RecordImportExport {
                 document: vc.document
             });
         }
-        const vps = await db.getVpDocuments<any[]>({
+
+        const vps = await db.getVpDocuments<VpDocumentCollection>({
             updateDate: {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        } as any);
+        }) as VpDocumentCollection[];
+
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,
