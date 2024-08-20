@@ -48,8 +48,10 @@ export class CacheInterceptor implements NestInterceptor {
                 if (cachedResponse) {
                     let result = JSON.parse(cachedResponse);
 
-                    if (typeof result === 'string') {
-                        result = Buffer.from(result, 'base64');
+                    if (result.type === 'buffer') {
+                        result = Buffer.from(result.data, 'base64');
+                    } else  {
+                        result = result.data;
                     }
 
                     return result;
@@ -73,7 +75,11 @@ export class CacheInterceptor implements NestInterceptor {
                         }
 
                         if (Buffer.isBuffer(result)) {
-                            result = result.toString('base64');
+                            result = { type: 'buffer', data: result.toString('base64') };
+                        } else if (typeof response === 'object') {
+                            result = { type: 'json', data: result };
+                        } else {
+                            result = { type: 'string', data: result };
                         }
 
                         await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);
