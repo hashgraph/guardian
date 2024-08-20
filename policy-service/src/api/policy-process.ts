@@ -74,9 +74,11 @@ Promise.all([
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
     app.listen();
-    DataBaseHelper.orm = db;
-    // @ts-ignore
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+
+    DatabaseServer.connectBD(db);
+
+    DatabaseServer.connectGridFS();
+
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);

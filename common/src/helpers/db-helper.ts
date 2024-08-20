@@ -2,7 +2,7 @@ import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAl
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
-import { GridFSBucket } from 'mongodb';
+import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MintTransactionStatus } from '@guardian/interfaces';
@@ -136,6 +136,63 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     public static get gridFS() {
         return DataBaseHelper._gridFS;
+    }
+
+    /**
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: MikroORM<MongoDriver>) {
+        DataBaseHelper.orm = db;
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        const connect: Db = DataBaseHelper.orm.em.getDriver().getConnection().getDb();
+
+        DataBaseHelper.gridFS = new GridFSBucket(connect);
+    }
+
+    /**
+     * Save file
+     * @param uuid
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                fileStream.write(buffer);
+                fileStream.end(() => {
+                    resolve(fileStream.id);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Load file
+     * @param id
+     *
+     * @returns file ID
+     */
+    public static async loadFile(id: ObjectId): Promise<Buffer> {
+        const files = await DataBaseHelper.gridFS.find(id).toArray();
+        if (files.length === 0) {
+            return null;
+        }
+        const file = files[0];
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        return Buffer.concat(bufferArray);
     }
 
     /**

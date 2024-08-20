@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, DatabaseServer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -39,7 +39,8 @@ Promise.all([
     mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
 
     app.listen();
     // new MessageBrokerChannel(cn, 'worker');
