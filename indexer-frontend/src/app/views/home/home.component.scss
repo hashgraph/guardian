@@ -34,17 +34,9 @@
             .search-label {
                 color: white;
                 text-align: center;
-                margin-bottom: 32px;
-
-                &__header {
-                    font-family: var(--font-family-bebas-neue);
-                    font-size: var(--font-size-header-3);
-                }
-
-                &__description {
-                    font-family: var(--font-family-inter);
-                    font-size: var(--font-size-small-1);
-                }
+                margin-bottom: 10px;
+                font-family: var(--font-family-bebas-neue);
+                font-size: var(--font-size-header-3);
             }
 
             .search-control {
@@ -87,7 +79,7 @@
 .cards {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: space-evenly;
     gap: 24px;
     align-items: center;
     height: 100%;

@@ -37,6 +37,7 @@ import { PermissionsService } from './services/permissions.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
+import { ChangePasswordComponent } from './views/login/change-password/change-password.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
@@ -130,6 +131,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         AppComponent,
         UserProfileComponent,
         LoginComponent,
+        ChangePasswordComponent,
         HomeComponent,
         HeaderComponent,
         RegisterComponent,
