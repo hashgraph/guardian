@@ -2,7 +2,7 @@ import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAl
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
-import { GridFSBucket } from 'mongodb';
+import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MintTransactionStatus } from '@guardian/interfaces';
@@ -136,6 +136,23 @@ export class DataBaseHelper<T extends BaseEntity> {
      */
     public static get gridFS() {
         return DataBaseHelper._gridFS;
+    }
+
+    /**
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: MikroORM<MongoDriver>) {
+        DataBaseHelper.orm = db;
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        const connect: Db = DataBaseHelper.orm.em.getDriver().getConnection().getDb();
+
+        DataBaseHelper.gridFS = new GridFSBucket(connect);
     }
 
     /**

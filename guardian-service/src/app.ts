@@ -8,7 +8,7 @@ import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
     AggregateVC, ApplicationState, ApprovalDocument, Artifact, ArtifactChunk, AssignEntity, BlockCache, BlockState, Branding, COMMON_CONNECTION_CONFIG,
-    Contract, DataBaseHelper, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
+    Contract, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
     LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
     MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
     PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
@@ -38,7 +38,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
-import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from './api/suggestions.service.js';
 import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
@@ -139,9 +138,10 @@ Promise.all([
 
     app.listen();
 
-    DataBaseHelper.orm = db;
+    DatabaseServer.connectBD(db);
 
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+    DatabaseServer.connectGridFS();
+
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,

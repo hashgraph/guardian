@@ -3,7 +3,7 @@ import { WalletService } from './api/wallet-service.js';
 import {
     ApplicationState,
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
+    DatabaseServer,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
@@ -60,7 +60,9 @@ Promise.all([
     InitializeVault(process.env.VAULT_PROVIDER),
     mongoForLoggingInitialization(),
 ]).then(async ([_, db, cn, app, vault, loggerMongo]) => {
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
+
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
 

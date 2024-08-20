@@ -3547,7 +3547,22 @@ export class DatabaseServer {
      * @returns file ID
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
-        return DataBaseHelper.saveFile(uuid, buffer)
+        return DataBaseHelper.saveFile(uuid, buffer);
+    }
+
+    /**
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: any): void {
+        DataBaseHelper.connectBD(db);
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        DataBaseHelper.connectGridFS();
     }
 
     /**

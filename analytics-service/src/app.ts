@@ -1,6 +1,6 @@
 import {
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
+    DataBaseHelper, DatabaseServer,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
@@ -44,7 +44,8 @@ Promise.all([
     mongoForLoggingInitialization(),
 ]).then(async ([db, app, cn, loggerMongo]) => {
     try {
-        DataBaseHelper.orm = db;
+        DatabaseServer.connectBD(db);
+
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {
