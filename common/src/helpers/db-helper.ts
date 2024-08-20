@@ -2,9 +2,10 @@ import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAl
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
-import { GridFSBucket } from 'mongodb';
+import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
+import { MintTransactionStatus } from '@guardian/interfaces';
 
 interface ICommonConnectionConfig {
     driver: typeof MongoDriver;
@@ -12,6 +13,50 @@ interface ICommonConnectionConfig {
     dbName: string;
     clientUrl: string;
     entities: string[];
+}
+export interface IGetAggregationFilters {
+    aggregation: unknown[],
+    aggregateMethod: string,
+    nameFilter: string,
+}
+
+export interface IGetDocumentAggregationFilters extends IGetAggregationFilters {
+    timelineLabelPath?: string,
+    timelineDescriptionPath?: string,
+    dryRun?: string,
+    sortObject?: Record<string, unknown>,
+    itemsPerPage?: number,
+    page?: number,
+    policyId?: string,
+}
+
+export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
+    BASE: 'base',
+    HISTORY: 'history',
+    SORT: 'sort',
+    PAGINATION: 'pagination',
+    VC_DOCUMENTS: 'vc-documents',
+    VP_DOCUMENTS: 'vp-documents',
+    APPROVE: 'approve'
+}
+
+export const MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS = {
+    DOC_BY_POLICY: 'doc_by_policy',
+    DOC_BY_INSTANCE: 'doc_by_instance',
+    DOCS_GROUPS: 'docs_groups',
+    SCHEMA_BY_NAME: 'schema_by_name',
+}
+
+export const MAP_ATTRIBUTES_AGGREGATION_FILTERS = {
+    RESULT: 'result'
+}
+
+export const MAP_TASKS_AGGREGATION_FILTERS = {
+    RESULT: 'result'
+}
+
+export const MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS = {
+    COUNT: 'count'
 }
 
 /**
@@ -94,6 +139,63 @@ export class DataBaseHelper<T extends BaseEntity> {
     }
 
     /**
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: MikroORM<MongoDriver>) {
+        DataBaseHelper.orm = db;
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        const connect: Db = DataBaseHelper.orm.em.getDriver().getConnection().getDb();
+
+        DataBaseHelper.gridFS = new GridFSBucket(connect);
+    }
+
+    /**
+     * Save file
+     * @param uuid
+     * @param buffer
+     * @returns file ID
+     */
+    public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
+        return new Promise<ObjectId>((resolve, reject) => {
+            try {
+                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                fileStream.write(buffer);
+                fileStream.end(() => {
+                    resolve(fileStream.id);
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
+     * Load file
+     * @param id
+     *
+     * @returns file ID
+     */
+    public static async loadFile(id: ObjectId): Promise<Buffer> {
+        const files = await DataBaseHelper.gridFS.find(id).toArray();
+        if (files.length === 0) {
+            return null;
+        }
+        const file = files[0];
+        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
+        const bufferArray = [];
+        for await (const data of fileStream) {
+            bufferArray.push(data);
+        }
+        return Buffer.concat(bufferArray);
+    }
+
+    /**
      * Delete entities by filters
      * @param filters filters
      * @returns Count
@@ -167,6 +269,326 @@ export class DataBaseHelper<T extends BaseEntity> {
             }
         }
         return aggregateEntities;
+    }
+
+    /**
+     * AggregateDryRun
+     * @param pipeline Pipeline
+     * @param dryRunId
+     * @param dryRunClass
+     *
+     * @returns Result
+     */
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async aggregateDryRan(pipeline: FilterObject<T>[], dryRunId: string, dryRunClass: string): Promise<T[]> {
+        if (Array.isArray(pipeline)) {
+            pipeline.unshift({
+                $match: {
+                    dryRunId,
+                    dryRunClass,
+                },
+            } as FilterObject<unknown> & {
+                $match?: {
+                    dryRunId?: string;
+                    dryRunClass?: string;
+                }
+            });
+        }
+
+        return await this.aggregate(pipeline)
+    }
+
+    /**
+     * get document aggregation filters
+     * @param props
+     *
+     * @returns Result
+     */
+    public static getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void {
+        const {
+            aggregation,
+            aggregateMethod,
+            nameFilter,
+            timelineLabelPath,
+            timelineDescriptionPath,
+            dryRun,
+            sortObject,
+            itemsPerPage,
+            page,
+            policyId,
+        } = props;
+
+        const filters = {
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.BASE]: [
+                {
+                    $match: {
+                        '__sourceTag__': { $ne: null },
+                    },
+                }, {
+                    $set: {
+                        'option': {
+                            $cond: {
+                                if: {
+                                    $or: [
+                                        { $eq: [null, '$newOption'] },
+                                        { $not: '$newOption' },
+                                    ],
+                                },
+                                then: '$option',
+                                else: '$newOption',
+                            },
+                        },
+                    },
+                }, {
+                    $unset: 'newOptions',
+                },
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.HISTORY]: [
+                {
+                    $lookup: {
+                        from: `${
+                            dryRun
+                                ? 'dry_run'
+                                : 'document_state'
+                        }`,
+                        localField: 'id',
+                        foreignField: 'documentId',
+                        pipeline: [
+                            {
+                                $set: {
+                                    labelValue: timelineLabelPath
+                                        ? '$document.' + (timelineLabelPath || 'option.status')
+                                        : '$document.option.status',
+                                    comment: timelineDescriptionPath
+                                        ? '$document.' + (timelineDescriptionPath || 'option.comment')
+                                        : '$document.option.comment',
+                                    created: '$createDate',
+                                },
+                            },
+                        ],
+                        as: 'history',
+                    },
+                },
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.SORT]: [
+                {
+                    $sort: sortObject
+                }
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION]: [
+                {
+                    $skip: itemsPerPage * page
+                },
+                {
+                    $limit: itemsPerPage
+                }
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.VC_DOCUMENTS]: [
+                {
+                    $match: {
+                        policyId: { $eq: policyId }
+                    }
+                }
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.VP_DOCUMENTS]: [
+                {
+                    $match: {
+                        policyId: { $eq: policyId }
+                    }
+                }
+            ],
+            [MAP_DOCUMENT_AGGREGATION_FILTERS.APPROVE]: [
+                {
+                    $match: {
+                        policyId: { $eq: policyId }
+                    }
+                }
+            ],
+        };
+
+        aggregation[aggregateMethod](...filters[nameFilter]);
+    }
+
+    /**
+     * get document aggregation filters for analytics
+     * @param nameFilter
+     * @param uuid
+     *
+     * @returns Result
+     */
+    public static getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[] {
+        const filters = {
+            [MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_POLICY]: [
+                { $match: { uuid, } },
+                {
+                    $group: {
+                        _id: {
+                            policyTopicId: '$policyTopicId',
+                            type: '$type',
+                            action: '$action'
+                        }, count: { $sum: 1 }
+                    }
+                }
+            ],
+            [MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_INSTANCE]: [
+                { $match: { uuid } },
+                {
+                    $group: {
+                        _id: {
+                            instanceTopicId: '$instanceTopicId',
+                            type: '$type',
+                            action: '$action'
+                        }, count: { $sum: 1 }
+                    }
+                }
+            ],
+            [MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOCS_GROUPS]: [
+                { $match: { uuid } },
+                { $group: { _id: { type: '$type', action: '$action' }, count: { $sum: 1 } } }
+            ],
+            [MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.SCHEMA_BY_NAME]: [
+                { $match: { uuid } },
+                {
+                    $group: {
+                        _id: {
+                            name: '$name',
+                            action: '$action',
+                        }, count: { $sum: 1 }
+                    }
+                },
+                { $sort: { count: -1 } }
+            ]
+        };
+
+        return filters[nameFilter];
+    }
+
+    /**
+     * get attributes aggregation filters
+     * @param nameFilterMap
+     * @param nameFilterAttributes
+     * @param existingAttributes
+     *
+     * @returns Result
+     */
+    public static getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[] {
+        const filters = {
+            [MAP_ATTRIBUTES_AGGREGATION_FILTERS.RESULT]: [
+                { $project: { attributes: '$attributes' } },
+                { $unwind: { path: '$attributes' } },
+                { $match: { attributes: { $regex: nameFilterAttributes, $options: 'i' } } },
+                { $match: { attributes: { $not: { $in: existingAttributes } } } },
+                { $group: { _id: null, uniqueValues: { $addToSet: '$attributes' } } },
+                { $unwind: { path: '$uniqueValues' } },
+                { $limit: 20 },
+                { $group: { _id: null, uniqueValues: { $addToSet: '$uniqueValues' } } },
+            ],
+        };
+
+        return filters[nameFilterMap];
+    }
+
+    /**
+     * get tasks aggregation filters
+     * @param nameFilter
+     * @param processTimeout
+     *
+     * @returns Result
+     */
+    public static getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[] {
+        const filters = {
+            [MAP_TASKS_AGGREGATION_FILTERS.RESULT]: [
+                {
+                    $match: {
+                        sent: true,
+                        done: { $ne: true },
+                    },
+                },
+                {
+                    $addFields: {
+                        timeDifference: {
+                            $subtract: ['$processedTime', '$createDate'],
+                        },
+                    },
+                },
+                {
+                    $match: {
+                        timeDifference: { $gt: processTimeout },
+                    },
+                },
+            ],
+        };
+
+        return filters[nameFilter];
+    }
+
+    /**
+     * get transactions serials aggregation filters
+     * @param props
+     *
+     * @returns Result
+     */
+    public static getTransactionsSerialsAggregationFilters(props: IGetAggregationFilters): void {
+        const { aggregation, aggregateMethod, nameFilter } = props;
+
+        const filters = {
+            [MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS.COUNT]: [
+                {
+                    $project: {
+                        serials: { $size: '$serials' },
+                    },
+                }
+            ],
+        };
+
+        aggregation[aggregateMethod](...filters[nameFilter]);
+    }
+
+    /**
+     * Get aggregation filter for transactions serials
+     * @param mintRequestId Mint request identifier
+     * @param transferStatus Transfer status
+     *
+     * @returns Aggregation filter
+     */
+    public static _getTransactionsSerialsAggregation(
+        mintRequestId: string,
+        transferStatus?: MintTransactionStatus | unknown
+    ): unknown[] {
+        const match: any = {
+            mintRequestId,
+        };
+
+        if (transferStatus) {
+            match.transferStatus = transferStatus;
+        }
+
+        return [
+            {
+                $match: match,
+            },
+            {
+                $group: {
+                    _id: 1,
+                    serials: {
+                        $push: '$serials',
+                    },
+                },
+            },
+            {
+                $project: {
+                    serials: {
+                        $reduce: {
+                            input: '$serials',
+                            initialValue: [],
+                            in: {
+                                $concatArrays: ['$$value', '$$this'],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
     }
 
     /**

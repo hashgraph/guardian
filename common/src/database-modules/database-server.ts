@@ -50,7 +50,7 @@ import {
     TopicType,
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
+import { DataBaseHelper, IGetDocumentAggregationFilters, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { PolicyTool } from '../entity/tool.js';
@@ -281,20 +281,9 @@ export class DatabaseServer {
      */
     public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: FilterObject<T>[]): Promise<T[]> {
         if (this.dryRun) {
-            if (Array.isArray(aggregation)) {
-                aggregation.unshift({
-                    $match: {
-                        dryRunId: this.dryRun,
-                        dryRunClass: this.classMap.get(entityClass),
-                    },
-                } as FilterObject<unknown> & {
-                    $match?: {
-                        dryRunId?: string;
-                        dryRunClass?: string;
-                    }
-                });
-            }
-            return await new DataBaseHelper(DryRun).aggregate(aggregation) as unknown as T[];
+            const dryRunClass =  this.classMap.get(entityClass)
+
+            return await new DataBaseHelper(DryRun).aggregateDryRan(aggregation, this.dryRun, dryRunClass) as unknown as T[];
         } else {
             return await new DataBaseHelper(entityClass).aggregate(aggregation);
         }
@@ -1068,6 +1057,50 @@ export class DatabaseServer {
      */
     public async getApprovalDocumentsByAggregation(aggregation: FilterObject<DidDocumentCollection>[]): Promise<ApprovalDocumentCollection[]> {
         return await this.aggregate(ApprovalDocumentCollection, aggregation) as ApprovalDocumentCollection[];
+    }
+
+    /**
+     * get document aggregation filters
+     * @param props
+     *
+     * @returns Result
+     */
+    public getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void {
+        return DataBaseHelper.getDocumentAggregationFilters(props);
+    }
+
+    /**
+     * get document aggregation filters for analytics
+     * @param nameFilter
+     * @param uuid
+     *
+     * @returns Result
+     */
+    public getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[] {
+        return DataBaseHelper.getAnalyticsDocAggregationFilters(nameFilter, uuid);
+    }
+
+    /**
+     * get document aggregation filters for analytics
+     * @param nameFilterMap
+     * @param nameFilterAttributes
+     * @param existingAttributes
+     *
+     * @returns Result
+     */
+    public getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[] {
+        return DataBaseHelper.getAttributesAggregationFilters(nameFilterMap, nameFilterAttributes, existingAttributes);
+    }
+
+    /**
+     * get tasks aggregation filters
+     * @param nameFilter
+     * @param processTimeout
+     *
+     * @returns Result
+     */
+    public getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[] {
+        return DataBaseHelper.getTasksAggregationFilters(nameFilter, processTimeout);
     }
 
     /**
@@ -1879,21 +1912,25 @@ export class DatabaseServer {
     /**
      * Get transactions serials count
      * @param mintRequestId Mint request identifier
+     * @param transferStatus Transfer status
+     *
      * @returns Serials count
      */
     public async getTransactionsSerialsCount(
         mintRequestId: string,
         transferStatus?: MintTransactionStatus | any
     ): Promise<number> {
-        const aggregation = this._getTransactionsSerialsAggregation(
+        const aggregation = DataBaseHelper._getTransactionsSerialsAggregation(
             mintRequestId,
             transferStatus
         );
-        aggregation.push({
-            $project: {
-                serials: { $size: '$serials' },
-            },
+
+        DataBaseHelper.getTransactionsSerialsAggregationFilters({
+            aggregation,
+            aggregateMethod: 'push',
+            nameFilter: MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS.COUNT
         });
+
         const result: any = await this.aggregate(MintTransaction, aggregation);
         return result[0]?.serials || 0;
     }
@@ -2051,60 +2088,17 @@ export class DatabaseServer {
     }
 
     /**
-     * Get aggregation filter for transactions serials
-     * @param mintRequestId Mint request identifier
-     * @returns Aggregation filter
-     */
-    private _getTransactionsSerialsAggregation(
-        mintRequestId: string,
-        transferStatus?: MintTransactionStatus | any
-    ): any[] {
-        const match: any = {
-            mintRequestId,
-        };
-        if (transferStatus) {
-            match.transferStatus = transferStatus;
-        }
-        const aggregation: any[] = [
-            {
-                $match: match,
-            },
-            {
-                $group: {
-                    _id: 1,
-                    serials: {
-                        $push: '$serials',
-                    },
-                },
-            },
-            {
-                $project: {
-                    serials: {
-                        $reduce: {
-                            input: '$serials',
-                            initialValue: [],
-                            in: {
-                                $concatArrays: ['$$value', '$$this'],
-                            },
-                        },
-                    },
-                },
-            },
-        ];
-
-        return aggregation;
-    }
-
-    /**
      * Get transactions serials
      * @param mintRequestId Mint request identifier
+     * @param transferStatus Transfer status
+     *
      * @returns Serials
      */
     public async getTransactionsSerials(
         mintRequestId: string,
         transferStatus?: MintTransactionStatus | any
     ): Promise<number[]> {
-        const aggregation = this._getTransactionsSerialsAggregation(
+        const aggregation = DataBaseHelper._getTransactionsSerialsAggregation(
             mintRequestId,
             transferStatus
         );
@@ -3549,40 +3543,36 @@ export class DatabaseServer {
      * Save file
      * @param uuid
      * @param buffer
+     *
      * @returns file ID
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
-                fileStream.write(buffer);
-                fileStream.end(() => {
-                    resolve(fileStream.id);
-                });
-            } catch (error) {
-                reject(error);
-            }
-        });
+        return DataBaseHelper.saveFile(uuid, buffer);
     }
 
     /**
-     * Save file
+     * Set MongoDriver
+     * @param db
+     */
+    public static connectBD(db: any): void {
+        DataBaseHelper.connectBD(db);
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        DataBaseHelper.connectGridFS();
+    }
+
+    /**
+     * Load file
      * @param id
      *
      * @returns file ID
      */
     public static async loadFile(id: ObjectId): Promise<Buffer> {
-        const files = await DataBaseHelper.gridFS.find(id).toArray();
-        if (files.length === 0) {
-            return null;
-        }
-        const file = files[0];
-        const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-        const bufferArray = [];
-        for await (const data of fileStream) {
-            bufferArray.push(data);
-        }
-        return Buffer.concat(bufferArray);
+        return DataBaseHelper.loadFile(id)
     }
 
     /**

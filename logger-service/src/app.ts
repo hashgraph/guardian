@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration, Log, mongoForLoggingInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, LargePayloadContainer, MessageBrokerChannel, Migration, Log, mongoForLoggingInitialization, DatabaseServer } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
@@ -43,7 +43,8 @@ Promise.all([
     }),
 ]).then(async values => {
     const [_, db, mqConnection, app] = values;
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
 
     app.listen();
 
