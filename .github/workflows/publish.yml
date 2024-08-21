@@ -22,7 +22,7 @@ jobs:
           egress-policy: audit
 
       - name: Conditional values for Github Action
-        uses: step-security/action-cond@667d0aa72b2bd9513536eb0ca8acd5549757bd3d # v1.2.1
+        uses: step-security/action-cond@615a91598eb99288b89cf1b3da31ac33cdd72b19 # v1.2.2
         id: latestTag
         with:
           cond: ${{ github.event.release.target_commitish == 'main' }}
