@@ -6,6 +6,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { InviteDialogComponent } from '../../../dialogs/invite-dialog/invite-dialog.component';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -86,16 +87,23 @@ export class GroupManagerBlockComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        this.loading = false;
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess, this._onError);
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 

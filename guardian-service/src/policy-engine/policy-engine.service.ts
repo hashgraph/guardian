@@ -379,7 +379,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -399,7 +399,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -419,7 +419,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -439,7 +439,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -459,7 +459,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -491,7 +491,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -508,7 +508,7 @@ export class PolicyEngineService {
                     return new MessageResponse(navigationData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -526,7 +526,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -545,7 +545,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -563,7 +563,7 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -599,7 +599,7 @@ export class PolicyEngineService {
                         );
                     return new MessageResponse(blocks);
                 } catch (error) {
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -1182,7 +1182,6 @@ export class PolicyEngineService {
                     return new BinaryMessageResponse(buffer);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    console.error(error);
                     return new MessageError(error);
                 }
             });

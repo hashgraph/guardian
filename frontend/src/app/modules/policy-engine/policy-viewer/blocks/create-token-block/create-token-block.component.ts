@@ -8,6 +8,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'createTokenBlock' types.
@@ -99,15 +100,25 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess, this._onError);
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -139,13 +150,15 @@ export class CreateTokenBlockComponent implements OnInit {
             const data = submitData || this.dataForm.value;
             this.loading = true;
             this.dialogLoading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-                this.dialogLoading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.dialogLoading = false;
-                this.loading = false;
-            });
+            this.policyEngineService
+                .setBlockData(this.id, this.policyId, data)
+                .subscribe(() => {
+                    this.dialogLoading = false;
+                }, (e) => {
+                    console.error(e.error);
+                    this.dialogLoading = false;
+                    this.loading = false;
+                });
         }
     }
 }

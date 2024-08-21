@@ -2,6 +2,14 @@ import { NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { headers } from 'nats';
 
+class MessageError extends Error {
+    public code: number;
+    constructor(message: any, code?: number) {
+        super(message);
+        this.code = code;
+    }
+}
+
 /**
  * Guardians service
  */
@@ -32,8 +40,12 @@ export class GuardiansService extends NatsService {
      * @param policyId
      */
     public async checkIfPolicyAlive(policyId: string): Promise<boolean> {
-        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000)
-        return !!exist
+        try {
+            const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000)
+            return !!exist;
+        } catch (error) {
+            return false;
+        }
     }
 
     /**
@@ -51,22 +63,22 @@ export class GuardiansService extends NatsService {
 
         return Promise.race([
             new Promise<T>(async (resolve, reject) => {
-                this.responseCallbacksMap.set(messageId, (d: T, error?) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
                     if (error) {
-                        reject(new Error(error));
+                        reject(new MessageError(error, code));
                         return
                     }
-                    resolve(d);
+                    resolve(body);
                 })
 
-                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data) , {
+                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
                     reply: this.replySubject,
                     headers: head
                 })
             }),
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
-                    resolve(null);
+                    reject(new MessageError('Block Timeout', 504));
                 }, awaitInterval)
             }),
         ])

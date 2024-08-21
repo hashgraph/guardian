@@ -8,6 +8,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -100,18 +101,23 @@ export class RequestDocumentBlockComponent implements OnInit {
         } else {
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 500);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess, this._onError);
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 

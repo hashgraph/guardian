@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -59,13 +59,37 @@ export class PaginationAddonBlockComponent implements OnInit {
     }
 
     loadData() {
-        this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
+        this.policyEngineService
+            .getBlockData(this.id, this.policyId)
+            .subscribe(this._onSuccess, this._onError);
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
+        }
+    }
+
+    setData(data: any) {
+        if (data) {
             this.size = data.size;
             this.itemsPerPage = data.itemsPerPage;
             this.page = data.page;
-        }, (e) => {
-            console.error(e.error);
-        });
+        } else {
+            this.size = 0;
+            this.itemsPerPage = 0;
+            this.page = 0;
+        }
     }
 
     onChange(data: any) {
@@ -73,13 +97,14 @@ export class PaginationAddonBlockComponent implements OnInit {
         this.itemsPerPage = data.pageSize;
         this.page = data.pageIndex;
 
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            size: this.size,
-            itemsPerPage: this.itemsPerPage,
-            page: this.page
-        }).subscribe(() => {
-        }, (e) => {
-            console.error(e.error);
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                size: this.size,
+                itemsPerPage: this.itemsPerPage,
+                page: this.page
+            }).subscribe(() => {
+            }, (e) => {
+                console.error(e.error);
+            });
     }
 }

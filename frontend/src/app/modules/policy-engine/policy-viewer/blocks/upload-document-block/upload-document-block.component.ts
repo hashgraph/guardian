@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { IUser } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -73,15 +73,25 @@ export class UploadDocumentBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess, this._onError);
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -110,21 +120,22 @@ export class UploadDocumentBlockComponent implements OnInit {
     onSubmit($event: any) {
         this.dialogLoading = true;
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, {
-            documents: this.items,
-        }).subscribe(() => {
-            setTimeout(() => {
-                if (this.dialogRef) {
-                    this.dialogRef.close();
-                    this.dialogRef = null;
-                }
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, {
+                documents: this.items,
+            }).subscribe(() => {
+                setTimeout(() => {
+                    if (this.dialogRef) {
+                        this.dialogRef.close();
+                        this.dialogRef = null;
+                    }
+                    this.dialogLoading = false;
+                }, 1000);
+            }, (e) => {
+                console.error(e.error);
                 this.dialogLoading = false;
-            }, 1000);
-        }, (e) => {
-            console.error(e.error);
-            this.dialogLoading = false;
-            this.loading = false;
-        });
+                this.loading = false;
+            });
     }
 
     onCancel(): void {

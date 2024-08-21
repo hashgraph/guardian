@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { Subscription } from 'rxjs';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'interfaceStepBlock' types.
@@ -66,11 +67,20 @@ export class StepBlockComponent implements OnInit {
             setTimeout(() => {
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-            }, (e) => {
-                console.error(e.error);
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess, this._onError);
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
         }
     }
 
