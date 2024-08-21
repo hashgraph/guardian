@@ -102,7 +102,7 @@ export class CreateTokenBlockComponent implements OnInit {
         } else {
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(this._onSuccess, this._onError);
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
 
