@@ -11,8 +11,6 @@ export class SynchronizationRegistries extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncRegistries ---');
-        console.time('--- syncRegistries 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -27,8 +25,8 @@ export class SynchronizationRegistries extends SynchronizationTask {
             row.analytics = this.createAnalytics(document);
             em.persist(row);
         }
+        console.log(`Sync Registries: flush`)
         await em.flush();
-        console.timeEnd('--- syncRegistries 1 ---');
     }
 
     private createAnalytics(

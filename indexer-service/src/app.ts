@@ -88,7 +88,6 @@ function getMask(mask: string | undefined): string {
 }
 
 function getBoolean(flag: string | undefined): boolean {
-    return true;
     return (flag?.toLowerCase() === 'true');
 }
 
@@ -167,113 +166,41 @@ Promise.all([
         /**
          * Sync tasks
          */
-        // const analytics = new SynchronizationTask(
-        //     'analytics',
-        //     syncAnalytics,
-        //     getMask(process.env.SYNC_ANALYTICS_MASK)
-        // );
-        // analytics.start(getBoolean(process.env.START_SYNC_ANALYTICS));
         (new SynchronizationAnalytics(getMask(process.env.SYNC_ANALYTICS_MASK)))
             .start(getBoolean(process.env.START_SYNC_ANALYTICS));
         (new SynchronizationProjects(getMask(process.env.SYNC_ANALYTICS_MASK)))
             .start(getBoolean(process.env.START_SYNC_ANALYTICS));
 
-        // const modulesSync = new SynchronizationTask(
-        //     'modules',
-        //     syncModules,
-        //     getMask(process.env.SYNC_MODULES_MASK)
-        // );
-        // modulesSync.start(getBoolean(process.env.START_SYNC_MODULES));
         (new SynchronizationModules(getMask(process.env.SYNC_MODULES_MASK)))
             .start(getBoolean(process.env.START_SYNC_MODULES));
 
-        // const registriesSync = new SynchronizationTask(
-        //     'registries',
-        //     syncRegistries,
-        //     getMask(process.env.SYNC_REGISTRIES_MASK)
-        // );
-        // registriesSync.start(getBoolean(process.env.START_SYNC_REGISTRIES));
         (new SynchronizationRegistries(getMask(process.env.SYNC_REGISTRIES_MASK)))
             .start(getBoolean(process.env.START_SYNC_REGISTRIES));
 
-        // const rolesSync = new SynchronizationTask(
-        //     'roles',
-        //     syncRoles,
-        //     getMask(process.env.SYNC_ROLES_MASK)
-        // );
-        // rolesSync.start(getBoolean(process.env.START_SYNC_ROLES));
         (new SynchronizationRoles(getMask(process.env.SYNC_ROLES_MASK)))
             .start(getBoolean(process.env.START_SYNC_ROLES));
 
-        // const toolsSync = new SynchronizationTask(
-        //     'tools',
-        //     syncTools,
-        //     getMask(process.env.SYNC_TOOLS_MASK)
-        // );
-        // toolsSync.start(getBoolean(process.env.START_SYNC_TOOLS));
         (new SynchronizationTools(getMask(process.env.SYNC_TOOLS_MASK)))
             .start(getBoolean(process.env.START_SYNC_TOOLS));
 
-        // const topicsSync = new SynchronizationTask(
-        //     'topics',
-        //     syncTopics,
-        //     getMask(process.env.SYNC_TOPICS_MASK)
-        // );
-        // topicsSync.start(getBoolean(process.env.START_SYNC_TOPICS));
         (new SynchronizationTopics(getMask(process.env.SYNC_TOPICS_MASK)))
             .start(getBoolean(process.env.START_SYNC_TOPICS));
 
-        // const schemasSync = new SynchronizationTask(
-        //     'schemas',
-        //     syncSchemas,
-        //     getMask(process.env.SYNC_SCHEMAS_MASK)
-        // );
-        // schemasSync.start(getBoolean(process.env.START_SYNC_SCHEMAS));
         (new SynchronizationSchemas(getMask(process.env.SYNC_SCHEMAS_MASK)))
             .start(getBoolean(process.env.START_SYNC_SCHEMAS));
 
-        // const didDocumentsSync = new SynchronizationTask(
-        //     'dids',
-        //     syncDidDocuments,
-        //     getMask(process.env.SYNC_DID_DOCUMENTS_MASK)
-        // );
-        // didDocumentsSync.start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
         (new SynchronizationDid(getMask(process.env.SYNC_DID_DOCUMENTS_MASK)))
             .start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
 
-        // const vcDocumentsSync = new SynchronizationTask(
-        //     'vcs',
-        //     syncVCs,
-        //     getMask(process.env.SYNC_VC_DOCUMENTS_MASK)
-        // );
-        // vcDocumentsSync.start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
         (new SynchronizationVCs(getMask(process.env.SYNC_VC_DOCUMENTS_MASK)))
             .start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
 
-        // const vpDocumentsSync = new SynchronizationTask(
-        //     'vps',
-        //     syncVPs,
-        //     getMask(process.env.SYNC_VC_DOCUMENTS_MASK)
-        // );
-        // vpDocumentsSync.start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
         (new SynchronizationVPs(getMask(process.env.SYNC_VP_DOCUMENTS_MASK)))
             .start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
 
-        // const policy = new SynchronizationTask(
-        //     'policy',
-        //     synchronizePolicies,
-        //     getMask(process.env.SYNC_POLICIES_MASK)
-        // );
-        // policy.start(getBoolean(process.env.START_SYNC_POLICIES));
         (new SynchronizationPolicy(getMask(process.env.SYNC_POLICIES_MASK)))
             .start(getBoolean(process.env.START_SYNC_POLICIES));
 
-        // const contractsSync = new SynchronizationTask(
-        //     'contracts',
-        //     syncContracts,
-        //     getMask(process.env.SYNC_CONTRACTS_MASK)
-        // );
-        // contractsSync.start(getBoolean(process.env.START_SYNC_CONTRACTS));
         (new SynchronizationContracts(getMask(process.env.SYNC_CONTRACTS_MASK)))
             .start(getBoolean(process.env.START_SYNC_CONTRACTS));
     },

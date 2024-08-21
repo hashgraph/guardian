@@ -1,10 +1,5 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { safetyRunning } from '../../utils/safety-running.js';
-import {
-    MessageType,
-    MessageAction,
-    IPFS_CID_PATTERN,
-} from '@indexer/interfaces';
+import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
@@ -17,8 +12,6 @@ export class SynchronizationVCs extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncVCs ---');
-        console.time('--- syncVCs 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -77,23 +70,7 @@ export class SynchronizationVCs extends SynchronizationTask {
         }
 
         console.log(`Sync VCs: load files`)
-        // const fileMap = new Map<string, string>();
-        // const files = DataBaseHelper.gridFS.find();
-        // while (await files.hasNext()) {
-        //     const file = await files.next();
-        //     if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
-        //         await safetyRunning(async () => {
-        //             const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-        //             const bufferArray = [];
-        //             for await (const data of fileStream) {
-        //                 bufferArray.push(data);
-        //             }
-        //             const buffer = Buffer.concat(bufferArray);
-        //             fileMap.set(file.filename, buffer.toString());
-        //         });
-        //     }
-        // }
-        const fileMap = await loadFiles(fileIds);
+        const fileMap = await loadFiles(fileIds, false);
 
         console.log(`Sync VCs: update data`);
         for (const document of allDocuments) {
@@ -101,8 +78,8 @@ export class SynchronizationVCs extends SynchronizationTask {
             row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
             em.persist(row);
         }
+        console.log(`Sync VCs: flush`)
         await em.flush();
-        console.timeEnd('--- syncVCs 1 ---');
     }
 
     private createAnalytics(

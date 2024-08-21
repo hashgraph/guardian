@@ -10,8 +10,6 @@ export class SynchronizationAnalytics extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncAnalytics ---');
-        console.time('--- syncAnalytics 1 ---');
         const em = DataBaseHelper.getEntityManager();
 
         const registries = await em.count(Message, {
@@ -37,7 +35,6 @@ export class SynchronizationAnalytics extends SynchronizationTask {
                 date,
             })
         );
-        console.timeEnd('--- syncAnalytics 1 ---');
     }
 
     private async getTotalIssuance() {

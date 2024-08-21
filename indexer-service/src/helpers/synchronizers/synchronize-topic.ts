@@ -11,8 +11,6 @@ export class SynchronizationTopics extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncTopics ---');
-        console.time('--- syncTopics 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -28,8 +26,8 @@ export class SynchronizationTopics extends SynchronizationTask {
             row.analytics = this.createAnalytics(topic);
             em.persist(row);
         }
+        console.log(`Sync Topics: flush`)
         await em.flush();
-        console.timeEnd('--- syncTopics 1 ---');
     }
 
     private createAnalytics(

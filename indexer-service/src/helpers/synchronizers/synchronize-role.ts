@@ -11,8 +11,6 @@ export class SynchronizationRoles extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncRoles ---');
-        console.time('--- syncRoles 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -37,8 +35,8 @@ export class SynchronizationRoles extends SynchronizationTask {
             row.analytics = this.createAnalytics(document, policyMap);
             em.persist(row);
         }
+        console.log(`Sync Roles: flush`)
         await em.flush();
-        console.timeEnd('--- syncRoles 1 ---');
     }
 
     private createAnalytics(

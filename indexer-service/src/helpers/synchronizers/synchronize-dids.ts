@@ -11,8 +11,6 @@ export class SynchronizationDid extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncDidDocuments ---');
-        console.time('--- syncDidDocuments 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -27,8 +25,8 @@ export class SynchronizationDid extends SynchronizationTask {
             row.analytics = this.createAnalytics(document);
             em.persist(row);
         }
+        console.log(`Sync DIDs: flush`)
         await em.flush();
-        console.timeEnd('--- syncDidDocuments 1 ---');
     }
 
     private createAnalytics(

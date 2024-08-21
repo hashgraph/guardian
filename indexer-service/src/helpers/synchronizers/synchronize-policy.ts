@@ -1,10 +1,10 @@
 import { DataBaseHelper, Message, TokenCache } from '@indexer/common';
 import { MessageType, MessageAction, PolicyAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
-import { safetyRunning } from '../../utils/safety-running.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
 import { SynchronizationTask } from '../synchronization-task.js';
+import { loadFiles } from '../load-files.js';
 
 enum TokenType {
     FT = 'FUNGIBLE_COMMON',
@@ -19,8 +19,6 @@ export class SynchronizationPolicy extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- synchronizePolicies ---');
-        console.time('--- synchronizePolicies 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
         const collection2 = em.getCollection<TokenCache>('token_cache');
@@ -39,29 +37,14 @@ export class SynchronizationPolicy extends SynchronizationTask {
         }
 
         console.log(`Sync Policies: load files`)
-        const fileMap = new Map<string, Buffer>();
-        const files = DataBaseHelper.gridFS.find();
-        while (await files.hasNext()) {
-            const file = await files.next();
-            if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
-                await safetyRunning(async () => {
-                    const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-                    const bufferArray = [];
-                    for await (const data of fileStream) {
-                        bufferArray.push(data);
-                    }
-                    const buffer = Buffer.concat(bufferArray);
-                    fileMap.set(file.filename, buffer);
-                });
-            }
-        }
+        const fileMap = await loadFiles(fileIds, true);
 
         console.log(`Sync Policies: load SRs`)
         const srMap = new Map<string, Message>();
         const srs = collection.find({ type: MessageType.STANDARD_REGISTRY });
         while (await srs.hasNext()) {
             const sr = await srs.next();
-            if (!sr.options?.registrantTopicId) {
+            if (sr.options?.registrantTopicId) {
                 srMap.set(sr.options.registrantTopicId, sr);
             }
         }
@@ -125,8 +108,8 @@ export class SynchronizationPolicy extends SynchronizationTask {
             );
             em.persist(row);
         }
+        console.log(`Sync Policies: flush`)
         await em.flush();
-        console.timeEnd('--- synchronizePolicies 1 ---');
     }
 
     private async createAnalytics(
@@ -208,7 +191,6 @@ export class SynchronizationPolicy extends SynchronizationTask {
         documentMap: Map<string, { vc: number, vp: number, evc: number }>,
         analytics: PolicyAnalytics
     ): void {
-        const em = DataBaseHelper.getEntityManager();
         const topics = new Set<string>();
         topics.add(policyRow.options?.instanceTopicId);
 
@@ -227,7 +209,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
             const documents = documentMap.get(topicId);
             if (documents) {
                 analytics.vcCount = analytics.vcCount + documents.vc + documents.evc;
-                analytics.vpCount = analytics.vcCount + documents.vp;
+                analytics.vpCount = analytics.vpCount + documents.vp;
             }
         }
     }

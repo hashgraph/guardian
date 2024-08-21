@@ -30,19 +30,21 @@ export abstract class SynchronizationTask {
     public start(firstExecution: boolean = false) {
         const taskExecution = async () => {
             try {
-                // const em = DataBaseHelper.getEntityManager();
-                // const runningTask = em.create(SyncTaskEntity, {
-                //     taskName: this._name,
-                //     date: new Date(),
-                // });
-                // await em.persistAndFlush(runningTask);
+                const em = DataBaseHelper.getEntityManager();
+                const runningTask = em.create(SyncTaskEntity, {
+                    taskName: this._name,
+                    date: new Date(),
+                });
+                await em.persistAndFlush(runningTask);
                 console.log(`${this._name} task is started`);
                 try {
+                    console.time(`----- sync ${this._name} -----`);
                     await this.sync();
+                    console.timeEnd(`----- sync ${this._name} -----`);
                 } catch (error) {
                     console.log(error);
                 } finally {
-                    // await em.removeAndFlush(runningTask);
+                    await em.removeAndFlush(runningTask);
                 }
                 console.log(`${this._name} task is finished`);
             } catch (error) {

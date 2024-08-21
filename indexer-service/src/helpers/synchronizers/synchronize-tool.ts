@@ -11,8 +11,6 @@ export class SynchronizationTools extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncTools ---');
-        console.time('--- syncTools 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -28,8 +26,8 @@ export class SynchronizationTools extends SynchronizationTask {
             row.analytics = this.createAnalytics(tool);
             em.persist(row);
         }
+        console.log(`Sync Tools: flush`)
         await em.flush();
-        console.timeEnd('--- syncTools 1 ---');
     }
 
     private createAnalytics(

@@ -11,8 +11,6 @@ export class SynchronizationContracts extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncContracts ---');
-        console.time('--- syncContracts 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -28,8 +26,8 @@ export class SynchronizationContracts extends SynchronizationTask {
             row.analytics = this.createAnalytics(document);
             em.persist(row);
         }
+        console.log(`Sync Contracts: flush`)
         await em.flush();
-        console.timeEnd('--- syncContracts 1 ---');
     }
 
     private createAnalytics(

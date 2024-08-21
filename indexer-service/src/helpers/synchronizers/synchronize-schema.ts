@@ -1,13 +1,8 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { safetyRunning } from '../../utils/safety-running.js';
-import {
-    SchemaField,
-    MessageType,
-    MessageAction,
-    Schema,
-} from '@indexer/interfaces';
+import { SchemaField, MessageType, MessageAction, Schema } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
+import { loadFiles } from '../load-files.js';
 
 export class SynchronizationSchemas extends SynchronizationTask {
     public readonly name: string = 'schemas';
@@ -17,7 +12,6 @@ export class SynchronizationSchemas extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.time('--- syncSchemas 1 ---');
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 
@@ -59,30 +53,16 @@ export class SynchronizationSchemas extends SynchronizationTask {
         }
 
         console.log(`Sync schemas: load files`)
-        const fileMap = new Map<string, string>();
-        const files = DataBaseHelper.gridFS.find();
-        while (await files.hasNext()) {
-            const file = await files.next();
-            if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
-                await safetyRunning(async () => {
-                    const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-                    const bufferArray = [];
-                    for await (const data of fileStream) {
-                        bufferArray.push(data);
-                    }
-                    const buffer = Buffer.concat(bufferArray);
-                    fileMap.set(file.filename, buffer.toString());
-                });
-            }
-        }
+        const fileMap = await loadFiles(fileIds, false);
+
         console.log(`Sync schemas: update data`)
         for (const schema of allSchemas) {
             const row = em.getReference(Message, schema._id);
             row.analytics = this.createAnalytics(schema, policyMap, schemaMap, fileMap);
             em.persist(row);
         }
+        console.log(`Sync schemas: flush`)
         await em.flush();
-        console.timeEnd('--- syncSchemas 1 ---');
     }
 
     private createAnalytics(
@@ -113,10 +93,11 @@ export class SynchronizationSchemas extends SynchronizationTask {
                 analytics.textSearch += `|${[...schemaFields].join('|')}`;
             }
             let childSchemas = [];
-            for (const uuid of childSchemaIds) {
+            for (const item of childSchemaIds) {
+                const uuid = item.substring(1).split('&')[0];
                 const id = `${schema.topicId}|${uuid}`;
                 const ids = schemaMap.get(id);
-                if (ids) {
+                if (ids && ids.length) {
                     childSchemas = childSchemas.concat(ids);
                 }
             }

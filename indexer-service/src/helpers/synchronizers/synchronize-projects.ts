@@ -1,15 +1,6 @@
-import {
-    DataBaseHelper,
-    Message,
-    Analytics,
-    ProjectCoordinates,
-} from '@indexer/common';
+import { DataBaseHelper, Message, ProjectCoordinates } from '@indexer/common';
 import { safetyRunning } from '../../utils/safety-running.js';
-import {
-    MessageType,
-    MessageAction,
-    IPFS_CID_PATTERN,
-} from '@indexer/interfaces';
+import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
 
@@ -32,8 +23,6 @@ export class SynchronizationProjects extends SynchronizationTask {
     }
 
     protected override async sync(): Promise<void> {
-        console.log('--- syncAnalytics ---');
-        console.time('--- syncAnalytics 2 ---');
         const em = DataBaseHelper.getEntityManager();
         const projectLocations = await em
             .getCollection('project_coordinates')
@@ -46,7 +35,7 @@ export class SynchronizationProjects extends SynchronizationTask {
             consensusTimestamp: { $nin: projectLocations },
         });
 
-        console.log(`Sync VCs: load documents`)
+        console.log(`Sync projects: load documents`)
         const allDocuments: Message[] = [];
         const fileIds: Set<string> = new Set<string>();
         while (await documents.hasNext()) {
@@ -60,7 +49,7 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
         }
 
-        console.log(`Sync VPs: load schemas`)
+        console.log(`Sync projects: load schemas`)
         const schemas = collection.find({ type: MessageType.SCHEMA });
         while (await schemas.hasNext()) {
             const schema = await schemas.next();
@@ -69,27 +58,10 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
         }
 
-        console.log(`Sync VCs: load files`)
-        // const fileMap = new Map<string, string>();
-        // const files = DataBaseHelper.gridFS.find();
-        // while (await files.hasNext()) {
-        //     const file = await files.next();
-        //     if (fileIds.has(file.filename) && !fileMap.has(file.filename)) {
-        //         await safetyRunning(async () => {
-        //             const fileStream = DataBaseHelper.gridFS.openDownloadStream(file._id);
-        //             const bufferArray = [];
-        //             for await (const data of fileStream) {
-        //                 bufferArray.push(data);
-        //             }
-        //             const buffer = Buffer.concat(bufferArray);
-        //             fileMap.set(file.filename, buffer.toString());
-        //         });
-        //     }
-        // }
+        console.log(`Sync projects: load files`)
+        const fileMap = await loadFiles(fileIds, false);
 
-        const fileMap = await loadFiles(fileIds);
-
-        console.log(`Sync VCs: update data`)
+        console.log(`Sync projects: update data`)
         for (const document of allDocuments) {
             const coords = this.updateGeoCoordinates(document, fileMap);
             if (coords) {
@@ -103,7 +75,6 @@ export class SynchronizationProjects extends SynchronizationTask {
             }
         }
         // await em.flush();
-        console.timeEnd('--- syncAnalytics 2 ---');
     }
 
     private updateGeoCoordinates(
