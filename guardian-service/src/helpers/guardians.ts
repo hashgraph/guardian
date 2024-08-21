@@ -40,12 +40,8 @@ export class GuardiansService extends NatsService {
      * @param policyId
      */
     public async checkIfPolicyAlive(policyId: string): Promise<boolean> {
-        try {
-            const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000)
-            return !!exist;
-        } catch (error) {
-            return false;
-        }
+        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000)
+        return !!exist
     }
 
     /**
@@ -56,6 +52,41 @@ export class GuardiansService extends NatsService {
      * @param awaitInterval
      */
     public sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
+        const messageId = GenerateUUIDv4();
+        const head = headers();
+        head.append('messageId', messageId);
+        head.append('policyId', policyId);
+
+        return Promise.race([
+            new Promise<T>(async (resolve, reject) => {
+                this.responseCallbacksMap.set(messageId, (d: T, error?) => {
+                    if (error) {
+                        reject(new Error(error));
+                        return
+                    }
+                    resolve(d);
+                })
+
+                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            }),
+            new Promise<T>((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(null);
+                }, awaitInterval)
+            }),
+        ])
+    }
+    /**
+     * sendPolicyMessage
+     * @param subject
+     * @param policyId
+     * @param data
+     * @param awaitInterval
+     */
+    public sendBlockMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
         const messageId = GenerateUUIDv4();
         const head = headers();
         head.append('messageId', messageId);

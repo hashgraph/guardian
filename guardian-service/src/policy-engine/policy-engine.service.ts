@@ -372,7 +372,7 @@ export class PolicyEngineService {
                         throw new Error(error);
                     }
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                             user,
                             policyId
                         }) as any;
@@ -390,7 +390,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
                             user,
                             blockId,
                             policyId,
@@ -410,7 +410,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
                             tag,
                             policyId,
@@ -430,7 +430,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                             user,
                             blockId,
                             policyId,
@@ -450,7 +450,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
+                        .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
                             tag,
                             policyId,
