@@ -5,8 +5,11 @@ import {
     Get,
     Param,
     Query,
+    Post,
+    Body,
 } from '@nestjs/common';
 import {
+    ApiBody,
     ApiInternalServerErrorResponse,
     ApiOkResponse,
     ApiOperation,
@@ -48,7 +51,9 @@ import {
     RegistryDetailsDTO,
     RelationshipsDTO,
     SchemaTreeDTO,
-    InternalServerErrorDTO
+    InternalServerErrorDTO,
+    DetailsDTO,
+    UpdateFileDTO
 } from '#dto';
 
 @Controller('entities')
@@ -1345,4 +1350,28 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#endregion
+    @Post('/update-files')
+    @ApiOperation({
+        summary: 'Try load ipfs files',
+        description: 'Returns ipfs files',
+    })
+    @ApiBody({
+        description: 'Entity Timestamp',
+        type: UpdateFileDTO,
+    })
+    @ApiOkResponse({
+        description: 'ipfs files',
+        type: DetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async search(@Body() body: UpdateFileDTO) {
+        return await this.send(
+            IndexerMessageAPI.UPDATE_FILES,
+            body
+        );
+    }
 }

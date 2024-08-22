@@ -24,6 +24,7 @@
         "@indexer/interfaces": "file:../indexer-interfaces",
         "@jsverse/transloco": "^7.2.1",
         "chart.js": "^4.4.3",
+        "cids": "^1.1.9",
         "echarts": "^5.5.0",
         "ngx-echarts": "^17.1.0",
         "ol": "^9.2.2",

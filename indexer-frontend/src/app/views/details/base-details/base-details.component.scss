@@ -25,6 +25,37 @@
     }
 }
 
+.documents-container {
+    height: 100%;
+    width: 100%;
+
+    .document-container {
+        width: 100%;
+        margin-bottom: 32px;
+
+        .document-container-group {
+            margin-bottom: 12px;
+
+            .document-container-group-header {
+                margin-bottom: 8px;
+                font-weight: 500;
+            }
+
+            .local-node {
+                background: #ddd;
+                padding: 4px 8px;
+                border-radius: 6px;
+                margin-left: 6px;
+            }
+        }
+    }
+
+    textarea {
+        height: 100%;
+        min-height: 250px;
+    }
+}
+
 .grid-3 {
     grid-template-columns: 230px 175px auto 150px 400px;
     border: 1px solid #aaa;

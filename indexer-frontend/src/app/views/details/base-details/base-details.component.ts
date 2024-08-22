@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Activity } from '@components/activity/activity.component';
 import { Relationships } from '@indexer/interfaces';
+import CID from 'cids';
+import { EntitiesService } from '@services/entities.service';
 
 @Component({
     selector: 'base-details',
@@ -31,7 +33,11 @@ export abstract class BaseDetailsComponent {
     activityItems: any[] = [];
     totalActivity: number = 0;
 
-    constructor(protected route: ActivatedRoute, protected router: Router) {}
+    constructor(
+        protected entitiesService: EntitiesService,
+        protected route: ActivatedRoute,
+        protected router: Router
+    ) { }
 
     ngOnInit() {
         this.loading = false;
@@ -175,6 +181,25 @@ export abstract class BaseDetailsComponent {
         }
     }
 
+    protected onLoadDocument(first: any) {
+        this.loading = true;
+        this.entitiesService
+            .updateFiles(first.consensusTimestamp)
+            .subscribe({
+                next: (result) => {
+                    this.first = result;
+                    this.setFiles(this.first);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                },
+            });
+    }
+
     protected setResult(result?: any): void {
         this.uuid = '';
         this.history = [];
@@ -198,8 +223,33 @@ export abstract class BaseDetailsComponent {
                 this.last = this.target;
                 this.history = [this.target];
             }
+            this.setFiles(this.first);
         }
         this.tabIndex = this.getTabIndex(this.tab);
+    }
+
+    protected setFiles(item: any) {
+        if (item) {
+            if (Array.isArray(item.files)) {
+                item._ipfs = [];
+                item._ipfsStatus = true;
+                for (let i = 0; i < item.files.length; i++) {
+                    const url = item.files[i];
+                    const document = item.documents?.[i];
+                    const cid = new CID(url);
+                    const ipfs = {
+                        version: cid.version,
+                        cid: url,
+                        global: cid.toV1().toString('base32'),
+                        document
+                    }
+                    if(!document) {
+                        item._ipfsStatus = false;
+                    }
+                    item._ipfs.push(ipfs);
+                }
+            }
+        }
     }
 
     protected setRelationships(result: Relationships): void {

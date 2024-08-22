@@ -121,11 +121,11 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     documentViewOption = 'document';
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override setResult(result?: any) {

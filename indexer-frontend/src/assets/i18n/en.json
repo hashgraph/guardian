@@ -305,6 +305,11 @@
                 "owner_did": "Owner DID"
             }
         },
-        "not_found": "Not found"
+        "not_found": "Not found",
+        "not_loaded": "Not loaded",
+        "json": "JSON",
+        "cid": "Document CID",
+        "try_load": "Try Load",
+        "local_node": "Local Node"
     }
 }

@@ -77,11 +77,11 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
     additionalOveriviewFormFields: OverviewFormField[] = [];
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {

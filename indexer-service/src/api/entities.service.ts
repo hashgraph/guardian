@@ -54,6 +54,7 @@ import {
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
+import { IPFSService } from '../helpers/ipfs-service.js';
 
 const pageOptions = new Set([
     'pageSize',
@@ -108,6 +109,49 @@ async function loadDocuments(row: IMessage): Promise<IMessage> {
         }
     }
     return row;
+}
+
+async function loadFiles(cid: string): Promise<string | null> {
+    const existingFile = await DataBaseHelper.gridFS.find({
+        filename: cid
+    }).toArray();
+    if (existingFile.length > 0) {
+        return existingFile[0]._id.toString();
+    }
+    const document = await IPFSService.getFile(cid);
+    if (!document) {
+        return null;
+    }
+    return new Promise<string>((resolve, reject) => {
+        try {
+            const fileStream = DataBaseHelper.gridFS.openUploadStream(cid);
+            fileStream.write(document);
+            fileStream.end(() => {
+                resolve(fileStream.id?.toString());
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+async function updateDocuments(row: Message): Promise<Message> {
+    if (row?.files?.length) {
+        const fns: Promise<string | null>[] = [];
+        for (const fileName of row.files) {
+            fns.push(loadFiles(fileName));
+        }
+        const files = await Promise.all(fns);
+        for (const fileId of files) {
+            if (fileId === null) {
+                throw Error('Failed to upload files');
+            }
+        }
+        row.documents = files;
+        return row;
+    } else {
+        throw Error('Files not found');
+    }
 }
 
 @Controller()
@@ -624,7 +668,7 @@ export class EntityService {
             const options = parsePageParams(msg);
             const filters = parsePageFilters(msg);
             filters.type = MessageType.SCHEMA;
-            filters.action = MessageAction.PublishSchema;
+            filters.action = { $in: [MessageAction.PublishSchema, MessageAction.PublishSystemSchema] };
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = (await em.findAndCount(
                 Message,
@@ -1477,4 +1521,36 @@ export class EntityService {
     }
     //#endregion
     //#endregion
+
+    @MessagePattern(IndexerMessageAPI.UPDATE_FILES)
+    async updateFiles(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<ContractDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+            });
+            await updateDocuments(item);
+            const collection = em.getCollection('message');
+            await collection.updateOne(
+                {
+                    _id: item._id,
+                },
+                {
+                    $set: {
+                        documents: item.documents,
+                    },
+                },
+                {
+                    upsert: false,
+                }
+            );
+            await loadDocuments(item);
+            return new MessageResponse<Message>(item);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
 }

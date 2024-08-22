@@ -76,11 +76,11 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
     tree?: any;
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {

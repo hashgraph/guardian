@@ -67,11 +67,11 @@ export class RegistryUserDetailsComponent extends BaseDetailsComponent {
     ];
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
