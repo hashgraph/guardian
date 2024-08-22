@@ -10,8 +10,8 @@ ARG YARN_CACHE_FOLDER=/root/.yarn
 FROM base as interfaces
 COPY --link indexer-interfaces/package.json indexer-interfaces/tsconfig*.json yarn.lock ./
 COPY --link indexer-interfaces/src src/
-# Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn \
+# Here and after. Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable && yarn pack
 
 # Stage 2: Build common module
@@ -20,8 +20,8 @@ COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/index
 COPY --link indexer-common/package.json indexer-common/tsconfig*.json yarn.lock ./
 COPY --link indexer-common/src src/
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=/root/.yarn \
-    yarn install --immutable && yarn pack
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install && yarn pack
 
 # Stage 3: Installing production dependecies
 FROM base as deps
@@ -29,8 +29,8 @@ COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/index
 COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
 COPY --link indexer-worker-service/package.json indexer-worker-service/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; input.dependencies['@indexer/common']='file:/tmp/indexer-common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=/root/.yarn,sharing=private \
-    yarn install --immutable --prod
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
+    yarn install --prod
 
 # Stage 4: Build service
 FROM base as build
@@ -38,7 +38,7 @@ COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/index
 COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 COPY --link indexer-worker-service/src src/
-RUN --mount=type=cache,target=/root/.yarn \
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable && yarn run build:prod
 
 # Stage 5: Create the final image
