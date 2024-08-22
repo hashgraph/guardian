@@ -171,10 +171,12 @@ export class ContractService {
     //#endregion
     //#region Retire contract endpoints
 
-    public retireSyncPools(contractId: string) {
-        return this.http.post<any>(
+    public retireSyncPools(contractId: string): Observable<string> {
+        return this.http.post(
             `${this.url}/retire/${contractId}/pools/sync`,
-            null
+            null, {
+                responseType: 'text'
+            }
         );
     }
 
