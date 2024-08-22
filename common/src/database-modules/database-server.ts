@@ -36,7 +36,8 @@ import {
     PolicyCacheData,
     RetirePool,
     AssignEntity,
-    PolicyTest, Artifact, PolicyRoles,
+    PolicyTest,
+    Artifact,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -50,14 +51,14 @@ import {
     TopicType,
 } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
-import { DataBaseHelper, IGetDocumentAggregationFilters, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
+import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
 import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js';
 import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { FilterObject, FilterQuery, FindAllOptions, FindOneOptions, MikroORM } from '@mikro-orm/core';
-import { IAuthUser } from '../interfaces';
+import { IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces';
 import { TopicId } from '@hashgraph/sdk';
 import { Message } from '../hedera-modules/index.js'
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -312,7 +313,7 @@ export class DatabaseServer {
      * @param entityClass
      * @param item
      */
-    private addDryRunId<T extends BaseEntity>(entityClass: new () => T, item: unknown): Partial<T> | Partial<T>[] {
+    private addDryRunId<T extends BaseEntity>(entityClass: new () => T, item: unknown): unknown | unknown[] {
         return DatabaseServer.addDryRunId(
             item, this.dryRun, this.classMap.get(entityClass), this.systemMode
         );
@@ -325,23 +326,26 @@ export class DatabaseServer {
      * @param dryRunClass
      * @param systemMode
      */
-    private static addDryRunId<T extends BaseEntity>(
-        item: any | any[],
+    private static addDryRunId(
+        item: unknown | unknown[],
         dryRunId: string,
         dryRunClass: string,
         systemMode: boolean
-    ): any {
-        if (Array.isArray(item)) {
-            for (const i of item) {
-                i.systemMode = systemMode;
-                i.dryRunId = dryRunId;
-                i.dryRunClass = dryRunClass;
-            }
-        } else {
+    ): unknown | unknown[] {
+        const extendItem = (item: unknown & IAddDryRunIdItem) => {
             item.systemMode = systemMode;
             item.dryRunId = dryRunId;
             item.dryRunClass = dryRunClass;
         }
+
+        if (Array.isArray(item)) {
+            for (const i of item) {
+                extendItem(i)
+            }
+        } else {
+            extendItem(item as unknown & IAddDryRunIdItem)
+        }
+
         return item;
     }
 
@@ -388,13 +392,13 @@ export class DatabaseServer {
      * @param item
      * @param filter
      */
-    async save<T extends BaseEntity>(entityClass: new () => T, item: any, filter?: FilterObject<T>): Promise<any> {
+    async save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
-            return await new DataBaseHelper(DryRun).save(item as Partial<T>, filter) as unknown as T;
+            return await new DataBaseHelper(DryRun).save(item, filter) as unknown as T;
         }
 
-        return await new DataBaseHelper(entityClass).save(item, filter) as unknown as T
+        return await new DataBaseHelper(entityClass).save(item as Partial<T>, filter)
     }
 
     /**
@@ -1338,7 +1342,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async setUserInGroup(group: any): Promise<PolicyRolesCollection> {
+    public async setUserInGroup(group: unknown): Promise<PolicyRolesCollection> {
         const doc = this.create(PolicyRolesCollection, group);
         await this.save(PolicyRolesCollection, doc);
         return doc;
@@ -1404,12 +1408,12 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async checkUserInGroup(group: any): Promise<PolicyRolesCollection | null> {
+    public async checkUserInGroup(group: { policyId: string, did: string, owner: string, uuid: string }): Promise<PolicyRolesCollection | null> {
         return await this.findOne(PolicyRolesCollection, {
             policyId: group.policyId,
             did: group.did,
             owner: group.owner,
-            uuid: group.uuid
+            uuid: group.uuid,
         });
     }
 
@@ -1659,7 +1663,7 @@ export class DatabaseServer {
     public async setMultiSigDocument(
         uuid: string,
         documentId: string,
-        user: any,
+        user: { id: string, did: string, group: string, username: string },
         status: string,
         document: IVC
     ): Promise<MultiDocuments> {
@@ -2832,7 +2836,7 @@ export class DatabaseServer {
         policyId: string,
         type: string,
         operatorId?: string
-    ): Promise<any> {
+    ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             type,
             hederaAccountId: operatorId
@@ -2850,8 +2854,8 @@ export class DatabaseServer {
     public static async setVirtualFile(
         policyId: string,
         file: ArrayBuffer,
-        url: any
-    ): Promise<any> {
+        url: {url: string}
+    ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             document: {
                 size: file?.byteLength
@@ -3476,8 +3480,8 @@ export class DatabaseServer {
      * @returns VCs
      */
     // tslint:disable-next-line:adjacent-overload-signatures
-    public static async saveVCs<T extends VcDocumentCollection | VcDocumentCollection[]>(data: Partial<T>): Promise<T> {
-        return (await new DataBaseHelper(VcDocumentCollection).save(data)) as any;
+    public static async saveVCs<T extends VcDocumentCollection | VcDocumentCollection[]>(data: Partial<T>): Promise<VcDocumentCollection> {
+        return (await new DataBaseHelper(VcDocumentCollection).save(data));
     }
 
     /**
@@ -3486,8 +3490,8 @@ export class DatabaseServer {
      *
      * @returns VPs
      */
-    public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: Partial<T>): Promise<T> {
-        return (await new DataBaseHelper(VpDocumentCollection).save(data)) as any;
+    public static async saveVPs<T extends VpDocumentCollection | VpDocumentCollection[]>(data: Partial<T>): Promise<VpDocumentCollection> {
+        return (await new DataBaseHelper(VpDocumentCollection).save(data));
     }
 
     /**

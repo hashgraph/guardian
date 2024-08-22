@@ -6,29 +6,7 @@ import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MintTransactionStatus } from '@guardian/interfaces';
-
-interface ICommonConnectionConfig {
-    driver: typeof MongoDriver;
-    namingStrategy: typeof DataBaseNamingStrategy;
-    dbName: string;
-    clientUrl: string;
-    entities: string[];
-}
-export interface IGetAggregationFilters {
-    aggregation: unknown[],
-    aggregateMethod: string,
-    nameFilter: string,
-}
-
-export interface IGetDocumentAggregationFilters extends IGetAggregationFilters {
-    timelineLabelPath?: string,
-    timelineDescriptionPath?: string,
-    dryRun?: string,
-    sortObject?: Record<string, unknown>,
-    itemsPerPage?: number,
-    page?: number,
-    policyId?: string,
-}
+import { ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces';
 
 export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     BASE: 'base',
