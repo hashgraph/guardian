@@ -3102,10 +3102,14 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                const contract = await contractRepository.findOne({
-                    contractId: request.contractId,
-                    owner
-                })
+                const contract: { version: string } = await contractRepository.findOne({
+                    contractId: request.contractId
+                }, { field: ['version'] });
+
+                const error = await checkContractsCompatibility(workers, contractRepository, contract, request.tokens);
+                if (error) {
+                    throw new Error(error);
+                }
 
                 let result;
                 if (contract.version === '1.0.0') {
