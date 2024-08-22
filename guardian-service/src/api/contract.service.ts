@@ -1871,12 +1871,7 @@ export async function contractAPI(
                 ).toSolidityAddress(),
             }]
 
-            if (contract.version === '1.0.0') {
-                params.push({
-                    type: ContractParamType.BOOL,
-                    value: ban,
-                })
-            } else {
+            if (contract.version !== '1.0.0') {
                 params.push({
                     type: ContractParamType.ADDRESS,
                     value: TokenId.fromString(
@@ -1884,6 +1879,11 @@ export async function contractAPI(
                     ).toSolidityAddress(),
                 })
             }
+
+            params.push({
+                type: ContractParamType.BOOL,
+                value: ban,
+            })
 
             await contractCall(
                 ContractAPI.REJECT_WIPE_REQUEST,

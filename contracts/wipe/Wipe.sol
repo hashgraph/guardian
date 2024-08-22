@@ -89,19 +89,24 @@ contract Wipe is Version, SafeHTS, Access {
         emit RequestsDisabled();
     }
 
-    function clear(address account) external role(MANAGER) {
+    function clear(address account) public role(MANAGER) {
         userRequestStorage[account] = UserRequestStorage(address(0));
         emit WipeRequestsCleared(account);
     }
 
-    function reject(address account, address token) public role(MANAGER) {
-        userRequestStorage[account].unsetRequest(token);
-        emit WipeRequestRemoved(account, token);
+    function reject(address account, address token, bool b) public role(MANAGER) {
+        if (b) {
+            ban(account);
+            clear(account);
+        } else {
+            userRequestStorage[account].unsetRequest(token);
+            emit WipeRequestRemoved(account, token);
+        }
     }
 
     function approve(address account, address token) external role(MANAGER) {
         addWiper(account, token);
-        reject(account, token);
+        reject(account, token, false);
     }
 
     function requestWiper(address token) public isNotBanned() {

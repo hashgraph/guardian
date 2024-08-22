@@ -19,7 +19,7 @@
                     [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
                     matTooltipClass="guardian-tooltip"
                     [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Reject</button>
-                <button *ngIf="version === '1.0.0'" (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn--ban"
+                <button (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn--ban"
                     [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
                     matTooltipClass="guardian-tooltip"
                     [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Ban</button>
