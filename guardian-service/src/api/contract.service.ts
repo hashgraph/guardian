@@ -116,6 +116,38 @@ async function getContractMessage(
     return [contractMessage, memo];
 }
 
+async function checkContractsCompatibility(
+    workers: Workers,
+    contractRepository: DataBaseHelper<Contract>,
+    retireContract: { version: string },
+    tokens: { token: string }[]
+) {
+    if (retireContract.version === '1.0.0') {
+        const tokenInfo = await DatabaseServer.getTokens({
+            id: { $in: tokens.map((item) => item.token) },
+        });
+        for (const token of tokenInfo) {
+            if (!token.wipeContractId) {
+                return `Wipe contract is not defined for token ${token.wipeContractId}`;
+            }
+            let wipeContract: { version: string } =
+                await contractRepository.findOne(
+                    { contractId: token.wipeContractId },
+                    { fields: ['version'] }
+                );
+            if (!wipeContract) {
+                [wipeContract] = await getContractMessage(
+                    workers,
+                    token.wipeContractId
+                );
+            }
+            if (wipeContract.version !== '1.0.0') {
+                return 'Incompatible wipe contract version';
+            }
+        }
+    }
+}
+
 export function getTokenContractId(wipeKey: { _type: string; key: string }) {
     if (wipeKey._type !== 'ProtobufEncoded') {
         return '';
@@ -160,7 +192,8 @@ async function setPool(
                 isWiper = await isContractWiper(
                     workers,
                     contractMessage,
-                    contractId
+                    contractId,
+                    item.token
                 );
                 // tslint:disable-next-line:no-empty
             } catch { }
@@ -2356,7 +2389,7 @@ export async function contractAPI(
                 }
 
                 const contract = await contractRepository.findOne(id, {
-                    fields: ['contractId'],
+                    fields: ['contractId', 'version'],
                 });
                 if (!contract) {
                     throw new Error('Contract not found');
@@ -2388,19 +2421,25 @@ export async function contractAPI(
                             continue;
                         }
                         handledContracts.add(token.contract);
-                        const [contractMessage] = await getContractMessage(workers, token.contract);
-                        const isWiper = await isContractWiper(
-                            workers,
-                            contractMessage,
-                            contractId
-                        );
+                        let contractMessage;
+                        let isWiper = false;
+                        try {
+                            [contractMessage] = await getContractMessage(workers, token.contract);
+                            isWiper = await isContractWiper(
+                                workers,
+                                contractMessage,
+                                contractId,
+                                token.token,
+                            );
+                        // tslint:disable-next-line:no-empty
+                        } catch {}
                         await setContractWiperPermissions(
                             contractRepository,
                             retirePoolRepository,
                             contractId,
                             token.contract,
                             isWiper,
-                            contractMessage.version !== '1.0.0' ? token.token : null
+                            contractMessage && contractMessage.version !== '1.0.0' ? token.token : null
                         );
                     }
                     // tslint:disable-next-line:no-shadowed-variable
@@ -2739,7 +2778,7 @@ export async function contractAPI(
             }
 
             const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
+                fields: ['contractId', 'version'],
             });
             if (!contract) {
                 throw new Error('Contract not found');
@@ -2755,6 +2794,11 @@ export async function contractAPI(
                 KeyType.KEY,
                 owner.creator
             );
+
+            const error = await checkContractsCompatibility(workers, contractRepository, contract, options.tokens);
+            if (error) {
+                throw new Error(error);
+            }
 
             await setPoolContract(
                 workers,
@@ -2945,13 +2989,22 @@ export async function contractAPI(
             const users = new Users();
             const wallet = new Wallet();
             const workers = new Workers();
+
+            const contract = await contractRepository.findOne({
+                contractId: pool.contractId
+            })
+
+            const error = await checkContractsCompatibility(workers, contractRepository, contract, tokens);
+            if (error) {
+                throw new Error(error);
+            }
+
             const root = await users.getUserById(owner.creator);
             const rootKey = await wallet.getKey(
                 root.walletToken,
                 KeyType.KEY,
                 owner.creator
             );
-
             const sr = await users.getUserById(root.parent || root.did);
             const srKey = await wallet.getKey(
                 sr.walletToken,
