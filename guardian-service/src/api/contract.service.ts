@@ -48,7 +48,8 @@ const accessEventsAbi = new ethers.Interface([
     'event OwnerAdded(address)',
 ]);
 
-const wipeEventsAbi = new ethers.Interface([
+// tslint:disable-next-line:variable-name
+const wipeEventsAbi_1_0_0 = new ethers.Interface([
     'event AdminAdded(address account)',
     'event AdminRemoved(address account)',
     'event ManagerAdded(address account)',
@@ -58,6 +59,15 @@ const wipeEventsAbi = new ethers.Interface([
     'event WipeRequestAdded(address)',
     'event WipeRequestRemoved(address)',
     'event WipeRequestsCleared()',
+    ...accessEventsAbi.fragments,
+]);
+
+// tslint:disable-next-line:variable-name
+const wipeEventsAbi_1_0_1 = new ethers.Interface([
+    'event AdminAdded(address account)',
+    'event AdminRemoved(address account)',
+    'event ManagerAdded(address account)',
+    'event ManagerRemoved(address account)',
     'event WiperAdded(address account, address token)',
     'event WiperRemoved(address account, address token)',
     'event WipeRequestAdded(address account, address token)',
@@ -469,6 +479,7 @@ export async function syncWipeContract(
 ) {
     const { contractId, version } = contract;
     const isFirstVersion = version === '1.0.0';
+    const eventAbi = isFirstVersion ? wipeEventsAbi_1_0_0 : wipeEventsAbi_1_0_1;
     const timestamps = [timestamp];
     let lastTimeStamp;
     while (timestamps.length) {
@@ -491,8 +502,8 @@ export async function syncWipeContract(
         }
 
         for (const log of result) {
-            const eventName = wipeEventsAbi.getEventName(log.topics[0]);
-            const data = wipeEventsAbi.decodeEventLog(eventName, log.data);
+            const eventName = eventAbi.getEventName(log.topics[0]);
+            const data = eventAbi.decodeEventLog(eventName, log.data);
             // tslint:disable-next-line:no-shadowed-variable
             const contracts = await contractRepository.find(
                 {
@@ -1032,6 +1043,7 @@ async function isContractWiper(
         return false;
     }
     const isFirstVersion = contract.version === '1.0.0';
+    const eventAbi = isFirstVersion ? wipeEventsAbi_1_0_0 : wipeEventsAbi_1_0_1;
     const timestamps = [undefined];
     while (timestamps.length) {
         const timestamp = timestamps.pop();
@@ -1053,8 +1065,8 @@ async function isContractWiper(
         }
 
         for (const log of result) {
-            const eventName = wipeEventsAbi.getEventName(log.topics[0]);
-            const data = wipeEventsAbi.decodeEventLog(eventName, log.data);
+            const eventName = eventAbi.getEventName(log.topics[0]);
+            const data = eventAbi.decodeEventLog(eventName, log.data);
 
             switch (eventName) {
                 case 'WiperAdded': {
