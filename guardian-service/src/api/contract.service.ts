@@ -134,7 +134,7 @@ async function checkContractsCompatibility(
 ) {
     if (retireContract.version === '1.0.0') {
         const tokenInfo = await DatabaseServer.getTokens({
-            id: { $in: tokens.map((item) => item.token) },
+            tokenId: { $in: tokens.map((item) => item.token) },
         });
         for (const token of tokenInfo) {
             if (!token.wipeContractId) {
