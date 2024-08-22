@@ -1,4 +1,4 @@
-import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData, FindOneOptions } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
@@ -609,7 +609,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<T>): Promise<number> {
+    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 
@@ -649,7 +649,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entity
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: unknown = {}): Promise<T | null> {
+    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: FindOneOptions<object> = {}): Promise<T | null> {
         let query: FilterQuery<T>;
 
         if (typeof filters === 'string' || filters instanceof ObjectId) {
@@ -658,7 +658,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             query = filters;
         }
 
-        return await this._em.getRepository<T>(this.entityClass).findOne(query, options);
+        return await this._em.getRepository<T>(this.entityClass).findOne(query, options as unknown as FindOneOptions<T>) as T | null;
     }
 
     /**

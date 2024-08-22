@@ -1,6 +1,7 @@
 import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { DatabaseServer, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
@@ -97,7 +98,7 @@ export async function documentsAPI(
             const [items, count] = await dataBaseServer.findAndCount(VpDocument, null, {
                 limit: 100,
                 orderBy: { createDate: 'DESC' }
-            });
+            } as FindOptions<unknown>);
             return new MessageResponse({ items, count });
         }
     });

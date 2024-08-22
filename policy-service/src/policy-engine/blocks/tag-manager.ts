@@ -7,6 +7,7 @@ import { BlockActionError } from '../errors/index.js';
 import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
 import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
+import { PopulatePath } from '@mikro-orm/mongodb';
 
 /**
  * Tag Manager
@@ -100,7 +101,7 @@ export class TagsManagerBlock {
                 'version',
                 'iri',
                 'documentFileId'
-            ]
+            ] as unknown as PopulatePath.ALL[]
         });
         const data: any = {
             id: ref.uuid,

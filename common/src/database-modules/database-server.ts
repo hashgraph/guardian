@@ -36,7 +36,7 @@ import {
     PolicyCacheData,
     RetirePool,
     AssignEntity,
-    PolicyTest,
+    PolicyTest, Artifact, PolicyRoles,
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -56,10 +56,11 @@ import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js
 import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
-import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
+import { FilterObject, FilterQuery, FindAllOptions, FindOneOptions, MikroORM } from '@mikro-orm/core';
 import { IAuthUser } from '../interfaces';
 import { TopicId } from '@hashgraph/sdk';
 import { Message } from '../hedera-modules/index.js'
+import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 /**
  * Database server
@@ -81,7 +82,7 @@ export class DatabaseServer {
      * Dry-run
      * @private
      */
-    private readonly classMap: Map<any, string> = new Map();
+    private readonly classMap: Map<unknown, string> = new Map();
 
     /**
      * Max Document Size ~ 16 MB
@@ -235,7 +236,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T>, options?: unknown): Promise<number> {
+    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T>, options?: FindOptions<unknown>): Promise<number> {
         if (this.dryRun) {
 
             const _filters = {
@@ -1130,7 +1131,7 @@ export class DatabaseServer {
      */
     public async getVcDocuments<T extends VcDocumentCollection | number>(
         filters: FilterObject<T>,
-        options?: unknown,
+        options?: FindOptions<unknown>,
         countResult?: boolean
     ): Promise<T[] | number> {
         if (countResult) {
@@ -1149,7 +1150,7 @@ export class DatabaseServer {
      */
     public async getVpDocuments<T extends VpDocumentCollection | number>(
         filters: FilterObject<T>,
-        options?: any,
+        options?: FindOptions<unknown>,
         countResult?: boolean
     ): Promise<T[] | number> {
         if (countResult) {
@@ -1166,7 +1167,7 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getDidDocuments(filters: FilterObject<DidDocumentCollection>, options?: any, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
+    public async getDidDocuments(filters: FilterObject<DidDocumentCollection>, options?: FindOptions<unknown>, countResult?: boolean): Promise<DidDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(DidDocumentCollection, filters, options);
         }
@@ -1188,7 +1189,7 @@ export class DatabaseServer {
      * @param countResult
      * @virtual
      */
-    public async getApprovalDocuments(filters: FilterObject<ApprovalDocumentCollection>, options?: any, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
+    public async getApprovalDocuments(filters: FilterObject<ApprovalDocumentCollection>, options?: FindOptions<unknown>, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number> {
         if (countResult) {
             return await this.count(ApprovalDocumentCollection, filters, options);
         }
@@ -1198,10 +1199,11 @@ export class DatabaseServer {
     /**
      * Get Document States
      * @param filters
+     * @param options
      *
      * @virtual
      */
-    public async getDocumentStates(filters: FilterObject<DocumentState>, options?: any): Promise<DocumentState[]> {
+    public async getDocumentStates(filters: FilterObject<DocumentState>, options?: FindOptions<unknown>): Promise<DocumentState[]> {
         return await this.find(DocumentState, filters, options);
     }
 
@@ -1419,7 +1421,7 @@ export class DatabaseServer {
      *
      * @virtual
      */
-    public async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
+    public async getGroupsByUser(policyId: string, did: string, options?: unknown ): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return [];
         }
@@ -1819,7 +1821,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTags(filters?: FilterQuery<Tag>, options?: any): Promise<Tag[]> {
+    public async getTags(filters?: FilterQuery<Tag>, options?: FindOptions<unknown>): Promise<Tag[]> {
         return await this.find(Tag, filters, options);
     }
 
@@ -1828,7 +1830,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public async getTagCache(filters?: FilterObject<TagCache>, options?: any): Promise<TagCache[]> {
+    public async getTagCache(filters?: FilterObject<TagCache>, options?: FindOptions<unknown>): Promise<TagCache[]> {
         return await this.find(TagCache, filters, options);
     }
 
@@ -1915,7 +1917,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Mint transactions
      */
-    public async getMintTransactions(filters: FilterObject<MintTransaction>, options?: any): Promise<MintTransaction[]> {
+    public async getMintTransactions(filters: FilterObject<MintTransaction>, options?: FindOptions<unknown>): Promise<MintTransaction[]> {
         return await this.find(MintTransaction, filters, options);
     }
 
@@ -2164,7 +2166,7 @@ export class DatabaseServer {
      */
     public static async getPolicyCacheData(
         filters?: FilterObject<PolicyCache>,
-        options?: any
+        options?: FindOptions<PolicyCacheData>
     ): Promise<PolicyCacheData[]> {
         return await new DataBaseHelper(PolicyCacheData).find(filters, options);
     }
@@ -2188,7 +2190,7 @@ export class DatabaseServer {
      */
     public static async getAndCountPolicyCacheData(
         filters?: FilterObject<PolicyCacheData>,
-        options?: any
+        options?: unknown
     ): Promise<[PolicyCacheData[], number]> {
         return await new DataBaseHelper(PolicyCacheData).findAndCount(
             filters,
@@ -2280,7 +2282,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getSchemas(filters?: FilterObject<SchemaCollection>, options?: any): Promise<SchemaCollection[]> {
+    public static async getSchemas(filters?: FilterObject<SchemaCollection>, options?: unknown): Promise<SchemaCollection[]> {
         return await new DataBaseHelper(SchemaCollection).find(filters, options);
     }
 
@@ -2356,8 +2358,9 @@ export class DatabaseServer {
     /**
      * Get schema
      * @param filters
+     * @param options
      */
-    public static async getSchemasAndCount(filters?: FilterObject<SchemaCollection>, options?: any): Promise<[SchemaCollection[], number]> {
+    public static async getSchemasAndCount(filters?: FilterObject<SchemaCollection>, options?: FindOptions<unknown>): Promise<[SchemaCollection[], number]> {
         return await new DataBaseHelper(SchemaCollection).findAndCount(filters, options);
     }
 
@@ -2413,7 +2416,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getPolicies(filters?: FilterObject<Policy>, options?: any): Promise<Policy[]> {
+    public static async getPolicies(filters?: FilterObject<Policy>, options?: unknown): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).find(filters, options);
     }
 
@@ -2422,7 +2425,7 @@ export class DatabaseServer {
      * @param filters
      */
     public static async getListOfPolicies(filters?: FilterObject<Policy>): Promise<Policy[]> {
-        const options: any = {
+        const options = {
             fields: [
                 'id',
                 'uuid',
@@ -2438,7 +2441,7 @@ export class DatabaseServer {
                 'messageId',
                 'codeVersion',
                 'createDate'
-            ],
+            ] as unknown as PopulatePath.ALL[],
             limit: 100
         }
         return await new DataBaseHelper(Policy).find(filters, options);
@@ -2479,8 +2482,9 @@ export class DatabaseServer {
     /**
      * Get policies and count
      * @param filters
+     * @param options
      */
-    public static async getPoliciesAndCount(filters: FilterObject<Policy>, options?: any): Promise<[Policy[], number]> {
+    public static async getPoliciesAndCount(filters: FilterObject<Policy>, options?: FindOptions<unknown>): Promise<[Policy[], number]> {
         return await new DataBaseHelper(Policy).findAndCount(filters, options);
     }
 
@@ -2572,7 +2576,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVC(filters?: FilterQuery<VcDocumentCollection>, options?: any): Promise<VcDocumentCollection | null> {
+    public static async getVC(filters?: FilterQuery<VcDocumentCollection>, options?: FindOptions<unknown>): Promise<VcDocumentCollection | null> {
         return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
     }
 
@@ -2581,7 +2585,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVCs(filters?: FilterQuery<VcDocumentCollection>, options?: any): Promise<VcDocumentCollection[]> {
+    public static async getVCs(filters?: FilterQuery<VcDocumentCollection>, options?: FindOptions<VcDocumentCollection>): Promise<VcDocumentCollection[]> {
         return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
     }
 
@@ -2598,7 +2602,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVP(filters?: FilterQuery<VpDocumentCollection>, options?: any): Promise<VpDocumentCollection | null> {
+    public static async getVP(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<unknown>): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(filters, options);
     }
 
@@ -2607,7 +2611,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: any): Promise<VpDocumentCollection[]> {
+    public static async getVPs(filters?: FilterQuery<VpDocumentCollection>, options?: FindOptions<VpDocumentCollection>): Promise<VpDocumentCollection[]> {
         return await new DataBaseHelper(VpDocumentCollection).find(filters, options);
     }
 
@@ -2718,7 +2722,7 @@ export class DatabaseServer {
                 'hederaAccountId',
                 'active'
             ]
-        });
+        } as unknown as FindOptions<unknown>);
     }
 
     /**
@@ -2938,7 +2942,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifacts(filters?: FilterQuery<ArtifactCollection>, options?: any): Promise<ArtifactCollection[]> {
+    public static async getArtifacts(filters?: FilterQuery<ArtifactCollection>, options?: FindOptions<Artifact>): Promise<ArtifactCollection[]> {
         return await new DataBaseHelper(ArtifactCollection).find(filters, options);
     }
 
@@ -2948,7 +2952,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Artifacts
      */
-    public static async getArtifactsAndCount(filters?: FilterObject<ArtifactCollection>, options?: any): Promise<[ArtifactCollection[], number]> {
+    public static async getArtifactsAndCount(filters?: FilterObject<ArtifactCollection>, options?: FindOptions<unknown>): Promise<[ArtifactCollection[], number]> {
         return await new DataBaseHelper(ArtifactCollection).findAndCount(filters, options);
     }
 
@@ -3117,7 +3121,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getModulesAndCount(filters?: FilterObject<PolicyModule>, options?: any): Promise<[PolicyModule[], number]> {
+    public static async getModulesAndCount(filters?: FilterObject<PolicyModule>, options?: FindOptions<unknown>): Promise<[PolicyModule[], number]> {
         return await new DataBaseHelper(PolicyModule).findAndCount(filters, options);
     }
 
@@ -3158,7 +3162,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getModules(filters?: FilterQuery<PolicyModule>, options?: any): Promise<PolicyModule[]> {
+    public static async getModules(filters?: FilterQuery<PolicyModule>, options?: FindOptions<PolicyModule>): Promise<PolicyModule[]> {
         return await new DataBaseHelper(PolicyModule).find(filters, options);
     }
 
@@ -3195,7 +3199,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getToolsAndCount(filters?: FilterObject<PolicyTool>, options?: any): Promise<[PolicyTool[], number]> {
+    public static async getToolsAndCount(filters?: FilterObject<PolicyTool>, options?: FindOptions<unknown>): Promise<[PolicyTool[], number]> {
         return await new DataBaseHelper(PolicyTool).findAndCount(filters, options);
     }
 
@@ -3236,7 +3240,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTools(filters?: FilterQuery<PolicyTool>, options?: any): Promise<PolicyTool[]> {
+    public static async getTools(filters?: FilterQuery<PolicyTool>, options?: unknown): Promise<PolicyTool[]> {
         return await new DataBaseHelper(PolicyTool).find(filters, options);
     }
 
@@ -3278,7 +3282,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTags(filters?: FilterQuery<Tag>, options?: any): Promise<Tag[]> {
+    public static async getTags(filters?: FilterQuery<Tag>, options?: unknown): Promise<Tag[]> {
         return await new DataBaseHelper(Tag).find(filters, options);
     }
 
@@ -3304,7 +3308,7 @@ export class DatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getTagCache(filters?: FilterQuery<TagCache> , options?: any): Promise<TagCache[]> {
+    public static async getTagCache(filters?: FilterQuery<TagCache> , options?: FindOptions<TagCache>): Promise<TagCache[]> {
         return await new DataBaseHelper(TagCache).find(filters, options);
     }
 
@@ -3435,7 +3439,7 @@ export class DatabaseServer {
      * @param options Options
      * @returns Record
      */
-    public static async getRecord(filters?: FilterQuery<Record>, options?: any): Promise<Record[]> {
+    public static async getRecord(filters?: FilterQuery<Record>, options?: FindOptions<Record>): Promise<Record[]> {
         return await new DataBaseHelper(Record).find(filters, options);
     }
 
@@ -3458,7 +3462,7 @@ export class DatabaseServer {
      *
      * @returns Groups
      */
-    public static async getGroupsByUser(policyId: string, did: string, options?: any): Promise<PolicyRolesCollection[]> {
+    public static async getGroupsByUser(policyId: string, did: string, options?: FindOptions<PolicyRolesCollection>): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return [];
         }
