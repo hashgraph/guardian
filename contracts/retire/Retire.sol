@@ -5,14 +5,20 @@ pragma experimental ABIEncoderV2;
 import "./RetireImplementation.sol";
 import "./retire-single-token/RetireSingleToken.sol";
 import "./retire-double-token/RetireDoubleToken.sol";
+import "../version/Version.sol";
+import "../wipe/interfaces/Wipe_1_0_0.sol";
 
-contract Retire is RetireCommon {
+contract Retire is Version, RetireCommon {
     event PoolAdded(RetireTokenPool[], bool);
     event PoolRemoved(address[]);
     event RetireRequestAdded(address, RetireTokenRequest[]);
     event RetireRequestRemoved(address, address[]);
     event PoolsCleared(uint8);
     event RequestsCleared(uint8);
+
+    function ver() override public pure returns (uint256[3] memory) {
+        return [uint256(1),0,1];
+    }
 
     mapping(uint8 => RetireImplementation) implementations;
 
@@ -64,7 +70,7 @@ contract Retire is RetireCommon {
         require(success);
     }
 
-    function approveRetire(address usr, address[] calldata tokens)
+    function approveRetire(address usr, RetireTokenRequest[] calldata tokens)
         public
         override
         role(ADMIN)
@@ -78,7 +84,8 @@ contract Retire is RetireCommon {
                 )
             );
         require(success);
-        emit RetireRequestRemoved(usr, tokens);
+        address[] memory tIds = _getTokenIds(tokens);
+        emit RetireRequestRemoved(usr, tIds);
     }
 
     function cancelRetire(address[] calldata tokens) public {
@@ -140,7 +147,12 @@ contract Retire is RetireCommon {
         role(ADMIN)
     {
         for (uint256 i = 0; i < tokens.length; i++) {
-            try wipeContract(tokens[i].token).requestWiper() {} catch {}
+            (Wipe tokenContract, uint256[3] memory ver) = wipeContract(tokens[i].token);
+            if (ver[0] == 1 && ver[1] == 0 && ver[2] == 0) {
+                try Wipe_1_0_0(address(tokenContract)).requestWiper() {} catch {}
+            } else {
+                try tokenContract.requestWiper(tokens[i].token) {} catch {}
+            }
         }
         implementations[uint8(tokens.length)].setPool(tokens, immediately);
         emit PoolAdded(tokens, immediately);
@@ -156,6 +168,11 @@ contract Retire is RetireCommon {
     }
 
     function tokenAvailable(address token) public returns (bool) {
-        return wipeContract(token).isWiper();
+        (Wipe tokenContract, uint256[3] memory ver) = wipeContract(token);
+        if (ver[0] == 1 && ver[1] == 0 && ver[2] == 0) {
+            return Wipe_1_0_0(address(tokenContract)).isWiper();
+        } else {
+            return tokenContract.isWiper(token);
+        }
     }
 }

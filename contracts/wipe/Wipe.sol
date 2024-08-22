@@ -4,104 +4,126 @@ pragma experimental ABIEncoderV2;
 
 import "../access/Access.sol";
 import "../safe-hts-precompile/SafeHTS.sol";
-import "./storage/WipeStorageManager.sol";
-import "./storage/WipeStorage.sol";
+import "./storage/UserRequestStorage.sol";
+import "../version/Version.sol";
 
-contract Wipe is SafeHTS, Access {
+contract Wipe is Version, SafeHTS, Access {
     event AdminAdded(address account);
     event AdminRemoved(address account);
     event ManagerAdded(address account);
     event ManagerRemoved(address account);
-    event WiperAdded(address account);
-    event WiperRemoved(address account);
-    event WipeRequestAdded(address account);
-    event WipeRequestRemoved(address account);
-    event WipeRequestsCleared();
+    event WiperAdded(address account, address token);
+    event WiperRemoved(address account, address token);
+    event WipeRequestAdded(address account, address token);
+    event WipeRequestRemoved(address account, address token);
+    event WipeRequestsCleared(address account);
+    event RequestsDisabled();
+    event RequestsEnabled();
+    event Banned(address);
+    event Unbanned(address);
 
-    bytes32 constant WIPER = keccak256("WIPER");
     bytes32 constant MANAGER = keccak256("MANAGER");
     bytes32 constant ADMIN = keccak256("ADMIN");
 
-    WipeStorageManager storageManager;
-    WipeStorage wipeStorage;
-    mapping(address => bool) requestBan;
+    mapping(address => UserRequestStorage) userRequestStorage;
+    mapping(address => mapping(address => bool)) tokenStorage;
+    mapping(address => bool) bans;
     bool public requestsDisabled;
 
+    modifier isTokenWiper(address token) {
+        require(isWiper(token), "NOT_WIPER");
+        _;
+    }
+
+    modifier isNotBanned() {
+        require(!banned(), "BANNED");
+        _;
+    }
+
     constructor() {
-        _setRole(address(this), WIPER);
         _setRole(address(this), ADMIN);
         _setRole(address(this), MANAGER);
         emit AdminAdded(address(this));
         emit ManagerAdded(address(this));
-        emit WiperAdded(address(this));
 
-        _setRole(msg.sender, WIPER);
         _setRole(msg.sender, ADMIN);
         _setRole(msg.sender, MANAGER);
         emit AdminAdded(msg.sender);
         emit ManagerAdded(msg.sender);
-        emit WiperAdded(msg.sender);
-
-        storageManager = new WipeStorageManager();
-        clear();
     }
 
-    function requests() external view role(MANAGER) returns (address[] memory) {
-        return wipeStorage.requests();
+    function ver() override public pure returns (uint256[3] memory) {
+        return [uint256(1),0,1];
     }
 
     function banned() public view returns (bool) {
-        return requestBan[msg.sender];
+        return bans[msg.sender];
+    }
+
+    function ban(address account) public role(MANAGER) {
+        require(account != address(this));
+        require(!bans[account], "ALREADY_BANNED");
+        bans[account] = true;
+        emit Banned(account);
+    }
+
+    function unban(address account) public role(MANAGER) {
+        require(bans[account], "NOT_BANNED");
+        bans[account] = false;
+        emit Unbanned(account);
     }
 
     function enableRequests() external role(ADMIN) {
+        if (!requestsDisabled) {
+            return;
+        }
         requestsDisabled = false;
+        emit RequestsEnabled();
     }
 
     function disableRequests() external role(ADMIN) {
+        if (requestsDisabled) {
+            return;
+        }
         requestsDisabled = true;
+        emit RequestsDisabled();
     }
 
-    function clear() public role(OWNER) {
-        (bool success, bytes memory result) = address(storageManager).delegatecall(
-            abi.encodeWithSelector(storageManager.initStorage.selector)
-        );
-        require(success);
-        wipeStorage = abi.decode(result, (WipeStorage));
-        emit WipeRequestsCleared();
+    function clear(address account) external role(MANAGER) {
+        userRequestStorage[account] = UserRequestStorage(address(0));
+        emit WipeRequestsCleared(account);
     }
 
-    function setRequestBan(address account, bool flag) public role(MANAGER) {
-        requestBan[account] = flag;
+    function reject(address account, address token) public role(MANAGER) {
+        userRequestStorage[account].unsetRequest(token);
+        emit WipeRequestRemoved(account, token);
     }
 
-    function reject(address account, bool ban) public role(MANAGER) {
-        wipeStorage.unsetRequest(account);
-        emit WipeRequestRemoved(account);
-        setRequestBan(account, ban);
+    function approve(address account, address token) external role(MANAGER) {
+        addWiper(account, token);
+        reject(account, token);
     }
 
-    function approve(address account) external role(MANAGER) {
-        addWiper(account);
-        reject(account, false);
-    }
-
-    function requestWiper() public {
-        require(!requestBan[msg.sender], "BANNED");
+    function requestWiper(address token) public isNotBanned() {
+        require(!tokenStorage[msg.sender][token], "ALREADY_WIPER");
         require(!requestsDisabled, "REQUESTS_DISABLED");
-        require(!_hasRole(msg.sender, WIPER), "ALREADY_HAS_WIPER");
-        wipeStorage.setRequest(msg.sender);
-        emit WipeRequestAdded(msg.sender);
+        if (userRequestStorage[msg.sender] == UserRequestStorage(address(0))) {
+            userRequestStorage[msg.sender] = new UserRequestStorage();
+        }
+        userRequestStorage[msg.sender].setRequest(token);
+        emit WipeRequestAdded(msg.sender, token);
     }
 
-    function addWiper(address account) public role(MANAGER) {
-        _setRole(account, WIPER);
-        emit WiperAdded(account);
+    function addWiper(address account, address token) public role(MANAGER) {
+        require(!tokenStorage[msg.sender][token], "ALREADY_WIPER");
+        tokenStorage[msg.sender][token] = true;
+        emit WiperAdded(account, token);
     }
 
-    function removeWiper(address account) public role(MANAGER) {
-        _unsetRole(account, WIPER);
-        emit WiperRemoved(account);
+    function removeWiper(address account, address token) public role(MANAGER) {
+        require(tokenStorage[msg.sender][token], "NOT_WIPER");
+        tokenStorage[msg.sender][token] = false;
+        emit WiperRemoved(account, token);
     }
 
     function addManager(address account) public role(ADMIN) {
@@ -132,8 +154,8 @@ contract Wipe is SafeHTS, Access {
         return _hasRole(msg.sender, MANAGER);
     }
 
-    function isWiper() public view returns (bool) {
-        return _hasRole(msg.sender, WIPER);
+    function isWiper(address token) public view returns (bool) {
+        return tokenStorage[msg.sender][token];
     }
 
     function permissions() external view returns (uint8) {
@@ -147,9 +169,6 @@ contract Wipe is SafeHTS, Access {
         if (isManager()) {
             result |= 1 << 2;
         }
-        if (isWiper()) {
-            result |= 1 << 3;
-        }
         return result;
     }
 
@@ -157,7 +176,7 @@ contract Wipe is SafeHTS, Access {
         address token,
         address account,
         int64 amount
-    ) public role(WIPER) {
+    ) public isTokenWiper(token) isNotBanned() {
         safeWipeTokenAccount(token, account, amount);
     }
 
@@ -165,7 +184,7 @@ contract Wipe is SafeHTS, Access {
         address token,
         address account,
         int64[] memory serialNumbers
-    ) public role(WIPER) {
+    ) public isTokenWiper(token) isNotBanned() {
         safeWipeTokenAccountNFT(token, account, serialNumbers);
     }
 }

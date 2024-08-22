@@ -112,8 +112,8 @@ export class ContractService {
         );
     }
 
-    public clearWipeRequests(contractId: string) {
-        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests`);
+    public clearWipeRequests(contractId: string, accountId?: string) {
+        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests/${accountId}`);
     }
 
     public wipeAddAdmin(hederaId: string, contractId: string): Observable<any> {
@@ -151,19 +151,20 @@ export class ContractService {
         );
     }
 
-    public wipeAddWiper(hederaId: string, contractId: string): Observable<any> {
+    public wipeAddWiper(hederaId: string, contractId: string, tokenId?: string): Observable<any> {
         return this.http.post<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`,
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`,
             null
         );
     }
 
     public wipeRemoveWiper(
         hederaId: string,
-        contractId: string
+        contractId: string,
+        tokenId?: string
     ): Observable<any> {
         return this.http.delete<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`
         );
     }
 

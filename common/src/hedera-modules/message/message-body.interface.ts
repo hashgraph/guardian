@@ -559,4 +559,9 @@ export interface ContractMessageBody extends MessageBody {
      * Owner
      */
     owner: string;
+
+    /**
+     * Version
+     */
+    version: string;
 }

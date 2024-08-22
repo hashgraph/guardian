@@ -34,13 +34,21 @@ import { contractCall, contractQuery, createContract, customContractCall, publis
 import { emptyNotifier } from '../helpers/notifier.js';
 
 const retireAbi = new ethers.Interface([
+    'function approveRetire(address, tuple(address, int64, int64[])[])',
     'function retire(tuple(address, int64, int64[])[])',
     'function setRequest(address, tuple(address, int64, int64[])[])',
     'function setPool(tuple(address, int64)[], bool)',
 ]);
 
-const wipeEventsAbi = new ethers.Interface([
+const versionEventsAbi = new ethers.Interface([
+    'event Version(uint256[3])',
+]);
+
+const accessEventsAbi = new ethers.Interface([
     'event OwnerAdded(address)',
+]);
+
+const wipeEventsAbi = new ethers.Interface([
     'event AdminAdded(address account)',
     'event AdminRemoved(address account)',
     'event ManagerAdded(address account)',
@@ -50,10 +58,20 @@ const wipeEventsAbi = new ethers.Interface([
     'event WipeRequestAdded(address)',
     'event WipeRequestRemoved(address)',
     'event WipeRequestsCleared()',
+    'event WiperAdded(address account, address token)',
+    'event WiperRemoved(address account, address token)',
+    'event WipeRequestAdded(address account, address token)',
+    'event WipeRequestRemoved(address account, address token)',
+    'event WipeRequestsCleared(address account)',
+    'event RequestsDisabled()',
+    'event RequestsEnabled()',
+    'event Banned(address)',
+    'event Unbanned(address)',
+    ...versionEventsAbi.fragments,
+    ...accessEventsAbi.fragments,
 ]);
 
 const retireEventsAbi = new ethers.Interface([
-    'event OwnerAdded(address)',
     'event AdminAdded(address)',
     'event AdminRemoved(address)',
     'event Retire(address, tuple(address, int64, int64[])[])',
@@ -63,7 +81,40 @@ const retireEventsAbi = new ethers.Interface([
     'event RetireRequestRemoved(address, address[])',
     'event PoolsCleared(uint8)',
     'event RequestsCleared(uint8)',
+    ...versionEventsAbi.fragments,
+    ...accessEventsAbi.fragments
 ]);
+
+async function getContractMessage(
+    workers,
+    contractId
+): Promise<[ContractMessage, string]> {
+    const { memo } = await workers.addNonRetryableTask(
+        {
+            type: WorkerTaskType.GET_CONTRACT_INFO,
+            data: {
+                contractId,
+            },
+        },
+        20,
+        null
+    );
+
+    const message = await workers.addRetryableTask(
+        {
+            type: WorkerTaskType.GET_TOPIC_MESSAGE_BY_INDEX,
+            data: {
+                topic: memo,
+                index: 1,
+            },
+        },
+        10
+    );
+
+    const contractMessage = ContractMessage.fromMessage(message?.message);
+
+    return [contractMessage, memo];
+}
 
 export function getTokenContractId(wipeKey: { _type: string; key: string }) {
     if (wipeKey._type !== 'ProtobufEncoded') {
@@ -103,22 +154,27 @@ async function setPool(
             const wipeContractId = getTokenContractId(tokenInfo.wipe_key);
 
             let isWiper = false;
+            let contractMessage;
             try {
+                [contractMessage] = await getContractMessage(workers, wipeContractId);
                 isWiper = await isContractWiper(
                     workers,
-                    wipeContractId,
+                    contractMessage,
                     contractId
                 );
                 // tslint:disable-next-line:no-empty
             } catch { }
+
             await setContractWiperPermissions(
                 contractRepository,
                 retirePoolRepository,
                 contractId,
                 wipeContractId,
-                isWiper
+                isWiper,
+                contractMessage && contractMessage.version !== '1.0.0'
+                    ? item.token
+                    : null
             );
-
             return {
                 token: item.token,
                 count: item.count,
@@ -139,7 +195,9 @@ async function setPool(
 
     pool.enabled =
         pool.tokens.findIndex(
-            (token) => !contract.wipeContractIds.includes(token.contract)
+            (token) =>
+                !contract.wipeContractIds.includes(token.contract) &&
+                !contract.wipeTokenIds.includes(token.token)
         ) < 0;
 
     const tokenIds = options.tokens.map((item) => item.token);
@@ -169,7 +227,8 @@ async function setContractWiperPermissions(
     retirePoolRepository: DataBaseHelper<RetirePool>,
     contractId: string,
     wipeContractId: string,
-    isWiper: boolean
+    isWiper: boolean,
+    token?: string,
 ) {
     const contracts = await contractRepository.find({
         contractId,
@@ -181,12 +240,22 @@ async function setContractWiperPermissions(
     await contractRepository.update(
         await Promise.all(
             contracts.map(async (contract) => {
-                contract.wipeContractIds = contract.wipeContractIds.filter(
-                    (contractWipeContractId) =>
-                        contractWipeContractId !== wipeContractId
-                );
-                if (isWiper) {
-                    contract.wipeContractIds.push(wipeContractId);
+                if (token) {
+                    contract.wipeTokenIds = contract.wipeTokenIds.filter(
+                        (contractTokenId) =>
+                            token !== contractTokenId
+                    );
+                    if (isWiper) {
+                        contract.wipeTokenIds.push(token);
+                    }
+                } else {
+                    contract.wipeContractIds = contract.wipeContractIds.filter(
+                        (contractWipeContractId) =>
+                            contractWipeContractId !== wipeContractId
+                    );
+                    if (isWiper) {
+                        contract.wipeContractIds.push(wipeContractId);
+                    }
                 }
                 return contract;
             })
@@ -208,8 +277,8 @@ async function setContractWiperPermissions(
 
                 pool.enabled =
                     pool.tokens.findIndex(
-                        (token) =>
-                            !contract.wipeContractIds.includes(token.contract)
+                        (poolToken) =>
+                            !contract.wipeContractIds.includes(poolToken.contract) && !contract.wipeTokenIds.includes(poolToken.token)
                     ) < 0;
                 return pool;
             })
@@ -271,28 +340,30 @@ async function setRetireRequest(
 
     const tokenIds = tokens.map((token) => token.token);
 
+    await retireRequestRepository.delete({
+        $and: [
+            {
+                user,
+                contractId,
+            },
+            {
+                $or: [
+                    {
+                        tokenIds: { $eq: [...tokenIds] },
+                    },
+                    {
+                        tokenIds: { $eq: tokenIds.reverse() },
+                    },
+                ],
+            },
+        ],
+    })
+
     await retireRequestRepository.save(
         {
             user,
             tokens: newTokens,
             contractId,
-        },
-        {
-            $and: [
-                {
-                    user,
-                },
-                {
-                    $or: [
-                        {
-                            tokenIds: { $eq: [...tokenIds] },
-                        },
-                        {
-                            tokenIds: { $eq: tokenIds.reverse() },
-                        },
-                    ],
-                },
-            ],
         }
     );
 }
@@ -311,11 +382,13 @@ export async function syncWipeContracts(
             syncDisabled: { $ne: true },
         },
         {
-            fields: ['contractId', 'lastSyncEventTimeStamp'],
+            fields: ['contractId', 'lastSyncEventTimeStamp', 'version'],
         }
     );
+    const contractVersions = new Map<string, string>();
     const maxTimestamps = new Map<string, string>();
     contracts.forEach((contract) => {
+        contractVersions.set(contract.contractId, contract.version);
         const maxTimestamp = maxTimestamps.get(contract.contractId) || '';
         const timestamp = contract.lastSyncEventTimeStamp || '';
         if (timestamp > maxTimestamp) {
@@ -342,7 +415,10 @@ export async function syncWipeContracts(
             retirePoolRepository,
             workers,
             users,
-            contractId,
+            {
+                contractId,
+                version: contractVersions.get(contractId)
+            },
             lastSyncEventTimeStamp
         );
     }
@@ -354,10 +430,12 @@ export async function syncWipeContract(
     retirePoolRepository: DataBaseHelper<RetirePool>,
     workers: Workers,
     users: Users,
-    contractId: string,
+    contract: { contractId: string, version: string },
     timestamp?: string,
     sendNotifications: boolean = true
 ) {
+    const { contractId, version } = contract;
+    const isFirstVersion = version === '1.0.0';
     const timestamps = [timestamp];
     let lastTimeStamp;
     while (timestamps.length) {
@@ -404,70 +482,149 @@ export async function syncWipeContract(
                     const retireContractId = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
-                    await setContractWiperPermissions(
-                        contractRepository,
-                        retirePoolRepository,
-                        retireContractId,
-                        contractId,
-                        true
-                    );
+
+                    if (isFirstVersion) {
+                        await setContractWiperPermissions(
+                            contractRepository,
+                            retirePoolRepository,
+                            retireContractId,
+                            contractId,
+                            true
+                        );
+                    } else {
+                        const token = TokenId.fromSolidityAddress(
+                            data[1]
+                        ).toString();
+                        await setContractWiperPermissions(
+                            contractRepository,
+                            retirePoolRepository,
+                            retireContractId,
+                            contractId,
+                            true,
+                            token
+                        );
+                    }
                     break;
                 }
                 case 'WiperRemoved': {
                     const retireContractId = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
-                    await setContractWiperPermissions(
-                        contractRepository,
-                        retirePoolRepository,
-                        retireContractId,
-                        contractId,
-                        false
-                    );
+
+                    if (isFirstVersion) {
+                        await setContractWiperPermissions(
+                            contractRepository,
+                            retirePoolRepository,
+                            retireContractId,
+                            contractId,
+                            false
+                        );
+                    } else {
+                        const token = TokenId.fromSolidityAddress(
+                            data[1]
+                        ).toString();
+                        await setContractWiperPermissions(
+                            contractRepository,
+                            retirePoolRepository,
+                            retireContractId,
+                            contractId,
+                            false,
+                            token
+                        );
+                    }
                     break;
                 }
                 case 'WipeRequestAdded': {
                     const user: string = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
-                    await wipeRequestRepository.save(
-                        {
+
+                    if (isFirstVersion) {
+                        await wipeRequestRepository.delete({
                             user,
                             contractId,
-                        },
-                        {
+                        });
+                        await wipeRequestRepository.save({
                             user,
                             contractId,
+                        });
+                        if (!sendNotifications) {
+                            break;
                         }
-                    );
-                    if (!sendNotifications) {
-                        break;
-                    }
-                    Promise.all(
-                        contractOwnerIds.map((contractOwnerId) =>
-                            NotificationHelper.info(
-                                `Wiper requsted in contract: ${contractId}`,
-                                `${user} requested wiper role`,
-                                contractOwnerId
+                        Promise.all(
+                            contractOwnerIds.map((contractOwnerId) =>
+                                NotificationHelper.info(
+                                    `Wiper requsted in contract: ${contractId}`,
+                                    `${user} requested wiper role`,
+                                    contractOwnerId
+                                )
                             )
-                        )
-                    );
+                        );
+                    } else {
+                        const token: string = TokenId.fromSolidityAddress(
+                            data[1]
+                        ).toString();
+                        await wipeRequestRepository.delete({
+                            user,
+                            contractId,
+                            token
+                        });
+                        await wipeRequestRepository.save({
+                            user,
+                            contractId,
+                            token
+                        });
+                        if (!sendNotifications) {
+                            break;
+                        }
+                        Promise.all(
+                            contractOwnerIds.map((contractOwnerId) =>
+                                NotificationHelper.info(
+                                    `Wiper requsted in contract: ${contractId}`,
+                                    `${user} requested wiper role for token ${token}`,
+                                    contractOwnerId
+                                )
+                            )
+                        );
+                    }
                     break;
                 }
                 case 'WipeRequestRemoved': {
                     const user: string = AccountId.fromSolidityAddress(
                         data[0]
                     ).toString();
-                    await wipeRequestRepository.delete({
-                        contractId,
-                        user,
-                    });
+
+                    if (isFirstVersion) {
+                        await wipeRequestRepository.delete({
+                            contractId,
+                            user,
+                        });
+                    } else {
+                        const token: string = TokenId.fromSolidityAddress(
+                            data[1]
+                        ).toString();
+                        await wipeRequestRepository.delete({
+                            contractId,
+                            user,
+                            token
+                        });
+                    }
                     break;
                 }
                 case 'WipeRequestsCleared': {
-                    await wipeRequestRepository.delete({
-                        contractId,
-                    });
+                    if (isFirstVersion) {
+                        await wipeRequestRepository.delete({
+                            contractId,
+                        });
+                    } else {
+                        const user: string = AccountId.fromSolidityAddress(
+                            data[0]
+                        ).toString();
+                        await wipeRequestRepository.delete({
+                            contractId,
+                            user
+                        });
+                    }
                     break;
                 }
                 default:
@@ -486,10 +643,10 @@ export async function syncWipeContract(
         contractId,
     });
     await contractRepository.update(
-        contracts.map((contract) => {
-            contract.lastSyncEventTimeStamp = lastTimeStamp;
-            contract.syncDisabled = false;
-            return contract;
+        contracts.map((updContract) => {
+            updContract.lastSyncEventTimeStamp = lastTimeStamp;
+            updContract.syncDisabled = false;
+            return updContract;
         })
     );
 }
@@ -834,12 +991,14 @@ export async function syncRetireContract(
 
 async function isContractWiper(
     workers: Workers,
-    contractId: string,
-    retireContractId: string
+    contract: { contractId: string, version: string },
+    retireContractId: string,
+    token?: string
 ): Promise<boolean> {
-    if (!contractId || !retireContractId) {
+    if (!contract.contractId || !retireContractId) {
         return false;
     }
+    const isFirstVersion = contract.version === '1.0.0';
     const timestamps = [undefined];
     while (timestamps.length) {
         const timestamp = timestamps.pop();
@@ -847,7 +1006,7 @@ async function isContractWiper(
             {
                 type: WorkerTaskType.GET_CONTRACT_EVENTS,
                 data: {
-                    contractId,
+                    contractId: contract.contractId,
                     timestamp: timestamp ? `lt:${timestamp}` : null,
                     order: 'desc',
                 },
@@ -866,20 +1025,40 @@ async function isContractWiper(
 
             switch (eventName) {
                 case 'WiperAdded': {
-                    if (
-                        AccountId.fromSolidityAddress(data[0]).toString() ===
-                        retireContractId
-                    ) {
-                        return true;
+                    if (isFirstVersion) {
+                        if (
+                            AccountId.fromSolidityAddress(data[0]).toString() ===
+                            retireContractId
+                        ) {
+                            return true;
+                        }
+                    } else {
+                        if (
+                            (AccountId.fromSolidityAddress(data[0]).toString() ===
+                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                            token)
+                        ) {
+                            return true;
+                        }
                     }
                     break;
                 }
                 case 'WiperRemoved': {
-                    if (
-                        AccountId.fromSolidityAddress(data[0]).toString() ===
-                        retireContractId
-                    ) {
-                        return false;
+                    if (isFirstVersion) {
+                        if (
+                            AccountId.fromSolidityAddress(data[0]).toString() ===
+                            retireContractId
+                        ) {
+                            return false;
+                        }
+                    } else {
+                        if (
+                            (AccountId.fromSolidityAddress(data[0]).toString() ===
+                            retireContractId) && (TokenId.fromSolidityAddress(data[1]).toString() ===
+                            token)
+                        ) {
+                            return false;
+                        }
                     }
                     break;
                 }
@@ -890,6 +1069,7 @@ async function isContractWiper(
 
         timestamps.push(result[result.length - 1].timestamp);
     }
+    return false;
 }
 
 async function getContractPermissions(
@@ -909,6 +1089,25 @@ async function getContractPermissions(
         )
     );
     return Number(new ethers.AbiCoder().decode(['uint8'], result)[0]);
+}
+
+export async function getContractVersion(log: any): Promise<string> {
+    if (!log) {
+        return '1.0.0';
+    }
+    try {
+        const eventName = versionEventsAbi.getEventName(
+            '0x'.concat(Buffer.from(log.topics[0]).toString('hex'))
+        );
+        const version = versionEventsAbi.decodeEventLog(
+            eventName,
+            '0x'.concat(Buffer.from(log.data).toString('hex'))
+        );
+        return version[0].join('.');
+    } catch (error) {
+        console.error(error);
+        return '1.0.0';
+    }
 }
 
 async function saveRetireVC(
@@ -1100,7 +1299,7 @@ export async function contractAPI(
                 }
             );
 
-            const contractId = await createContract(
+            const [contractId, log] = await createContract(
                 ContractAPI.CREATE_CONTRACT,
                 workers,
                 type,
@@ -1112,14 +1311,21 @@ export async function contractAPI(
             await topic.saveKeys();
             await DatabaseServer.saveTopic(topic.toObject());
 
+            const version = await getContractVersion(
+                log
+            );
             const contract = await contractRepository.save({
                 contractId,
                 owner: owner.creator,
                 description,
-                permissions: type === ContractType.WIPE ? 15 : 3,
+                permissions: type === ContractType.WIPE ?
+                    (version !== '1.0.0' ? 7 : 15)
+                    : 3,
                 type,
                 topicId: topic.topicId,
                 wipeContractIds: [],
+                wipeTokenIds: [],
+                version,
             });
 
             const contractMessage = new ContractMessage(
@@ -1181,33 +1387,7 @@ export async function contractAPI(
                 rootKey
             );
 
-            const { memo } = await workers.addNonRetryableTask(
-                {
-                    type: WorkerTaskType.GET_CONTRACT_INFO,
-                    data: {
-                        contractId,
-                        hederaAccountId: root.hederaAccountId,
-                        hederaAccountKey: rootKey,
-                    },
-                },
-                20,
-                null
-            );
-
-            const message = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TOPIC_MESSAGE_BY_INDEX,
-                    data: {
-                        topic: memo,
-                        index: 1,
-                    },
-                },
-                10
-            );
-
-            const contractMessage = ContractMessage.fromMessage(
-                message?.message
-            );
+            const [contractMessage, memo] = await getContractMessage(workers, contractId);
 
             const existingContract = await contractRepository.findOne({
                 contractId,
@@ -1222,6 +1402,7 @@ export async function contractAPI(
                     topicId: memo,
                     type: contractMessage.contractType,
                     wipeContractIds: [],
+                    wipeTokenIds: [],
                     lastSyncEventTimeStamp:
                         existingContract?.lastSyncEventTimeStamp,
                     syncPoolsDate: existingContract?.syncPoolsDate,
@@ -1229,6 +1410,7 @@ export async function contractAPI(
                     syncDisabled: existingContract
                         ? existingContract?.syncDisabled
                         : true,
+                    version: contractMessage.version
                 },
                 {
                     contractId,
@@ -1259,7 +1441,7 @@ export async function contractAPI(
                     retirePoolRepository,
                     workers,
                     users,
-                    contractId,
+                    contract,
                     existingContract?.lastSyncEventTimeStamp,
                     false
                 );
@@ -1561,6 +1743,26 @@ export async function contractAPI(
                     owner.creator
                 );
 
+                const contract = await contractRepository.findOne({
+                    contractId: request.contractId
+                });
+
+                const params = [{
+                    type: ContractParamType.ADDRESS,
+                    value: AccountId.fromString(
+                        request.user
+                    ).toSolidityAddress(),
+                }]
+
+                if (contract.version !== '1.0.0') {
+                    params.push({
+                        type: ContractParamType.ADDRESS,
+                        value: TokenId.fromString(
+                            request.token
+                        ).toSolidityAddress(),
+                    })
+                }
+
                 await contractCall(
                     ContractAPI.APPROVE_WIPE_REQUEST,
                     workers,
@@ -1568,14 +1770,7 @@ export async function contractAPI(
                     root.hederaAccountId,
                     rootKey,
                     'approve',
-                    [
-                        {
-                            type: ContractParamType.ADDRESS,
-                            value: AccountId.fromString(
-                                request.user
-                            ).toSolidityAddress(),
-                        },
-                    ]
+                    params,
                 );
 
                 await wipeRequestRepository.remove(request);
@@ -1585,7 +1780,8 @@ export async function contractAPI(
                     retirePoolRepository,
                     request.user,
                     request.contractId,
-                    true
+                    true,
+                    request.token
                 );
 
                 return new MessageResponse(true);
@@ -1631,6 +1827,31 @@ export async function contractAPI(
                 owner.creator
             );
 
+            const contract = await contractRepository.findOne({
+                contractId: request.contractId
+            });
+
+            const params: any[] = [{
+                type: ContractParamType.ADDRESS,
+                value: AccountId.fromString(
+                    request.user
+                ).toSolidityAddress(),
+            }]
+
+            if (contract.version === '1.0.0') {
+                params.push({
+                    type: ContractParamType.BOOL,
+                    value: ban,
+                })
+            } else {
+                params.push({
+                    type: ContractParamType.ADDRESS,
+                    value: TokenId.fromString(
+                        request.token
+                    ).toSolidityAddress(),
+                })
+            }
+
             await contractCall(
                 ContractAPI.REJECT_WIPE_REQUEST,
                 workers,
@@ -1638,18 +1859,7 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey,
                 'reject',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            request.user
-                        ).toSolidityAddress(),
-                    },
-                    {
-                        type: ContractParamType.BOOL,
-                        value: ban,
-                    },
-                ]
+                params,
             );
 
             await wipeRequestRepository.remove(request);
@@ -1662,13 +1872,13 @@ export async function contractAPI(
     });
 
     ApiResponse(ContractAPI.CLEAR_WIPE_REQUESTS,
-        async (msg: { owner: IOwner, id: string }) => {
+        async (msg: { owner: IOwner, id: string, hederaId?: string }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid get contract parameters');
                 }
 
-                const { owner, id } = msg;
+                const { owner, id, hederaId } = msg;
 
                 if (!id) {
                     throw new Error('Invalid contract identifier');
@@ -1678,7 +1888,7 @@ export async function contractAPI(
                 }
 
                 const contract = await contractRepository.findOne(id, {
-                    fields: ['contractId'],
+                    fields: ['contractId', 'version'],
                 });
                 if (!contract) {
                     throw new Error('Contract not found');
@@ -1701,10 +1911,18 @@ export async function contractAPI(
                     contractId,
                     root.hederaAccountId,
                     rootKey,
-                    'clear'
+                    'clear',
+                    contract.version !== '1.0.0' ? [{
+                        type: ContractParamType.ADDRESS,
+                        value: AccountId.fromString(
+                            hederaId
+                        ).toSolidityAddress(),
+                    }] : null
                 );
-
-                await wipeRequestRepository.delete({
+                await wipeRequestRepository.delete(contract.version !== '1.0.0' ? {
+                    contractId,
+                    user: hederaId
+                } : {
                     contractId,
                 });
 
@@ -1975,13 +2193,14 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
+        tokenId?: string
     }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { owner, id, hederaId } = msg;
+            const { owner, id, hederaId, tokenId } = msg;
 
             if (!id) {
                 throw new Error('Invalid contract identifier');
@@ -1994,7 +2213,7 @@ export async function contractAPI(
             }
 
             const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
+                fields: ['contractId', 'version'],
             });
             if (!contract) {
                 throw new Error('Contract not found');
@@ -2011,6 +2230,23 @@ export async function contractAPI(
                 owner.creator
             );
 
+            const params = [
+                {
+                    type: ContractParamType.ADDRESS,
+                    value: AccountId.fromString(
+                        hederaId
+                    ).toSolidityAddress(),
+                },
+            ];
+            if (contract.version !== '1.0.0') {
+                params.push({
+                    type: ContractParamType.ADDRESS,
+                    value: TokenId.fromString(
+                        tokenId
+                    ).toSolidityAddress(),
+                })
+            }
+
             await contractCall(
                 ContractAPI.ADD_WIPE_WIPER,
                 workers,
@@ -2018,14 +2254,7 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey,
                 'addWiper',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
-                    },
-                ]
+                params,
             );
 
             return new MessageResponse(true);
@@ -2039,13 +2268,14 @@ export async function contractAPI(
         owner: IOwner,
         id: string,
         hederaId: string
+        tokenId?: string
     }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { owner, id, hederaId } = msg;
+            const { owner, id, hederaId, tokenId } = msg;
 
             if (!id) {
                 throw new Error('Invalid contract identifier');
@@ -2058,7 +2288,7 @@ export async function contractAPI(
             }
 
             const contract = await contractRepository.findOne(id, {
-                fields: ['contractId'],
+                fields: ['contractId', 'version'],
             });
             if (!contract) {
                 throw new Error('Contract not found');
@@ -2075,6 +2305,23 @@ export async function contractAPI(
                 owner.creator
             );
 
+            const params = [
+                {
+                    type: ContractParamType.ADDRESS,
+                    value: AccountId.fromString(
+                        hederaId
+                    ).toSolidityAddress(),
+                },
+            ];
+            if (contract.version !== '1.0.0') {
+                params.push({
+                    type: ContractParamType.ADDRESS,
+                    value: TokenId.fromString(
+                        tokenId
+                    ).toSolidityAddress(),
+                })
+            }
+
             await contractCall(
                 ContractAPI.REMOVE_WIPE_WIPER,
                 workers,
@@ -2082,14 +2329,7 @@ export async function contractAPI(
                 root.hederaAccountId,
                 rootKey,
                 'removeWiper',
-                [
-                    {
-                        type: ContractParamType.ADDRESS,
-                        value: AccountId.fromString(
-                            hederaId
-                        ).toSolidityAddress(),
-                    },
-                ]
+                params,
             );
 
             return new MessageResponse(true);
@@ -2148,9 +2388,10 @@ export async function contractAPI(
                             continue;
                         }
                         handledContracts.add(token.contract);
+                        const [contractMessage] = await getContractMessage(workers, token.contract);
                         const isWiper = await isContractWiper(
                             workers,
-                            token.contract,
+                            contractMessage,
                             contractId
                         );
                         await setContractWiperPermissions(
@@ -2158,7 +2399,8 @@ export async function contractAPI(
                             retirePoolRepository,
                             contractId,
                             token.contract,
-                            isWiper
+                            isWiper,
+                            contractMessage.version !== '1.0.0' ? token.token : null
                         );
                     }
                     // tslint:disable-next-line:no-shadowed-variable
@@ -2169,7 +2411,7 @@ export async function contractAPI(
                     pool.enabled =
                         pool.tokens.findIndex(
                             (token) =>
-                                !contract.wipeContractIds.includes(token.contract)
+                                !contract.wipeContractIds.includes(token.contract) && !contract.wipeTokenIds.includes(token.token)
                         ) < 0;
                 }
 
@@ -2795,28 +3037,54 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                const result = await contractCall(
-                    ContractAPI.APPROVE_RETIRE,
-                    workers,
-                    request.contractId,
-                    root.hederaAccountId,
-                    rootKey,
-                    'approveRetire',
-                    [
-                        {
-                            type: ContractParamType.ADDRESS,
-                            value: AccountId.fromString(
+                const contract = await contractRepository.findOne({
+                    contractId: request.contractId,
+                    owner
+                })
+
+                let result;
+                if (contract.version === '1.0.0') {
+                    result = await contractCall(
+                        ContractAPI.APPROVE_RETIRE,
+                        workers,
+                        request.contractId,
+                        root.hederaAccountId,
+                        rootKey,
+                        'approveRetire',
+                        [
+                            {
+                                type: ContractParamType.ADDRESS,
+                                value: AccountId.fromString(
+                                    request.user
+                                ).toSolidityAddress(),
+                            },
+                            {
+                                type: ContractParamType.ADDRESS_ARRAY,
+                                value: request.tokens.map((token) =>
+                                    TokenId.fromString(token.token).toSolidityAddress()
+                                ),
+                            },
+                        ]
+                    );
+                } else {
+                    result = await customContractCall(
+                        ContractAPI.APPROVE_RETIRE,
+                        workers,
+                        request.contractId,
+                        root.hederaAccountId,
+                        rootKey,
+                        retireAbi.encodeFunctionData('approveRetire', [
+                            AccountId.fromString(
                                 request.user
                             ).toSolidityAddress(),
-                        },
-                        {
-                            type: ContractParamType.ADDRESS_ARRAY,
-                            value: request.tokens.map((token) =>
-                                TokenId.fromString(token.token).toSolidityAddress()
-                            ),
-                        },
-                    ]
-                );
+                            request.tokens.map((token) => [
+                                TokenId.fromString(token.token).toSolidityAddress(),
+                                token.count,
+                                token.serials,
+                            ])
+                        ])
+                    );
+                }
 
                 await saveRetireVC(
                     contractRepository,

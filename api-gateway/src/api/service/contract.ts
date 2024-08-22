@@ -515,7 +515,7 @@ export class ContractsApi {
     /**
      * Remove all wipe requests
      */
-    @Delete('/wipe/:contractId/requests')
+    @Delete('/wipe/:contractId/requests/:hederaId')
     @Auth(
         Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
         // UserRole.STANDARD_REGISTRY,
@@ -531,6 +531,13 @@ export class ContractsApi {
         required: true,
         example: '652745597a7b53526de37c05',
     })
+    @ApiParam({
+        name: 'hederaId',
+        description: 'Hedera identifier',
+        type: String,
+        required: false,
+        example: '0.0.1',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -544,11 +551,12 @@ export class ContractsApi {
     async clearWipeRequests(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId?: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.clearWipeRequests(owner, contractId);
+            return await guardians.clearWipeRequests(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -757,7 +765,7 @@ export class ContractsApi {
     /**
      * Add wipe wiper
      */
-    @Post('/wipe/:contractId/wiper/:hederaId')
+    @Post('/wipe/:contractId/wiper/:hederaId/:tokenId')
     @Auth(
         Permissions.CONTRACTS_WIPER_CREATE,
         // UserRole.STANDARD_REGISTRY,
@@ -780,6 +788,13 @@ export class ContractsApi {
         required: true,
         example: '0.0.1',
     })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: false,
+        example: '0.0.1',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -793,12 +808,13 @@ export class ContractsApi {
     async wipeAddWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId?: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.addWipeWiper(owner, contractId, hederaId);
+            return await guardians.addWipeWiper(owner, contractId, hederaId, tokenId);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -807,7 +823,7 @@ export class ContractsApi {
     /**
      * Remove wipe wiper
      */
-    @Delete('/wipe/:contractId/wiper/:hederaId')
+    @Delete('/wipe/:contractId/wiper/:hederaId/:tokenId')
     @Auth(
         Permissions.CONTRACTS_WIPER_DELETE,
         // UserRole.STANDARD_REGISTRY,
@@ -830,6 +846,13 @@ export class ContractsApi {
         required: true,
         example: '0.0.1',
     })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: false,
+        example: '0.0.1',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -843,12 +866,13 @@ export class ContractsApi {
     async wipeRemoveWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId?: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.removeWipeWiper(owner, contractId, hederaId);
+            return await guardians.removeWipeWiper(owner, contractId, hederaId, tokenId);
         } catch (error) {
             await InternalException(error, this.logger);
         }
