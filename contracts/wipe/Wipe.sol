@@ -120,14 +120,14 @@ contract Wipe is Version, SafeHTS, Access {
     }
 
     function addWiper(address account, address token) public role(MANAGER) {
-        require(!tokenStorage[msg.sender][token], "ALREADY_WIPER");
-        tokenStorage[msg.sender][token] = true;
+        require(!tokenStorage[account][token], "ALREADY_WIPER");
+        tokenStorage[account][token] = true;
         emit WiperAdded(account, token);
     }
 
     function removeWiper(address account, address token) public role(MANAGER) {
-        require(tokenStorage[msg.sender][token], "NOT_WIPER");
-        tokenStorage[msg.sender][token] = false;
+        require(tokenStorage[account][token], "NOT_WIPER");
+        tokenStorage[account][token] = false;
         emit WiperRemoved(account, token);
     }
 
