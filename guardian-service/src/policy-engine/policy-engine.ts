@@ -1362,7 +1362,7 @@ export class PolicyEngine extends NatsService {
             user: userAccount.hederaAccountId,
             policyOwner: root.hederaAccountId,
             type: data.mainPolicyTopicId === policy.instanceTopicId ? 'Main' : 'Sub',
-        });
+        } as MultiPolicy);
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
         message.setDocument(multipleConfig);

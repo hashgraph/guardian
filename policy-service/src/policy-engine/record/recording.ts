@@ -8,6 +8,7 @@ import { RecordAction } from './action.type.js';
 import { RecordMethod } from './method.type.js';
 import { RecordItem } from './record-item.js';
 import { FilterObject } from '@mikro-orm/core';
+import { PopulatePath } from '@mikro-orm/mongodb';
 
 /**
  * Recording controller
@@ -235,7 +236,7 @@ export class Recording {
                     'time',
                     'user',
                     'target'
-                ]
+                ] as unknown as PopulatePath.ALL[]
             }
         ) as any;
     }

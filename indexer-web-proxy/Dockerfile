@@ -10,8 +10,8 @@ ARG YARN_CACHE_FOLDER=/root/.yarn
 FROM base as interfaces
 COPY --link indexer-interfaces/package.json indexer-interfaces/tsconfig*.json yarn.lock ./
 COPY --link indexer-interfaces/src src/
-# Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn \
+# Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable && yarn pack
 
 # Stage 2: Build frontend

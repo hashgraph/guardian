@@ -430,7 +430,7 @@ export async function importToolByFile(
         {
             fields: ['name', 'iri'],
         }
-    )) as { name: string; iri: string }[];
+    ));
 
     // Import Schemas
     const schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
@@ -440,7 +440,7 @@ export async function importToolByFile(
             category: SchemaCategory.TOOL,
             topicId: tool.topicId,
             skipGenerateId: false,
-            outerSchemas: toolsSchemas
+            outerSchemas: toolsSchemas as { name: string; iri: string }[]
         },
         notifier
     );

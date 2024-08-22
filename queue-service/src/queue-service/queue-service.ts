@@ -209,7 +209,7 @@ export class QueueService extends NatsService{
         const dataBaseServer = new DatabaseServer();
 
         const tasks =
-            await dataBaseServer.aggregate(TaskEntity, dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout) as FilterObject<any>[]);
+            await dataBaseServer.aggregate(TaskEntity, dataBaseServer.getTasksAggregationFilters(MAP_TASKS_AGGREGATION_FILTERS.RESULT, this.processTimeout));
 
         for (const task of tasks) {
             task.processedTime = null;

@@ -1,4 +1,4 @@
-import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData } from '@mikro-orm/core';
+import { MikroORM, CreateRequestContext, wrap, FilterObject, FilterQuery, FindAllOptions, EntityData, RequiredEntityData, FindOneOptions } from '@mikro-orm/core';
 import { MongoDriver, MongoEntityManager, MongoEntityRepository, ObjectId } from '@mikro-orm/mongodb';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseNamingStrategy } from './db-naming-strategy.js';
@@ -6,29 +6,7 @@ import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MintTransactionStatus } from '@guardian/interfaces';
-
-interface ICommonConnectionConfig {
-    driver: typeof MongoDriver;
-    namingStrategy: typeof DataBaseNamingStrategy;
-    dbName: string;
-    clientUrl: string;
-    entities: string[];
-}
-export interface IGetAggregationFilters {
-    aggregation: unknown[],
-    aggregateMethod: string,
-    nameFilter: string,
-}
-
-export interface IGetDocumentAggregationFilters extends IGetAggregationFilters {
-    timelineLabelPath?: string,
-    timelineDescriptionPath?: string,
-    dryRun?: string,
-    sortObject?: Record<string, unknown>,
-    itemsPerPage?: number,
-    page?: number,
-    policyId?: string,
-}
+import { ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces';
 
 export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     BASE: 'base',
@@ -609,7 +587,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<T>): Promise<number> {
+    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 
@@ -649,7 +627,7 @@ export class DataBaseHelper<T extends BaseEntity> {
      * @returns Entity
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: unknown = {}): Promise<T | null> {
+    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: FindOneOptions<object> = {}): Promise<T | null> {
         let query: FilterQuery<T>;
 
         if (typeof filters === 'string' || filters instanceof ObjectId) {
@@ -658,7 +636,7 @@ export class DataBaseHelper<T extends BaseEntity> {
             query = filters;
         }
 
-        return await this._em.getRepository<T>(this.entityClass).findOne(query, options);
+        return await this._em.getRepository<T>(this.entityClass).findOne(query, options as unknown as FindOneOptions<T>) as T | null;
     }
 
     /**
