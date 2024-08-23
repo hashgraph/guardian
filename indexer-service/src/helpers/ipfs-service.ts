@@ -12,7 +12,6 @@ export class IPFSService {
     }
 
     public static async get(cid: string, timeout: number): Promise<Buffer> {
-        process.env.IPFS_GATEWAY = 'https://${cid}.ipfs.w3s.link/';
         const items = await axios.get(
             process.env.IPFS_GATEWAY?.replace('${cid}', cid),
             {
