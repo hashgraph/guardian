@@ -47,12 +47,20 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         this.dataForm?.patchValue({enableAdmin: value});
     }
 
+    get enableAdminDisabled(): any {
+        return this.dataForm?.get('enableAdmin')?.disabled;
+    }
+
     get enableWipe(): any {
         return this.dataForm?.get('enableWipe')?.value;
     }
 
     set enableWipe(value: any) {
         this.dataForm?.patchValue({enableWipe: value});
+    }
+
+    get enableWipeDisabled(): any {
+        return this.dataForm?.get('enableWipe')?.disabled;
     }
 
     get enableFreeze(): any {
@@ -63,12 +71,20 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         this.dataForm?.patchValue({enableFreeze: value});
     }
 
+    get enableFreezeDisabled(): any {
+        return this.dataForm?.get('enableFreeze')?.disabled;
+    }
+
     get enableKYC(): any {
         return this.dataForm?.get('enableKYC')?.value;
     }
 
     set enableKYC(value: any) {
         this.dataForm?.patchValue({enableKYC: value});
+    }
+
+    get enableKYCDisabled(): any {
+        return this.dataForm?.get('enableKYC')?.disabled;
     }
 
     get wipeContractId(): any {
