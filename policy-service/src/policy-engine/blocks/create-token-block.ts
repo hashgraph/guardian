@@ -96,7 +96,7 @@ export class CreateTokenBlock {
             const templateFields = Object.keys(tokenTemplate);
             for (const fieldName of templateFields) {
                 if (
-                    tokenTemplate[fieldName] === '' ||
+                    (fieldName !== 'wipeContractId' && tokenTemplate[fieldName] === '') ||
                     tokenTemplate[fieldName] === null ||
                     tokenTemplate[fieldName] === undefined
                 ) {
