@@ -112,15 +112,22 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
     ];
     documentViewOptions = [
         {
-            icon: 'pi pi-align-justify',
+            icon: 'pi pi-code',
             value: 'json',
         },
         {
-            icon: 'pi pi-address-book',
+            icon: 'pi pi-file',
             value: 'document',
         },
     ];
     documentViewOption = 'document';
+
+    privateFields = {
+        '@context': true,
+        'type': true,
+        'policyId': true,
+        'ref': true
+    };
 
     constructor(
         entitiesService: EntitiesService,
