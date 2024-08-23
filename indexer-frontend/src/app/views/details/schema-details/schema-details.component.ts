@@ -152,8 +152,4 @@ export class SchemaDetailsComponent extends BaseDetailsComponent {
             },
         });
     }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
-    }
 }

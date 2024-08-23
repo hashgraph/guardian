@@ -11,27 +11,27 @@ export class IPFSService {
         }
     }
 
-    public static async get(cid: string): Promise<Buffer> {
-        process.env.IPFS_GATEWAY = 'https://${cid}.ipfs.dweb.link/';
+    public static async get(cid: string, timeout: number): Promise<Buffer> {
+        process.env.IPFS_GATEWAY = 'https://${cid}.ipfs.w3s.link/';
         const items = await axios.get(
             process.env.IPFS_GATEWAY?.replace('${cid}', cid),
             {
                 responseType: 'arraybuffer',
-                timeout: 60 * 1000,
+                timeout,
             }
         );
         return items.data;
     }
 
-    public static async getFile(url: string): Promise<Buffer | void> {
+    public static async getFile(url: string, timeout: number = 60000): Promise<Buffer | void> {
         try {
             const cid = IPFSService.parseCID(url);
             const timeoutPromise = new Promise<void>((resolve, reject) => {
                 setTimeout(() => {
                     reject(new Error('IPFS timeout exceeded'));
-                }, 60 * 1000);
+                }, timeout);
             });
-            return Promise.race([IPFSService.get(cid), timeoutPromise]);
+            return Promise.race([IPFSService.get(cid, timeout), timeoutPromise]);
         } catch (error) {
             throw error;
         }

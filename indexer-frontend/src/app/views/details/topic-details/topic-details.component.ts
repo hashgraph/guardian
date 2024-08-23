@@ -157,10 +157,6 @@ export class TopicDetailsComponent extends BaseDetailsComponent {
         return JSON.stringify(item, null, 4);
     }
 
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
-    }
-
     public override onOpenTopics() {
         this.router.navigate(['/topics'], {
             queryParams: {

@@ -195,8 +195,4 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
     }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
-    }
 }

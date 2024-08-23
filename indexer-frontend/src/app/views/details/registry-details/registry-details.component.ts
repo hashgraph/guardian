@@ -127,10 +127,6 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
         return JSON.stringify(item, null, 4);
     }
 
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
-    }
-
     public override onOpenUsers() {
         this.router.navigate(['/registry-users'], {
             queryParams: {

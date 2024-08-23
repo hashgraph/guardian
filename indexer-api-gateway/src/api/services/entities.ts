@@ -1350,6 +1350,7 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
     //#endregion
+
     @Post('/update-files')
     @ApiOperation({
         summary: 'Try load ipfs files',

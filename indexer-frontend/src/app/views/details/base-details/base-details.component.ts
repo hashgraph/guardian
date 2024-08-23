@@ -236,19 +236,41 @@ export abstract class BaseDetailsComponent {
                 for (let i = 0; i < item.files.length; i++) {
                     const url = item.files[i];
                     const document = item.documents?.[i];
+                    const json = this.getDocument(document);
+                    const credentialSubject = this.getCredentialSubject(document);
                     const cid = new CID(url);
                     const ipfs = {
                         version: cid.version,
                         cid: url,
                         global: cid.toV1().toString('base32'),
-                        document
+                        document,
+                        json,
+                        credentialSubject
                     }
-                    if(!document) {
+                    if (!document) {
                         item._ipfsStatus = false;
                     }
                     item._ipfs.push(ipfs);
                 }
             }
+        }
+    }
+
+    protected getDocument(item: any): string {
+        try {
+            return JSON.stringify(JSON.parse(item), null, 4);
+        } catch (error) {
+            console.log(error);
+            return '';
+        }
+    }
+
+    protected getCredentialSubject(item: any): any {
+        try {
+            return JSON.parse(item).credentialSubject[0];
+        } catch (error) {
+            console.log(error);
+            return {};
         }
     }
 

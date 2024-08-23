@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ECElementEvent, EChartsOption } from 'echarts';
+import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { MatInputModule } from '@angular/material/input';
 import { BaseDetailsComponent } from '../base-details/base-details.component';
@@ -17,11 +17,12 @@ import { SchemaFormViewComponent } from '@components/schema-form-view/schema-for
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { Schema } from '@indexer/interfaces';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import {
     OverviewFormComponent,
     OverviewFormField,
 } from '@components/overview-form/overview-form.component';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'vc-document-details',
@@ -46,6 +47,7 @@ import {
         SelectButtonModule,
         FormsModule,
         OverviewFormComponent,
+        ButtonModule
     ],
 })
 export class VcDocumentDetailsComponent extends BaseDetailsComponent {
@@ -130,8 +132,29 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     protected override setResult(result?: any) {
         super.setResult(result);
-        if (result?.schema) {
-            this.schema = new Schema(result?.schema, '');
+        try {
+            if (result?.schema) {
+                this.schema = new Schema(result?.schema, '');
+                this.documentViewOption = 'document';
+            } else {
+                this.documentViewOption = 'json';
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    protected override setFiles(result?: any) {
+        super.setFiles(result);
+        try {
+            if (result?.schema) {
+                this.schema = new Schema(result?.schema, '');
+                this.documentViewOption = 'document';
+            } else {
+                this.documentViewOption = 'json';
+            }
+        } catch (error) {
+            console.log(error);
         }
     }
 
@@ -207,18 +230,5 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
-    }
-
-    public getCredentialSubject(): any {
-        try {
-            return JSON.parse(this.target.documents[0]).credentialSubject[0];
-        } catch (error) {
-            console.log(error);
-            return {};
-        }
     }
 }
