@@ -15,7 +15,6 @@ import {
 } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
-import { ElasticService } from './_dev/api/elastic.service.js';
 import { SearchService } from './api/search.service.js';
 import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
@@ -107,7 +106,6 @@ function getBoolean(flag: string | undefined): boolean {
     controllers: [
         ChannelService,
         LogService,
-        ElasticService,
         SearchService,
         EntityService,
         FiltersService,
