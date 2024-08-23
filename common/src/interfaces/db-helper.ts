@@ -55,7 +55,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * Set MongoDriver
      * @param db
      */
-    public static connectBD(db: IOrmConnection) {
+    public static connectBD(db: IOrmConnection): void {
         throw new Error('Method not implemented.');
     }
 

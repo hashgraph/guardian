@@ -58,7 +58,7 @@ import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
-import { IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces';
+import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { TopicId } from '@hashgraph/sdk';
 import { Message } from '../hedera-modules/index.js'
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -66,7 +66,7 @@ import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 /**
  * Database server
  */
-export class DatabaseServer {
+export class DatabaseServer extends AbstractDatabaseServer  {
     /**
      * Dry-run
      * @private
@@ -99,6 +99,7 @@ export class DatabaseServer {
         : 500;
 
     constructor(dryRun: string = null) {
+        super();
         this.dryRun = dryRun || null;
 
         this.classMap.set(BlockCache, 'BlockCache');
@@ -1180,7 +1181,7 @@ export class DatabaseServer {
 
     /**
      * Get Did Document
-     * @param topicId
+     * @param did
      */
     public async getDidDocument(did: string): Promise<DidDocumentCollection | null> {
         return await this.findOne(DidDocumentCollection, { did });
@@ -1785,7 +1786,7 @@ export class DatabaseServer {
 
     /**
      * Update External Topic
-     * @param row
+     * @param item
      *
      * @virtual
      */
@@ -1884,7 +1885,7 @@ export class DatabaseServer {
      * @param data Mint request
      * @returns Saved mint request
      */
-    public async saveMintRequest(data: Partial<MintRequest>) {
+    public async saveMintRequest(data: Partial<MintRequest>): Promise<MintRequest> {
         return await this.save(MintRequest, data);
     }
 
@@ -1911,7 +1912,7 @@ export class DatabaseServer {
      * @param transaction Transaction
      * @returns Saved transaction
      */
-    public async saveMintTransaction(transaction: Partial<MintTransaction>) {
+    public async saveMintTransaction(transaction: Partial<MintTransaction>): Promise<MintTransaction> {
         return this.save(MintTransaction, transaction);
     }
 
