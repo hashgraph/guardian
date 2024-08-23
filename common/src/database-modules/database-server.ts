@@ -57,7 +57,7 @@ import { GetConditionsPoliciesByCategories } from '../helpers/policy-category.js
 import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
-import { FilterObject, FilterQuery, FindAllOptions, FindOneOptions, MikroORM } from '@mikro-orm/core';
+import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import { IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces';
 import { TopicId } from '@hashgraph/sdk';
 import { Message } from '../hedera-modules/index.js'
@@ -332,18 +332,18 @@ export class DatabaseServer {
         dryRunClass: string,
         systemMode: boolean
     ): unknown | unknown[] {
-        const extendItem = (item: unknown & IAddDryRunIdItem) => {
-            item.systemMode = systemMode;
-            item.dryRunId = dryRunId;
-            item.dryRunClass = dryRunClass;
+        const getExtendedItem = (extendedItem: unknown & IAddDryRunIdItem) => {
+            extendedItem.systemMode = systemMode;
+            extendedItem.dryRunId = dryRunId;
+            extendedItem.dryRunClass = dryRunClass;
         }
 
         if (Array.isArray(item)) {
             for (const i of item) {
-                extendItem(i)
+                getExtendedItem(i)
             }
         } else {
-            extendItem(item as unknown & IAddDryRunIdItem)
+            getExtendedItem(item as unknown & IAddDryRunIdItem)
         }
 
         return item;

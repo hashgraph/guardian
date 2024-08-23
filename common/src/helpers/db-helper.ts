@@ -6,7 +6,7 @@ import { Db, GridFSBucket } from 'mongodb';
 import fixConnectionString from './fix-connection-string.js';
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 import { MintTransactionStatus } from '@guardian/interfaces';
-import { ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces';
+import { AbstractDataBaseHelper, ICommonConnectionConfig, IGetAggregationFilters, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 
 export const MAP_DOCUMENT_AGGREGATION_FILTERS = {
     BASE: 'base',
@@ -55,7 +55,7 @@ export const COMMON_CONNECTION_CONFIG: ICommonConnectionConfig = {
 /**
  * Database helper
  */
-export class DataBaseHelper<T extends BaseEntity> {
+export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper<T>  {
 
     /**
      * System fields
@@ -82,6 +82,7 @@ export class DataBaseHelper<T extends BaseEntity> {
     private readonly _em: MongoEntityManager;
 
     public constructor(private readonly entityClass: new () => T) {
+        super();
         if (!DataBaseHelper.orm) {
             throw new Error('ORM is not initialized');
         }
