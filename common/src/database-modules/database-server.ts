@@ -1477,6 +1477,8 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     /**
      * Get all policy users
      * @param policyId
+     * @param uuid
+     * @param role
      *
      * @virtual
      */
@@ -1487,6 +1489,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     /**
      * Get all policy users by role
      * @param policyId
+     * @param role
      *
      * @virtual
      */
@@ -1521,6 +1524,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param policyId
      * @param uuid
      * @param owner
+     * @param role
      *
      * @virtual
      */
@@ -1538,6 +1542,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
     /**
      * Parse invite token
+     * @param policyId
      * @param invitationId
      *
      * @virtual

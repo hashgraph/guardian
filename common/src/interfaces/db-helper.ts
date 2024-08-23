@@ -13,6 +13,7 @@ export interface ICommonConnectionConfig {
     clientUrl: string;
     entities: string[];
 }
+
 export interface IGetAggregationFilters {
     aggregation: unknown[],
     aggregateMethod: string,
@@ -33,6 +34,10 @@ export interface IOrmConnection {
     connect(): void;
 }
 
+export const STATUS_IMPLEMENTATION = {
+    METHOD_IS_NOT_IMPLEMENTED: 'Method not implemented.'
+}
+
 /**
  * Abstract Database helper
  */
@@ -41,14 +46,14 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * Set ORM
      */
     public static set orm(orm: IOrmConnection) {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
      * Get ORM
      */
     public static get orm(): IOrmConnection | undefined {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -56,7 +61,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @param db
      */
     public static connectBD(db: IOrmConnection): void {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -66,7 +71,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns file ID
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<unknown> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -75,7 +80,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns file ID
      */
     public static async loadFile(id: unknown): Promise<Buffer | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -125,7 +130,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -135,7 +140,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[] {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -146,7 +151,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[] {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -156,7 +161,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[] {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -165,7 +170,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getTransactionsSerialsAggregationFilters(props: IGetAggregationFilters): void {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -175,7 +180,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Aggregation filter
      */
     public static _getTransactionsSerialsAggregation(mintRequestId: string, transferStatus?: unknown): unknown[] {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**

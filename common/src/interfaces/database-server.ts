@@ -1,33 +1,29 @@
+import {TopicId} from '@hashgraph/sdk';
+
 //entities
+import { IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
-import { IAuthUser, IGetDocumentAggregationFilters, IOrmConnection } from './index.js';
 import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
-    ArtifactChunk as ArtifactChunkCollection,
     BlockCache,
     BlockState,
-    Contract as ContractCollection,
     DidDocument as DidDocumentCollection,
     DocumentState,
     DryRun,
-    DryRunFiles,
     ExternalDocument,
     MintRequest,
     MintTransaction,
     MultiDocuments,
-    MultiPolicy,
     MultiPolicyTransaction,
     Policy,
     PolicyCategory,
     PolicyInvitations,
     PolicyModule,
     PolicyRoles as PolicyRolesCollection,
-    Record,
     Schema as SchemaCollection,
     SplitDocuments,
-    SuggestionsConfig,
     Tag,
     TagCache,
     Token as TokenCollection,
@@ -35,15 +31,13 @@ import {
     VcDocument as VcDocumentCollection,
     VpDocument,
     VpDocument as VpDocumentCollection,
-    PolicyCache,
-    PolicyCacheData,
-    RetirePool,
-    AssignEntity,
-    PolicyTest,
-    Artifact, Message, PolicyProperty, DataBaseHelper, PolicyTool,
+    Message,
+    PolicyProperty,
+    PolicyTool,
 } from '../index.js';
-import { IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
-import { TopicId } from '@hashgraph/sdk';
+
+//interfaces
+import {IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION} from './index.js';
 
 export interface IAddDryRunIdItem {
     dryRunId: string,
@@ -147,7 +141,7 @@ export abstract class AbstractDatabaseServer {
      * @param db
      */
     public static connectBD(db: IOrmConnection): void {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -162,7 +156,7 @@ export abstract class AbstractDatabaseServer {
      * @param all
      */
     public static clearDryRun(dryRunId: string, all: boolean): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -206,7 +200,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -414,7 +408,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPublishPolicies(): Promise<Policy[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -423,7 +417,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPolicyCategories(): Promise<PolicyCategory[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -432,7 +426,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPolicyProperties(): Promise<PolicyProperty[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -443,7 +437,7 @@ export abstract class AbstractDatabaseServer {
      * @returns {Policy[]} - found policies
      */
     public static getFilteredPolicies(categoryIds: string[], text: string): Promise<Policy[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -594,32 +588,258 @@ export abstract class AbstractDatabaseServer {
      */
     public abstract getDocumentStates(filters: Partial<DocumentState>, options?: unknown): Promise<DocumentState[]>;
 
-    public abstract getTopic(filters: { policyId?: string, type?: TopicType, name?: string, owner?: string, topicId?: string }): Promise<TopicCollection | null>;
-    public abstract getTopics(filters: { policyId?: string, type?: TopicType, name?: string, owner?: string, topicId?: string }): Promise<TopicCollection[]>;
+    /**
+     * Get Topic
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getTopic(
+        filters: {
+        /**
+         * policyId
+         */
+        policyId?: string,
+        /**
+         * type
+         */
+        type?: TopicType,
+        /**
+         * name
+         */
+        name?: string,
+        /**
+         * owner
+         */
+        owner?: string,
+        /**
+         * topicId
+         */
+        topicId?: string
+    }): Promise<TopicCollection | null>;
+
+    /**
+     * Get Topics
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getTopics(
+        filters: {
+        /**
+         * policyId
+         */
+        policyId?: string,
+        /**
+         * type
+         */
+        type?: TopicType,
+        /**
+         * name
+         */
+        name?: string,
+        /**
+         * owner
+         */
+        owner?: string,
+        /**
+         * topicId
+         */
+        topicId?: string
+    }): Promise<TopicCollection[]>;
+
+    /**
+     * Get topic by id
+     * @param topicId
+     */
     public abstract getTopicById(topicId: string): Promise<TopicCollection | null>;
+
+    /**
+     * Get Token
+     * @param tokenId
+     * @param dryRun
+     */
     public abstract getToken(tokenId: string, dryRun?: string): Promise<TokenCollection | null>;
+
+    /**
+     * Save Topic
+     * @param topic
+     *
+     * @virtual
+     */
     public abstract saveTopic(topic: TopicCollection): Promise<TopicCollection>;
 
+    /**
+     * Get schema
+     * @param iri
+     * @param topicId
+     */
     public abstract getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null>;
+
+    /**
+     * Get schema
+     * @param topicId
+     * @param entity
+     */
     public abstract getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null>;
 
+    /**
+     * Set user in group
+     *
+     * @param group
+     *
+     * @virtual
+     */
     public abstract setUserInGroup(group: unknown): Promise<PolicyRolesCollection>;
+
+    /**
+     * Set Active Group
+     *
+     * @param policyId
+     * @param did
+     * @param uuid
+     *
+     * @virtual
+     */
     public abstract setActiveGroup(policyId: string, did: string, uuid: string): Promise<void>;
+
+    /**
+     * Get Group By UUID
+     * @param policyId
+     * @param uuid
+     *
+     * @virtual
+     */
     public abstract getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get Group By Name
+     * @param policyId
+     * @param groupName
+     *
+     * @virtual
+     */
     public abstract getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get User In Group
+     * @param policyId
+     * @param did
+     * @param uuid
+     *
+     * @virtual
+     */
     public abstract getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Check User In Group
+     * @param group
+     *
+     * @virtual
+     */
     public abstract checkUserInGroup(group: { policyId: string, did: string, owner: string, uuid: string }): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get Groups By User
+     * @param policyId
+     * @param did
+     * @param options
+     *
+     * @virtual
+     */
     public abstract getGroupsByUser(policyId: string, did: string, options?: unknown): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get Active Group By User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
     public abstract getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get members
+     *
+     * @param group
+     *
+     * @virtual
+     */
     public abstract getAllMembersByGroup(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users
+     * @param policyId
+     *
+     * @virtual
+     */
     public abstract getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users
+     * @param policyId
+     * @param uuid
+     * @param role
+     *
+     * @virtual
+     */
     public abstract getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users by role
+     * @param policyId
+     * @param role
+     *
+     * @virtual
+     */
     public abstract getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get user roles
+     * @param policyId
+     * @param did
+     * @returns
+     *
+     * @virtual
+     */
     public abstract getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Delete user
+     * @param group
+     *
+     * @virtual
+     */
     public abstract deleteGroup(group: PolicyRolesCollection): Promise<void>;
+
+    /**
+     * Create invite token
+     * @param policyId
+     * @param uuid
+     * @param owner
+     * @param role
+     *
+     * @virtual
+     */
     public abstract createInviteToken(policyId: string, uuid: string, owner: string, role: string): Promise<string>;
+
+    /**
+     * Parse invite token
+     * @param policyId
+     * @param invitationId
+     *
+     * @virtual
+     */
     public abstract parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations | null>;
 
+    /**
+     * Get MultiSign Status by document or user
+     * @param uuid
+     * @param documentId
+     * @param userId
+     *
+     * @virtual
+     */
     public abstract getMultiSignStatus(uuid: string, documentId: string, userId: string): Promise<MultiDocuments>;
 
     /**
@@ -797,7 +1017,7 @@ export abstract class AbstractDatabaseServer {
         active: boolean,
         systemMode?: boolean
     ): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -808,7 +1028,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async saveVirtualMessage<T>(dryRun: string, message: Message): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -819,7 +1039,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualMessages(dryRun: string, topicId: string | TopicId): Promise<DryRun[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -830,7 +1050,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualMessage(dryRun: string, messageId: string): Promise<DryRun | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -839,7 +1059,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Tokens
      */
     public static async getTokens(filters?: Partial<TokenCollection>): Promise<TokenCollection[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -848,7 +1068,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Saved Artifact
      */
     public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -857,7 +1077,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Artifact
      */
     public static async getArtifact(filters?: Partial<ArtifactCollection>): Promise<ArtifactCollection | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -867,7 +1087,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Artifacts
      */
     public static async getArtifacts(filters?: Partial<ArtifactCollection>, options?: unknown): Promise<ArtifactCollection[]> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -875,7 +1095,7 @@ export abstract class AbstractDatabaseServer {
      * @param artifact Artifact
      */
     public static async removeArtifact(artifact?: ArtifactCollection): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -884,7 +1104,7 @@ export abstract class AbstractDatabaseServer {
      * @param data Data
      */
     public static async saveArtifactFile(uuid: string, data: Buffer): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -893,7 +1113,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Buffer
      */
     public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -901,7 +1121,7 @@ export abstract class AbstractDatabaseServer {
      * @param id
      */
     public static async getModuleById(id: string): Promise<PolicyModule | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -909,7 +1129,7 @@ export abstract class AbstractDatabaseServer {
      * @param id
      */
     public static async getToolById(id: string): Promise<PolicyTool | null> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 
     /**
@@ -924,6 +1144,23 @@ export abstract class AbstractDatabaseServer {
      * @param item
      */
     public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
-        throw new Error('Method not implemented.');
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+    }
+
+    /**
+     * Update schema
+     * @param id
+     * @param item
+     */
+    public static async updateSchema(id: string, item: SchemaCollection): Promise<void> {
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+    }
+
+    /**
+     * Update schemas
+     * @param items Schemas
+     */
+    public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
+        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
     }
 }
