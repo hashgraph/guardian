@@ -15,6 +15,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ColumnType, TableComponent } from '@components/table/table.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'vp-document-details',
@@ -35,7 +36,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         TabViewModule,
         TableComponent,
         ProgressSpinnerModule,
-        InputTextareaModule
+        InputTextareaModule,
+        ButtonModule
     ]
 })
 export class VpDocumentDetailsComponent extends BaseDetailsComponent {
