@@ -7,7 +7,8 @@
 {% hint style="info" %}
 **Important Note:**
 
-Values from .env file need to be set up only on first start (when db or vault are empty). Then later if you want it to be changed, you can change it through Settings from admin Panel or through API.
+1. Values from .env file need to be set up only on first start (when db or vault are empty). Then later if you want it to be changed, you can change it through Settings from admin Panel or through API.
+2. Now we have upgraded DB\_HOST (in guardian and indexer), DB\_LOGGER\_HOST (in guardian) settings and now it allows to set up Mongo Atlas connection string like mongodb+srv://.... which means that if you are explicitly setting up protocol it will be automatically applied OR if your using only host and port, it will automatically add mongodb:// (backward compatibility)
 {% endhint %}
 
 ### `.env / .env.docker` Parameters in `api-gateway`
