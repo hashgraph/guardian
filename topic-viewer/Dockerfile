@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.11.1-alpine
+ARG NODE_VERSION=20.16-alpine
 FROM node:${NODE_VERSION} as base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
@@ -9,16 +9,16 @@ ARG YARN_CACHE_FOLDER=/root/.yarn
 # Stage 1: Installing production dependecies
 FROM base as deps
 COPY --link topic-viewer/package.json topic-viewer/tsconfig*.json yarn.lock ./
-# Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
-RUN --mount=type=cache,target=/root/.yarn,sharing=private \
-    yarn install --prod
+# Here and after. Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
+    yarn install --immutable --prod
 
 # Stage 2: Build service
 FROM base as build
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 COPY --link topic-viewer/src src/
-RUN --mount=type=cache,target=/root/.yarn \
-    yarn install --frozen-lockfile && yarn run build:prod
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install --immutable && yarn run build:prod
 
 # Stage 3: Create the final image
 FROM base as image

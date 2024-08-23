@@ -94,6 +94,7 @@ export class DocumentSourceComponent implements OnInit {
         field.dialogClass = "";
         field.dialogType = "";
         field.bindBlock = "";
+        field.bindBlocks = [];
     }
 
     getFieldName(field: any, i: number): string {

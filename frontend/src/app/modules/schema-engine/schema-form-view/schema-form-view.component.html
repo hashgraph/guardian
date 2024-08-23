@@ -1,6 +1,6 @@
 <form>
     <ng-container *ngFor="let item of fields">
-        <div *ngIf="!item.hide" class="form-field-container">
+        <div *ngIf="!item.hide && !item.notCorrespondCondition" class="form-field-container">
             <div *ngIf="!item.isArray && !item.isRef" class="form-field">
                 <div class="label-field">{{item.description}}</div>
 

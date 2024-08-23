@@ -307,7 +307,6 @@ export class ContractsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    // @UseCache({ isExpress: true })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
@@ -917,6 +916,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.syncRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -966,7 +966,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
@@ -1039,7 +1038,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
@@ -1101,6 +1099,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.clearRetireRequests(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1143,6 +1142,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.clearRetirePools(owner, contractId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1189,6 +1189,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.setRetirePool(owner, contractId, body);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1231,6 +1232,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.unsetRetirePool(owner, poolId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1273,6 +1275,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.unsetRetireRequest(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1320,6 +1323,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.retire(owner, poolId, body);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1362,6 +1366,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.approveRetire(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1405,6 +1410,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.cancelRetire(owner, requestId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1455,6 +1461,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.addRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1505,6 +1512,7 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.removeRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1553,7 +1561,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
