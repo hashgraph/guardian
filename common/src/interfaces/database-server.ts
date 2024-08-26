@@ -141,7 +141,7 @@ export abstract class AbstractDatabaseServer {
      * @param db
      */
     public static connectBD(db: IOrmConnection): void {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.connectBD.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -156,7 +156,7 @@ export abstract class AbstractDatabaseServer {
      * @param all
      */
     public static clearDryRun(dryRunId: string, all: boolean): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.clearDryRun.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -200,7 +200,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getVirtualUser.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -408,7 +408,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPublishPolicies(): Promise<Policy[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getPublishPolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -417,7 +417,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPolicyCategories(): Promise<PolicyCategory[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getPolicyCategories.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -426,7 +426,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static getPolicyProperties(): Promise<PolicyProperty[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getPolicyProperties.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -437,7 +437,7 @@ export abstract class AbstractDatabaseServer {
      * @returns {Policy[]} - found policies
      */
     public static getFilteredPolicies(categoryIds: string[], text: string): Promise<Policy[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getFilteredPolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1017,7 +1017,7 @@ export abstract class AbstractDatabaseServer {
         active: boolean,
         systemMode?: boolean
     ): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.createVirtualUser.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1028,7 +1028,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async saveVirtualMessage<T>(dryRun: string, message: Message): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.saveVirtualMessage.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1039,7 +1039,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualMessages(dryRun: string, topicId: string | TopicId): Promise<DryRun[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getVirtualMessages.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1050,7 +1050,7 @@ export abstract class AbstractDatabaseServer {
      * @virtual
      */
     public static async getVirtualMessage(dryRun: string, messageId: string): Promise<DryRun | null> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getVirtualMessage.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1059,7 +1059,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Tokens
      */
     public static async getTokens(filters?: Partial<TokenCollection>): Promise<TokenCollection[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getTokens.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1068,7 +1068,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Saved Artifact
      */
     public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.saveArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1077,7 +1077,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Artifact
      */
     public static async getArtifact(filters?: Partial<ArtifactCollection>): Promise<ArtifactCollection | null> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1087,7 +1087,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Artifacts
      */
     public static async getArtifacts(filters?: Partial<ArtifactCollection>, options?: unknown): Promise<ArtifactCollection[]> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getArtifacts.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1095,7 +1095,7 @@ export abstract class AbstractDatabaseServer {
      * @param artifact Artifact
      */
     public static async removeArtifact(artifact?: ArtifactCollection): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.removeArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1104,7 +1104,7 @@ export abstract class AbstractDatabaseServer {
      * @param data Data
      */
     public static async saveArtifactFile(uuid: string, data: Buffer): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.saveArtifactFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1113,7 +1113,7 @@ export abstract class AbstractDatabaseServer {
      * @returns Buffer
      */
     public static async getArtifactFileByUUID(uuid: string): Promise<Buffer> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getArtifactFileByUUID.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1121,7 +1121,7 @@ export abstract class AbstractDatabaseServer {
      * @param id
      */
     public static async getModuleById(id: string): Promise<PolicyModule | null> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getModuleById.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1129,7 +1129,7 @@ export abstract class AbstractDatabaseServer {
      * @param id
      */
     public static async getToolById(id: string): Promise<PolicyTool | null> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.getToolById.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1144,7 +1144,7 @@ export abstract class AbstractDatabaseServer {
      * @param item
      */
     public static async updateMultiPolicyTransactions(item: MultiPolicyTransaction): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.updateMultiPolicyTransactions.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1153,7 +1153,7 @@ export abstract class AbstractDatabaseServer {
      * @param item
      */
     public static async updateSchema(id: string, item: SchemaCollection): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.updateSchema.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1161,6 +1161,6 @@ export abstract class AbstractDatabaseServer {
      * @param items Schemas
      */
     public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
-        throw new Error(STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED);
+        throw new Error(`${this.name}.${this.updateSchemas.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 }
