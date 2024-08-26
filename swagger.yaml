@@ -1430,6 +1430,48 @@ paths:
       tags: *ref_3
       security:
         - bearer: []
+  /contracts/wipe/{contractId}/requests/{hederaId}:
+    delete:
+      operationId: ContractsApi_clearWipeRequestsWithHederaId
+      summary: Clear wipe requests for hedera account.
+      description: >-
+        Clear wipe contract requests for specific hedera account. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: []
   /contracts/wipe/{contractId}/admin/{hederaId}:
     post:
       operationId: ContractsApi_wipeAddAdmin
@@ -1656,6 +1698,103 @@ paths:
           required: true
           in: path
           description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: []
+  /contracts/wipe/{contractId}/wiper/{hederaId}/{tokenId}:
+    post:
+      operationId: ContractsApi_wipeAddWiperWithToken
+      summary: Add wipe wiper for token.
+      description: >-
+        Add wipe contract wiper for specific token. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: []
+    delete:
+      operationId: ContractsApi_wipeRemoveWiperWithToken
+      summary: Remove wipe wiper for token.
+      description: >-
+        Remove wipe contract wiper for specific token. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
           example: 0.0.1
           schema:
             type: string
@@ -11918,7 +12057,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.27.0
+  version: 2.27.1
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -12961,6 +13100,10 @@ components:
           type: array
           items:
             type: string
+        wipeTokenIds:
+          type: array
+          items:
+            type: string
       required:
         - id
         - contractId
@@ -12973,6 +13116,7 @@ components:
         - syncPoolsDate
         - lastSyncEventTimeStamp
         - wipeContractIds
+        - wipeTokenIds
     ContractConfigDTO:
       type: object
       properties:
@@ -12992,10 +13136,13 @@ components:
           type: string
         user:
           type: string
+        token:
+          type: string
       required:
         - id
         - contractId
         - user
+        - token
     RetireRequestDTO:
       type: object
       properties:
