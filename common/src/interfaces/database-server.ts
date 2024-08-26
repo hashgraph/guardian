@@ -1,7 +1,7 @@
 import {TopicId} from '@hashgraph/sdk';
 
 //entities
-import { IVC, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { IVC, MintTransactionStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
 import {
     AggregateVC,
@@ -38,6 +38,7 @@ import {
 
 //interfaces
 import {IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION} from './index.js';
+import { FilterObject } from '@mikro-orm/core';
 
 export interface IAddDryRunIdItem {
     dryRunId: string,
@@ -1163,4 +1164,25 @@ export abstract class AbstractDatabaseServer {
     public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
         throw new Error(`${this.name}.${this.updateSchemas.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
+
+    /**
+     * Get transactions count
+     * @param filters Mint request identifier
+     * @returns Transactions count
+     */
+    public abstract getTransactionsCount(filters: FilterObject<MintTransaction>): Promise<number>
+
+    /**
+     * Get mint request minted serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public abstract getMintRequestSerials(mintRequestId: string): Promise<number[]>
+
+    /**
+     * Get mint request transfer serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public abstract getMintRequestTransferSerials(mintRequestId: string): Promise<number[]>
 }

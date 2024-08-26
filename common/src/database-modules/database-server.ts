@@ -1970,10 +1970,10 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
     /**
      * Get transactions count
-     * @param mintRequestId Mint request identifier
+     * @param filters Mint request identifier
      * @returns Transactions count
      */
-    public async getTransactionsCount(filters): Promise<number> {
+    public async getTransactionsCount(filters: FilterObject<MintTransaction>): Promise<number> {
         return await this.count(MintTransaction, filters);
     }
 
