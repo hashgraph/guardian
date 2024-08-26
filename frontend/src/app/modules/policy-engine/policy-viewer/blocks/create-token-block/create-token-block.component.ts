@@ -1,11 +1,9 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormGroup, Validators } from '@angular/forms';
 import { ContractType, IUser } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
@@ -43,10 +41,6 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
-        private dialog: MatDialog,
-        private changeDetectorRef: ChangeDetectorRef
     ) {
         this.dataForm = fb.group({
             tokenName: ['Token Name', Validators.required],
@@ -116,16 +110,8 @@ export class CreateTokenBlockComponent implements OnInit {
             const uiMetaData = data.uiMetaData;
             this.templatePreset = data.data;
             this.type = uiMetaData.type;
-            if (this.type == 'dialog') {
-                this.content = uiMetaData.content;
-                this.buttonClass = uiMetaData.buttonClass;
-                this.description = uiMetaData.description;
-                this.title = uiMetaData.title;
-            }
-            if (this.type == 'page') {
-                this.title = uiMetaData.title;
-                this.description = uiMetaData.description;
-            }
+            this.title = uiMetaData.title;
+            this.description = uiMetaData.description;
             this.disabled = data.active === false;
             this.isExist = true;
         } else {

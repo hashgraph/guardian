@@ -29,3 +29,4 @@ export * from './console-transport.js';
 export * from './mongo-logging-initialization.js';
 export * from './pino-logger.js';
 export * from './pino-logger-initialization.js';
+export * from './insert-variables.js';

@@ -20,7 +20,9 @@ export class CreateTokenBlock {
             await CommonBlock.validate(validator, ref);
             if (!ref.options.template) {
                 validator.addError('Template can not be empty');
-                return;
+            }
+            if (ref.options.autorun && ref.options.defaultActive) {
+                validator.addError(`Autorun can't be use with default active`);
             }
             if (validator.tokenTemplateNotExist(ref.options.template)) {
                 validator.addError(`Token "${ref.options.template}" does not exist`);
