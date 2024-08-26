@@ -10,7 +10,7 @@ on:
 jobs:
   runService:
     name: Run Service
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: guardian-linux-medium
     strategy:
       matrix:
         node-version: [ 20.x ]
@@ -38,9 +38,9 @@ jobs:
         run: yarn install
 
       - name: Start NatsMQ
-        uses: onichandame/nats-action@a8144f9009c5f67c39edd6a50f9de659c44bd135 # v0.0.0
+        uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
         with:
-          port: "4222"
+          port: '4222'
 
       - name: Config Repo
         run: |
