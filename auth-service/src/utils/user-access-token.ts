@@ -1,5 +1,5 @@
 import { SecretManager } from '@guardian/common';
-import { IUser, GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser } from '@guardian/interfaces';
 import pkg from 'jsonwebtoken';
 import * as util from 'util';
 
@@ -17,10 +17,18 @@ export class UserAccessTokenService {
     private static readonly REFRESH_TOKEN_UPDATE_INTERVAL = '31536000000'; // 1 year
     private static readonly ACCESS_TOKEN_UPDATE_INTERVAL = '60000';
 
-    private readonly ACCESS_TOKEN_SECRET: string;
+    private readonly JWT_PRIVATE_KEY: string;
+    private readonly JWT_PUBLIC_KEY: string;
 
-    constructor(accessTokenSecret: string) {
-        this.ACCESS_TOKEN_SECRET = accessTokenSecret;
+    constructor(jwtPrivateKey: string, jwtPublicKey: string) {
+        this.JWT_PRIVATE_KEY = jwtPrivateKey;
+        this.JWT_PUBLIC_KEY = jwtPublicKey;
+    }
+
+    public static async New(): Promise<UserAccessTokenService> {
+        const secretManager = SecretManager.New();
+        const {JWT_PUBLIC_KEY, JWT_PRIVATE_KEY} = await secretManager.getSecrets('secretkey/auth');
+        return new UserAccessTokenService(JWT_PRIVATE_KEY, JWT_PUBLIC_KEY);
     }
 
     public generateRefreshToken(user: IUser): IToken {
@@ -32,7 +40,9 @@ export class UserAccessTokenService {
             id: tokenId,
             name: user.username,
             expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
-        }, this.ACCESS_TOKEN_SECRET);
+        }, this.JWT_PRIVATE_KEY, {
+            algorithm: 'RS256'
+        });
         return {
             id: tokenId,
             token: refreshToken
@@ -44,7 +54,9 @@ export class UserAccessTokenService {
         name: string,
         expireAt: number
     }> {
-        return await util.promisify<string, any, Object, any>(verify)(refreshToken, this.ACCESS_TOKEN_SECRET, {});
+        return await util.promisify<string, any, Object, any>(verify)(refreshToken, this.JWT_PUBLIC_KEY, {
+            algorithms: ['RS256']
+        });
     }
 
     public generateAccessToken(user: IUser, expire: boolean): string {
@@ -57,14 +69,18 @@ export class UserAccessTokenService {
                 did: user.did,
                 role: user.role,
                 expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
-            }, this.ACCESS_TOKEN_SECRET);
+            }, this.JWT_PRIVATE_KEY, {
+                algorithm: 'RS256'
+            });
             return accessToken;
         } else {
             const accessToken = sign({
                 username: user.username,
                 did: user.did,
                 role: user.role
-            }, this.ACCESS_TOKEN_SECRET);
+            }, this.JWT_PRIVATE_KEY, {
+                algorithm: 'RS256'
+            });
             return accessToken;
         }
     }
@@ -75,12 +91,8 @@ export class UserAccessTokenService {
         role: string,
         expireAt?: number
     }> {
-        return await util.promisify<string, any, Object, any>(verify)(accessToken, this.ACCESS_TOKEN_SECRET, {});
-    }
-
-    public static async New(): Promise<UserAccessTokenService> {
-        const secretManager = SecretManager.New();
-        const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-        return new UserAccessTokenService(ACCESS_TOKEN_SECRET);
+        return await util.promisify<string, any, Object, any>(verify)(accessToken, this.JWT_PUBLIC_KEY, {
+            algorithms: ['RS256']
+        });
     }
 }

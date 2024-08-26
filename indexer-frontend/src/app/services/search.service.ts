@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { ApiUtils } from './utils';
-import { Page, SearchItem } from '@indexer/interfaces';
+import { Page, PageFilters, SearchItem } from '@indexer/interfaces';
 
 /**
  * Services for working from search.
@@ -16,9 +16,9 @@ export class SearchService {
 
     public search(
         data: string,
-        pageIndex: number
+        filters: { pageIndex: number; pageSize: number }
     ): Observable<Page<SearchItem>> {
-        const options = ApiUtils.getOptions({ search: data, pageIndex });
+        const options = ApiUtils.getOptions({ search: data, ...filters });
         return this.http.get<Page<SearchItem>>(this.url, options) as any;
     }
 }

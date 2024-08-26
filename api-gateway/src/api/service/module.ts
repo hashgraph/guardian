@@ -43,7 +43,8 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async postModules(
         @AuthUser() user: IAuthUser,
-        @Body() body: ModuleDTO
+        @Body() body: ModuleDTO,
+        @Req() req
     ): Promise<ModuleDTO> {
         try {
             const guardian = new Guardians();
@@ -51,6 +52,12 @@ export class ModulesApi {
             if (!module.config || module.config.blockType !== 'module') {
                 throw new HttpException('Invalid module config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
+
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardian.createModule(module, new EntityOwner(user));
         } catch (error) {
@@ -219,10 +226,11 @@ export class ModulesApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getModuleSchemas(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -240,7 +248,9 @@ export class ModulesApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner.owner
             });
-            // res.locals.data = SchemaUtils.toOld(items)
+
+            req.locals = SchemaUtils.toOld(items)
+
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
@@ -279,7 +289,8 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async postSchemas(
         @AuthUser() user: IAuthUser,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req: Request
     ): Promise<SchemaDTO[]> {
         try {
             if (!newSchema) {
@@ -295,6 +306,9 @@ export class ModulesApi {
             SchemaHelper.updateOwner(newSchema, owner);
 
             const schemas = await guardians.createSchema(newSchema, owner);
+
+            const invalidedCacheTags = [`${PREFIXES.MODULES}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -336,12 +350,23 @@ export class ModulesApi {
     async deleteModule(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const guardian = new Guardians();
             if (!uuid) {
                 throw new Error('Invalid uuid');
             }
+
+            const invalidedCacheKeys = [
+                `${PREFIXES.MODULES}${uuid}/export/file`,
+                `${PREFIXES.MODULES}${uuid}/export/message`,
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user));
+
             return await guardian.deleteModule(uuid, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -372,7 +397,7 @@ export class ModulesApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
-    // @UseCache()
+    @UseCache()
     @HttpCode(HttpStatus.OK)
     async getMenu(
         @AuthUser() user: IAuthUser,
@@ -480,7 +505,9 @@ export class ModulesApi {
 
             const invalidedCacheKeys = [
               `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
-              `${PREFIXES.MODULES}${req.params.uuid}/export/message`
+              `${PREFIXES.MODULES}${req.params.uuid}/export/message`,
+              `${PREFIXES.MODULES}schemas`,
+              `${PREFIXES.MODULES}menu`,
             ];
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user));
@@ -604,7 +631,8 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async moduleImportMessage(
         @AuthUser() user: IAuthUser,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Req() req: Request
     ): Promise<ModuleDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -612,6 +640,12 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             return await guardian.importModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
@@ -646,10 +680,17 @@ export class ModulesApi {
     @HttpCode(HttpStatus.CREATED)
     async moduleImportFile(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req: Request
     ): Promise<ModuleDTO> {
         const guardian = new Guardians();
         try {
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.importModuleFile(body, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -684,7 +725,8 @@ export class ModulesApi {
     @HttpCode(HttpStatus.OK)
     async moduleImportMessagePreview(
         @AuthUser() user: IAuthUser,
-        @Body() body: ImportMessageDTO
+        @Body() body: ImportMessageDTO,
+        @Req() req: Request
     ): Promise<ModulePreviewDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -692,6 +734,13 @@ export class ModulesApi {
         }
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.previewModuleMessage(messageId, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -725,10 +774,18 @@ export class ModulesApi {
     @HttpCode(HttpStatus.OK)
     async moduleImportFilePreview(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<ModulePreviewDTO> {
         try {
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.previewModuleFile(body, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -779,7 +836,9 @@ export class ModulesApi {
 
             const invalidedCacheKeys = [
                 `${PREFIXES.MODULES}${req.params.uuid}/export/file`,
-                `${PREFIXES.MODULES}${req.params.uuid}/export/message`
+                `${PREFIXES.MODULES}${req.params.uuid}/export/message`,
+                `${PREFIXES.MODULES}schemas`,
+                `${PREFIXES.MODULES}menu`,
             ];
 
             await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user));

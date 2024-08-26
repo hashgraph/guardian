@@ -1,0 +1,13 @@
+<div class="content" [style.visibility]="visible ? 'visible' : 'hidden' ">
+    <div class="btn-option {{uiClass}}" (click)="dialog ? onSelectDialog() : onSelect()">
+        {{name}}
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

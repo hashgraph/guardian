@@ -36,6 +36,7 @@ import {
     syncTopics,
     syncContracts
 } from './helpers/synchronizers/index.js';
+import { fixtures } from './helpers/fixtures.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -144,6 +145,10 @@ Promise.all([
                 }
             );
         }
+        /**
+         * Fixtures
+         */
+        fixtures();
         /**
          * Listen
          */

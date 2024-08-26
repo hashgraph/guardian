@@ -8,7 +8,7 @@ on:
 jobs:
   buildAndTest:
     name: Build and Test (Manual - Main)
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: guardian-linux-medium
     strategy:
       matrix:
         node-version: [ 20.10.0 ]
