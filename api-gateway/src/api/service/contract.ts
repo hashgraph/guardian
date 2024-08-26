@@ -514,7 +514,7 @@ export class ContractsApi {
     /**
      * Remove all wipe requests
      */
-    @Delete('/wipe/:contractId/requests/:hederaId')
+    @Delete('/wipe/:contractId/requests')
     @Auth(
         Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
         // UserRole.STANDARD_REGISTRY,
@@ -530,13 +530,6 @@ export class ContractsApi {
         required: true,
         example: '652745597a7b53526de37c05',
     })
-    @ApiParam({
-        name: 'hederaId',
-        description: 'Hedera identifier',
-        type: String,
-        required: false,
-        example: '0.0.1',
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -550,7 +543,56 @@ export class ContractsApi {
     async clearWipeRequests(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId?: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.clearWipeRequests(owner, contractId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Remove all wipe requests
+     */
+    @Delete('/wipe/:contractId/requests/:hederaId')
+    @Auth(
+        Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Clear wipe requests for hedera account.',
+        description: 'Clear wipe contract requests for specific hedera account. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        description: 'Hedera identifier',
+        type: String,
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async clearWipeRequestsWithHederaId(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
@@ -764,7 +806,7 @@ export class ContractsApi {
     /**
      * Add wipe wiper
      */
-    @Post('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Post('/wipe/:contractId/wiper/:hederaId')
     @Auth(
         Permissions.CONTRACTS_WIPER_CREATE,
         // UserRole.STANDARD_REGISTRY,
@@ -787,13 +829,6 @@ export class ContractsApi {
         required: true,
         example: '0.0.1',
     })
-    @ApiParam({
-        name: 'tokenId',
-        type: String,
-        description: 'Token identifier',
-        required: false,
-        example: '0.0.1',
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -808,7 +843,64 @@ export class ContractsApi {
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
         @Param('hederaId') hederaId: string,
-        @Param('tokenId') tokenId?: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.addWipeWiper(owner, contractId, hederaId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Add wipe wiper
+     */
+    @Post('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Auth(
+        Permissions.CONTRACTS_WIPER_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Add wipe wiper for token.',
+        description: 'Add wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async wipeAddWiperWithToken(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
@@ -822,7 +914,7 @@ export class ContractsApi {
     /**
      * Remove wipe wiper
      */
-    @Delete('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Delete('/wipe/:contractId/wiper/:hederaId')
     @Auth(
         Permissions.CONTRACTS_WIPER_DELETE,
         // UserRole.STANDARD_REGISTRY,
@@ -845,13 +937,6 @@ export class ContractsApi {
         required: true,
         example: '0.0.1',
     })
-    @ApiParam({
-        name: 'tokenId',
-        type: String,
-        description: 'Token identifier',
-        required: false,
-        example: '0.0.1',
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean
@@ -866,7 +951,64 @@ export class ContractsApi {
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
         @Param('hederaId') hederaId: string,
-        @Param('tokenId') tokenId?: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.removeWipeWiper(owner, contractId, hederaId);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Remove wipe wiper
+     */
+    @Delete('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Auth(
+        Permissions.CONTRACTS_WIPER_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Remove wipe wiper for token.',
+        description: 'Remove wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async wipeRemoveWiperWithToken(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
