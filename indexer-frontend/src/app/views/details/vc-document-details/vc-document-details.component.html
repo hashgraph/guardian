@@ -28,53 +28,79 @@
                             </div>
                         </div>
 
-                        <div class="document-view-options">
-                            <div class="document-view-options-header">
-                                {{ 'details.document' | transloco }}
+                        <div class="document-view-container">
+                            <div class="document-view-options">
+                                <div class="document-view-options-header">
+                                    {{ 'details.document' | transloco }}
+                                </div>
+                                <p-selectButton 
+                                    [options]="documentViewOptions"
+                                    [(ngModel)]="documentViewOption" 
+                                    [unselectable]="true" 
+                                    optionValue="value"
+                                    optionLabel="label">
+                                </p-selectButton>
                             </div>
-                            <p-selectButton 
-                                [options]="documentViewOptions"
-                                [(ngModel)]="documentViewOption" 
-                                [unselectable]="true" 
-                                optionValue="value"
-                                optionLabel="label">
-                            </p-selectButton>
-                        </div>
-                        @if (first._ipfsStatus) {
-                            @switch (documentViewOption) {
-                                @case ('json') {
-                                    <div class="details-document-view-container">
-                                        <div class="details-document__json">
-                                            <div class="text-area-container">
-                                                <textarea [value]="first._ipfs[0].json" readonly pInputTextarea>
-                                            </textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                                @case ('document') {
-                                    @if (schema) {
+                            @if (first._ipfsStatus) {
+                                @switch (documentViewOption) {
+                                    @case ('json') {
                                         <div class="details-document-view-container">
-                                            <div class="details-document__document">
-                                                <app-schema-form-view 
-                                                    [schema]="schema"
-                                                    [values]="first._ipfs[0].credentialSubject"
-                                                    [private-fields]="privateFields">
-                                                </app-schema-form-view>
+                                            <div class="details-document__json">
+                                                <div class="text-area-container">
+                                                    <textarea [value]="first._ipfs[0].json" readonly pInputTextarea>
+                                                </textarea>
+                                                </div>
                                             </div>
                                         </div>
                                     }
+                                    @case ('document') {
+                                        @if (schema) {
+                                            <div class="details-document-view-container">
+                                                <div class="details-document__document">
+                                                    <app-schema-form-view 
+                                                        [schema]="schema"
+                                                        [values]="first._ipfs[0].credentialSubject"
+                                                        [private-fields]="privateFields">
+                                                    </app-schema-form-view>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
                                 }
-                            }
-                            @if (documentViewOption === 'document' && !schema) {
+                                @if (documentViewOption === 'document' && !schema) {
+                                    <div class="document-container">
+                                        <div class="document-container-error">
+                                            <div class="document-container-error-header">
+                                                {{ 'details.document_not_loaded_header' | transloco }}
+                                            </div>
+                                            <div class="document-container-error-message">
+                                                {{ 'details.document_not_loaded_message' | transloco }}
+                                            </div>
+                                            <p-button 
+                                                class="document-container-error-btn" 
+                                                [label]="'details.try_load' | transloco" 
+                                                (onClick)="onLoadDocument(first)"/>
+                                        </div>
+                                    </div>
+                                }
+                            } @else {
                                 <div class="document-container">
                                     <div class="document-container-error">
-                                        <div class="document-container-error-header">
-                                            {{ 'details.document_not_loaded_header' | transloco }}
-                                        </div>
-                                        <div class="document-container-error-message">
-                                            {{ 'details.document_not_loaded_message' | transloco }}
-                                        </div>
+                                        @if (first._ipfs.length<2) {
+                                            <div class="document-container-error-header">
+                                                {{ 'details.document_not_loaded_header' | transloco }}
+                                            </div>
+                                            <div class="document-container-error-message">
+                                                {{ 'details.document_not_loaded_message' | transloco }}
+                                            </div>
+                                        } @else {
+                                            <div class="document-container-error-header">
+                                                {{ 'details.documents_not_loaded_header' | transloco }}
+                                            </div>
+                                            <div class="document-container-error-message">
+                                                {{ 'details.documents_not_loaded_message' | transloco }}
+                                            </div>
+                                        }
                                         <p-button 
                                             class="document-container-error-btn" 
                                             [label]="'details.try_load' | transloco" 
@@ -82,31 +108,7 @@
                                     </div>
                                 </div>
                             }
-                        } @else {
-                            <div class="document-container">
-                                <div class="document-container-error">
-                                    @if (first._ipfs.length<2) {
-                                        <div class="document-container-error-header">
-                                            {{ 'details.document_not_loaded_header' | transloco }}
-                                        </div>
-                                        <div class="document-container-error-message">
-                                            {{ 'details.document_not_loaded_message' | transloco }}
-                                        </div>
-                                    } @else {
-                                        <div class="document-container-error-header">
-                                            {{ 'details.documents_not_loaded_header' | transloco }}
-                                        </div>
-                                        <div class="document-container-error-message">
-                                            {{ 'details.documents_not_loaded_message' | transloco }}
-                                        </div>
-                                    }
-                                    <p-button 
-                                        class="document-container-error-btn" 
-                                        [label]="'details.try_load' | transloco" 
-                                        (onClick)="onLoadDocument(first)"/>
-                                </div>
-                            </div>
-                        }
+                        </div>
                     </div>
                 }
             </p-tabPanel>
