@@ -57,13 +57,13 @@ export class CreateTokenBlock {
      */
     @StateField()
     declare state: {
-        [key: string]: any
+        [key: string]: any;
     };
 
     public async beforeInit(): Promise<void> {
         this.state = {
             tokenNumber: 0,
-        }
+        };
     }
 
     /**
@@ -143,7 +143,6 @@ export class CreateTokenBlock {
      * @param user
      */
     async getData(user: PolicyUser): Promise<any> {
-        const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref =
             PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         if (ref.options.autorun) {
@@ -163,9 +162,9 @@ export class CreateTokenBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            uiMetaData: options.uiMetaData || {},
             active: this.getActive(user),
             data: tokenTemplate,
+            ...ref.options,
         };
     }
 

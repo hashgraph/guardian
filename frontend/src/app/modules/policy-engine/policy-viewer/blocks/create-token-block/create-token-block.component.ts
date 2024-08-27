@@ -13,7 +13,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'create-token-block',
     templateUrl: './create-token-block.component.html',
-    styleUrls: ['./create-token-block.component.scss']
+    styleUrls: ['./create-token-block.component.scss'],
 })
 export class CreateTokenBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -24,7 +24,6 @@ export class CreateTokenBlockComponent implements OnInit {
     socket: any;
     dialogLoading: boolean = false;
     dataForm: FormGroup;
-    type!: string;
     content: any;
     dialogContent: any;
     templatePreset: any;
@@ -41,7 +40,7 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        private fb: FormBuilder,
+        private fb: FormBuilder
     ) {
         this.dataForm = fb.group({
             tokenName: ['Token Name', Validators.required],
@@ -60,18 +59,20 @@ export class CreateTokenBlockComponent implements OnInit {
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
         forkJoin([
             this.contractService.getContracts({
-                type: ContractType.WIPE
+                type: ContractType.WIPE,
             }),
-            this.profile.getProfile()
+            this.profile.getProfile(),
         ]).subscribe((value) => {
-            this.contracts = value[0] && value[0].body || [];
+            this.contracts = (value[0] && value[0].body) || [];
             this.user = value[1];
             this.loadData();
-        })
+        });
     }
 
     ngOnDestroy(): void {
@@ -94,25 +95,28 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(
+                    (data: any) => {
+                        this.setData(data);
+                        setTimeout(() => {
+                            this.loading = false;
+                        }, 500);
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 
     setData(data: any) {
         if (data) {
-            const uiMetaData = data.uiMetaData;
             this.templatePreset = data.data;
-            this.type = uiMetaData.type;
-            this.title = uiMetaData.title;
-            this.description = uiMetaData.description;
+            this.title = data.title;
+            this.description = data.description;
             this.disabled = data.active === false;
             this.isExist = true;
         } else {
@@ -126,13 +130,18 @@ export class CreateTokenBlockComponent implements OnInit {
             const data = submitData || this.dataForm.value;
             this.loading = true;
             this.dialogLoading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-                this.dialogLoading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.dialogLoading = false;
-                this.loading = false;
-            });
+            this.policyEngineService
+                .setBlockData(this.id, this.policyId, data)
+                .subscribe(
+                    () => {
+                        this.dialogLoading = false;
+                    },
+                    (e) => {
+                        console.error(e.error);
+                        this.dialogLoading = false;
+                        this.loading = false;
+                    }
+                );
         }
     }
 }
