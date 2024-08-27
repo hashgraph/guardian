@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ContractType, IUser } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ContractService } from 'src/app/services/contract.service';
@@ -41,6 +41,7 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
+        private fb: FormBuilder,
     ) {
         this.dataForm = fb.group({
             tokenName: ['Token Name', Validators.required],

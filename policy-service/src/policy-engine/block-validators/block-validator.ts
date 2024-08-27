@@ -372,6 +372,15 @@ export class BlockValidator {
     }
 
     /**
+     * Get token template
+     * @param templateName
+     * @returns Token template
+     */
+    public getTokenTemplate(templateName: string) {
+        return this.validator.getTokenTemplate(templateName);
+    }
+
+    /**
      * Token not exist
      * @param templateName
      */

@@ -56,15 +56,15 @@ export class CreateTokenBlock {
      * Block state
      */
     @StateField()
-    public readonly state: {
-        /**
-         * Token number
-         */
-        tokenNumber: number;
-        [key: string]: any;
-    } = {
-        tokenNumber: 0,
+    declare state: {
+        [key: string]: any
     };
+
+    public async beforeInit(): Promise<void> {
+        this.state = {
+            tokenNumber: 0,
+        }
+    }
 
     /**
      * Change active state
@@ -156,7 +156,9 @@ export class CreateTokenBlock {
         const tokenTemplate = this._prepareTokenTemplate(
             ref,
             PolicyUtils.getTokenTemplate(ref, ref.options.template),
-            this.state[user.id].data.data
+            Object.assign({}, this.state?.[user.id]?.data?.data, {
+                index: this.state.tokenNumber,
+            })
         );
         return {
             id: ref.uuid,
@@ -315,6 +317,8 @@ export class CreateTokenBlock {
                 ),
                 this.state?.[user.id]?.data?.data
             );
+            delete this.state?.[user.id];
+            await ref.saveState();
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
             this.changeActive(user, true);
