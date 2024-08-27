@@ -66,37 +66,6 @@ export class CreateTokenBlock {
         };
     }
 
-    /**
-     * Change active state
-     * @param user
-     * @param active
-     */
-    private changeActive(user: PolicyUser, active: boolean) {
-        const ref = PolicyComponentsUtils.GetBlockRef(this);
-        if (this.state.hasOwnProperty(user.id)) {
-            this.state[user.id].active = active;
-        } else {
-            this.state[user.id] = { active };
-        }
-        ref.updateBlock(this.state[user.id], user);
-        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
-    }
-
-    /**
-     * Get active state
-     * @param user
-     */
-    private getActive(user: PolicyUser) {
-        if (!this.state.hasOwnProperty(user.id)) {
-            this.state[user.id] = { active: true };
-        } else {
-            if (this.state[user.id].active === undefined) {
-                this.state[user.id].active = true;
-            }
-        }
-        return this.state[user.id].active;
-    }
-
     private _prepareTokenTemplate(
         ref: IPolicyRequestBlock,
         template: any,
@@ -162,7 +131,7 @@ export class CreateTokenBlock {
         return {
             id: ref.uuid,
             blockType: ref.blockType,
-            active: this.getActive(user),
+            active: ref.isBlockActive(user),
             data: tokenTemplate,
             ...ref.options,
         };
@@ -182,7 +151,6 @@ export class CreateTokenBlock {
             );
         }
 
-        this.changeActive(user, false);
         const policyOwnerCred = await PolicyUtils.getUserCredentials(
             ref,
             ref.policyOwner
@@ -239,7 +207,6 @@ export class CreateTokenBlock {
         await ref.saveState();
         // #endregion
 
-        this.changeActive(user, true);
         const state = { data: docs };
         ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
         ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
@@ -277,7 +244,7 @@ export class CreateTokenBlock {
 
         if (ref.options.autorun) {
             throw new BlockActionError(
-                `Block is autorunable and doesn't produce any`,
+                `Block is autorunable and doesn't produce anything`,
                 ref.blockType,
                 ref.uuid
             );
@@ -286,15 +253,6 @@ export class CreateTokenBlock {
         if (!user.did) {
             throw new BlockActionError(
                 'User have no any did',
-                ref.blockType,
-                ref.uuid
-            );
-        }
-
-        const active = this.getActive(user);
-        if (!active) {
-            throw new BlockActionError(
-                'Block not available',
                 ref.blockType,
                 ref.uuid
             );
@@ -320,7 +278,6 @@ export class CreateTokenBlock {
             await ref.saveState();
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 

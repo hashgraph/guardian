@@ -22,17 +22,11 @@ export class CreateTokenBlockComponent implements OnInit {
 
     loading: boolean = true;
     socket: any;
-    dialogLoading: boolean = false;
     dataForm: FormGroup;
-    content: any;
-    dialogContent: any;
     templatePreset: any;
     title: any;
     description: any;
-    buttonClass: any;
-    user!: IUser;
     isExist: boolean = false;
-    disabled = false;
     contracts: { contractId: string }[] = [];
 
     constructor(
@@ -40,7 +34,7 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        private fb: FormBuilder
+        fb: FormBuilder
     ) {
         this.dataForm = fb.group({
             tokenName: ['Token Name', Validators.required],
@@ -63,14 +57,10 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.onUpdate.bind(this)
             );
         }
-        forkJoin([
-            this.contractService.getContracts({
-                type: ContractType.WIPE,
-            }),
-            this.profile.getProfile(),
-        ]).subscribe((value) => {
-            this.contracts = (value[0] && value[0].body) || [];
-            this.user = value[1];
+        this.contractService.getContracts({
+            type: ContractType.WIPE,
+        }).subscribe((value) => {
+            this.contracts = value.body || [];
             this.loadData();
         });
     }
@@ -117,10 +107,9 @@ export class CreateTokenBlockComponent implements OnInit {
             this.templatePreset = data.data;
             this.title = data.title;
             this.description = data.description;
-            this.disabled = data.active === false;
+            this.loading = data.active === false;
             this.isExist = true;
         } else {
-            this.disabled = false;
             this.isExist = false;
         }
     }
@@ -129,16 +118,13 @@ export class CreateTokenBlockComponent implements OnInit {
         if (submitData || this.dataForm.valid) {
             const data = submitData || this.dataForm.value;
             this.loading = true;
-            this.dialogLoading = true;
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, data)
                 .subscribe(
-                    () => {
-                        this.dialogLoading = false;
-                    },
+                    // tslint:disable-next-line:no-empty
+                    () => {},
                     (e) => {
                         console.error(e.error);
-                        this.dialogLoading = false;
                         this.loading = false;
                     }
                 );

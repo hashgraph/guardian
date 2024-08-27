@@ -158,5 +158,6 @@ export const flagsGroupKeywords = [
     'onlyAssignByGroupDocuments',
     'dialog',
     'autorun',
+    'useTemplate',
 ];
 export const errorGroupKeywords = ['errorFallbackTag', 'onErrorAction'];
