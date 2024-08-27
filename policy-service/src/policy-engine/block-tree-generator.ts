@@ -99,7 +99,7 @@ export class BlockTreeGenerator extends NatsService {
                 const data = await policyInstance.getData(userFull, policyInstance.uuid);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -130,7 +130,6 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
-
             const { user, blockId, params } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
@@ -140,7 +139,7 @@ export class BlockTreeGenerator extends NatsService {
                 const data = await block.getData(userFull, blockId, params);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -159,7 +158,7 @@ export class BlockTreeGenerator extends NatsService {
                 const data = await block.getData(userFull, block.uuid, params);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -181,7 +180,7 @@ export class BlockTreeGenerator extends NatsService {
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -198,7 +197,7 @@ export class BlockTreeGenerator extends NatsService {
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 

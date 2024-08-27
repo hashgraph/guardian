@@ -372,14 +372,14 @@ export class PolicyEngineService {
                         throw new Error(error);
                     }
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_ROOT_BLOCK_DATA, policyId, {
                             user,
                             policyId
                         }) as any;
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -390,7 +390,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_BLOCK_DATA, policyId, {
                             user,
                             blockId,
                             policyId,
@@ -399,7 +399,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -410,7 +410,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
+                        .sendBlockMessage(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
                             tag,
                             policyId,
@@ -419,7 +419,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -430,7 +430,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
+                        .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                             user,
                             blockId,
                             policyId,
@@ -439,7 +439,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -450,7 +450,7 @@ export class PolicyEngineService {
                     const policy = await DatabaseServer.getPolicyById(policyId);
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
                     const blockData = await new GuardiansService()
-                        .sendPolicyMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
+                        .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
                             tag,
                             policyId,
@@ -459,7 +459,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -491,7 +491,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -508,7 +508,7 @@ export class PolicyEngineService {
                     return new MessageResponse(navigationData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -526,7 +526,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -545,7 +545,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -563,7 +563,7 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -599,7 +599,7 @@ export class PolicyEngineService {
                         );
                     return new MessageResponse(blocks);
                 } catch (error) {
-                    return new MessageError(error);
+                    return new MessageError(error, error.code);
                 }
             });
 
@@ -1182,7 +1182,6 @@ export class PolicyEngineService {
                     return new BinaryMessageResponse(buffer);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
-                    console.error(error);
                     return new MessageError(error);
                 }
             });

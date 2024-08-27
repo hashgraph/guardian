@@ -19,6 +19,7 @@ export class HandleErrorsService implements HttpInterceptor {
     }
 
     excludeErrorCodes: string[] = ['401'];
+    excludeErrorTexts: string[] = ['Block Unavailable'];
 
     private messageToText(message: any) {
         if (typeof message === 'object') {
@@ -99,7 +100,10 @@ export class HandleErrorsService implements HttpInterceptor {
                 enableHtml: true
             });
         } else {
-            if (!this.excludeErrorCodes.includes(String(error.status))) {
+            if (
+                !this.excludeErrorCodes.includes(String(error.status)) &&
+                !this.excludeErrorTexts.includes(String(result.text))
+            ) {
                 const body = `
                     <div>${result.text}</div>
                     <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>

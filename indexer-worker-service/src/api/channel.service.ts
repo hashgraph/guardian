@@ -70,6 +70,7 @@ export class Worker {
         this.status = 'INITIALIZING';
         TopicService.CYCLE_TIME = option.CYCLE_TIME;
         MessageService.CYCLE_TIME = option.CYCLE_TIME;
+        TokenService.CYCLE_TIME = option.CYCLE_TIME;
         this.topics = new Jobs({
             delay: option.TOPIC_READ_DELAY,
             timeout: option.TOPIC_READ_TIMEOUT,

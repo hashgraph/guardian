@@ -2,6 +2,14 @@ import { NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { headers } from 'nats';
 
+class MessageError extends Error {
+    public code: number;
+    constructor(message: any, code?: number) {
+        super(message);
+        this.code = code;
+    }
+}
+
 /**
  * Guardians service
  */
@@ -59,7 +67,7 @@ export class GuardiansService extends NatsService {
                     resolve(d);
                 })
 
-                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data) , {
+                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
                     reply: this.replySubject,
                     headers: head
                 })
@@ -67,6 +75,41 @@ export class GuardiansService extends NatsService {
             new Promise<T>((resolve, reject) => {
                 setTimeout(() => {
                     resolve(null);
+                }, awaitInterval)
+            }),
+        ])
+    }
+    /**
+     * sendPolicyMessage
+     * @param subject
+     * @param policyId
+     * @param data
+     * @param awaitInterval
+     */
+    public sendBlockMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
+        const messageId = GenerateUUIDv4();
+        const head = headers();
+        head.append('messageId', messageId);
+        head.append('policyId', policyId);
+
+        return Promise.race([
+            new Promise<T>(async (resolve, reject) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
+                    if (error) {
+                        reject(new MessageError(error, code));
+                        return
+                    }
+                    resolve(body);
+                })
+
+                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            }),
+            new Promise<T>((resolve, reject) => {
+                setTimeout(() => {
+                    reject(new MessageError('Block Timeout', 504));
                 }, awaitInterval)
             }),
         ])
