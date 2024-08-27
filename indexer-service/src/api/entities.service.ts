@@ -282,7 +282,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Registry>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -375,7 +375,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -438,7 +438,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<RegistryUser>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -510,7 +510,7 @@ export class EntityService {
                 },
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -542,7 +542,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Policy>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -605,7 +605,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -634,7 +634,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Tool>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -690,7 +690,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -719,7 +719,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Module>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -753,7 +753,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -785,7 +785,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<ISchema>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -843,7 +843,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_SCHEMA_TREE)
@@ -881,7 +881,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -908,7 +908,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Token>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -927,7 +927,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -955,7 +955,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Role>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -1001,7 +1001,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1032,7 +1032,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<DID>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_DOCUMENT)
@@ -1081,7 +1081,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_DID_RELATIONSHIPS)
@@ -1113,7 +1113,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1144,7 +1144,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VP>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VP_DOCUMENT)
@@ -1193,7 +1193,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VP_RELATIONSHIPS)
@@ -1227,7 +1227,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1262,7 +1262,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<VC>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_DOCUMENT)
@@ -1315,7 +1315,7 @@ export class EntityService {
                 schema,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_VC_RELATIONSHIPS)
@@ -1349,7 +1349,7 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1379,7 +1379,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<NFT>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 
@@ -1404,7 +1404,7 @@ export class EntityService {
                 history: nftHistory.data?.transactions || [],
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1434,7 +1434,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Topic>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_TOPIC)
@@ -1543,7 +1543,7 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1572,7 +1572,7 @@ export class EntityService {
             };
             return new MessageResponse<Page<Contract>>(result);
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     @MessagePattern(IndexerMessageAPI.GET_CONTRACT)
@@ -1603,7 +1603,7 @@ export class EntityService {
                 row,
             });
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
     //#endregion
@@ -1629,7 +1629,7 @@ export class EntityService {
                 return new MessageResponse<any>(item);
             }
         } catch (error) {
-            return new MessageError(error);
+            return new MessageError(error, error.code);
         }
     }
 }

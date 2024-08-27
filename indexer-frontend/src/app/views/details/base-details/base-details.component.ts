@@ -187,8 +187,10 @@ export abstract class BaseDetailsComponent {
             .updateFiles(first.consensusTimestamp)
             .subscribe({
                 next: (result) => {
-                    this.first = result;
-                    this.setFiles(this.first);
+                    if(result) {
+                        this.first = result;
+                        this.setFiles(this.first);
+                    }
                     setTimeout(() => {
                         this.loading = false;
                     }, 500);
