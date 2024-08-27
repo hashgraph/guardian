@@ -10,8 +10,7 @@ import {
     ContractFunctionParameters,
     ContractFunctionResult,
     ContractId,
-    ContractInfo,
-    ContractInfoQuery,
+    ContractLogInfo,
     DelegateContractId,
     FileId,
     Hbar,
@@ -1365,7 +1364,7 @@ export class HederaSDKHelper {
         parameters: ContractFunctionParameters,
         gas: number = 1000000,
         contractMemo?: string
-    ): Promise<string> {
+    ): Promise<[string, ContractLogInfo]> {
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
@@ -1379,7 +1378,10 @@ export class HederaSDKHelper {
         const contractInstantiateRx =
             await contractInstantiateSubmit.getReceipt(client);
         const contractId = contractInstantiateRx.contractId;
-        return `${contractId}`;
+        const contractRecord =
+            await contractInstantiateSubmit.getRecord(client);
+
+        return [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]];
     }
 
     /**
@@ -1528,22 +1530,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get Contract Info
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     *
-     * @returns {any} - Contract Info
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
-    public async getContractInfo(
-        contractId: string | ContractId,
-    ): Promise<ContractInfo> {
-        const client = this.client;
-        const query = new ContractInfoQuery().setContractId(contractId);
-        return await query.execute(client);
-    }
-
-    /**
      * Hedera REST api
      * @param url Url
      * @param options Options
@@ -1596,6 +1582,29 @@ export class HederaSDKHelper {
         }
 
         return result;
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
+    public static async getContractInfo(
+        contractId: string | ContractId,
+    ): Promise<{ memo: string }> {
+        const url = `${Environment.HEDERA_CONTRACT_API}${contractId}`;
+        const res = await axios.get(url, {
+            responseType: 'json',
+        });
+
+        if (!res || !res.data) {
+            throw new Error(`Invalid response`);
+        }
+
+        return res.data;
     }
 
     /**

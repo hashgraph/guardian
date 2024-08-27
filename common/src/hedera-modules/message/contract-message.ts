@@ -30,6 +30,11 @@ export class ContractMessage extends Message {
      */
     public owner: string;
 
+    /**
+     * Version
+     */
+    public version: string;
+
     constructor(action: MessageAction) {
         super(action, MessageType.Contract);
     }
@@ -43,6 +48,7 @@ export class ContractMessage extends Message {
         this.description = contract.description;
         this.contractType = contract.type;
         this.owner = contract.owner;
+        this.version = contract.version;
     }
 
     /**
@@ -58,7 +64,8 @@ export class ContractMessage extends Message {
             contractId: this.contractId,
             description: this.description,
             contractType: this.contractType,
-            owner: this.owner
+            owner: this.owner,
+            version: this.version
         };
     }
 
@@ -112,6 +119,7 @@ export class ContractMessage extends Message {
         message.description = json.description;
         message.contractType = json.contractType;
         message.owner = json.owner;
+        message.version = json.version || '1.0.0';
 
         const urls = []
         message.setUrls(urls);
@@ -141,6 +149,7 @@ export class ContractMessage extends Message {
         result.description = this.description;
         result.contractType = this.contractType;
         result.owner = this.owner;
+        result.version = this.version;
         return result;
     }
 

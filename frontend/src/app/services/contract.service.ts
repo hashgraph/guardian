@@ -112,8 +112,8 @@ export class ContractService {
         );
     }
 
-    public clearWipeRequests(contractId: string) {
-        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests`);
+    public clearWipeRequests(contractId: string, accountId?: string) {
+        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests/${accountId}`);
     }
 
     public wipeAddAdmin(hederaId: string, contractId: string): Observable<any> {
@@ -151,29 +151,32 @@ export class ContractService {
         );
     }
 
-    public wipeAddWiper(hederaId: string, contractId: string): Observable<any> {
+    public wipeAddWiper(hederaId: string, contractId: string, tokenId?: string): Observable<any> {
         return this.http.post<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`,
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`,
             null
         );
     }
 
     public wipeRemoveWiper(
         hederaId: string,
-        contractId: string
+        contractId: string,
+        tokenId?: string
     ): Observable<any> {
         return this.http.delete<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`
         );
     }
 
     //#endregion
     //#region Retire contract endpoints
 
-    public retireSyncPools(contractId: string) {
-        return this.http.post<any>(
+    public retireSyncPools(contractId: string): Observable<string> {
+        return this.http.post(
             `${this.url}/retire/${contractId}/pools/sync`,
-            null
+            null, {
+                responseType: 'text'
+            }
         );
     }
 

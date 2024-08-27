@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import "./RetireCommon.sol";
 import "./storage/RetireStorageManager.sol";
+import "../wipe/Wipe.sol";
 
 abstract contract RetireImplementation is RetireCommon {
     modifier tokenCount(uint8 tc) virtual;
@@ -115,14 +116,15 @@ abstract contract RetireImplementation is RetireCommon {
     {
         for (uint256 i = 0; i < tokens.length; i++) {
             int32 tokenType = safeGetTokenType(tokens[i].token);
+            (Wipe tokenContract, ) = wipeContract(tokens[i].token);
             if (tokenType == 0) {
-                wipeContract(tokens[i].token).wipe(
+                tokenContract.wipe(
                     tokens[i].token,
                     usr,
                     tokens[i].count
                 );
             } else if (tokenType == 1) {
-                wipeContract(tokens[i].token).wipeNFT(
+                tokenContract.wipeNFT(
                     tokens[i].token,
                     usr,
                     tokens[i].serials
@@ -154,16 +156,18 @@ abstract contract RetireImplementation is RetireCommon {
     }
 
     // delegateCall
-    function approveRetire(address usr, address[] calldata tokens)
+    function approveRetire(address usr, RetireTokenRequest[] calldata tokens)
         public
         override
         tokenCount(uint8(tokens.length))
         role(ADMIN)
     {
+        address[] memory tIds = _getTokenIds(tokens);
         RetireTokenRequest[] memory options = RetireCommon(this)
-            .getRequest(usr, tokens);
+            .getRequest(usr, tIds);
+        require(keccak256(abi.encode(tokens)) == keccak256(abi.encode(options)));
         _retire(usr, options);
-        RetireCommon(this).unsetRequest(usr, tokens);
+        RetireCommon(this).unsetRequest(usr, tIds);
     }
 
     function _getTokenCount(RetireTokenRequest calldata opt)

@@ -830,25 +830,11 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_CONTRACT_INFO: {
                     const {
-                        hederaAccountId,
-                        hederaAccountKey,
                         contractId,
                     } = task.data;
-                    client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    // const address = await client.contractQuery(
-                    //     contractId,
-                    //     'getOwner',
-                    //     new ContractFunctionParameters()
-                    // );
-                    // const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
-                    const info = await client.getContractInfo(contractId);
+                    const info = await HederaSDKHelper.getContractInfo(contractId);
                     result.data = {
-                        memo: info.contractMemo
+                        memo: info.memo
                     };
 
                     break;
