@@ -1,6 +1,5 @@
 import { DatabaseServer, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
-import { FilterObject } from '@mikro-orm/core';
 import { TaskEntity } from '../entity/task';
 
 @Singleton

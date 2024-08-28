@@ -9,7 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { getVCField, VcDocument, VpDocument } from '@guardian/common';
-import { FilterObject, FilterQuery } from '@mikro-orm/core';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Report block
