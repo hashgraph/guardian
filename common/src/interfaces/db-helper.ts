@@ -46,14 +46,14 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * Set ORM
      */
     public static set orm(orm: IOrmConnection) {
-        throw new Error(`${this.name}.set orm: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.set orm: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
      * Get ORM
      */
     public static get orm(): IOrmConnection | undefined {
-        throw new Error(`${this.name}.get orm: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.get orm: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -61,7 +61,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @param db
      */
     public static connectBD(db: IOrmConnection): void {
-        throw new Error(`${this.name}.${this.connectBD.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.connectBD.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -71,7 +71,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns file ID
      */
     public static async saveFile(uuid: string, buffer: Buffer): Promise<unknown> {
-        throw new Error(`${this.name}.${this.saveFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.saveFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -80,7 +80,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns file ID
      */
     public static async loadFile(id: unknown): Promise<Buffer> {
-        throw new Error(`${this.name}.${this.loadFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.loadFile.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -130,7 +130,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void {
-        throw new Error(`${this.name}.${this.getDocumentAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.getDocumentAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -140,7 +140,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[] {
-        throw new Error(`${this.name}.${this.getAnalyticsDocAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.getAnalyticsDocAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -151,7 +151,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[] {
-        throw new Error(`${this.name}.${this.getAttributesAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.getAttributesAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -161,7 +161,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[] {
-        throw new Error(`${this.name}.${this.getTasksAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.getTasksAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -170,7 +170,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Result
      */
     public static getTransactionsSerialsAggregationFilters(props: IGetAggregationFilters): void {
-        throw new Error(`${this.name}.${this.getTransactionsSerialsAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper.getTransactionsSerialsAggregationFilters.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -180,7 +180,7 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @returns Aggregation filter
      */
     public static _getTransactionsSerialsAggregation(mintRequestId: string, transferStatus?: unknown): unknown[] {
-        throw new Error(`${this.name}.${this._getTransactionsSerialsAggregation.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+        throw new Error(`${AbstractDataBaseHelper.name}.${AbstractDataBaseHelper._getTransactionsSerialsAggregation.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**

@@ -2384,7 +2384,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
     /**
      * Get schema
-     * @param ids
+     * @param id
      */
     public static async getSchemaById(id: string): Promise<SchemaCollection | null> {
         if (id) {
@@ -3103,7 +3103,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get MultiPolicyTransaction count
      * @param policyId
      */
-    public static async countMultiPolicyTransactions(policyId: string) {
+    public static async countMultiPolicyTransactions(policyId: string): Promise<number> {
         return await new DataBaseHelper(MultiPolicyTransaction).count({ policyId, status: 'Waiting' });
     }
 
