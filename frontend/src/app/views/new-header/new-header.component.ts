@@ -144,8 +144,14 @@ export class NewHeaderComponent implements OnInit {
                 this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
             }
             this.brandingService.getBrandingData().then(res => {
-                if (document.getElementById('company-logo') as HTMLImageElement) {
-                    (document.getElementById('company-logo') as HTMLImageElement)!.src = res.companyLogoUrl;
+                const logo = document.getElementById('company-logo') as HTMLImageElement;
+                if (logo) {
+                    logo.src = res.companyLogoUrl;
+                    if(res.companyLogoUrl) {
+                        logo.style.display = 'block';
+                    } else {
+                        logo.style.display = 'none';
+                    }
                 }
 
                 if (document.getElementById('company-name')) {

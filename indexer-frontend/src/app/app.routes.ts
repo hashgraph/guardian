@@ -4,8 +4,6 @@ import { Routes } from '@angular/router';
 import { StatusComponent } from '@dev/status/status.component';
 import { MessagesComponent } from '@dev/logs/messages/messages.component';
 import { DocumentsComponent } from '@dev/logs/documents/documents.component';
-import { NftsComponent } from '@dev/logs/nfts/nfts.component';
-import { ElasticComponent } from '@dev/elastic/elastic.component';
 
 //Home
 import { SearchViewComponent } from '@views/search/search.component';
@@ -46,7 +44,6 @@ import { ContractDetailsComponent } from '@views/details/contract-details/contra
 export const routes: Routes = [
     // _DEV
     { path: 'status', component: StatusComponent },
-    { path: 'elastic', component: ElasticComponent },
     { path: 'messages', component: MessagesComponent },
     { path: 'documents', component: DocumentsComponent },
     { path: 'tokens', component: TokensComponent },

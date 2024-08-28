@@ -13,5 +13,4 @@ export * from './decorators/singleton.js';
 export * from './interfaces/index.js';
 export * from './messages/message-response.js';
 export * from './messages/message-api.js';
-export * from './elastic/index.js';
 export const entities = Object.values(ent);

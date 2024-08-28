@@ -1452,11 +1452,13 @@ export class Guardians extends NatsService {
      */
     public async clearWipeRequests(
         owner: IOwner,
-        id: string
+        id: string,
+        hederaId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.CLEAR_WIPE_REQUESTS, {
             owner,
             id,
+            hederaId,
         });
     }
 
@@ -1546,12 +1548,14 @@ export class Guardians extends NatsService {
     public async addWipeWiper(
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        tokenId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.ADD_WIPE_WIPER, {
             owner,
             id,
             hederaId,
+            tokenId,
         });
     }
 
@@ -1565,12 +1569,14 @@ export class Guardians extends NatsService {
     public async removeWipeWiper(
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        tokenId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.REMOVE_WIPE_WIPER, {
             owner,
             id,
             hederaId,
+            tokenId,
         });
     }
 

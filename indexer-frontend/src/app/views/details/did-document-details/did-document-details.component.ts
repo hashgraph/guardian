@@ -59,11 +59,11 @@ export class DidDocumentDetailsComponent extends BaseDetailsComponent {
     tree?: any;
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -134,9 +134,5 @@ export class DidDocumentDetailsComponent extends BaseDetailsComponent {
                 'analytics.schemaIds': this.id,
             },
         });
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 }

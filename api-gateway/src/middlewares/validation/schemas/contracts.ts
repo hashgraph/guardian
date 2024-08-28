@@ -42,6 +42,8 @@ export class ContractDTO implements IContract {
     lastSyncEventTimeStamp?: string;
     @ApiProperty({ required: true })
     wipeContractIds: string[];
+    @ApiProperty({ required: true })
+    wipeTokenIds: string[];
 }
 
 export class WiperRequestDTO {
@@ -51,6 +53,8 @@ export class WiperRequestDTO {
     contractId: string;
     @ApiProperty({ required: true })
     user: string;
+    @ApiProperty()
+    token?: string;
 }
 
 export class RetireRequestDTO implements IRetireRequest {

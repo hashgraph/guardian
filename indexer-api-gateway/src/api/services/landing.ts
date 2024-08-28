@@ -3,7 +3,6 @@ import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } 
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import { ProjectCoordinatesDTO, LandingAnalyticsDTO, InternalServerErrorDTO } from '#dto';
-import { LandingAnalytics, ProjectCoordinates } from '@indexer/interfaces';
 
 @Controller('landing')
 @ApiTags('landing')

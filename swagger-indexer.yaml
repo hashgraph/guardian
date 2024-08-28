@@ -1761,6 +1761,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/update-files:
+    post:
+      operationId: EntityApi_search
+      summary: Try load ipfs files
+      description: Returns ipfs files
+      parameters: []
+      requestBody:
+        required: true
+        description: Entity Timestamp
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateFileDTO'
+      responses:
+        '200':
+          description: ipfs files
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /landing/analytics:
     get:
       operationId: LandingApi_getOnboardingStat
@@ -5904,6 +5931,24 @@ components:
         - uuid
         - item
         - row
+    UpdateFileDTO:
+      type: object
+      properties:
+        messageId:
+          type: string
+          description: Entity Timestamp
+          example: '1706823227.586179534'
+      required:
+        - messageId
+    DetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+      required:
+        - id
     LandingAnalyticsDTO:
       type: object
       properties:

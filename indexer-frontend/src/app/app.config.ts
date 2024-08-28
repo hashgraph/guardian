@@ -1,7 +1,6 @@
 // _DEV
 import { StatusService } from '@dev/services/status.service';
 import { LogsService } from '@dev/services/logs.service';
-import { ElasticService } from '@dev/services/elastic.service';
 
 //
 import { ApplicationConfig, isDevMode } from '@angular/core';
@@ -21,7 +20,6 @@ export const appConfig: ApplicationConfig = {
     providers: [
         StatusService,
         LogsService,
-        ElasticService,
         SearchService,
         EntitiesService,
         FiltersService,

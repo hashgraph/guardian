@@ -3,6 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'external-topic' type.
@@ -87,15 +88,25 @@ export class ExternalTopicBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -158,12 +169,14 @@ export class ExternalTopicBlockComponent implements OnInit {
             operation: 'SetTopic',
             value: form?.topicId
         };
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public setSchema() {
@@ -173,12 +186,14 @@ export class ExternalTopicBlockComponent implements OnInit {
             operation: 'SetSchema',
             value: form?.schemaId
         };
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public onRefresh() {
@@ -186,12 +201,14 @@ export class ExternalTopicBlockComponent implements OnInit {
         const data = {
             operation: 'LoadDocuments'
         };
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public restart() {
@@ -199,12 +216,14 @@ export class ExternalTopicBlockComponent implements OnInit {
         const data = {
             operation: 'Restart'
         };
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     public verificationAll() {
@@ -212,11 +231,13 @@ export class ExternalTopicBlockComponent implements OnInit {
         const data = {
             operation: 'VerificationSchemas'
         };
-        this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, data)
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 }

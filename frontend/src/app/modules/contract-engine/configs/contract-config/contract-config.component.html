@@ -47,14 +47,14 @@
                 <ng-container matColumnDef="tags">
                     <th mat-header-cell *matHeaderCellDef> Tags </th>
                     <td mat-cell *matCellDef="let element">
-                        <tags-explorer 
+                        <tags-explorer
                             *ngIf="user.TAGS_TAG_READ"
                             [user]="user"
-                            [data]="element._tags" 
-                            [owner]="owner" 
-                            [target]="element.id" 
+                            [data]="element._tags"
+                            [owner]="owner"
+                            [target]="element.id"
                             [entity]="tagEntity"
-                            [schemas]="tagSchemas" 
+                            [schemas]="tagSchemas"
                             [service]="tagsService"></tags-explorer>
                     </td>
                 </ng-container>
@@ -66,7 +66,7 @@
                                 <span class="role" matTooltip="Owner" [attr.has]="hasPermissions(element.permissions, 0)">O</span>
                                 <span class="role" matTooltip="Admin" [attr.has]="hasPermissions(element.permissions, 1)">A</span>
                                 <span class="role" matTooltip="Manager" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 2)">M</span>
-                                <span class="role" matTooltip="Wiper" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 3)">W</span>
+                                <span class="role" matTooltip="Wiper" *ngIf="type == 'WIPE' && element.version === '1.0.0'" [attr.has]="hasPermissions(element.permissions, 3)">W</span>
                             </div>
                             <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
                         </div>

@@ -77,11 +77,11 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
     additionalOveriviewFormFields: OverviewFormField[] = [];
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -147,10 +147,6 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 
     public override onOpenTopics() {

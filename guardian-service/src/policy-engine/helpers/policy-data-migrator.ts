@@ -64,8 +64,7 @@ import {
 } from './policy-data/loaders/index.js';
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
-import { setPoolContract } from '../../api/contract.service.js';
-import { FilterObject, FilterQuery } from '@mikro-orm/core';
+import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
 
 /**
  * Document error
@@ -216,73 +215,73 @@ export class PolicyDataMigrator {
                 policyRoles = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'roles',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 policyStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'states',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'schemas',
                     cachePolicyId: userPolicy.id,
                     category: SchemaCategory.SYSTEM,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vcs },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcRoleVcs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     schema: '#UserRole',
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcVPs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vps',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vps },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcDids = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'dids',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcMintRequests = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintRequests',
                     cachePolicyId: userPolicy.id,
                     vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcMintTransactions = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintTransactions',
                     cachePolicyId: userPolicy.id,
                     mintRequestId: {
                         $in: srcMintRequests.map((item) => item.id),
                     },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'multiDocuments',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'aggregateVCs',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'splitDocuments',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcDocumentStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'documentStates',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcTokens = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'tokens',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
                 srcRetirePools = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'retirePools',
                     cachePolicyId: userPolicy.id,
-                } as FilterObject<PolicyCache>);
+                } as Partial<PolicyCache>);
             } else {
                 srcModel = await DatabaseServer.getPolicy({
                     id: src,
@@ -716,7 +715,7 @@ export class PolicyDataMigrator {
                 type: ContractType.WIPE,
                 wipeContractId,
                 owner: this._owner,
-            } as FilterQuery<Contract>
+            } as Partial<Contract>
         );
         if (existingWipeContract) {
             return wipeContractId;
@@ -747,7 +746,7 @@ export class PolicyDataMigrator {
             }
         );
 
-        const contractId = await createContract(
+        const [contractId, log] = await createContract(
             ContractAPI.CREATE_CONTRACT,
             new Workers(),
             ContractType.WIPE,
@@ -759,14 +758,23 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
+// <<<<<<< HEAD
+//         const contract = await dataBaseServer.save(Contract, {
+// =======
+        const version = await getContractVersion(
+            log
+        );
         const contract = await dataBaseServer.save(Contract, {
+// >>>>>>> develop
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,
-            permissions: 15,
+            permissions: (version === '1.0.0' ? 15 : 7),
             type: ContractType.WIPE,
             topicId: topic.topicId,
             wipeContractIds: [],
+            wipeTokenIds: [],
+            version,
         });
 
         const contractMessage = new ContractMessage(
