@@ -207,7 +207,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
-                reject();
+                resolve(null);
             });
         });
     }
