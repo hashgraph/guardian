@@ -1,7 +1,6 @@
 import '../config.js'
 import {
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
     DatabaseServer,
     entities,
     Environment,
@@ -26,7 +25,6 @@ import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'process';
 import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
-import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';

@@ -30,7 +30,6 @@ import { ExternalEvent } from './interfaces/external-event.js';
 import { BlockTreeGenerator } from './block-tree-generator.js';
 import { PolicyNavigationMap } from './interfaces/block-state.js';
 import { ComponentsService } from './helpers/components-service.js';
-import { PopulatePath } from '@mikro-orm/mongodb';
 
 /**
  * Policy tag helper

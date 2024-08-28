@@ -1,6 +1,6 @@
 import {
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper, DatabaseServer,
+    DatabaseServer,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
