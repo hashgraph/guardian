@@ -65,7 +65,7 @@ import {
 } from './policy-data/loaders/index.js';
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
-import { setPoolContract } from '../../api/contract.service.js';
+import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
 
 /**
  * Document error
@@ -741,7 +741,7 @@ export class PolicyDataMigrator {
             }
         );
 
-        const contractId = await createContract(
+        const [contractId, log] = await createContract(
             ContractAPI.CREATE_CONTRACT,
             new Workers(),
             ContractType.WIPE,
@@ -753,14 +753,19 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
+        const version = await getContractVersion(
+            log
+        );
         const contract = await new DataBaseHelper(Contract).save({
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,
-            permissions: 15,
+            permissions: (version === '1.0.0' ? 15 : 7),
             type: ContractType.WIPE,
             topicId: topic.topicId,
             wipeContractIds: [],
+            wipeTokenIds: [],
+            version,
         });
 
         const contractMessage = new ContractMessage(

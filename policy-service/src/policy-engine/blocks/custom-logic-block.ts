@@ -72,7 +72,7 @@ export class CustomLogicBlock {
      * After init callback
      */
     public afterInit() {
-        console.log('Custom logic block');
+        // console.log('Custom logic block');
     }
 
     /**

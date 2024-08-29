@@ -3,6 +3,10 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { IOwner, PolicyHelper, UserRole } from '@guardian/interfaces';
 import { PolicyEngine } from './policy-engine.js';
 
+interface MessageError extends Error {
+    code: number;
+}
+
 /**
  * Find all field values in object by field name
  * @param obj
@@ -91,14 +95,18 @@ export const ONLY_SR = ' Only users with the Standard Registry role are allowed 
  * @param error
  * @param logger
  */
-export async function InternalException(error: HttpException | Error | string, logger: PinoLogger) {
+export async function InternalException(error: HttpException | string | MessageError, logger: PinoLogger) {
     await logger.error(error, ['API_GATEWAY']);
     if (error instanceof HttpException) {
         throw error;
     } else if (typeof error === 'string') {
         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     } else {
-        throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        if (error.code) {
+            throw new HttpException(error.message, error.code);
+        } else {
+            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     };
 }
 

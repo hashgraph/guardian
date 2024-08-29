@@ -41,7 +41,7 @@ export async function brandingAPI(
                 'headerColor': '#000',
                 'primaryColor': '#4169E2',
                 'companyName': 'Guardian',
-                'companyLogoUrl': '',
+                'companyLogoUrl': '/assets/images/logo.png',
                 'loginBannerUrl': 'bg.jpg',
                 'faviconUrl': 'favicon.ico',
                 termsAndConditions

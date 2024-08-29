@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -61,18 +62,27 @@ export class FiltersAddonBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
 
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
+        }
+    }
 
     setData(data: any) {
         this.currentValue = null;
@@ -110,11 +120,13 @@ export class FiltersAddonBlockComponent implements OnInit {
 
     onFilters() {
         this.loading = true;
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue: this.currentValue }).subscribe(() => {
-            this.loading = false;
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
+        this.policyEngineService
+            .setBlockData(this.id, this.policyId, { filterValue: this.currentValue })
+            .subscribe(() => {
+                this.loading = false;
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 }

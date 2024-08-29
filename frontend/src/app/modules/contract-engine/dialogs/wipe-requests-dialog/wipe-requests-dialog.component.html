@@ -6,6 +6,10 @@
                 <mat-icon class="profile__icon">person</mat-icon>
                 <span class="profile__id">{{request.user}}</span>
             </div>
+            <div class="token" *ngIf="version !== '1.0.0'">
+                <mat-icon class="token__icon">generating_tokens</mat-icon>
+                <span class="token__id">{{request.token}}</span>
+            </div>
             <div class="request__actions">
                 <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
                     [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"

@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -67,18 +68,23 @@ export class ActionBlockComponent implements OnInit {
         } else {
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 1000);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -147,13 +153,12 @@ export class ActionBlockComponent implements OnInit {
         this.visible = this.options.findIndex((o: any) => o.value == this.value) == -1;
         this.policyEngineService
             .setBlockData(this.id, this.policyId, this.data)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                }
-            );
+            .subscribe(() => {
+
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     setStatus(row: any, status: string) {
@@ -162,32 +167,26 @@ export class ActionBlockComponent implements OnInit {
         data.status = status;
         this.policyEngineService
             .setBlockData(this.id, this.policyId, data)
-            .subscribe(
-                () => {
-                    this.loadData();
-                },
-                (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                }
-            );
+            .subscribe(() => {
+                this.loadData();
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     onDownload() {
         this.policyEngineService
             .setBlockData(this.id, this.policyId, this.data)
-            .subscribe(
-                (data) => {
-                    if (data) {
-                        this.downloadObjectAsJson(data.body, data.fileName);
-                    }
-                    this.loading = false;
-                },
-                (e) => {
-                    console.error(e.error);
-                    this.loading = false;
+            .subscribe((data) => {
+                if (data) {
+                    this.downloadObjectAsJson(data.body, data.fileName);
                 }
-            );
+                this.loading = false;
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 
     downloadObjectAsJson(exportObj: any, exportName: string) {
@@ -207,12 +206,11 @@ export class ActionBlockComponent implements OnInit {
         this.setObjectValue(this.data, this.field, this.currentValue);
         this.policyEngineService
             .setBlockData(this.id, this.policyId, this.data)
-            .subscribe(
-                () => {},
-                (e) => {
-                    console.error(e.error);
-                    this.loading = false;
-                }
-            );
+            .subscribe(() => {
+
+            }, (e) => {
+                console.error(e.error);
+                this.loading = false;
+            });
     }
 }

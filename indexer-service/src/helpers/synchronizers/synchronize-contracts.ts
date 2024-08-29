@@ -1,46 +1,51 @@
-import { DataBaseHelper } from '@indexer/common';
+import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType, MessageAction } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
+import { SynchronizationTask } from '../synchronization-task.js';
 
-function filter() {
-    return {
-        $or: [
-            {
-                'analytics.textSearch': null,
-            },
-        ],
-    };
-}
+export class SynchronizationContracts extends SynchronizationTask {
+    public readonly name: string = 'contracts';
 
-export async function syncContracts() {
-    const em = DataBaseHelper.getEntityManager();
-    const collection = em.getCollection('message');
-    const contracts = await collection.find({
-        type: { $in: [MessageType.CONTRACT] },
-        action: MessageAction.CreateContract,
-        ...filter(),
-    });
-    let index = 0;
-    const count = await contracts.count();
-    while (await contracts.hasNext()) {
-        index++;
-        console.log(`Sync contracts ${index}/${count}`);
-        const document = await contracts.next();
+    constructor(mask: string) {
+        super('contracts', mask);
+    }
+
+    protected override async sync(): Promise<void> {
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+
+        console.log(`Sync Contracts: update data`)
+        const contracts = collection.find({
+            type: { $in: [MessageType.CONTRACT] },
+            action: MessageAction.CreateContract,
+            ...this.filter(),
+        });
+        while (await contracts.hasNext()) {
+            const document = await contracts.next();
+            const row = em.getReference(Message, document._id);
+            row.analytics = this.createAnalytics(document);
+            em.persist(row);
+        }
+        console.log(`Sync Contracts: flush`)
+        await em.flush();
+    }
+
+    private createAnalytics(
+        document: Message
+    ): any {
         const analytics: any = {
             textSearch: textSearch(document)
         };
-        await collection.updateOne(
-            {
-                _id: document._id,
-            },
-            {
-                $set: {
-                    analytics,
+        return analytics;
+    }
+
+    private filter() {
+        return {
+            $or: [
+                {
+                    'analytics.textSearch': null,
                 },
-            },
-            {
-                upsert: false,
-            }
-        );
+            ],
+        };
     }
 }
