@@ -43,7 +43,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
 
     const workers = new Workers();
     const result = await workers.addNonRetryableTask({
-        type: WorkerTaskType.GENERATE_DEMO_KEY,
+        type: WorkerTaskType.CREATE_ACCOUNT,
         data: {
             operatorId: OPERATOR_ID,
             operatorKey: OPERATOR_KEY,
