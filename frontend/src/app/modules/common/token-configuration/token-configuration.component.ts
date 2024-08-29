@@ -6,8 +6,7 @@ import { FormGroup } from '@angular/forms';
     templateUrl: './token-configuration.component.html',
     styleUrls: ['./token-configuration.component.css'],
 })
-export class TokenConfigurationComponent implements OnInit, OnChanges {
-    @Input('preset') preset?: any;
+export class TokenConfigurationComponent implements OnChanges {
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
@@ -47,12 +46,20 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         this.dataForm?.patchValue({enableAdmin: value});
     }
 
+    get enableAdminDisabled(): any {
+        return this.dataForm?.get('enableAdmin')?.disabled;
+    }
+
     get enableWipe(): any {
         return this.dataForm?.get('enableWipe')?.value;
     }
 
     set enableWipe(value: any) {
         this.dataForm?.patchValue({enableWipe: value});
+    }
+
+    get enableWipeDisabled(): any {
+        return this.dataForm?.get('enableWipe')?.disabled;
     }
 
     get enableFreeze(): any {
@@ -63,6 +70,10 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         this.dataForm?.patchValue({enableFreeze: value});
     }
 
+    get enableFreezeDisabled(): any {
+        return this.dataForm?.get('enableFreeze')?.disabled;
+    }
+
     get enableKYC(): any {
         return this.dataForm?.get('enableKYC')?.value;
     }
@@ -71,22 +82,16 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
         this.dataForm?.patchValue({enableKYC: value});
     }
 
+    get enableKYCDisabled(): any {
+        return this.dataForm?.get('enableKYC')?.disabled;
+    }
+
     get wipeContractId(): any {
         return this.dataForm?.get('wipeContractId')?.value;
     }
 
     set decimals(value: string) {
         this.dataForm?.patchValue({ decimals: value });
-    }
-
-    ngOnInit(): void {
-        if (this.preset) {
-            this.dataForm.patchValue(this.preset);
-            for (let presetEntry of Object.entries(this.preset)) {
-                const controlName = presetEntry[0];
-                this.dataForm.get(controlName)?.disable();
-            }
-        }
     }
 
     ngOnChanges() {
