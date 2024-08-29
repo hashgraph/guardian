@@ -418,16 +418,58 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         });
     }
 
+    inputHederaAndTokenIdentifier(callback: (hederaId: string, tokenId: string) => void) {
+        const dialogRef = this.dialog.open(DataInputDialogComponent, {
+            width: '700px',
+            autoFocus: false,
+            disableClose: true,
+            data: {
+                fieldsConfig: [
+                    {
+                        name: 'hederaId',
+                        label: 'Hedera identifier',
+                        placeholder: '0.0.1',
+                        validators: [
+                            Validators.required,
+                            Validators.pattern('^\\d+\\.\\d+\\.\\d+$'),
+                        ],
+                    },
+                    {
+                        name: 'tokenId',
+                        label: 'Token identifier',
+                        placeholder: '0.0.1',
+                        validators: [
+                            Validators.required,
+                            Validators.pattern('^\\d+\\.\\d+\\.\\d+$'),
+                        ],
+                    },
+                ],
+                title: 'Enter Hedera and Token identifiers',
+            },
+        });
+        dialogRef.afterClosed().subscribe(async (result) => {
+            if (!result) {
+                return;
+            }
+            callback(result.hederaId?.trim(), result.tokenId?.trim());
+        });
+    }
+
     addWiper(contract: any) {
-        this.inputHederaIdentifier((result) => {
+        const callback = (hederaId: string, tokenId?: string) => {
             this.loading = true;
-            this.contractsService.wipeAddWiper(result, contract.id).subscribe(
+            this.contractsService.wipeAddWiper(hederaId, contract.id, tokenId).subscribe(
                 (res) => {
                     this.loading = false;
                 },
                 () => (this.loading = false)
             );
-        });
+        }
+        if (contract.version === '1.0.0') {
+            this.inputHederaIdentifier(callback);
+        } else {
+            this.inputHederaAndTokenIdentifier(callback);
+        }
     }
 
     addAdmin(contract: any) {
@@ -469,17 +511,22 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     }
 
     removeWiper(contract: any) {
-        this.inputHederaIdentifier((result) => {
+        const callback = (hederaId: string, tokenId?: string) => {
             this.loading = true;
             this.contractsService
-                .wipeRemoveWiper(result, contract.id)
+                .wipeRemoveWiper(hederaId, contract.id, tokenId)
                 .subscribe(
                     (res) => {
                         this.loading = false;
                     },
                     () => (this.loading = false)
                 );
-        });
+        }
+        if (contract.version === '1.0.0') {
+            this.inputHederaIdentifier(callback);
+        } else {
+            this.inputHederaAndTokenIdentifier(callback);
+        }
     }
 
     removeAdmin(contract: any) {
@@ -545,13 +592,20 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     }
 
     clearRequests(contract: any) {
-        this.loading = true;
-        this.contractsService.clearWipeRequests(contract.id).subscribe(
-            (res) => {
-                this.loading = false;
-            },
-            () => (this.loading = false)
-        );
+        const callback = (result?: any) => {
+            this.loading = true;
+            this.contractsService.clearWipeRequests(contract.id, result).subscribe(
+                (res) => {
+                    this.loading = false;
+                },
+                () => (this.loading = false)
+            );
+        }
+        if (contract.version === '1.0.0') {
+            callback();
+        } else {
+            this.inputHederaIdentifier(callback);
+        }
     }
 
     clearRetireRequests(contract: any) {
@@ -633,7 +687,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     openWipeRequests(contract: any) {
         this.dialog.open(WipeRequestsDialogComponent, {
-            width: '650px',
+            width: contract.version === '1.0.0' ? '650px' : '850px',
             panelClass: 'g-dialog',
             disableClose: true,
             autoFocus: false,

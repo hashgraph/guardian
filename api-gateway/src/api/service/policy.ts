@@ -2,8 +2,8 @@ import { Auth, AuthUser } from '#auth';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, TaskDTO } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiServiceUnavailableResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
@@ -1389,6 +1389,10 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: BlockDTO
     })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
@@ -1437,6 +1441,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1492,6 +1500,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1552,6 +1564,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1658,6 +1674,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',

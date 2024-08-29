@@ -3,12 +3,12 @@ import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { forkJoin } from 'rxjs';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -94,19 +94,26 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            forkJoin([
-                this.policyEngineService.getBlockData(this.id, this.policyId)
-            ]).subscribe((value) => {
-                const data: any = value[0];
-                this.setData(data).then(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                });
-            }, (e) => {
-                console.error(e.error);
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data).then(() => {
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 500);
+        });
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -200,7 +207,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
-                reject();
+                resolve(null);
             });
         });
     }

@@ -15,6 +15,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ColumnType, TableComponent } from '@components/table/table.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'vp-document-details',
@@ -35,7 +36,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         TabViewModule,
         TableComponent,
         ProgressSpinnerModule,
-        InputTextareaModule
+        InputTextareaModule,
+        ButtonModule
     ]
 })
 export class VpDocumentDetailsComponent extends BaseDetailsComponent {
@@ -102,11 +104,11 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     ]
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -194,9 +196,5 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 }

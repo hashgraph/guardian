@@ -1,7 +1,7 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "name": "indexer-frontend",
-    "version": "2.27.0",
+    "version": "2.27.1",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --proxy-config ./proxy.conf.json",
@@ -24,6 +24,7 @@
         "@indexer/interfaces": "file:../indexer-interfaces",
         "@jsverse/transloco": "^7.2.1",
         "chart.js": "^4.4.3",
+        "cids": "^1.1.9",
         "echarts": "^5.5.0",
         "ngx-echarts": "^17.1.0",
         "ol": "^9.2.2",
