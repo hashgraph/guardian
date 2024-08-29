@@ -6,8 +6,7 @@ import { FormGroup } from '@angular/forms';
     templateUrl: './token-configuration.component.html',
     styleUrls: ['./token-configuration.component.css'],
 })
-export class TokenConfigurationComponent implements OnInit, OnChanges {
-    @Input('preset') preset?: any;
+export class TokenConfigurationComponent implements OnChanges {
     @Input('dataForm') dataForm!: FormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
@@ -93,16 +92,6 @@ export class TokenConfigurationComponent implements OnInit, OnChanges {
 
     set decimals(value: string) {
         this.dataForm?.patchValue({ decimals: value });
-    }
-
-    ngOnInit(): void {
-        if (this.preset) {
-            this.dataForm.patchValue(this.preset);
-            for (let presetEntry of Object.entries(this.preset)) {
-                const controlName = presetEntry[0];
-                this.dataForm.get(controlName)?.disable();
-            }
-        }
     }
 
     ngOnChanges() {

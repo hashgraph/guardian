@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ContractType, IUser } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { ContractType } from '@guardian/interfaces';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -23,7 +22,6 @@ export class CreateTokenBlockComponent implements OnInit {
     loading: boolean = true;
     socket: any;
     dataForm: FormGroup;
-    templatePreset: any;
     title: any;
     description: any;
     isExist: boolean = false;
@@ -34,21 +32,8 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        fb: FormBuilder
+        private fb: FormBuilder
     ) {
-        this.dataForm = fb.group({
-            tokenName: ['Token Name', Validators.required],
-            tokenSymbol: ['F', Validators.required],
-            tokenType: ['fungible', Validators.required],
-            decimals: ['2'],
-            initialSupply: ['0'],
-            enableAdmin: [true, Validators.required],
-            changeSupply: [true, Validators.required],
-            enableFreeze: [false, Validators.required],
-            enableKYC: [false, Validators.required],
-            enableWipe: [true, Validators.required],
-            wipeContractId: [],
-        });
     }
 
     ngOnInit(): void {
@@ -104,7 +89,23 @@ export class CreateTokenBlockComponent implements OnInit {
 
     setData(data: any) {
         if (data) {
-            this.templatePreset = data.data;
+            this.dataForm = this.fb.group({
+                tokenName: ['Token Name', Validators.required],
+                tokenSymbol: ['F', Validators.required],
+                tokenType: ['fungible', Validators.required],
+                decimals: ['2'],
+                initialSupply: ['0'],
+                enableAdmin: [true, Validators.required],
+                changeSupply: [true, Validators.required],
+                enableFreeze: [false, Validators.required],
+                enableKYC: [false, Validators.required],
+                enableWipe: [true, Validators.required],
+                wipeContractId: [],
+            })
+            this.dataForm.patchValue(data.data);
+            for (const presetEntry of Object.entries(data.data)) {
+                this.dataForm.get(presetEntry[0])?.disable();
+            }
             this.title = data.title;
             this.description = data.description;
             this.loading = data.active === false;
