@@ -215,4 +215,10 @@ export class PolicyPropertiesComponent implements OnInit {
     onTokenTypeChange(item: any) {
         item.decimals = '';
     }
+
+    onEnableWipeChange(template: PolicyToken) {
+        if (template.enableWipe !== true) {
+            template.wipeContractId = undefined;
+        }
+    }
 }

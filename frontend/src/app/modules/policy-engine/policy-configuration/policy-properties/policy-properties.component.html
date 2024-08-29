@@ -535,7 +535,7 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Wipe</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableWipe" [disabled]="readonly">
+                                <mat-select placeholder="To be specified by user" (selectionChange)="onEnableWipeChange(item)" [(ngModel)]="item.enableWipe" [disabled]="readonly">
                                     <mat-option>To be specified by user</mat-option>
                                     <mat-option [value]="true">Yes</mat-option>
                                     <mat-option [value]="false">No</mat-option>
