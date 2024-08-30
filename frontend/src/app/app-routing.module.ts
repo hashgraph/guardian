@@ -45,6 +45,7 @@ import { UsersManagementComponent } from './views/user-management/user-managemen
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { MapService } from './services/map.service';
+import { PolicyStatisticsComponent } from './modules/policy-statistics/policy-statistics/policy-statistics.component';
 
 @Injectable({
     providedIn: 'root'
@@ -486,6 +487,15 @@ const routes: Routes = [
                 Permissions.DELEGATION_ROLE_MANAGE,
                 Permissions.PERMISSIONS_ROLE_MANAGE
             ]
+        }
+    },
+
+    {
+        path: 'policy-statistics',
+        component: PolicyStatisticsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
         }
     },
 
