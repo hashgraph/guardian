@@ -73,7 +73,9 @@ services:
 
   notification-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
     depends_on:
       - message-broker
     volumes:
@@ -81,7 +83,9 @@ services:
 
   logger-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
     expose:
@@ -91,7 +95,9 @@ services:
 
   queue-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
@@ -103,7 +109,9 @@ services:
 
   worker-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
     depends_on:
       queue-service:
         condition: service_started
@@ -120,8 +128,9 @@ services:
       replicas: 2
 
   auth-service:
-    <<: *service-template
-    image: gcr.io/hedera-registry/auth-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
     volumes:
       - ./auth-service/tls:/usr/local/app/tls:ro
       - ./auth-service/configs:/usr/local/app/configs:ro
@@ -136,7 +145,9 @@ services:
 
   api-gateway:
     <<: *service-template
-    image: gcr.io/hedera-registry/api-gateway:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
     expose:
       - 3002
       - 6555
@@ -153,7 +164,9 @@ services:
 
   ai-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/ai-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
     expose:
       - 3013
     depends_on:
@@ -169,7 +182,9 @@ services:
 
   policy-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/policy-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./policy-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
@@ -184,7 +199,9 @@ services:
 
   guardian-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/guardian-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
     volumes:
       - ./guardian-service/tls:/usr/local/app/tls:ro
       - ./guardian-service/configs:/usr/local/app/configs:ro
@@ -200,7 +217,9 @@ services:
       - 5007
 
   application-events:
-    image: gcr.io/hedera-registry/application-events:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: application-events/Dockerfile
     init: true
     depends_on:
       - mongo
@@ -212,7 +231,9 @@ services:
     - 3012
 
   web-proxy:
-    image: gcr.io/hedera-registry/frontend:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile.ci
     init: true
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
