@@ -19,6 +19,17 @@ services:
     expose:
       - 27017
 
+  mongo-express:
+    image: mongo-express:1.0.2-20
+    expose:
+      - 8081
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_SITE_BASEURL: /mongo-admin # default credentials: admin/pass
+    depends_on:
+      - mongo
+
   cache:
     image: registry.redict.io/redict
     platform: linux/amd64
@@ -73,7 +84,9 @@ services:
 
   notification-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/notification-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./notification-service/Dockerfile
     depends_on:
       - message-broker
     volumes:
@@ -81,7 +94,9 @@ services:
 
   logger-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
     expose:
@@ -91,11 +106,12 @@ services:
 
   queue-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
-      - logger-service
     expose:
       - 6555
     volumes:
@@ -103,7 +119,9 @@ services:
 
   worker-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
     depends_on:
       queue-service:
         condition: service_started
@@ -121,7 +139,9 @@ services:
 
   auth-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/auth-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile.demo
     volumes:
       - ./auth-service/tls:/usr/local/app/tls:ro
       - ./auth-service/configs:/usr/local/app/configs:ro
@@ -129,14 +149,15 @@ services:
       - mongo
       - vault
       - message-broker
-      - logger-service
     expose:
       - 6555
       - 5005
 
   api-gateway:
     <<: *service-template
-    image: gcr.io/hedera-registry/api-gateway:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile.demo
     expose:
       - 3002
       - 6555
@@ -147,19 +168,19 @@ services:
       - message-broker
       - guardian-service
       - auth-service
-      - logger-service
     volumes:
       - ./api-gateway/configs:/usr/local/app/configs:ro
 
   ai-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/ai-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./ai-service/Dockerfile
     expose:
       - 3013
     depends_on:
       - mongo
       - message-broker
-      - logger-service
     volumes:
       - ./ai-service/faiss-vector:/usr/local/app/faiss-vector:rw
       - ./ai-service/data:/usr/local/app/data:rw
@@ -169,12 +190,13 @@ services:
 
   policy-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/policy-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./policy-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
       - auth-service
-      - logger-service
     expose:
       - 50000-60000
       - 5006
@@ -184,7 +206,9 @@ services:
 
   guardian-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/guardian-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./guardian-service/Dockerfile
     volumes:
       - ./guardian-service/tls:/usr/local/app/tls:ro
       - ./guardian-service/configs:/usr/local/app/configs:ro
@@ -192,38 +216,64 @@ services:
       - mongo
       - message-broker
       - auth-service
-      - logger-service
-      - worker-service
+      - queue-service
       - policy-service
     expose:
       - 6555
       - 5007
 
   application-events:
-    image: gcr.io/hedera-registry/application-events:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: application-events/Dockerfile
     init: true
     depends_on:
       - mongo
       - message-broker
       - guardian-service
       - auth-service
-      - logger-service
     expose:
     - 3012
 
+  mrv-sender:
+    build:
+      context: .
+      dockerfile: ./mrv-sender/Dockerfile
+    init: true
+    expose:
+      - 3005
+      - 5008
+
+  topic-viewer:
+    build:
+      context: .
+      dockerfile: ./topic-viewer/Dockerfile
+    init: true
+    expose:
+      - 3006
+      - 5009
+
   web-proxy:
-    image: gcr.io/hedera-registry/frontend:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./web-proxy/Dockerfile.demo
     init: true
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
       GATEWAY_HOST: api-gateway
       GATEWAY_PORT: 3002
+      MRV_SENDER_HOST: mrv-sender
+      MRV_SENDER_PORT: 3005
+      TOPIC_VIEWER_HOST: topic-viewer
+      TOPIC_VIEWER_PORT: 3006
     ports:
       - "3000:80"
     depends_on:
       - guardian-service
       - auth-service
       - api-gateway
+      - mrv-sender
+      - mongo-express
 
   prometheus:
     image: prom/prometheus:v2.44.0
