@@ -252,7 +252,7 @@ export class AccountService extends NatsService {
                 try {
                     const { username, password, role } = msg;
 
-                    const checkUserName =  new DatabaseServer().count(User, { username })
+                    const checkUserName = await new DatabaseServer().count(User, { username })
 
                     if (checkUserName) {
                         return new MessageError('An account with the same name already exists.');
