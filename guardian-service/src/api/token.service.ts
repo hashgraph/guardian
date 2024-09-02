@@ -1,8 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { ArrayMessageResponse, DataBaseHelper, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
+import { ArrayMessageResponse, DatabaseServer, KeyType, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { publishTokenTags } from './tag.service.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Create token in Hedera network
@@ -146,13 +147,12 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
  * Create token
  * @param token
  * @param owner
- * @param tokenRepository
+ * @param dataBaseServer
  * @param notifier
- */
-async function createToken(
+ */async function createToken(
     token: Token,
     user: IOwner,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier
 ): Promise<Token> {
     if (!token.tokenName) {
@@ -183,8 +183,8 @@ async function createToken(
     }
 
     notifier.completedAndStart('Create and save token in DB');
-    const tokenObject = tokenRepository.create(rawTokenObject);
-    const result = await tokenRepository.save(tokenObject);
+    const tokenObject = dataBaseServer.create(Token, rawTokenObject);
+    const result = await dataBaseServer.save(Token, tokenObject);
 
     notifier.completed();
     return result;
@@ -194,22 +194,22 @@ async function createToken(
  * Update token
  * @param oldToken
  * @param newToken
- * @param tokenRepository
+ * @param user
+ * @param dataBaseServer
  * @param notifier
  * @param log
- */
-async function updateToken(
+ */async function updateToken(
     oldToken: Token,
     newToken: Token,
     user: IOwner,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier,
     log: PinoLogger
 ): Promise<Token> {
     if (oldToken.draftToken && newToken.draftToken) {
         notifier.start('Update token');
         const tokenObject = Object.assign(oldToken, newToken);
-        const result = await tokenRepository.update(tokenObject, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
         notifier.completed();
 
         return result;
@@ -223,7 +223,7 @@ async function updateToken(
         const newTokenObject = await createHederaToken(newToken, root);
         const tokenObject = Object.assign(oldToken, newTokenObject);
 
-        const result = await tokenRepository.update(tokenObject, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, tokenObject);
 
         notifier.completedAndStart('Publish tags');
         try {
@@ -287,7 +287,7 @@ async function updateToken(
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
 
-        const result = await tokenRepository.update(oldToken, oldToken?.id);
+        const result = await dataBaseServer.update(Token, oldToken?.id, oldToken);
 
         const saveKeys = [];
         if (changes.enableFreeze) {
@@ -330,7 +330,7 @@ async function updateToken(
 async function deleteToken(
     token: Token,
     user: IOwner,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier
 ): Promise<boolean> {
     if (!token.draftToken) {
@@ -360,11 +360,11 @@ async function deleteToken(
         notifier.completedAndStart('Save token in DB');
 
         if (tokenData) {
-            await tokenRepository.delete(token);
+            await dataBaseServer.deleteEntity(Token, token);
         }
     } else {
         notifier.start('Delete token from db');
-        await tokenRepository.delete(token);
+        await dataBaseServer.deleteEntity(Token, token);
     }
 
     notifier.completed();
@@ -377,18 +377,18 @@ async function deleteToken(
  * @param tokenId
  * @param did
  * @param associate
- * @param tokenRepository
+ * @param dataBaseServer
  * @param notifier
  */
 async function associateToken(
     tokenId: string,
     target: IOwner,
     associate: any,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier
 ): Promise<{ tokenName: string; status: boolean }> {
     notifier.start('Find token data');
-    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -431,7 +431,7 @@ async function associateToken(
  * @param username
  * @param owner
  * @param grant
- * @param tokenRepository
+ * @param dataBaseServer
  * @param notifier
  */
 async function grantKycToken(
@@ -439,11 +439,11 @@ async function grantKycToken(
     username: string,
     owner: IOwner,
     grant: boolean,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier
 ): Promise<any> {
     notifier.start('Find token data');
-    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -501,7 +501,7 @@ async function grantKycToken(
  * @param username
  * @param owner
  * @param freeze
- * @param tokenRepository
+ * @param dataBaseServer
  * @param notifier
  */
 async function freezeToken(
@@ -509,11 +509,11 @@ async function freezeToken(
     username: string,
     owner: IOwner,
     freeze: boolean,
-    tokenRepository: DataBaseHelper<Token>,
+    dataBaseServer: DatabaseServer,
     notifier: INotifier
 ): Promise<any> {
     notifier.start('Find token data');
-    const token = await tokenRepository.findOne({ where: { tokenId: { $eq: tokenId } } });
+    const token = await dataBaseServer.findOne(Token, { tokenId: { $eq: tokenId } });
     if (!token) {
         throw new Error('Token not found');
     }
@@ -568,9 +568,10 @@ async function freezeToken(
 /**
  * Connect to the message broker methods of working with tokens.
  *
- * @param tokenRepository - table with tokens
+ * @param dataBaseServer
+ * @param logger
  */
-export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: PinoLogger): Promise<void> {
+export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogger): Promise<void> {
     /**
      * Create new token
      *
@@ -587,9 +588,9 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
 
                 const { item, owner } = msg;
 
-                await createToken(item, owner, tokenRepository, emptyNotifier());
+                await createToken(item, owner, dataBaseServer, emptyNotifier());
 
-                const tokens = await tokenRepository.findAll();
+                const tokens = await dataBaseServer.findAll(Token);
                 return new MessageResponse(tokens);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -606,7 +607,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-                const result = await createToken(token, owner, tokenRepository, notifier);
+                const result = await createToken(token, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -623,12 +624,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-                const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+                const item = await dataBaseServer.findOne(Token, { tokenId: token.tokenId });
                 if (!item || item.owner !== owner.owner) {
                     throw new Error('Token not found');
                 }
 
-                return new MessageResponse(await updateToken(item, token, owner, tokenRepository, emptyNotifier(), logger));
+                return new MessageResponse(await updateToken(item, token, owner, dataBaseServer, emptyNotifier(), logger));
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -643,12 +644,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-                const item = await tokenRepository.findOne({ tokenId: token.tokenId });
+                const item = await dataBaseServer.findOne(Token, { tokenId: token.tokenId });
                 if (!item || item.owner !== owner.owner) {
                     throw new Error('Token not found');
                 }
 
-                const result = await updateToken(item, token, owner, tokenRepository, notifier, logger);
+                const result = await updateToken(item, token, owner, dataBaseServer, notifier, logger);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -666,11 +667,11 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                 if (!msg) {
                     throw new Error('Invalid Params');
                 }
-                const item = await tokenRepository.findOne({ tokenId });
+                const item = await dataBaseServer.findOne(Token, { tokenId });
                 if (!item || item.owner !== owner.owner) {
                     throw new Error('Token not found');
                 }
-                const result = await deleteToken(item, owner, tokenRepository, notifier);
+                const result = await deleteToken(item, owner, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -683,7 +684,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
         async (msg: { tokenId: string, username: string, owner: IOwner, freeze: boolean }) => {
             try {
                 const { tokenId, username, owner, freeze } = msg;
-                const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, emptyNotifier());
+                const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -697,7 +698,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await freezeToken(tokenId, username, owner, freeze, tokenRepository, notifier);
+                const result = await freezeToken(tokenId, username, owner, freeze, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -711,7 +712,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
         async (msg: { tokenId: string, username: string, owner: IOwner, grant: boolean }) => {
             try {
                 const { tokenId, username, owner, grant } = msg;
-                const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, emptyNotifier());
+                const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -725,7 +726,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await grantKycToken(tokenId, username, owner, grant, tokenRepository, notifier);
+                const result = await grantKycToken(tokenId, username, owner, grant, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -739,7 +740,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
         async (msg: { tokenId: string, owner: IOwner, associate: boolean }) => {
             try {
                 const { tokenId, owner, associate } = msg;
-                const result = await associateToken(tokenId, owner, associate, tokenRepository, emptyNotifier());
+                const result = await associateToken(tokenId, owner, associate, dataBaseServer, emptyNotifier());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -753,7 +754,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
             const notifier = await initNotifier(task);
 
             RunFunctionAsync(async () => {
-                const result = await associateToken(tokenId, owner, associate, tokenRepository, notifier);
+                const result = await associateToken(tokenId, owner, associate, dataBaseServer, notifier);
                 notifier.result(result);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -774,7 +775,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                     throw new Error('User not found');
                 }
 
-                const token = await tokenRepository.findOne({ tokenId });
+                const token = await dataBaseServer.findOne(Token, { tokenId });
                 if (!token) {
                     throw new Error('Token not found');
                 }
@@ -833,15 +834,13 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                     }
                 }, 20);
 
-                const [tokens, count] = await tokenRepository.findAndCount(user.parent
+                const [tokens, count] = await dataBaseServer.findAndCount(Token,user.parent
                     ? {
-                        where: {
-                            $or: [
-                                { owner: { $eq: user.parent } },
-                                { owner: { $exists: false } }
-                            ]
-                        }
-                    }
+                         $or: [
+                             { owner: { $eq: user.parent } },
+                             { owner: { $exists: false } }
+                         ]
+                    } as FilterObject<Token>
                     : {}
                 );
 
@@ -882,20 +881,18 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
         async (msg: { filters: any, owner: IOwner }) => {
             const { filters, owner } = msg;
             const option: any = {
-                where: {
-                    $or: [
-                        { owner: { $eq: owner.owner } },
-                        { owner: { $exists: false } }
-                    ]
-                }
+                $or: [
+                    { owner: { $eq: owner.owner } },
+                    { owner: { $exists: false } }
+                ]
             }
             if (filters.tokenId) {
-                option.where.tokenId = filters.tokenId;
+                option.tokenId = filters.tokenId;
             }
             if (filters.ids) {
-                option.where.tokenId = { $in: filters.ids };
+                option.tokenId = { $in: filters.ids };
             }
-            const tokens = await tokenRepository.find(option);
+            const tokens = await dataBaseServer.find(Token, option);
             return new MessageResponse(tokens);
         })
 
@@ -930,12 +927,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                         },
                     };
 
-            const [tokens, count] = await tokenRepository.findAndCount({
+            const [tokens, count] = await dataBaseServer.findAndCount(Token, {
                 $or: [
                     { owner: { $eq: owner.owner } },
                     { owner: { $exists: false } }
                 ]
-            }, options);
+            } as FilterObject<Token>, options);
             return new ArrayMessageResponse(tokens, count);
         })
 
@@ -972,12 +969,12 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
                         fields
                     };
 
-            const [tokens, count] = await tokenRepository.findAndCount({
+            const [tokens, count] = await dataBaseServer.findAndCount(Token, {
                 $or: [
                     { owner: { $eq: owner.owner } },
                     { owner: { $exists: false } }
                 ]
-            }, options);
+            } as FilterObject<Token>, options);
             return new ArrayMessageResponse(tokens, count);
         })
 
@@ -991,7 +988,7 @@ export async function tokenAPI(tokenRepository: DataBaseHelper<Token>, logger: P
     ApiResponse(MessageAPI.GET_TOKEN,
         async (msg: { tokenId: string, owner: IOwner }) => {
             const { owner, tokenId } = msg;
-            const token = await tokenRepository.findOne({
+            const token = await dataBaseServer.findOne(Token, {
                 tokenId,
                 $or: [
                     { owner: { $eq: owner.owner } },

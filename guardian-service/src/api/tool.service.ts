@@ -10,6 +10,7 @@ import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js
 import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
 import { publishToolTags } from './tag.service.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Sha256
@@ -418,7 +419,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -457,7 +458,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {

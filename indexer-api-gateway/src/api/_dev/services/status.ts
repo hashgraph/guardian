@@ -1,7 +1,6 @@
 import { Controller, HttpCode, HttpStatus, Get, Inject } from '@nestjs/common';
 import { ClientProxy, EventPattern } from '@nestjs/microservices';
 import {
-    ApiInternalServerErrorResponse,
     ApiForbiddenResponse,
     ApiOkResponse,
     ApiOperation,

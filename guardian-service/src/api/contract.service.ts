@@ -2,7 +2,6 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     Contract,
     ContractMessage,
-    DataBaseHelper,
     DatabaseServer,
     KeyType,
     MessageAction,
@@ -128,7 +127,7 @@ async function getContractMessage(
 
 async function checkContractsCompatibility(
     workers: Workers,
-    contractRepository: DataBaseHelper<Contract>,
+    databaseServer: DatabaseServer,
     retireContract: { version: string },
     tokens: { token: string }[]
 ) {
@@ -141,15 +140,16 @@ async function checkContractsCompatibility(
                 return `Wipe contract is not defined for token ${token.wipeContractId}`;
             }
             let wipeContract: { version: string } =
-                await contractRepository.findOne(
+                await databaseServer.findOne(
+                    Contract,
                     { contractId: token.wipeContractId },
                     { fields: ['version'] }
-                );
+                ) as unknown as { version: string };
             if (!wipeContract) {
                 [wipeContract] = await getContractMessage(
                     workers,
                     token.wipeContractId
-                );
+                ) as unknown as [{ version: string }];
             }
             if (wipeContract.version !== '1.0.0') {
                 return 'Incompatible wipe contract version';
@@ -177,8 +177,7 @@ export function getTokenContractId(wipeKey: { _type: string; key: string }) {
 
 async function setPool(
     workers: Workers,
-    contractRepository: DataBaseHelper<Contract>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
+    dataBaseServer: DatabaseServer,
     contractId: string,
     options: { tokens: RetireTokenPool[]; immediately: boolean }
 ) {
@@ -209,8 +208,7 @@ async function setPool(
             } catch { }
 
             await setContractWiperPermissions(
-                contractRepository,
-                retirePoolRepository,
+                dataBaseServer,
                 contractId,
                 wipeContractId,
                 isWiper,
@@ -232,9 +230,9 @@ async function setPool(
         })
     );
 
-    const contract = await contractRepository.findOne({
+    const contract = await dataBaseServer.findOne(Contract,{
         contractId,
-    });
+    }) as Contract & {wipeTokenIds: string[]};
 
     pool.enabled =
         pool.tokens.findIndex(
@@ -262,25 +260,28 @@ async function setPool(
             },
         ],
     };
-    await retirePoolRepository.save(pool, filters);
+    await dataBaseServer.save(RetirePool, pool, filters);
 }
 
 async function setContractWiperPermissions(
-    contractRepository: DataBaseHelper<Contract>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
+    dataBaseServer: DatabaseServer,
     contractId: string,
     wipeContractId: string,
     isWiper: boolean,
     token?: string,
 ) {
-    const contracts = await contractRepository.find({
+    const contracts = await dataBaseServer.find(Contract, {
         contractId,
-    });
+    })  as (Contract & {wipeTokenIds: string[]})[];
     if (contracts.length === 0) {
         return;
     }
 
-    await contractRepository.update(
+    await dataBaseServer.update(
+        Contract,
+        {
+            contractId,
+        },
         await Promise.all(
             contracts.map(async (contract) => {
                 if (token) {
@@ -303,20 +304,18 @@ async function setContractWiperPermissions(
                 return contract;
             })
         ),
-        {
-            contractId,
-        }
     );
-    const pools = await retirePoolRepository.find({
+    const pools = await dataBaseServer.find(RetirePool, {
         contractId,
     });
 
-    await retirePoolRepository.save(
+    await dataBaseServer.save(
+        RetirePool,
         await Promise.all(
             pools.map(async (pool) => {
-                const contract = await contractRepository.findOne({
+                const contract = await dataBaseServer.findOne(Contract, {
                     contractId,
-                });
+                }) as Contract & {wipeTokenIds: string[]};
 
                 pool.enabled =
                     pool.tokens.findIndex(
@@ -355,7 +354,7 @@ export async function setPoolContract(
 
 async function setRetireRequest(
     workers: Workers,
-    retireRequestRepository: DataBaseHelper<RetireRequest>,
+    dataBaseServer: DatabaseServer,
     contractId: string,
     user: string,
     tokens: RetireTokenRequest[]
@@ -383,7 +382,7 @@ async function setRetireRequest(
 
     const tokenIds = tokens.map((token) => token.token);
 
-    await retireRequestRepository.delete({
+    await dataBaseServer.deleteEntity(RetireRequest, {
         $and: [
             {
                 user,
@@ -400,9 +399,10 @@ async function setRetireRequest(
                 ],
             },
         ],
-    })
+    } as Partial<RetireRequest>)
 
-    await retireRequestRepository.save(
+    await dataBaseServer.save(
+        RetireRequest,
         {
             user,
             tokens: newTokens,
@@ -412,14 +412,13 @@ async function setRetireRequest(
 }
 
 export async function syncWipeContracts(
-    contractRepository: DataBaseHelper<Contract>,
-    wipeRequestRepository: DataBaseHelper<WiperRequest>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
+    dataBaseServer: DatabaseServer,
     workers: Workers,
     users: Users
 ) {
     const contractIds = new Map<string, string>();
-    const contracts = await contractRepository.find(
+    const contracts = await dataBaseServer.find(
+        Contract,
         {
             type: ContractType.WIPE,
             syncDisabled: { $ne: true },
@@ -427,7 +426,8 @@ export async function syncWipeContracts(
         {
             fields: ['contractId', 'lastSyncEventTimeStamp', 'version'],
         }
-    );
+    ) as (Contract & {version: string})[];
+
     const contractVersions = new Map<string, string>();
     const maxTimestamps = new Map<string, string>();
     contracts.forEach((contract) => {
@@ -453,9 +453,7 @@ export async function syncWipeContracts(
 
     for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
         await syncWipeContract(
-            contractRepository,
-            wipeRequestRepository,
-            retirePoolRepository,
+            dataBaseServer,
             workers,
             users,
             {
@@ -468,9 +466,7 @@ export async function syncWipeContracts(
 }
 
 export async function syncWipeContract(
-    contractRepository: DataBaseHelper<Contract>,
-    wipeRequestRepository: DataBaseHelper<WiperRequest>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
+    dataBaseServer: DatabaseServer,
     workers: Workers,
     users: Users,
     contract: { contractId: string, version: string },
@@ -505,7 +501,8 @@ export async function syncWipeContract(
             const eventName = eventAbi.getEventName(log.topics[0]);
             const data = eventAbi.decodeEventLog(eventName, log.data);
             // tslint:disable-next-line:no-shadowed-variable
-            const contracts = await contractRepository.find(
+            const contracts = await dataBaseServer.find(
+                Contract,
                 {
                     contractId,
                 },
@@ -529,8 +526,9 @@ export async function syncWipeContract(
 
                     if (isFirstVersion) {
                         await setContractWiperPermissions(
-                            contractRepository,
-                            retirePoolRepository,
+                            // contractRepository,
+                            // retirePoolRepository,
+                            dataBaseServer,
                             retireContractId,
                             contractId,
                             true
@@ -540,8 +538,7 @@ export async function syncWipeContract(
                             data[1]
                         ).toString();
                         await setContractWiperPermissions(
-                            contractRepository,
-                            retirePoolRepository,
+                            dataBaseServer,
                             retireContractId,
                             contractId,
                             true,
@@ -557,8 +554,7 @@ export async function syncWipeContract(
 
                     if (isFirstVersion) {
                         await setContractWiperPermissions(
-                            contractRepository,
-                            retirePoolRepository,
+                            dataBaseServer,
                             retireContractId,
                             contractId,
                             false
@@ -568,8 +564,7 @@ export async function syncWipeContract(
                             data[1]
                         ).toString();
                         await setContractWiperPermissions(
-                            contractRepository,
-                            retirePoolRepository,
+                            dataBaseServer,
                             retireContractId,
                             contractId,
                             false,
@@ -584,11 +579,11 @@ export async function syncWipeContract(
                     ).toString();
 
                     if (isFirstVersion) {
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             user,
                             contractId,
                         });
-                        await wipeRequestRepository.save({
+                        await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                         });
@@ -608,12 +603,12 @@ export async function syncWipeContract(
                         const token: string = TokenId.fromSolidityAddress(
                             data[1]
                         ).toString();
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             user,
                             contractId,
                             token
-                        });
-                        await wipeRequestRepository.save({
+                        } as Partial<WiperRequest>);
+                        await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                             token
@@ -639,7 +634,7 @@ export async function syncWipeContract(
                     ).toString();
 
                     if (isFirstVersion) {
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                             user,
                         });
@@ -647,24 +642,24 @@ export async function syncWipeContract(
                         const token: string = TokenId.fromSolidityAddress(
                             data[1]
                         ).toString();
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                             user,
                             token
-                        });
+                        } as Partial<WiperRequest>);
                     }
                     break;
                 }
                 case 'WipeRequestsCleared': {
                     if (isFirstVersion) {
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                         });
                     } else {
                         const user: string = AccountId.fromSolidityAddress(
                             data[0]
                         ).toString();
-                        await wipeRequestRepository.delete({
+                        await dataBaseServer.deleteEntity(WiperRequest, {
                             contractId,
                             user
                         });
@@ -683,10 +678,11 @@ export async function syncWipeContract(
     if (!lastTimeStamp) {
         return;
     }
-    const contracts = await contractRepository.find({
+    const contracts = await dataBaseServer.find(Contract, {
         contractId,
     });
-    await contractRepository.update(
+    await dataBaseServer.update(Contract,
+        null,
         contracts.map((updContract) => {
             updContract.lastSyncEventTimeStamp = lastTimeStamp;
             updContract.syncDisabled = false;
@@ -696,14 +692,13 @@ export async function syncWipeContract(
 }
 
 export async function syncRetireContracts(
-    contractRepository: DataBaseHelper<Contract>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
-    retireRequestRepository: DataBaseHelper<RetireRequest>,
+    dataBaseServer: DatabaseServer,
     workers: Workers,
     users: Users
 ) {
     const contractIds = new Map<string, string>();
-    const contracts = await contractRepository.find(
+    const contracts = await dataBaseServer.find(
+        Contract,
         {
             type: ContractType.RETIRE,
             syncDisabled: { $ne: true },
@@ -734,9 +729,7 @@ export async function syncRetireContracts(
     });
     for (const [contractId, lastSyncEventTimeStamp] of contractIds) {
         await syncRetireContract(
-            contractRepository,
-            retirePoolRepository,
-            retireRequestRepository,
+            dataBaseServer,
             workers,
             users,
             contractId,
@@ -746,9 +739,7 @@ export async function syncRetireContracts(
 }
 
 export async function syncRetireContract(
-    contractRepository: DataBaseHelper<Contract>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
-    retireRequestRepository: DataBaseHelper<RetireRequest>,
+    dataBaseServer: DatabaseServer,
     workers: Workers,
     users: Users,
     contractId: string,
@@ -781,7 +772,8 @@ export async function syncRetireContract(
             const data = retireEventsAbi.decodeEventLog(eventName, log.data);
 
             // tslint:disable-next-line:no-shadowed-variable
-            const contracts = await contractRepository.find(
+            const contracts = await dataBaseServer.find(
+                Contract,
                 {
                     contractId,
                 },
@@ -832,8 +824,7 @@ export async function syncRetireContract(
                     }));
                     await setPool(
                         workers,
-                        contractRepository,
-                        retirePoolRepository,
+                        dataBaseServer,
                         contractId,
                         {
                             tokens,
@@ -871,7 +862,7 @@ export async function syncRetireContract(
                     const tokenIds = data[0].map((item) =>
                         TokenId.fromSolidityAddress(item).toString()
                     );
-                    await retirePoolRepository.delete({
+                    await dataBaseServer.deleteEntity(RetirePool, {
                         $and: [
                             {
                                 contractId,
@@ -887,7 +878,7 @@ export async function syncRetireContract(
                                 ],
                             },
                         ],
-                    });
+                    } as Partial<RetirePool>);
                     if (!sendNotifications) {
                         break;
                     }
@@ -917,7 +908,7 @@ export async function syncRetireContract(
                     ).toString();
                     await setRetireRequest(
                         workers,
-                        retireRequestRepository,
+                        dataBaseServer,
                         contractId,
                         retireUser,
                         data[1].map((item) => ({
@@ -949,7 +940,7 @@ export async function syncRetireContract(
                     const tokenIds = data[1].map((item) =>
                         TokenId.fromSolidityAddress(item).toString()
                     );
-                    await retireRequestRepository.delete({
+                    await dataBaseServer.deleteEntity(RetireRequest, {
                         $and: [
                             {
                                 contractId,
@@ -966,14 +957,14 @@ export async function syncRetireContract(
                                 ],
                             },
                         ],
-                    });
+                    } as Partial<RetireRequest>);
                     break;
                 }
                 case 'PoolsCleared': {
                     const count = Number(data[0]);
-                    await retirePoolRepository.delete({
+                    await dataBaseServer.deleteEntity(RetirePool, {
                         tokens: { $size: count },
-                    });
+                    } as unknown as Partial<RetirePool>);
                     if (!sendNotifications) {
                         break;
                     }
@@ -991,9 +982,9 @@ export async function syncRetireContract(
                 }
                 case 'RequestsCleared': {
                     const count = Number(data[0]);
-                    await retireRequestRepository.delete({
+                    await dataBaseServer.deleteEntity(RetireRequest, {
                         tokens: { $size: count },
-                    });
+                    } as unknown as Partial<RetireRequest>);
                     if (!sendNotifications) {
                         break;
                     }
@@ -1021,10 +1012,12 @@ export async function syncRetireContract(
         return;
     }
 
-    const contracts = await contractRepository.find({
+    const contracts = await dataBaseServer.find(Contract, {
         contractId,
     });
-    await contractRepository.update(
+    await dataBaseServer.update(
+        Contract,
+        null,
         contracts.map((contract) => {
             contract.lastSyncEventTimeStamp = lastTimeStamp;
             contract.syncDisabled = false;
@@ -1156,7 +1149,7 @@ export async function getContractVersion(log: any): Promise<string> {
 }
 
 async function saveRetireVC(
-    contractRepository: DataBaseHelper<Contract>,
+    dataBaseServer: DatabaseServer,
     contractId: string,
     owner: IOwner,
     hederaAccountId: string,
@@ -1164,7 +1157,7 @@ async function saveRetireVC(
     userHederaAccountId: string,
     tokens: (RetireTokenRequest & { decimals: number })[]
 ) {
-    const contract = await contractRepository.findOne({
+    const contract = await dataBaseServer.findOne(Contract, {
         contractId,
         owner: owner.creator,
     });
@@ -1178,20 +1171,20 @@ async function saveRetireVC(
     messageServer.setTopicObject(topicConfig);
 
     const userTopic = await TopicConfig.fromObject(
-        await new DataBaseHelper(Topic).findOne({
+        await dataBaseServer.findOne(Topic, {
             owner: owner.creator,
             type: TopicType.UserTopic,
         }),
         true
     );
 
-    let schema = await new DataBaseHelper(SchemaCollection).findOne({
+    let schema = await dataBaseServer.findOne(SchemaCollection, {
         entity: SchemaEntity.RETIRE_TOKEN,
         readonly: true,
         topicId: userTopic.topicId,
     });
     if (!schema) {
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
+        schema = await dataBaseServer.findOne(SchemaCollection, {
             entity: SchemaEntity.RETIRE_TOKEN,
             system: true,
             active: true,
@@ -1206,7 +1199,7 @@ async function saveRetireVC(
                 MessageAction.PublishSystemSchema,
                 emptyNotifier()
             );
-            await new DataBaseHelper(SchemaCollection).save(item);
+            await dataBaseServer.save(SchemaCollection, item);
         }
     }
 
@@ -1238,7 +1231,7 @@ async function saveRetireVC(
     vcMessage.setDocument(vcObject);
     await messageServer.sendMessage(vcMessage);
 
-    await new DataBaseHelper(VcDocumentCollection).save({
+    await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
         owner: owner.creator,
         document: vcMessage.document,
@@ -1251,11 +1244,7 @@ async function saveRetireVC(
  * Connect to the message broker methods of working with contracts.
  */
 export async function contractAPI(
-    contractRepository: DataBaseHelper<Contract>,
-    wipeRequestRepository: DataBaseHelper<WiperRequest>,
-    retirePoolRepository: DataBaseHelper<RetirePool>,
-    retireRequestRepository: DataBaseHelper<RetireRequest>,
-    vcRepostitory: DataBaseHelper<VcDocument>,
+    dataBaseServer: DatabaseServer,
     logger: PinoLogger,
 ): Promise<void> {
     ApiResponse(ContractAPI.GET_CONTRACTS, async (msg: {
@@ -1291,7 +1280,8 @@ export async function contractAPI(
             }
 
             return new MessageResponse(
-                await contractRepository.findAndCount(
+                await dataBaseServer.findAndCount(
+                    Contract,
                     {
                         owner: owner.owner,
                         type,
@@ -1359,7 +1349,7 @@ export async function contractAPI(
             const version = await getContractVersion(
                 log
             );
-            const contract = await contractRepository.save({
+            const contract = await dataBaseServer.save(Contract, {
                 contractId,
                 owner: owner.creator,
                 description,
@@ -1432,13 +1422,14 @@ export async function contractAPI(
                 rootKey
             );
 
-            const [contractMessage, memo] = await getContractMessage(workers, contractId);
+            const [contractMessage, memo] = await getContractMessage(workers, contractId) as [ContractMessage & {version: string}, string];
 
-            const existingContract = await contractRepository.findOne({
+            const existingContract = await dataBaseServer.findOne(Contract, {
                 contractId,
             });
 
-            const contract = await contractRepository.save(
+            const contract = await dataBaseServer.save(
+                Contract,
                 {
                     contractId,
                     owner: owner.creator,
@@ -1461,15 +1452,13 @@ export async function contractAPI(
                     contractId,
                     owner: owner.creator,
                 }
-            );
+            ) as Contract & { contractId: string; version: string; };
             if (
                 !existingContract &&
                 contractMessage.contractType === ContractType.RETIRE
             ) {
                 await syncRetireContract(
-                    contractRepository,
-                    retirePoolRepository,
-                    retireRequestRepository,
+                    dataBaseServer,
                     workers,
                     users,
                     contractId,
@@ -1481,9 +1470,7 @@ export async function contractAPI(
                 contractMessage.contractType === ContractType.WIPE
             ) {
                 await syncWipeContract(
-                    contractRepository,
-                    wipeRequestRepository,
-                    retirePoolRepository,
+                    dataBaseServer,
                     workers,
                     users,
                     contract,
@@ -1514,7 +1501,7 @@ export async function contractAPI(
                 throw new Error('Invalid contract identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await  dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -1539,13 +1526,14 @@ export async function contractAPI(
                 rootKey
             );
 
-            await contractRepository.update(
-                {
-                    permissions,
-                },
+            await dataBaseServer.update(
+                Contract,
                 {
                     contractId,
                     owner: owner.creator,
+                },
+                {
+                    permissions,
                 }
             );
             return new MessageResponse(permissions);
@@ -1571,7 +1559,7 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId'],
                 });
                 if (!contract) {
@@ -1579,19 +1567,19 @@ export async function contractAPI(
                 }
                 const contractId = contract.contractId;
 
-                await contractRepository.delete({
+                await dataBaseServer.deleteEntity(Contract, {
                     contractId,
                     owner: owner.creator,
                 });
 
-                const existingContracts = await contractRepository.count({
+                const existingContracts = await dataBaseServer.count(Contract, {
                     contractId,
                 });
                 if (existingContracts < 1) {
-                    await retirePoolRepository.delete({
+                    await dataBaseServer.deleteEntity(RetirePool, {
                         contractId,
                     });
-                    await retireRequestRepository.delete({
+                    await dataBaseServer.deleteEntity(RetireRequest, {
                         contractId,
                     });
                 }
@@ -1637,10 +1625,11 @@ export async function contractAPI(
             if (contractId) {
                 contractFilters.contractId = contractId;
             }
-            const contracts = await contractRepository.find(contractFilters);
+            const contracts = await dataBaseServer.find(Contract, contractFilters);
 
             return new MessageResponse(
-                await wipeRequestRepository.findAndCount(
+                await dataBaseServer.findAndCount(
+                    WiperRequest,
                     {
                         contractId: {
                             $in: contracts.map((item) => item.contractId),
@@ -1671,7 +1660,7 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId'],
                 });
                 if (!contract) {
@@ -1721,7 +1710,7 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId'],
                 });
                 if (!contract) {
@@ -1771,9 +1760,9 @@ export async function contractAPI(
                     throw new Error('Invalid request identifier');
                 }
 
-                const request = await wipeRequestRepository.findOne({
+                const request = await dataBaseServer.findOne(WiperRequest, {
                     id: requestId,
-                });
+                }) as WiperRequest & {token: string};
                 if (!request) {
                     throw new Error('Request is not found');
                 }
@@ -1788,9 +1777,9 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                const contract = await contractRepository.findOne({
-                    contractId: request.contractId
-                });
+                const contract = await dataBaseServer.findOne(Contract, {
+                    contractId: request.contractId,
+                }) as Contract & { version: string };
 
                 const params = [{
                     type: ContractParamType.ADDRESS,
@@ -1818,11 +1807,10 @@ export async function contractAPI(
                     params,
                 );
 
-                await wipeRequestRepository.remove(request);
+                await dataBaseServer.remove(WiperRequest, request);
 
                 await setContractWiperPermissions(
-                    contractRepository,
-                    retirePoolRepository,
+                    dataBaseServer,
                     request.user,
                     request.contractId,
                     true,
@@ -1855,9 +1843,9 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const request = await wipeRequestRepository.findOne({
+            const request = await dataBaseServer.findOne(WiperRequest, {
                 id: requestId,
-            });
+            }) as WiperRequest & {token: string};
             if (!request) {
                 throw new Error('Request is not found');
             }
@@ -1872,9 +1860,9 @@ export async function contractAPI(
                 owner.creator
             );
 
-            const contract = await contractRepository.findOne({
+            const contract = await dataBaseServer.findOne(Contract, {
                 contractId: request.contractId
-            });
+            }) as Contract & { version: string };
 
             const params: any[] = [{
                 type: ContractParamType.ADDRESS,
@@ -1907,7 +1895,7 @@ export async function contractAPI(
                 params,
             );
 
-            await wipeRequestRepository.remove(request);
+            await dataBaseServer.remove(WiperRequest, request);
 
             return new MessageResponse(true);
         } catch (error) {
@@ -1932,9 +1920,9 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId', 'version'],
-                });
+                }) as Contract & { version: string };
                 if (!contract) {
                     throw new Error('Contract not found');
                 }
@@ -1964,7 +1952,8 @@ export async function contractAPI(
                         ).toSolidityAddress(),
                     }] : null
                 );
-                await wipeRequestRepository.delete(contract.version !== '1.0.0' ? {
+
+                await dataBaseServer.deleteEntity(WiperRequest, contract.version !== '1.0.0' ? {
                     contractId,
                     user: hederaId
                 } : {
@@ -2000,7 +1989,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -2064,7 +2053,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -2128,7 +2117,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -2192,7 +2181,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -2257,9 +2246,10 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId', 'version'],
-            });
+            }) as Contract & { version: string };
+
             if (!contract) {
                 throw new Error('Contract not found');
             }
@@ -2332,9 +2322,9 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId', 'version'],
-            });
+            }) as Contract & { version: string };
             if (!contract) {
                 throw new Error('Contract not found');
             }
@@ -2400,16 +2390,17 @@ export async function contractAPI(
                     throw new Error('Invalid owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId', 'version'],
                 });
+
                 if (!contract) {
                     throw new Error('Contract not found');
                 }
                 const contractId = contract.contractId;
                 const workers = new Workers();
 
-                const pools = await retirePoolRepository.find({
+                const pools = await dataBaseServer.find(RetirePool, {
                     contractId,
                 });
 
@@ -2446,8 +2437,7 @@ export async function contractAPI(
                         // tslint:disable-next-line:no-empty
                         } catch {}
                         await setContractWiperPermissions(
-                            contractRepository,
-                            retirePoolRepository,
+                            dataBaseServer,
                             contractId,
                             token.contract,
                             isWiper,
@@ -2455,9 +2445,9 @@ export async function contractAPI(
                         );
                     }
                     // tslint:disable-next-line:no-shadowed-variable
-                    const contract = await contractRepository.findOne({
+                    const contract = await dataBaseServer.findOne(Contract, {
                         contractId,
-                    });
+                    }) as Contract & { wipeTokenIds: string[] };
 
                     pool.enabled =
                         pool.tokens.findIndex(
@@ -2466,15 +2456,17 @@ export async function contractAPI(
                         ) < 0;
                 }
 
-                await retirePoolRepository.update(pools);
+                await dataBaseServer.update(RetirePool, null, pools);
 
                 const syncDate = new Date();
 
-                const contracts = await contractRepository.find({
+                const contracts = await dataBaseServer.find(Contract, {
                     contractId,
                 });
 
-                await contractRepository.update(
+                await dataBaseServer.update(
+                    Contract,
+                    null,
                     // tslint:disable-next-line:no-shadowed-variable
                     contracts.map((contract) => {
                         contract.syncPoolsDate = syncDate;
@@ -2529,17 +2521,17 @@ export async function contractAPI(
             let result: any;
             if (user.role === UserRole.STANDARD_REGISTRY) {
                 if (!filters.contractId) {
-                    const contracts = await contractRepository.find({
+                    const contracts = await dataBaseServer.find(Contract, {
                         owner: owner.creator,
                     });
                     filters.contractId = {
                         $in: contracts.map((item) => item.id),
                     };
                 }
-                result = await retireRequestRepository.findAndCount(filters, otherOptions);
+                result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             } else if (user.role === UserRole.USER) {
                 filters.user = user.hederaAccountId;
-                result = await retireRequestRepository.findAndCount(filters, otherOptions);
+                result = await dataBaseServer.findAndCount(RetireRequest, filters, otherOptions);
             }
             return new MessageResponse(result);
         } catch (error) {
@@ -2592,7 +2584,7 @@ export async function contractAPI(
             if (contractId) {
                 filters.$and.push({ contractId });
             } else {
-                const contracts = await contractRepository.find({
+                const contracts = await dataBaseServer.find(Contract, {
                     type: ContractType.RETIRE,
                     owner: owner.owner,
                 });
@@ -2611,7 +2603,7 @@ export async function contractAPI(
             }
 
             return new MessageResponse(
-                await retirePoolRepository.findAndCount(filters, otherOptions)
+                await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
             );
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -2635,7 +2627,7 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId'],
                 });
                 if (!contract) {
@@ -2682,7 +2674,7 @@ export async function contractAPI(
                     ]
                 );
 
-                await retireRequestRepository.delete({
+                await dataBaseServer.deleteEntity(RetireRequest, {
                     contractId,
                 });
 
@@ -2709,7 +2701,7 @@ export async function contractAPI(
                     throw new Error('Invalid contract owner');
                 }
 
-                const contract = await contractRepository.findOne(id, {
+                const contract = await dataBaseServer.findOne(Contract, id, {
                     fields: ['contractId'],
                 });
                 if (!contract) {
@@ -2756,7 +2748,7 @@ export async function contractAPI(
                     ]
                 );
 
-                await retirePoolRepository.delete({
+                await dataBaseServer.deleteEntity(RetirePool, {
                     contractId,
                 });
 
@@ -2789,9 +2781,9 @@ export async function contractAPI(
                 throw new Error('Options are required');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId', 'version'],
-            });
+            }) as Contract & { version: string };
             if (!contract) {
                 throw new Error('Contract not found');
             }
@@ -2807,7 +2799,7 @@ export async function contractAPI(
                 owner.creator
             );
 
-            const error = await checkContractsCompatibility(workers, contractRepository, contract, options.tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, options.tokens);
             if (error) {
                 throw new Error(error);
             }
@@ -2824,8 +2816,9 @@ export async function contractAPI(
             return new MessageResponse(
                 await setPool(
                     workers,
-                    contractRepository,
-                    retirePoolRepository,
+                    // contractRepository,
+                    // retirePoolRepository,
+                    dataBaseServer,
                     contractId,
                     options
                 )
@@ -2852,7 +2845,7 @@ export async function contractAPI(
                     throw new Error('Pool identifier is required');
                 }
 
-                const pool = await retirePoolRepository.findOne({
+                const pool = await dataBaseServer.findOne(RetirePool, {
                     id: poolId,
                 });
 
@@ -2887,7 +2880,7 @@ export async function contractAPI(
                     ]
                 );
 
-                await retirePoolRepository.remove(pool);
+                await dataBaseServer.remove(RetirePool, pool);
 
                 return new MessageResponse(result);
             } catch (error) {
@@ -2912,7 +2905,7 @@ export async function contractAPI(
                     throw new Error('Pool identifier is required');
                 }
 
-                const request = await retireRequestRepository.findOne({
+                const request = await dataBaseServer.findOne(RetireRequest, {
                     id: requestId,
                 });
 
@@ -2952,7 +2945,7 @@ export async function contractAPI(
                         },
                     ]
                 );
-                await retireRequestRepository.remove(request);
+                await dataBaseServer.remove(RetireRequest, request);
 
                 return new MessageResponse(result);
             } catch (error) {
@@ -2986,7 +2979,7 @@ export async function contractAPI(
                 throw new Error('Pool identifier is required');
             }
 
-            const pool = await retirePoolRepository.findOne({
+            const pool = await dataBaseServer.findOne(RetirePool, {
                 id: poolId,
             });
             if (!pool) {
@@ -3002,11 +2995,11 @@ export async function contractAPI(
             const wallet = new Wallet();
             const workers = new Workers();
 
-            const contract = await contractRepository.findOne({
+            const contract = await dataBaseServer.findOne(Contract, {
                 contractId: pool.contractId
-            })
+            }) as Contract & { version: string }
 
-            const error = await checkContractsCompatibility(workers, contractRepository, contract, tokens);
+            const error = await checkContractsCompatibility(workers, dataBaseServer, contract, tokens);
             if (error) {
                 throw new Error(error);
             }
@@ -3041,7 +3034,8 @@ export async function contractAPI(
             const srUser = EntityOwner.sr(sr.id, sr.did);
             if (pool.immediately) {
                 await saveRetireVC(
-                    contractRepository,
+                    // contractRepository,
+                    dataBaseServer,
                     pool.contractId,
                     srUser,
                     sr.hederaAccountId,
@@ -3084,7 +3078,7 @@ export async function contractAPI(
                     throw new Error('Pool identifier is required');
                 }
 
-                const request = await retireRequestRepository.findOne({
+                const request = await dataBaseServer.findOne(RetireRequest, {
                     id: requestId,
                 });
 
@@ -3102,11 +3096,11 @@ export async function contractAPI(
                     owner.creator
                 );
 
-                const contract: { version: string } = await contractRepository.findOne({
+                const contract: { version: string } = await dataBaseServer.findOne(Contract, {
                     contractId: request.contractId
-                }, { field: ['version'] });
+                }, { field: ['version'] }) as Contract & { version: string };
 
-                const error = await checkContractsCompatibility(workers, contractRepository, contract, request.tokens);
+                const error = await checkContractsCompatibility(workers, dataBaseServer, contract, request.tokens);
                 if (error) {
                     throw new Error(error);
                 }
@@ -3156,7 +3150,7 @@ export async function contractAPI(
                 }
 
                 await saveRetireVC(
-                    contractRepository,
+                    dataBaseServer,
                     request.contractId,
                     owner,
                     root.hederaAccountId,
@@ -3165,7 +3159,7 @@ export async function contractAPI(
                     request.tokens
                 );
 
-                await retireRequestRepository.remove(request);
+                await dataBaseServer.remove(RetireRequest, request);
 
                 return new MessageResponse(result);
             } catch (error) {
@@ -3190,7 +3184,7 @@ export async function contractAPI(
                     throw new Error('Pool identifier is required');
                 }
 
-                const request = await retireRequestRepository.findOne({
+                const request = await dataBaseServer.findOne(RetireRequest, {
                     id: requestId,
                 });
 
@@ -3225,7 +3219,7 @@ export async function contractAPI(
                     ]
                 );
 
-                await retireRequestRepository.remove(request);
+                await dataBaseServer.remove(RetireRequest, request);
 
                 return new MessageResponse(result);
             } catch (error) {
@@ -3256,7 +3250,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -3320,7 +3314,7 @@ export async function contractAPI(
                 throw new Error('Invalid hedera identifier');
             }
 
-            const contract = await contractRepository.findOne(id, {
+            const contract = await dataBaseServer.findOne(Contract, id, {
                 fields: ['contractId'],
             });
             if (!contract) {
@@ -3403,7 +3397,7 @@ export async function contractAPI(
             }
 
             return new MessageResponse(
-                await vcRepostitory.findAndCount(filters, otherOptions)
+                await dataBaseServer.findAndCount(VcDocument, filters, otherOptions)
             );
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);

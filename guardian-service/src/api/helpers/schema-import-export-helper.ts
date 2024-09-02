@@ -5,6 +5,7 @@ import { importTag } from '../../api/helpers/tag-import-export-helper.js';
 import { onlyUnique, checkForCircularDependency } from './schema-helper.js';
 import geoJson from '@guardian/interfaces/dist/helpers/geojson-schema/geo-json.js';
 import sentinelHub from '@guardian/interfaces/dist/helpers/sentinel-hub/sentinel-hub-schema.js';
+import { FilterObject } from '@mikro-orm/core';
 
 export class SchemaCache {
     /**
@@ -521,7 +522,7 @@ export class SchemaImport {
                 }, {
                     uuid: { $ne: schemaObject.uuid }
                 }]
-            });
+            } as FilterObject<SchemaCollection>);
             if (errorsCount > 0) {
                 throw new Error('Schema identifier already exist');
             }

@@ -8,7 +8,7 @@ import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
     AggregateVC, ApplicationState, ApprovalDocument, Artifact, ArtifactChunk, AssignEntity, BlockCache, BlockState, Branding, COMMON_CONNECTION_CONFIG,
-    Contract, DataBaseHelper, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
+    Contract, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
     LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
     MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
     PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
@@ -38,7 +38,6 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
-import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from './api/suggestions.service.js';
 import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
@@ -140,9 +139,10 @@ Promise.all([
 
     app.listen();
 
-    DataBaseHelper.orm = db;
+    DatabaseServer.connectBD(db);
 
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+    DatabaseServer.connectGridFS();
+
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,
@@ -171,37 +171,19 @@ Promise.all([
 
     await state.updateState(ApplicationStates.STARTED);
 
-    const didDocumentRepository = new DataBaseHelper(DidDocument);
-    const vcDocumentRepository = new DataBaseHelper(VcDocument);
-    const vpDocumentRepository = new DataBaseHelper(VpDocument);
-    const tokenRepository = new DataBaseHelper(Token);
-    const schemaRepository = new DataBaseHelper(Schema);
-    const settingsRepository = new DataBaseHelper(Settings);
-    const topicRepository = new DataBaseHelper(Topic);
-    const policyRepository = new DataBaseHelper(Policy);
-    const contractRepository = new DataBaseHelper(Contract);
-    const wipeRequestRepository = new DataBaseHelper(WiperRequest);
-    const retirePoolRepository = new DataBaseHelper(RetirePool);
-    const retireRequestRepository = new DataBaseHelper(RetireRequest);
-    const brandingRepository = new DataBaseHelper(Branding);
+    const dataBaseServer = new DatabaseServer();
 
     try {
-        await configAPI(settingsRepository, topicRepository, logger);
+        await configAPI(dataBaseServer, logger);
         await schemaAPI(logger);
-        await tokenAPI(tokenRepository, logger);
-        await loaderAPI(didDocumentRepository, schemaRepository, logger);
+        await tokenAPI(dataBaseServer, logger);
+        await loaderAPI(dataBaseServer, logger);
         await profileAPI(logger);
-        await documentsAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
-        await demoAPI(settingsRepository, logger);
-        await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, logger);
+        await documentsAPI(dataBaseServer);
+        await demoAPI(dataBaseServer, logger);
+        await trustChainAPI(dataBaseServer, logger);
         await artifactAPI(logger);
-        await contractAPI(contractRepository,
-            wipeRequestRepository,
-            retirePoolRepository,
-            retireRequestRepository,
-            vcDocumentRepository,
-            logger
-        );
+        await contractAPI(dataBaseServer, logger);
         await modulesAPI(logger);
         await toolsAPI(logger);
         await tagsAPI(logger);
@@ -210,7 +192,7 @@ Promise.all([
         await themeAPI(logger);
         await wizardAPI(logger);
         await recordAPI(logger);
-        await brandingAPI(brandingRepository);
+        await brandingAPI(dataBaseServer);
         await suggestionsAPI();
         await projectsAPI(logger);
         await AssignedEntityAPI(logger)
@@ -378,9 +360,7 @@ Promise.all([
         'retire-sync',
         syncRetireContracts.bind(
             {},
-            contractRepository,
-            retirePoolRepository,
-            retireRequestRepository,
+            dataBaseServer,
             workers,
             users
         ),
@@ -393,9 +373,7 @@ Promise.all([
         'wipe-sync',
         syncWipeContracts.bind(
             {},
-            contractRepository,
-            wipeRequestRepository,
-            retirePoolRepository,
+            dataBaseServer,
             workers,
             users
         ),
@@ -408,11 +386,11 @@ Promise.all([
         'policy-discontinue',
         async () => {
             const date = new Date();
-            const policiesToDiscontunie = await policyRepository.find({
+            const policiesToDiscontunie = await dataBaseServer.find(Policy,{
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });
-            await policyRepository.update(policiesToDiscontunie.map(policy => {
+            await dataBaseServer.update(Policy, null, policiesToDiscontunie.map(policy => {
                 policy.status = PolicyType.DISCONTINUED;
                 return policy;
             }));

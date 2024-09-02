@@ -1,7 +1,6 @@
 import '../config.js'
 import {
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
     DatabaseServer,
     entities,
     Environment,
@@ -26,7 +25,6 @@ import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'process';
 import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
-import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -74,9 +72,11 @@ Promise.all([
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
     app.listen();
-    DataBaseHelper.orm = db;
-    // @ts-ignore
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+
+    DatabaseServer.connectBD(db);
+
+    DatabaseServer.connectGridFS();
+
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);

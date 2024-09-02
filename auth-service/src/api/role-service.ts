@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
 import { AuthEvents, GenerateUUIDv4, IGroup, IOwner, PermissionsArray } from '@guardian/interfaces';
 import { DynamicRole } from '../entity/dynamic-role.js';
 import { User } from '../entity/user.js';
@@ -72,11 +72,13 @@ class ListPermissions {
 }
 
 export async function getDefaultRole(owner: string): Promise<DynamicRole> {
-    const defaultRole = await new DataBaseHelper(DynamicRole).findOne({ owner, default: true });
+    const entityRepository = new DatabaseServer();
+
+    const defaultRole = await entityRepository.findOne(DynamicRole, { owner, default: true });
     if (defaultRole) {
         return defaultRole;
     }
-    return await new DataBaseHelper(DynamicRole).findOne({ owner: null, default: true, readonly: true });
+    return await entityRepository.findOne(DynamicRole, { owner: null, default: true, readonly: true });
 }
 
 /**
@@ -168,7 +170,7 @@ export class RoleService extends NatsService {
                         }
                     }
 
-                    const [items, count] = await new DataBaseHelper(DynamicRole).findAndCount(options, otherOptions);
+                    const [items, count] = await new DatabaseServer().findAndCount(DynamicRole, options, otherOptions);
                     const defaultRole = await getDefaultRole(owner);
                     const defaultRoleId = defaultRole?.id;
                     for (const item of items) {
@@ -207,8 +209,10 @@ export class RoleService extends NatsService {
                     } else {
                         role.uuid = GenerateUUIDv4();
                     }
-                    let item = new DataBaseHelper(DynamicRole).create(role);
-                    item = await new DataBaseHelper(DynamicRole).save(item);
+                    const entityRepository = new DatabaseServer();
+
+                    let item = entityRepository.create(DynamicRole, role);
+                    item = await entityRepository.save(DynamicRole, item);
                     return new MessageResponse(item);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -231,7 +235,9 @@ export class RoleService extends NatsService {
                     }
                     const { id, role, owner } = msg;
 
-                    const item = await new DataBaseHelper(DynamicRole).findOne({
+                    const entityRepository = new DatabaseServer();
+
+                    const item = await entityRepository.findOne(DynamicRole, {
                         id,
                         owner: owner.creator
                     });
@@ -243,7 +249,7 @@ export class RoleService extends NatsService {
                     item.name = role.name;
                     item.description = role.description;
                     item.permissions = ListPermissions.unique(role.permissions);
-                    const result = await new DataBaseHelper(DynamicRole).update(item);
+                    const result = await entityRepository.update(DynamicRole, null, item);
                     return new MessageResponse(result);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -265,7 +271,7 @@ export class RoleService extends NatsService {
                         return new MessageError('Invalid get role parameters');
                     }
                     const { id } = msg;
-                    const item = await new DataBaseHelper(DynamicRole).findOne({ id });
+                    const item = await new DatabaseServer().findOne(DynamicRole, { id });
                     return new MessageResponse(item);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -283,18 +289,20 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.DELETE_ROLE,
             async (msg: { id: string, owner: IOwner }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     if (!msg) {
                         return new MessageError('Invalid delete role parameters');
                     }
                     const { id, owner } = msg;
-                    const item = await new DataBaseHelper(DynamicRole).findOne({
+                    const item = await entityRepository.findOne(DynamicRole, {
                         id,
                         owner: owner.creator
                     });
                     if (!item || item.owner !== owner.creator) {
                         throw new Error('Invalid role');
                     }
-                    await new DataBaseHelper(DynamicRole).remove(item);
+                    await entityRepository.remove(DynamicRole, item);
                     return new MessageResponse(item);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -312,15 +320,17 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.SET_DEFAULT_ROLE,
             async (msg: { id: string, owner: string }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     if (!msg) {
                         return new MessageError('Invalid delete role parameters');
                     }
                     const { id, owner } = msg;
-                    const items = await new DataBaseHelper(DynamicRole).find({ owner });
+                    const items = await entityRepository.find(DynamicRole, { owner });
                     for (const item of items) {
                         item.default = item.id === id;
                     }
-                    await new DataBaseHelper(DynamicRole).update(items);
+                    await entityRepository.update(DynamicRole, null, items);
                     const result = items.find((role) => role.default);
                     return new MessageResponse(result);
                 } catch (error) {
@@ -339,11 +349,13 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.SET_DEFAULT_USER_ROLE,
             async (msg: { username: string, owner: string }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     if (!msg) {
                         return new MessageError('Invalid delete role parameters');
                     }
                     const { username, owner } = msg;
-                    const target = await new DataBaseHelper(User).findOne({
+                    const target = await entityRepository.findOne(User, {
                         username,
                         parent: owner
                     })
@@ -370,7 +382,7 @@ export class RoleService extends NatsService {
                         target.permissionsGroup = [];
                         target.permissions = [];
                     }
-                    const result = await new DataBaseHelper(User).update(target);
+                    const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -388,6 +400,8 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.UPDATE_USER_ROLE,
             async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     if (!msg) {
                         return new MessageError('Invalid update user parameters');
                     }
@@ -400,7 +414,7 @@ export class RoleService extends NatsService {
 
                     const roleMap = new Map<string, [string, string, string]>();
                     const permissions = new Set<string>();
-                    const roles = await new DataBaseHelper(DynamicRole).find({ id: { $in: userRoles } });
+                    const roles = await entityRepository.find(DynamicRole, { id: { $in: userRoles } });
                     for (const role of roles) {
                         if (
                             (role.owner && role.owner === owner.creator) ||
@@ -433,7 +447,7 @@ export class RoleService extends NatsService {
                         });
                     }
                     target.permissions = Array.from(permissions);
-                    const result = await new DataBaseHelper(User).update(target);
+                    const result = await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -451,6 +465,8 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.REFRESH_USER_PERMISSIONS,
             async (msg: { id: string, owner: string }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     const { owner } = msg;
                     const users = await UserUtils.getUsers({ parent: owner }, UserProp.RAW);
                     const roleMap = new Map<string, DynamicRole>();
@@ -460,7 +476,7 @@ export class RoleService extends NatsService {
                         if (user.permissionsGroup) {
                             for (const group of user.permissionsGroup) {
                                 if (!roleMap.has(group.roleId)) {
-                                    const row = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
+                                    const row = await entityRepository.findOne(DynamicRole, { id: group.roleId });
                                     roleMap.set(group.roleId, row);
                                 }
                                 const role = roleMap.get(group.roleId);
@@ -475,7 +491,7 @@ export class RoleService extends NatsService {
                         }
                         user.permissionsGroup = permissionsGroup;
                         user.permissions = Array.from(permissions);
-                        await new DataBaseHelper(User).update(user);
+                        await entityRepository.update(User, null, user);
                     }
                     return new MessageResponse(UserUtils.updateUsersFields(users, UserProp.REQUIRED));
                 } catch (error) {
@@ -494,6 +510,8 @@ export class RoleService extends NatsService {
         this.getMessages(AuthEvents.DELEGATE_USER_ROLE,
             async (msg: { username: string, userRoles: string[], owner: IOwner }) => {
                 try {
+                    const entityRepository = new DatabaseServer();
+
                     if (!msg) {
                         return new MessageError('Invalid update user parameters');
                     }
@@ -511,7 +529,7 @@ export class RoleService extends NatsService {
                     target.permissionsGroup = target.permissionsGroup || [];
                     for (const group of target.permissionsGroup) {
                         if (group.owner !== owner.creator) {
-                            const role = await new DataBaseHelper(DynamicRole).findOne({ id: group.roleId });
+                            const role = await entityRepository.findOne(DynamicRole, { id: group.roleId });
                             if (role) {
                                 othersRoles.set(role.id, [group.owner, role]);
                             }
@@ -520,7 +538,7 @@ export class RoleService extends NatsService {
 
                     //New
                     const ownRoles = user.permissionsGroup?.map((g) => g.roleId) || [];
-                    const roles = await new DataBaseHelper(DynamicRole).find({ id: { $in: userRoles } });
+                    const roles = await entityRepository.find(DynamicRole, { id: { $in: userRoles } });
                     for (const role of roles) {
                         if (ownRoles.includes(role.id)) {
                             if (!othersRoles.has(role.id)) {
@@ -549,7 +567,7 @@ export class RoleService extends NatsService {
 
                     target.permissionsGroup = permissionsGroup;
                     target.permissions = Array.from(permissions);
-                    await new DataBaseHelper(User).update(target);
+                    await entityRepository.update(User, null, target);
                     return new MessageResponse(UserUtils.updateUserFields(target, UserProp.REQUIRED));
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE']);

@@ -1,6 +1,5 @@
 import {
     DIDMessage,
-    DataBaseHelper,
     Message,
     MessageType,
     ModuleMessage,
@@ -9,6 +8,7 @@ import {
     TagMessage,
     TokenMessage,
     UrlType,
+    DatabaseServer,
 } from '@guardian/common';
 import { AnalyticsModule as Module } from '../entity/analytics-module.js';
 import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
@@ -120,7 +120,7 @@ export class AnalyticsPolicyService {
                 const data: any = AnalyticsPolicyService.parsPolicyMessage(message);
                 if (data) {
                     if (data.type === MessageType.DIDDocument && data.did !== sr.did) {
-                        const row = new DataBaseHelper(User).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             topicId: data.topicId,
@@ -130,11 +130,15 @@ export class AnalyticsPolicyService {
                             type: UserType.USER,
                             owner: sr.did,
                             action: data.action
-                        });
-                        await new DataBaseHelper(User).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(User, row);
+
+                        await databaseServer.save(User, entity);
                     }
                     if (data.type === MessageType.Policy) {
-                        const row = new DataBaseHelper(Policy).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -145,11 +149,15 @@ export class AnalyticsPolicyService {
                             timeStamp: data.id,
                             owner: sr.did,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Policy).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Policy, row);
+
+                        await databaseServer.save(Policy, entity);
                     }
                     if (data.type === MessageType.Module) {
-                        const row = new DataBaseHelper(Module).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -158,11 +166,15 @@ export class AnalyticsPolicyService {
                             description: data.description,
                             owner: sr.did,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Module).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Module, row);
+
+                        await databaseServer.save(Module, entity);
                     }
                     if (data.type === MessageType.Tag) {
-                        const row = new DataBaseHelper(Tag).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -176,24 +188,34 @@ export class AnalyticsPolicyService {
                             entity: data.entity,
                             date: data.date,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Tag).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Tag, row);
+
+                        await databaseServer.save(Tag, entity);
                     }
                     if (data.type === MessageType.Schema) {
-                        const row = new DataBaseHelper(Schema).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
                             timeStamp: data.id,
+                            tagUUID: data.uuid,
                             name: data.name,
                             description: data.description,
+                            owner: data.owner,
+                            target: data.target,
+                            operation: data.operation,
                             entity: data.entity,
-                            version: data.version,
-                            owner: sr.did,
-                            action: data.action,
-                            ipfs: data.getDocumentUrl(UrlType.cid)
-                        });
-                        await new DataBaseHelper(Schema).save(row);
+                            date: data.date,
+                            action: data.action
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Schema, row);
+
+                        await databaseServer.save(Schema, entity);
                     }
                 }
             });
@@ -215,7 +237,7 @@ export class AnalyticsPolicyService {
                 const data: any = AnalyticsPolicyService.parsInstanceMessage(message);
                 if (data) {
                     if (data.type === MessageType.InstancePolicy) {
-                        const row = new DataBaseHelper(PolicyInstance).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -229,11 +251,15 @@ export class AnalyticsPolicyService {
                             owner: policy.owner,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
-                        });
-                        await new DataBaseHelper(PolicyInstance).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(PolicyInstance, row);
+
+                        await databaseServer.save(PolicyInstance, entity);
                     }
                     if (data.type === MessageType.Token) {
-                        const row = new DataBaseHelper(Token).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -245,11 +271,15 @@ export class AnalyticsPolicyService {
                             tokenType: data.tokenType,
                             owner: policy.owner,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Token).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Token, row);
+
+                        await databaseServer.save(Token, entity);
                     }
                     if (data.type === MessageType.Tag) {
-                        const row = new DataBaseHelper(Tag).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -263,11 +293,15 @@ export class AnalyticsPolicyService {
                             entity: data.entity,
                             date: data.date,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Tag).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Tag, row);
+
+                        await databaseServer.save(Tag, entity);
                     }
                     if (data.type === MessageType.Schema) {
-                        const row = new DataBaseHelper(Schema).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             account: data.payer,
@@ -280,8 +314,12 @@ export class AnalyticsPolicyService {
                             owner: policy.owner,
                             action: data.action,
                             ipfs: data.getDocumentUrl(UrlType.cid)
-                        });
-                        await new DataBaseHelper(Schema).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Schema, row);
+
+                        await databaseServer.save(Schema, entity);
                     }
                 }
             });
@@ -299,10 +337,11 @@ export class AnalyticsPolicyService {
     public static async searchPolicy(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.POLICIES, ReportStatus.PROGRESS);
 
-        const row = await new DataBaseHelper(User).find({
+        const row = await new DatabaseServer().find(User, {
             uuid: report.uuid,
             type: UserType.STANDARD_REGISTRY
         });
+
         const users = AnalyticsUtils.unique(row, 'topicId')
         AnalyticsUtils.updateProgress(report, users.length);
 
@@ -324,9 +363,8 @@ export class AnalyticsPolicyService {
     public static async searchInstance(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.INSTANCES, ReportStatus.PROGRESS);
 
-        const row = await new DataBaseHelper(Policy).find({
-            uuid: report.uuid
-        });
+        const row = await new DatabaseServer().find(Policy, { uuid: report.uuid });
+
         const policies = AnalyticsUtils.unique(row, 'topicId')
 
         AnalyticsUtils.updateProgress(report, policies.length);
