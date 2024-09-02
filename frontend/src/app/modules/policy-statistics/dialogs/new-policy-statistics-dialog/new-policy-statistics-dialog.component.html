@@ -31,7 +31,8 @@
                     [showClear]="false"
                     class="guardian-dropdown"
                     appendTo="body"
-                    placeholder="Not selected">
+                    placeholder="Not selected"
+                    panelStyleClass="guardian-dropdown-panel">
                     <ng-template pTemplate="selectedItem">
                         <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
                             <span class="guardian-dropdown-label">Policy</span> 

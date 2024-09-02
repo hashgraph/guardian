@@ -120,6 +120,7 @@ export class PolicyStatisticsComponent implements OnInit {
                 name: 'All',
                 instanceTopicId: null
             });
+            this.allPolicies.forEach((p: any) => p.label = p.name);
 
             const topic = this.route.snapshot.queryParams['topic'];
             this.currentPolicy =
