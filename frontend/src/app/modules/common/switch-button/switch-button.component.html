@@ -1,4 +1,4 @@
-<label class="mode-switch">
+<label class="mode-switch" [attr.disabled]="disabled">
     <input type="checkbox" [name]="mode" [id]="mode" [(ngModel)]="value" (change)="onChange()">
     <label [for]="mode">
         <p class="l-off">{{off}}</p>

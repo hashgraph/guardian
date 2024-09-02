@@ -5451,6 +5451,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5493,6 +5499,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5539,6 +5551,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5586,6 +5604,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5627,6 +5651,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -14054,6 +14084,18 @@ components:
     Object:
       type: object
       properties: {}
+    ServiceUnavailableErrorDTO:
+      type: object
+      properties:
+        code:
+          type: number
+          example: 503
+        message:
+          type: string
+          example: Error message
+      required:
+        - code
+        - message
     PolicyPreviewDTO:
       type: object
       properties:

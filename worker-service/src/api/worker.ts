@@ -348,7 +348,10 @@ export class Worker extends NatsService {
                     break;
                 }
 
-                case WorkerTaskType.GENERATE_DEMO_KEY: {
+                /*
+                 * Task represents "Create Account" functionality in Hedera SDK. It is available on every network.
+                 */
+                case WorkerTaskType.CREATE_ACCOUNT: {
                     const { operatorId, operatorKey, initialBalance } = task.data;
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const treasury = await client.newAccount(initialBalance);

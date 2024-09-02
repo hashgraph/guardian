@@ -17,7 +17,7 @@ export class CreateTokenConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         properties: false,
@@ -26,8 +26,7 @@ export class CreateTokenConfigComponent implements OnInit {
     properties!: any;
     tokenTemplate!: TokenTemplateVariables[];
 
-    constructor() {
-    }
+    constructor() {}
 
     ngOnInit(): void {
         this.tokenTemplate = [];
@@ -43,15 +42,13 @@ export class CreateTokenConfigComponent implements OnInit {
         this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
-        this.properties.uiMetaData = this.properties.uiMetaData || {};
-        this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
         this.tokenTemplate = this.moduleVariables?.tokenTemplates || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
-    
+
     onSave() {
         this.item.changed = true;
     }
