@@ -1,67 +1,39 @@
-import { expect } from 'chai';
-import { DatabaseServer } from '../../../dist/database-modules/index.js';
-import { BaseEntity } from '../../../dist/index.js';
+import { assert, expect } from 'chai';
+import esmock from 'esmock';
 
-class TestEntity extends BaseEntity {
-  constructor() {
-    super();
-    this.name = 'Test Entity';
-  }
-}
+//mocks
+import { DataBaseHelper, ormMock } from '../database-helper/mocks-database-helper.mjs';
+
+//entities
+import { TestEntity } from '../database-helper/test-entities.mjs';
+
+const { DatabaseServer } = await esmock('../../../dist/database-modules/database-server.js', {
+  '../../../dist/helpers/db-helper.js': DataBaseHelper,
+});
 
 describe('DatabaseServer', function() {
   let dbServer;
+  let db;
 
-  beforeEach(function() {
-    // dbServer = new DatabaseServer();
+  before(() => {
+    DatabaseServer.connectBD(ormMock);
+    dbServer = new DatabaseServer();
+
+    db = DataBaseHelper.orm.em.getDriver().getConnection().getDb();
+
+    Object.keys(db).forEach(key => delete db[key]);
   });
 
-  describe('findOne', function() {
-    // it('should return the correct entity when dryRun is enabled', async function() {
-    //   try {
-    //     dbServer.setDryRun('dryRunId');
-    //     console.log('findOne');
-    //     const result = await dbServer.findOne(TestEntity, 'entityId');
-    //     console.log('result', result);
-    //     expect(result).to.be.an('object');
-    //     expect(result.dryRunId).to.equal('dryRunId');
-    //   } catch (error) {
-    //     console.log('error', error);
-    //   }
-    // });
+  describe('create Method', function() {
+    it('should create and return the correct entity', function() {
+      const entityData = { name: 'Test Entity' };
 
-    // it('should call DataBaseHelper findOne without dryRun', async function() {
-    //   const result = await dbServer.findOne(SomeEntity, { someField: 'value' });
-    //   expect(result).to.be.an('object');
-    // });
+      const result = dbServer.create(TestEntity, entityData);
+
+      assert.isNotNull(result);
+      assert.equal(result.name, 'Test Entity');
+      assert.equal(db[TestEntity.name].length, 1);
+      assert.equal(db[TestEntity.name][0].name, 'Test Entity');
+    });
   });
-
-  // describe('count', function() {
-  //   it('should return the correct count when dryRun is enabled', async function() {
-  //     dbServer.setDryRun('dryRunId');
-  //     const count = await dbServer.count(SomeEntity, { someField: 'value' });
-  //     expect(count).to.be.a('number');
-  //   });
-  //
-  //   it('should call DataBaseHelper count without dryRun', async function() {
-  //     const count = await dbServer.count(SomeEntity, { someField: 'value' });
-  //     expect(count).to.be.a('number');
-  //   });
-  // });
-  //
-  // describe('find', function() {
-  //   it('should return an array of entities when dryRun is enabled', async function() {
-  //     dbServer.setDryRun('dryRunId');
-  //     const results = await dbServer.find(SomeEntity, { someField: 'value' });
-  //     expect(results).to.be.an('array');
-  //   });
-  //
-  //   it('should call DataBaseHelper find without dryRun', async function() {
-  //     const results = await dbServer.find(SomeEntity, { someField: 'value' });
-  //     expect(results).to.be.an('array');
-  //   });
-  // });
-
-  // Continue writing tests for other methods following the same pattern.
-
 });
