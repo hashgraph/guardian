@@ -29,7 +29,7 @@ import {
 } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
-import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO } from '#middlewares';
+import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO, StatisticsDTO } from '#middlewares';
 
 /**
  * Filters type
@@ -527,7 +527,7 @@ export class Guardians extends NatsService {
      * @returns {any} Demo Key
      */
     public async generateDemoKey(role: string, userId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role, userId });
     }
 
     /**
@@ -537,7 +537,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task, userId });
     }
 
     /**
@@ -2818,7 +2818,7 @@ export class Guardians extends NatsService {
      * @param pageSize
      */
     public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { userId: user.id.toString(), pageIndex, pageSize });
     }
 
     /**
@@ -2827,7 +2827,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async restartTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.RESTART_TASK, { taskId, userId });
     }
 
     /**
@@ -2836,6 +2836,28 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async deleteTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.DELETE_TASK, { taskId, userId });
     }
+
+    /**
+     * Create statistic
+     * @param statistic
+     * @param owner
+     * @returns statistic
+     */
+    public async createStatistics(statistic: StatisticsDTO, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC, { statistic, owner });
+    }
+
+    /**
+     * Return tools
+     *
+     * @param {IFilter} [params]
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getStatistics(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTICS, { filters, owner });
+    }
+
 }

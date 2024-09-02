@@ -1,0 +1,35 @@
+.guardian-input-container {
+    display: flex;
+    flex-direction: column;
+    height: 60px;
+    width: 100%;
+
+    label {
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 14px;
+        text-align: left;
+        margin-bottom: 6px;
+    }
+
+    input {
+        height: 40px;
+        border-radius: 8px;
+        outline: none;
+        border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+
+        &:enabled:hover {
+            border-color: var(--guardian-primary-color, #4169E2);
+        }
+
+        &:enabled:focus {
+            border-color: var(--guardian-primary-color, #4169E2);
+            box-shadow: none;
+        }
+    }
+
+    .p-dropdown { 
+        width: 100%;
+    }
+}

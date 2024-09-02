@@ -24,24 +24,55 @@
 
     <div class="guardian-user-page-header">
         <span>{{title}}</span>
-        <div class="policy-name">
-            <span>Policy Name: AM0081</span>
-            <span class="policy-version">Version: (1.0.0)</span>
-        </div>
+        <!-- <div *ngIf="policy" class="policy-name">
+            <span>Policy Name: {{policy.name}}</span>
+            <span class="policy-version">Version: {{policy.version}}</span>
+        </div> -->
     </div>
 
     <div class="guardian-user-page-toolbar">
-        <button 
-            (click)="onCreate()" 
-            class="guardian-button guardian-button-primary">
-            <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                    src="/assets/images/icons/add.svg"
-                    svgClass="icon-color-secondary">
-                </svg-icon>
-            </div>
-            <div class="guardian-button-label">Create New</div>
-        </button>
+        <div class="guardian-user-page-filters">
+            <p-dropdown
+                (onChange)="onFilter($event)"
+                [(ngModel)]="currentPolicy"
+                [options]="allPolicies"
+                [showClear]="false"
+                class="guardian-dropdown"
+                placeholder="Select Policy">
+                <ng-template pTemplate="selectedItem">
+                    <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                        <span class="guardian-dropdown-label">Policy</span> 
+                        <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
+                    </div>
+                    <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                        <span class="guardian-dropdown-label">Policy</span> 
+                        <span class="guardian-dropdown-item">All</span>
+                    </div>
+                </ng-template>
+                <ng-template let-policy pTemplate="item">
+                    <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
+                        <span>{{policy.name}}</span>
+                        <span class="dropdown-policy-version">({{policy.version}})</span> 
+                    </div>
+                    <div *ngIf="!policy.instanceTopicId" class="guardian-dropdown-item">
+                        <span>All</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
+        </div>
+        <div class="guardian-user-page-buttons">
+            <button 
+                (click)="onCreate()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/add.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Create New</div>
+            </button>
+        </div>
     </div>
 
     <div class="guardian-user-page-grid">

@@ -11,3 +11,8 @@
         padding-left: 16px;
     }
 }
+.guardian-dropdown {
+    &::ng-deep .p-dropdown { 
+        width: 250px;
+    }
+}

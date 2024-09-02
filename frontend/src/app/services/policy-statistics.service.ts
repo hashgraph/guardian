@@ -8,7 +8,7 @@ import { API_BASE_URL } from './api';
  */
 @Injectable()
 export class PolicyStatisticsService {
-    private readonly url: string = `${API_BASE_URL}/policies`;
+    private readonly url: string = `${API_BASE_URL}/policy-statistics`;
 
     constructor(private http: HttpClient) {
     }
@@ -24,5 +24,9 @@ export class PolicyStatisticsService {
         const page = response.body || [];
         const count = Number(response.headers.get('X-Total-Count')) || page.length;
         return { page, count };
+    }
+
+    public create(policy: any): Observable<void> {
+        return this.http.post<any>(`${this.url}/`, policy);
     }
 }

@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
 
 interface IColumn {
     id: string;
@@ -31,10 +35,18 @@ export class PolicyStatisticsComponent implements OnInit {
     public pageSize: number;
     public pageCount: number;
     public columns: IColumn[];
+    public allPolicies: any[] = [];
+    public currentPolicy: any = null;
+
+    private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
-        private policyStatisticsService: PolicyStatisticsService
+        private policyStatisticsService: PolicyStatisticsService,
+        private policyEngineService: PolicyEngineService,
+        private dialogService: DialogService,
+        private router: Router,
+        private route: ActivatedRoute
     ) {
         this.columns = [{
             id: 'name',
@@ -80,22 +92,40 @@ export class PolicyStatisticsComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 10;
         this.pageCount = 0;
-        this.loadProfile();
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                this.loadProfile();
+            })
+        );
+        // this.loadProfile();
     }
 
     ngOnDestroy(): void {
-
+        this.subscription.unsubscribe();
     }
 
     private loadProfile() {
+        // const policyId = this.route.snapshot.params['policyId'];
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
-        ]).subscribe(([profile]) => {
+            this.policyEngineService.all(),
+        ]).subscribe(([profile, policies]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
+            this.allPolicies = policies || [];
+            this.allPolicies.unshift({
+                name: 'All',
+                instanceTopicId: null
+            });
+
+            const topic = this.route.snapshot.queryParams['topic'];
+            this.currentPolicy =
+                this.allPolicies.find((p) => p.instanceTopicId === topic) ||
+                this.allPolicies[0];
+
             if (this.isConfirmed) {
                 this.loadData();
             } else {
@@ -125,7 +155,7 @@ export class PolicyStatisticsComponent implements OnInit {
     }
 
     public onBack() {
-
+        this.router.navigate(['/policy-viewer']);
     }
 
     public onPage(event: any): void {
@@ -139,7 +169,42 @@ export class PolicyStatisticsComponent implements OnInit {
         this.loadData();
     }
 
-    public onCreate() {
+    public onFilter(event: any) {
+        if (event.value === null) {
+            this.currentPolicy = this.allPolicies[0];
+        }
+        this.pageIndex = 0;
+        const topic = this.currentPolicy?.instanceTopicId || 'all'
+        this.router.navigate(['/policy-statistics'], { queryParams: { topic } });
+        this.loadData();
+    }
 
+    public onCreate() {
+        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+            showHeader: false,
+            header: 'Create New',
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policies: this.allPolicies,
+                policy: this.currentPolicy,
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.create(result)
+            }
+        });
+    }
+
+    private create(item: any) {
+        this.loading = true;
+        this.policyStatisticsService
+            .create(item)
+            .subscribe((newItem) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }
