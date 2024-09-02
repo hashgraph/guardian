@@ -234,15 +234,12 @@ describe('DataBaseHelper Tests', () => {
 	describe('DataBaseHelper CreateMuchData Method', () => {
 		it('should create a lot of data correctly', async () => {
 			const existingEntities = await dbHelper.findAll();
-
 			await dbHelper.remove(existingEntities);
 
 			const initialCount = await dbHelper.count();
-
 			assert.equal(initialCount, 0);
 
 			await dbHelper.createMuchData({name: 'Batch Entity'}, 10);
-
 			const entities = await dbHelper.find({name: 'Batch Entity'});
 
 			assert.isArray(entities);
