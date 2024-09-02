@@ -5,7 +5,7 @@ export enum WorkerTaskType {
     GET_FILE = 'get-file',
     ADD_FILE = 'add-file',
     SEND_HEDERA = 'send-hedera',
-    GENERATE_DEMO_KEY = 'generate-demo-key',
+    CREATE_ACCOUNT = 'create-account',
     GET_USER_BALANCE = 'get-user-balance',
     GET_ACCOUNT_INFO = 'get-account-info',
     CREATE_TOKEN = 'create-token',

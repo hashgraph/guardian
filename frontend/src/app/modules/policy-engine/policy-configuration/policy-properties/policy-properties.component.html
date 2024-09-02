@@ -511,17 +511,6 @@
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
-                            <td class="propRowCell cellName">Change Supply</td>
-                            <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.changeSupply" [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="true">Yes</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
-                            </td>
-                        </tr>
-                        <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
-                            <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Freeze</td>
                             <td class="propRowCell">
                                 <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableFreeze" [disabled]="readonly">
@@ -546,10 +535,22 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Wipe</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableWipe" [disabled]="readonly">
+                                <mat-select placeholder="To be specified by user" (selectionChange)="onEnableWipeChange(item)" [(ngModel)]="item.enableWipe" [disabled]="readonly">
                                     <mat-option>To be specified by user</mat-option>
                                     <mat-option [value]="true">Yes</mat-option>
                                     <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </td>
+                        </tr>
+                        <tr class="propRow subRow" *ngIf="item.enableWipe" [attr.collapse]="propHidden.tokensGroup[i]">
+                            <td class="propRowCol"></td>
+                            <td class="propRowCell cellName">Wipe Contract</td>
+                            <td class="propRowCell">
+                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.wipeContractId" [disabled]="readonly">
+                                    <mat-option>To be specified by user</mat-option>
+                                    <mat-option [value]="''">Empty</mat-option>
+                                    <mat-option *ngFor="let contract of wipeContracts" [value]="contract.contractId">{{contract.contractId}}
+                                        ({{contract.description}})</mat-option>
                                 </mat-select>
                             </td>
                         </tr>

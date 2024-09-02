@@ -715,6 +715,11 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
  */
 export interface IPolicyRequestBlock extends IPolicyBlock {
     /**
+     * Is block active
+     */
+    isBlockActive(user: PolicyUser): Promise<boolean>;
+
+    /**
      * Get block data
      * @param user
      */

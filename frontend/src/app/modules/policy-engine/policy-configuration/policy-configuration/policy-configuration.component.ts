@@ -2,7 +2,15 @@ import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-dro
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
+import {
+    ContractType,
+    IContract,
+    PolicyCategoryType,
+    Schema,
+    SchemaHelper,
+    Token,
+    UserPermissions,
+} from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
 import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
@@ -31,6 +39,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import { ContractService } from 'src/app/services/contract.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -62,6 +71,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public rootTemplate!: PolicyRoot;
     public currentBlock!: PolicyItem | undefined;
 
+    public wipeContracts: IContract[] = [];
     public schemas: Schema[] = [];
     public tokens: Token[] = [];
     public modules: any[] = [];
@@ -213,6 +223,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private toolsService: ToolsService,
         private analyticsService: AnalyticsService,
         private profileService: ProfileService,
+        private contractService: ContractService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
@@ -312,7 +323,8 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.schemaService.getSchemas(this.policyTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList(),
-                this.policyEngineService.getPolicyCategories()
+                this.policyEngineService.getPolicyCategories(),
+                this.contractService.getContracts({ type: ContractType.WIPE }),
             ]).subscribe((data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
@@ -320,6 +332,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 const modules = data[3] || [];
                 const tools = data[4] || [];
                 this.categories = data[5] || [];
+                this.wipeContracts = data[6].body || [];
 
                 this.registeredService.registerConfig(blockInformation);
                 this.tokens = tokens.map((e: any) => new Token(e));
@@ -1525,8 +1538,8 @@ export class PolicyConfigurationComponent implements OnInit {
             module.description = result.description;
             this.loading = true;
             this.modulesService.create(module).subscribe((result) => {
-                this.router.navigate(['/module-configuration'], { 
-                    queryParams: { moduleId: result.uuid } 
+                this.router.navigate(['/module-configuration'], {
+                    queryParams: { moduleId: result.uuid }
                 });
             }, (e) => {
                 this.loading = false;

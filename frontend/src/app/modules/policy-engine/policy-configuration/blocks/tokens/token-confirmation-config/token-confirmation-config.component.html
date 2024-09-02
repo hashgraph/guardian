@@ -1,4 +1,12 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+    <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Use Template</td>
+        <td class="propRowCell">
+            <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
+                [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
+        </td>
+    </tr>
     <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>

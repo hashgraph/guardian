@@ -31,7 +31,9 @@ services:
 
   logger-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/logger-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
     depends_on:
       - message-broker
     volumes:
@@ -39,7 +41,9 @@ services:
 
   auth-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/auth-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
     volumes:
       - ./auth-service/tls:/usr/local/app/tls:ro
       - ./auth-service/configs:/usr/local/app/configs:ro
@@ -53,11 +57,12 @@ services:
 
   queue-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/queue-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
-      - logger-service
     expose:
       - 6555
     volumes:
@@ -65,7 +70,9 @@ services:
 
   worker-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/worker-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
     depends_on:
       queue-service:
         condition: service_started
@@ -81,7 +88,9 @@ services:
 
   analytics-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/analytics-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./analytics-service/Dockerfile
     depends_on:
       - message-broker
       - queue-service

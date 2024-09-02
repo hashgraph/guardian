@@ -551,6 +551,8 @@
     * [Creating Token through UI using Token Template](guardian/tokens/token-template/creating-token-through-ui.md)
   * [📖 Token Authenticity](guardian/tokens/token-authenticity/README.md)
     * [ℹ️ Establishing Token Authenticity](guardian/tokens/token-authenticity/how-to-establish-token-authenticity.md)
+  * [Dynamic Token Creation in Policies](guardian/tokens/dynamic-token-creation-in-policies/README.md)
+    * [Dynamic Token Creation in Guardian Policies using UI](guardian/tokens/dynamic-token-creation-in-policies/dynamic-token-creation-in-guardian-policies-using-ui.md)
   * [🛠️ Token Operations](guardian/tokens/token-operations/README.md)
     * [⚙️ Token APIs](guardian/tokens/token-operations/token-apis/README.md)
       * [Token Listing](guardian/tokens/token-operations/token-apis/token-listing.md)

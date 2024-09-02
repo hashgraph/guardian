@@ -40,7 +40,9 @@ services:
 
   indexer-worker-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/indexer-worker-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./indexer-worker-service/Dockerfile
     depends_on:
       - mongo
       - message-broker
@@ -55,7 +57,9 @@ services:
 
   indexer-api-gateway:
     <<: *service-template
-    image: gcr.io/hedera-registry/indexer-api-gateway:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./indexer-api-gateway/Dockerfile
     expose:
       - 3021
       - 6555
@@ -68,7 +72,9 @@ services:
 
   indexer-service:
     <<: *service-template
-    image: gcr.io/hedera-registry/indexer-service:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./indexer-service/Dockerfile
     volumes:
       - ./indexer-service/tls:/usr/local/app/tls:ro
       - ./indexer-service/configs:/usr/local/app/configs:ro
@@ -80,7 +86,9 @@ services:
       - 5007
 
   indexer-web-proxy:
-    image: gcr.io/hedera-registry/indexer-web-proxy:${GUARDIAN_VERSION:-latest}
+    build:
+      context: .
+      dockerfile: ./indexer-web-proxy/Dockerfile
     init: true
     ports:
       - "3005:80"

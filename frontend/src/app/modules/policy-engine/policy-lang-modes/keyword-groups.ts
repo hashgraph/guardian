@@ -12,6 +12,7 @@ export const idGroupKeywords = [
     'presetSchema',
     'outputSchema',
     'schema',
+    'template',
 ];
 export const nameGroupKeywords = [
     'name',
@@ -156,5 +157,7 @@ export const flagsGroupKeywords = [
     'onlyAssignDocuments',
     'onlyAssignByGroupDocuments',
     'dialog',
+    'autorun',
+    'useTemplate',
 ];
 export const errorGroupKeywords = ['errorFallbackTag', 'onErrorAction'];

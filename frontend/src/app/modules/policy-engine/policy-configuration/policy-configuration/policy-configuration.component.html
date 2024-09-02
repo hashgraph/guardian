@@ -20,11 +20,11 @@
                     <span>Save</span>
                 </div>
 
-                <div 
+                <div
                     *ngIf="user.POLICIES_POLICY_CREATE"
-                    class="top-toolbar-btn all-status" 
+                    class="top-toolbar-btn all-status"
                     [class.readonly-status]="policyTemplate.isDemo"
-                    (click)="saveAsPolicy()" 
+                    (click)="saveAsPolicy()"
                     title="Save Policy">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
@@ -97,10 +97,10 @@
                     <span>Save</span>
                 </div>
 
-                <div 
+                <div
                     *ngIf="user.MODULES_MODULE_CREATE"
-                    class="top-toolbar-btn all-status" 
-                    (click)="saveAsModule()" 
+                    class="top-toolbar-btn all-status"
+                    (click)="saveAsModule()"
                     title="Save Module">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
@@ -108,8 +108,8 @@
 
                 <div class="delimiter"></div>
 
-                <div 
-                    *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW" 
+                <div
+                    *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW"
                     class="top-toolbar-group all-status"
                     [matMenuTriggerFor]="publishMenu2">
                     <mat-icon class="edit-color">edit</mat-icon>
@@ -124,12 +124,12 @@
                     <span class="publish-color">Published</span>
                 </div>
 
-                <div 
-                    *ngIf="moduleTemplate.isDraft" 
-                    class="top-toolbar-btn all-status" 
+                <div
+                    *ngIf="moduleTemplate.isDraft"
+                    class="top-toolbar-btn all-status"
                     (click)="validationModule()"
-                    title="Validation Module" 
-                    [attr.errors-count]="errorsCount" 
+                    title="Validation Module"
+                    [attr.errors-count]="errorsCount"
                     [attr.readonly]="!isTree"
                 >
                     <mat-icon>task_alt</mat-icon>
@@ -151,10 +151,10 @@
                     <span>Save</span>
                 </div>
 
-                <div 
+                <div
                     *ngIf="user.TOOLS_TOOL_CREATE"
-                    class="top-toolbar-btn readonly-status" 
-                    (click)="saveAsTool()" 
+                    class="top-toolbar-btn readonly-status"
+                    (click)="saveAsTool()"
                     title="Save Tool">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
@@ -162,8 +162,8 @@
 
                 <div class="delimiter"></div>
 
-                <div 
-                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW" 
+                <div
+                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
                     class="top-toolbar-group all-status"
                     [matMenuTriggerFor]="publishMenu3">
                     <mat-icon class="edit-color">edit</mat-icon>
@@ -231,9 +231,9 @@
                         <span>Create New Module</span>
                     </div>
 
-                    <div 
+                    <div
                         *ngIf="user.MODULES_MODULE_CREATE"
-                        class="top-toolbar-btn readonly-status" 
+                        class="top-toolbar-btn readonly-status"
                         title="Convert to Module"
                         (click)="onConvertToModule()">
                         <mat-icon>move_to_inbox</mat-icon>
@@ -367,12 +367,12 @@
                             </div>
                         </div>
 
-                        <div 
-                            class="pc-tabs-content components-menu" 
+                        <div
+                            class="pc-tabs-content components-menu"
                             cdkDropList #menuList="cdkDropList"
-                            [cdkDropListConnectedTo]="[dropListConnector.body]" 
+                            [cdkDropListConnectedTo]="[dropListConnector.body]"
                             cdkDropListSortingDisabled
-                            [cdkDropListEnterPredicate]="noReturnPredicate" 
+                            [cdkDropListEnterPredicate]="noReturnPredicate"
                             (cdkDropListDropped)="drop($event)"
                         >
                             <div class="components-container" [hidden]="!options.components">
@@ -381,10 +381,10 @@
                                     <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                     <mat-icon class="components-search-icon">search</mat-icon>
                                 </div>
-                                <div 
-                                    *ngIf="componentsList.favorites.length" 
+                                <div
+                                    *ngIf="componentsList.favorites.length"
                                     class="components-group"
-                                    [attr.readonly]="disableComponentMenu" 
+                                    [attr.readonly]="disableComponentMenu"
                                     [attr.collapsed]="options.favoritesGroup"
                                 >
                                     <div class="components-group-name" (click)="collapse('favoritesGroup')">
@@ -398,9 +398,9 @@
                                     <div class="components-group-body readonly-status">
                                         <div class="components-group-item"
                                             *ngFor="let item of componentsList.favorites">
-                                            <div 
-                                                cdkDrag 
-                                                [cdkDragData]="item.data" 
+                                            <div
+                                                cdkDrag
+                                                [cdkDragData]="item.data"
                                                 class="drag-btn"
                                                 [attr.block-type]="item.header"
                                                 (click)="onAdd(item)"
@@ -429,11 +429,11 @@
                                     <div class="components-group-body readonly-status">
                                         <div class="components-group-item"
                                             *ngFor="let item of componentsList.uiComponents">
-                                            <div 
-                                                cdkDrag 
-                                                [cdkDragData]="item.data" 
+                                            <div
+                                                cdkDrag
+                                                [cdkDragData]="item.data"
                                                 class="drag-btn"
-                                                [attr.block-type]="item.header" 
+                                                [attr.block-type]="item.header"
                                                 (click)="onAdd(item)"
                                             >
                                                 <div class="drag-component">
@@ -485,11 +485,11 @@
                                     </div>
                                     <div class="components-group-body readonly-status">
                                         <div class="components-group-item" *ngFor="let item of componentsList.addons">
-                                            <div 
-                                                cdkDrag 
-                                                [cdkDragData]="item.data" 
+                                            <div
+                                                cdkDrag
+                                                [cdkDragData]="item.data"
                                                 class="drag-btn"
-                                                [attr.block-type]="item.header" 
+                                                [attr.block-type]="item.header"
                                                 (click)="onAdd(item)"
                                             >
                                                 <div class="drag-component">
@@ -506,10 +506,10 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div 
-                                    *ngIf="componentsList.unGrouped.length" 
+                                <div
+                                    *ngIf="componentsList.unGrouped.length"
                                     class="components-group"
-                                    [attr.readonly]="disableComponentMenu" 
+                                    [attr.readonly]="disableComponentMenu"
                                     [attr.collapsed]="options.unGroup"
                                 >
                                     <div class="components-group-name" (click)="collapse('unGroup')">
@@ -520,11 +520,11 @@
                                     <div class="components-group-body readonly-status">
                                         <div class="components-group-item"
                                             *ngFor="let item of componentsList.unGrouped">
-                                            <div 
-                                                cdkDrag 
-                                                [cdkDragData]="item.data" 
+                                            <div
+                                                cdkDrag
+                                                [cdkDragData]="item.data"
                                                 class="drag-btn"
-                                                [attr.block-type]="item.header" 
+                                                [attr.block-type]="item.header"
                                                 (click)="onAdd(item)"
                                             >
                                                 <div class="drag-component">
@@ -550,8 +550,8 @@
                                         (input)="onModuleSearch($event)">
                                     <mat-icon class="components-search-icon">search</mat-icon>
                                 </div>
-                                <div 
-                                    *ngIf="modulesList.favorites.length" 
+                                <div
+                                    *ngIf="modulesList.favorites.length"
                                     class="components-group"
                                     [attr.collapsed]="options.favoritesModulesGroup"
                                     [attr.readonly]="disableModuleMenu"
@@ -702,11 +702,11 @@
                 </div>
             </ng-template>
             <ng-template #configurationTree let-size="size" let-id="id">
-                <div class="center-container" 
-                    [attr.resizing-id]="id" 
-                    cdkDrag 
+                <div class="center-container"
+                    [attr.resizing-id]="id"
+                    cdkDrag
                     [cdkDragStartDelay]="100"
-                    (cdkDragStarted)="onDragSection($event)" 
+                    (cdkDragStarted)="onDragSection($event)"
                     (cdkDragDropped)="onDropSection($event)"
                     [ngStyle]="{ width: size, 'flex-basis': size }"
                 >
@@ -719,9 +719,9 @@
 
                     <div class="pc-tabs minimized-tabs">
                         <div class="pc-tabs-headers right-menu" cdkDragHandle>
-                            <div *ngIf="rootType ==='Policy'" 
+                            <div *ngIf="rootType ==='Policy'"
                                 class="tab-header tab-header-icon"
-                                [attr.selected]="openFolder===policyTemplate" 
+                                [attr.selected]="openFolder===policyTemplate"
                                 (click)="onOpenRoot(policyTemplate)"
                                 style="width: 100px;margin-right: 6px"
                             >
@@ -740,9 +740,9 @@
                             </div>
 
                             <ng-container *ngIf="allSubModule">
-                                <div class="tab-header tab-header-icon" 
+                                <div class="tab-header tab-header-icon"
                                     *ngFor="let item of allSubModule"
-                                    [attr.selected]="openFolder===item" 
+                                    [attr.selected]="openFolder===item"
                                     (click)="onOpenModule(item)"
                                 >
                                     <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>
@@ -780,7 +780,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="pc-tabs-content" 
+                        <div class="pc-tabs-content"
                             [ngClass]="{
                                 'tree-container': isTree
                             }">
@@ -789,24 +789,24 @@
                                     (ngModelChange)="saveState()">
                                 </ngx-codemirror>
                             </div>
-                            <policy-tree 
-                                *ngIf="isTree" 
-                                [module]="openFolder" 
+                            <policy-tree
+                                *ngIf="isTree"
+                                [module]="openFolder"
                                 [blocks]="openFolder.dataSource"
-                                [errors]="errorsMap" 
-                                [readonly]="readonly" 
+                                [errors]="errorsMap"
+                                [readonly]="readonly"
                                 [active]="eventVisible"
-                                [connector]="dropListConnector" 
+                                [connector]="dropListConnector"
                                 [suggestions]="isSuggestionsEnabled"
-                                [nextBlock]="nextBlock" 
-                                [nestedBlock]="nestedBlock" 
+                                [nextBlock]="nextBlock"
+                                [nestedBlock]="nestedBlock"
                                 [(currentBlock)]="currentBlock"
-                                (search)="onBlockSearch($event)" 
+                                (search)="onBlockSearch($event)"
                                 (nested)="addSuggestionsBlock($event, true)"
-                                (next)="addSuggestionsBlock($event)" 
+                                (next)="addSuggestionsBlock($event)"
                                 (open)="onOpenModule($event)"
-                                (delete)="onDelete($event)" 
-                                (select)="onSelect($event)" 
+                                (delete)="onDelete($event)"
+                                (select)="onSelect($event)"
                                 (reorder)="onReorder($event)"
                                 (init)="onInitViewer($event)">
                             </policy-tree>
@@ -817,17 +817,17 @@
             </ng-template>
 
             <ng-template #configurationProperties let-size="size" let-id="id">
-                <div 
-                    [attr.resizing-id]="id" 
-                    cdkDrag 
-                    [cdkDragStartDelay]="100" 
+                <div
+                    [attr.resizing-id]="id"
+                    cdkDrag
+                    [cdkDragStartDelay]="100"
                     (cdkDragStarted)="onDragSection($event)"
-                    (cdkDragDropped)="onDropSection($event)" 
-                    [cdkDragDisabled]="true" 
+                    (cdkDragDropped)="onDropSection($event)"
+                    [cdkDragDisabled]="true"
                     cdkDropList
-                    cdkDropListOrientation="vertical" 
+                    cdkDropListOrientation="vertical"
                     (cdkDropListDropped)="onDroppedSection($event)"
-                    [cdkDropListData]="options.propertiesOrder" 
+                    [cdkDropListData]="options.propertiesOrder"
                     class="right-toolbar"
                     [ngStyle]="{ width: size, 'flex-basis': size }"
                 >
@@ -852,15 +852,15 @@
 
                     <ng-template #propertiesPolicy let-size="size" let-id="id">
 
-                        <div 
-                            cdkDrag 
-                            [cdkDragStartDelay]="100" 
+                        <div
+                            cdkDrag
+                            [cdkDragStartDelay]="100"
                             (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)" 
+                            (cdkDragDropped)="onDropSection($event)"
                             [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            [ngStyle]="{ height: size, 'flex-basis': size }"
                             class="right-top-toolbar"
-                            [attr.collapse-top]="options.rightTopMenu" 
+                            [attr.collapse-top]="options.rightTopMenu"
                             [attr.collapse-bottom]="options.rightBottomMenu"
                         >
                             <mat-icon *cdkDragPreview>article</mat-icon>
@@ -893,53 +893,54 @@
                                 </div>
                                 <div class="pc-tabs-content" [attr.readonly]="!isTree">
                                     <div class="prop-container" [hidden]="!options.description">
-                                        <policy-properties 
-                                            class="readonly-status" 
+                                        <policy-properties
+                                            class="readonly-status"
                                             [allCategories]="allCategories"
-                                            [policyCategories]="policyCategoriesMapped" 
+                                            [policyCategories]="policyCategoriesMapped"
                                             [policy]="policyTemplate"
-                                            type="Main" 
+                                            type="Main"
                                             [readonly]="readonly"
                                         ></policy-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.roles">
-                                        <policy-properties 
-                                            class="readonly-status" 
-                                            [policy]="policyTemplate" 
+                                        <policy-properties
+                                            class="readonly-status"
+                                            [policy]="policyTemplate"
                                             type="Role"
                                             [readonly]="readonly"
                                         ></policy-properties>
                                     </div>
                                     <div [hidden]="!options.navigation" class="prop-container">
-                                        <policy-properties 
-                                            [policy]="policyTemplate" 
+                                        <policy-properties
+                                            [policy]="policyTemplate"
                                             [readonly]="readonly"
-                                            class="readonly-status" 
+                                            class="readonly-status"
                                             type="Navigation"
                                         ></policy-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.groups">
-                                        <policy-properties 
-                                            [policy]="policyTemplate" 
+                                        <policy-properties
+                                            [policy]="policyTemplate"
                                             type="Groups"
-                                            class="readonly-status" 
+                                            class="readonly-status"
                                             [readonly]="readonly"
                                         ></policy-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.topics">
-                                        <policy-properties 
-                                            class="readonly-status" 
+                                        <policy-properties
+                                            class="readonly-status"
                                             [policy]="policyTemplate"
-                                            type="Topics" 
+                                            type="Topics"
                                             [readonly]="readonly"
                                         ></policy-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.tokens">
-                                        <policy-properties 
-                                            class="readonly-status" 
+                                        <policy-properties
+                                            class="readonly-status"
                                             [policy]="policyTemplate"
-                                            type="Tokens" 
+                                            type="Tokens"
                                             [readonly]="readonly"
+                                            [wipeContracts]="wipeContracts"
                                         ></policy-properties>
                                     </div>
                                 </div>
@@ -971,36 +972,36 @@
                                 </div>
                                 <div class="pc-tabs-content" [attr.readonly]="!isTree">
                                     <div class="prop-container" [hidden]="!options.descriptionModule">
-                                        <module-properties 
-                                            [module]="openFolder" 
-                                            type="Main" 
+                                        <module-properties
+                                            [module]="openFolder"
+                                            type="Main"
                                             class="readonly-status"
                                             [readonly]="readonly"
                                             [errors]="errorsMap[openFolder.id]"
                                         ></module-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.inputsModule">
-                                        <module-properties 
-                                            [module]="openFolder" 
+                                        <module-properties
+                                            [module]="openFolder"
                                             class="readonly-status" type="Inputs"
                                             [readonly]="readonly"
                                             [errors]="errorsMap[openFolder.id]"
                                         ></module-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.outputsModule">
-                                        <module-properties 
-                                            [module]="openFolder" 
-                                            type="Outputs" 
+                                        <module-properties
+                                            [module]="openFolder"
+                                            type="Outputs"
                                             class="readonly-status"
                                             [readonly]="readonly"
                                             [errors]="errorsMap[openFolder.id]"
                                         ></module-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.variablesModule">
-                                        <module-properties 
-                                            [module]="openFolder" 
+                                        <module-properties
+                                            [module]="openFolder"
                                             class="readonly-status"
-                                            type="Variables" 
+                                            type="Variables"
                                             [readonly]="readonly"
                                             [errors]="errorsMap[openFolder.id]"
                                         ></module-properties>
@@ -1011,15 +1012,15 @@
                     </ng-template>
 
                     <ng-template #propertiesBlock let-size="size" let-id="id">
-                        <div 
-                            cdkDrag 
-                            [cdkDragStartDelay]="100" 
+                        <div
+                            cdkDrag
+                            [cdkDragStartDelay]="100"
                             (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)" 
+                            (cdkDragDropped)="onDropSection($event)"
                             [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            [ngStyle]="{ height: size, 'flex-basis': size }"
                             class="right-bottom-toolbar"
-                            *ngIf="currentBlock && !isRootModule" 
+                            *ngIf="currentBlock && !isRootModule"
                             [attr.collapse-top]="options.rightTopMenu"
                             [attr.collapse-bottom]="options.rightBottomMenu"
                         >
@@ -1054,34 +1055,34 @@
                                                 <span>{{item}}</span>
                                             </div>
                                         </div>
-                                        <common-properties 
-                                            [module]="openFolder" 
+                                        <common-properties
+                                            [module]="openFolder"
                                             [readonly]="readonly"
-                                            [block]="currentBlock" 
+                                            [block]="currentBlock"
                                             class="readonly-status"
                                             type="Common"
                                         ></common-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.events">
-                                        <common-properties 
-                                            [module]="openFolder" 
+                                        <common-properties
+                                            [module]="openFolder"
                                             [readonly]="readonly"
-                                            [block]="currentBlock" 
+                                            [block]="currentBlock"
                                             class="readonly-status"
                                             type="Events"
                                         ></common-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.artifacts">
-                                        <artifact-properties 
-                                            [policyId]="policyId" 
+                                        <artifact-properties
+                                            [policyId]="policyId"
                                             [readonly]="readonly"
-                                            class="readonly-status" 
+                                            class="readonly-status"
                                             [block]="currentBlock"
                                         ></artifact-properties>
                                     </div>
                                     <div class="prop-container" [hidden]="!options.json">
-                                        <json-properties 
-                                            *ngIf="options.json" 
+                                        <json-properties
+                                            *ngIf="options.json"
                                             [block]="currentBlock"
                                             [readonly]="readonly"
                                         ></json-properties>
@@ -1090,15 +1091,15 @@
                             </div>
                         </div>
 
-                        <div 
-                            cdkDrag 
-                            [cdkDragStartDelay]="100" 
+                        <div
+                            cdkDrag
+                            [cdkDragStartDelay]="100"
                             (cdkDragStarted)="onDragSection($event)"
-                            (cdkDragDropped)="onDropSection($event)" 
+                            (cdkDragDropped)="onDropSection($event)"
                             [attr.resizing-id]="id"
-                            [ngStyle]="{ height: size, 'flex-basis': size }" 
+                            [ngStyle]="{ height: size, 'flex-basis': size }"
                             class="right-bottom-toolbar"
-                            *ngIf="currentBlock && isRootModule" 
+                            *ngIf="currentBlock && isRootModule"
                             [attr.collapse-top]="options.rightTopMenu"
                             [attr.collapse-bottom]="options.rightBottomMenu"
                         >
@@ -1130,9 +1131,9 @@
 </div>
 
 <mat-menu #publishMenu="matMenu">
-    <div 
+    <div
         *ngIf="user.POLICIES_POLICY_REVIEW"
-        class="toolbar-menu all-status publish-color" 
+        class="toolbar-menu all-status publish-color"
         (click)="tryPublishPolicy()"
         title="Release version into public domain."
     >
@@ -1148,8 +1149,8 @@
 </mat-menu>
 
 <mat-menu #publishMenu2="matMenu">
-    <div 
-        class="toolbar-menu all-status publish-color" 
+    <div
+        class="toolbar-menu all-status publish-color"
         (click)="tryPublishModule()"
         title="Release version into public domain.">
         <mat-icon class="publish-color">public</mat-icon>
@@ -1158,8 +1159,8 @@
 </mat-menu>
 
 <mat-menu #publishMenu3="matMenu">
-    <div 
-        class="toolbar-menu all-status publish-color" 
+    <div
+        class="toolbar-menu all-status publish-color"
         (click)="tryPublishTool()"
         title="Release version into public domain.">
         <mat-icon class="publish-color">public</mat-icon>
