@@ -4,7 +4,7 @@
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
-## ---- August 2024----
+## ---- October 2024----
 
 ### Code audit: support and resolution of issues
 
@@ -55,8 +55,6 @@ Documentation Link : [https://docs.hedera.com/guardian-dev-1/guardian/readme/get
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3551](https://github.com/hashgraph/guardian/issues/3551)
 
-## ---- September 2024----
-
 ### Global Carbon Council (GCC) GCCM001: Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid or Captive Consumers – Version 4.0
 
 1. Creating Schema design for this methodology.
@@ -87,17 +85,15 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3236](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2942](https://github.com/hashgraph/guardian/issues/2942)
 
-### Guardian analytics: insights and top-down data way points
+### Guardian analytics: bottom-up data traceability
 
-The overall goal is to create a tool which provides non-technical high-level users (banks, auditors, analysts, accountants, etc) with insights out the box, and can serve as a way point for further data analytics, discovery and diagnostics.&#x20;
+1. Design and implement specialised analytics engine which would enable Guardian to identify, trace and display mathematical relations between data in different artifacts (VCs/VPs/tokens) including events (transactions/messages) on Hedera hashgraph, with unlimited traceability depth.
+2. Intelligent 'understanding' of the nature of the transformations (e.g. in formulas in calculation blocks) is out of scope of this ticket, the analytics engine can view transformations as black boxes. If the 'original' data are used as 'input' into such a black box, for the purposes of this analytics reporting it can be assumed that the 'output' data depends on that 'original' data.
+3. The system should correctly identify and display references to the 'original' data such as when VC document fields reference document fields in other VCs.
+4. Users should be able to perform complex data searches with the scope limited to the dependencies graph.
+5. Guardian UI should enable Project Developers to define (and name) new datapoints and publish these definitions in a standardised manner linking them both to the originator's author DID, project ID and policy ID.
 
-* Introduce an AI data analytics backend which automatically and continuously processes and analyses Guardian data across the entire ecosystem with the purpose of identifying patterns, dependencies, trends, important factors and variables, groups (cohorts) of data, etc.&#x20;
-* Develop an analytics UI and visualization tool which is useable by non-technical users. This UI should allow users to continuously 'zoom in' or 'shift horizontally' on the data or the analytics results to examine them on a more detailed level or for a different parameter set: a different location, industry, sector, time range, specific values etc.&#x20;
-* Implement functionality to visualize and search the structure (or organization) of Guardian data, which allows users to determine for example which schemas refer to attributes, in which policies they are used, and then seamlessly navigate to which data has been generated that's connected to these.&#x20;
-* Provide an intelligent search interface which allows users at any point, while looking at a selection of data or an analytics result, to search for a 'similar' data or analytics result, while parameterizing the search with additional criteria. E.g. 'find similar set of MRVs but from projects in West Africa and those produced between 2021 and 2023'.&#x20;
-* Allow users to save the configuration of their searches, UI settings/configurations and other parameters generating analytics results, etc so users can repeat and further enhance their previous analysis later - with newly available data.&#x20;
-
-Referral Link: [ https://github.com/hashgraph/guardian/issues/3341](https://github.com/hashgraph/guardian/issues/3341)
+Referral Link: [https://github.com/hashgraph/guardian/issues/3336](https://github.com/hashgraph/guardian/issues/3336)
 
 ### Rationalize API and UI return error codes
 
@@ -152,17 +148,12 @@ Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://gith
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
 
-## ---- October 2024----
+## Calculation logic for values in 'automatic fields' in schemas
 
-### Block configuration (mini-) wizards
+* Introduce facilities into schema definition language which would allow for the referencing of other fields/values and specification of mathematics needed to calculate the field value based on those.
+* It should be possible to reference fields from 'other' schemas in the chain - parents/children.
 
-Recent improvement in [#1655](https://github.com/hashgraph/guardian/issues/1655) and [#1687](https://github.com/hashgraph/guardian/issues/1687) introduced high-level wizards for Policy creation. Similar approach can be taken for configuring individual blocks - wizards can guide users via the flow and provide contextual description/documentation of UI items to avoid referring to the official documentation for user convenience:&#x20;
-
-* implement (mini-) wizards for block configuration&#x20;
-* ensure there is a brief description of each step to guide user understanding of actions&#x20;
-* allow users to save and exit wizards at any time&#x20;
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/2235](https://github.com/hashgraph/guardian/issues/2235)
+Referral Link: [https://github.com/hashgraph/guardian/issues/2986](https://github.com/hashgraph/guardian/issues/2986)
 
 ### API facilities to retrieve unique references (IDs) of results for API-triggered operations
 
@@ -176,7 +167,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2235](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3139](https://github.com/hashgraph/guardian/issues/3139)
 
-### ACR Methodology for Quantifying, Monitoring, Reporting, and Verifying Greenhouse Gas Emissions Reductions and Removals from Landfill Gas Destruction and Beneficial Use Projects
+## Architecture for REDD+ Transactions (ART) The REDD+ Environmental Excellence Standard (TREES) - Version 2.0 #3707
 
 1. Creating Schema design for this methodology.&#x20;
 2. Development of the schema and policy.&#x20;
@@ -184,18 +175,21 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3139](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3707](https://github.com/hashgraph/guardian/issues/3707)
 
-## ---- November 2024----
+## ---- January 2025----
 
-### Guardian analytics: bottom-up data traceability
+### Guardian analytics: insights and top-down data way points
 
-1. Design and implement specialized analytics engine which would enable Guardian to identify, trace and display relations between data in different artifacts (VCs/VPs/tokens) including events (transactions/messages) on Hedera hashgraph, with unlimited traceability depth.&#x20;
-2. Intelligent 'understanding' of the nature of the transformations (e.g. in formulas in calculation blocks) is out of scope of this ticket, the analytics engine can view transformations as black boxes. If the 'original' data are used as 'input' into such a black box, for this analytics reporting, it can be assumed that the 'output' data depends on that data.&#x20;
-3. The system should correctly identify and display references to the 'original' data such as when VC document fields reference document fields in other VCs.&#x20;
-4. Users should be able to perform complex data searches with the scope limited to the dependencies graph.&#x20;
+The overall goal is to create a tool which provides non-technical high-level users (banks, auditors, analysts, accountants, etc) with insights out the box, and can serve as a way point for further data analytics, discovery and diagnostics.&#x20;
 
-Referral Link: [https://github.com/hashgraph/guardian/issues/3336](https://github.com/hashgraph/guardian/issues/3336)
+* Introduce an AI data analytics backend which automatically and continuously processes and analyses Guardian data across the entire ecosystem with the purpose of identifying patterns, dependencies, trends, important factors and variables, groups (cohorts) of data, etc.&#x20;
+* Develop an analytics UI and visualization tool which is useable by non-technical users. This UI should allow users to continuously 'zoom in' or 'shift horizontally' on the data or the analytics results to examine them on a more detailed level or for a different parameter set: a different location, industry, sector, time range, specific values etc.&#x20;
+* Implement functionality to visualize and search the structure (or organization) of Guardian data, which allows users to determine for example which schemas refer to attributes, in which policies they are used, and then seamlessly navigate to which data has been generated that's connected to these.&#x20;
+* Provide an intelligent search interface which allows users at any point, while looking at a selection of data or an analytics result, to search for a 'similar' data or analytics result, while parameterizing the search with additional criteria. E.g. 'find similar set of MRVs but from projects in West Africa and those produced between 2021 and 2023'.&#x20;
+* Allow users to save the configuration of their searches, UI settings/configurations and other parameters generating analytics results, etc so users can repeat and further enhance their previous analysis later - with newly available data.&#x20;
 
-### CDM AMS-III.BM Methodology for Lightweight Two and Three Wheeled Personal Transportation
+Referral Link: [ https://github.com/hashgraph/guardian/issues/3341](https://github.com/hashgraph/guardian/issues/3341)
+
+## Climate Action Reserve (CAR) U.S. Urban Forest Management&#x20;
 
 1. Creating Schema design for this methodology.&#x20;
 2. Development of the schema and policy.&#x20;
@@ -203,15 +197,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3336](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3709](https://github.com/hashgraph/guardian/issues/3709)
 
-## ---- December 2024----
-
 ### Trustchain support for contract-based issuance and retirement implementation
 
 Extend/modify trustchain implementation to support new contract-based issuance and retirement functionality such that users have visibility to the entire lifecycle of the token and have access to all significant artifacts produced as a result.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2243](https://github.com/hashgraph/guardian/issues/2243)
 
-### GS Methodology for Collection of Sargassum and Other Macroalgae to Avoid Emissions from Decomposition and to Use for Beneficial Products
+## American Carbon Registry (ACR) ACR Methodology for Quantifying, Monitoring, Reporting, and Verifying Greenhouse Gas Emissions Reductions and Removals from Landfill Gas Destruction and Beneficial Use Proje
 
 1. Creating Schema design for this methodology.&#x20;
 2. Development of the schema and policy.&#x20;
@@ -224,8 +216,6 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3710](https://githu
 Some interesting next steps could be to address the final data gaps; engage with PACT to review the policy and schema, provide feedback, and identify new use cases and features; engage with a third-party auditor to review or potentially verify the policy; and eventually have actual downstream supply chain partners referencing the PCF.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3729](https://github.com/hashgraph/guardian/issues/3729)
-
-## ---- January 2025----
 
 ### Emissions Reduction/Removals (ERRs) Calculation Pre-Calculator in Guardian
 
@@ -256,7 +246,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2838](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3141](https://github.com/hashgraph/guardian/issues/3141)
 
-### Verra Methodology for Enhanced Fleet Vehicle and Combustion Engine Efficiency (Under Final Review)
+## Clean Cooking and Climate Consortium Comprehensive Lowered Emissions Assessment and Reporting (CLEAR) Methodology for Cooking Energy Transitions
 
 1. Creating Schema design for this methodology.&#x20;
 2. Development of the schema and policy.&#x20;
