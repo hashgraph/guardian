@@ -13,11 +13,33 @@ export class PolicyStatisticsService {
     constructor(private http: HttpClient) {
     }
 
-    public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
-        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+    public static getOptions(
+        filters: any,
+        pageIndex?: number,
+        pageSize?: number
+    ): HttpParams {
+        let params = new HttpParams();
+        if (filters && typeof filters === 'object') {
+            for (const key of Object.keys(filters)) {
+                if (filters[key]) {
+                    params = params.set(key, filters[key]);
+                }
+            }
         }
-        return this.http.get<any>(`${this.url}`, { observe: 'response' });
+        if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
+            params = params.set('pageIndex', String(pageIndex));
+            params = params.set('pageSize', String(pageSize));
+        }
+        return params;
+    }
+
+    public page(
+        pageIndex?: number,
+        pageSize?: number,
+        filters?: any
+    ): Observable<HttpResponse<any[]>> {
+        const params = PolicyStatisticsService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
     public parsePage(response: HttpResponse<any[]>) {
@@ -28,5 +50,13 @@ export class PolicyStatisticsService {
 
     public create(policy: any): Observable<void> {
         return this.http.post<any>(`${this.url}/`, policy);
+    }
+
+    public getItem(id: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${id}`);
+    }
+
+    public getRelationships(id: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${id}/relationships`);
     }
 }

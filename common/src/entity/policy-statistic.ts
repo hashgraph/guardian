@@ -10,7 +10,7 @@ export class PolicyStatistic extends BaseEntity {
     /**
      * Tag id
      */
-    @Property()
+    @Property({ nullable: true })
     uuid?: string;
 
     /**
@@ -33,6 +33,12 @@ export class PolicyStatistic extends BaseEntity {
         index: true
     })
     owner?: string;
+
+    /**
+     * Tool creator
+     */
+    @Property({ nullable: true })
+    creator?: string;
 
     /**
      * Target ID

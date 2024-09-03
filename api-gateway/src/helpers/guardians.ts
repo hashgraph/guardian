@@ -2850,7 +2850,7 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return tools
+     * Return statistics
      *
      * @param {IFilter} [params]
      *
@@ -2860,4 +2860,23 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_STATISTICS, { filters, owner });
     }
 
+    /**
+     * Get statistic
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getStatisticById(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC, { id, owner });
+    }
+
+    /**
+     * Get relationships
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getStatisticRelationships(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_RELATIONSHIPS, { id, owner });
+    }
 }

@@ -140,9 +140,17 @@ export class PolicyStatisticsComponent implements OnInit {
     }
 
     private loadData() {
+        const filters: any = {};
+        if (this.currentPolicy?.instanceTopicId) {
+            filters.topicId = this.currentPolicy?.instanceTopicId;
+        }
         this.loading = true;
         this.policyStatisticsService
-            .page(this.pageIndex, this.pageSize)
+            .page(
+                this.pageIndex,
+                this.pageSize,
+                filters
+            )
             .subscribe((response) => {
                 const { page, count } = this.policyStatisticsService.parsePage(response);
                 this.page = page;
@@ -207,5 +215,9 @@ export class PolicyStatisticsComponent implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onEdit(item: any) {
+        this.router.navigate(['/policy-statistics', item.id]);
     }
 }

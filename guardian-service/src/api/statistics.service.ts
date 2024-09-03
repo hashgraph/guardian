@@ -60,10 +60,14 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 otherOptions.fields = [
                     'id',
-                    'creator',
+                    // 'creator',
                     'owner',
                     'name',
-                    'description'
+                    'description',
+                    'status',
+                    'topicId',
+                    'messageId',
+                    'policyId'
                 ];
                 const [items, count] = await DatabaseServer.getStatisticsAndCount(
                     {
@@ -72,6 +76,42 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     otherOptions
                 );
                 return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_STATISTIC,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { id, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                return new MessageResponse(item);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_STATISTIC_RELATIONSHIPS,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load tools parameter');
+                }
+                const { id, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

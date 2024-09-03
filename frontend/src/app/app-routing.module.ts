@@ -46,6 +46,7 @@ import { UsersManagementDetailComponent } from './views/user-management-detail/u
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { MapService } from './services/map.service';
 import { PolicyStatisticsComponent } from './modules/policy-statistics/policy-statistics/policy-statistics.component';
+import { PolicyStatisticsConfigurationComponent } from './modules/policy-statistics/policy-statistics-configuration/policy-statistics-configuration.component';
 
 @Injectable({
     providedIn: 'root'
@@ -493,6 +494,14 @@ const routes: Routes = [
     {
         path: 'policy-statistics',
         component: PolicyStatisticsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'policy-statistics/:id',
+        component: PolicyStatisticsConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [UserRole.USER]

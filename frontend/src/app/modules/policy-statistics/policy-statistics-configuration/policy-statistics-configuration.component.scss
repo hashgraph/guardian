@@ -1,0 +1,18 @@
+.policy-name {
+    color: #848FA9;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    position: absolute;
+    top: 34px;
+    right: 0;
+
+    .policy-version {
+        padding-left: 16px;
+    }
+}
+.guardian-dropdown {
+    &::ng-deep .p-dropdown { 
+        width: 250px;
+    }
+}

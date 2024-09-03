@@ -103,8 +103,22 @@
                                     pTooltip="{{row[column.id]}}"
                                     [tooltipDisabled]="!column.tooltip"
                                     tooltipPosition="top"
+                                    [ngSwitch]="column.id"
                                 >
-                                    <span class="text-truncate">{{row[column.id]}}</span>
+                                    <ng-container *ngSwitchCase="'options'">
+                                        <div 
+                                            class="guardian-icon-button big" 
+                                            (click)="onEdit(row)">
+                                            <svg-icon 
+                                                class="icon-btn"
+                                                src="/assets/images/icons/edit.svg"
+                                                svgClass="icon-color-primary">
+                                            </svg-icon>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchDefault>
+                                        <span class="text-truncate">{{row[column.id]}}</span>
+                                    </ng-container>
                                 </td>
                             </ng-container>
                         </tr>

@@ -13,10 +13,12 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { NewPolicyStatisticsDialog } from './dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
+import { PolicyStatisticsConfigurationComponent } from './policy-statistics-configuration/policy-statistics-configuration.component';
 
 @NgModule({
     declarations: [
         PolicyStatisticsComponent,
+        PolicyStatisticsConfigurationComponent,
         NewPolicyStatisticsDialog
     ],
     imports: [

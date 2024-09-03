@@ -1,8 +1,8 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query, Req, Response } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels } from '@nestjs/swagger';
-import { InternalServerErrorDTO, StatisticsDTO, pageHeader } from '#middlewares';
+import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, StatisticsDTO, pageHeader } from '#middlewares';
 import { UseCache, Guardians, InternalException, ONLY_SR, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -105,6 +105,92 @@ export class PolicyStatisticsApi {
                 pageSize
             }, owner);
             return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get statistic by id
+     */
+    @Get('/:id')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Retrieves statistic configuration.',
+        description: 'Retrieves statistic configuration for the specified ID.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'id',
+        type: String,
+        description: 'Statistic ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @UseCache()
+    async getStatisticById(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<StatisticsDTO> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getStatisticById(id, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+      * Get relationships by id
+      */
+    @Get('/:id/relationships')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Retrieves statistic relationships.',
+        description: 'Retrieves statistic relationships for the specified ID.' + ONLY_SR
+    })
+    @ApiParam({
+        name: 'id',
+        type: String,
+        description: 'Statistic ID',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @UseCache()
+    async getStatisticRelationships(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<StatisticsDTO> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getStatisticRelationships(id, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
