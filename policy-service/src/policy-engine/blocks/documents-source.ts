@@ -8,6 +8,7 @@ import { StateField } from '../helpers/decorators/index.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
 import { BlockActionError } from '../errors/index.js';
+import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common';
 
 /**
  * Document source block with UI
@@ -286,59 +287,27 @@ export class InterfaceDocumentsSource {
      */
     private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
-        const aggregation = [...filtersAndDataType.filters, {
-            $match: {
-                '__sourceTag__': { $ne: null }
-            }
-        }, {
-            $set: {
-                'option': {
-                    $cond: {
-                        if: {
-                            $or: [
-                                { $eq: [null, '$newOption'] },
-                                { $not: '$newOption' }
-                            ]
-                        },
-                        then: '$option',
-                        else: '$newOption'
-                    }
-                }
-            }
-        }, {
-            $unset: 'newOptions',
-        }];
+
+        const aggregation = [...filtersAndDataType.filters] as unknown[];
+
+        ref.databaseServer.getDocumentAggregationFilters({
+            aggregation,
+            aggregateMethod: 'push',
+            nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.BASE
+        });
 
         if (history) {
-            aggregation.push({
-                $lookup: {
-                    from: `${
-                        ref.databaseServer.getDryRun()
-                            ? 'dry_run'
-                            : 'document_state'
-                    }`,
-                    localField: 'id',
-                    foreignField: 'documentId',
-                    pipeline: [
-                        {
-                            $set: {
-                                labelValue: history
-                                    ? '$document.' +
-                                      (history.options.timelineLabelPath ||
-                                          'option.status')
-                                    : '$document.option.status',
-                                comment: history
-                                    ? '$document.' +
-                                      (history.options
-                                          .timelineDescriptionPath ||
-                                          'option.comment')
-                                    : '$document.option.comment',
-                                created: '$createDate',
-                            },
-                        },
-                    ],
-                    as: 'history',
-                },
+            const dryRun = ref.databaseServer.getDryRun();
+
+            const { timelineLabelPath, timelineDescriptionPath } = history.options;
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.HISTORY,
+                timelineLabelPath,
+                timelineDescriptionPath,
+                dryRun,
             });
         }
 
@@ -355,47 +324,60 @@ export class InterfaceDocumentsSource {
                     sortObject[sortState.orderField] = 1;
                     break;
             }
-            aggregation.push({
-                $sort: sortObject
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.SORT,
+                sortObject,
             });
         }
 
         if (paginationData) {
-            aggregation.push({
-                $skip: paginationData.itemsPerPage * paginationData.page
-            },
-            {
-                $limit: paginationData.itemsPerPage
+            const { itemsPerPage, page } = paginationData;
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION,
+                itemsPerPage,
+                page
             });
         }
 
         switch (filtersAndDataType.dataType) {
             case 'vc-documents':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VC_DOCUMENTS,
+                    policyId: ref.policyId,
                 });
+
                 return await ref.databaseServer.getVcDocumentsByAggregation(aggregation);
             case 'did-documents':
                 return await ref.databaseServer.getDidDocumentsByAggregation(aggregation);
             case 'vp-documents':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VP_DOCUMENTS,
+                    policyId: ref.policyId,
                 });
+
                 const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
                 for (const item of data as any[]) {
                     [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
                 }
                 return data;
             case 'approve':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.APPROVE,
+                    policyId: ref.policyId,
                 });
+
                 return await ref.databaseServer.getApprovalDocumentsByAggregation(aggregation);
             default:
                 return [];

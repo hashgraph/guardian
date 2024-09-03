@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageResponse, NatsService, PinoLogger, Singleton, Vc, VerifiableCredential } from '@guardian/common';
+import { DatabaseServer, MessageResponse, NatsService, PinoLogger, Singleton, Vc, VerifiableCredential } from '@guardian/common';
 import { AuthEvents, ExternalProviders, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MeecoService } from '../meeco/meeco.service.js';
 import { MeecoIssuerWhitelist } from '../entity/meeco-issuer-whitelist.js';
@@ -47,8 +47,8 @@ export class MeecoAuthService extends NatsService {
             return;
         }
 
-        const issuerWhitelistRepository = new DataBaseHelper(MeecoIssuerWhitelist);
-        const issuerWhitelist = await issuerWhitelistRepository.findOne({
+        const issuerWhitelistRepository = new DatabaseServer();
+        const issuerWhitelist = await issuerWhitelistRepository.findOne(MeecoIssuerWhitelist, {
             issuerId: process.env.MEECO_ISSUER_ORGANIZATION_ID, name: process.env.MEECO_ISSUER_ORGANIZATION_NAME,
         });
 
@@ -56,7 +56,7 @@ export class MeecoAuthService extends NatsService {
             const _issuerWhitelist = new MeecoIssuerWhitelist();
             _issuerWhitelist.issuerId = process.env.MEECO_ISSUER_ORGANIZATION_ID;
             _issuerWhitelist.name = process.env.MEECO_ISSUER_ORGANIZATION_NAME;
-            issuerWhitelistRepository.save(_issuerWhitelist);
+            await issuerWhitelistRepository.save(MeecoIssuerWhitelist, _issuerWhitelist);
         }
     }
 
@@ -208,8 +208,8 @@ export class MeecoAuthService extends NatsService {
         }
 
         const { id: issuerId, name: issuerName } = verifiableCredential.vc.issuer;
-        const issuerWhitelistRepository = new DataBaseHelper(MeecoIssuerWhitelist);
-        const issuerWhitelist = await issuerWhitelistRepository.findOne({ issuerId, name: issuerName });
+        const issuerWhitelistRepository = new DatabaseServer();
+        const issuerWhitelist = await issuerWhitelistRepository.findOne(MeecoIssuerWhitelist, { issuerId, name: issuerName });
         if (!issuerWhitelist) {
             throw new Error(`Issuer ${issuerName} is not whitelisted`);
         }

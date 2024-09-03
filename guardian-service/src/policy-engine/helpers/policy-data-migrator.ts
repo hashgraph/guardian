@@ -4,7 +4,6 @@ import {
     BlockState,
     Contract,
     ContractMessage,
-    DataBaseHelper,
     DatabaseServer,
     DidDocument,
     DocumentState,
@@ -33,7 +32,7 @@ import {
     VpDocumentDefinition,
     Wallet,
     Workers,
-    findAllEntities,
+    findAllEntities, PolicyCache,
 } from '@guardian/common';
 import {
     ContractAPI,
@@ -216,73 +215,73 @@ export class PolicyDataMigrator {
                 policyRoles = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'roles',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 policyStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'states',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'schemas',
                     cachePolicyId: userPolicy.id,
                     category: SchemaCategory.SYSTEM,
-                });
+                } as Partial<PolicyCache>);
                 srcVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcRoleVcs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     schema: '#UserRole',
-                });
+                } as Partial<PolicyCache>);
                 srcVPs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vps',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vps },
-                });
+                } as Partial<PolicyCache>);
                 srcDids = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'dids',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcMintRequests = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintRequests',
                     cachePolicyId: userPolicy.id,
                     vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
-                });
+                } as Partial<PolicyCache>);
                 srcMintTransactions = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintTransactions',
                     cachePolicyId: userPolicy.id,
                     mintRequestId: {
                         $in: srcMintRequests.map((item) => item.id),
                     },
-                });
+                } as Partial<PolicyCache>);
                 srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'multiDocuments',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'aggregateVCs',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'splitDocuments',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcDocumentStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'documentStates',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcTokens = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'tokens',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcRetirePools = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'retirePools',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
             } else {
                 srcModel = await DatabaseServer.getPolicy({
                     id: src,
@@ -659,6 +658,9 @@ export class PolicyDataMigrator {
         tokenTemplates: { [key: string]: string }
     ) {
         const result: any = {};
+
+        const dataBaseServer = new DatabaseServer();
+
         for (const [tokenTemplate, tokenId] of Object.entries(tokenTemplates)) {
             const newTokenTemplate = this._tokens[tokenTemplate];
             if (!newTokenTemplate) {
@@ -671,7 +673,7 @@ export class PolicyDataMigrator {
                 delete existingToken._id;
                 delete existingToken.id;
                 existingToken.policyId = this._policyId;
-                await new DataBaseHelper(Token).save(existingToken);
+                await dataBaseServer.save(Token, existingToken);
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -692,7 +694,7 @@ export class PolicyDataMigrator {
                 }) as any
             );
             tokenObject.policyId = this._policyId;
-            await new DataBaseHelper(Token).save(tokenObject);
+            await dataBaseServer.save(Token, tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
         }
@@ -705,12 +707,15 @@ export class PolicyDataMigrator {
      * @returns Wipe contract identifier
      */
     async createWipeContract(wipeContractId: string) {
-        const existingWipeContract = await new DataBaseHelper(Contract).findOne(
+        const dataBaseServer = new DatabaseServer();
+
+        const existingWipeContract = await dataBaseServer.findOne(
+            Contract,
             {
                 type: ContractType.WIPE,
                 wipeContractId,
                 owner: this._owner,
-            }
+            } as Partial<Contract>
         );
         if (existingWipeContract) {
             return wipeContractId;
@@ -753,10 +758,14 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
+// <<<<<<< HEAD
+//         const contract = await dataBaseServer.save(Contract, {
+// =======
         const version = await getContractVersion(
             log
         );
-        const contract = await new DataBaseHelper(Contract).save({
+        const contract = await dataBaseServer.save(Contract, {
+// >>>>>>> develop
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,

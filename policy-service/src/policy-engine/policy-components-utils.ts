@@ -1092,7 +1092,7 @@ export class PolicyComponentsUtils {
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: PolicyUser
-    ): Promise<any[]> {
+    ): Promise<PolicyRoles[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,

@@ -65,7 +65,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     'name',
                     'description'
                 ];
-                const [items, count] = await DatabaseServer.getPolicyStatisticsAndCount(
+                const [items, count] = await DatabaseServer.getStatisticsAndCount(
                     {
                         owner: owner.owner
                     },

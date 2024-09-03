@@ -1,5 +1,5 @@
 import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DryRunFiles, IPFS, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
+import { DatabaseServer, DryRunFiles, IPFS, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
 
@@ -61,12 +61,14 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
             const policyId = msg.policyId;
             const fileBuffer = Buffer.from(msg.buffer.data);
 
-            const entity = new DataBaseHelper(DryRunFiles).create({
+            const dataBaseServer = new DatabaseServer();
+
+            const entity = dataBaseServer.create(DryRunFiles, {
                 policyId,
                 file: fileBuffer
             });
 
-            await new DataBaseHelper(DryRunFiles).save(entity)
+            await dataBaseServer.save(DryRunFiles, entity)
 
             return new MessageResponse({
                 cid: entity.id,
@@ -110,7 +112,7 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
                 throw new Error('Invalid response type');
             }
 
-            const file = await new DataBaseHelper(DryRunFiles).findOne({id: msg.cid});
+            const file = await new DatabaseServer().findOne(DryRunFiles, {id: msg.cid});
 
             return new MessageResponse(file.file);
         } catch (error) {

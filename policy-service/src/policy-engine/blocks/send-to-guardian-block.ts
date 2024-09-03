@@ -4,12 +4,13 @@ import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocumentDefinition as VcDocument, VCMessage, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentType } from '../interfaces/document.type.js';
+import { FilterQuery } from '@mikro-orm/core';
 
 /**
  * Document Operations
@@ -73,11 +74,9 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
-                where: {
-                    policyId: { $eq: ref.policyId },
-                    hash: { $eq: document.hash },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
+                policyId: { $eq: ref.policyId },
+                hash: { $eq: document.hash },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
             });
         }
         return old;
@@ -107,11 +106,9 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.did) {
             old = await ref.databaseServer.getVcDocument({
-                where: {
-                    did: { $eq: document.did },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
-            });
+                did: { $eq: document.did },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+            } as FilterQuery<VcDocumentCollection>);
         }
         return old;
     }
@@ -126,12 +123,10 @@ export class SendToGuardianBlock {
         let old: any = null;
         if (document.hash) {
             old = await ref.databaseServer.getVpDocument({
-                where: {
-                    policyId: { $eq: ref.policyId },
-                    hash: { $eq: document.hash },
-                    hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
-                }
-            });
+                policyId: { $eq: ref.policyId },
+                hash: { $eq: document.hash },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+            } as FilterQuery<VpDocumentCollection>);
         }
         return old;
     }

@@ -1,5 +1,5 @@
 import { IVault } from '../vault.interface.js';
-import { DataBaseHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
 import { WalletAccount } from '../../entity/wallet-account.js';
 
 /**
@@ -20,7 +20,7 @@ export class Database implements IVault {
      * @param key
      */
     async getKey(token: string, type: string, key: string): Promise<string> {
-        const item = await new DataBaseHelper(WalletAccount).findOne({ token, type: type + '|' + key });
+        const item = await new DatabaseServer().findOne(WalletAccount, { token, type: type + '|' + key });
         return item?.key
     }
 
@@ -32,12 +32,12 @@ export class Database implements IVault {
      * @param value
      */
     async setKey(token: string, type: string, key: string, value: string): Promise<void> {
-        const walletAcc = new DataBaseHelper(WalletAccount).create({
+        const walletAcc = new DatabaseServer().create(WalletAccount, {
             token,
             type: type + '|' + key,
             key: value
         });
-        await new DataBaseHelper(WalletAccount).save(walletAcc);
+        await new DatabaseServer().save(WalletAccount, walletAcc);
     }
 
     /**
@@ -45,7 +45,7 @@ export class Database implements IVault {
      * @param type
      */
     async getGlobalApplicationKey(type: string): Promise<string> {
-        const item = await new DataBaseHelper(WalletAccount).findOne({ type });
+        const item = await new DatabaseServer().findOne(WalletAccount,{ type });
         return item?.key;
     }
 
@@ -55,11 +55,11 @@ export class Database implements IVault {
      * @param key
      */
     async setGlobalApplicationKey(type: string, key: string): Promise<void> {
-        let setting: WalletAccount = await new DataBaseHelper(WalletAccount).findOne({ type });
+        let setting: WalletAccount = await new DatabaseServer().findOne(WalletAccount,{ type });
         if (!setting) {
-            setting = new DataBaseHelper(WalletAccount).create({ type, key });
+            setting = new DatabaseServer().create(WalletAccount, { type, key });
         }
         setting.key = key;
-        await new DataBaseHelper(WalletAccount).save(setting);
+        await new DatabaseServer().save(WalletAccount, setting);
     }
 }

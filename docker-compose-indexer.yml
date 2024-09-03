@@ -1,3 +1,11 @@
+# YAML anchor that contains common configuration elements for our services
+x-service-template: &service-template
+  init: true
+  env_file:
+    - ./configs/.env.${GUARDIAN_ENV}.indexer.system
+  environment:
+    - GUARDIAN_ENV=${GUARDIAN_ENV}
+
 services:
   mongo:
     image: mongo:6.0.16
@@ -31,18 +39,12 @@ services:
       - ./configs/nats.conf:/etc/nats/nats.conf
 
   indexer-worker-service:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-worker-service/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-worker-service:${GUARDIAN_VERSION:-latest}
     depends_on:
       - mongo
       - message-broker
       - indexer-service
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
     volumes:
@@ -52,12 +54,8 @@ services:
       replicas: 3
 
   indexer-api-gateway:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-api-gateway/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-api-gateway:${GUARDIAN_VERSION:-latest}
     expose:
       - 3021
       - 6555
@@ -65,34 +63,24 @@ services:
       - mongo
       - message-broker
       - indexer-service
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
     volumes:
       - ./indexer-api-gateway/configs:/usr/local/app/configs:ro
 
   indexer-service:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-service/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-service:${GUARDIAN_VERSION:-latest}
     volumes:
       - ./indexer-service/tls:/usr/local/app/tls:ro
       - ./indexer-service/configs:/usr/local/app/configs:ro
     depends_on:
       - mongo
       - message-broker
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
       - 5007
 
   indexer-web-proxy:
-    build:
-      context: .
-      dockerfile: ./indexer-web-proxy/Dockerfile
+    image: gcr.io/hedera-registry/indexer-web-proxy:${GUARDIAN_VERSION:-latest}
     init: true
     ports:
       - "3005:80"
