@@ -156,10 +156,8 @@ export class AnalyticsDocumentService {
                             instanceTopicId: instance.instanceTopicId,
                             timeStamp: data.id,
                             account: data.payer,
-                            type: DocumentType.ROLE,
-                            issuer: data.issuer,
-                            role: data.role,
-                            group: data.group,
+                            type: DocumentType.DID,
+                            issuer: data.did,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
                         };
@@ -176,14 +174,13 @@ export class AnalyticsDocumentService {
                             policyUUID: instance.policyUUID,
                             policyTopicId: instance.policyTopicId,
                             instanceTopicId: instance.instanceTopicId,
-                            timeStamp: data.id,
                             account: data.payer,
-                            type: DocumentType.ROLE,
-                            issuer: data.issuer,
-                            role: data.role,
-                            group: data.group,
-                            action: data.action,
-                            ipfs: data.getUrlValue(0, UrlType.cid)
+                            timeStamp: data.id,
+                            topicId: data.childId,
+                            name: data.name,
+                            description: data.description,
+                            owner: data.owner,
+                            action: data.action
                         };
                         const databaseServer = new DatabaseServer();
 
