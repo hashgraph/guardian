@@ -11,7 +11,7 @@ import {
     Contract, DataBaseHelper, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
     LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
     MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
-    PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
+    PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyStatistic, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
     Settings, SplitDocuments, SuggestionsConfig, Tag, TagCache, Theme, Token, Topic, TopicMemo, TransactionLogger, TransactionLogLvl, Users,
     ValidateConfiguration, VcDocument, VpDocument, Wallet, WiperRequest, Workers
 } from '@guardian/common';
@@ -95,7 +95,8 @@ const necessaryEntity = [
     PolicyCacheData,
     PolicyCache,
     AssignEntity,
-    PolicyTest
+    PolicyTest,
+    PolicyStatistic
 ]
 
 Promise.all([

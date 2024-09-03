@@ -20,9 +20,18 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('Invalid Params');
                 }
                 const { statistic, owner } = msg;
-
-
-                return new MessageResponse({});
+                if (statistic) {
+                    delete statistic._id;
+                    delete statistic.id;
+                    delete statistic.status;
+                    delete statistic.owner;
+                    delete statistic.messageId;
+                }
+                statistic.creator = owner.creator;
+                statistic.owner = owner.owner;
+                statistic.status = 'Draft';
+                const row = await DatabaseServer.createStatistic(statistic);
+                return new MessageResponse(row);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -56,13 +65,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     'name',
                     'description'
                 ];
-                // const [items, count] = await DatabaseServer.getToolsAndCount(
-                //     {
-                //         owner: owner.owner
-                //     },
-                //     otherOptions
-                // );
-                return new MessageResponse({ items: [{}], count: 1 });
+                const [items, count] = await DatabaseServer.getPolicyStatisticsAndCount(
+                    {
+                        owner: owner.owner
+                    },
+                    otherOptions
+                );
+                return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

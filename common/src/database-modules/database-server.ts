@@ -37,6 +37,7 @@ import {
     RetirePool,
     AssignEntity,
     PolicyTest,
+    PolicyStatistic
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -119,6 +120,7 @@ export class DatabaseServer {
         this.classMap.set(PolicyProperty, 'PolicyProperties');
         this.classMap.set(MintRequest, 'MintRequest');
         this.classMap.set(MintTransaction, 'MintTransaction');
+        this.classMap.set(PolicyStatistic, 'PolicyStatistic');
     }
 
     /**
@@ -3649,5 +3651,80 @@ export class DatabaseServer {
      */
     public static async removePolicyTests(tests: PolicyTest[]): Promise<void> {
         await new DataBaseHelper(PolicyTest).remove(tests);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Create statistic
+     * @param statistic
+     */
+    public static async createStatistic(statistic: any): Promise<PolicyStatistic> {
+        const item = new DataBaseHelper(PolicyStatistic).create(statistic);
+        return await new DataBaseHelper(PolicyStatistic).save(item);
+    }
+
+    /**
+     * Get statistics
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyStatisticsAndCount(filters?: any, options?: any): Promise<[PolicyStatistic[], number]> {
+        return await new DataBaseHelper(PolicyStatistic).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic By ID
+     * @param uuid
+     */
+    public static async gePolicyStatisticById(id: string): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(id);
+    }
+
+    /**
+     * Get statistic
+     * @param filters
+     */
+    public static async getPolicyStatistic(filters: any): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(filters);
+    }
+
+    /**
+     * Delete statistic
+     * @param statistic
+     */
+    public static async removePolicyStatistic(statistic: PolicyStatistic): Promise<void> {
+        return await new DataBaseHelper(PolicyStatistic).remove(statistic);
+    }
+
+    /**
+     * Get statistics
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyStatistics(filters?: any, options?: any): Promise<PolicyStatistic[]> {
+        return await new DataBaseHelper(PolicyStatistic).find(filters, options);
+    }
+
+    /**
+     * Update statistic
+     * @param row
+     */
+    public static async updatePolicyStatistic(row: PolicyStatistic): Promise<PolicyStatistic> {
+        return await new DataBaseHelper(PolicyStatistic).update(row);
     }
 }
