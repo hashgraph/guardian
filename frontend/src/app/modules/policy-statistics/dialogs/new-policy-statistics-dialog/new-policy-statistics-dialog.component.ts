@@ -49,7 +49,13 @@ export class NewPolicyStatisticsDialog {
 
     public onSubmit(): void {
         if (this.dataForm.valid) {
-            this.ref.close(this.dataForm.value);
+            const { name, description, policy } = this.dataForm.value;
+            this.ref.close({
+                name, 
+                description, 
+                policyId: policy?.id,
+                instanceTopicId: policy?.instanceTopicId,
+            });
         }
     }
 }

@@ -3071,6 +3071,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param id
      */
     public static async getContractById(id: string): Promise<ContractCollection | null> {
+        if(!id) return null;
         return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 

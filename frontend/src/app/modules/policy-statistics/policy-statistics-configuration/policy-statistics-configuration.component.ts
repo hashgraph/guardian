@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserPermissions } from '@guardian/interfaces';
+import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
+import { TreeNode, TreeGraphComponent } from '../tree-graph/tree-graph.component';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -20,8 +21,12 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     public id: string;
     public item: any;
+    public policy: any;
+    public schemas: any[];
 
     private subscription = new Subscription();
+    private tree: TreeGraphComponent;
+    private nodes: TreeNode[];
 
     constructor(
         private profileService: ProfileService,
@@ -73,6 +78,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             this.policyStatisticsService.getRelationships(this.id),
         ]).subscribe(([item, relationships]) => {
             this.item = item;
+            if (relationships) {
+                this.prepareData(relationships);
+            }
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -81,7 +89,43 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         });
     }
 
+    private prepareData(relationships: any) {
+        this.policy = relationships.policy || {};
+        this.schemas = relationships.schemas || [];
+        this.nodes = [];
+        for (const schema of this.schemas) {
+            try {
+                const item = new Schema(schema);
+                const node = new TreeNode(item.iri);
+                node.type = item.entity === 'VC' ? 'root' : 'sub';
+                node.data = {
+                    name: item.name,
+                    description: item.description,
+                }
+                for (const field of item.fields) {
+                    if (field.isRef && field.type) {
+                        node.addId(field.type)
+                    }
+                }
+                this.nodes.push(node);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        if (this.tree) {
+            this.tree.setData(this.nodes)
+        }
+    }
+
     public onBack() {
         this.router.navigate(['/policy-statistics']);
+    }
+
+    public initTree($event: TreeGraphComponent) {
+        this.tree = $event;
+        if (this.nodes) {
+            this.tree.setData(this.nodes)
+        }
     }
 }

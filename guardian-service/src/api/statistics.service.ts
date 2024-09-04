@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
-import { IOwner, MessageAPI } from '@guardian/interfaces';
+import { DatabaseServer, ImportExportUtils, MessageError, MessageResponse, PinoLogger, PolicyImportExport } from '@guardian/common';
+import { IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -111,7 +111,20 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                return new MessageResponse(item);
+                const policyId = item.policyId;
+                console.log('1')
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                console.log('2')
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+                console.log('3')
+                const { schemas } = await PolicyImportExport.loadPolicyComponents(policy);
+                console.log('4')
+                return new MessageResponse({
+                    policy,
+                    schemas: schemas.filter((s) => s.status === SchemaStatus.PUBLISHED)
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

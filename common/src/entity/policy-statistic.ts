@@ -71,6 +71,15 @@ export class PolicyStatistic extends BaseEntity {
     policyId?: string;
 
     /**
+     * Policy Topic id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    instanceTopicId?: string;
+
+    /**
      * Set policy defaults
      */
     @BeforeCreate()

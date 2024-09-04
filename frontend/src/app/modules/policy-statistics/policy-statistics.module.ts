@@ -14,12 +14,14 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { NewPolicyStatisticsDialog } from './dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
 import { PolicyStatisticsConfigurationComponent } from './policy-statistics-configuration/policy-statistics-configuration.component';
+import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 
 @NgModule({
     declarations: [
         PolicyStatisticsComponent,
         PolicyStatisticsConfigurationComponent,
-        NewPolicyStatisticsDialog
+        NewPolicyStatisticsDialog,
+        TreeGraphComponent
     ],
     imports: [
         CommonModule,

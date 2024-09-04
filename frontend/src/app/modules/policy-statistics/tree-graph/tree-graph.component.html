@@ -1,0 +1,23 @@
+<div class="tree-graph">
+
+    <div 
+        *ngIf="grid" 
+        class="tree-grid"
+        [style.grid-template-columns]="grid.columnsTemplate"
+        [style.grid-template-rows]="grid.rowsTemplate"
+    >
+        <div 
+            *ngFor="let node of grid.nodes"
+            [style.grid-column-start]="node.minColumn"
+            [style.grid-column-end]="node.maxColumn"
+            [style.grid-row-start]="node.minRow"
+            [style.grid-row-end]="node.maxRow"
+            class="tree-node-container"
+        >
+            <div class="tree-node {{node.type}}-node">
+                {{node.data.name}}
+            </div>
+        </div>
+
+    </div>
+</div>
