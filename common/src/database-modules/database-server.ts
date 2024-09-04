@@ -910,7 +910,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      *
      * @virtual
      */
-    public async getPolicy(policyId: string): Promise<Policy | null> {
+    public async getPolicy(policyId: string | null): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
@@ -2386,11 +2386,8 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get schema
      * @param id
      */
-    public static async getSchemaById(id: string): Promise<SchemaCollection | null> {
-        if (id) {
-            return await new DataBaseHelper(SchemaCollection).findOne(id);
-        }
-        return null;
+    public static async getSchemaById(id: string | null): Promise<SchemaCollection | null> {
+        return await new DataBaseHelper(SchemaCollection).findOne(id);
     }
 
     /**
@@ -2461,7 +2458,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get policy by id
      * @param policyId
      */
-    public static async getPolicyById(policyId: string): Promise<Policy | null> {
+    public static async getPolicyById(policyId: string | null): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
 
@@ -2577,7 +2574,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get VC
      * @param id
      */
-    public static async getVCById(id: string): Promise<VcDocumentCollection> | null {
+    public static async getVCById(id: string | null): Promise<VcDocumentCollection> | null {
         return await new DataBaseHelper(VcDocumentCollection).findOne(id);
     }
 
@@ -2603,7 +2600,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get VC
      * @param id
      */
-    public static async getVPById(id: string): Promise<VpDocumentCollection | null> {
+    public static async getVPById(id: string | null): Promise<VpDocumentCollection | null> {
         return await new DataBaseHelper(VpDocumentCollection).findOne(id);
     }
 
@@ -3052,7 +3049,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get Token by ID
      * @param id
      */
-    public static async getTokenById(id: string): Promise<TokenCollection | null> {
+    public static async getTokenById(id: string | null): Promise<TokenCollection | null> {
         return await new DataBaseHelper(TokenCollection).findOne(id);
     }
 
@@ -3069,7 +3066,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get Contract by ID
      * @param id
      */
-    public static async getContractById(id: string): Promise<ContractCollection | null> {
+    public static async getContractById(id: string | null): Promise<ContractCollection | null> {
         return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 
@@ -3145,9 +3142,9 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
     /**
      * Get Module By ID
-     * @param uuid
+     * @param id
      */
-    public static async getModuleById(id: string): Promise<PolicyModule | null> {
+    public static async getModuleById(id: string | null): Promise<PolicyModule | null> {
         return await new DataBaseHelper(PolicyModule).findOne(id);
     }
 
@@ -3225,7 +3222,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * Get Tool By ID
      * @param id
      */
-    public static async getToolById(id: string): Promise<PolicyTool | null> {
+    public static async getToolById(id: string | null): Promise<PolicyTool | null> {
         return await new DataBaseHelper(PolicyTool).findOne(id);
     }
 
