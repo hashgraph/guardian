@@ -132,7 +132,7 @@ jobs:
           OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
+        uses: EnricoMi/publish-unit-test-result-action@82082dac68ad6a19d980f8ce817e108b9f496c2a # v2.17.1
         if: always()
         with:
           files: test_results/**/*.xml
