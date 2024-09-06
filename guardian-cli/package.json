@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.46.0",
-    "axios": "^1.6.7",
+    "axios": "^1.6.8",
     "commander": "^10.0.0",
     "solc": "0.8.11",
     "ws": "^8.16.0"
