@@ -1,23 +1,46 @@
-<div class="tree-graph">
-
+<div class="tree-container">
     <div 
-        *ngIf="grid" 
-        class="tree-grid"
-        [style.grid-template-columns]="grid.columnsTemplate"
-        [style.grid-template-rows]="grid.rowsTemplate"
+        class="tree-graph"
+        [attr.moving]="moving"
+        (mousedown)="onMouseDown($event)"
+        (mouseup)="onMouseUp($event)"
+        (mousemove)="onMouseMove($event)"
+        (mouseleave)="onMouseUp($event)"
+        (wheel)="onScroll($event)"
     >
         <div 
-            *ngFor="let node of grid.nodes"
-            [style.grid-column-start]="node.minColumn"
-            [style.grid-column-end]="node.maxColumn"
-            [style.grid-row-start]="node.minRow"
-            [style.grid-row-end]="node.maxRow"
-            class="tree-node-container"
+            #gridEl 
+            class="tree-moving-container"
         >
-            <div class="tree-node {{node.type}}-node">
-                {{node.data.name}}
+            <div 
+                *ngIf="grid"
+                class="tree-grid"
+                [style.grid-template-columns]="grid.columnsTemplate"
+                [style.grid-template-rows]="grid.rowsTemplate"
+            >
+            <div 
+                *ngFor="let node of grid.nodes"
+                [style.grid-column-start]="node.minColumn"
+                [style.grid-column-end]="node.maxColumn"
+                [style.grid-row-start]="node.minRow"
+                [style.grid-row-end]="node.maxRow"
+                class="tree-node-container"
+            >
+                <div class="tree-node" (click)="onSelectNode(node)">
+                    <ng-container 
+                        [ngTemplateOutlet]="nodeTemplate" 
+                        [ngTemplateOutletContext]="{ node }"
+                    ></ng-container>
+                </div>
+                <div class="tree-node-lines">
+                    <div
+                        *ngFor="let line of node.lines"
+                        class="tree-node-line {{line.type}}-line selected-type-{{line.selected}}"
+                        [style.width.px]="line.width"
+                    >
+                    </div>
+                </div>
             </div>
         </div>
-
     </div>
 </div>

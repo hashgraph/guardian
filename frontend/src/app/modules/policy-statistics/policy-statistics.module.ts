@@ -15,6 +15,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { NewPolicyStatisticsDialog } from './dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
 import { PolicyStatisticsConfigurationComponent } from './policy-statistics-configuration/policy-statistics-configuration.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
+import { TabViewModule } from 'primeng/tabview';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     declarations: [
@@ -35,6 +37,8 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
         TooltipModule,
         InputTextModule,
         DropdownModule,
+        TabViewModule,
+        CheckboxModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

@@ -1,29 +1,194 @@
+:host {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.tree-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
 .tree-graph {
-    // width: 400px;
-    // height: 400px;
-    display: block;
+    background: #EFF3F7;
     position: relative;
-    overflow: scroll;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* make GPU composite layer */
+    will-change: transform, top, left;
+    /* try optimize */
+
+    &[moving="true"] {
+        cursor: grabbing;
+    }
+
+    .tree-moving-container {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        /* make GPU composite layer */
+        will-change: transform, top, left;
+        /* try optimize */
+    }
 
     .tree-grid {
+        position: absolute;
+        left: 0px;
+        top: 0px;
         display: grid;
+
+        background-color: #f4f6f9;
+        opacity: 1;
+        background-image:
+            linear-gradient(#e8e8e8 0.8px, transparent 0.8px),
+            linear-gradient(90deg, #e8e8e8 0.8px, transparent 0.8px),
+            linear-gradient(#e8e8e8 0.4px, transparent 0.4px),
+            linear-gradient(90deg, #e8e8e8 0.4px, #f4f6f9 0.4px);
+        background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
+        background-position: -0.8px -0.8px, -0.8px -0.8px, -0.4px -0.4px, -0.4px -0.4px;
 
         .tree-node-container {
             width: 100%;
             height: 100%;
-            padding: 24px;
             display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
+            padding: 25px;
+            flex-direction: column;
 
             .tree-node {
-                background: #ffffff;
-                border: 1px solid #cacaca;
-                box-shadow: 0 2px 15px 2px #cacaca;
-                padding: 16px;
-                border-radius: 8px;
-                white-space: nowrap;
-                width: fit-content;
+                position: relative;
+            }
+
+            .tree-node-lines {
+                width: 100%;
+                height: 100%;
+                position: relative;
+            }
+
+            .tree-node-line {
+                position: absolute;
+                top: 0px;
+                bottom: -50px;
+                min-width: 3px;
+                pointer-events: none;
+
+                &.selected-type-selected {
+
+                    &::after,
+                    &::before {
+                        border-color: var(--guardian-primary-color, #4169E2) !important;
+                        border-width: 2px !important;
+                    }
+
+                    &.middle-line,
+                    &.right-line {
+                        &::before {
+                            left: -2px;
+                        }
+                    }
+
+                    z-index: 2;
+                }
+
+                &.selected-type-sub {
+
+                    &::after,
+                    &::before {
+                        border-color: var(--guardian-primary-color, #4169E2) !important;
+                    }
+
+                    z-index: 1;
+                }
+
+                &.selected-type-hidden {
+                    opacity: 0.2;
+                    z-index: 0;
+                }
+
+                &.left-line {
+                    right: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 25px;
+                        left: 0px;
+                        border-right: 1px solid #848FA9;
+                        border-bottom: 1px solid #848FA9;
+                    }
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        bottom: 0px;
+                        left: 0px;
+                        width: 5px;
+                        height: 25px;
+                        border-left: 1px solid #848FA9;
+                        border-top: 1px solid #848FA9;
+                    }
+                }
+
+                &.middle-line {
+                    left: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: -1px;
+                        border-left: 1px solid #848FA9;
+                    }
+                }
+
+                &.right-line {
+                    left: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 25px;
+                        left: -1px;
+                        border-left: 1px solid #848FA9;
+                        border-bottom: 1px solid #848FA9;
+                    }
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        bottom: 0px;
+                        right: 0px;
+                        width: 5px;
+                        height: 25px;
+                        border-right: 1px solid #848FA9;
+                        border-top: 1px solid #848FA9;
+                    }
+                }
             }
         }
     }

@@ -1,98 +1,7 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-
-export class TreeNode {
-    public readonly uuid: string;
-
-    public id: string;
-    public type: 'root' | 'sub';
-    public childIds: string[];
-    public children: TreeNode[];
-    public size: number;
-    public data: any;
-    public row: number;
-    public column: number;
-    public minColumn: number;
-    public maxColumn: number;
-    public minRow: number;
-    public maxRow: number;
-
-    constructor(id?: string) {
-        this.uuid = GenerateUUIDv4();
-
-        this.id = id || this.uuid;
-        this.type = 'root';
-        this.childIds = [];
-        this.children = [];
-        this.size = 1;
-        this.data = null;
-        this.row = 0;
-        this.column = 0;
-        this.minColumn = 0;
-        this.maxColumn = 0;
-        this.minRow = 0;
-        this.maxRow = 0;
-    }
-
-    public addId(id: string): void {
-        this.childIds.push(id);
-    }
-
-    public addNode(node: TreeNode): void {
-        this.children.push(node);
-    }
-
-    public clone(): TreeNode {
-        const clone = new TreeNode(this.id);
-        clone.type = this.type;
-        clone.data = this.data;
-        clone.childIds = this.childIds.slice();
-        return clone;
-    }
-
-    public resize(): void {
-        let size = 0;
-        for (const child of this.children) {
-            child.resize();
-            size += child.size;
-        }
-        this.size = Math.max(1, size);
-        if (this.size % 2 === 0) {
-            this.size += 1;
-        }
-    }
-}
-
-export class Grid {
-    public column: number;
-    public row: number;
-    public nodes: TreeNode[];
-    public columnsTemplate: string;
-    public rowsTemplate: string;
-
-    constructor() {
-        this.column = 0;
-        this.row = 0;
-        this.nodes = [];
-    }
-
-    public addNode(node: TreeNode): void {
-        this.row = Math.max(this.row, node.row);
-        this.column = Math.max(this.column, node.column);
-        this.nodes.push(node);
-    }
-
-    public render() {
-        this.columnsTemplate = 'auto';
-        for (let i = 1; i < this.column; i++) {
-            this.columnsTemplate += ` auto`;
-        }
-        this.rowsTemplate = 'auto';
-        for (let i = 1; i < this.row; i++) {
-            this.rowsTemplate += ` auto`;
-        }
-    }
-}
+import { Component, ContentChild, ElementRef, EventEmitter, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { SelectType } from './tree-types';
+import { TreeNode } from './tree-node';
+import { Grid } from './tree-grid';
 
 @Component({
     selector: 'app-tree-graph',
@@ -100,40 +9,60 @@ export class Grid {
     styleUrls: ['./tree-graph.component.scss'],
 })
 export class TreeGraphComponent implements OnInit {
-    @Output('init') init = new EventEmitter<TreeGraphComponent>();
+    @ViewChild('gridEl', { static: false }) gridEl: ElementRef;
+    @ContentChild('nodeTemplate') nodeTemplate: TemplateRef<any>;
+
+    @Output('init') initEvent = new EventEmitter<TreeGraphComponent>();
+    @Output('select') selectEvent = new EventEmitter<TreeNode | null>();
+
     public roots: TreeNode[];
     public grid: Grid;
+    public width: number = 200;
+    public zoom = 1;
 
     constructor() {
+
     }
 
     ngOnInit() {
-        this.init.emit(this);
+        this.initEvent.emit(this);
     }
 
     ngOnDestroy(): void {
 
     }
 
+    public get moving(): boolean {
+        if (this.grid) {
+            return this.grid.moving;
+        } else {
+            return false;
+        }
+    }
+
     public setData(nodes: TreeNode[]) {
         this.roots = this.nonUniqueNodes(nodes)
-        this.grid = this.createLayout(this.roots);
+        this.grid = Grid.createLayout(this.width, this.roots);
         this.grid.render();
+    }
 
-        // const roots = this.uniqueNodes(nodes)
-        // for (const node of nodes) {
-        //     node.size = 1;
-        //     if (!node.children) {
-        //         node.children = [];
-        //     }
-        //     for (const id of node.childIds) {
-        //         const child = nodeMap.get(id);
-        //         if (child) {
-        //             node.children.push(child);
-        //         }
-        //     }
-        // }
-        // const roots = nodes.filter((n) => n.type === 'root')
+    public select(node: TreeNode) {
+        const selected = node.selected !== SelectType.SELECTED;
+        if (selected) {
+            for (const node of this.grid.nodes) {
+                node.selected = SelectType.HIDDEN;
+            }
+            node.select(SelectType.SELECTED);
+        } else {
+            for (const node of this.grid.nodes) {
+                node.selected = SelectType.NONE;
+            }
+        }
+        for (const node of this.grid.nodes) {
+            for (const line of node.lines) {
+                line.select();
+            }
+        }
     }
 
     private uniqueNodes(nodes: TreeNode[]): TreeNode[] {
@@ -162,6 +91,8 @@ export class TreeGraphComponent implements OnInit {
                 const child = nodeMap.get(id);
                 if (child) {
                     node.addNode(getSubNode(child.clone()));
+                } else {
+                    console.log('', id)
                 }
             }
             return node;
@@ -173,35 +104,65 @@ export class TreeGraphComponent implements OnInit {
         return roots;
     }
 
-    private createLayout(roots: TreeNode[]): Grid {
-        const grid = new Grid();
-        const updateCoord = (node: TreeNode, row: number, column: number): number => {
-            const max = column + node.size;
-            node.column = column + Math.floor(node.size / 2) + 1;
-            node.minColumn = column + 1;
-            node.maxColumn = max + 1;
-            node.row = row;
-            node.minRow = row;
-            node.maxRow = row;
-            grid.addNode(node)
+    public setZoom(zoom: number, el: any) {
+        let transformOrigin = [0, 0];
+        var p = ["webkit", "moz", "ms", "o"],
+            s = "scale(" + zoom + ")",
+            oString = (transformOrigin[0] * 100) + "% " + (transformOrigin[1] * 100) + "%";
 
-            const m = (node.children.length / 2);
-            let c = column;
-            for (let index = 0; index < node.children.length; index++) {
-                const child = node.children[index];
-                if (Math.abs(index - m) < 0.1) {
-                    c++;
-                }
-                c = updateCoord(child, row + 1, c);
-            }
-            return max;
+        for (var i = 0; i < p.length; i++) {
+            el.style[p[i] + "Transform"] = s;
+            el.style[p[i] + "TransformOrigin"] = oString;
         }
 
-        let column = 0;
-        for (const node of roots) {
-            column = updateCoord(node, 1, column);
-        }
+        el.style["transform"] = s;
+        el.style["transformOrigin"] = oString;
+    }
 
-        return grid;
+    public onZoom(zoom: number) {
+        if (zoom > 0) {
+            this.zoom += 0.1;
+        } else {
+            this.zoom -= 0.1;
+        }
+        this.zoom = Math.max(this.zoom, 0.1);
+        this.setZoom(this.zoom, this.gridEl.nativeElement);
+    }
+
+    public onMouseDown($event: any) {
+        this.grid.onMove(true, $event);
+        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
+        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+    }
+
+    public onMouseUp($event: any) {
+        this.grid.onMove(false, $event);
+        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
+        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+    }
+
+    public onMouseMove($event: any) {
+        this.grid.onMoving($event);
+        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
+        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+    }
+
+    public onScroll($event: any) {
+        if ($event.deltaY < 0) {
+            this.zoom = this.zoom * 1.1;
+        } else {
+            this.zoom = this.zoom * 0.9;
+        }
+        this.zoom = Math.max(this.zoom, 0.1);
+        this.setZoom(this.zoom, this.gridEl.nativeElement);
+    }
+
+    public onSelectNode(node: TreeNode) {
+        this.select(node);
+        if(node.selected === SelectType.SELECTED) {
+            this.selectEvent.emit(node);
+        } else {
+            this.selectEvent.emit(null);
+        }
     }
 }

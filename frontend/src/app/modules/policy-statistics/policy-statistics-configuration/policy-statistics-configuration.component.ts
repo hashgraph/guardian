@@ -4,7 +4,9 @@ import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TreeNode, TreeGraphComponent } from '../tree-graph/tree-graph.component';
+import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
+import { TreeNode } from '../tree-graph/tree-node';
+import { TreeListData, TreeListItem } from '../tree-graph/tree-list';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -27,6 +29,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
     private nodes: TreeNode[];
+
+    public selectedNode: TreeNode | null = null;
+    public rootNode: TreeNode | null = null;
 
     constructor(
         private profileService: ProfileService,
@@ -99,8 +104,11 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 const node = new TreeNode(item.iri);
                 node.type = item.entity === 'VC' ? 'root' : 'sub';
                 node.data = {
+                    iri: item.iri,
                     name: item.name,
                     description: item.description,
+                    fields: TreeListData.fromObject<any>(item, 'fields'),
+                    selectedFields: null
                 }
                 for (const field of item.fields) {
                     if (field.isRef && field.type) {
@@ -127,5 +135,14 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         if (this.nodes) {
             this.tree.setData(this.nodes)
         }
+    }
+
+    public onSelectNode(node: TreeNode | null) {
+        this.selectedNode = node;
+        this.rootNode = node?.getRoot() || null;
+    }
+
+    public onCollapseField(node: TreeNode, field: TreeListItem<any>) {
+        (node.data.fields as TreeListData<any>).collapse(field, !field.collapsed);
     }
 }

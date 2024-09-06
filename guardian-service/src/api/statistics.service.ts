@@ -112,18 +112,15 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 const policyId = item.policyId;
-                console.log('1')
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                console.log('2')
                 if (!policy || policy.status !== PolicyType.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
-                console.log('3')
-                const { schemas } = await PolicyImportExport.loadPolicyComponents(policy);
-                console.log('4')
+                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED)
                 return new MessageResponse({
                     policy,
-                    schemas: schemas.filter((s) => s.status === SchemaStatus.PUBLISHED)
+                    schemas: all
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

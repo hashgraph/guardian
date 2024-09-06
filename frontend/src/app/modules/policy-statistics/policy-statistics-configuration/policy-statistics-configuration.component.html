@@ -8,25 +8,127 @@
         <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div class="guardian-user-back-button">
-        <button 
-            (click)="onBack()" 
-            class="guardian-button guardian-button-secondary">
-            <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                    src="/assets/images/icons/left-arrow.svg"
-                    svgClass="icon-color-primary">
-                </svg-icon>
+    <div class="header-container">
+        <div class="guardian-user-back-button">
+            <button 
+                (click)="onBack()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Policies</div>
+            </button>
+        </div>
+    
+        <div class="guardian-user-page-header">
+            <span>{{title}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
             </div>
-            <div class="guardian-button-label">Back to Policies</div>
-        </button>
+        </div>
     </div>
 
-    <div class="guardian-user-page-header">
-        <span>{{title}}</span>
+    <div class="body-container">
+        <p-tabView class="guardian-tabs">
+            <p-tabPanel header="Select Schemas">
+
+                <div class="schema-viewer">
+                    <div class="tree-container">
+                        <app-tree-graph 
+                            (init)="initTree($event)"
+                            (select)="onSelectNode($event)"
+                        >
+                            <ng-template 
+                                #nodeTemplate 
+                                let-node="node" 
+                            >
+                                <div class="tree-node {{node.type}}-node selected-type-{{node.selected}}">
+                                    <div class="node-header">
+                                        {{node.data.name}}
+                                    </div>
+                                    <div *ngIf="node.data.selectedFields" class="node-fields">
+                
+                                    </div>
+                                    <div *ngIf="!node.data.selectedFields" class="node-not-fields">
+                                        Nothing selected
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </app-tree-graph>
+                    </div>
+                    <div class="schema-search">
+                        <div class="guardian-search">
+                            <input id="schemaSearch" placeholder="Search" pInputText type="text"/>
+                        </div>
+                    </div>
+                    <div class="schema-fields" [attr.hidden-schema]="!rootNode">
+                        <div *ngIf="rootNode" class="fields-container">
+                            <div class="schema-name">
+                                {{rootNode.data.name}}
+                            </div>
+                            <div  class="schema-config">
+                                <p-tabView class="guardian-tabs">
+                                    <p-tabPanel header="Select Fields">
+                                        <div class="field-list">
+                                            <div class="field-search">
+                                                <div class="guardian-search">
+                                                    <input id="fieldSearch" placeholder="Search" pInputText type="text"/>
+                                                </div>
+                                            </div>
+                                            <div class="field-tree-container">
+                                                <div class="field-tree">
+                                                    <div *ngFor="let item of rootNode.data.fields.items" class="field-item">
+                                                        <div class="field-offset" 
+                                                            [style.width.px]="24*item.lvl" 
+                                                            [style.min-width.px]="24*item.lvl"></div>
+                                                        <div class="field-collapse">
+                                                            <div 
+                                                                *ngIf="item.expandable" 
+                                                                class="collapse-btn"
+                                                                (click)="onCollapseField(rootNode, item)"
+                                                            >
+                                                                <svg-icon class="icon-btn svg-icon"
+                                                                    src="/assets/images/icons/left-arrow.svg"
+                                                                    svgClass="icon-color-secondary">
+                                                                </svg-icon>
+                                                            </div>
+                                                        </div>
+                                                        <div class="field-select">
+                                                            <p-checkbox 
+                                                                class="guardian-checkbox"
+                                                                [(ngModel)]="item.selected" 
+                                                                [binary]="true"></p-checkbox>
+                                                        </div>
+                                                        <div class="field-name">
+                                                            {{item.data.title}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p-tabPanel>
+                                    <p-tabPanel header="Set Rules">
+
+                                    </p-tabPanel>
+                                </p-tabView>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </p-tabPanel>
+            <p-tabPanel header="Configure Variables">
+
+
+            </p-tabPanel>
+        </p-tabView>
     </div>
 
-    <div>
-        <app-tree-graph (init)="initTree($event)"></app-tree-graph>
+    <div class="actions-container">
+        <button (click)="onBack()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>
