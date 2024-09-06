@@ -3,15 +3,15 @@ import { SelectType } from "./tree-types";
 import { Line } from './tree-line';
 
 
-export class TreeNode {
+export class TreeNode<T> {
     public readonly uuid: string;
 
     public id: string;
     public type: 'root' | 'sub';
     public childIds: Set<string>;
-    public children: TreeNode[];
+    public children: TreeNode<T>[];
     public size: number;
-    public data: any;
+    public data: T;
     public row: number;
     public column: number;
     public minColumn: number;
@@ -20,17 +20,21 @@ export class TreeNode {
     public maxRow: number;
     public lines: Line[];
     public selected: SelectType;
-    public parent: TreeNode | null;
+    public parent: TreeNode<T> | null;
 
-    constructor(id?: string) {
+    constructor(
+        id: string | null | undefined,
+        type: 'root' | 'sub' | null | undefined,
+        data: T,
+    ) {
         this.uuid = GenerateUUIDv4();
 
         this.id = id || this.uuid;
-        this.type = 'root';
+        this.type = type || 'root';
         this.childIds = new Set<string>();
         this.children = [];
         this.size = 1;
-        this.data = null;
+        this.data = data;
         this.row = 0;
         this.column = 0;
         this.minColumn = 0;
@@ -46,13 +50,13 @@ export class TreeNode {
         this.childIds.add(id);
     }
 
-    public addNode(node: TreeNode): void {
+    public addNode(node: TreeNode<T>): void {
         node.parent = this;
         this.children.push(node);
     }
 
-    public clone(): TreeNode {
-        const clone = new TreeNode(this.id);
+    public clone(): TreeNode<T> {
+        const clone = new TreeNode<T>(this.id, this.type, this.data);
         clone.type = this.type;
         clone.data = this.data;
         clone.childIds = new Set(this.childIds);
@@ -91,7 +95,7 @@ export class TreeNode {
         }
     }
 
-    public getRoot(): TreeNode {
+    public getRoot(): TreeNode<T> {
         if (this.parent) {
             return this.parent.getRoot();
         } else {

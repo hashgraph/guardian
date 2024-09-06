@@ -5,7 +5,7 @@ import { TreeNode } from "./tree-node";
 export class Grid {
     public column: number;
     public row: number;
-    public nodes: TreeNode[];
+    public nodes: TreeNode<any>[];
     public columnsTemplate: string;
     public rowsTemplate: string;
     public width: number;
@@ -23,15 +23,15 @@ export class Grid {
         this.width = width;
     }
 
-    public addNode(node: TreeNode): void {
+    public addNode(node: TreeNode<any>): void {
         this.row = Math.max(this.row, node.row);
         this.column = Math.max(this.column, node.column);
         this.nodes.push(node);
     }
 
-    public static createLayout(width: number, roots: TreeNode[]): Grid {
+    public static createLayout(width: number, roots: TreeNode<any>[]): Grid {
         const grid = new Grid(width);
-        const updateCoord = (node: TreeNode, row: number, column: number): number => {
+        const updateCoord = (node: TreeNode<any>, row: number, column: number): number => {
             const max = column + node.size;
             node.column = column + (node.size / 2);
             node.minColumn = column + 1;

@@ -51,7 +51,9 @@
                                         {{node.data.name}}
                                     </div>
                                     <div *ngIf="node.data.selectedFields" class="node-fields">
-                
+                                        <div *ngFor="let item of node.data.selectedFields">
+                                            {{item.data.title}}
+                                        </div>
                                     </div>
                                     <div *ngIf="!node.data.selectedFields" class="node-not-fields">
                                         Nothing selected
@@ -101,6 +103,7 @@
                                                             <p-checkbox 
                                                                 class="guardian-checkbox"
                                                                 [(ngModel)]="item.selected" 
+                                                                (onChange)="onSelectField(rootNode, item)"
                                                                 [binary]="true"></p-checkbox>
                                                         </div>
                                                         <div class="field-name">

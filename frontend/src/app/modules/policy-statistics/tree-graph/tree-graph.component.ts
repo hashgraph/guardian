@@ -13,9 +13,9 @@ export class TreeGraphComponent implements OnInit {
     @ContentChild('nodeTemplate') nodeTemplate: TemplateRef<any>;
 
     @Output('init') initEvent = new EventEmitter<TreeGraphComponent>();
-    @Output('select') selectEvent = new EventEmitter<TreeNode | null>();
+    @Output('select') selectEvent = new EventEmitter<TreeNode<any> | null>();
 
-    public roots: TreeNode[];
+    public roots: TreeNode<any>[];
     public grid: Grid;
     public width: number = 200;
     public zoom = 1;
@@ -40,13 +40,13 @@ export class TreeGraphComponent implements OnInit {
         }
     }
 
-    public setData(nodes: TreeNode[]) {
+    public setData(nodes: TreeNode<any>[]) {
         this.roots = this.nonUniqueNodes(nodes)
         this.grid = Grid.createLayout(this.width, this.roots);
         this.grid.render();
     }
 
-    public select(node: TreeNode) {
+    public select(node: TreeNode<any>) {
         const selected = node.selected !== SelectType.SELECTED;
         if (selected) {
             for (const node of this.grid.nodes) {
@@ -65,8 +65,8 @@ export class TreeGraphComponent implements OnInit {
         }
     }
 
-    private uniqueNodes(nodes: TreeNode[]): TreeNode[] {
-        const nodeMap = new Map<string, TreeNode>();
+    private uniqueNodes(nodes: TreeNode<any>[]): TreeNode<any>[] {
+        const nodeMap = new Map<string, TreeNode<any>>();
         for (const node of nodes) {
             nodeMap.set(node.id, node);
         }
@@ -77,16 +77,16 @@ export class TreeGraphComponent implements OnInit {
         return roots;
     }
 
-    private nonUniqueNodes(nodes: TreeNode[]): TreeNode[] {
+    private nonUniqueNodes(nodes: TreeNode<any>[]): TreeNode<any>[] {
         const roots = nodes.filter((n) => n.type === 'root');
         const subs = nodes.filter((n) => n.type !== 'root');
 
-        const nodeMap = new Map<string, TreeNode>();
+        const nodeMap = new Map<string, TreeNode<any>>();
         for (const node of subs) {
             nodeMap.set(node.id, node);
         }
 
-        const getSubNode = (node: TreeNode): TreeNode => {
+        const getSubNode = (node: TreeNode<any>): TreeNode<any> => {
             for (const id of node.childIds) {
                 const child = nodeMap.get(id);
                 if (child) {
@@ -157,7 +157,7 @@ export class TreeGraphComponent implements OnInit {
         this.setZoom(this.zoom, this.gridEl.nativeElement);
     }
 
-    public onSelectNode(node: TreeNode) {
+    public onSelectNode(node: TreeNode<any>) {
         this.select(node);
         if(node.selected === SelectType.SELECTED) {
             this.selectEvent.emit(node);

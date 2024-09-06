@@ -8,6 +8,14 @@ import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
 import { TreeListData, TreeListItem } from '../tree-graph/tree-list';
 
+interface SchemaData {
+    iri: string;
+    name: string;
+    description: string;
+    fields: TreeListData<any>;
+    selectedFields: TreeListItem<any>[] | null
+}
+
 @Component({
     selector: 'app-policy-statistics-configuration',
     templateUrl: './policy-statistics-configuration.component.html',
@@ -28,10 +36,10 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
-    private nodes: TreeNode[];
+    private nodes: TreeNode<SchemaData>[];
 
-    public selectedNode: TreeNode | null = null;
-    public rootNode: TreeNode | null = null;
+    public selectedNode: TreeNode<SchemaData> | null = null;
+    public rootNode: TreeNode<SchemaData> | null = null;
 
     constructor(
         private profileService: ProfileService,
@@ -101,15 +109,17 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         for (const schema of this.schemas) {
             try {
                 const item = new Schema(schema);
-                const node = new TreeNode(item.iri);
-                node.type = item.entity === 'VC' ? 'root' : 'sub';
-                node.data = {
-                    iri: item.iri,
-                    name: item.name,
-                    description: item.description,
-                    fields: TreeListData.fromObject<any>(item, 'fields'),
-                    selectedFields: null
-                }
+                const node = new TreeNode<SchemaData>(
+                    item.iri,
+                    item.entity === 'VC' ? 'root' : 'sub',
+                    {
+                        iri: item.iri || '',
+                        name: item.name || '',
+                        description: item.description || '',
+                        fields: TreeListData.fromObject<any>(item, 'fields'),
+                        selectedFields: null
+                    }
+                );
                 for (const field of item.fields) {
                     if (field.isRef && field.type) {
                         node.addId(field.type)
@@ -137,12 +147,23 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         }
     }
 
-    public onSelectNode(node: TreeNode | null) {
+    public onSelectNode(node: TreeNode<SchemaData> | null) {
         this.selectedNode = node;
         this.rootNode = node?.getRoot() || null;
     }
 
-    public onCollapseField(node: TreeNode, field: TreeListItem<any>) {
-        (node.data.fields as TreeListData<any>).collapse(field, !field.collapsed);
+    public onCollapseField(node: TreeNode<SchemaData>, field: TreeListItem<any>) {
+        node.data.fields.collapse(field, !field.collapsed);
+    }
+
+    public onSelectField(node: TreeNode<SchemaData>, field: TreeListItem<any>) {
+        setTimeout(() => {
+            if (node.data) {
+                node.data.selectedFields = node.data.fields.getSelected();
+                if (node.data.selectedFields && !node.data.selectedFields.length) {
+                    node.data.selectedFields = null;
+                }
+            }
+        });
     }
 }

@@ -11,8 +11,8 @@ export class Line {
         y1: number;
         y2: number;
     }[];
-    public start: TreeNode;
-    public end: TreeNode;
+    public start: TreeNode<any>;
+    public end: TreeNode<any>;
     public type: string;
     public selected: SelectType;
     private _width: number;
@@ -24,11 +24,11 @@ export class Line {
         this.height = 0;
     }
 
-    public addStart(node: TreeNode): void {
+    public addStart(node: TreeNode<any>): void {
         this.start = node;
     }
 
-    public addEnd(node: TreeNode): void {
+    public addEnd(node: TreeNode<any>): void {
         this.end = node;
     }
 
