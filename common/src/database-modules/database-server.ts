@@ -420,7 +420,6 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         return await new DataBaseHelper(entityClass).saveMany(item as Partial<T>[], filter)
     }
 
-
     /**
      * Overriding the update method
      * @param entityClass
