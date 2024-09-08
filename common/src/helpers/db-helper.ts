@@ -660,12 +660,16 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         entity: Partial<T> | Partial<T>[],
         filter?: FilterObject<T>
     ): Promise<T | T[]> {
+        // if (Array.isArray(entity)) {
+        //     const result = [];
+        //     for (const item of entity) {
+        //         result.push(await this.save(item));
+        //     }
+        //     return result;
+        // }
+
         if (Array.isArray(entity)) {
-            const result = [];
-            for (const item of entity) {
-                result.push(await this.save(item));
-            }
-            return result;
+            return await Promise.all(entity.map(item => this.save(item)));
         }
 
         const repository = this._em.getRepository(this.entityClass);
@@ -695,6 +699,59 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         return entityToUpdateOrCreate;
     }
 
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async saveMany(
+        entities:Partial<T>[],
+        filter?: FilterObject<T>
+    ): Promise<T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+
+        let existingEntityByFilter;
+        let existingEntitiesById: T[] = [];
+
+        if(filter) {
+            existingEntityByFilter = await repository.findOne(filter);
+        } else {
+            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+            if (ids.length > 0) {
+                existingEntitiesById = await repository.find({ id: { $in: ids } });
+            }
+        }
+
+        const entitiesToUpdateOrCreate = []
+
+        for (const entity of entities) {
+            if (!entity.id && !entity._id && !filter) {
+                const entityToCreate = repository.create(Object.assign({}, entity));
+                this._em.persist(entityToCreate)
+                entitiesToUpdateOrCreate.push(entityToCreate);
+                continue
+            }
+
+            let entityToUpdateOrCreate = existingEntityByFilter
+                ?? existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id);
+
+            if (entityToUpdateOrCreate) {
+                for (const systemFileField of DataBaseHelper._systemFileFields) {
+                    if (entity[systemFileField]) {
+                       delete entity[systemFileField]
+                    }
+                }
+
+                wrap(entityToUpdateOrCreate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { merge: false });
+            } else {
+                entityToUpdateOrCreate = repository.create({ ...entity });
+            }
+
+            this._em.persist(entityToUpdateOrCreate);
+            entitiesToUpdateOrCreate.push(entityToUpdateOrCreate);
+        }
+
+        await this._em.flush();
+
+        return entitiesToUpdateOrCreate;
+    }
+
     /**
      * Update entity by id field or filters
      * @param entity Entity
@@ -714,12 +771,16 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         entity: T | T[],
         filter?: FilterQuery<T>
     ): Promise<T | T[]> {
+        // if (Array.isArray(entity)) {
+        //     const result = [];
+        //     for (const item of entity) {
+        //         result.push(await this.update(item));
+        //     }
+        //     return result;
+        // }
+
         if (Array.isArray(entity)) {
-            const result = [];
-            for (const item of entity) {
-                result.push(await this.update(item));
-            }
-            return result;
+            return await Promise.all(entity.map(item => this.save(item)));
         }
 
         if (!entity.id && !entity._id && !filter) {
@@ -742,6 +803,128 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         return entitiesToUpdate.length === 1
             ? entitiesToUpdate[0]
             : entitiesToUpdate;
+    }
+
+
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async updateMany(
+        entities: T[],
+        filter?: FilterQuery<T>
+    ): Promise<T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+
+        let existingEntityByFilter;
+        let existingEntitiesById: T[] = [];
+
+        const updatedEntities = []
+
+        if(filter) {
+            existingEntityByFilter = await repository.find(filter);
+        } else {
+            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+            if (ids.length > 0) {
+                existingEntitiesById = await repository.find({ id: { $in: ids } });
+            }
+        }
+
+        for (const entity of entities) {
+            if (!entity.id && !entity._id && !filter) {
+                continue;
+            }
+
+            let entitiesToUpdate = existingEntityByFilter
+
+            if(!entitiesToUpdate) {
+                const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
+
+                if(existingEntityById) {
+                    entitiesToUpdate = [existingEntityById]
+                } else {
+                    entitiesToUpdate = []
+                }
+            }
+
+            for (const systemFileField of DataBaseHelper._systemFileFields) {
+                if (entity[systemFileField]) {
+                    delete entity[systemFileField]
+                }
+            }
+
+            for (const entityToUpdate of entitiesToUpdate) {
+                wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { mergeObjectProperties: false });
+                updatedEntities.push(entityToUpdate);
+            }
+        }
+
+        await this._em.flush();
+        return updatedEntities;
+    }
+
+    @CreateRequestContext(() => DataBaseHelper.orm)
+    public async updateManyV2(
+        entities: T[],
+        filter?: FilterQuery<T>
+    ): Promise<T[]> {
+        const repository = this._em.getRepository(this.entityClass);
+        let existingEntityByFilter;
+        let existingEntitiesById: T[] = [];
+
+        const bulkOps = [];
+        const updatedDocuments = [];
+
+        if(filter) {
+            existingEntityByFilter = await repository.find(filter);
+        } else {
+            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+            if (ids.length > 0) {
+                existingEntitiesById = await repository.find({ id: { $in: ids } });
+            }
+        }
+
+        for (const entity of entities) {
+            const id = entity.id || entity._id;
+
+            if (!filter && !id) {
+                continue;
+            }
+
+            let entitiesToUpdate = existingEntityByFilter
+
+            if(!entitiesToUpdate) {
+                const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
+
+                if(existingEntityById) {
+                    entitiesToUpdate = [existingEntityById]
+                } else {
+                    entitiesToUpdate = []
+                }
+            }
+
+            for (const systemFileField of DataBaseHelper._systemFileFields) {
+                if (entity[systemFileField]) {
+                    delete entity[systemFileField]
+                }
+            }
+
+            for (const entityToUpdate of entitiesToUpdate) {
+                wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { mergeObjectProperties: false });
+
+                bulkOps.push({
+                    updateOne: {
+                        filter: { _id: id },
+                        update: { $set: entityToUpdate },
+                    }
+                });
+
+                updatedDocuments.push(entityToUpdate);
+            }
+        }
+
+        if (bulkOps.length > 0) {
+            await repository.getMongoManager().bulkWrite(bulkOps);
+        }
+
+        return updatedDocuments;
     }
 
     /**
