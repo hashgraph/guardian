@@ -820,7 +820,6 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
             : entitiesToUpdate;
     }
 
-
     // @CreateRequestContext(() => DataBaseHelper.orm)
     // public async updateMany(
     //     entities: T[],

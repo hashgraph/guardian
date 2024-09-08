@@ -420,7 +420,6 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         return await new DataBaseHelper(entityClass).saveMany(item as Partial<T>[], filter)
     }
 
-
     /**
      * Overriding the update method
      * @param entityClass
@@ -1405,7 +1404,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         for (const group of groups) {
             group.active = group.uuid === uuid;
         }
-        await this.save(PolicyRolesCollection, groups as unknown);
+        await this.saveMany(PolicyRolesCollection, groups);
     }
 
     /**
@@ -1765,7 +1764,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param residue
      */
     public async setResidue(residue: SplitDocuments[]): Promise<void> {
-        await this.save(SplitDocuments, residue as unknown);
+        await this.saveMany(SplitDocuments, residue);
     }
 
     /**
