@@ -55,6 +55,7 @@ import {
 
 //interfaces
 import {IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION} from './index.js';
+import { FilterQuery } from '@mikro-orm/core';
 
 export interface IAddDryRunIdItem {
     dryRunId: string,
@@ -135,7 +136,15 @@ export abstract class AbstractDatabaseServer {
      * @param criteria
      * @param row
      */
-    public abstract update<T extends BaseEntity>(entityClass: new () => T, criteria: Partial<T>, row: unknown): Promise<T>;
+    public abstract update<T extends BaseEntity>(entityClass: new () => T, criteria: Partial<T>, row: unknown | unknown[]): Promise<T>;
+
+    /**
+     * Update many method
+     * @param entityClass
+     * @param entities
+     * @param filter
+     */
+    public abstract updateMany<T extends BaseEntity>(entityClass: new () => T, entities: T[], filter: FilterQuery<T>): Promise<DryRun[] | T[]>;
 
     /**
      * Overriding the remove method
@@ -182,6 +191,14 @@ export abstract class AbstractDatabaseServer {
      * @param filter
      */
     public abstract save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: Partial<T>): Promise<T>
+
+    /**
+     * Save many
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    public abstract saveMany<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: Partial<T>): Promise<T[]>
 
     /**
      * Save Block State

@@ -394,6 +394,10 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param filter
      */
     async save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
+        if(Array.isArray(item)) {
+            return await this.saveMany(entityClass, item, filter) as any
+        }
+
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
             return await new DataBaseHelper(DryRun).save(item, filter) as unknown as T;
@@ -401,6 +405,21 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
         return await new DataBaseHelper(entityClass).save(item as Partial<T>, filter)
     }
+
+    /**
+     * Save many
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    async saveMany<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: FilterObject<T>): Promise<T[]> {
+        if (this.dryRun) {
+            this.addDryRunId(entityClass, item);
+            return await new DataBaseHelper(DryRun).saveMany(item, filter) as unknown as T[];
+        }
+        return await new DataBaseHelper(entityClass).saveMany(item as Partial<T>[], filter)
+    }
+
 
     /**
      * Overriding the update method
@@ -411,13 +430,36 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     async update<T extends BaseEntity>(
         entityClass: new () => T,
         criteria: FilterQuery<T>,
-        row: unknown
+        row: unknown | unknown[]
     ): Promise<T> {
+        if(Array.isArray(criteria)) {
+            return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
+        }
+
         if (this.dryRun) {
             this.addDryRunId(entityClass, row);
             return (await new DataBaseHelper(DryRun).update(row as DryRun, criteria as FilterQuery<DryRun>)) as unknown as T;
         } else {
             return await new DataBaseHelper(entityClass).update(row as T, criteria);
+        }
+    }
+
+    /**
+     * Update many method
+     * @param entityClass
+     * @param entities
+     * @param filter
+     */
+    async updateMany<T extends BaseEntity>(
+        entityClass: new () => T,
+        entities: T[],
+        filter: FilterQuery<T>,
+    ): Promise<DryRun[] | T[]> {
+        if (this.dryRun) {
+            this.addDryRunId(entityClass, entities);
+            return (await new DataBaseHelper(DryRun).updateMany(entities as unknown as DryRun[], filter as FilterQuery<DryRun>));
+        } else {
+            return await new DataBaseHelper(entityClass).updateMany(entities as T[], filter);
         }
     }
 

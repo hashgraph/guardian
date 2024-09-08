@@ -238,6 +238,13 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
     public abstract save(entities: Partial<T>[]): Promise<T[]>;
 
     /**
+     * Save many entities by ids
+     * @param entities Entities
+     * @returns Entities
+     */
+    public abstract saveMany(entities: Partial<T>[]): Promise<T[]>;
+
+    /**
      * Update entity by id field or filters
      * @param entity Entity
      * @param filter Filter
@@ -250,6 +257,14 @@ export abstract class AbstractDataBaseHelper<T extends BaseEntity> {
      * @param entities Entities
      */
     public abstract update(entities: T[]): Promise<T[]>;
+
+    /**
+     * Update many entities by ids
+     * @param entities Entities
+     * @param filter Filter
+     * @returns Entity
+     */
+    public abstract updateMany(entities: T[], filter?: Partial<T>): Promise<T[]>;
 
     /**
      * Create a lot of data

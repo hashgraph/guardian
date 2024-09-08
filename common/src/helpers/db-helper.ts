@@ -193,6 +193,21 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         await this._em.removeAndFlush(entity);
     }
 
+    // @CreateRequestContext(() => DataBaseHelper.orm)
+    // public async removeMany(entities: T[]): Promise<number> {
+    //     const repository = this._em.getRepository(this.entityClass);
+    //
+    //     const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+    //
+    //     let deleteResult = 0
+    //
+    //     if (ids.length > 0) {
+    //         deleteResult = await repository.nativeDelete({ _id: { $in: ids } });
+    //     }
+    //
+    //     return deleteResult
+    // }
+
     /**
      * Create entity
      * @param entity Entity
@@ -806,62 +821,62 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     }
 
 
+    // @CreateRequestContext(() => DataBaseHelper.orm)
+    // public async updateMany(
+    //     entities: T[],
+    //     filter?: FilterQuery<T>
+    // ): Promise<T[]> {
+    //     const repository = this._em.getRepository(this.entityClass);
+    //
+    //     let existingEntityByFilter;
+    //     let existingEntitiesById: T[] = [];
+    //
+    //     const updatedEntities = []
+    //
+    //     if(filter) {
+    //         existingEntityByFilter = await repository.find(filter);
+    //     } else {
+    //         const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+    //         if (ids.length > 0) {
+    //             existingEntitiesById = await repository.find({ id: { $in: ids } });
+    //         }
+    //     }
+    //
+    //     for (const entity of entities) {
+    //         if (!entity.id && !entity._id && !filter) {
+    //             continue;
+    //         }
+    //
+    //         let entitiesToUpdate = existingEntityByFilter
+    //
+    //         if(!entitiesToUpdate) {
+    //             const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
+    //
+    //             if(existingEntityById) {
+    //                 entitiesToUpdate = [existingEntityById]
+    //             } else {
+    //                 entitiesToUpdate = []
+    //             }
+    //         }
+    //
+    //         for (const systemFileField of DataBaseHelper._systemFileFields) {
+    //             if (entity[systemFileField]) {
+    //                 delete entity[systemFileField]
+    //             }
+    //         }
+    //
+    //         for (const entityToUpdate of entitiesToUpdate) {
+    //             wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { mergeObjectProperties: false });
+    //             updatedEntities.push(entityToUpdate);
+    //         }
+    //     }
+    //
+    //     await this._em.flush();
+    //     return updatedEntities;
+    // }
+
     @CreateRequestContext(() => DataBaseHelper.orm)
     public async updateMany(
-        entities: T[],
-        filter?: FilterQuery<T>
-    ): Promise<T[]> {
-        const repository = this._em.getRepository(this.entityClass);
-
-        let existingEntityByFilter;
-        let existingEntitiesById: T[] = [];
-
-        const updatedEntities = []
-
-        if(filter) {
-            existingEntityByFilter = await repository.find(filter);
-        } else {
-            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
-            if (ids.length > 0) {
-                existingEntitiesById = await repository.find({ id: { $in: ids } });
-            }
-        }
-
-        for (const entity of entities) {
-            if (!entity.id && !entity._id && !filter) {
-                continue;
-            }
-
-            let entitiesToUpdate = existingEntityByFilter
-
-            if(!entitiesToUpdate) {
-                const existingEntityById = existingEntitiesById.find((existingEntity: T) => existingEntity.id === entity.id)
-
-                if(existingEntityById) {
-                    entitiesToUpdate = [existingEntityById]
-                } else {
-                    entitiesToUpdate = []
-                }
-            }
-
-            for (const systemFileField of DataBaseHelper._systemFileFields) {
-                if (entity[systemFileField]) {
-                    delete entity[systemFileField]
-                }
-            }
-
-            for (const entityToUpdate of entitiesToUpdate) {
-                wrap(entityToUpdate).assign({ ...entity, updateDate: new Date() } as EntityData<T>, { mergeObjectProperties: false });
-                updatedEntities.push(entityToUpdate);
-            }
-        }
-
-        await this._em.flush();
-        return updatedEntities;
-    }
-
-    @CreateRequestContext(() => DataBaseHelper.orm)
-    public async updateManyV2(
         entities: T[],
         filter?: FilterQuery<T>
     ): Promise<T[]> {
