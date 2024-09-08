@@ -201,15 +201,13 @@ export class AnalyticsPolicyService {
                             root: report.root,
                             account: data.payer,
                             timeStamp: data.id,
-                            tagUUID: data.uuid,
                             name: data.name,
                             description: data.description,
-                            owner: data.owner,
-                            target: data.target,
-                            operation: data.operation,
                             entity: data.entity,
-                            date: data.date,
-                            action: data.action
+                            version: data.version,
+                            owner: sr.did,
+                            action: data.action,
+                            ipfs: data.getDocumentUrl(UrlType.cid)
                         };
                         const databaseServer = new DatabaseServer();
 
