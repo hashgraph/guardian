@@ -968,9 +968,9 @@ export abstract class AbstractDatabaseServer {
 
     /**
      * Get schema
-     * @param item
+     * @param items
      */
-    public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
+    public static async saveSchema(items: SchemaCollection): Promise<SchemaCollection> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveSchema.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
@@ -1872,6 +1872,15 @@ export abstract class AbstractDatabaseServer {
      * @returns Saved Artifact
      */
     public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Save Artifacts
+     * @param artifacts Artifacts
+     * @returns Saved Artifacts
+     */
+    public static async saveArtifacts(artifacts: ArtifactCollection[]): Promise<ArtifactCollection[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 

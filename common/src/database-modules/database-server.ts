@@ -2379,7 +2379,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get schema
+     * Save schema
      * @param item
      */
     public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
@@ -2387,16 +2387,24 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get schema
-     * @param item
+     * Save schemas
+     * @param items
      */
-    public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
-        const result = [];
-        for await (const schema of item) {
-            result.push(await new DataBaseHelper(SchemaCollection).save(schema));
-        }
-        return result;
+    public static async saveSchemas(items: SchemaCollection[]): Promise<SchemaCollection[]> {
+        return await new DataBaseHelper(SchemaCollection).saveMany(items);
     }
+
+    // /**
+    //  * Get schema
+    //  * @param item
+    //  */
+    // public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
+    //     const result = [];
+    //     for await (const schema of item) {
+    //         result.push(await new DataBaseHelper(SchemaCollection).save(schema));
+    //     }
+    //     return result;
+    // }
 
     /**
      * Get schema
@@ -2976,6 +2984,15 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      */
     public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
         return await new DataBaseHelper(ArtifactCollection).save(artifact);
+    }
+
+    /**
+     * Save Artifacts
+     * @param artifacts Artifacts
+     * @returns Saved Artifacts
+     */
+    public static async saveArtifacts(artifacts: ArtifactCollection[]): Promise<ArtifactCollection[]> {
+        return await new DataBaseHelper(ArtifactCollection).saveMany(artifacts);
     }
 
     /**

@@ -18,7 +18,7 @@ import {
     RegistrationMessage,
     RunFunctionAsync,
     Schema as SchemaCollection,
-    Settings,
+    Settings, Token,
     Topic,
     TopicConfig,
     TopicHelper,
@@ -559,6 +559,8 @@ async function createDefaultRoles(
     const ids: string[] = [];
     const dataBaseServer = new DatabaseServer();
 
+    const vcDocumentCollectionObjects = []
+
     for (const config of roles) {
         notifier.info(`Create role (${config.name})`);
         const role = await users.createRole(config, owner);
@@ -587,7 +589,8 @@ async function createDefaultRoles(
         message.setRole(credentialSubject);
         message.setDocument(document);
         await messageServer.sendMessage(message, true, null, userId);
-        await dataBaseServer.save(VcDocumentCollection, {
+
+        vcDocumentCollectionObjects.push({
             hash: message.hash,
             owner: owner.owner,
             creator: owner.creator,
@@ -598,9 +601,12 @@ async function createDefaultRoles(
                 'credentialSubject.0.name',
                 'credentialSubject.0.uuid'
             ],
-        });
+        })
+
         ids.push(role.id);
     }
+    await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentCollectionObjects);
+
     await users.setDefaultRole(ids[0], owner.creator);
 }
 

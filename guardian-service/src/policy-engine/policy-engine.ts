@@ -443,10 +443,15 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.updateTopic(newTopic);
         }
 
+        const artifactObjects = []
+
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = policy.id;
-            await DatabaseServer.saveArtifact(addedArtifact);
+
+            artifactObjects.push(addedArtifact);
         }
+
+        await DatabaseServer.saveArtifacts(artifactObjects);
 
         notifier.completedAndStart('Updating hash');
         policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
