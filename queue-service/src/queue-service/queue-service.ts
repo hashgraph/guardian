@@ -172,6 +172,9 @@ export class QueueService extends NatsService{
         const workers = await this.getFreeWorkers();
 
         const dataBaseServer = new DatabaseServer();
+
+        const taskObjects = []
+
         for (const worker of workers) {
             const task = await dataBaseServer.findOne(TaskEntity, {
                 priority: {
@@ -187,11 +190,14 @@ export class QueueService extends NatsService{
             if (r?.result) {
                 task.processedTime = new Date();
                 task.sent = true;
-                await dataBaseServer.save(TaskEntity, task);
+
+                taskObjects.push(task);
             } else {
                 console.log('task sent error')
             }
         }
+
+        await dataBaseServer.saveMany(TaskEntity, taskObjects);
     }
 
     private async clearOldTasks() {
@@ -215,7 +221,7 @@ export class QueueService extends NatsService{
             task.sent = false;
         }
 
-        await dataBaseServer.save(TaskEntity, tasks);
+        await dataBaseServer.saveMany(TaskEntity, tasks);
     }
 
     /**
