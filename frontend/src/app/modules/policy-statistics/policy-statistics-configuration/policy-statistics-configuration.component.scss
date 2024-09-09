@@ -172,13 +172,6 @@
                                         min-width: 24px;
                                         height: 24px;
                                         overflow: hidden;
-
-                                        .collapse-btn {
-                                            width: 20px;
-                                            height: 20px;
-                                            margin: 2px;
-                                            cursor: pointer;
-                                        }
                                     }
 
                                     .field-select {
@@ -190,6 +183,11 @@
 
                                     .field-name {
                                         padding-left: 8px;
+
+                                        &[highlighted="true"] {
+                                            color: var(--guardian-primary-color, #4169E2);
+                                            font-weight: 600;
+                                        }
                                     }
                                 }
                             }
@@ -262,30 +260,30 @@
 
         .node-fields {
             border-top: 1px solid #E1E7EF;
-            color: #23252E;
             font-family: Inter;
             font-size: 12px;
             font-weight: 500;
             line-height: 14px;
             text-align: left;
-            padding: 9px 8px 9px 16px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
 
-        .node-not-fields {
-            border-top: 1px solid #E1E7EF;
-            color: #848FA9;
-            font-family: Inter;
-            font-size: 12px;
-            font-weight: 500;
-            line-height: 14px;
-            text-align: left;
-            padding: 9px 8px 9px 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            .node-field {
+                color: #23252E;
+                border-bottom: 1px solid #E1E7EF;
+                padding: 8px 8px 8px 16px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .node-not-fields {
+                color: #848FA9;
+                border-bottom: 1px solid #E1E7EF;
+                padding: 8px 8px 8px 16px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
     }
 }

@@ -86,7 +86,9 @@ export class TreeGraphComponent implements OnInit {
             nodeMap.set(node.id, node);
         }
 
+        const allNodes: TreeNode<any>[] = [];
         const getSubNode = (node: TreeNode<any>): TreeNode<any> => {
+            allNodes.push(node);
             for (const id of node.childIds) {
                 const child = nodeMap.get(id);
                 if (child) {
@@ -99,7 +101,12 @@ export class TreeGraphComponent implements OnInit {
         }
         for (const root of roots) {
             getSubNode(root);
+        }
+        for (const root of roots) {
             root.resize();
+        }
+        for (const node of allNodes) {
+            node.update();
         }
         return roots;
     }
@@ -159,7 +166,7 @@ export class TreeGraphComponent implements OnInit {
 
     public onSelectNode(node: TreeNode<any>) {
         this.select(node);
-        if(node.selected === SelectType.SELECTED) {
+        if (node.selected === SelectType.SELECTED) {
             this.selectEvent.emit(node);
         } else {
             this.selectEvent.emit(null);

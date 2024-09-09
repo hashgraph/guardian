@@ -1,0 +1,38 @@
+.guardian-checkbox {
+    .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-focus {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: none;
+        border-color: var(--guardian-primary-color, #4169E2);
+    }
+
+    .p-checkbox {
+        .p-checkbox-box {
+            border: 2px solid var(--guardian-primary-color, #4169E2);
+            border-radius: 2px;
+
+            &.p-highlight {
+                border-color: var(--guardian-primary-color, #4169E2);
+                background: var(--guardian-primary-color, #4169E2);
+            }
+        }
+    }
+
+    &.checkbox-24 {
+        .p-checkbox {
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            padding: 4px;
+
+            .p-checkbox-box {
+                width: 16px;
+                height: 16px;
+
+                .p-checkbox-icon {
+                    font-size: 10px;
+                }
+            }
+        }
+    }
+}

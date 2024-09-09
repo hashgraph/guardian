@@ -50,13 +50,18 @@
                                     <div class="node-header">
                                         {{node.data.name}}
                                     </div>
-                                    <div *ngIf="node.data.selectedFields" class="node-fields">
-                                        <div *ngFor="let item of node.data.selectedFields">
-                                            {{item.data.title}}
+                                    <div *ngIf="node.fields.selectedCount>0" class="node-fields">
+                                        <div *ngFor="let item of node.fields.selectedFields" class="node-field">
+                                            {{item.data.description}}
+                                        </div>
+                                        <div *ngIf="node.fields.selectedCount>4" class="node-not-fields">
+                                            + {{node.fields.selectedCount-4}} more
                                         </div>
                                     </div>
-                                    <div *ngIf="!node.data.selectedFields" class="node-not-fields">
-                                        Nothing selected
+                                    <div *ngIf="!node.fields.selectedCount" class="node-fields">
+                                        <div class="node-not-fields">
+                                            Nothing selected
+                                        </div>
                                     </div>
                                 </div>
                             </ng-template>
@@ -68,6 +73,9 @@
                         </div>
                     </div>
                     <div class="schema-fields" [attr.hidden-schema]="!rootNode">
+                        <div *ngIf="nodeLoading" class="guardian-loading">
+                            <div class="guardian-loading-image"></div>
+                        </div>
                         <div *ngIf="rootNode" class="fields-container">
                             <div class="schema-name">
                                 {{rootNode.data.name}}
@@ -82,32 +90,32 @@
                                                 </div>
                                             </div>
                                             <div class="field-tree-container">
-                                                <div class="field-tree">
-                                                    <div *ngFor="let item of rootNode.data.fields.items" class="field-item">
+                                                <div #fieldTree class="field-tree">
+                                                    <div *ngFor="let item of rootNode.fields.items" class="field-item">
                                                         <div class="field-offset" 
                                                             [style.width.px]="24*item.lvl" 
                                                             [style.min-width.px]="24*item.lvl"></div>
                                                         <div class="field-collapse">
                                                             <div 
                                                                 *ngIf="item.expandable" 
-                                                                class="collapse-btn"
+                                                                class="guardian-collapse collapse-24"
+                                                                [attr.collapsed]="item.collapsed"
                                                                 (click)="onCollapseField(rootNode, item)"
                                                             >
-                                                                <svg-icon class="icon-btn svg-icon"
-                                                                    src="/assets/images/icons/left-arrow.svg"
-                                                                    svgClass="icon-color-secondary">
-                                                                </svg-icon>
                                                             </div>
                                                         </div>
-                                                        <div class="field-select">
+                                                        <div class="field-select" (click)="onSelectField(item)">
                                                             <p-checkbox 
-                                                                class="guardian-checkbox"
-                                                                [(ngModel)]="item.selected" 
-                                                                (onChange)="onSelectField(rootNode, item)"
+                                                                class="guardian-checkbox checkbox-24"
+                                                                [ngModel]="item.selected" 
                                                                 [binary]="true"></p-checkbox>
                                                         </div>
-                                                        <div class="field-name">
-                                                            {{item.data.title}}
+                                                        <div 
+                                                            class="field-name" 
+                                                            (click)="onSelectField(item)"
+                                                            [attr.highlighted]="item.highlighted"
+                                                        >
+                                                            {{item.data.description}}
                                                         </div>
                                                     </div>
                                                 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
@@ -6,14 +6,56 @@ import { PolicyStatisticsService } from 'src/app/services/policy-statistics.serv
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
-import { TreeListData, TreeListItem } from '../tree-graph/tree-list';
+import { TreeListData, TreeListItem, TreeListView } from '../tree-graph/tree-list';
 
 interface SchemaData {
     iri: string;
     name: string;
     description: string;
-    fields: TreeListData<any>;
-    selectedFields: TreeListItem<any>[] | null
+}
+
+class SchemaNode extends TreeNode<SchemaData> {
+    public fields: TreeListView<any>;
+
+    public override clone(): SchemaNode {
+        const clone = new SchemaNode(this.id, this.type, this.data);
+        clone.type = this.type;
+        clone.data = this.data;
+        clone.childIds = new Set(this.childIds);
+        clone.fields = this.fields;
+        return clone;
+    }
+
+    public override update() {
+        this.fields = this.getRootFields();
+    }
+
+    public getRootFields(): TreeListView<any> {
+        if (this.parent) {
+            const parentFields = (this.parent as SchemaNode).getRootFields();
+            return parentFields.createView((s) => {
+                return s.parent?.data?.type === this.data.iri;
+            })
+        } else {
+            return this.fields;
+        }
+    }
+
+    public static from(schema: Schema): SchemaNode {
+        const id = schema.iri;
+        const type = schema.entity === 'VC' ? 'root' : 'sub'
+        const data = {
+            iri: schema.iri || '',
+            name: schema.name || '',
+            description: schema.description || '',
+        }
+        const result = new SchemaNode(id, type, data);
+        const fields = TreeListData.fromObject<any>(schema, 'fields');
+        result.fields = TreeListView.createView(fields, (s) => {
+            return !s.parent;
+        })
+        return result;
+    }
 }
 
 @Component({
@@ -36,10 +78,17 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
-    private nodes: TreeNode<SchemaData>[];
+    private nodes: SchemaNode[];
 
-    public selectedNode: TreeNode<SchemaData> | null = null;
-    public rootNode: TreeNode<SchemaData> | null = null;
+    public selectedNode: SchemaNode | null = null;
+    public rootNode: SchemaNode | null = null;
+
+    public nodeLoading: boolean = true;
+
+    @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
+
+    private _timeout1: any;
+    private _timeout2: any;
 
     constructor(
         private profileService: ProfileService,
@@ -109,17 +158,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         for (const schema of this.schemas) {
             try {
                 const item = new Schema(schema);
-                const node = new TreeNode<SchemaData>(
-                    item.iri,
-                    item.entity === 'VC' ? 'root' : 'sub',
-                    {
-                        iri: item.iri || '',
-                        name: item.name || '',
-                        description: item.description || '',
-                        fields: TreeListData.fromObject<any>(item, 'fields'),
-                        selectedFields: null
-                    }
-                );
+                const node = SchemaNode.from(item);
                 for (const field of item.fields) {
                     if (field.isRef && field.type) {
                         node.addId(field.type)
@@ -148,22 +187,45 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }
 
     public onSelectNode(node: TreeNode<SchemaData> | null) {
-        this.selectedNode = node;
-        this.rootNode = node?.getRoot() || null;
-    }
-
-    public onCollapseField(node: TreeNode<SchemaData>, field: TreeListItem<any>) {
-        node.data.fields.collapse(field, !field.collapsed);
-    }
-
-    public onSelectField(node: TreeNode<SchemaData>, field: TreeListItem<any>) {
-        setTimeout(() => {
-            if (node.data) {
-                node.data.selectedFields = node.data.fields.getSelected();
-                if (node.data.selectedFields && !node.data.selectedFields.length) {
-                    node.data.selectedFields = null;
-                }
+        clearTimeout(this._timeout1);
+        clearTimeout(this._timeout2);
+        this.nodeLoading = true;
+        this.selectedNode = node as SchemaNode;
+        this.rootNode = (node?.getRoot() || null) as SchemaNode;
+        if (this.rootNode) {
+            const id = this.selectedNode?.data?.iri;
+            const data = this.rootNode.fields;
+            data.collapseAll(true);
+            data.highlightAll(false);
+            const items = data.find((item: any) => {
+                return item.type === id;
+            });
+            for (const item of items) {
+                data.collapsePath(item, false);
+                data.highlight(item, true);
             }
-        });
+            data.update();
+            this._timeout1 = setTimeout(() => {
+                const first = (document as any).querySelector('.field-name[highlighted="true"]');
+                if (this.fieldTree && first) {
+                    this.fieldTree.nativeElement.scrollTop = first.offsetTop;
+                }
+                this._timeout2 = setTimeout(() => {
+                    this.nodeLoading = false;
+                }, 200)
+            }, 200)
+        }
+    }
+
+    public onCollapseField(node: SchemaNode, field: TreeListItem<any>) {
+        node.fields.collapse(field, !field.collapsed);
+        node.fields.update();
+    }
+
+    public onSelectField(field: TreeListItem<any>) {
+        field.selected = !field.selected;
+        if (this.rootNode) {
+            this.rootNode.fields.update();
+        }
     }
 }

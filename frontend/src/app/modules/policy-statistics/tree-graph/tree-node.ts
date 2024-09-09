@@ -51,7 +51,7 @@ export class TreeNode<T> {
     }
 
     public addNode(node: TreeNode<T>): void {
-        node.parent = this;
+        node.setParent(this);
         this.children.push(node);
     }
 
@@ -70,13 +70,14 @@ export class TreeNode<T> {
             size += child.size;
         }
         this.size = Math.max(1, size);
-        // if (this.size % 2 === 0) {
-        //     this.size += 1;
-        // }
     }
 
     public select(type: SelectType) {
         this._select(type, true, true);
+    }
+
+    public setParent(parent: TreeNode<T>): void {
+        this.parent = parent;
     }
 
     private _select(
@@ -101,5 +102,9 @@ export class TreeNode<T> {
         } else {
             return this;
         }
+    }
+
+    public update(): void {
+        
     }
 }
