@@ -50,7 +50,7 @@ import {
     SuggestionsConfig,
     Record,
     AssignEntity,
-    PolicyTest, DataBaseHelper,
+    PolicyTest,
 } from '../index.js';
 
 //interfaces
@@ -1375,7 +1375,6 @@ export abstract class AbstractDatabaseServer {
      */
     public abstract updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]>
 
-
     /**
      * Get tag By UUID
      * @param uuid
@@ -1796,7 +1795,6 @@ export abstract class AbstractDatabaseServer {
     public static async updateTags(tags: Tag[]): Promise<Tag[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTag.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
 
     /**
      * Create tag cache

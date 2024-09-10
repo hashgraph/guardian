@@ -18,7 +18,7 @@ import {
     RegistrationMessage,
     RunFunctionAsync,
     Schema as SchemaCollection,
-    Settings, Token,
+    Settings,
     Topic,
     TopicConfig,
     TopicHelper,
