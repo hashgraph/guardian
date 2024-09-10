@@ -772,7 +772,7 @@ export class PolicyEngine extends NatsService {
                     policyObjects.push(model);
                 }
 
-                await DatabaseServer.saveManyPolicies(policyObjects);
+                await DatabaseServer.savePolicies(policyObjects);
 
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);
