@@ -1894,11 +1894,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public async updateTag(row: Tag): Promise<Tag> {
-        return await this.update(Tag, row.id, row);
+    public async updateTag(tag: Tag): Promise<Tag> {
+        return await this.update(Tag, tag.id, tag);
+    }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public async updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]> {
+        return await this.updateMany(Tag, tags)
     }
 
     /**
@@ -2539,10 +2547,10 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Update many policies
+     * Update policies
      * @param models
      */
-    public static async saveManyPolicies(models: Policy[]): Promise<Policy[]> {
+    public static async savePolicies(models: Policy[]): Promise<Policy[]> {
         return await new DataBaseHelper(Policy).saveMany(models);
     }
 
@@ -3364,10 +3372,10 @@ export class DatabaseServer extends AbstractDatabaseServer  {
 
     /**
      * Update tag
-     * @param row
+     * @param tag
      */
-    public static async updateTag(row: Tag): Promise<Tag> {
-        return await new DataBaseHelper(Tag).update(row);
+    public static async updateTag(tag: Tag): Promise<Tag> {
+        return await new DataBaseHelper(Tag).update(tag);
     }
 
     /**

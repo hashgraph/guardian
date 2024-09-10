@@ -611,11 +611,11 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Update many policies
+     * Update policies
      * @param models
      */
-    public static async saveManyPolicies(models: Policy[]): Promise<Policy[]> {
-        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateManyPolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    public static async savePolicies(models: Policy[]): Promise<Policy[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.savePolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1364,16 +1364,17 @@ export abstract class AbstractDatabaseServer {
     public abstract removeTag(tag: Tag): Promise<void>
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public abstract updateTag(row: Tag): Promise<Tag>
+    public abstract updateTag(tag: Tag): Promise<Tag>
 
     /**
      * Update tags
      * @param tags
      */
-    public abstract updateTags(tags: Tag[]): Promise<Tag[]>
+    public abstract updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]>
+
 
     /**
      * Get tag By UUID
@@ -1781,12 +1782,21 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public static async updateTag(row: Tag): Promise<Tag> {
+    public static async updateTag(tag: Tag): Promise<Tag> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTag.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public static async updateTags(tags: Tag[]): Promise<Tag[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTag.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
 
     /**
      * Create tag cache
