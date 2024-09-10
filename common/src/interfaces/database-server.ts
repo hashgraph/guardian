@@ -50,7 +50,7 @@ import {
     SuggestionsConfig,
     Record,
     AssignEntity,
-    PolicyTest,
+    PolicyTest, DataBaseHelper,
 } from '../index.js';
 
 //interfaces
@@ -608,6 +608,14 @@ export abstract class AbstractDatabaseServer {
      */
     public static async updatePolicy(model: Policy): Promise<Policy> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updatePolicy.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Update many policies
+     * @param models
+     */
+    public static async saveManyPolicies(models: Policy[]): Promise<Policy[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateManyPolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1362,6 +1370,12 @@ export abstract class AbstractDatabaseServer {
     public abstract updateTag(row: Tag): Promise<Tag>
 
     /**
+     * Update tags
+     * @param tags
+     */
+    public abstract updateTags(tags: Tag[]): Promise<Tag[]>
+
+    /**
      * Get tag By UUID
      * @param uuid
      */
@@ -1797,6 +1811,14 @@ export abstract class AbstractDatabaseServer {
      */
     public static async updateTagCache(row: TagCache): Promise<TagCache> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTagCache.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Update tags cache
+     * @param rows
+     */
+    public static async updateTagsCache(rows: TagCache[]): Promise<TagCache[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTagsCache.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**

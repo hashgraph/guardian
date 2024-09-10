@@ -452,7 +452,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     async updateMany<T extends BaseEntity>(
         entityClass: new () => T,
         entities: T[],
-        filter: FilterQuery<T>,
+        filter?: FilterQuery<T>,
     ): Promise<DryRun[] | T[]> {
         if (this.dryRun) {
             this.addDryRunId(entityClass, entities);
@@ -2359,7 +2359,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param items Schemas
      */
     public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
-        await new DataBaseHelper(SchemaCollection).update(items);
+        await new DataBaseHelper(SchemaCollection).updateMany(items);
     }
 
     /**
@@ -2531,11 +2531,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get policy
+     * Update policy
      * @param model
      */
     public static async updatePolicy(model: Policy): Promise<Policy> {
         return await new DataBaseHelper(Policy).save(model);
+    }
+
+    /**
+     * Update many policies
+     * @param models
+     */
+    public static async saveManyPolicies(models: Policy[]): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).saveMany(models);
     }
 
     /**
@@ -3355,11 +3363,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Update tags
+     * Update tag
      * @param row
      */
     public static async updateTag(row: Tag): Promise<Tag> {
         return await new DataBaseHelper(Tag).update(row);
+    }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public static async updateTags(tags: Tag[]): Promise<Tag[]> {
+        return await new DataBaseHelper(Tag).updateMany(tags);
     }
 
     /**
@@ -3386,6 +3402,14 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      */
     public static async updateTagCache(row: TagCache): Promise<TagCache> {
         return await new DataBaseHelper(TagCache).update(row);
+    }
+
+    /**
+     * Update tags cache
+     * @param rows
+     */
+    public static async updateTagsCache(rows: TagCache[]): Promise<TagCache[]> {
+        return await new DataBaseHelper(TagCache).updateMany(rows);
     }
 
     /**
