@@ -277,6 +277,12 @@ export class InterfaceDocumentsSource {
             }
         }
 
+        if (pagination) {
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.resetPagination(user);
+            }
+        }
+
         ret = Object.assign(ret,
             {
                 data,
