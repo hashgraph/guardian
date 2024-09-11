@@ -1,6 +1,6 @@
 import { SourceAddon, StateField } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -32,7 +32,7 @@ export class PaginationAddon {
     @StateField()
     private state;
 
-    private prevState;
+    private readonly prevState;
 
     constructor() {
         if (!this.state) {
@@ -85,7 +85,6 @@ export class PaginationAddon {
     }
 
     async resetPagination(user: PolicyUser): Promise<void> {
-        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         if (this.prevState[user.id]) {
             this.state[user.id] = this.prevState[user.id];
             delete this.prevState[user.id];
