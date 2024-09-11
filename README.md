@@ -52,7 +52,7 @@ The following steps need to be executed in order to start Guardian using docker:
 3. Update BC access variables
 4. Setup IPFS
 5. Build and launch with Docker
-6. Browse to [http://localhost:3000](http://localhost:3000)
+6. Browse to http://localhost:3000
 
 Here the steps description follows:
 
@@ -274,12 +274,12 @@ This will start the containers in detached mode (-d) and build them if necessary
 
 > **_NOTE:_** From the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
 
-#### 7. Browse to <http://localhost:3000> and complete the setup.
+#### 7. Browse to http://localhost:3000 and complete the setup.
 
 for other examples go to:
-* [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop.md)
-* [Steps to deploy Guardian using a specific Environment ( QA)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa.md)
-* [Steps to deploy Guardian using default Environment](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment.md)
+* [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop)
+* [Steps to deploy Guardian using a specific Environment ( QA)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa)
+* [Steps to deploy Guardian using default Environment](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment)
 
 
 ## Manual installation
@@ -492,7 +492,7 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
    ```
    Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
-   To start the service (found on <http://localhost:3002>):
+   To start the service (found on http://localhost:3002):
 
    Yarn:
    ```shell
@@ -519,7 +519,7 @@ npm --workspace=guardian-service run build
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values
 in `./guardian-service/configs/.env.worker` file as in the example above.
 
-To start the service (found on <http://localhost:3002>):
+To start the service (found on http://localhost:3002):
 
 Yarn:
 ```shell
@@ -547,7 +547,7 @@ npm --workspace=api-gateway run build
 
 Configure the service as previously described. Do not need special configuration variables.
 
-To start the service (found on <http://localhost:3002>):
+To start the service (found on http://localhost:3002):
 
 Yarn:
    ```shell
@@ -570,7 +570,7 @@ npm --workspace=api-gateway start
 
     Configure the service as previously described. Do not need special configuration variables.
 
-    To start the service (found on <http://localhost:3005>):
+    To start the service (found on http://localhost:3005):
 
     ```shell
     npm start
@@ -611,7 +611,7 @@ npm --workspace=ai-service start
     npm run build
     ```
 
-    To start the service (found on <http://localhost:4200>):
+    To start the service (found on http://localhost:4200):
 
     ```shell
     npm start
@@ -683,7 +683,7 @@ npm --workspace=ai-service start
    docker compose -f docker-compose-dev.yml up --build
    ```
 
-#### 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
+#### 3. Access local development using http://localhost:3000 or http://localhost:4200
 
 ## Troubleshoot
 

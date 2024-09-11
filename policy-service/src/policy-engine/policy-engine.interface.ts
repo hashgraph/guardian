@@ -638,6 +638,12 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Restore filters
      */
     resetFilters(user: PolicyUser): Promise<void>;
+
+    /**
+     * Restore pagination
+     * @param user
+     */
+    resetPagination(user: PolicyUser): Promise<void>;
 }
 
 /**

@@ -137,6 +137,8 @@ export class InterfaceDocumentsSource {
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
+        let ret = {};
+
         if (!queryParams) {
             queryParams = {};
         }
@@ -209,6 +211,17 @@ export class InterfaceDocumentsSource {
             this.state[user.id] = sortState;
         }
         let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history);
+
+        if (paginationData) {
+            ret = Object.assign(ret, {
+                page: paginationData.page,
+                pageSize: paginationData.itemsPerPage,
+                totalCount: paginationData.size,
+                hasPreviousPage: paginationData.page > 0,
+                hasNextPage: ((paginationData.page + 1) * paginationData.itemsPerPage) < paginationData.size
+            });
+        }
+
         if (
             !enableCommonSorting && history
         ) {
@@ -264,7 +277,13 @@ export class InterfaceDocumentsSource {
             }
         }
 
-        return Object.assign(
+        if (pagination) {
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.resetPagination(user);
+            }
+        }
+
+        ret = Object.assign(ret,
             {
                 data,
                 blocks: filters,
@@ -275,6 +294,8 @@ export class InterfaceDocumentsSource {
             }),
             sortState
         );
+
+        return ret;
     }
 
     /**
