@@ -14,11 +14,14 @@ export class TreeGraphComponent implements OnInit {
 
     @Output('init') initEvent = new EventEmitter<TreeGraphComponent>();
     @Output('select') selectEvent = new EventEmitter<TreeNode<any> | null>();
+    @Output('render') renderEvent = new EventEmitter<any>();
 
     public roots: TreeNode<any>[];
+    public nodes: TreeNode<any>[];
     public grid: Grid;
     public width: number = 200;
     public zoom = 1;
+    public toolbar = true;
 
     constructor() {
 
@@ -41,14 +44,29 @@ export class TreeGraphComponent implements OnInit {
     }
 
     public setData(nodes: TreeNode<any>[]) {
-        this.roots = this.nonUniqueNodes(nodes)
+        const { roots, allNodes } = this.nonUniqueNodes(nodes);
+        this.roots = roots;
+        this.nodes = allNodes;
         this.grid = Grid.createLayout(this.width, this.roots);
         this.grid.render();
+        this.renderEvent.emit({
+            grid: this.grid,
+            roots: this.roots,
+            nodes: this.nodes
+        })
     }
 
-    public select(node: TreeNode<any>) {
-        const selected = node.selected !== SelectType.SELECTED;
-        if (selected) {
+    public getNodes(): TreeNode<any>[] {
+        return this.nodes;
+    }
+
+    public getRoots(): TreeNode<any>[] {
+        return this.roots;
+    }
+
+    public select(node: TreeNode<any> | null) {
+        const selected = node && node.selected !== SelectType.SELECTED;
+        if (node && selected) {
             for (const node of this.grid.nodes) {
                 node.selected = SelectType.HIDDEN;
             }
@@ -77,7 +95,7 @@ export class TreeGraphComponent implements OnInit {
         return roots;
     }
 
-    private nonUniqueNodes(nodes: TreeNode<any>[]): TreeNode<any>[] {
+    private nonUniqueNodes(nodes: TreeNode<any>[]) {
         const roots = nodes.filter((n) => n.type === 'root');
         const subs = nodes.filter((n) => n.type !== 'root');
 
@@ -108,7 +126,7 @@ export class TreeGraphComponent implements OnInit {
         for (const node of allNodes) {
             node.update();
         }
-        return roots;
+        return { roots, allNodes };
     }
 
     public setZoom(zoom: number, el: any) {
@@ -137,21 +155,31 @@ export class TreeGraphComponent implements OnInit {
     }
 
     public onMouseDown($event: any) {
+        if ($event.stopPropagation) {
+            $event.stopPropagation()
+        }
         this.grid.onMove(true, $event);
-        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
-        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+        this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
+        this.gridEl.nativeElement.style.top = `${this.grid.y}px`;
     }
 
     public onMouseUp($event: any) {
+        if ($event.stopPropagation) {
+            $event.stopPropagation()
+        }
         this.grid.onMove(false, $event);
-        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
-        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+        this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
+        this.gridEl.nativeElement.style.top = `${this.grid.y}px`;
     }
 
     public onMouseMove($event: any) {
-        this.grid.onMoving($event);
-        this.gridEl.nativeElement.style.left = `${-this.grid.x}px`;
-        this.gridEl.nativeElement.style.top = `${-this.grid.y}px`;
+        if ($event.stopPropagation) {
+            $event.stopPropagation()
+        }
+        if (this.grid.onMoving($event)) {
+            this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
+            this.gridEl.nativeElement.style.top = `${this.grid.y}px`;
+        }
     }
 
     public onScroll($event: any) {
@@ -164,12 +192,20 @@ export class TreeGraphComponent implements OnInit {
         this.setZoom(this.zoom, this.gridEl.nativeElement);
     }
 
-    public onSelectNode(node: TreeNode<any>) {
+    public onSelectNode(node: TreeNode<any> | null) {
         this.select(node);
-        if (node.selected === SelectType.SELECTED) {
+        if (node && node.selected === SelectType.SELECTED) {
             this.selectEvent.emit(node);
         } else {
             this.selectEvent.emit(null);
+        }
+    }
+
+    public move(x: number, y: number): void {
+        if (this.grid) {
+            this.grid.move(x, y);
+            this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
+            this.gridEl.nativeElement.style.top = `${this.grid.y}px`;
         }
     }
 }

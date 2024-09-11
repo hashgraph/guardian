@@ -9,6 +9,9 @@ export class TreeListItem<T> {
     public selected: boolean;
     public hidden: boolean;
     public highlighted: boolean;
+    public searchHighlighted: '' | 'highlighted' | 'sub' | 'hidden';
+    public search: string;
+    public searchChildren: string;
 
     constructor(data: T, parent: TreeListItem<T> | null, lvl: number) {
         this.data = data;
@@ -20,6 +23,9 @@ export class TreeListItem<T> {
         this.expandable = false;
         this.selected = false;
         this.highlighted = false;
+        this.search = '';
+        this.searchChildren = '';
+        this.searchHighlighted = '';
     }
 
     public setChildren(children: TreeListItem<T>[]) {
@@ -67,6 +73,15 @@ export class TreeListItem<T> {
             this.hidden = false;
         }
     }
+
+    public setSearchRules(f: (item: T) => string) {
+        this.searchHighlighted = '';
+        this.search = f(this.data);
+        this.searchChildren = this.search + '|';
+        for (const child of this.children) {
+            this.searchChildren = this.searchChildren + child.searchChildren + '|';
+        }
+    }
 }
 
 export class TreeListData<T> {
@@ -80,7 +95,7 @@ export class TreeListData<T> {
 
     constructor(list: TreeListItem<T>[]) {
         this.list = list;
-        this.update();
+        this.updateHidden();
     }
 
     public select(item: TreeListItem<T>, selected: boolean) {
@@ -136,14 +151,40 @@ export class TreeListData<T> {
         return result;
     }
 
-    public update() {
+    public updateHidden() {
         const list = this.list;
-
-        //Hidden
         for (const item of list) {
             item.updateHidden();
         }
         this._items = list.filter((i) => !i.hidden);
+    }
+
+    public setSearchRules(f: (item: T) => string) {
+        for (let index = this.list.length - 1; index > -1; index--) {
+            const item = this.list[index];
+            item.setSearchRules(f);
+        }
+    }
+
+    public searchItems(text: string): void {
+        if (text) {
+            for (const item of this.list) {
+                if (item.search.includes(text)) {
+                    item.searchHighlighted = 'highlighted';
+                } else {
+                    if (item.searchChildren.includes(text)) {
+                        item.searchHighlighted = 'sub';
+                        item.collapsed = false;
+                    } else {
+                        item.searchHighlighted = 'hidden';
+                    }
+                }
+            }
+        } else {
+            for (const item of this.list) {
+                item.searchHighlighted = '';
+            }
+        }
     }
 
     public static fromObject<T>(object: any, field: string): TreeListData<T> {
@@ -180,6 +221,8 @@ export class TreeListView<T> {
     private _selectedCount = 0;
     private _selectedLimit = 0;
     private _views: TreeListView<T>[];
+    private _search: string;
+    private _searchHighlighted: boolean;
 
     public get selectedFields(): TreeListItem<T>[] {
         return this._selectedFields;
@@ -193,9 +236,18 @@ export class TreeListView<T> {
         return this._data.items;
     }
 
+    public get search(): string {
+        return this._search;
+    }
+
+    public get searchHighlighted(): boolean {
+        return this._searchHighlighted;
+    }
+
     constructor(data: TreeListData<T>, indexes?: number[]) {
         this._data = data;
         this._views = [];
+        this._search = '';
         if (indexes) {
             this._indexes = new Set<number>(indexes);
         } else {
@@ -204,7 +256,8 @@ export class TreeListView<T> {
                 this._indexes.add(index);
             }
         }
-        this.update();
+        this.updateHidden();
+        this.updateSelected();
     }
 
     public setSelectedLimit(limit: number) {
@@ -243,10 +296,63 @@ export class TreeListView<T> {
         return this._data.find(f);
     }
 
-    public update(updateData: boolean = true) {
-        if (updateData) {
-            this._data.update();
+    public filterOne(text: string): TreeListItem<T> | null {
+        for (const index of this._indexes) {
+            const item = this._data.list[index];
+            if (item.search.includes(text)) {
+                return item;
+            }
         }
+        return null;
+    }
+
+    public filter(text: string): TreeListItem<T>[] {
+        const result: TreeListItem<T>[] = []
+        for (const index of this._indexes) {
+            const item = this._data.list[index];
+            if (item.search.includes(text)) {
+                result.push(item);
+            }
+        }
+        return result;
+    }
+
+    public setSearchRules(f: (item: T) => string) {
+        this._data.setSearchRules(f);
+    }
+
+    public updateSearch() {
+        this._search = '';
+        for (const index of this._indexes) {
+            const item = this._data.list[index];
+            if (item) {
+                this._search = this._search + item.search + '|';
+            }
+        }
+    }
+
+    public searchItems(text: string): void {
+        this._data.searchItems(text);
+    }
+
+    public searchView(text: string): void {
+        this._searchHighlighted = false;
+        if (text) {
+            for (const index of this._indexes) {
+                const item = this._data.list[index];
+                if (item.search.includes(text)) {
+                    this._searchHighlighted = true;
+                    return;
+                }
+            }
+        }
+    }
+
+    public updateHidden() {
+        this._data.updateHidden();
+    }
+
+    public updateSelected() {
         const list = this._data.list;
         this._selectedFields = list.filter((item, index) => item.selected && this._indexes.has(index));
         this._selectedCount = this._selectedFields.length;
@@ -254,7 +360,7 @@ export class TreeListView<T> {
             this._selectedFields = this._selectedFields.slice(0, this._selectedLimit);
         }
         for (const view of this._views) {
-            view.update(false);
+            view.updateSelected();
         }
     }
 

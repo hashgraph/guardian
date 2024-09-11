@@ -1,6 +1,7 @@
 .guardian-page {
     position: relative;
     padding: 0px;
+    user-select: none;
 
     .header-container {
         padding: 56px 48px 10px 48px;
@@ -48,6 +49,7 @@
     .body-container {
         width: 100%;
         height: 100%;
+        user-select: none;
 
         .schema-viewer {
             position: absolute;
@@ -60,7 +62,7 @@
             .tree-container {
                 position: absolute;
                 left: 0px;
-                top: 40px;
+                top: 39px;
                 bottom: 0px;
                 right: 0px;
                 z-index: 1;
@@ -69,15 +71,123 @@
             .schema-search {
                 position: absolute;
                 left: 0px;
-                top: 0px;
+                top: 40px;
                 right: 0px;
                 height: 56px;
                 z-index: 2;
-                background: #eff3f7;
+                background: transparent;
                 padding: 8px 416px 8px 16px;
 
                 .guardian-search {
                     max-width: 500px;
+                }
+            }
+
+            .schema-toolbar {
+                position: absolute;
+                left: 0px;
+                top: 0px;
+                right: 0px;
+                height: 39px;
+                z-index: 2;
+                background: #eff3f7;
+                padding: 8px 416px 0px 16px;
+                display: flex;
+                flex-direction: row;
+                border-bottom: 1px solid #E1E7EF;
+                user-select: none;
+
+                .tree-tabs {
+                    display: flex;
+                    flex-direction: row;
+                    overflow: hidden;
+                }
+                
+                .tree-tabs-nav {
+                    display: flex;
+                    flex-direction: row;
+                    width: 70px;
+                    height: 30px;
+                    min-width: 70px;
+                    padding: 0 5px;
+
+                    .tree-tabs-nav-left {
+                        width: 30px;
+                        height: 30px;
+                        cursor: pointer;
+                        position: relative;
+
+                        &::before {
+                            content: "";
+                            display: block;
+                            position: absolute;
+                            left: 50%;
+                            top: 50%;
+                            transform: translate(-50%, -50%);
+                            border: 6px solid var(--guardian-primary-color, #4169E2);
+                            width: 0px;
+                            height: 0px;
+                            pointer-events: none;
+                            border-top-color: transparent;
+                            border-left-color: transparent;
+                            border-bottom-color: transparent;
+                            border-left-width: 0;
+                        }
+                    }
+
+                    .tree-tabs-nav-right {
+                        width: 30px;
+                        height: 30px;
+                        cursor: pointer;
+                        position: relative;
+
+                        &::before {
+                            content: "";
+                            display: block;
+                            position: absolute;
+                            left: 50%;
+                            top: 50%;
+                            transform: translate(-50%, -50%);
+                            border: 6px solid var(--guardian-primary-color, #4169E2);
+                            width: 0px;
+                            height: 0px;
+                            pointer-events: none;
+                            border-top-color: transparent;
+                            border-right-color: transparent;
+                            border-bottom-color: transparent;
+                            border-right-width: 0;
+                        }
+                    }
+                }
+
+                .tree-tab {
+                    max-width: 100px;
+                    min-width: 100px;
+                    padding: 8px 8px 8px 16px;
+                    background: #F9FAFC;
+                    font-family: Inter;
+                    font-size: 12px;
+                    font-weight: 500;
+                    line-height: 14px;
+                    text-align: left;
+                    color: #23252E;
+                    border: 1px solid #E1E7EF;
+                    border-radius: 6px;
+                    border-bottom-width: 0;
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                    height: 30px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    cursor: pointer;
+                    margin-right: 4px;
+                }
+
+                .tree-tab-last {
+                    max-width: 200px;
+                    min-width: 200px;
+                    height: 30px;
                 }
             }
 
@@ -101,6 +211,19 @@
                     width: 0px;
                 }
 
+                .schema-close {
+                    width: 32px;
+                    height: 32px;
+                    min-width: 32px;
+                    max-width: 32px;
+                    position: absolute;
+                    padding: 4px;
+                    border-radius: 100%;
+                    cursor: pointer;
+                    top: 17px;
+                    right: 16px;
+                }
+
                 .fields-container {
                     width: 400px;
                     height: 100%;
@@ -115,6 +238,7 @@
                         line-height: 18px;
                         text-align: left;
                         color: #23252E;
+                        position: relative;
                     }
 
                     .schema-config {
@@ -183,11 +307,30 @@
 
                                     .field-name {
                                         padding-left: 8px;
+                                        min-width: 125px;
+                                    }
 
-                                        &[highlighted="true"] {
-                                            color: var(--guardian-primary-color, #4169E2);
-                                            font-weight: 600;
-                                        }
+                                    &[highlighted="true"] .field-name {
+                                        color: var(--guardian-primary-color, #4169E2);
+                                        font-weight: 600;
+                                    }
+
+                                    &[search-highlighted="hidden"] {
+                                        display: none;
+                                    }
+
+                                    &[search-highlighted="sub"] .field-name {
+                                        opacity: 0.5;
+                                    }
+
+                                    &[search-highlighted="highlighted"] .field-name {
+                                        color: var(--guardian-success-color, #19BE47);
+                                        font-weight: 600;
+                                    }
+
+                                    &[search-highlighted="highlighted"][highlighted="true"] .field-name {
+                                        color: var(--guardian-primary-color, #4169E2);
+                                        font-weight: 600;
                                     }
                                 }
                             }
@@ -198,7 +341,6 @@
         }
     }
 }
-
 
 .guardian-dropdown {
     &::ng-deep .p-dropdown {
@@ -235,7 +377,7 @@
 
         &.selected-type-selected {
             border: 1px solid var(--guardian-primary-color, #4169E2);
-            box-shadow: 0px 0px 0px 3px #4169E2, 0px 6px 6px 0px #00000021;
+            box-shadow: 0px 0px 0px 3px var(--guardian-primary-color, #4169E2), 0px 6px 6px 0px #00000021;
         }
 
         &.selected-type-sub {
@@ -244,6 +386,16 @@
 
         &.selected-type-hidden {
             opacity: 0.4;
+        }
+
+        &[search-highlighted="true"] {
+            border: 1px solid var(--guardian-success-color, #19BE47);
+            box-shadow: 0px 0px 0px 3px var(--guardian-success-color, #19BE47), 0px 6px 6px 0px #00000021;
+        }
+
+        &[search-highlighted="true"].selected-type-selected {
+            border: 1px solid var(--guardian-primary-color, #4169E2);
+            box-shadow: 0px 0px 0px 3px var(--guardian-primary-color, #4169E2), 0px 6px 6px 0px #00000021;
         }
 
         .node-header {

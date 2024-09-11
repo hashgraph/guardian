@@ -86,10 +86,17 @@ export class Grid {
 
     public onMoving($event: any) {
         if (this.moving) {
-            this.x = this.x + (this._clientX - $event.clientX);
-            this.y = this.y + (this._clientY - $event.clientY);
+            this.x = this.x - (this._clientX - $event.clientX);
+            this.y = this.y - (this._clientY - $event.clientY);
             this._clientX = $event.clientX;
             this._clientY = $event.clientY;
+            return true;
         }
+        return false;
+    }
+
+    public move(x: number, y: number): void {
+        this.x = x;
+        this.y = y;
     }
 }

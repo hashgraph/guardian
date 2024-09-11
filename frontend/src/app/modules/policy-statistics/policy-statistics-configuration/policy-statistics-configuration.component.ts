@@ -6,57 +6,8 @@ import { PolicyStatisticsService } from 'src/app/services/policy-statistics.serv
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
-import { TreeListData, TreeListItem, TreeListView } from '../tree-graph/tree-list';
-
-interface SchemaData {
-    iri: string;
-    name: string;
-    description: string;
-}
-
-class SchemaNode extends TreeNode<SchemaData> {
-    public fields: TreeListView<any>;
-
-    public override clone(): SchemaNode {
-        const clone = new SchemaNode(this.id, this.type, this.data);
-        clone.type = this.type;
-        clone.data = this.data;
-        clone.childIds = new Set(this.childIds);
-        clone.fields = this.fields;
-        return clone;
-    }
-
-    public override update() {
-        this.fields = this.getRootFields();
-    }
-
-    public getRootFields(): TreeListView<any> {
-        if (this.parent) {
-            const parentFields = (this.parent as SchemaNode).getRootFields();
-            return parentFields.createView((s) => {
-                return s.parent?.data?.type === this.data.iri;
-            })
-        } else {
-            return this.fields;
-        }
-    }
-
-    public static from(schema: Schema): SchemaNode {
-        const id = schema.iri;
-        const type = schema.entity === 'VC' ? 'root' : 'sub'
-        const data = {
-            iri: schema.iri || '',
-            name: schema.name || '',
-            description: schema.description || '',
-        }
-        const result = new SchemaNode(id, type, data);
-        const fields = TreeListData.fromObject<any>(schema, 'fields');
-        result.fields = TreeListView.createView(fields, (s) => {
-            return !s.parent;
-        })
-        return result;
-    }
-}
+import { TreeListItem } from '../tree-graph/tree-list';
+import { SchemaData, SchemaNode } from './schema-node';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -80,12 +31,16 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     private tree: TreeGraphComponent;
     private nodes: SchemaNode[];
 
+    public roots: SchemaNode[];
     public selectedNode: SchemaNode | null = null;
     public rootNode: SchemaNode | null = null;
 
     public nodeLoading: boolean = true;
 
+    public searchField: string = '';
+
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
+    @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
 
     private _timeout1: any;
     private _timeout2: any;
@@ -171,7 +126,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         }
 
         if (this.tree) {
-            this.tree.setData(this.nodes)
+            this.tree.setData(this.nodes);
         }
     }
 
@@ -182,8 +137,18 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public initTree($event: TreeGraphComponent) {
         this.tree = $event;
         if (this.nodes) {
-            this.tree.setData(this.nodes)
+            this.tree.setData(this.nodes);
         }
+    }
+
+    public createNodes($event: any) {
+        const roots = $event.roots as SchemaNode[];
+        const nodes = $event.nodes as SchemaNode[];
+        this.roots = roots;
+        for (const node of nodes) {
+            node.fields.updateSearch();
+        }
+        this.tree.move(18, 56);
     }
 
     public onSelectNode(node: TreeNode<SchemaData> | null) {
@@ -194,21 +159,28 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.rootNode = (node?.getRoot() || null) as SchemaNode;
         if (this.rootNode) {
             const id = this.selectedNode?.data?.iri;
-            const data = this.rootNode.fields;
-            data.collapseAll(true);
-            data.highlightAll(false);
-            const items = data.find((item: any) => {
+            const rootView = this.rootNode.fields;
+            rootView.collapseAll(true);
+            rootView.highlightAll(false);
+            const items = rootView.find((item: any) => {
                 return item.type === id;
             });
             for (const item of items) {
-                data.collapsePath(item, false);
-                data.highlight(item, true);
+                rootView.collapsePath(item, false);
+                rootView.highlight(item, true);
             }
-            data.update();
+            rootView.searchItems(this.searchField);
+            rootView.updateHidden();
+            rootView.updateSelected();
             this._timeout1 = setTimeout(() => {
-                const first = (document as any).querySelector('.field-name[highlighted="true"]');
-                if (this.fieldTree && first) {
-                    this.fieldTree.nativeElement.scrollTop = first.offsetTop;
+                const first = (document as any)
+                    .querySelector('.field-item[highlighted="true"]:not([search-highlighted="hidden"])');
+                if (this.fieldTree) {
+                    if (first) {
+                        this.fieldTree.nativeElement.scrollTop = first.offsetTop;
+                    } else {
+                        this.fieldTree.nativeElement.scrollTop = 0;
+                    }
                 }
                 this._timeout2 = setTimeout(() => {
                     this.nodeLoading = false;
@@ -217,15 +189,68 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         }
     }
 
-    public onCollapseField(node: SchemaNode, field: TreeListItem<any>) {
-        node.fields.collapse(field, !field.collapsed);
-        node.fields.update();
+    public onCollapseField(field: TreeListItem<any>) {
+        if (this.rootNode) {
+            const rootView = this.rootNode.fields;
+            rootView.collapse(field, !field.collapsed);
+            rootView.updateHidden();
+        }
     }
 
     public onSelectField(field: TreeListItem<any>) {
         field.selected = !field.selected;
         if (this.rootNode) {
-            this.rootNode.fields.update();
+            const rootView = this.rootNode.fields;
+            rootView.updateHidden();
+            rootView.updateSelected();
         }
+    }
+
+    public onSchemaFilter($event: any) {
+        const value = ($event.target.value || '').trim().toLocaleLowerCase();
+        if (this.tree) {
+            const roots = this.tree.getRoots() as SchemaNode[];
+            for (const root of roots) {
+                root.fields.searchItems(value);
+            }
+
+            const nodes = this.tree.getNodes() as SchemaNode[];
+            for (const node of nodes) {
+                node.fields.searchView(value);
+            }
+
+            if (this.rootNode) {
+                const rootView = this.rootNode.fields;
+                rootView.updateHidden();
+            }
+        }
+    }
+
+    public onNavRoot(root: SchemaNode) {
+        const el = document.querySelector(`.tree-node[node-id="${root.uuid}"]`);
+        const grid = el?.parentElement?.parentElement;
+        if (el && grid) {
+            const elCoord = el.getBoundingClientRect();
+            const gridCoord = grid.getBoundingClientRect();
+            const x = elCoord.left - gridCoord.left;
+            this.tree?.move(-x + 50, 56)
+        }
+    }
+
+    public onNavNext(dir: number) {
+        const el = this.treeTabs.nativeElement;
+        const max = Math.floor((el.scrollWidth - el.offsetWidth) / 104);
+        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 104);
+        if (dir < 0) {
+            current--;
+        } else {
+            current++;
+        }
+        current = Math.min(Math.max(current, 0), max);
+        this.treeTabs.nativeElement.scrollLeft = current * 104;
+    }
+
+    public onClearNode() {
+        this.tree?.onSelectNode(null);
     }
 }

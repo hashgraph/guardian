@@ -40,13 +40,17 @@
                     <div class="tree-container">
                         <app-tree-graph 
                             (init)="initTree($event)"
+                            (render)="createNodes($event)"
                             (select)="onSelectNode($event)"
                         >
                             <ng-template 
                                 #nodeTemplate 
                                 let-node="node" 
                             >
-                                <div class="tree-node {{node.type}}-node selected-type-{{node.selected}}">
+                                <div 
+                                    class="tree-node {{node.type}}-node selected-type-{{node.selected}}"
+                                    [attr.search-highlighted]="node.fields.searchHighlighted"
+                                >
                                     <div class="node-header">
                                         {{node.data.name}}
                                     </div>
@@ -69,7 +73,26 @@
                     </div>
                     <div class="schema-search">
                         <div class="guardian-search">
-                            <input id="schemaSearch" placeholder="Search" pInputText type="text"/>
+                            <input 
+                                id="schemaSearch" 
+                                [(ngModel)]="searchField"
+                                placeholder="Search" 
+                                pInputText 
+                                type="text"
+                                (change)="onSchemaFilter($event)"
+                            />
+                        </div>
+                    </div>
+                    <div class="schema-toolbar">
+                        <div class="tree-tabs-nav">
+                            <div class="tree-tabs-nav-left" (click)="onNavNext(-1)"></div>
+                            <div class="tree-tabs-nav-right" (click)="onNavNext(1)"></div>
+                        </div>
+                        <div #treeTabs class="tree-tabs">
+                            <div *ngFor="let root of roots" class="tree-tab" (click)="onNavRoot(root)">
+                                {{root.data.name}}
+                            </div>
+                            <div class="tree-tab-last"></div>
                         </div>
                     </div>
                     <div class="schema-fields" [attr.hidden-schema]="!rootNode">
@@ -79,6 +102,11 @@
                         <div *ngIf="rootNode" class="fields-container">
                             <div class="schema-name">
                                 {{rootNode.data.name}}
+                                <div class="schema-close" (click)="onClearNode()">
+                                    <svg-icon 
+                                        src="/assets/images/icons/close.svg" 
+                                        svgClass="icon-color-close"></svg-icon>
+                                </div>
                             </div>
                             <div  class="schema-config">
                                 <p-tabView class="guardian-tabs">
@@ -86,12 +114,24 @@
                                         <div class="field-list">
                                             <div class="field-search">
                                                 <div class="guardian-search">
-                                                    <input id="fieldSearch" placeholder="Search" pInputText type="text"/>
+                                                    <input 
+                                                        id="fieldSearch" 
+                                                        [(ngModel)]="searchField"
+                                                        placeholder="Search" 
+                                                        pInputText 
+                                                        type="text"
+                                                        (change)="onSchemaFilter($event)"
+                                                    />
                                                 </div>
                                             </div>
                                             <div class="field-tree-container">
                                                 <div #fieldTree class="field-tree">
-                                                    <div *ngFor="let item of rootNode.fields.items" class="field-item">
+                                                    <div 
+                                                        *ngFor="let item of rootNode.fields.items" 
+                                                        class="field-item"
+                                                        [attr.highlighted]="item.highlighted"
+                                                        [attr.search-highlighted]="item.searchHighlighted"
+                                                    >
                                                         <div class="field-offset" 
                                                             [style.width.px]="24*item.lvl" 
                                                             [style.min-width.px]="24*item.lvl"></div>
@@ -100,7 +140,7 @@
                                                                 *ngIf="item.expandable" 
                                                                 class="guardian-collapse collapse-24"
                                                                 [attr.collapsed]="item.collapsed"
-                                                                (click)="onCollapseField(rootNode, item)"
+                                                                (click)="onCollapseField(item)"
                                                             >
                                                             </div>
                                                         </div>
@@ -113,7 +153,6 @@
                                                         <div 
                                                             class="field-name" 
                                                             (click)="onSelectField(item)"
-                                                            [attr.highlighted]="item.highlighted"
                                                         >
                                                             {{item.data.description}}
                                                         </div>

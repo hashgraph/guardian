@@ -6,6 +6,7 @@
         (mouseup)="onMouseUp($event)"
         (mousemove)="onMouseMove($event)"
         (mouseleave)="onMouseUp($event)"
+        (mouseenter)="onMouseUp($event)"
         (wheel)="onScroll($event)"
     >
         <div 
@@ -26,7 +27,7 @@
                 [style.grid-row-end]="node.maxRow"
                 class="tree-node-container"
             >
-                <div class="tree-node" (click)="onSelectNode(node)">
+                <div class="tree-node" (click)="onSelectNode(node)" [attr.node-id]="node.uuid">
                     <ng-container 
                         [ngTemplateOutlet]="nodeTemplate" 
                         [ngTemplateOutletContext]="{ node }"
