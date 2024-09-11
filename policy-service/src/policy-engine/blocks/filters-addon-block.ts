@@ -156,6 +156,7 @@ export class FiltersAddonBlock {
 
     async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        this.previousState[user.id] = {...this.state[user.id]};
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
@@ -175,6 +176,7 @@ export class FiltersAddonBlock {
             blockState.lastValue = value;
             this.state[user.id] = blockState;
         }
+        this.previousFilters[user.id] = {...ref.filters[user.id]};
         ref.setFilters(filter, user);
     }
 
