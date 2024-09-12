@@ -167,15 +167,12 @@ const entityManagerMock = {
     }),
     getMongoManager: sandbox.stub().returns({
       bulkWrite: sandbox.stub().callsFake((bulkOps) => {
-        // console.log('bulkOps', bulkOps);
         const collection = inMemoryStore[TestEntity.name] || [];
 
         bulkOps.forEach(op => {
           const { filter, update } = op.updateOne;
-          // console.log('filter, update', filter, update);
-          const entityToUpdate = collection.find(e => e.id.toString() === filter.id?.toString());
 
-          // console.log('entityToUpdate', entityToUpdate);
+          const entityToUpdate = collection.find(e => e.id.toString() === filter.id?.toString());
 
           if (entityToUpdate) {
             Object.assign(entityToUpdate, update.$set);

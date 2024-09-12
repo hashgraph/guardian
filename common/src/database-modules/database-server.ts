@@ -2402,18 +2402,6 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         return await new DataBaseHelper(SchemaCollection).saveMany(items);
     }
 
-    // /**
-    //  * Get schema
-    //  * @param item
-    //  */
-    // public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
-    //     const result = [];
-    //     for await (const schema of item) {
-    //         result.push(await new DataBaseHelper(SchemaCollection).save(schema));
-    //     }
-    //     return result;
-    // }
-
     /**
      * Get schema
      * @param item
