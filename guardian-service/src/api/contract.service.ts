@@ -12,7 +12,7 @@ import {
     PinoLogger,
     RetirePool,
     RetireRequest,
-    Schema as SchemaCollection,
+    Schema as SchemaCollection, Token,
     Topic,
     TopicConfig,
     TopicHelper,
@@ -497,6 +497,8 @@ export async function syncWipeContract(
             break;
         }
 
+        const wiperRequestRecords = []
+
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
             const data = eventAbi.decodeEventLog(eventName, log.data);
@@ -583,10 +585,12 @@ export async function syncWipeContract(
                             user,
                             contractId,
                         });
-                        await dataBaseServer.save(WiperRequest, {
+
+                        wiperRequestRecords.push({
                             user,
                             contractId,
                         });
+
                         if (!sendNotifications) {
                             break;
                         }
@@ -608,11 +612,13 @@ export async function syncWipeContract(
                             contractId,
                             token
                         } as Partial<WiperRequest>);
-                        await dataBaseServer.save(WiperRequest, {
+
+                        wiperRequestRecords.push({
                             user,
                             contractId,
                             token
                         });
+
                         if (!sendNotifications) {
                             break;
                         }
@@ -670,6 +676,8 @@ export async function syncWipeContract(
                     break;
             }
         }
+
+        await dataBaseServer.saveMany(Token, wiperRequestRecords);
 
         lastTimeStamp = result[result.length - 1].timestamp;
         timestamps.push(lastTimeStamp);
@@ -2456,7 +2464,7 @@ export async function contractAPI(
                         ) < 0;
                 }
 
-                await dataBaseServer.update(RetirePool, null, pools);
+                await dataBaseServer.updateMany(RetirePool, pools);
 
                 const syncDate = new Date();
 

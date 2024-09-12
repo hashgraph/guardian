@@ -249,4 +249,49 @@ describe('DataBaseHelper Tests', () => {
 			assert.equal(finalCount, initialCount + 10);
 		});
 	});
+
+  describe('saveMany Method', () => {
+    it('should save multiple new entities correctly', async () => {
+      const existingEntities = await dbHelper.findAll();
+      await dbHelper.remove(existingEntities);
+
+      const entitiesData = [
+        { name: 'Entity 1' },
+        { name: 'Entity 2' }
+      ];
+
+      const savedEntities = await dbHelper.saveMany(entitiesData);
+
+      assert.isArray(savedEntities);
+      assert.lengthOf(savedEntities, 2);
+      assert.equal(savedEntities[0].name, 'Entity 1');
+      assert.equal(savedEntities[1].name, 'Entity 2');
+
+      assert.equal(db[TestEntity.name].length, 2);
+      assert.equal(db[TestEntity.name][0].name, 'Entity 1');
+      assert.equal(db[TestEntity.name][1].name, 'Entity 2');
+    });
+  });
+
+  describe('updateMany Method', () => {
+    it('should update multiple entities correctly', async () => {
+      const savedEntities = await dbHelper.findAll();
+
+      const entitiesToUpdate = [
+        { name: 'Updated Entity 1', id: savedEntities[0].id },
+        { name: 'Updated Entity 2', id: savedEntities[1].id }
+      ];
+
+      const updatedEntities = await dbHelper.updateMany(entitiesToUpdate);
+
+      assert.isArray(updatedEntities);
+      assert.lengthOf(updatedEntities, 2);
+      assert.equal(updatedEntities[0].name, 'Updated Entity 1');
+      assert.equal(updatedEntities[1].name, 'Updated Entity 2');
+
+      assert.equal(db[TestEntity.name].length, 2);
+      assert.equal(db[TestEntity.name][0].name, 'Updated Entity 1');
+      assert.equal(db[TestEntity.name][1].name, 'Updated Entity 2');
+    });
+  });
 });

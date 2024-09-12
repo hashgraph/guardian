@@ -147,6 +147,10 @@ const entityManagerMock = {
         return collection.filter(entity => entity._id.toString() === query.toString());
       }
 
+      if (query.id && query.id.$in) {
+        return collection.filter(entity => query.id.$in.includes(entity.id));
+      }
+
       return collection.filter(entity => {
         return Object.keys(query).every(key => entity[key] === query[key]);
       });
@@ -160,6 +164,26 @@ const entityManagerMock = {
     }),
     findAll: sandbox.stub().callsFake(() => {
       return inMemoryStore[TestEntity.name] || [];
+    }),
+    getMongoManager: sandbox.stub().returns({
+      bulkWrite: sandbox.stub().callsFake((bulkOps) => {
+        // console.log('bulkOps', bulkOps);
+        const collection = inMemoryStore[TestEntity.name] || [];
+
+        bulkOps.forEach(op => {
+          const { filter, update } = op.updateOne;
+          // console.log('filter, update', filter, update);
+          const entityToUpdate = collection.find(e => e.id.toString() === filter.id?.toString());
+
+          // console.log('entityToUpdate', entityToUpdate);
+
+          if (entityToUpdate) {
+            Object.assign(entityToUpdate, update.$set);
+          }
+        });
+
+        inMemoryStore[TestEntity.name] = collection;
+      }),
     }),
   }),
   getDriver: sandbox.stub().returns({
@@ -198,9 +222,12 @@ export const {DataBaseHelper} = await esmock('../../../dist/helpers/db-helper.js
     CreateRequestContext: () => {
       return (target, propertyKey, descriptor) => descriptor;
     },
-    wrap: () => ({
-      assign: sandbox.stub().returns(new TestEntity()),
-    })
+    wrap: (entity) => ({
+      assign: (data) => {
+        Object.assign(entity, data);
+        return entity;
+      },
+    }),
   },
   'mongodb': {
     GridFSBucket: function () {

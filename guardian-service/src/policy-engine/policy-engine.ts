@@ -443,10 +443,15 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.updateTopic(newTopic);
         }
 
+        const artifactObjects = []
+
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = policy.id;
-            await DatabaseServer.saveArtifact(addedArtifact);
+
+            artifactObjects.push(addedArtifact);
         }
+
+        await DatabaseServer.saveArtifacts(artifactObjects);
 
         notifier.completedAndStart('Updating hash');
         policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
@@ -750,6 +755,9 @@ export class PolicyEngine extends NatsService {
             notifier.completedAndStart('Token');
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
+
+            const policyObjects = []
+
             for (const token of tokens) {
                 let _token = token;
                 if (token.draftToken) {
@@ -760,8 +768,11 @@ export class PolicyEngine extends NatsService {
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
-                    model = await DatabaseServer.updatePolicy(model);
+
+                    policyObjects.push(model);
                 }
+
+                await DatabaseServer.savePolicies(policyObjects);
 
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);

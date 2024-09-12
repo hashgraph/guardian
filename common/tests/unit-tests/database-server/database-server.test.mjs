@@ -186,4 +186,49 @@ describe('DatabaseServer', function () {
 			assert.equal(finalCount, initialCount + 10);
 		});
 	});
+
+  describe('saveMany Method', function () {
+    it('should save multiple entities correctly', async function () {
+      const existingEntities = await dbServer.findAll(TestEntity);
+      await dbServer.remove(TestEntity, existingEntities);
+
+      const entitiesData = [
+        { name: 'Entity 1' },
+        { name: 'Entity 2' }
+      ];
+
+      const savedEntities = await dbServer.saveMany(TestEntity, entitiesData);
+
+      assert.isArray(savedEntities);
+      assert.lengthOf(savedEntities, 2);
+      assert.equal(savedEntities[0].name, 'Entity 1');
+      assert.equal(savedEntities[1].name, 'Entity 2');
+
+      const allEntities = await dbServer.findAll(TestEntity);
+      assert.lengthOf(allEntities, 2);
+    });
+  });
+
+  describe('updateMany Method', function () {
+    it('should update multiple entities correctly', async function () {
+      const savedEntities = await dbServer.findAll(TestEntity);
+
+      const entitiesToUpdate = savedEntities.map(entity => ({
+        name: `Updated ${entity.name}`,
+        id: entity.id
+      }));
+
+      const updatedEntities = await dbServer.updateMany(TestEntity, entitiesToUpdate);
+
+      assert.isArray(updatedEntities);
+      assert.lengthOf(updatedEntities, 2);
+      assert.equal(updatedEntities[0].name, 'Updated Entity 1');
+      assert.equal(updatedEntities[1].name, 'Updated Entity 2');
+
+      const allEntities = await dbServer.findAll(TestEntity);
+      assert.lengthOf(allEntities, 2);
+      assert.equal(allEntities[0].name, 'Updated Entity 1');
+      assert.equal(allEntities[1].name, 'Updated Entity 2');
+    });
+  });
 });

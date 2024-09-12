@@ -611,6 +611,14 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
+     * Update policies
+     * @param models
+     */
+    public static async savePolicies(models: Policy[]): Promise<Policy[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.savePolicies.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
      * Get policies and count
      * @param filters
      * @param options
@@ -968,9 +976,9 @@ export abstract class AbstractDatabaseServer {
 
     /**
      * Get schema
-     * @param item
+     * @param items
      */
-    public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
+    public static async saveSchema(items: SchemaCollection): Promise<SchemaCollection> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveSchema.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
@@ -1356,10 +1364,16 @@ export abstract class AbstractDatabaseServer {
     public abstract removeTag(tag: Tag): Promise<void>
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public abstract updateTag(row: Tag): Promise<Tag>
+    public abstract updateTag(tag: Tag): Promise<Tag>
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public abstract updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]>
 
     /**
      * Get tag By UUID
@@ -1767,10 +1781,18 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public static async updateTag(row: Tag): Promise<Tag> {
+    public static async updateTag(tag: Tag): Promise<Tag> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTag.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public static async updateTags(tags: Tag[]): Promise<Tag[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTag.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
@@ -1797,6 +1819,14 @@ export abstract class AbstractDatabaseServer {
      */
     public static async updateTagCache(row: TagCache): Promise<TagCache> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTagCache.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Update tags cache
+     * @param rows
+     */
+    public static async updateTagsCache(rows: TagCache[]): Promise<TagCache[]> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTagsCache.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
     /**
@@ -1872,6 +1902,15 @@ export abstract class AbstractDatabaseServer {
      * @returns Saved Artifact
      */
     public static async saveArtifact(artifact: ArtifactCollection): Promise<ArtifactCollection> {
+        throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
+    }
+
+    /**
+     * Save Artifacts
+     * @param artifacts Artifacts
+     * @returns Saved Artifacts
+     */
+    public static async saveArtifacts(artifacts: ArtifactCollection[]): Promise<ArtifactCollection[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveArtifact.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
 
