@@ -145,10 +145,22 @@ export class TreeGraphComponent implements OnInit {
     }
 
     public onZoom(zoom: number) {
-        if (zoom > 0) {
+        if (zoom === 0) {
+            this.zoom = 1;
+        } else if (zoom > 0) {
             this.zoom += 0.1;
         } else {
             this.zoom -= 0.1;
+        }
+        this.zoom = Math.max(this.zoom, 0.1);
+        this.setZoom(this.zoom, this.gridEl.nativeElement);
+    }
+
+    public onScroll($event: any) {
+        if ($event.deltaY < 0) {
+            this.zoom = this.zoom * 1.1;
+        } else {
+            this.zoom = this.zoom * 0.9;
         }
         this.zoom = Math.max(this.zoom, 0.1);
         this.setZoom(this.zoom, this.gridEl.nativeElement);
@@ -182,16 +194,6 @@ export class TreeGraphComponent implements OnInit {
         }
     }
 
-    public onScroll($event: any) {
-        if ($event.deltaY < 0) {
-            this.zoom = this.zoom * 1.1;
-        } else {
-            this.zoom = this.zoom * 0.9;
-        }
-        this.zoom = Math.max(this.zoom, 0.1);
-        this.setZoom(this.zoom, this.gridEl.nativeElement);
-    }
-
     public onSelectNode(node: TreeNode<any> | null) {
         this.select(node);
         if (node && node.selected === SelectType.SELECTED) {
@@ -204,6 +206,12 @@ export class TreeGraphComponent implements OnInit {
     public move(x: number, y: number): void {
         if (this.grid) {
             this.grid.move(x, y);
+        }
+        this.refresh();
+    }
+
+    public refresh() {
+        if (this.gridEl) {
             this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
             this.gridEl.nativeElement.style.top = `${this.grid.y}px`;
         }

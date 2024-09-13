@@ -17,6 +17,7 @@ import { PolicyStatisticsConfigurationComponent } from './policy-statistics-conf
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
+import { RadioButtonModule } from 'primeng/radiobutton';
 
 @NgModule({
     declarations: [
@@ -39,6 +40,7 @@ import { CheckboxModule } from 'primeng/checkbox';
         DropdownModule,
         TabViewModule,
         CheckboxModule,
+        RadioButtonModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

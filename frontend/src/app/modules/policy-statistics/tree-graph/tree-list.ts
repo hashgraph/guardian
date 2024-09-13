@@ -10,8 +10,8 @@ export class TreeListItem<T> {
     public hidden: boolean;
     public highlighted: boolean;
     public searchHighlighted: '' | 'highlighted' | 'sub' | 'hidden';
-    public search: string;
-    public searchChildren: string;
+    public search: string[];
+    public searchChildren: string[];
 
     constructor(data: T, parent: TreeListItem<T> | null, lvl: number) {
         this.data = data;
@@ -23,9 +23,17 @@ export class TreeListItem<T> {
         this.expandable = false;
         this.selected = false;
         this.highlighted = false;
-        this.search = '';
-        this.searchChildren = '';
+        this.search = [];
+        this.searchChildren = [];
         this.searchHighlighted = '';
+    }
+
+    public getPath(): TreeListItem<T>[] {
+        if (this.parent) {
+            return [...this.parent.getPath(), this];
+        } else {
+            return [this];
+        }
     }
 
     public setChildren(children: TreeListItem<T>[]) {
@@ -74,12 +82,15 @@ export class TreeListItem<T> {
         }
     }
 
-    public setSearchRules(f: (item: T) => string) {
+    public setSearchRules(f: (item: T) => string[]) {
         this.searchHighlighted = '';
         this.search = f(this.data);
-        this.searchChildren = this.search + '|';
+        this.searchChildren = this.search.map((s) => s + '|');
         for (const child of this.children) {
-            this.searchChildren = this.searchChildren + child.searchChildren + '|';
+            for (let i = 0; i < this.searchChildren.length; i++) {
+                this.searchChildren[i] = this.searchChildren[i] + child.searchChildren[i] + '|';
+
+            }
         }
     }
 }
@@ -159,20 +170,20 @@ export class TreeListData<T> {
         this._items = list.filter((i) => !i.hidden);
     }
 
-    public setSearchRules(f: (item: T) => string) {
+    public setSearchRules(f: (item: T) => string[]) {
         for (let index = this.list.length - 1; index > -1; index--) {
             const item = this.list[index];
             item.setSearchRules(f);
         }
     }
 
-    public searchItems(text: string): void {
+    public searchItems(text: string, ruleIndex: number): void {
         if (text) {
             for (const item of this.list) {
-                if (item.search.includes(text)) {
+                if (item.search[ruleIndex].includes(text)) {
                     item.searchHighlighted = 'highlighted';
                 } else {
-                    if (item.searchChildren.includes(text)) {
+                    if (item.searchChildren[ruleIndex].includes(text)) {
                         item.searchHighlighted = 'sub';
                         item.collapsed = false;
                     } else {
@@ -187,7 +198,11 @@ export class TreeListData<T> {
         }
     }
 
-    public static fromObject<T>(object: any, field: string): TreeListData<T> {
+    public static fromObject<T>(
+        root: any,
+        field: string,
+        f?: (item: TreeListItem<T>) => TreeListItem<T>
+    ): TreeListData<T> {
         const list: TreeListItem<T>[] = [];
         const getItem = (
             data: any,
@@ -196,19 +211,22 @@ export class TreeListData<T> {
             lvl: number
         ): TreeListItem<T>[] => {
             const children: TreeListItem<T>[] = []
-            const array: any[] = data[key];
-            if (Array.isArray(array)) {
-                for (const f of array) {
-                    const i = new TreeListItem(f, parent, lvl);
-                    list.push(i);
-                    children.push(i);
-                    const c = getItem(f, field, i, lvl + 1);
-                    i.setChildren(c);
+            const arrayObjects: any[] = data[key];
+            if (Array.isArray(arrayObjects)) {
+                for (const data of arrayObjects) {
+                    let newItem = new TreeListItem(data, parent, lvl);
+                    if (f) {
+                        newItem = f(newItem);
+                    }
+                    list.push(newItem);
+                    children.push(newItem);
+                    const child = getItem(data, field, newItem, lvl + 1);
+                    newItem.setChildren(child);
                 }
             }
             return children;
         }
-        getItem(object, field, null, 0)
+        getItem(root, field, null, 0)
         return new TreeListData(list);
     }
 }
@@ -219,6 +237,7 @@ export class TreeListView<T> {
 
     private _selectedFields: TreeListItem<T>[] = [];
     private _selectedCount = 0;
+    private _selectedAllCount = 0;
     private _selectedLimit = 0;
     private _views: TreeListView<T>[];
     private _search: string;
@@ -230,6 +249,10 @@ export class TreeListView<T> {
 
     public get selectedCount(): number {
         return this._selectedCount;
+    }
+
+    public get selectedAllCount(): number {
+        return this._selectedAllCount;
     }
 
     public get items(): TreeListItem<T>[] {
@@ -296,28 +319,7 @@ export class TreeListView<T> {
         return this._data.find(f);
     }
 
-    public filterOne(text: string): TreeListItem<T> | null {
-        for (const index of this._indexes) {
-            const item = this._data.list[index];
-            if (item.search.includes(text)) {
-                return item;
-            }
-        }
-        return null;
-    }
-
-    public filter(text: string): TreeListItem<T>[] {
-        const result: TreeListItem<T>[] = []
-        for (const index of this._indexes) {
-            const item = this._data.list[index];
-            if (item.search.includes(text)) {
-                result.push(item);
-            }
-        }
-        return result;
-    }
-
-    public setSearchRules(f: (item: T) => string) {
+    public setSearchRules(f: (item: T) => string[]) {
         this._data.setSearchRules(f);
     }
 
@@ -326,25 +328,19 @@ export class TreeListView<T> {
         for (const index of this._indexes) {
             const item = this._data.list[index];
             if (item) {
-                this._search = this._search + item.search + '|';
+                this._search = this._search + item.search[0] + '|';
             }
         }
     }
 
-    public searchItems(text: string): void {
-        this._data.searchItems(text);
+    public searchItems(text: string, ruleIndex: number): void {
+        this._data.searchItems(text, ruleIndex);
     }
 
     public searchView(text: string): void {
         this._searchHighlighted = false;
-        if (text) {
-            for (const index of this._indexes) {
-                const item = this._data.list[index];
-                if (item.search.includes(text)) {
-                    this._searchHighlighted = true;
-                    return;
-                }
-            }
+        if (text && this._search.includes(text)) {
+            this._searchHighlighted = true;
         }
     }
 
@@ -354,6 +350,7 @@ export class TreeListView<T> {
 
     public updateSelected() {
         const list = this._data.list;
+        this._selectedAllCount = list.filter((item) => item.selected).length;
         this._selectedFields = list.filter((item, index) => item.selected && this._indexes.has(index));
         this._selectedCount = this._selectedFields.length;
         if (this._selectedLimit) {
@@ -362,6 +359,10 @@ export class TreeListView<T> {
         for (const view of this._views) {
             view.updateSelected();
         }
+    }
+
+    public getSelected(): TreeListItem<T>[] {
+        return this._data.list.filter((item) => item.selected);
     }
 
     public createView(f: (item: TreeListItem<T>) => boolean): TreeListView<T> {

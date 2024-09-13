@@ -7,7 +7,9 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
 import { TreeListItem } from '../tree-graph/tree-list';
-import { SchemaData, SchemaNode } from './schema-node';
+import { SchemaData, SchemaFormulas, SchemaNode, SchemaVariables } from './schema-node';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { SchemaService } from 'src/app/services/schema.service';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -36,8 +38,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public rootNode: SchemaNode | null = null;
 
     public nodeLoading: boolean = true;
-
     public searchField: string = '';
+
+    public stepper = [true, false, false];
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -45,8 +48,51 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     private _timeout1: any;
     private _timeout2: any;
 
+    public formulas: SchemaFormulas = new SchemaFormulas();
+    public variables: SchemaVariables = new SchemaVariables();
+
+    public overviewForm = new FormGroup({
+        name: new FormControl('', Validators.required),
+        description: new FormControl(''),
+        policy: new FormControl('', Validators.required),
+        method: new FormControl('', Validators.required)
+    });
+
+    public schemaFilterType: number = 1;
+
+    public methods: any[] = [{
+        label: 'Manually',
+        value: 'manually'
+    }, {
+        label: 'By Event',
+        value: 'byEvent'
+    }, {
+        label: 'every Day',
+        value: 'everyDay'
+    }, {
+        label: 'every Week',
+        value: 'everyWeek'
+    }, {
+        label: 'every Month',
+        value: 'everyMonth'
+    }, {
+        label: 'every Year',
+        value: 'everyYear'
+    }];
+
+    public properties: Map<string, string>;
+
+    public get zoom(): number {
+        if (this.tree) {
+            return Math.round(this.tree.zoom * 100);
+        } else {
+            return 100;
+        }
+    }
+
     constructor(
         private profileService: ProfileService,
+        private schemaService: SchemaService,
         private policyStatisticsService: PolicyStatisticsService,
         private router: Router,
         private route: ActivatedRoute
@@ -93,27 +139,38 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         forkJoin([
             this.policyStatisticsService.getItem(this.id),
             this.policyStatisticsService.getRelationships(this.id),
-        ]).subscribe(([item, relationships]) => {
+            this.schemaService.properties()
+        ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
             if (relationships) {
-                this.prepareData(relationships);
+                this.prepareData(item, relationships, properties);
             }
             setTimeout(() => {
                 this.loading = false;
-            }, 500);
+            }, 1000);
         }, (e) => {
             this.loading = false;
         });
     }
 
-    private prepareData(relationships: any) {
+    private prepareData(
+        item: any,
+        relationships: any,
+        properties: any[]
+    ) {
         this.policy = relationships.policy || {};
         this.schemas = relationships.schemas || [];
         this.nodes = [];
+        this.properties = new Map<string, string>();
+        if(properties) {
+            for (const property of properties) {
+                this.properties.set(property.title, property.value);
+            }
+        }
         for (const schema of this.schemas) {
             try {
                 const item = new Schema(schema);
-                const node = SchemaNode.from(item);
+                const node = SchemaNode.from(item, this.properties);
                 for (const field of item.fields) {
                     if (field.isRef && field.type) {
                         node.addId(field.type)
@@ -128,6 +185,13 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         if (this.tree) {
             this.tree.setData(this.nodes);
         }
+
+        this.overviewForm.setValue({
+            name: item.name,
+            description: item.description,
+            policy: this.policy?.name,
+            method: item.description,
+        });
     }
 
     public onBack() {
@@ -148,7 +212,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         for (const node of nodes) {
             node.fields.updateSearch();
         }
-        this.tree.move(18, 56);
+        this.tree.move(18, 46);
     }
 
     public onSelectNode(node: TreeNode<SchemaData> | null) {
@@ -169,7 +233,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 rootView.collapsePath(item, false);
                 rootView.highlight(item, true);
             }
-            rootView.searchItems(this.searchField);
+            rootView.searchItems(this.searchField, this.schemaFilterType);
             rootView.updateHidden();
             rootView.updateSelected();
             this._timeout1 = setTimeout(() => {
@@ -204,14 +268,17 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             rootView.updateHidden();
             rootView.updateSelected();
         }
+        this.updateVariables();
     }
 
-    public onSchemaFilter($event: any) {
-        const value = ($event.target.value || '').trim().toLocaleLowerCase();
+    public onSchemaFilter() {
+        clearTimeout(this._timeout2);
+        this.nodeLoading = true;
+        const value = (this.searchField || '').trim().toLocaleLowerCase();
         if (this.tree) {
             const roots = this.tree.getRoots() as SchemaNode[];
             for (const root of roots) {
-                root.fields.searchItems(value);
+                root.fields.searchItems(value, this.schemaFilterType);
             }
 
             const nodes = this.tree.getNodes() as SchemaNode[];
@@ -224,6 +291,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 rootView.updateHidden();
             }
         }
+        this._timeout2 = setTimeout(() => {
+            this.nodeLoading = false;
+        }, 200)
     }
 
     public onNavRoot(root: SchemaNode) {
@@ -233,24 +303,72 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             const elCoord = el.getBoundingClientRect();
             const gridCoord = grid.getBoundingClientRect();
             const x = elCoord.left - gridCoord.left;
-            this.tree?.move(-x + 50, 56)
+            this.tree?.move(-x + 50, 56);
+            this.tree.onSelectNode(root);
         }
     }
 
     public onNavNext(dir: number) {
         const el = this.treeTabs.nativeElement;
-        const max = Math.floor((el.scrollWidth - el.offsetWidth) / 104);
-        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 104);
+        const max = Math.floor((el.scrollWidth - el.offsetWidth) / 114);
+        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 114);
         if (dir < 0) {
             current--;
         } else {
             current++;
         }
         current = Math.min(Math.max(current, 0), max);
-        this.treeTabs.nativeElement.scrollLeft = current * 104;
+        this.treeTabs.nativeElement.scrollLeft = current * 114;
     }
 
     public onClearNode() {
         this.tree?.onSelectNode(null);
+    }
+
+    public onStep(index: number) {
+        this.loading = true;
+        setTimeout(() => {
+            for (let i = 0; i < this.stepper.length; i++) {
+                this.stepper[i] = false;
+            }
+            this.stepper[index] = true;
+            this.tree?.move(18, 46);
+            if (index === 1) {
+                setTimeout(() => {
+                    this.tree?.refresh();
+                    this.loading = false;
+                }, 3000);
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 800);
+            }
+        }, 300);
+    }
+
+    public onZoom(d: number) {
+        if (this.tree) {
+            this.tree.onZoom(d);
+            if (d === 0) {
+                this.tree.move(18, 46);
+            }
+        }
+    }
+
+    public schemaConfigChange($event: any) {
+        if ($event.index === 1) {
+            this.schemaFilterType = 2;
+        } else {
+            this.schemaFilterType = 1;
+        }
+        this.onSchemaFilter();
+    }
+
+    private updateVariables() {
+        this.variables.fromNodes(this.roots);
+    }
+
+    public onAddVariable() {
+        this.formulas.add();
     }
 }
