@@ -6,6 +6,7 @@ import {DataBaseHelper, ormMock} from '../database-helper/mocks-database-helper.
 
 //entities
 import {TestEntity} from '../database-helper/test-entities.mjs';
+import {Schema} from '../../../dist/entity/index.js'
 
 const {DatabaseServer} = await esmock('../../../dist/database-modules/database-server.js', {
 	'../../../dist/helpers/index.js': {DataBaseHelper},
@@ -25,16 +26,16 @@ describe('DatabaseServer', function () {
 		
 		Object.keys(db).forEach(key => delete db[key]);
 	});
-  
-  describe('DatabaseServer GridFS Methods', () => {
-    it('should save and load a file correctly', async () => {
-        const buffer = Buffer.from('test file content');
-        const fileId = await DatabaseServer.saveFile('test-file', buffer);
-        
-        const loadedBuffer = await DatabaseServer.loadFile(fileId);
-        assert.deepEqual(loadedBuffer, buffer);
-    });
-  });
+	
+	describe('DatabaseServer GridFS Methods', () => {
+		it('should save and load a file correctly', async () => {
+			const buffer = Buffer.from('test file content');
+			const fileId = await DatabaseServer.saveFile('test-file', buffer);
+			
+			const loadedBuffer = await DatabaseServer.loadFile(fileId);
+			assert.deepEqual(loadedBuffer, buffer);
+		});
+	});
 	
 	describe('create Method', function () {
 		it('should create and return the correct entity', function () {
@@ -186,49 +187,91 @@ describe('DatabaseServer', function () {
 			assert.equal(finalCount, initialCount + 10);
 		});
 	});
-
-  describe('saveMany Method', function () {
-    it('should save multiple entities correctly', async function () {
-      const existingEntities = await dbServer.findAll(TestEntity);
-      await dbServer.remove(TestEntity, existingEntities);
-
-      const entitiesData = [
-        { name: 'Entity 1' },
-        { name: 'Entity 2' }
-      ];
-
-      const savedEntities = await dbServer.saveMany(TestEntity, entitiesData);
-
-      assert.isArray(savedEntities);
-      assert.lengthOf(savedEntities, 2);
-      assert.equal(savedEntities[0].name, 'Entity 1');
-      assert.equal(savedEntities[1].name, 'Entity 2');
-
-      const allEntities = await dbServer.findAll(TestEntity);
-      assert.lengthOf(allEntities, 2);
-    });
-  });
-
-  describe('updateMany Method', function () {
-    it('should update multiple entities correctly', async function () {
-      const savedEntities = await dbServer.findAll(TestEntity);
-
-      const entitiesToUpdate = savedEntities.map(entity => ({
-        name: `Updated ${entity.name}`,
-        id: entity.id
-      }));
-
-      const updatedEntities = await dbServer.updateMany(TestEntity, entitiesToUpdate);
-
-      assert.isArray(updatedEntities);
-      assert.lengthOf(updatedEntities, 2);
-      assert.equal(updatedEntities[0].name, 'Updated Entity 1');
-      assert.equal(updatedEntities[1].name, 'Updated Entity 2');
-
-      const allEntities = await dbServer.findAll(TestEntity);
-      assert.lengthOf(allEntities, 2);
-      assert.equal(allEntities[0].name, 'Updated Entity 1');
-      assert.equal(allEntities[1].name, 'Updated Entity 2');
-    });
-  });
+	
+	describe('saveMany Method', function () {
+		it('should save multiple entities correctly', async function () {
+			const existingEntities = await dbServer.findAll(TestEntity);
+			await dbServer.remove(TestEntity, existingEntities);
+			
+			const entitiesData = [
+				{name: 'Entity 1'},
+				{name: 'Entity 2'}
+			];
+			
+			const savedEntities = await dbServer.saveMany(TestEntity, entitiesData);
+			
+			assert.isArray(savedEntities);
+			assert.lengthOf(savedEntities, 2);
+			assert.equal(savedEntities[0].name, 'Entity 1');
+			assert.equal(savedEntities[1].name, 'Entity 2');
+			
+			const allEntities = await dbServer.findAll(TestEntity);
+			assert.lengthOf(allEntities, 2);
+		});
+	});
+	
+	describe('updateMany Method', function () {
+		it('should update multiple entities correctly', async function () {
+			const savedEntities = await dbServer.findAll(TestEntity);
+			
+			const entitiesToUpdate = savedEntities.map(entity => ({
+				name: `Updated ${entity.name}`,
+				id: entity.id
+			}));
+			
+			const updatedEntities = await dbServer.updateMany(TestEntity, entitiesToUpdate);
+			
+			assert.isArray(updatedEntities);
+			assert.lengthOf(updatedEntities, 2);
+			assert.equal(updatedEntities[0].name, 'Updated Entity 1');
+			assert.equal(updatedEntities[1].name, 'Updated Entity 2');
+			
+			const allEntities = await dbServer.findAll(TestEntity);
+			assert.lengthOf(allEntities, 2);
+			assert.equal(allEntities[0].name, 'Updated Entity 1');
+			assert.equal(allEntities[1].name, 'Updated Entity 2');
+		});
+	});
+	
+	describe('saveSchemas Method', function () {
+		it('should save schemas correctly with saveSchemas', async () => {
+			const schemasToSave = [{name: 'schema1'}, {name: 'schema2'}];
+			
+			const savedSchemas = await DatabaseServer.saveSchemas(schemasToSave);
+			
+			assert.isArray(savedSchemas);
+			assert.lengthOf(savedSchemas, 2);
+			assert.equal(savedSchemas[0].name, 'schema1');
+			assert.equal(savedSchemas[1].name, 'schema2');
+			
+			const savedInDb = db[Schema.name];
+			
+			assert.equal(savedInDb.length, 2);
+			assert.equal(savedInDb[0].name, 'schema1');
+			assert.equal(savedInDb[1].name, 'schema2');
+		})
+	})
+	
+	describe('updateSchemas Method', function () {
+		it('should update schemas by changing their names', async () => {
+			const existingSchemas = await db[Schema.name];
+			
+			assert.isArray(existingSchemas);
+			assert.lengthOf(existingSchemas, 2);
+			assert.equal(existingSchemas[0].name, 'schema1');
+			assert.equal(existingSchemas[1].name, 'schema2');
+			
+			existingSchemas[0].name = 'updatedSchema1';
+			existingSchemas[1].name = 'updatedSchema2';
+			
+			await DatabaseServer.updateSchemas(existingSchemas);
+			
+			const updatedSchemas = db[Schema.name];
+			
+			assert.isArray(updatedSchemas);
+			assert.lengthOf(updatedSchemas, 2);
+			assert.equal(updatedSchemas[0].name, 'updatedSchema1');
+			assert.equal(updatedSchemas[1].name, 'updatedSchema2');
+		});
+	});
 });
