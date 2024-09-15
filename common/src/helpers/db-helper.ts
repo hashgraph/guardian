@@ -768,7 +768,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         filter?: FilterQuery<T>
     ): Promise<T | T[]> {
         if (Array.isArray(entity)) {
-            return await Promise.all(entity.map(item => this.save(item)));
+            return await Promise.all(entity.map(item => this.update(item)));
         }
 
         if (!entity.id && !entity._id && !filter) {
@@ -854,7 +854,8 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         }
 
         if (bulkOps.length > 0) {
-            await repository.getMongoManager().bulkWrite(bulkOps);
+            const collection = this._em.getDriver().getConnection().getCollection(this.entityClass.name);
+            await collection.bulkWrite(bulkOps);
         }
 
         return updatedDocuments;
