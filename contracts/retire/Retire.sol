@@ -41,13 +41,6 @@ contract Retire is Version, RetireCommon {
         return implementations[tc] != RetireImplementation(address(0));
     }
 
-    function setImplementation(uint8 tc, address contractAddress)
-        external
-        role(OWNER)
-    {
-        implementations[tc] = RetireImplementation(contractAddress);
-    }
-
     function retire(RetireTokenRequest[] calldata tokens) public override {
         for (uint256 i = 0; i < tokens.length; i++) {
             require(tokenAvailable(tokens[i].token), "PAIR_NOT_AVAILABLE");

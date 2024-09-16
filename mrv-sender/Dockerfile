@@ -1,13 +1,13 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.16-alpine
-FROM node:${NODE_VERSION} as base
+ARG NODE_VERSION=20.17-alpine
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
 ARG YARN_CACHE_FOLDER=/root/.yarn
 
 # Stage 1: Build interfaces module
-FROM base as interfaces
+FROM base AS interfaces
 COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
 COPY --link interfaces/src src/
 # Here and after. Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
@@ -15,7 +15,7 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install --immutable && yarn pack
 
 # Stage 2: Build common module
-FROM base as common
+FROM base AS common
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link common/package.json common/tsconfig*.json yarn.lock ./
 COPY --link common/src src/
@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
     yarn install && yarn pack
 
 # Stage 3: Installing production dependecies
-FROM base as deps
+FROM base AS deps
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link mrv-sender/package.json mrv-sender/tsconfig*.json yarn.lock ./
@@ -33,17 +33,18 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
     yarn install --prod
 
 # Stage 4: Build service
-FROM base as build
+FROM base AS build
 COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
 COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
 COPY --link mrv-sender/src src/
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
     yarn install --immutable && yarn run build:prod
 
 # Stage 5: Create the final image
-FROM base as image
-ENV NODE_ENV production
+FROM node:${NODE_VERSION} AS image
+WORKDIR /usr/local/app
+ENV NODE_ENV=production
 
 COPY --link mrv-sender/public public/
 

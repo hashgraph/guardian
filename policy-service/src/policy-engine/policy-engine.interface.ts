@@ -638,6 +638,12 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * Restore filters
      */
     resetFilters(user: PolicyUser): Promise<void>;
+
+    /**
+     * Restore pagination
+     * @param user
+     */
+    resetPagination(user: PolicyUser): Promise<void>;
 }
 
 /**
@@ -714,6 +720,11 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
  * Policy request block interface
  */
 export interface IPolicyRequestBlock extends IPolicyBlock {
+    /**
+     * Is block active
+     */
+    isBlockActive(user: PolicyUser): Promise<boolean>;
+
     /**
      * Get block data
      * @param user

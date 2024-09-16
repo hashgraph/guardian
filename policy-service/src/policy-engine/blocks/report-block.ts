@@ -9,6 +9,7 @@ import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { getVCField, VcDocument, VpDocument } from '@guardian/common';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Report block
@@ -219,9 +220,9 @@ export class ReportBlock {
                     messageIds.push(ids);
                 }
             }
-            const items = await ref.databaseServer.getVcDocuments<VcDocument[]>({
-                where: { messageId: { $in: messageIds } }
-            });
+
+            const items = await ref.databaseServer.getVcDocuments<VcDocument>({ messageId: { $in: messageIds } }) as VcDocument[];
+
             for (const item of items) {
                 documentIds.push(item.document.id);
                 documentSubjectIds.push(item.document.credentialSubject[0].id);
@@ -358,12 +359,11 @@ export class ReportBlock {
         }
         const additionalReports = [];
         if (messageIds.length) {
-            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
-                where: {
-                    messageId: { $in: messageIds },
-                    policyId: { $eq: ref.policyId }
-                }
-            });
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument>({
+                messageId: { $in: messageIds },
+                policyId: { $eq: ref.policyId }
+            }) as VpDocument[];
+
             for (const additionalVp of additionalVps) {
                 [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);
@@ -371,13 +371,12 @@ export class ReportBlock {
             }
         }
         if (vp.messageId) {
-            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument[]>({
-                where: {
-                    'document.verifiableCredential.credentialSubject.type': { $eq: 'TokenDataSource' },
-                    'document.verifiableCredential.credentialSubject.relationships': { $eq: vp.messageId },
-                    'policyId': { $eq: ref.policyId }
-                }
-            });
+            const additionalVps: any[] = await ref.databaseServer.getVpDocuments<VpDocument>({
+                'document.verifiableCredential.credentialSubject.type': { $eq: 'TokenDataSource' },
+                'document.verifiableCredential.credentialSubject.relationships': { $eq: vp.messageId },
+                'policyId': { $eq: ref.policyId }
+            } as FilterObject<VpDocument>) as VpDocument[];
+
             for (const additionalVp of additionalVps) {
                 [additionalVp.serials, additionalVp.amount, additionalVp.error, additionalVp.wasTransferNeeded, additionalVp.transferSerials, additionalVp.transferAmount, additionalVp.tokenIds] = await ref.databaseServer.getVPMintInformation(additionalVp);
                 const additionalReport = await this.addReportByVP({}, {}, additionalVp);

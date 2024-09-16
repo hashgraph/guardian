@@ -6,9 +6,10 @@ import {
     Policy,
     VcDocument,
     VcDocumentDefinition,
-    PinoLogger
+    PinoLogger,
 } from '@guardian/common';
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
+import { FilterObject } from '@mikro-orm/core';
 
 export const CompanyNameField = 'AccountableImpactOrganization.name';
 export const SectoralScopeField = 'ActivityImpactModule.projectScope';
@@ -98,7 +99,7 @@ export async function projectsAPI(logger: PinoLogger): Promise<void> {
                 const fetchedPolicies = await DatabaseServer.getPolicies({
                     id: { $in: msg.policyIds },
                     status: { $eq: 'PUBLISH' }
-                });
+                } as FilterObject<Policy>);
                 const allPolicies = policies.concat(fetchedPolicies);
 
                 const resultSchemas: Set<string> = new Set<string>();

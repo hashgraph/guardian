@@ -1,13 +1,20 @@
-import { DataBaseHelper } from '../helpers/index.js';
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
 import { DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * Schema Documents Loader.
  * Used for schema validation.
  */
 export class LocalSchemaContextLoader extends DocumentLoader {
+    dataBaseServer: DatabaseServer
+
+    constructor() {
+        super();
+        this.dataBaseServer =  new DatabaseServer()
+    }
+
     /**
      * Get document format
      * @param iri
@@ -44,7 +51,7 @@ export class LocalSchemaContextLoader extends DocumentLoader {
             if (!contextURL) {
                 return null;
             }
-            return await new DataBaseHelper(Schema).findOne({ contextURL });
+            return await this.dataBaseServer.findOne(Schema, { contextURL });
         }
         catch (error) {
             return null;

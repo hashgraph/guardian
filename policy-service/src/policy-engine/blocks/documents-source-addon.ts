@@ -164,14 +164,14 @@ export class DocumentsSourceAddon {
         switch (ref.options.dataType) {
             case 'vc-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult);
+                data = await ref.databaseServer.getVcDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
                 break;
             case 'did-documents':
                 data = await ref.databaseServer.getDidDocuments(filters, otherOptions, countResult);
                 break;
             case 'vp-documents':
                 filters.policyId = ref.policyId;
-                data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult);
+                data = await ref.databaseServer.getVpDocuments(filters, otherOptions, countResult) as number | IPolicyDocument[];
                 if (!countResult) {
                     for (const item of data as any[]) {
                         [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);

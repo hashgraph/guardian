@@ -21,7 +21,7 @@ export class IPFSService {
                     timeout,
                 }
             );
-            return items.data;  
+            return items.data;
         } catch (error) {
             throw new CustomError(String(error), error.response?.status)
         }

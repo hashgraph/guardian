@@ -1,12 +1,19 @@
-import { DataBaseHelper } from '../helpers/index.js';
 import { DidDocument } from '../entity/index.js';
 import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * DID Documents Loader
  * Used for signatures validation.
  */
 export class LocalDidLoader extends DocumentLoader {
+    dataBaseServer: DatabaseServer
+
+    constructor(filters?: string | string[]) {
+        super(filters);
+        this.dataBaseServer =  new DatabaseServer()
+    }
+
     public async has(iri: string): Promise<boolean> {
         return (await super.has(iri)) && (await this._hasDocument(iri));
     }
@@ -28,7 +35,7 @@ export class LocalDidLoader extends DocumentLoader {
      */
     public async getDocument(iri: string): Promise<any> {
         const did = DidURL.getController(iri);
-        const didDocuments = await new DataBaseHelper(DidDocument).findOne({
+        const didDocuments = await this.dataBaseServer.findOne(DidDocument, {
             did,
         });
         if (didDocuments) {
@@ -44,6 +51,6 @@ export class LocalDidLoader extends DocumentLoader {
      */
     private async _hasDocument(iri: string): Promise<boolean> {
         const did = DidURL.getController(iri);
-        return !!(await new DataBaseHelper(DidDocument).findOne({ did }));
+        return !!(await this.dataBaseServer.findOne(DidDocument, { did }));
     }
 }

@@ -6,7 +6,7 @@ import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument, VcHelper, VpDocument } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
 import { RecordItem } from './record-item.js';
 import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
@@ -312,12 +312,13 @@ export class Running {
         }
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(this.policyId);
-        const vcs = await db.getVcDocuments<any[]>({
+        const vcs = await db.getVcDocuments<VcDocumentCollection>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        } ) as VcDocumentCollection[];
+
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -325,12 +326,13 @@ export class Running {
                 document: vc.document
             });
         }
-        const vps = await db.getVpDocuments<any[]>({
+        const vps = await db.getVpDocuments<VpDocument>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        }) as VpDocument[];
+
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,

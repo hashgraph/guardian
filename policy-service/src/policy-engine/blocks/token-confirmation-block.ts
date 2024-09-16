@@ -43,7 +43,7 @@ export class TokenConfirmationBlock {
      * @private
      */
     @StateField()
-    private readonly state: {
+    declare state: {
         [key: string]: {
             /**
              * Hedera account
@@ -62,7 +62,11 @@ export class TokenConfirmationBlock {
              */
             tokenId: string
         }
-    } = {};
+    };
+
+    public async beforeInit(): Promise<void> {
+        this.state = {};
+    }
 
     /**
      * Token
@@ -122,7 +126,10 @@ export class TokenConfirmationBlock {
         if (!['confirm', 'skip'].includes(data.action)) {
             throw new BlockActionError(`Invalid Action`, ref.blockType, ref.uuid)
         }
-        await this.confirm(ref, data, blockState, data.action === 'skip');
+
+        if (data.action === 'confirm') {
+            await this.confirm(ref, data, blockState, data.action === 'skip');
+        }
 
         ref.triggerEvents(PolicyOutputEventType.Confirm, blockState.user, blockState.data);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, blockState.user, blockState.data);
@@ -144,6 +151,11 @@ export class TokenConfirmationBlock {
             hederaAccountKey: data.hederaAccountKey
         }
 
+        await PolicyUtils.checkAccountId(account);
+        if (!account.hederaAccountKey) {
+            throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
+        }
+
         let token: any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
@@ -157,52 +169,17 @@ export class TokenConfirmationBlock {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
 
-        await PolicyUtils.checkAccountId(account);
-        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
-        const hederaCredentials = await policyOwner.loadHederaCredentials(ref);
-        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, hederaCredentials);
-
-        if (skip) {
-            switch (ref.options.action) {
-                case 'associate': {
-                    if (!hederaAccountInfo[token.tokenId]) {
-                        throw new BlockActionError(`Token is not associated`, ref.blockType, ref.uuid);
-                    }
-                    break;
-                }
-                case 'dissociate': {
-                    if (hederaAccountInfo[token.tokenId]) {
-                        throw new BlockActionError(`Token is not dissociated`, ref.blockType, ref.uuid);
-                    }
-                    break;
-                }
-                default:
-                    break;
+        switch (ref.options.action) {
+            case 'associate': {
+                await PolicyUtils.associate(ref, token, account);
+                break;
             }
-        } else {
-            if (!account.hederaAccountKey) {
-                throw new BlockActionError(`Key value is unknown`, ref.blockType, ref.uuid)
+            case 'dissociate': {
+                await PolicyUtils.dissociate(ref, token, account);
+                break;
             }
-            switch (ref.options.action) {
-                case 'associate': {
-                    if (!hederaAccountInfo[token.tokenId]) {
-                        await PolicyUtils.associate(ref, token, account);
-                    } else {
-                        console.warn('Token already associated', ref.policyId);
-                    }
-                    break;
-                }
-                case 'dissociate': {
-                    if (hederaAccountInfo[token.tokenId]) {
-                        await PolicyUtils.dissociate(ref, token, account);
-                    } else {
-                        console.warn('Token already dissociated', ref.policyId);
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
+            default:
+                break;
         }
     }
 
