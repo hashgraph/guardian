@@ -8,25 +8,25 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 @Entity()
 export class PolicyStatistic extends BaseEntity {
     /**
-     * Tag id
+     * ID
      */
     @Property({ nullable: true })
     uuid?: string;
 
     /**
-     * Tag label
+     * Label
      */
     @Property({ nullable: true })
     name?: string;
 
     /**
-     * Tag description
+     * Description
      */
     @Property({ nullable: true })
     description?: string;
 
     /**
-     * Tag owner
+     * Owner
      */
     @Property({
         nullable: true,
@@ -35,13 +35,13 @@ export class PolicyStatistic extends BaseEntity {
     owner?: string;
 
     /**
-     * Tool creator
+     * Creator
      */
     @Property({ nullable: true })
     creator?: string;
 
     /**
-     * Target ID
+     * Status
      */
     @Property({ nullable: true })
     status?: 'Draft' | 'Published';
@@ -80,7 +80,19 @@ export class PolicyStatistic extends BaseEntity {
     instanceTopicId?: string;
 
     /**
-     * Set policy defaults
+     * Config
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    config?: any;
+
+    /**
+     * Method
+     */
+    @Property({ nullable: true })
+    method?: string;
+
+    /**
+     * Set defaults
      */
     @BeforeCreate()
     setDefaults() {

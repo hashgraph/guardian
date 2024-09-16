@@ -1,7 +1,8 @@
-import { Component, ContentChild, ElementRef, EventEmitter, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
+import { Component, ContentChild, ElementRef, EventEmitter, NgZone, OnInit, Output, Renderer2, TemplateRef, ViewChild } from '@angular/core';
 import { SelectType } from './tree-types';
 import { TreeNode } from './tree-node';
 import { Grid } from './tree-grid';
+import { TreeSource } from './tree-source';
 
 @Component({
     selector: 'app-tree-graph',
@@ -9,30 +10,42 @@ import { Grid } from './tree-grid';
     styleUrls: ['./tree-graph.component.scss'],
 })
 export class TreeGraphComponent implements OnInit {
-    @ViewChild('gridEl', { static: false }) gridEl: ElementRef;
+    @ViewChild('movedEl', { static: true }) movedEl: ElementRef<HTMLDivElement>;
+    @ViewChild('gridEl', { static: false }) gridEl: ElementRef<HTMLDivElement>;
     @ContentChild('nodeTemplate') nodeTemplate: TemplateRef<any>;
 
     @Output('init') initEvent = new EventEmitter<TreeGraphComponent>();
     @Output('select') selectEvent = new EventEmitter<TreeNode<any> | null>();
     @Output('render') renderEvent = new EventEmitter<any>();
 
-    public roots: TreeNode<any>[];
-    public nodes: TreeNode<any>[];
     public grid: Grid;
     public width: number = 200;
     public zoom = 1;
     public toolbar = true;
+    public source: TreeSource<any>;
 
-    constructor() {
+    private _unListen: Function;
+
+    constructor(
+        private ngZone: NgZone,
+        private renderer: Renderer2
+    ) {
 
     }
 
     ngOnInit() {
+        this.ngZone.runOutsideAngular(() => {
+            this._unListen = this.renderer.listen(
+                this.movedEl.nativeElement,
+                'mousemove',
+                this.onMouseMove.bind(this)
+            );
+        });
         this.initEvent.emit(this);
     }
 
     ngOnDestroy(): void {
-
+        this._unListen();
     }
 
     public get moving(): boolean {
@@ -43,25 +56,16 @@ export class TreeGraphComponent implements OnInit {
         }
     }
 
-    public setData(nodes: TreeNode<any>[]) {
-        const { roots, allNodes } = this.nonUniqueNodes(nodes);
-        this.roots = roots;
-        this.nodes = allNodes;
-        this.grid = Grid.createLayout(this.width, this.roots);
+    public setData(source: TreeSource<any>) {
+        this.source = source;
+        this.grid = Grid.createLayout(this.width, this.source.roots);
         this.grid.render();
         this.renderEvent.emit({
             grid: this.grid,
-            roots: this.roots,
-            nodes: this.nodes
+            roots: this.source.roots,
+            nodes: this.source.nodes,
+            source: this.source
         })
-    }
-
-    public getNodes(): TreeNode<any>[] {
-        return this.nodes;
-    }
-
-    public getRoots(): TreeNode<any>[] {
-        return this.roots;
     }
 
     public select(node: TreeNode<any> | null) {
@@ -83,63 +87,15 @@ export class TreeGraphComponent implements OnInit {
         }
     }
 
-    private uniqueNodes(nodes: TreeNode<any>[]): TreeNode<any>[] {
-        const nodeMap = new Map<string, TreeNode<any>>();
-        for (const node of nodes) {
-            nodeMap.set(node.id, node);
-        }
-
-        const roots = nodes.filter((n) => n.type === 'root');
-        const subs = nodes.filter((n) => n.type !== 'root');
-
-        return roots;
-    }
-
-    private nonUniqueNodes(nodes: TreeNode<any>[]) {
-        const roots = nodes.filter((n) => n.type === 'root');
-        const subs = nodes.filter((n) => n.type !== 'root');
-
-        const nodeMap = new Map<string, TreeNode<any>>();
-        for (const node of subs) {
-            nodeMap.set(node.id, node);
-        }
-
-        const allNodes: TreeNode<any>[] = [];
-        const getSubNode = (node: TreeNode<any>): TreeNode<any> => {
-            allNodes.push(node);
-            for (const id of node.childIds) {
-                const child = nodeMap.get(id);
-                if (child) {
-                    node.addNode(getSubNode(child.clone()));
-                } else {
-                    console.log('', id)
-                }
-            }
-            return node;
-        }
-        for (const root of roots) {
-            getSubNode(root);
-        }
-        for (const root of roots) {
-            root.resize();
-        }
-        for (const node of allNodes) {
-            node.update();
-        }
-        return { roots, allNodes };
-    }
-
     public setZoom(zoom: number, el: any) {
-        let transformOrigin = [0, 0];
-        var p = ["webkit", "moz", "ms", "o"],
-            s = "scale(" + zoom + ")",
-            oString = (transformOrigin[0] * 100) + "% " + (transformOrigin[1] * 100) + "%";
-
-        for (var i = 0; i < p.length; i++) {
+        const transformOrigin = [0, 0];
+        const p = ["webkit", "moz", "ms", "o"];
+        const s = "translateZ(0) scale(" + zoom + ")";
+        const oString = (transformOrigin[0] * 100) + "% " + (transformOrigin[1] * 100) + "%";
+        for (let i = 0; i < p.length; i++) {
             el.style[p[i] + "Transform"] = s;
             el.style[p[i] + "TransformOrigin"] = oString;
         }
-
         el.style["transform"] = s;
         el.style["transformOrigin"] = oString;
     }
@@ -168,7 +124,7 @@ export class TreeGraphComponent implements OnInit {
 
     public onMouseDown($event: any) {
         if ($event.stopPropagation) {
-            $event.stopPropagation()
+            $event.stopPropagation();
         }
         this.grid.onMove(true, $event);
         this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
@@ -177,7 +133,7 @@ export class TreeGraphComponent implements OnInit {
 
     public onMouseUp($event: any) {
         if ($event.stopPropagation) {
-            $event.stopPropagation()
+            $event.stopPropagation();
         }
         this.grid.onMove(false, $event);
         this.gridEl.nativeElement.style.left = `${this.grid.x}px`;
@@ -186,7 +142,7 @@ export class TreeGraphComponent implements OnInit {
 
     public onMouseMove($event: any) {
         if ($event.stopPropagation) {
-            $event.stopPropagation()
+            $event.stopPropagation();
         }
         if (this.grid.onMoving($event)) {
             this.gridEl.nativeElement.style.left = `${this.grid.x}px`;

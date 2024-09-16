@@ -38,6 +38,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Get statistics
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - Operation success
+     */
     ApiResponse(MessageAPI.GET_STATISTICS,
         async (msg: { filters: any, owner: IOwner }) => {
             try {
@@ -82,6 +89,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Get statistic
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {any} - Operation success
+     */
     ApiResponse(MessageAPI.GET_STATISTIC,
         async (msg: { id: string, owner: IOwner }) => {
             try {
@@ -93,6 +107,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
+                console.log(item);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -100,6 +115,13 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Get relationships
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {any} - Operation success
+     */
     ApiResponse(MessageAPI.GET_STATISTIC_RELATIONSHIPS,
         async (msg: { id: string, owner: IOwner }) => {
             try {
@@ -127,4 +149,64 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    /**
+     * Update theme
+     *
+     * @param payload - theme
+     *
+     * @returns {Theme} theme
+     */
+    ApiResponse(MessageAPI.UPDATE_STATISTIC,
+        async (msg: { id: string, statistic: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid update theme parameters');
+                }
+                const { id, statistic, owner } = msg;
+
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                item.name = statistic.name;
+                item.description = statistic.description;
+                item.config = statistic.config;
+
+                const result = await DatabaseServer.updateStatistic(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Delete statistics
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {boolean} - Operation success
+     */
+    ApiResponse(MessageAPI.DELETE_STATISTIC,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid delete theme parameters');
+                }
+                const { id, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                await DatabaseServer.removeStatistic(item);
+                return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+
 }

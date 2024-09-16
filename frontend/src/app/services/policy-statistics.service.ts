@@ -48,8 +48,8 @@ export class PolicyStatisticsService {
         return { page, count };
     }
 
-    public create(policy: any): Observable<void> {
-        return this.http.post<any>(`${this.url}/`, policy);
+    public create(item: any): Observable<void> {
+        return this.http.post<any>(`${this.url}/`, item);
     }
 
     public getItem(id: string): Observable<any> {
@@ -58,5 +58,13 @@ export class PolicyStatisticsService {
 
     public getRelationships(id: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${id}/relationships`);
+    }
+
+    public delete(item: any): Observable<any> {
+        return this.http.delete<boolean>(`${this.url}/${item.id}`);
+    }
+
+    public update(item: any): Observable<any> {
+        return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 }

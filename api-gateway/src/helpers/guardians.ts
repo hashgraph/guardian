@@ -2879,4 +2879,29 @@ export class Guardians extends NatsService {
     public async getStatisticRelationships(id: string, owner: IOwner): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_STATISTIC_RELATIONSHIPS, { id, owner });
     }
+
+    /**
+     * Update statistic
+     * @param id
+     * @param statistic
+     * @param owner
+     * @returns theme
+     */
+    public async updateStatistic(
+        id: string,
+        statistic: any,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_STATISTIC, { id, statistic, owner });
+    }
+
+    /**
+     * Delete statistic
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteStatistic(id: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_STATISTIC, { id, owner });
+    }
 }

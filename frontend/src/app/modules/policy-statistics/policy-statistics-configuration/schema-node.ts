@@ -41,18 +41,14 @@ export class SchemaNode extends TreeNode<SchemaData> {
     }
 
     public override update() {
-        this.fields = this.getRootFields();
-    }
-
-    public getRootFields(): TreeListView<FieldData> {
         if (this.parent) {
-            const parentFields = (this.parent as SchemaNode).getRootFields();
-            return parentFields.createView((s) => {
+            const root = this.getRoot() as SchemaNode;
+            const parentFields = root.fields;
+            this.fields = parentFields.createView((s) => {
                 return s.parent?.data?.type === this.data.iri;
             });
-        } else {
-            return this.fields;
         }
+        this.fields.updateSearch();
     }
 
     public static from(schema: Schema, properties: Map<string, string>): SchemaNode {
@@ -85,19 +81,77 @@ export class SchemaNode extends TreeNode<SchemaData> {
     }
 }
 
-export class SchemaVariable {
+interface IVariableData {
+    id: string;
+    schemaId: string;
+    path: string;
+    schemaName: string;
+    schemaPath: string;
+    fieldType: string;
+    fieldDescription: string;
+    fieldProperty: string;
+    fieldPropertyName: string;
+}
+
+export class SchemaVariable implements IVariableData {
     public id: string;
-    public path: string;
-    public namePath: string;
     public schemaId: string;
-    public schema: string;
-    public description: string;
-    public property: string;
-    public propertyName: string;
-    public type: string;
+    public path: string;
+
+    public schemaName: string;
+    public schemaPath: string;
+    public fieldType: string;
+    public fieldDescription: string;
+    public fieldProperty: string;
+    public fieldPropertyName: string;
+
     public index: number;
 
     constructor() {
+    }
+
+    public getJson(): IVariableData {
+        return {
+            id: this.id,
+            schemaId: this.schemaId,
+            path: this.path,
+            schemaName: this.schemaName,
+            schemaPath: this.schemaPath,
+            fieldType: this.fieldType,
+            fieldDescription: this.fieldDescription,
+            fieldProperty: this.fieldProperty,
+            fieldPropertyName: this.fieldPropertyName
+        }
+    }
+
+    public static fromData(data: IVariableData): SchemaVariable {
+        const variable = new SchemaVariable();
+        variable.id = data.id;
+        variable.schemaId = data.schemaId;
+        variable.path = data.path;
+        variable.schemaName = data.schemaName;
+        variable.schemaPath = data.schemaPath;
+        variable.fieldType = data.fieldType;
+        variable.fieldDescription = data.fieldDescription;
+        variable.fieldProperty = data.fieldProperty;
+        variable.fieldPropertyName = data.fieldPropertyName;
+        return variable;
+    }
+
+    public static fromNode(rootNode: SchemaNode, field: TreeListItem<FieldData>): SchemaVariable {
+        const variable = new SchemaVariable();
+        const path = field.path.map((e) => e.data.name).join('.');
+        const schemaPath = field.path.map((e) => e.data.description).join(' / ');
+        variable.id = '';
+        variable.schemaId = rootNode.data.iri;
+        variable.path = path;
+        variable.schemaName = rootNode.data.name;
+        variable.schemaPath = schemaPath;
+        variable.fieldType = field.data.type;
+        variable.fieldDescription = field.data.description;
+        variable.fieldProperty = field.data.property;
+        variable.fieldPropertyName = field.data.propertyName;
+        return variable;
     }
 }
 
@@ -125,23 +179,13 @@ export class SchemaVariables {
         return name;
     }
 
-    public fromData(data: any[]) {
+    public fromData(data: IVariableData[]) {
         const map = new Map<string, SchemaVariable>();
         if (data) {
             for (let index = 0; index < data.length; index++) {
                 const item = data[index];
-                const variable = new SchemaVariable();
-                variable.id = item.id;
-                variable.schemaId = item.schemaId;
-                variable.path = item.path;
-                variable.namePath = item.namePath;
-                variable.schema = item.schema;
-                variable.description = item.description;
-                variable.type = item.type;
-                variable.property = item.property;
-                variable.propertyName = item.propertyName;
+                const variable = SchemaVariable.fromData(item);
                 variable.index = index;
-
                 const fullPath = `${variable.schemaId}.${variable.path}`;
                 map.set(fullPath, variable);
             }
@@ -167,17 +211,7 @@ export class SchemaVariables {
                 const fields = root.fields.getSelected();
                 for (const field of fields) {
                     index++;
-                    const variable = new SchemaVariable();
-                    const path = field.getPath();
-                    variable.id = '';
-                    variable.schemaId = root.data.iri;
-                    variable.path = path.map((e) => e.data.name).join('.');
-                    variable.namePath = path.map((e) => e.data.description).join(' / ');
-                    variable.schema = root.data.name;
-                    variable.description = field.data.description;
-                    variable.type = field.data.type;
-                    variable.property = field.data.property;
-                    variable.propertyName = field.data.propertyName;
+                    const variable = SchemaVariable.fromNode(root, field);
                     variable.index = index;
                     const fullPath = `${variable.schemaId}.${variable.path}`;
                     map.set(fullPath, variable);
@@ -206,9 +240,33 @@ export class SchemaVariables {
             this.variables[index].index = index;
         }
     }
+
+    public getJson(): any[] {
+        return this.variables.map((v) => v.getJson());
+    }
+
+    public getMap(): Map<string, Map<string, SchemaVariable>> {
+        const map = new Map<string, Map<string, SchemaVariable>>();
+        for (const variable of this.variables) {
+            let m = map.get(variable.schemaId);
+            if (!m) {
+                m = new Map<string, SchemaVariable>();
+                map.set(variable.schemaId, m);
+            }
+            m.set(variable.path, variable);
+        }
+        return map;
+    }
 }
 
-export class SchemaFormula {
+interface IFormulaData {
+    id: string;
+    type: string;
+    description: string;
+    formula: string;
+}
+
+export class SchemaFormula implements IFormulaData {
     public id: string;
     public type: string;
     public description: string;
@@ -216,6 +274,24 @@ export class SchemaFormula {
     public index: number;
 
     constructor() {
+    }
+
+    public getJson(): IFormulaData {
+        return {
+            id: this.id,
+            type: this.type,
+            description: this.description,
+            formula: this.formula
+        }
+    }
+
+    public static fromData(data: IFormulaData): SchemaFormula {
+        const formula = new SchemaFormula();
+        formula.id = data.id;
+        formula.type = data.type;
+        formula.description = data.description;
+        formula.formula = data.formula;
+        return formula;
     }
 }
 
@@ -249,16 +325,12 @@ export class SchemaFormulas {
         this.formulas.push(formula);
     }
 
-    public fromData(data: any[]) {
+    public fromData(data: IFormulaData[]) {
         this.formulas = [];
         if (data) {
             for (let index = 0; index < data.length; index++) {
                 const item = data[index];
-                const formula = new SchemaFormula();
-                formula.id = item.id;
-                formula.type = item.type;
-                formula.description = item.description;
-                formula.formula = item.formula;
+                const formula = SchemaFormula.fromData(item);
                 formula.index = index;
                 this.formulas.push(formula);
             }
@@ -267,5 +339,9 @@ export class SchemaFormulas {
             this.names.add(item.id);
         }
         this.startIndex = this.formulas.length + 1;
+    }
+
+    public getJson(): any[] {
+        return this.formulas.map((f) => f.getJson());
     }
 }

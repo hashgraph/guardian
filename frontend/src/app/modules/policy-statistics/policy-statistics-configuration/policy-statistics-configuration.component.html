@@ -130,7 +130,7 @@
                     <div class="tree-tab-last"></div>
                 </div>
             </div>
-            <div class="zoom-toolbar" [attr.hidden-schema]="!rootNode">
+            <div class="zoom-toolbar" [attr.hidden-schema]="!selectedNode">
                 <div class="zoom-button">
                     <button 
                         class="guardian-icon-button" 
@@ -168,7 +168,7 @@
                     </button>
                 </div>
             </div>
-            <div class="schema-fields" [attr.hidden-schema]="!rootNode">
+            <div class="schema-fields" [attr.hidden-schema]="!selectedNode">
                 <div *ngIf="nodeLoading" class="guardian-loading">
                     <div class="guardian-loading-image"></div>
                 </div>
@@ -395,16 +395,16 @@
                                 {{variable.id}}
                             </div>
                             <div class="variables-grid-cell cell-300">
-                                {{variable.namePath}}
+                                {{variable.schemaPath}}
                             </div>
                             <div class="variables-grid-cell cell-300">
-                                {{variable.propertyName}}
+                                {{variable.fieldPropertyName}}
                             </div>
                             <div class="variables-grid-cell">
-                                {{variable.description}}
+                                {{variable.fieldDescription}}
                             </div>
                             <div class="variables-grid-cell cell-200">
-                                {{variable.type}}
+                                {{variable.fieldType}}
                             </div>
                         </div>
                     </div>
@@ -496,6 +496,6 @@
                 </div>
             </div>
         </div>
-        <button (click)="onBack()" class="guardian-button guardian-button-primary">Apply Changes</button>
+        <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>

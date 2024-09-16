@@ -10,6 +10,7 @@ import { TreeListItem } from '../tree-graph/tree-list';
 import { SchemaData, SchemaFormulas, SchemaNode, SchemaVariables } from './schema-node';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
+import { TreeSource } from '../tree-graph/tree-source';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -32,8 +33,8 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
     private nodes: SchemaNode[];
+    private source: TreeSource<SchemaNode>;
 
-    public roots: SchemaNode[];
     public selectedNode: SchemaNode | null = null;
     public rootNode: SchemaNode | null = null;
 
@@ -45,8 +46,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
 
-    private _timeout1: any;
-    private _timeout2: any;
+    private _selectTimeout1: any;
+    private _selectTimeout2: any;
+    private _selectTimeout3: any;
 
     public formulas: SchemaFormulas = new SchemaFormulas();
     public variables: SchemaVariables = new SchemaVariables();
@@ -88,6 +90,10 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         } else {
             return 100;
         }
+    }
+
+    public get roots(): SchemaNode[] {
+        return this.source?.roots;
     }
 
     constructor(
@@ -143,8 +149,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
             if (relationships) {
-                this.prepareData(item, relationships, properties);
+                this.updateTree(relationships, properties);
             }
+            this.updateForm(this.item);
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
@@ -153,16 +160,12 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         });
     }
 
-    private prepareData(
-        item: any,
-        relationships: any,
-        properties: any[]
-    ) {
+    private updateTree(relationships: any, properties: any[]) {
         this.policy = relationships.policy || {};
         this.schemas = relationships.schemas || [];
         this.nodes = [];
         this.properties = new Map<string, string>();
-        if(properties) {
+        if (properties) {
             for (const property of properties) {
                 this.properties.set(property.title, property.value);
             }
@@ -182,16 +185,38 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             }
         }
 
+        this.source = new TreeSource(this.nodes);
         if (this.tree) {
-            this.tree.setData(this.nodes);
+            this.tree.setData(this.source);
         }
+    }
 
+    private updateForm(item: any) {
         this.overviewForm.setValue({
             name: item.name,
             description: item.description,
             policy: this.policy?.name,
             method: item.description,
         });
+
+        const config = item.config || {};
+        this.variables.fromData(config.variables);
+        this.formulas.fromData(config.formulas);
+
+        const map1 = this.variables.getMap();
+        for (const root of this.source.roots) {
+            const map2 = map1.get(root.data.iri);
+            if (map2) {
+                const rootView = root.fields;
+                const data = rootView.data;
+                for (const field of data.list) {
+                    const path = field.path.map((e) => e.data.name).join('.');
+                    field.selected = map2.has(path);
+                }
+                rootView.updateHidden();
+                rootView.updateSelected();
+            }
+        }
     }
 
     public onBack() {
@@ -201,34 +226,34 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public initTree($event: TreeGraphComponent) {
         this.tree = $event;
         if (this.nodes) {
-            this.tree.setData(this.nodes);
+            this.tree.setData(this.source);
         }
     }
 
     public createNodes($event: any) {
-        const roots = $event.roots as SchemaNode[];
-        const nodes = $event.nodes as SchemaNode[];
-        this.roots = roots;
-        for (const node of nodes) {
-            node.fields.updateSearch();
-        }
         this.tree.move(18, 46);
     }
 
     public onSelectNode(node: TreeNode<SchemaData> | null) {
-        clearTimeout(this._timeout1);
-        clearTimeout(this._timeout2);
+        clearTimeout(this._selectTimeout1);
+        clearTimeout(this._selectTimeout2);
+        clearTimeout(this._selectTimeout3);
         this.nodeLoading = true;
         this.selectedNode = node as SchemaNode;
-        this.rootNode = (node?.getRoot() || null) as SchemaNode;
+        this._selectTimeout1 = setTimeout(() => {
+            this._updateSelectNode();
+        }, 350)
+
+    }
+
+    private _updateSelectNode() {
+        this.rootNode = (this.selectedNode?.getRoot() || null) as SchemaNode;
         if (this.rootNode) {
-            const id = this.selectedNode?.data?.iri;
+            const schemaId = this.selectedNode?.data?.iri;
             const rootView = this.rootNode.fields;
             rootView.collapseAll(true);
             rootView.highlightAll(false);
-            const items = rootView.find((item: any) => {
-                return item.type === id;
-            });
+            const items = rootView.find((item) => item.type === schemaId);
             for (const item of items) {
                 rootView.collapsePath(item, false);
                 rootView.highlight(item, true);
@@ -236,22 +261,28 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             rootView.searchItems(this.searchField, this.schemaFilterType);
             rootView.updateHidden();
             rootView.updateSelected();
-            this._timeout1 = setTimeout(() => {
-                const first = (document as any)
-                    .querySelector('.field-item[highlighted="true"]:not([search-highlighted="hidden"])');
-                if (this.fieldTree) {
-                    if (first) {
-                        this.fieldTree.nativeElement.scrollTop = first.offsetTop;
-                    } else {
-                        this.fieldTree.nativeElement.scrollTop = 0;
-                    }
-                }
-                this._timeout2 = setTimeout(() => {
-                    this.nodeLoading = false;
-                }, 200)
+            this._selectTimeout2 = setTimeout(() => {
+                this._updateSelectScroll();
             }, 200)
         }
     }
+
+    private _updateSelectScroll() {
+        const first = (document as any)
+            .querySelector('.field-item[highlighted="true"]:not([search-highlighted="hidden"])');
+        if (this.fieldTree) {
+            if (first) {
+                this.fieldTree.nativeElement.scrollTop = first.offsetTop;
+            } else {
+                this.fieldTree.nativeElement.scrollTop = 0;
+            }
+        }
+        this._selectTimeout3 = setTimeout(() => {
+            this.nodeLoading = false;
+        }, 200)
+    }
+
+
 
     public onCollapseField(field: TreeListItem<any>) {
         if (this.rootNode) {
@@ -272,17 +303,16 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }
 
     public onSchemaFilter() {
-        clearTimeout(this._timeout2);
+        clearTimeout(this._selectTimeout3);
         this.nodeLoading = true;
         const value = (this.searchField || '').trim().toLocaleLowerCase();
-        if (this.tree) {
-            const roots = this.tree.getRoots() as SchemaNode[];
+        if (this.source) {
+            const roots = this.source.roots;
             for (const root of roots) {
                 root.fields.searchItems(value, this.schemaFilterType);
             }
 
-            const nodes = this.tree.getNodes() as SchemaNode[];
-            for (const node of nodes) {
+            for (const node of this.source.nodes) {
                 node.fields.searchView(value);
             }
 
@@ -291,7 +321,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 rootView.updateHidden();
             }
         }
-        this._timeout2 = setTimeout(() => {
+        this._selectTimeout3 = setTimeout(() => {
             this.nodeLoading = false;
         }, 200)
     }
@@ -365,10 +395,37 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }
 
     private updateVariables() {
-        this.variables.fromNodes(this.roots);
+        this.variables.fromNodes(this.source.roots);
     }
 
     public onAddVariable() {
         this.formulas.add();
+    }
+
+    public onSave() {
+        this.loading = true;
+        const value = this.overviewForm.value;
+        const config = {
+            variables: this.variables.getJson(),
+            formulas: this.formulas.getJson()
+        };
+        const item = {
+            ...this.item,
+            name: value.name,
+            description: value.description,
+            method: value.method,
+            config
+        };
+        this.policyStatisticsService
+            .update(item)
+            .subscribe((item) => {
+                this.item = item;
+                this.updateForm(this.item);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

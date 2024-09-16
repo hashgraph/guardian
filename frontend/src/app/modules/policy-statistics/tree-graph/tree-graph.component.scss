@@ -86,19 +86,24 @@
                 min-width: 3px;
                 pointer-events: none;
 
+                & {
+                    &::after,
+                    &::before {
+                        border-color: #848FA9;
+                        border-width: 2px;
+                        border-style: dashed;
+                    }
+
+                    z-index: 2;
+                }
+
                 &.selected-type-selected {
 
                     &::after,
                     &::before {
                         border-color: var(--guardian-primary-color, #4169E2) !important;
-                        border-width: 2px !important;
-                    }
-
-                    &.middle-line,
-                    &.right-line {
-                        &::before {
-                            left: -2px;
-                        }
+                        border-style: solid !important;
+                        opacity: 1 !important;
                     }
 
                     z-index: 2;
@@ -109,6 +114,7 @@
                     &::after,
                     &::before {
                         border-color: var(--guardian-primary-color, #4169E2) !important;
+                        opacity: 1 !important;
                     }
 
                     z-index: 1;
@@ -117,6 +123,18 @@
                 &.selected-type-hidden {
                     opacity: 0.2;
                     z-index: 0;
+                }
+
+                &.left-line:not(:first-child) {
+                    &::before {
+                        opacity: 0;
+                    }
+                }
+
+                &.right-line:not(:last-child) {
+                    &::before {
+                        opacity: 0;
+                    }
                 }
 
                 &.left-line {
@@ -130,8 +148,8 @@
                         right: 0px;
                         bottom: 25px;
                         left: 0px;
-                        border-right: 1px solid #848FA9;
-                        border-bottom: 1px solid #848FA9;
+                        border-left-width: 0 !important;
+                        border-top-width: 0 !important;
                     }
 
                     &::after {
@@ -140,10 +158,10 @@
                         position: absolute;
                         bottom: 0px;
                         left: 0px;
-                        width: 5px;
+                        width: 2px;
                         height: 25px;
-                        border-left: 1px solid #848FA9;
-                        border-top: 1px solid #848FA9;
+                        border-right-width: 0 !important;
+                        border-bottom-width: 0 !important;
                     }
                 }
 
@@ -157,8 +175,10 @@
                         top: 0px;
                         right: 0px;
                         bottom: 0px;
-                        left: -1px;
-                        border-left: 1px solid #848FA9;
+                        left: -2px;
+                        border-right-width: 0 !important;
+                        border-bottom-width: 0 !important;
+                        border-top-width: 0 !important;
                     }
                 }
 
@@ -172,9 +192,9 @@
                         top: 0px;
                         right: 0px;
                         bottom: 25px;
-                        left: -1px;
-                        border-left: 1px solid #848FA9;
-                        border-bottom: 1px solid #848FA9;
+                        left: -2px;
+                        border-right-width: 0 !important;
+                        border-top-width: 0 !important;
                     }
 
                     &::after {
@@ -183,10 +203,10 @@
                         position: absolute;
                         bottom: 0px;
                         right: 0px;
-                        width: 5px;
+                        width: 2px;
                         height: 25px;
-                        border-right: 1px solid #848FA9;
-                        border-top: 1px solid #848FA9;
+                        border-left-width: 0 !important;
+                        border-bottom-width: 0 !important;
                     }
                 }
             }

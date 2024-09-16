@@ -3,6 +3,7 @@ export class TreeListItem<T> {
     public readonly parent: TreeListItem<T> | null;
     public readonly lvl: number;
     public readonly children: TreeListItem<T>[];
+    public readonly path: TreeListItem<T>[];
 
     public collapsed: boolean;
     public expandable: boolean;
@@ -26,14 +27,13 @@ export class TreeListItem<T> {
         this.search = [];
         this.searchChildren = [];
         this.searchHighlighted = '';
-    }
 
-    public getPath(): TreeListItem<T>[] {
         if (this.parent) {
-            return [...this.parent.getPath(), this];
+            this.path = [...this.parent.path, this];
         } else {
-            return [this];
+            this.path = [this];
         }
+
     }
 
     public setChildren(children: TreeListItem<T>[]) {
@@ -89,7 +89,6 @@ export class TreeListItem<T> {
         for (const child of this.children) {
             for (let i = 0; i < this.searchChildren.length; i++) {
                 this.searchChildren[i] = this.searchChildren[i] + child.searchChildren[i] + '|';
-
             }
         }
     }
@@ -242,6 +241,10 @@ export class TreeListView<T> {
     private _views: TreeListView<T>[];
     private _search: string;
     private _searchHighlighted: boolean;
+
+    public get data(): TreeListData<T> {
+        return this._data;
+    }
 
     public get selectedFields(): TreeListItem<T>[] {
         return this._selectedFields;

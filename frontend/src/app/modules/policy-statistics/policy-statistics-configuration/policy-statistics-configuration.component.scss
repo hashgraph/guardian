@@ -320,6 +320,8 @@
                 -moz-transition: width 0.2s ease-in-out;
                 -o-transition: width 0.2s ease-in-out;
                 transition: width 0.2s ease-in-out;
+                transform: translateZ(0);
+                will-change: transform, width;
 
                 &[hidden-schema="true"] {
                     width: 0px;
@@ -386,6 +388,8 @@
                                 bottom: 0;
                                 left: 0;
                                 right: 0;
+                                transform: translateZ(0);
+                                transform-origin: 0% 0%;
 
                                 .field-item {
                                     width: 100%;
@@ -643,7 +647,7 @@
 
     .tree-node {
         background: #ffffff;
-        border: 1px solid #E1E7EF;
+        border: 1px solid #bac0ce;
         box-shadow: 0px 4px 4px 0px #00000014;
         border-radius: 6px;
         width: 150px;
@@ -694,7 +698,7 @@
             background: #F9FAFC;
             font-family: Inter;
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 600;
             line-height: 14px;
             text-align: left;
             color: #23252E;
@@ -717,6 +721,7 @@
                 padding: 8px 8px 8px 16px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                font-weight: 400;
             }
 
             .node-not-fields {
@@ -725,6 +730,7 @@
                 padding: 8px 8px 8px 16px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                font-weight: 400;
             }
         }
     }

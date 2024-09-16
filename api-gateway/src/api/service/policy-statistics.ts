@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, StatisticsDTO, pageHeader } from '#middlewares';
@@ -191,6 +191,100 @@ export class PolicyStatisticsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
             return await guardian.getStatisticRelationships(id, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Update statistic
+     */
+    @Put('/:id')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Updates statistic configuration.',
+        description: 'Updates statistic configuration for the specified statistic ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: 'Statistic Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiBody({
+        description: 'Object that contains a statistic.',
+        required: true,
+        type: StatisticsDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async updateStatistic(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Body() item: StatisticsDTO
+    ): Promise<StatisticsDTO> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid statistic id', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getStatisticById(id, owner);
+            if (!oldItem) {
+                throw new HttpException('Statistic not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.updateStatistic(id, item, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Delete statistic
+     */
+    @Delete('/:id')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Deletes the statistic.',
+        description: 'Deletes the statistic with the provided statistic ID.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: 'Statistic Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async deleteStatistic(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string
+    ): Promise<boolean> {
+        try {
+            if (!id) {
+                throw new HttpException('Invalid statistic id', HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.deleteStatistic(id, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

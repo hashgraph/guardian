@@ -8,7 +8,7 @@
         flex-direction: row;
 
         .guardian-step-separator {
-            width: 106px;
+            width: 90px;
             position: relative;
 
             &::before {
@@ -16,8 +16,8 @@
                 display: block;
                 position: absolute;
                 border-top: 2px solid #C4D0E1;
-                left: 32px;
-                right: 32px;
+                left: 24px;
+                right: 24px;
                 top: calc(50% - 1px);
                 height: 3px;
             }
@@ -32,6 +32,10 @@
         align-items: center;
         cursor: pointer;
         height: 40px;
+        border-radius: 8px;
+        padding: 8px;
+        white-space: nowrap;
+        cursor: pointer;
 
         .guardian-step-icon {
             width: 24px;
@@ -53,6 +57,9 @@
             color: #AAB7C4;
         }
 
+        &:hover {
+            background: #f0f3fc;
+        }
 
         &[action="true"] {
             .guardian-step-icon {

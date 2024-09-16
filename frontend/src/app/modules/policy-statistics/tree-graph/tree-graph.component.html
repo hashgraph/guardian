@@ -1,10 +1,11 @@
 <div class="tree-container">
     <div 
+        #movedEl 
         class="tree-graph"
         [attr.moving]="moving"
         (mousedown)="onMouseDown($event)"
         (mouseup)="onMouseUp($event)"
-        (mousemove)="onMouseMove($event)"
+
         (mouseleave)="onMouseUp($event)"
         (mouseenter)="onMouseUp($event)"
         (wheel)="onScroll($event)"

@@ -1,7 +1,6 @@
 import { SelectType } from "./tree-types";
 import { TreeNode } from "./tree-node";
 
-
 export class Line {
     public width: number;
     public height: number;
