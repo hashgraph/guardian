@@ -800,3 +800,28 @@
         }
     }
 }
+
+.config-viewer ngx-codemirror {
+    width: 100%;
+}
+
+.config-viewer ngx-codemirror::ng-deep {
+    .CodeMirror-gutters {
+        display: none;
+    }
+
+    .cm-number {
+        color: #15ab3f;
+        font-weight: 600;
+    }
+
+    .cm-formula-variable {
+        color: #4267df;
+        font-weight: 600;
+    }
+
+    .cm-formula-function {
+        color: #FF9800;
+        font-weight: 600;
+    }
+}

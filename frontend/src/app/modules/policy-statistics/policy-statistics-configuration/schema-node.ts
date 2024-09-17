@@ -204,6 +204,14 @@ export class SchemaVariables {
         return name;
     }
 
+    public getNames(): string[] {
+        const names: Set<string> = new Set<string>();
+        for (const variable of this.variables) {
+            names.add(variable.id);
+        }
+        return Array.from(names);
+    }
+
     public fromData(data: IVariableData[]) {
         const map = new Map<string, SchemaVariable>();
         if (data) {

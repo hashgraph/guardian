@@ -35,14 +35,32 @@
         <div class="guardian-step-container">
             <div class="guardian-stepper horizontal-stepper">
                 <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
+                    </div>
                     <div class="guardian-step-name">Overview</div>
                 </div>
                 <div class="guardian-step-separator"></div>
                 <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/tree.svg">
+                        </svg-icon>
+                    </div>
                     <div class="guardian-step-name">Select Schemas</div>
                 </div>
                 <div class="guardian-step-separator"></div>
                 <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/table.svg">
+                        </svg-icon>
+                    </div>
                     <div class="guardian-step-name">Configure Rules</div>
                 </div>
             </div>
@@ -408,7 +426,13 @@
                     <div class="variables-grid-body">
                         <div *ngFor="let variable of variables.variables" class="variables-grid-row">
                             <div class="variables-grid-cell cell-84">
-                                {{variable.id}}
+                                <input 
+                                    class="guardian-input guardian-input-cell"
+                                    [(ngModel)]="variable.id" 
+                                    id="formula.id" 
+                                    pInputText 
+                                    type="text"/>
+                                <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300">
                                 {{variable.schemaPath}}
@@ -420,7 +444,9 @@
                                 {{variable.fieldDescription}}
                             </div>
                             <div class="variables-grid-cell cell-200">
-                                {{variable.displayType}}
+                                <span style="text-transform: capitalize">
+                                    {{variable.displayType}}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -474,13 +500,16 @@
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell">
-                                <input 
+                                <!-- <input 
                                     class="guardian-input guardian-input-cell"
                                     [(ngModel)]="formula.formula" 
                                     id="formula.formula" 
                                     pInputText 
                                     type="text"/>
-                                <div class="cell-focus"></div>
+                                <div class="cell-focus"></div> -->
+                                <ngx-codemirror 
+                                    [(ngModel)]="formula.formula" 
+                                    [options]="codeMirrorOptions" ></ngx-codemirror>
                             </div>
                             <div class="variables-grid-cell cell-btn">
                                 <button 

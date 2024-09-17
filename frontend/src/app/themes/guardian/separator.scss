@@ -31,7 +31,8 @@
         justify-content: flex-start;
         align-items: center;
         cursor: pointer;
-        height: 40px;
+        height: 34px;
+        margin: 3px 0px;
         border-radius: 8px;
         padding: 8px;
         white-space: nowrap;
@@ -40,11 +41,24 @@
         .guardian-step-icon {
             width: 24px;
             height: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            svg-icon svg {
+                fill: #AAB7C4;
+                color: #AAB7C4;
+            }
+        }
+
+        .guardian-step-marker {
+            width: 24px;
+            height: 24px;
             background: #AAB7C4;
             border-radius: 50%;
             display: flex;
             justify-content: center;
-            align-items: center;        
+            align-items: center;
         }
 
         .guardian-step-name {
@@ -63,6 +77,13 @@
 
         &[action="true"] {
             .guardian-step-icon {
+                svg-icon svg {
+                    fill: var(--guardian-primary-color);
+                    color: var(--guardian-primary-color);
+                }
+            }
+
+            .guardian-step-marker {
                 background: var(--guardian-primary-color, #4169E2);
             }
 

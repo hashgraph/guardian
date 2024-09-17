@@ -11,6 +11,7 @@ import { SchemaData, SchemaFormulas, SchemaNode, SchemaVariables } from './schem
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../tree-graph/tree-source';
+import { createAutocomplete } from '../lang-modes/autocomplete';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -69,16 +70,16 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         label: 'By Event',
         value: 'byEvent'
     }, {
-        label: 'every Day',
+        label: 'Every Day',
         value: 'everyDay'
     }, {
-        label: 'every Week',
+        label: 'Every Week',
         value: 'everyWeek'
     }, {
-        label: 'every Month',
+        label: 'Every Month',
         value: 'everyMonth'
     }, {
-        label: 'every Year',
+        label: 'Every Year',
         value: 'everyYear'
     }];
 
@@ -109,6 +110,25 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public get roots(): SchemaNode[] {
         return this.source?.roots;
     }
+
+    public codeMirrorOptions: any = {
+        theme: 'default',
+        mode: 'formula-lang',
+        styleActiveLine: false,
+        lineNumbers: false,
+        lineWrapping: false,
+        foldGutter: true,
+        gutters: [
+            'CodeMirror-lint-markers'
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readOnly: false,
+        viewportMargin: Infinity,
+        variables: [],
+        extraKeys: { "Ctrl-Space": "autocomplete" }
+    };
 
     constructor(
         private profileService: ProfileService,
@@ -219,6 +239,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.variables.fromData(config.variables);
         this.formulas.fromData(config.formulas);
         this.variables.updateType(this.schemas);
+        this.updateCodeMirror();
 
         const map1 = this.variables.getMap();
         for (const root of this.source.roots) {
@@ -384,13 +405,13 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 setTimeout(() => {
                     this.tree?.refresh();
                     this.loading = false;
-                }, 3000);
+                }, 1500);
             } else {
                 setTimeout(() => {
                     this.loading = false;
-                }, 800);
+                }, 400);
             }
-        }, 300);
+        }, 200);
     }
 
     public onZoom(d: number) {
@@ -411,16 +432,28 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.onSchemaFilter();
     }
 
+    private updateCodeMirror() {
+        const variables = this.variables.getNames();
+        this.codeMirrorOptions = {
+            ...this.codeMirrorOptions,
+            variables: variables,
+            hintOptions: {
+                hint: createAutocomplete(variables)
+            }
+        }
+    }
+
     private updateVariables() {
         this.variables.fromNodes(this.source.roots);
         this.variables.updateType(this.schemas);
+        this.updateCodeMirror();
     }
 
     public onAddVariable() {
         this.formulas.add();
     }
 
-    public onDeleteVariable(formula:any) {
+    public onDeleteVariable(formula: any) {
         this.formulas.delete(formula);
     }
 

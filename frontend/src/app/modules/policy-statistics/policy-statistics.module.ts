@@ -18,6 +18,7 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 
 @NgModule({
     declarations: [
@@ -41,6 +42,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
         TabViewModule,
         CheckboxModule,
         RadioButtonModule,
+        CodemirrorModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

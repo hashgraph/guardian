@@ -90,7 +90,6 @@ export class PolicyStatisticsApi {
     })
     @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
     async getStatistics(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
@@ -136,7 +135,6 @@ export class PolicyStatisticsApi {
     })
     @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
     async getStatisticById(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string
