@@ -14,6 +14,8 @@ export interface FieldData {
     description: string;
     property: string;
     propertyName: string;
+    isArray: boolean;
+    isRef: boolean;
 }
 
 export class SchemaRules {
@@ -88,6 +90,8 @@ interface IVariableData {
     schemaName: string;
     schemaPath: string;
     fieldType: string;
+    fieldRef: boolean;
+    fieldArray: boolean;
     fieldDescription: string;
     fieldProperty: string;
     fieldPropertyName: string;
@@ -101,13 +105,28 @@ export class SchemaVariable implements IVariableData {
     public schemaName: string;
     public schemaPath: string;
     public fieldType: string;
+    public fieldRef: boolean;
+    public fieldArray: boolean;
     public fieldDescription: string;
     public fieldProperty: string;
     public fieldPropertyName: string;
+    public displayType: string;
 
     public index: number;
 
     constructor() {
+    }
+
+    public updateType(schemas: Map<string | undefined, Schema>) {
+        const schema = schemas.get(this.fieldType);
+        if (schema) {
+            this.displayType = schema.name || this.fieldType;
+        } else {
+            this.displayType = this.fieldType;
+        }
+        if (this.fieldArray) {
+            this.displayType = `Array(${this.displayType})`;
+        }
     }
 
     public getJson(): IVariableData {
@@ -118,6 +137,8 @@ export class SchemaVariable implements IVariableData {
             schemaName: this.schemaName,
             schemaPath: this.schemaPath,
             fieldType: this.fieldType,
+            fieldArray: this.fieldArray,
+            fieldRef: this.fieldRef,
             fieldDescription: this.fieldDescription,
             fieldProperty: this.fieldProperty,
             fieldPropertyName: this.fieldPropertyName
@@ -131,6 +152,8 @@ export class SchemaVariable implements IVariableData {
         variable.path = data.path;
         variable.schemaName = data.schemaName;
         variable.schemaPath = data.schemaPath;
+        variable.fieldRef = data.fieldRef;
+        variable.fieldArray = data.fieldArray;
         variable.fieldType = data.fieldType;
         variable.fieldDescription = data.fieldDescription;
         variable.fieldProperty = data.fieldProperty;
@@ -147,6 +170,8 @@ export class SchemaVariable implements IVariableData {
         variable.path = path;
         variable.schemaName = rootNode.data.name;
         variable.schemaPath = schemaPath;
+        variable.fieldRef = field.data.isRef;
+        variable.fieldArray = field.data.isArray;
         variable.fieldType = field.data.type;
         variable.fieldDescription = field.data.description;
         variable.fieldProperty = field.data.property;
@@ -257,6 +282,16 @@ export class SchemaVariables {
         }
         return map;
     }
+
+    public updateType(schemas: Schema[]) {
+        const map = new Map<string | undefined, Schema>();
+        for (const schema of schemas) {
+            map.set(schema.iri, schema)
+        }
+        for (const variable of this.variables) {
+            variable.updateType(map);
+        }
+    }
 }
 
 interface IFormulaData {
@@ -274,6 +309,7 @@ export class SchemaFormula implements IFormulaData {
     public index: number;
 
     constructor() {
+        this.type = 'string';
     }
 
     public getJson(): IFormulaData {
@@ -288,7 +324,7 @@ export class SchemaFormula implements IFormulaData {
     public static fromData(data: IFormulaData): SchemaFormula {
         const formula = new SchemaFormula();
         formula.id = data.id;
-        formula.type = data.type;
+        formula.type = data.type || 'string';
         formula.description = data.description;
         formula.formula = data.formula;
         return formula;
@@ -305,6 +341,12 @@ export class SchemaFormulas {
     constructor() {
         this.formulas = [];
         this.names = new Set<string>();
+    }
+
+    public setDefault() {
+        this.names.clear();
+        this.startIndex = 1;
+        this.add();
     }
 
     public getName(): string {
@@ -324,6 +366,12 @@ export class SchemaFormulas {
         formula.id = this.getName();
         this.formulas.push(formula);
     }
+    public delete(formula: SchemaFormula) {
+        this.formulas = this.formulas.filter((f) => f !== formula);
+        if (this.formulas.length === 0) {
+            this.setDefault()
+        }
+    }
 
     public fromData(data: IFormulaData[]) {
         this.formulas = [];
@@ -339,6 +387,9 @@ export class SchemaFormulas {
             this.names.add(item.id);
         }
         this.startIndex = this.formulas.length + 1;
+        if (this.formulas.length === 0) {
+            this.setDefault()
+        }
     }
 
     public getJson(): any[] {

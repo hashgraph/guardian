@@ -31,7 +31,23 @@
             </div>
         </div>
     </div>
-
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                    <div class="guardian-step-name">Overview</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                    <div class="guardian-step-name">Select Schemas</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                    <div class="guardian-step-name">Configure Rules</div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="body-container">
         <div *ngIf="stepper[0]" class="overview-viewer">
             <form [formGroup]="overviewForm">
@@ -381,7 +397,7 @@
                 <div class="variables-header">
                     Input
                 </div>
-                <div class="variables-grid">
+                <div *ngIf="variables.variables.length" class="variables-grid">
                     <div class="variables-grid-header">
                         <div class="variables-grid-cell cell-84">ID</div>
                         <div class="variables-grid-cell cell-300">SCHEMA</div>
@@ -404,10 +420,13 @@
                                 {{variable.fieldDescription}}
                             </div>
                             <div class="variables-grid-cell cell-200">
-                                {{variable.fieldType}}
+                                {{variable.displayType}}
                             </div>
                         </div>
                     </div>
+                </div>
+                <div *ngIf="!variables.variables.length" class="variables-empty-grid">
+                    There were no fields selected yet
                 </div>
             </div>
             <div class="variables-container">
@@ -425,21 +444,54 @@
                     <div class="variables-grid-body">
                         <div *ngFor="let formula of formulas.formulas" class="variables-grid-row">
                             <div class="variables-grid-cell cell-84">
-                                <input [(ngModel)]="formula.id" id="formula.id" pInputText type="text"/>
+                                <input 
+                                    class="guardian-input guardian-input-cell"
+                                    [(ngModel)]="formula.id" 
+                                    id="formula.id" 
+                                    pInputText 
+                                    type="text"/>
+                                <div class="cell-focus"></div>
                             </div>
-                            <div class="variables-grid-cell cell-200">{{formula.type}}</div>
+                            <div class="variables-grid-cell cell-200">
+                                <p-dropdown
+                                    [(ngModel)]="formula.type"
+                                    [options]="formulaTypes"
+                                    [showClear]="false"
+                                    class="guardian-dropdown guardian-dropdown-cell"
+                                    appendTo="body"
+                                    placeholder="Not selected"
+                                    panelStyleClass="guardian-dropdown-panel">
+                                </p-dropdown>
+                                <div class="cell-focus"></div>
+                            </div>
                             <div class="variables-grid-cell cell-300">
-                                <input [(ngModel)]="formula.description" id="formula.description" pInputText type="text"/>
+                                <input 
+                                    class="guardian-input guardian-input-cell"
+                                    [(ngModel)]="formula.description" 
+                                    id="formula.description" 
+                                    pInputText 
+                                    type="text"/>
+                                <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell">
-                                <input [(ngModel)]="formula.formula" id="formula.formula" pInputText type="text"/>
+                                <input 
+                                    class="guardian-input guardian-input-cell"
+                                    [(ngModel)]="formula.formula" 
+                                    id="formula.formula" 
+                                    pInputText 
+                                    type="text"/>
+                                <div class="cell-focus"></div>
                             </div>
-                            <div class="variables-grid-cell cell-48">
-                                <svg-icon
-                                    class="icon-btn svg-icon"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
+                            <div class="variables-grid-cell cell-btn">
+                                <button 
+                                    class="guardian-icon-button" 
+                                    (click)="onDeleteVariable(formula)">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
+                                    </svg-icon>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -463,39 +515,6 @@
     </div>
 
     <div class="actions-container">
-        <div class="guardian-step-container">
-            <div class="guardian-stepper horizontal-stepper">
-                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
-                    <div class="guardian-step-icon">
-                        <svg-icon class="icon-btn svg-icon-16"
-                            src="/assets/images/icons/16/right-arrow.svg"
-                            svgClass="icon-color-secondary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-step-name">Overview</div>
-                </div>
-                <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
-                    <div class="guardian-step-icon">
-                        <svg-icon class="icon-btn svg-icon-16"
-                            src="/assets/images/icons/16/right-arrow.svg"
-                            svgClass="icon-color-secondary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-step-name">Select Schemas</div>
-                </div>
-                <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
-                    <div class="guardian-step-icon">
-                        <svg-icon class="icon-btn svg-icon-16"
-                            src="/assets/images/icons/16/right-arrow.svg"
-                            svgClass="icon-color-secondary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-step-name">Configure Rules</div>
-                </div>
-            </div>
-        </div>
         <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>

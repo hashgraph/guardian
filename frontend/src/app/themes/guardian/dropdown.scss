@@ -27,6 +27,16 @@
                 color: var(--guardian-font-color, #23252E);
             }
         }
+
+        .p-inputtext { 
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 400;
+            padding: 0px 16px;
+            display: flex;
+            color: #000;
+            align-items: center;
+        }
     }
 
     .guardian-dropdown-selected {
@@ -54,6 +64,13 @@
     }
 
     .guardian-dropdown-item {}
+
+    &.guardian-dropdown-cell {
+        width: 100%;
+        .p-dropdown {
+            border: none !important;
+        }
+    }
 }
 
 .guardian-dropdown-panel {

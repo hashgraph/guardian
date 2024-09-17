@@ -28,7 +28,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public id: string;
     public item: any;
     public policy: any;
-    public schemas: any[];
+    public schemas: Schema[];
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
@@ -80,6 +80,20 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }, {
         label: 'every Year',
         value: 'everyYear'
+    }];
+
+    public formulaTypes: any[] = [{
+        label: 'String',
+        value: 'string'
+    }, {
+        label: 'Number',
+        value: 'number'
+    }, {
+        label: 'Array(String)',
+        value: 'array(string)'
+    }, {
+        label: 'Array(Number)',
+        value: 'array(number)'
     }];
 
     public properties: Map<string, string>;
@@ -162,7 +176,6 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     private updateTree(relationships: any, properties: any[]) {
         this.policy = relationships.policy || {};
-        this.schemas = relationships.schemas || [];
         this.nodes = [];
         this.properties = new Map<string, string>();
         if (properties) {
@@ -170,7 +183,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 this.properties.set(property.title, property.value);
             }
         }
-        for (const schema of this.schemas) {
+        const schemas = relationships.schemas || [];
+        this.schemas = [];
+        for (const schema of schemas) {
             try {
                 const item = new Schema(schema);
                 const node = SchemaNode.from(item, this.properties);
@@ -180,6 +195,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                     }
                 }
                 this.nodes.push(node);
+                this.schemas.push(item)
             } catch (error) {
                 console.log(error);
             }
@@ -202,6 +218,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         const config = item.config || {};
         this.variables.fromData(config.variables);
         this.formulas.fromData(config.formulas);
+        this.variables.updateType(this.schemas);
 
         const map1 = this.variables.getMap();
         for (const root of this.source.roots) {
@@ -340,15 +357,15 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     public onNavNext(dir: number) {
         const el = this.treeTabs.nativeElement;
-        const max = Math.floor((el.scrollWidth - el.offsetWidth) / 114);
-        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 114);
+        const max = Math.floor((el.scrollWidth - el.offsetWidth) / 148);
+        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 148);
         if (dir < 0) {
             current--;
         } else {
             current++;
         }
         current = Math.min(Math.max(current, 0), max);
-        this.treeTabs.nativeElement.scrollLeft = current * 114;
+        this.treeTabs.nativeElement.scrollLeft = current * 148;
     }
 
     public onClearNode() {
@@ -396,10 +413,15 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     private updateVariables() {
         this.variables.fromNodes(this.source.roots);
+        this.variables.updateType(this.schemas);
     }
 
     public onAddVariable() {
         this.formulas.add();
+    }
+
+    public onDeleteVariable(formula:any) {
+        this.formulas.delete(formula);
     }
 
     public onSave() {
