@@ -1,10 +1,13 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 
 import { Observable, of, switchMap, tap } from 'rxjs';
 
 //services
 import { CacheService } from '../cache-service.js';
 import { Users } from '../users.js';
+
+//helpers
+import { streamToBuffer } from '../index.js';
 
 //utils
 import { getCacheKey } from './utils/index.js';
@@ -48,7 +51,11 @@ export class CacheInterceptor implements NestInterceptor {
                 if (cachedResponse) {
                     let result = JSON.parse(cachedResponse);
 
-                    if (result.type === 'buffer') {
+                    if (result.type === 'StreamableFile') {
+                        const buffer = Buffer.from(result.data, 'base64');
+                        result = new StreamableFile(buffer);
+                    }
+                    else if (result.type === 'buffer') {
                         result = Buffer.from(result.data, 'base64');
                     } else  {
                         result = result.data;
@@ -74,7 +81,11 @@ export class CacheInterceptor implements NestInterceptor {
                             result = request.locals;
                         }
 
-                        if (Buffer.isBuffer(result)) {
+                        if (response instanceof StreamableFile) {
+                            const buffer = await streamToBuffer(response.getStream());
+                            result = { type: 'StreamableFile', data: buffer.toString('base64') };
+                        }
+                        else if (Buffer.isBuffer(result)) {
                             result = { type: 'buffer', data: result.toString('base64') };
                         } else if (typeof response === 'object') {
                             result = { type: 'json', data: result };

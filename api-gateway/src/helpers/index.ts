@@ -16,3 +16,4 @@ export * from './decorators/index.js';
 export * from './interceptors/index.js';
 export * from './entity-owner.js';
 export * from './interceptors/utils/index.js';
+export * from './stream-to-buffer.js';
