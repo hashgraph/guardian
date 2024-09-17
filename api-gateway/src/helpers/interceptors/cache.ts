@@ -1,6 +1,5 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 
-import { Readable } from 'stream';
 import { Observable, of, switchMap, tap } from 'rxjs';
 
 //services
@@ -53,7 +52,7 @@ export class CacheInterceptor implements NestInterceptor {
                     let result = JSON.parse(cachedResponse);
 
                     if (result.type === 'StreamableFile') {
-                        let buffer = Buffer.from(result.data, 'base64');
+                        const buffer = Buffer.from(result.data, 'base64');
                         result = new StreamableFile(buffer);
                     }
                     else if (result.type === 'buffer') {
@@ -83,7 +82,7 @@ export class CacheInterceptor implements NestInterceptor {
                         }
 
                         if (response instanceof StreamableFile) {
-                            let buffer = await streamToBuffer(response.getStream());
+                            const buffer = await streamToBuffer(response.getStream());
                             result = { type: 'StreamableFile', data: buffer.toString('base64') };
                         }
                         else if (Buffer.isBuffer(result)) {
