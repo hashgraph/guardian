@@ -50,6 +50,7 @@ export class SchemaNode extends TreeNode<SchemaData> {
                 return s.parent?.data?.type === this.data.iri;
             });
         }
+        this.fields.setSelectedLimit(4);
         this.fields.updateSearch();
     }
 
