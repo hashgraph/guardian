@@ -12099,6 +12099,81 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
+    put:
+      operationId: PolicyStatisticsApi_updateStatistic
+      summary: Updates statistic configuration.
+      description: >-
+        Updates statistic configuration for the specified statistic ID. Only
+        users with the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Statistic Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a statistic.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+    delete:
+      operationId: PolicyStatisticsApi_deleteStatistic
+      summary: Deletes the statistic.
+      description: >-
+        Deletes the statistic with the provided statistic ID. Only users with
+        the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Statistic Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
   /policy-statistics/{id}/relationships:
     get:
       operationId: PolicyStatisticsApi_getStatisticRelationships
@@ -15458,6 +15533,35 @@ components:
         description:
           type: string
           example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        instanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          example: Draft
+        method:
+          type: string
+          example: ''
+        config:
+          type: object
+          nullable: true
       required:
         - name
     WorkersTasksDTO:
