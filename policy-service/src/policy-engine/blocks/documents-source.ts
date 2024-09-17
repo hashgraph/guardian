@@ -270,9 +270,7 @@ export class InterfaceDocumentsSource {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    if (useStrict === 'true') {
-                        await (filter as IPolicyAddonBlock).resetFilters(user);
-                    }
+                    await (filter as IPolicyAddonBlock).resetFilters(user);
                 }
             }
         }
