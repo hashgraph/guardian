@@ -1,67 +1,54 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Previews the module from a zip file without loading it into the local DB", () => {
-        cy.fixture("module_1682969031678.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization,
-                    },
-                    body: file,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    let responseJson = JSON.parse(Cypress.Blob.arrayBufferToBinaryString(response.body))
-                    expect(responseJson.module).to.have.property("name");
-                    expect(responseJson.module).to.have.property("description");
-                    expect(responseJson.module).to.have.property("creator");
-                    expect(responseJson.module).to.have.property("owner");
-                    expect(responseJson.module.config.blockType).eql("module");
-                });
-            })
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.fixture("module_1682969031678.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
+                        headers: {
+                            "content-type": "binary/octet-stream",
+                            authorization,
+                        },
+                        body: file,
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+                        let responseJson = JSON.parse(Cypress.Blob.arrayBufferToBinaryString(response.body))
+                        expect(responseJson.module).to.have.property("name");
+                        expect(responseJson.module).to.have.property("description");
+                        expect(responseJson.module).to.have.property("creator");
+                        expect(responseJson.module).to.have.property("owner");
+                        expect(responseJson.module.config.blockType).eql("module");
+                    });
+                })
+        })
     });
 
     it("Previews the module from a zip file without loading it into the local DB as User - Negative", () => {
-        cy.fixture("module_1682969031678.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountsLogin,
-                    body: {
-                        username: "Registrant",
-                        password: "test"
-                    }
-                }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
+            cy.fixture("module_1682969031678.module", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
                     cy.request({
                         method: METHOD.POST,
-                        url: API.ApiServer + API.AccessToken,
-                        body: {
-                            refreshToken: response.body.refreshToken
-                        }
+                        url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
+                        headers: {
+                            "content-type": "binary/octet-stream",
+                            authorization,
+                        },
+                        body: file,
+                        failOnStatusCode: false,
                     }).then((response) => {
-                        let accessToken = "Bearer " + response.body.accessToken
-                        cy.request({
-                            method: METHOD.POST,
-                            url: API.ApiServer + API.ListOfAllModules + API.ImportFile + API.Preview,
-                            headers: {
-                                "content-type": "binary/octet-stream",
-                                authorization: accessToken,
-                            },
-                            body: file,
-                            failOnStatusCode: false,
-                        }).then((response) => {
-                            expect(response.status).eql(STATUS_CODE.FORBIDDEN);
-                        });
+                        expect(response.status).eql(STATUS_CODE.FORBIDDEN);
                     });
                 });
-
-            })
+        });
     });
 
     it("Previews the module from a zip file without loading it into the local DB without auth token - Negative", () => {

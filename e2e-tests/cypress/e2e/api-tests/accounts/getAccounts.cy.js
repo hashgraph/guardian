@@ -1,20 +1,24 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Get list of users", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Accounts,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-            expect(response.body.at(0)).to.have.property("username");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Accounts,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.at(0)).to.have.property("username");
+            });
+        })
     });
 
     it("Get list of users without auth - Negative", () => {
@@ -23,7 +27,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             url: API.ApiServer + API.Accounts,
             headers: {
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -36,7 +40,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             headers: {
                 authorization: "bearer 11111111111111111111@#$",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -49,39 +53,23 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             headers: {
                 authorization: "",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Get list of users as User - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: "Registrant",
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
-                body: {
-                    refreshToken: response.body.refreshToken
-                }
+                method: METHOD.GET,
+                url: API.ApiServer + API.Accounts,
+                headers: {
+                    authorization
+                },
+                failOnStatusCode: false,
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Accounts,
-                    headers: {
-                        authorization: accessToken
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.FORBIDDEN);
-                });
+                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });

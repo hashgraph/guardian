@@ -1,63 +1,50 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
-context("Modules", { tags: ['modules', 'thirdPool'] },() => {
-
-    const authorization = Cypress.env("authorization");
+context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Returns modules menu", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.ListOfModules,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-            if (response.body.length != 0) {
-                expect(response.body.at(-1)).to.have.property("_id");
-                expect(response.body.at(-1)).to.have.property("uuid");
-                expect(response.body.at(-1)).to.have.property("status");
-            }
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfModules,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                if (response.body.length != 0) {
+                    expect(response.body.at(-1)).to.have.property("_id");
+                    expect(response.body.at(-1)).to.have.property("uuid");
+                    expect(response.body.at(-1)).to.have.property("status");
+                }
+            });
+        })
     });
 
     it("Returns modules menu as User - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: "Registrant",
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
-                body: {
-                    refreshToken: response.body.refreshToken
-                }
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfModules,
+                headers: {
+                    authorization
+                },
+                failOnStatusCode: false,
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.ListOfModules,
-                    headers: {
-                        authorization: accessToken
-                    }, 
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.FORBIDDEN);
-                });
+                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
-        });
+        })
     });
 
     it("Returns modules menu without auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfModules,
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -70,7 +57,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             headers: {
                 authorization: "Bearer wqe",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -83,7 +70,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             headers: {
                 authorization: "",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });

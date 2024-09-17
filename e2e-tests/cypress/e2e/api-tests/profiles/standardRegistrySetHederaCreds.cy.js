@@ -1,18 +1,18 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
-import {checkForRemovedStyleOptions} from "cypress/mount-utils";
+import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
+context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+    const SRUsername = Cypress.env('SRUser');
 
     it('Get Standard Registry account information', () => {
         //Getting accessToken for StandardRegistry
-        let username = 'StandardRegistry'
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'accounts/login',
             body: {
-                username: username,
+                username: SRUsername,
                 password: 'test'
             }
         })
@@ -36,7 +36,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
                             if (response.body.confirmed === false) {
                                 cy.request({
                                     method: 'PUT',
-                                    url: API.ApiServer + 'profiles/' + username,
+                                    url: API.ApiServer + 'profiles/' + SRUsername,
                                     headers: {
                                         authorization: accessToken
                                     },
@@ -57,7 +57,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
                                         //get info about StandardRegistry and put it in the file
                                         cy.request({
                                             method: 'GET',
-                                            url: API.ApiServer + 'profiles/' + username,
+                                            url: API.ApiServer + 'profiles/' + SRUsername,
                                             headers: {
                                                 authorization: accessToken
                                             }

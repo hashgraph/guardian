@@ -1,104 +1,40 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
+
     it("Get Standard Registry balance", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Balance,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-            expect(response.body.unit).eql("Hbar");
-            expect(response.body.user.username).eql("StandardRegistry");
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Balance,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.unit).eql("Hbar");
+                expect(response.body.user.username).eql(SRUsername);
+            });
         });
     });
 
     it('Get User balance', () => {
-        let username = Math.floor(Math.random() * 99999) + "UserTest";
-        let id, key;
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountRegister,
-            body: {
-                username: username,
-                password: "test",
-                password_confirmation: "test",
-                role: "USER"
-            }
-        }).then(() => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccountsLogin,
-                body: {
-                    username: username,
-                    password: "test"
-                }
+                method: METHOD.GET,
+                url: API.ApiServer + API.Balance,
+                headers: {
+                    authorization
+                },
             }).then((response) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccessToken,
-                    body: {
-                        refreshToken: response.body.refreshToken
-                    }
-                }).then((response) => {
-                    let accessToken = "Bearer " + response.body.accessToken
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.StandardRegistriesAggregated,
-                        headers: {
-                            authorization: accessToken
-                        }
-                    }).then((response) => {
-                        let SRDid = response.body[0].did
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.RandomKey,
-                            headers: {
-                                authorization: accessToken
-                            }
-                        }).then((response) => {
-                            cy.wait(3000)
-                            cy.request({
-                                method: METHOD.PUT,
-                                url: API.ApiServer + API.Profiles + username,
-                                body: {
-                                    parent: SRDid,
-                                    hederaAccountId: response.body.id,
-                                    hederaAccountKey: response.body.key,
-                                    useFireblocksSigning: false,
-                                    fireblocksConfig:
-                                    {
-                                        fireBlocksVaultId: "",
-                                        fireBlocksAssetId: "",
-                                        fireBlocksApiKey: "",
-                                        fireBlocksPrivateiKey: ""
-                                    }
-                                },
-                                headers: {
-                                    authorization: accessToken
-                                },
-                                timeout: 180000
-                            }).then(() => {
-                                cy.request({
-                                    method: METHOD.GET,
-                                    url: API.ApiServer + API.Balance,
-                                    headers: {
-                                        authorization: accessToken
-                                    },
-                                }).then((response) => {
-                                    expect(response.status).eql(STATUS_CODE.OK);
-                                    expect(response.body.unit).eql("Hbar");
-                                    expect(response.body.user.username).eql(username);
-                                });
-                            })
-                        })
-                    })
-                })
-            })
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.unit).eql("Hbar");
+                expect(response.body.user.username).eql(UserUsername);
+            });
         })
     })
 
@@ -111,6 +47,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
+
     it("Get balance with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -123,6 +60,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
+
     it("Get balance with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -135,5 +73,4 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
 });

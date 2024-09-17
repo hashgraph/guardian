@@ -1,68 +1,59 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
-context("Artifacts", { tags: ['artifacts', 'secondPool'] },() => {
-    const authorization = Cypress.env("authorization");
-
+context("Artifacts", { tags: ['artifacts', 'secondPool'] }, () => {
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
+    
     before(() => {
-        cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.PolicisImportFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization,
-                    },
-                    timeout: 300000,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                });
-            })
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.PolicisImportFile,
+                        body: file,
+                        headers: {
+                            "content-type": "binary/octet-stream",
+                            authorization,
+                        },
+                        timeout: 300000,
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.SUCCESS);
+                    });
+                })
+        })
     })
 
     it("Get list of artifacts", { tags: ['smoke'] }, () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Artifacts,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-            expect(response.body.at(0).id).not.null;
-            expect(response.body.at(0).uuid).not.null;
-            expect(response.body.at(0).owner).not.null;
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Artifacts,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.at(0).id).not.null;
+                expect(response.body.at(0).uuid).not.null;
+                expect(response.body.at(0).owner).not.null;
+            });
+        })
     });
 
     it("Get list of artifacts by user - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: "Registrant",
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
-                body: {
-                    refreshToken: response.body.refreshToken
-                }
+                method: METHOD.GET,
+                url: API.ApiServer + API.Artifacts,
+                headers: {
+                    authorization
+                },
+                failOnStatusCode: false,
             }).then((response) => {
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Artifacts,
-                    headers: {
-                        authorization: "Bearer " + response.body.accessToken
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.FORBIDDEN);
-                });
+                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         })
     })
@@ -71,7 +62,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool'] },() => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.Artifacts,
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -84,7 +75,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool'] },() => {
             headers: {
                 authorization: "Bearer wqe",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -97,7 +88,7 @@ context("Artifacts", { tags: ['artifacts', 'secondPool'] },() => {
             headers: {
                 authorization: "",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });

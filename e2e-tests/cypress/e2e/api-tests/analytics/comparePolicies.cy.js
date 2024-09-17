@@ -1,67 +1,72 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
+
     let policyId1, policyId2
     before(() => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportMsg,
-            body: {
-                messageId: Cypress.env('policy_for_compare1'),//iRec 4
-                metadata: {
-                    "tools": {}
-                  }
-            },
-            headers: {
-                authorization,
-            },
-            timeout: 360000
-        })
-            .then((response) => {
-                policyId1 = response.body.at(-1).id;
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.PolicisImportMsg,
-                    body: {
-                        "messageId": Cypress.env('policy_for_compare2'),//iRec 5
-                        metadata: {
-                            "tools": {}
-                          }
-                    },
-                    headers: {
-                        authorization,
-                    },
-                    timeout: 360000
-                }).then((response) => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportMsg,
+                body: {
+                    messageId: Cypress.env('policy_for_compare1'),//iRec 4
+                    metadata: {
+                        "tools": {}
+                    }
+                },
+                headers: {
+                    authorization,
+                },
+                timeout: 360000
+            }).then((response) => {
+                    policyId1 = response.body.at(-1).id;
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    policyId2 = response.body.at(-1).id;
+                    cy.request({
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.PolicisImportMsg,
+                        body: {
+                            "messageId": Cypress.env('policy_for_compare2'),//iRec 5
+                            metadata: {
+                                "tools": {}
+                            }
+                        },
+                        headers: {
+                            authorization,
+                        },
+                        timeout: 360000
+                    }).then((response) => {
+                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                        policyId2 = response.body.at(-1).id;
+                    })
                 })
-            })
+        })
     })
 
     it("Compare policies", { tags: ['smoke'] }, () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare,
-            body: {
-                policyId1: policyId1,
-                policyId2: policyId2,
-                eventsLvl: 1,
-                propLvl: 2,
-                childrenLvl: 2,
-                idLvl: 0
-            },
-            headers: {
-                authorization,
-            }
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            expect(response.body.left.id).to.eq(policyId1);
-            expect(response.body.right.id).to.eq(policyId2);
-            expect(response.body.total).not.null;
+        Authorization.getAccessTokenByRefreshToken().then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicyCompare,
+                body: {
+                    policyId1: policyId1,
+                    policyId2: policyId2,
+                    eventsLvl: 1,
+                    propLvl: 2,
+                    childrenLvl: 2,
+                    idLvl: 0
+                },
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body.left.id).to.eq(policyId1);
+                expect(response.body.right.id).to.eq(policyId2);
+                expect(response.body.total).not.null;
+            })
         })
     });
 
@@ -128,23 +133,25 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
     });
 
     it("Compare policies(Export)", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
-            body: {
-                policyId1: policyId1,
-                policyId2: policyId2,
-                eventsLvl: 1,
-                propLvl: 2,
-                childrenLvl: 2,
-                idLvl: 0
-            },
-            headers: {
-                authorization,
-            }
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            expect(response.body).to.include("data:text/csv");
+        Authorization.getAccessTokenByRefreshToken().then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
+                body: {
+                    policyId1: policyId1,
+                    policyId2: policyId2,
+                    eventsLvl: 1,
+                    propLvl: 2,
+                    childrenLvl: 2,
+                    idLvl: 0
+                },
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body).to.include("data:text/csv");
+            })
         })
     });
 

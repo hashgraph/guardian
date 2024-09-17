@@ -1,35 +1,40 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context('Policies', { tags: ['policies', 'secondPool'] }, () => {
-    const authorization = Cypress.env('authorization');
+    const SRUsername = Cypress.env('SRUser');
     let policyId;
 
     before(() => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.PolicisImportMsg,
-            body: { messageId: (Cypress.env('irec_policy')) },
-            headers: {
-                authorization,
-            },
-            timeout: 180000
-        }).then((response) => {
-            policyId = response.body.at(0).id;
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportMsg,
+                body: { messageId: (Cypress.env('irec_policy')) },
+                headers: {
+                    authorization,
+                },
+                timeout: 180000
+            }).then((response) => {
+                policyId = response.body.at(0).id;
+            })
         })
     })
 
     it('Retrieves policy configuration for the specified policy ID', () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.Policies + policyId,
-            headers: {
-                authorization,
-            }
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK);
-            expect(response.body.description).to.eq("iRec Description");
-            expect(response.body.status).to.eq("DRAFT");
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies + policyId,
+                headers: {
+                    authorization,
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body.description).to.eq("iRec Description");
+                expect(response.body.status).to.eq("DRAFT");
+            })
         })
     })
 

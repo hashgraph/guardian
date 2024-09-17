@@ -1,21 +1,24 @@
-import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
+import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 
 context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
     let did
 
     before(() => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.StandartRegistries,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            did = response.body[0].did
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.StandartRegistries,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                did = response.body[0].did
+            });
+        })
     });
 
     it('Register a new user, login with it and set hedera credentials for it', () => {

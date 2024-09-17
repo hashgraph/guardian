@@ -1,43 +1,30 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
-    const authorization = Cypress.env("authorization");
-    const user = "Installer";
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Freeze and unfreeze transfers of the specified token for the user", { tags: ['smoke'] }, () => {
         //associate token
-        cy.request({
-            method: 'POST',
-            url: API.ApiServer + 'accounts/login',
-            body: {
-                username: user,
-                password: "test",
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: 'POST',
-                url: API.ApiServer + 'accounts/access-token',
-                body: {
-                    refreshToken: response.body.refreshToken
+                method: 'GET',
+                url: API.ApiServer + 'tokens',
+                headers: {
+                    authorization
                 }
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
+                let tokenId = response.body.at(-1).tokenId
                 cy.request({
-                    method: 'GET',
-                    url: API.ApiServer + 'tokens',
+                    method: 'PUT',
+                    url: API.ApiServer + 'tokens/' + tokenId + '/associate',
                     headers: {
-                        authorization: accessToken
+                        authorization
                     }
-                }).then((response) => {
-                    let tokenId = response.body.at(-1).tokenId
-                    cy.request({
-                        method: 'PUT',
-                        url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                        headers: {
-                            authorization: accessToken
-                        }
-                    }).then((response) => {
+                }).then(() => {
+                    Authorization.getAccessToken(SRUsername).then((authorization) => {
                         cy.request({
                             method: METHOD.PUT,
                             url:
@@ -82,9 +69,9 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                             });
                         });
 
-                   })
+                    })
                 })
             })
         })
-    });
+    })
 });

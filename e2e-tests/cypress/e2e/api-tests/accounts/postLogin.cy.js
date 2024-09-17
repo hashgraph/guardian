@@ -3,54 +3,39 @@ import API from "../../../support/ApiUrls";
 
 
 context('Accounts',  { tags: ['accounts', 'firstPool'] }, () => {
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
+
     it('Login as Standard Registry', { tags: ['smoke'] }, () => {
-        const username = "StandardRegistry";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
-                username: username,
+                username: SRUsername,
                 password: 'test'
             }
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK)
-            expect(response.body).to.have.property('username', username)
+            expect(response.body).to.have.property('username', SRUsername)
             expect(response.body).to.have.property('role', 'STANDARD_REGISTRY')
             expect(response.body).to.have.property('did')
             expect(response.body).to.have.property('refreshToken')
         })
     })
 
-    it('Login as Installer', () => {
-        const username = "Installer";
+    it('Login as User', () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
-                username: username,
+                username: UserUsername,
                 password: 'test'
             }
         }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.OK)
-            expect(response.body).to.have.property('username', username)
+            expect(response.body).to.have.property('username', UserUsername)
             expect(response.body).to.have.property('role', 'USER')
             expect(response.body).to.have.property('refreshToken')
-        })
-    })
-
-    it('Login as Auditor', () => {
-        const username = "Auditor";
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: username,
-                password: 'test'
-            }
-        }).then((response) => {
-            expect(response.status).to.eq(STATUS_CODE.OK)
-            expect(response.body).to.have.property('username', username)
-            expect(response.body).to.have.property('role', 'AUDITOR')
         })
     })
 

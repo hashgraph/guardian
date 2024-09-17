@@ -1,23 +1,25 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
-
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
 
     it("Returns all retire vcs", () => {
-        cy.request({
-            method: METHOD.GET,
-            url: API.ApiServer + API.RetireContract,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-            expect(response.body.at(0)).to.have.property("_id");
-            expect(response.body.at(0)).to.have.property("owner");
-            expect(response.body.at(0)).to.have.property("type");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.RetireContract,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                expect(response.body.at(0)).to.have.property("_id");
+                expect(response.body.at(0)).to.have.property("owner");
+                expect(response.body.at(0)).to.have.property("type");
+            });
+        })
     });
 
     it("Returns all retire vcs without auth token - Negative", () => {

@@ -2,8 +2,10 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
+    const name = "TestUserRegistration";
+    const SRUsername = Cypress.env('SRUser');
+
     it("Register and login as new user", { tags: ['smoke', 'firstPool'] }, () => {
-        const name = Math.floor(Math.random() * 999) + "PostRegTest";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -17,8 +19,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             expect(response.status).to.eq(STATUS_CODE.SUCCESS);
             expect(response.body).to.have.property("username", name);
             expect(response.body).to.have.property("id");
-        })
-            .then(() => {
+        }).then(() => {
                 cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + API.AccountsLogin,
@@ -33,8 +34,6 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 });
             });
     });
-
-    //Negative
 
     it("Register without body - Negative", () => {
         cy.request({
@@ -63,7 +62,6 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     });
 
     it('Register without password - Negative', () => {
-        const name = Math.floor(Math.random() * 999) + "test001";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -121,7 +119,6 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     });
 
     it('Register with wrong URL - Negative', () => {
-        const name = Math.floor(Math.random() * 999) + "test001";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister + "wrong",
@@ -136,7 +133,6 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     });
 
     it('Register with extra data - Negative', () => {
-        const name = Math.floor(Math.random() * 999) + "test001";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -170,7 +166,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
             body: {
-                username: "StandardRegistry",
+                username: SRUsername,
                 password: "test",
                 password_confirmation : "test",
                 role:"USER"
@@ -183,12 +179,11 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     });
 
     it('Register with user password mismatch - Negative', () => {
-        const nameNeg = Math.floor(Math.random() * 999) + "test001";
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
             body: {
-                username: nameNeg,
+                username: name,
                 password: "test",
                 password_confirmation : "testtest",
                 role:"USER"

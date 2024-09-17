@@ -1,120 +1,116 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Artifacts", { tags: ['artifacts', 'secondPool'] }, () => {
-    
-    const authorization = Cypress.env("authorization");
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
+
     let artifactId;
 
     before(() => {
-        cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-            .then((file) => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.PolicisImportFile,
-                    body: file,
-                    headers: {
-                        "content-type": "binary/octet-stream",
-                        authorization,
-                    },
-                    timeout: 300000,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.fixture("remoteWorkGHGPolicy.policy", "binary").then((binary) => Cypress.Blob.binaryStringToBlob(binary))
+                .then((file) => {
                     cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.Artifacts,
+                        method: METHOD.POST,
+                        url: API.ApiServer + API.PolicisImportFile,
+                        body: file,
                         headers: {
+                            "content-type": "binary/octet-stream",
                             authorization,
                         },
+                        timeout: 300000,
                     }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.OK);
-                        artifactId = response.body.at(0).id;
-                    })
-                });
-           })
+                        expect(response.status).eql(STATUS_CODE.SUCCESS);
+                        cy.request({
+                            method: METHOD.GET,
+                            url: API.ApiServer + API.Artifacts,
+                            headers: {
+                                authorization,
+                            },
+                        }).then((response) => {
+                            expect(response.status).to.eq(STATUS_CODE.OK);
+                            artifactId = response.body.at(0).id;
+                        })
+                    });
+                })
+        })
     });
 
     it("Delete artifact", { tags: ['smoke'] }, () => {
-        cy.request({
-            url: API.ApiServer + API.Artifacts + artifactId,
-            method: METHOD.DELETE,
-            headers: {
-                authorization,
-            },
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.OK);
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                url: API.ApiServer + API.Artifacts + artifactId,
+                method: METHOD.DELETE,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+            });
+        })
     });
 
     it("Delete already deleted artifact - Negative", () => {
-        cy.request({
-            url: API.ApiServer + API.Artifacts + artifactId,
-            method: METHOD.DELETE,
-            headers: {
-                authorization,
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
-            expect(response.body.message).eql("Cannot read properties of null (reading 'policyId')");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                url: API.ApiServer + API.Artifacts + artifactId,
+                method: METHOD.DELETE,
+                headers: {
+                    authorization,
+                },
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.ERROR);
+                expect(response.body.message).eql("Cannot read properties of null (reading 'policyId')");
+            });
+        })
     });
 
     it("Delete artifact with invalid artifact id - Negative", () => {
-        cy.request({
-            url: API.ApiServer + API.Artifacts + "21231231321321321",
-            method: METHOD.DELETE,
-            headers: {
-                authorization,
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
-            expect(response.body.message).eql("Cannot read properties of null (reading 'policyId')");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                url: API.ApiServer + API.Artifacts + "21231231321321321",
+                method: METHOD.DELETE,
+                headers: {
+                    authorization,
+                },
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.ERROR);
+                expect(response.body.message).eql("Cannot read properties of null (reading 'policyId')");
+            });
+        })
     });
 
     it("Delete artifact by user - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: "Registrant",
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
-                body: {
-                    refreshToken: response.body.refreshToken
-                }
+                method: METHOD.GET,
+                url: API.ApiServer + API.Artifacts,
+                headers: {
+                    authorization,
+                },
             }).then((response) => {
-                let accessToken = response.body.accessToken
-                cy.request({
-                    method: METHOD.GET,
-                    url: API.ApiServer + API.Artifacts,
-                    headers: {
-                        authorization,
-                    },
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                    artifactId = response.body.at(0).id;
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                artifactId = response.body.at(0).id;
+                Authorization.getAccessToken(UserUsername).then((authorization) => {
                     cy.request({
                         url: API.ApiServer + API.Artifacts + artifactId,
                         method: METHOD.DELETE,
                         headers: {
-                            authorization: "Bearer " + accessToken,
+                            authorization
                         },
                         failOnStatusCode: false,
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.FORBIDDEN);
                     });
-                });
+                })
             });
-        })
+        });
     });
-
+    
     it("Delete artifact without auth token - Negative", () => {
         cy.request({
             url: API.ApiServer + API.Artifacts + artifactId,

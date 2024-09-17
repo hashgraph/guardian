@@ -1,44 +1,48 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 
 context('Policies', { tags: ['policies', 'secondPool'] }, () => {
-    const authorization = Cypress.env('authorization');
+  const SRUsername = Cypress.env('SRUser');
 
-    it('Get policy configuration for the specified policy ID', () => {
-
+  it('Get policy configuration for the specified policy ID', () => {
+    Authorization.getAccessToken(SRUsername).then((authorization) => {
       const urlPolicies = {
         method: METHOD.GET,
         url: API.ApiServer + API.Policies,
         headers: {
-            authorization,
+          authorization,
         },
-    };
+      };
 
-    cy.request(urlPolicies).then((response) => {
+      cy.request(urlPolicies).then((response) => {
         expect(response.status).to.eq(STATUS_CODE.OK);
         const policyId = response.body.at(0).id;
 
 
-      const urlPoliciesId = {
-        method: 'GET',
-        url: API.ApiServer + 'policies/' + policyId,
-        headers: {
-          authorization,
-        }};
-      cy.request(urlPoliciesId)
+        const urlPoliciesId = {
+          method: 'GET',
+          url: API.ApiServer + 'policies/' + policyId,
+          headers: {
+            authorization,
+          }
+        };
+        cy.request(urlPoliciesId)
           .then((response) => {
-          expect(response.status).to.eq(STATUS_CODE.OK)
-          expect(response.body.id).to.equal(policyId)
+            expect(response.status).to.eq(STATUS_CODE.OK)
+            expect(response.body.id).to.equal(policyId)
 
-          let children = response.body.config.children
+            let children = response.body.config.children
 
-          cy.writeFile('cypress/fixtures/policyTags.json',
-              { id: children[0].id,
+            cy.writeFile('cypress/fixtures/policyTags.json',
+              {
+                id: children[0].id,
                 tag: children[0].tag,
                 blockType: children[0].blockType,
-          });
-        })
+              });
+          })
+      })
     })
-})
+  })
 })

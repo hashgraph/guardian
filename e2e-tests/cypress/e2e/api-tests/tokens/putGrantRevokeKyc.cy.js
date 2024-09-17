@@ -1,37 +1,24 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
-    const authorization = Cypress.env("authorization");
-    const user = "Installer";
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Set and unset the KYC flag for the user", { tags: ['smoke'] }, () => {
-        //grant kyc
-        cy.request({
-            method: 'POST',
-            url: API.ApiServer + 'accounts/login',
-            body: {
-                username: user,
-                password: "test",
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
+            //grant kyc
             cy.request({
-                method: 'POST',
-                url: API.ApiServer + 'accounts/access-token',
-                body: {
-                    refreshToken: response.body.refreshToken
+                method: 'GET',
+                url: API.ApiServer + 'tokens',
+                headers: {
+                    authorization
                 }
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
-                cy.request({
-                    method: 'GET',
-                    url: API.ApiServer + 'tokens',
-                    headers: {
-                        authorization: accessToken
-                    }
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.OK);
-                    let tokenId = response.body.at(-1).tokenId
+                expect(response.status).eql(STATUS_CODE.OK);
+                let tokenId = response.body.at(-1).tokenId
+                Authorization.getAccessToken(SRUsername).then((authorization) => {
                     cy.request({
                         method: METHOD.PUT,
                         url:

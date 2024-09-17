@@ -1,57 +1,41 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] },() => {
-    const authorization = Cypress.env('authorization');
+context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+    const SR3Username = Cypress.env('SR3User');
 
     it('Set Hedera credentials for the Installer', () => {
-        let username = "Installer";
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: username,
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(SR3Username).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
-                body: {
-                    refreshToken: response.body.refreshToken
+                method: 'GET',
+                url: API.ApiServer + 'accounts/standard-registries/aggregated',
+                headers: {
+                    authorization
                 }
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
+                let SRDid = response.body[0].did
                 cy.request({
-                    method: 'GET',
-                    url: API.ApiServer + 'accounts/standard-registries/aggregated',
-                    headers: {
-                        authorization: accessToken
-                    }
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.RandomKey,
+                    headers: { authorization },
                 }).then((response) => {
-                    let SRDid = response.body[0].did
+                    cy.wait(3000)
+                    let hederaAccountId = response.body.id
+                    let hederaAccountKey = response.body.key
                     cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.RandomKey,
-                        headers: {authorization},
-                    }).then((response) => {
-                        cy.wait(3000)
-                        let hederaAccountId = response.body.id
-                        let hederaAccountKey = response.body.key
-                        cy.request({
-                            method: 'PUT',
-                            url: API.ApiServer + 'profiles/' + username,
-                            body: {
-                                hederaAccountId: hederaAccountId,
-                                hederaAccountKey: hederaAccountKey,
-                                parent: SRDid
-                            },
-                            headers: {
-                                authorization: accessToken
-                            },
-                            timeout: 180000
-                        })
+                        method: 'PUT',
+                        url: API.ApiServer + 'profiles/' + SR3Username,
+                        body: {
+                            hederaAccountId: hederaAccountId,
+                            hederaAccountKey: hederaAccountKey,
+                            parent: SRDid
+                        },
+                        headers: {
+                            authorization
+                        },
+                        timeout: 180000
                     })
                 })
             })

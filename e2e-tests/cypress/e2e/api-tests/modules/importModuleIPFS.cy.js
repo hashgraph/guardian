@@ -1,60 +1,48 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
+import * as Authorization from "../../../support/authorization";
 
-context("Modules", { tags: ['modules', 'thirdPool'] },() => {
-    const authorization = Cypress.env("authorization");
+context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
+    const SRUsername = Cypress.env('SRUser');
+    const UserUsername = Cypress.env('User');
 
     it("Imports new module and all associated artifacts from IPFS into the local DB", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
-            headers: {
-                authorization,
-            },
-            body: {
-                "messageId": Cypress.env('module_for_import')
-            },
-            timeout: 180000
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.SUCCESS);
-            expect(response.body).to.have.property("name");
-            expect(response.body).to.have.property("description");
-            expect(response.body).to.have.property("creator");
-            expect(response.body).to.have.property("owner");
-            expect(response.body.config.blockType).eql("module");
-        });
-    });
-
-    it("Imports new module and all associated artifacts from IPFS into the local DB as User - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.AccountsLogin,
-            body: {
-                username: "Registrant",
-                password: "test"
-            }
-        }).then((response) => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.AccessToken,
+                url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
+                headers: {
+                    authorization,
+                },
                 body: {
-                    refreshToken: response.body.refreshToken
-                }
+                    "messageId": Cypress.env('module_for_import')
+                },
+                timeout: 180000
             }).then((response) => {
-                let accessToken = "Bearer " + response.body.accessToken
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
-                    headers: {
-                        authorization: accessToken
-                    }, 
-                    body: {
-                        "messageId": Cypress.env('module_for_import')
-                    },
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.FORBIDDEN);
-                });
+                expect(response.status).eql(STATUS_CODE.SUCCESS);
+                expect(response.body).to.have.property("name");
+                expect(response.body).to.have.property("description");
+                expect(response.body).to.have.property("creator");
+                expect(response.body).to.have.property("owner");
+                expect(response.body.config.blockType).eql("module");
+            });
+        });
+    })
+
+    it("Imports new module and all associated artifacts from IPFS into the local DB as User - Negative", () => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
+                headers: {
+                    authorization
+                },
+                body: {
+                    "messageId": Cypress.env('module_for_import')
+                },
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });
         });
     });
@@ -66,7 +54,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             body: {
                 "messageId": Cypress.env('module_for_import')
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -82,7 +70,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             body: {
                 "messageId": Cypress.env('module_for_import')
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
@@ -98,40 +86,44 @@ context("Modules", { tags: ['modules', 'thirdPool'] },() => {
             body: {
                 "messageId": Cypress.env('module_for_import')
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
     it("Imports new module and all associated artifacts from IPFS into the local DB with invalid message id - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
-            headers: {
-                authorization,
-            },
-            body: {
-                "messageId": Cypress.env('module_for_import') + "777121"
-            },
-            failOnStatusCode:false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.ERROR);
-            expect(response.body.message).eql("Request failed with status code 400");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
+                headers: {
+                    authorization,
+                },
+                body: {
+                    "messageId": Cypress.env('module_for_import') + "777121"
+                },
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.ERROR);
+                expect(response.body.message).eql("Request failed with status code 400");
+            });
+        })
     });
 
     it("Imports new module and all associated artifacts from IPFS into the local DB with empty message id - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
-            headers: {
-                authorization,
-            },
-            failOnStatusCode:false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
-            expect(response.body.message).eql("Message ID in body is empty");
-        });
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.ListOfAllModules + API.ImportMessage,
+                headers: {
+                    authorization,
+                },
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
+                expect(response.body.message).eql("Message ID in body is empty");
+            });
+        })
     });
 });
