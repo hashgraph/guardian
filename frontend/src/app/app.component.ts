@@ -5,6 +5,7 @@ import { BrandingService } from './services/branding.service';
 import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
 import './modules/policy-statistics/lang-modes/formula-lang.mode';
+import './modules/policy-statistics/lang-modes/single-line';
 import { globalLoaderActive } from './static/global-loader.function';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';

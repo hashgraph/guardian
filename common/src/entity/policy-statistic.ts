@@ -1,6 +1,6 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * PolicyStatistic collection
@@ -44,7 +44,7 @@ export class PolicyStatistic extends BaseEntity {
      * Status
      */
     @Property({ nullable: true })
-    status?: 'Draft' | 'Published';
+    status?: EntityStatus;
 
     /**
      * Topic id
@@ -97,6 +97,6 @@ export class PolicyStatistic extends BaseEntity {
     @BeforeCreate()
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
-        this.status = this.status || 'Draft';
+        this.status = this.status || EntityStatus.DRAFT;
     }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
@@ -37,6 +37,26 @@ export class PolicyStatisticsComponent implements OnInit {
     public columns: IColumn[];
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
+    public statuses = [{
+        label: 'Draft',
+        value: EntityStatus.DRAFT,
+        description: 'Return to editing.',
+        disable: (value: string): boolean => {
+            return !(value === EntityStatus.ERROR);
+        }
+    }, {
+        label: 'Published',
+        value: EntityStatus.PUBLISHED,
+        description: 'Release version into public domain.',
+        disable: (value: string): boolean => {
+            return !(value === EntityStatus.DRAFT);
+        }
+    }, {
+        label: 'Error',
+        value: EntityStatus.ERROR,
+        description: '',
+        disable: true
+    }]
 
     private subscription = new Subscription();
 
@@ -67,7 +87,7 @@ export class PolicyStatisticsComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
-            id: 'trigger',
+            id: 'method',
             title: 'Trigger',
             type: 'text',
             size: 'auto',
@@ -219,5 +239,9 @@ export class PolicyStatisticsComponent implements OnInit {
 
     public onEdit(item: any) {
         this.router.navigate(['/policy-statistics', item.id]);
+    }
+
+    public onChangeStatus($event: string): void {
+        debugger
     }
 }

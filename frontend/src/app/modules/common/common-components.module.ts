@@ -32,6 +32,7 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 
 @NgModule({
     declarations: [
@@ -55,6 +56,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         CompareViewerComponent,
         AlertComponent,
         PaginatorComponent,
+        StatusDropdown
     ],
     imports: [
         CommonModule,
@@ -91,7 +93,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         CompareBtnComponent,
         CompareViewerComponent,
         PaginatorComponent,
-        DataInputDialogComponent
+        DataInputDialogComponent,
+        StatusDropdown
     ]
 })
 export class CommonComponentsModule { }

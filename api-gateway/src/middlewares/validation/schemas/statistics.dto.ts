@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
 import { IsObject, IsOptional, IsString } from 'class-validator';
+import { EntityStatus } from '@guardian/interfaces';
 
 export class StatisticsDTO {
     @ApiProperty({
@@ -70,7 +71,7 @@ export class StatisticsDTO {
     })
     @IsOptional()
     @IsString()
-    messageId?: string;  
+    messageId?: string;
 
     @ApiProperty({
         type: 'string',
@@ -93,11 +94,12 @@ export class StatisticsDTO {
     @ApiProperty({
         type: 'string',
         required: false,
-        example: 'Draft'
+        enum: EntityStatus,
+        example: EntityStatus.DRAFT
     })
     @IsOptional()
     @IsString()
-    status?: string;
+    status?: EntityStatus;
 
     @ApiProperty({
         type: 'string',

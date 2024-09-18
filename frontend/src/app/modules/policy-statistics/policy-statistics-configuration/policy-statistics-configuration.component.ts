@@ -7,7 +7,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
 import { TreeListItem } from '../tree-graph/tree-list';
-import { SchemaData, SchemaFormulas, SchemaNode, SchemaVariables } from './schema-node';
+import { SchemaData, SchemaFormula, SchemaFormulas, SchemaNode, SchemaVariables } from './schema-node';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../tree-graph/tree-source';
@@ -127,7 +127,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         readOnly: false,
         viewportMargin: Infinity,
         variables: [],
-        extraKeys: { "Ctrl-Space": "autocomplete" }
+        extraKeys: { "Ctrl-Space": "autocomplete" },
+        scrollbarStyle: null,
+        singleLine: true
     };
 
     constructor(

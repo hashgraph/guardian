@@ -116,6 +116,12 @@
                                             </svg-icon>
                                         </div>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'status'">
+                                        <status-dropdown
+                                            [(value)]="row.status"
+                                            [options]="statuses"
+                                            (change)="onChangeStatus($event)"></status-dropdown>
+                                    </ng-container>
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
                                     </ng-container>
@@ -137,6 +143,7 @@
         </ng-container>
         <ng-template #noData>
             <div class="guardian-user-not-data">
+                
                 <svg-icon 
                     class="svg-icon-32" 
                     src="/assets/images/icons/32/list.svg" 

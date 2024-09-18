@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, ImportExportUtils, MessageError, MessageResponse, PinoLogger, PolicyImportExport } from '@guardian/common';
-import { IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, PolicyStatistic } from '@guardian/common';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -14,22 +14,31 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} new statistic
      */
     ApiResponse(MessageAPI.CREATE_STATISTIC,
-        async (msg: { statistic: any, owner: IOwner }) => {
+        async (msg: { statistic: PolicyStatistic, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    throw new Error('Invalid Params');
+                    return new MessageError('Invalid parameters');
                 }
                 const { statistic, owner } = msg;
-                if (statistic) {
-                    delete statistic._id;
-                    delete statistic.id;
-                    delete statistic.status;
-                    delete statistic.owner;
-                    delete statistic.messageId;
+
+                if (!statistic) {
+                    return new MessageError('Invalid object.');
                 }
+
+                const policyId = statistic.policyId;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                delete statistic._id;
+                delete statistic.id;
+                delete statistic.status;
+                delete statistic.owner;
+                delete statistic.messageId;
                 statistic.creator = owner.creator;
                 statistic.owner = owner.owner;
-                statistic.status = 'Draft';
+                statistic.status = EntityStatus.DRAFT;
                 const row = await DatabaseServer.createStatistic(statistic);
                 return new MessageResponse(row);
             } catch (error) {
@@ -49,7 +58,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: { filters: any, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    return new MessageError('Invalid load tools parameter');
+                    return new MessageError('Invalid parameters');
                 }
                 const { filters, owner } = msg;
                 const { pageIndex, pageSize } = filters;
@@ -67,7 +76,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 otherOptions.fields = [
                     'id',
-                    // 'creator',
+                    'creator',
                     'owner',
                     'name',
                     'description',
@@ -100,7 +109,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: { id: string, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    return new MessageError('Invalid load tools parameter');
+                    return new MessageError('Invalid parameters');
                 }
                 const { id, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(id);
@@ -126,7 +135,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: { id: string, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    return new MessageError('Invalid load tools parameter');
+                    return new MessageError('Invalid parameters');
                 }
                 const { id, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(id);
@@ -158,10 +167,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
      * @returns {Theme} theme
      */
     ApiResponse(MessageAPI.UPDATE_STATISTIC,
-        async (msg: { id: string, statistic: any, owner: IOwner }) => {
+        async (msg: { id: string, statistic: PolicyStatistic, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    return new MessageError('Invalid update theme parameters');
+                    return new MessageError('Invalid parameters');
                 }
                 const { id, statistic, owner } = msg;
 
@@ -172,6 +181,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 item.name = statistic.name;
                 item.description = statistic.description;
+                item.method = statistic.method;
                 item.config = statistic.config;
 
                 const result = await DatabaseServer.updateStatistic(item);
@@ -193,7 +203,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
         async (msg: { id: string, owner: IOwner }) => {
             try {
                 if (!msg) {
-                    return new MessageError('Invalid delete theme parameters');
+                    return new MessageError('Invalid parameters');
                 }
                 const { id, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(id);
@@ -208,5 +218,36 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Publish statistic
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {boolean} - Operation success
+     */
+    ApiResponse(MessageAPI.PUBLISH_STATISTIC,
+        async (msg: { id: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters');
+                }
+                const { id, owner } = msg;
 
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    throw new Error(`Item already published`);
+                }
+                item.status = EntityStatus.PUBLISHED;
+
+                const result = await DatabaseServer.updateStatistic(item);
+                return new MessageResponse(result);
+
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }
