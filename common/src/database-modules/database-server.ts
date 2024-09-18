@@ -2367,7 +2367,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param items Schemas
      */
     public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
-        await new DataBaseHelper(SchemaCollection).updateMany(items);
+        await new DataBaseHelper(SchemaCollection).update(items);
     }
 
     /**
