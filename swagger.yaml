@@ -15555,7 +15555,11 @@ components:
           example: 0.0.1
         status:
           type: string
-          example: Draft
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+          example: DRAFT
         method:
           type: string
           example: ''
