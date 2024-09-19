@@ -369,7 +369,7 @@ export class TagsManagerBlock {
             }
         }
 
-        const tagObjects = []
+        // const tagObjects = []
 
         for (const item of map.values()) {
             if (item.message) {
@@ -390,14 +390,15 @@ export class TagsManagerBlock {
                 tag.date = tag.date || (new Date()).toISOString();
 
                 if (tag.id) {
-                    tagObjects.push(tag);
+                    await ref.databaseServer.updateTag(tag);
+                    // tagObjects.push(tag);
                 } else {
                     await ref.databaseServer.createTag(tag);
                 }
             }
         }
 
-        await ref.databaseServer.updateTags(tagObjects)
+        // await ref.databaseServer.updateTags(tagObjects)
     }
 
 }

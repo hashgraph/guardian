@@ -25,16 +25,17 @@ export async function publishSchemaTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
-    const tagObjects = []
+    // const tagObjects = []
 
     for (const tag of tags) {
         tag.target = schema.messageId;
         await publishTag(tag, messageServer, owner);
-
-        tagObjects.push(tag);
+        await DatabaseServer.updateTag(tag);
+        //
+        // tagObjects.push(tag);
     }
 
-    await new DatabaseServer().updateTags(tagObjects);
+    // await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -60,16 +61,17 @@ export async function publishPolicyTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
-    const tagObjects = []
+    // const tagObjects = []
 
     for (const tag of tags) {
         tag.target = policy.messageId;
         await publishTag(tag, messageServer, owner);
+        await DatabaseServer.updateTag(tag);
 
-        tagObjects.push(tag);
+        // tagObjects.push(tag);
     }
 
-    await new DatabaseServer().updateTags(tagObjects);
+    // await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -95,16 +97,17 @@ export async function publishTokenTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
-    const tagObjects = []
+    // const tagObjects = []
 
     for (const tag of tags) {
         tag.target = token.tokenId;
         await publishTag(tag, messageServer, owner);
+        await DatabaseServer.updateTag(tag);
 
-        tagObjects.push(tag);
+        // tagObjects.push(tag);
     }
 
-    await new DatabaseServer().updateTags(tagObjects);
+    // await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -129,16 +132,17 @@ export async function publishToolTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
-    const tagObjects = []
+    // const tagObjects = []
 
     for (const tag of tags) {
         tag.target = tool.tagsTopicId;
         await publishTag(tag, messageServer, owner);
+        await DatabaseServer.updateTag(tag);
 
-        tagObjects.push(tag);
+        // tagObjects.push(tag);
     }
 
-    await new DatabaseServer().updateTags(tagObjects);
+    // await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -164,16 +168,17 @@ export async function publishModuleTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
-    const tagObjects = []
+    // const tagObjects = []
 
     for (const tag of tags) {
         tag.target = module.messageId;
         await publishTag(tag, messageServer, owner);
+        await DatabaseServer.updateTag(tag);
 
-        tagObjects.push(tag);
+        // tagObjects.push(tag);
     }
 
-    await new DatabaseServer().updateTags(tagObjects);
+    // await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -485,7 +490,7 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                                 map.set(tag.messageId, { message: null, local: tag });
                             }
                         }
-                        const tagObjects = []
+                        // const tagObjects = []
 
                         for (const item of map.values()) {
                             if (item.message) {
@@ -506,14 +511,15 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                                 tag.date = tag.date || (new Date()).toISOString();
 
                                 if (tag.id) {
-                                    tagObjects.push(tag);
+                                    // tagObjects.push(tag);
+                                    await DatabaseServer.updateTag(tag);
                                 } else {
                                     await DatabaseServer.createTag(tag);
                                 }
                             }
                         }
 
-                        await new DatabaseServer().updateTags(tagObjects)
+                        // await new DatabaseServer().updateTags(tagObjects)
                     }
                 } else {
                     throw new Error('Invalid target');
@@ -523,15 +529,15 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const cache = await DatabaseServer.getTagCache(filter);
                 if (cache.length) {
 
-                    const tagCacheObjects = []
+                    // const tagCacheObjects = []
 
                     for (const item of cache) {
                         item.date = date;
-
-                        tagCacheObjects.push(item);
+                        await DatabaseServer.updateTagCache(item);
+                        // tagCacheObjects.push(item);
                     }
 
-                    await DatabaseServer.updateTagsCache(tagCacheObjects)
+                    // await DatabaseServer.updateTagsCache(tagCacheObjects)
                 } else {
                     await DatabaseServer.createTagCache({ localTarget, entity, date });
                 }
