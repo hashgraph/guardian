@@ -29,9 +29,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false,
         },
-        driverOptions: {
-            useUnifiedTopology: true,
-        },
         ensureIndexes: true,
     }, [
         'v2-21-0',

@@ -103,9 +103,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        driverOptions: {
-            useUnifiedTopology: true
-        },
         ensureIndexes: true,
         entities: necessaryEntity
     }, [
