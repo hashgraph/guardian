@@ -2464,7 +2464,7 @@ export async function contractAPI(
                         ) < 0;
                 }
 
-                await dataBaseServer.update(RetirePool, null, pools);
+                await dataBaseServer.updateMany(RetirePool, pools);
 
                 const syncDate = new Date();
 

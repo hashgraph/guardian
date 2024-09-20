@@ -767,16 +767,8 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         entity: T | T[],
         filter?: FilterQuery<T>
     ): Promise<T | T[]> {
-        // if (Array.isArray(entity)) {
-        //     return await Promise.all(entity.map(item => this.update(item)));
-        // }
-
         if (Array.isArray(entity)) {
-            const result = [];
-            for (const item of entity) {
-                result.push(await this.update(item));
-            }
-            return result;
+            return await Promise.all(entity.map(item => this.update(item)));
         }
 
         if (!entity.id && !entity._id && !filter) {

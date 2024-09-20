@@ -431,9 +431,9 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         criteria: FilterQuery<T>,
         row: unknown | unknown[]
     ): Promise<T> {
-        // if(Array.isArray(criteria)) {
-        //     return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
-        // }
+        if(Array.isArray(criteria)) {
+            return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
+        }
 
         if (this.dryRun) {
             this.addDryRunId(entityClass, row);
