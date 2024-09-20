@@ -173,7 +173,7 @@ export class QueueService extends NatsService{
 
         const dataBaseServer = new DatabaseServer();
 
-        const taskObjects = []
+        // const taskObjects = []
 
         for (const worker of workers) {
             const task = await dataBaseServer.findOne(TaskEntity, {
@@ -190,14 +190,15 @@ export class QueueService extends NatsService{
             if (r?.result) {
                 task.processedTime = new Date();
                 task.sent = true;
+                await dataBaseServer.save(TaskEntity, task);
 
-                taskObjects.push(task);
+                // taskObjects.push(task);
             } else {
                 console.log('task sent error')
             }
         }
 
-        await dataBaseServer.saveMany(TaskEntity, taskObjects);
+        // await dataBaseServer.saveMany(TaskEntity, taskObjects);
     }
 
     private async clearOldTasks() {
@@ -221,7 +222,7 @@ export class QueueService extends NatsService{
             task.sent = false;
         }
 
-        await dataBaseServer.saveMany(TaskEntity, tasks);
+        await dataBaseServer.save(TaskEntity, tasks);
     }
 
     /**
