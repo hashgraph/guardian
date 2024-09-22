@@ -497,7 +497,7 @@ export async function syncWipeContract(
             break;
         }
 
-        const wiperRequestRecords = []
+        // const wiperRequestRecords = []
 
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
@@ -586,10 +586,15 @@ export async function syncWipeContract(
                             contractId,
                         });
 
-                        wiperRequestRecords.push({
+                        await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                         });
+
+                        // wiperRequestRecords.push({
+                        //     user,
+                        //     contractId,
+                        // });
 
                         if (!sendNotifications) {
                             break;
@@ -613,11 +618,17 @@ export async function syncWipeContract(
                             token
                         } as Partial<WiperRequest>);
 
-                        wiperRequestRecords.push({
+                        await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                             token
                         });
+
+                        // wiperRequestRecords.push({
+                        //     user,
+                        //     contractId,
+                        //     token
+                        // });
 
                         if (!sendNotifications) {
                             break;
@@ -677,7 +688,7 @@ export async function syncWipeContract(
             }
         }
 
-        await dataBaseServer.saveMany(Token, wiperRequestRecords);
+        // await dataBaseServer.saveMany(Token, wiperRequestRecords);
 
         lastTimeStamp = result[result.length - 1].timestamp;
         timestamps.push(lastTimeStamp);
@@ -2464,7 +2475,7 @@ export async function contractAPI(
                         ) < 0;
                 }
 
-                await dataBaseServer.updateMany(RetirePool, pools);
+                await dataBaseServer.update(RetirePool, null, pools);
 
                 const syncDate = new Date();
 
