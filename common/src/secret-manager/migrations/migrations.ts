@@ -134,7 +134,6 @@ async function migrate() {
       'dist/secret-manager/migrations/vault-account.js'
     ],
       driverOptions: {
-        useUnifiedTopology: true,
           minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MIN_POOL_SIZE, RADIX),
           maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MAX_POOL_SIZE, RADIX),
           maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MAX_IDLE_TIME_MS, RADIX),
