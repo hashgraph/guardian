@@ -7,11 +7,16 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
 import { TreeListItem } from '../tree-graph/tree-list';
-import { SchemaData, SchemaFormula, SchemaFormulas, SchemaNode, SchemaVariables } from './schema-node';
+import { SchemaData, SchemaNode } from './models/schema-node';
+import { SchemaVariables } from "./models/schema-variables";
+import { SchemaFormulas } from "./models/schema-formulas";
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../tree-graph/tree-source';
 import { createAutocomplete } from '../lang-modes/autocomplete';
+import { SchemaScores } from './models/schema-scores';
+import { DialogService } from 'primeng/dynamicdialog';
+import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -53,35 +58,36 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     public formulas: SchemaFormulas = new SchemaFormulas();
     public variables: SchemaVariables = new SchemaVariables();
+    public scores: SchemaScores = new SchemaScores();
 
     public overviewForm = new FormGroup({
         name: new FormControl('', Validators.required),
         description: new FormControl(''),
         policy: new FormControl('', Validators.required),
-        method: new FormControl('', Validators.required)
+        // method: new FormControl('', Validators.required)
     });
 
     public schemaFilterType: number = 1;
 
-    public methods: any[] = [{
-        label: 'Manually',
-        value: 'manually'
-    }, {
-        label: 'By Event',
-        value: 'byEvent'
-    }, {
-        label: 'Every Day',
-        value: 'everyDay'
-    }, {
-        label: 'Every Week',
-        value: 'everyWeek'
-    }, {
-        label: 'Every Month',
-        value: 'everyMonth'
-    }, {
-        label: 'Every Year',
-        value: 'everyYear'
-    }];
+    // public methods: any[] = [{
+    //     label: 'Manually',
+    //     value: 'manually'
+    // }, {
+    //     label: 'By Event',
+    //     value: 'byEvent'
+    // }, {
+    //     label: 'Every Day',
+    //     value: 'everyDay'
+    // }, {
+    //     label: 'Every Week',
+    //     value: 'everyWeek'
+    // }, {
+    //     label: 'Every Month',
+    //     value: 'everyMonth'
+    // }, {
+    //     label: 'Every Year',
+    //     value: 'everyYear'
+    // }];
 
     public formulaTypes: any[] = [{
         label: 'String',
@@ -136,6 +142,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private policyStatisticsService: PolicyStatisticsService,
+        private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
     ) {
@@ -234,12 +241,13 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             name: item.name,
             description: item.description,
             policy: this.policy?.name,
-            method: item.description,
+            // method: item.description,
         });
 
         const config = item.config || {};
         this.variables.fromData(config.variables);
         this.formulas.fromData(config.formulas);
+        this.scores.fromData(config.scores);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -459,18 +467,53 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.formulas.delete(formula);
     }
 
+    public onAddScore() {
+        this.scores.add();
+    }
+
+    public onDeleteScore(score: any) {
+        this.scores.delete(score);
+    }
+
+    public onEditScore(score: any) {
+        const dialogRef = this.dialogService.open(ScoreDialog, {
+            showHeader: false,
+            header: 'Create New',
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                score: { ...score }
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                Object.assign(score, result);
+            }
+        });
+    }
+
+    public getRelationshipsName(id: string) {
+        const variable = this.variables.get(id);
+        if (variable) {
+            return `${variable.id} - ${variable.fieldDescription}`;
+        } else {
+            return id;
+        }
+    }
+
     public onSave() {
         this.loading = true;
         const value = this.overviewForm.value;
         const config = {
             variables: this.variables.getJson(),
-            formulas: this.formulas.getJson()
+            formulas: this.formulas.getJson(),
+            scores: this.scores.getJson()
         };
         const item = {
             ...this.item,
             name: value.name,
             description: value.description,
-            method: value.method,
+            // method: value.method,
             config
         };
         this.policyStatisticsService

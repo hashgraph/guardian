@@ -11,7 +11,7 @@
     }
 
     .col-button {
-        padding: 12px 6px !important;
+        padding: 0px 6px !important;
     }
 
     .col-auto {
@@ -114,6 +114,18 @@
         border: 1px solid var(--guardian-border-color);
         border-radius: 6px;
 
+        &.vertical-border {
+            .dialog-grid-row {
+                &>div { 
+                    border-right: 1px solid var(--guardian-border-color);
+
+                    &:last-child {
+                        border-right: none;
+                    }
+                }
+            }
+        }
+
         .dialog-grid-row {
             display: flex;
             flex-direction: row;
@@ -128,9 +140,38 @@
             color: var(--guardian-font-color);
 
             &>div {
-                padding: 22px 10px;
+                padding: 0px 10px;
                 display: flex;
                 align-items: center;
+                position: relative;
+
+                .cell-focus {
+                    display: none;
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    right: 0px;
+                    bottom: 0px;
+                    border: 1px solid var(--guardian-primary-color, #4169E2);
+                }
+                .p-inputwrapper-focus+.cell-focus,
+                .guardian-input:focus+.cell-focus {
+                    display: block;
+                }
+
+                &:first-child {
+                    .cell-focus {
+                        left: -12px;
+                    }
+                }
+            }
+
+            &:first-child>div:first-child .cell-focus {
+                border-top-left-radius: 6px;
+            }
+
+            &:last-child>div:first-child .cell-focus {
+                border-bottom-left-radius: 6px;
             }
 
             &[expand="true"] {
@@ -139,6 +180,10 @@
                 .expand-icon {
                     transform: rotate(90deg);
                 }
+            }
+
+            &:last-child {
+                border-bottom: none;
             }
         }
 
@@ -152,6 +197,17 @@
                 display: flex;
             }
         }
+    }
+
+    .dialog-grid-empty {
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        color: #848FA9;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
 

@@ -19,12 +19,15 @@ import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ScoreDialog } from './dialogs/score-dialog/score-dialog.component';
 
 @NgModule({
     declarations: [
         PolicyStatisticsComponent,
         PolicyStatisticsConfigurationComponent,
         NewPolicyStatisticsDialog,
+        ScoreDialog,
         TreeGraphComponent
     ],
     imports: [
@@ -43,6 +46,7 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
         CheckboxModule,
         RadioButtonModule,
         CodemirrorModule,
+        MultiSelectModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

@@ -1,90 +1,8 @@
 import { Schema } from "@guardian/interfaces";
-import { TreeListView, TreeListData, TreeListItem } from "../tree-graph/tree-list";
-import { TreeNode } from "../tree-graph/tree-node";
+import { FieldData, SchemaNode } from "./schema-node";
+import { TreeListItem } from "../../tree-graph/tree-list";
 
-export interface SchemaData {
-    iri: string;
-    name: string;
-    description: string;
-}
-
-export interface FieldData {
-    name: string;
-    type: string;
-    description: string;
-    property: string;
-    propertyName: string;
-    isArray: boolean;
-    isRef: boolean;
-}
-
-export class SchemaRules {
-    public relationships: 'main' | 'related' | 'unrelated';
-    public unique: 'true' | 'false';
-
-    constructor() {
-        this.relationships = 'unrelated';
-        this.unique = 'false';
-    }
-}
-
-export class SchemaNode extends TreeNode<SchemaData> {
-    public fields: TreeListView<FieldData>;
-    public rules: SchemaRules;
-
-    public override clone(): SchemaNode {
-        const clone = new SchemaNode(this.id, this.type, this.data);
-        clone.type = this.type;
-        clone.data = this.data;
-        clone.childIds = new Set(this.childIds);
-        clone.fields = this.fields;
-        clone.rules = this.rules;
-        return clone;
-    }
-
-    public override update() {
-        if (this.parent) {
-            const root = this.getRoot() as SchemaNode;
-            const parentFields = root.fields;
-            this.fields = parentFields.createView((s) => {
-                return s.parent?.data?.type === this.data.iri;
-            });
-        }
-        this.fields.setSelectedLimit(4);
-        this.fields.updateSearch();
-    }
-
-    public static from(schema: Schema, properties: Map<string, string>): SchemaNode {
-        const id = schema.iri;
-        const type = schema.entity === 'VC' ? 'root' : 'sub';
-        const data = {
-            iri: schema.iri || '',
-            name: schema.name || '',
-            description: schema.description || ''
-        };
-        const result = new SchemaNode(id, type, data);
-        const fields = TreeListData.fromObject<FieldData>(schema, 'fields', (f) => {
-            if (f.data.property) {
-                f.data.propertyName = properties.get(f.data.property) || f.data.property;
-            }
-            return f;
-        });
-        result.fields = TreeListView.createView(fields, (s) => {
-            return !s.parent;
-        });
-        result.fields.setSearchRules((item) => {
-            return [
-                `(${item.description || ''})|(${item.propertyName || ''})`.toLocaleLowerCase(),
-                `(${item.description || ''})`.toLocaleLowerCase(),
-                `(${item.propertyName || ''})`.toLocaleLowerCase()
-            ];
-        })
-        result.rules = new SchemaRules();
-        return result;
-    }
-}
-
-interface IVariableData {
+export interface IVariableData {
     id: string;
     schemaId: string;
     path: string;
@@ -182,7 +100,7 @@ export class SchemaVariable implements IVariableData {
 }
 
 export class SchemaVariables {
-    private readonly symbol = 'A'
+    private readonly symbol = 'A';
     private startIndex: number = 1;
 
     public variables: SchemaVariable[];
@@ -191,6 +109,10 @@ export class SchemaVariables {
     constructor() {
         this.variables = [];
         this.names = new Set<string>();
+    }
+
+    public get(id: string): SchemaVariable | undefined {
+        return this.variables.find((v) => v.id === id);
     }
 
     public getName(): string {
@@ -295,113 +217,10 @@ export class SchemaVariables {
     public updateType(schemas: Schema[]) {
         const map = new Map<string | undefined, Schema>();
         for (const schema of schemas) {
-            map.set(schema.iri, schema)
+            map.set(schema.iri, schema);
         }
         for (const variable of this.variables) {
             variable.updateType(map);
         }
-    }
-}
-
-interface IFormulaData {
-    id: string;
-    type: string;
-    description: string;
-    formula: string;
-}
-
-export class SchemaFormula implements IFormulaData {
-    public id: string;
-    public type: string;
-    public description: string;
-    public formula: string;
-    public index: number;
-
-    constructor() {
-        this.type = 'string';
-    }
-
-    public getJson(): IFormulaData {
-        return {
-            id: this.id,
-            type: this.type,
-            description: this.description,
-            formula: this.formula
-        }
-    }
-
-    public static fromData(data: IFormulaData): SchemaFormula {
-        const formula = new SchemaFormula();
-        formula.id = data.id;
-        formula.type = data.type || 'string';
-        formula.description = data.description;
-        formula.formula = data.formula;
-        return formula;
-    }
-}
-
-export class SchemaFormulas {
-    private readonly symbol = 'B'
-    private startIndex: number = 1;
-
-    public formulas: SchemaFormula[];
-    public names: Set<string>;
-
-    constructor() {
-        this.formulas = [];
-        this.names = new Set<string>();
-    }
-
-    public setDefault() {
-        this.names.clear();
-        this.startIndex = 1;
-        this.add();
-    }
-
-    public getName(): string {
-        let name: string = '';
-        for (let index = this.startIndex; index < 1000000; index++) {
-            name = `${this.symbol}${index}`;
-            if (!this.names.has(name)) {
-                this.names.add(name);
-                return name;
-            }
-        }
-        return name;
-    }
-
-    public add() {
-        const formula = new SchemaFormula();
-        formula.id = this.getName();
-        this.formulas.push(formula);
-    }
-    public delete(formula: SchemaFormula) {
-        this.formulas = this.formulas.filter((f) => f !== formula);
-        if (this.formulas.length === 0) {
-            this.setDefault()
-        }
-    }
-
-    public fromData(data: IFormulaData[]) {
-        this.formulas = [];
-        if (data) {
-            for (let index = 0; index < data.length; index++) {
-                const item = data[index];
-                const formula = SchemaFormula.fromData(item);
-                formula.index = index;
-                this.formulas.push(formula);
-            }
-        }
-        for (const item of this.formulas) {
-            this.names.add(item.id);
-        }
-        this.startIndex = this.formulas.length + 1;
-        if (this.formulas.length === 0) {
-            this.setDefault()
-        }
-    }
-
-    public getJson(): any[] {
-        return this.formulas.map((f) => f.getJson());
     }
 }

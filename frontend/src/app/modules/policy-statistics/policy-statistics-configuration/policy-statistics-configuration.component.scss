@@ -574,6 +574,12 @@
                         max-width: 48px;
                     }
 
+                    .cell-56 {
+                        min-width: 56px;
+                        width: 56px;
+                        max-width: 56px;
+                    }
+
                     .cell-64 {
                         min-width: 64px;
                         width: 64px;
@@ -592,6 +598,12 @@
                         max-width: 200px;
                     }
 
+                    .cell-250 {
+                        min-width: 250px;
+                        width: 250px;
+                        max-width: 250px;
+                    }
+
                     .cell-300 {
                         min-width: 300px;
                         width: 300px;
@@ -602,12 +614,22 @@
                         min-width: 48px !important;
                         width: 48px !important;
                         max-width: 48px !important;
-                        padding: 6px 10px !important;
+                        padding: 6px 0px 6px 16px !important;
+
+                        &.cell-56 {
+                            min-width: 56px !important;
+                            width: 56px !important;
+                            max-width: 56px !important;
+                        }
 
                         button {
-                            min-width: 36px;
-                            min-height: 36px;
+                            width: 24px;
+                            height: 24px;
                         }
+                    }
+
+                    .cell-multiselect {
+                        padding: 3px 10px !important;
                     }
 
                     .variables-grid-cell {
@@ -710,6 +732,23 @@
 .guardian-dropdown {
     &::ng-deep .p-dropdown {
         width: 100%;
+
+        .p-dropdown-label {
+            padding-left: 0px;
+        }
+    }
+}
+
+.guardian-multiselect {
+    height: 100%;
+
+    &::ng-deep .p-multiselect {
+        width: 100%;
+        height: 100%;
+
+        .p-multiselect-label  {
+            padding: 6px 16px 6px 8px;
+        }
     }
 }
 
@@ -830,4 +869,32 @@
         color: #FF9800;
         font-weight: 600;
     }
+}
+
+.multiselect-option-value {
+    max-width: 300px;
+    white-space: normal;
+    padding-left: 8px;
+}
+
+.multiselect-selected-value {
+    width: 210px;
+    height: 30px;
+    padding: 7px 8px 7px 8px;
+    border-radius: 6px;
+    background: #EFF3F7;
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+    color: #848FA9;
+    margin-bottom: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.multiselect-selected-value:last-child {
+    margin-bottom: 0px;
 }
