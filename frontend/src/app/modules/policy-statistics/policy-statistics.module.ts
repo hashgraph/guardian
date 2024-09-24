@@ -21,6 +21,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ScoreDialog } from './dialogs/score-dialog/score-dialog.component';
+import { PolicyReportsConfigurationComponent } from './policy-report-configuration/policy-report-configuration.component';
 
 @NgModule({
     declarations: [
@@ -28,7 +29,8 @@ import { ScoreDialog } from './dialogs/score-dialog/score-dialog.component';
         PolicyStatisticsConfigurationComponent,
         NewPolicyStatisticsDialog,
         ScoreDialog,
-        TreeGraphComponent
+        TreeGraphComponent,
+        PolicyReportsConfigurationComponent
     ],
     imports: [
         CommonModule,

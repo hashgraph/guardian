@@ -1,3 +1,20 @@
+$sizes: (
+    44: 44px,
+    56: 56px,
+    64: 64px,
+    80: 80px,
+    100: 100px,
+    120: 120px,
+    135: 135px,
+    140: 140px,
+    150: 150px,
+    160: 160px,
+    180: 180px,
+    200: 200px,
+    220: 220px,
+    250: 250px
+);
+
 .dialog-grid-container {
     display: flex;
     flex-direction: column;
@@ -18,76 +35,12 @@
         width: 100%;
     }
 
-    .col-44 {
-        width: 44px;
-        min-width: 44px;
-        max-width: 44px;
-    }
-
-    .col-64 {
-        width: 64px;
-        min-width: 64px;
-        max-width: 64px;
-    }
-
-    .col-80 {
-        width: 80px;
-        min-width: 80px;
-        max-width: 80px;
-    }
-
-    .col-100 {
-        width: 100px;
-        min-width: 100px;
-        max-width: 100px;
-    }
-
-    .col-120 {
-        width: 120px;
-        min-width: 120px;
-        max-width: 120px;
-    }
-
-    .col-135 {
-        width: 135px;
-        min-width: 135px;
-        max-width: 135px;
-    }
-
-    .col-140 {
-        width: 140px;
-        min-width: 140px;
-        max-width: 140px;
-    }
-
-    .col-150 {
-        width: 150px;
-        min-width: 150px;
-        max-width: 150px;
-    }
-
-    .col-160 {
-        width: 160px;
-        min-width: 160px;
-        max-width: 160px;
-    }
-
-    .col-180 {
-        width: 180px;
-        min-width: 180px;
-        max-width: 180px;
-    }
-
-    .col-200 {
-        width: 200px;
-        min-width: 200px;
-        max-width: 200px;
-    }
-
-    .col-250 {
-        width: 250px;
-        min-width: 250px;
-        max-width: 250px;
+    @each $name, $size in $sizes {
+        .col-#{$name} {
+            width: $size;
+            min-width: $size;
+            max-width: $size;
+        }
     }
 
     .dialog-grid-header {
@@ -116,7 +69,7 @@
 
         &.vertical-border {
             .dialog-grid-row {
-                &>div { 
+                &>div {
                     border-right: 1px solid var(--guardian-border-color);
 
                     &:last-child {
@@ -154,6 +107,7 @@
                     bottom: 0px;
                     border: 1px solid var(--guardian-primary-color, #4169E2);
                 }
+
                 .p-inputwrapper-focus+.cell-focus,
                 .guardian-input:focus+.cell-focus {
                     display: block;
@@ -269,6 +223,7 @@
             &:first-child {
                 padding-left: 24px;
             }
+
             &:last-child {
                 padding-left: 24px;
             }
@@ -285,6 +240,7 @@
             &:first-child {
                 padding-left: 24px;
             }
+
             &:last-child {
                 padding-left: 24px;
             }
@@ -294,5 +250,17 @@
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
+    }
+
+    @each $name, $size in $sizes {
+        .col-#{$name} {
+            width: $size;
+            min-width: $size;
+            max-width: $size;
+        }
+    }
+
+    .col-auto {
+        width: 100%;
     }
 }

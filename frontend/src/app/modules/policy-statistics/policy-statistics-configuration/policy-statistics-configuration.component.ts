@@ -482,7 +482,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                score: { ...score }
+                score: JSON.parse(JSON.stringify(score))
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

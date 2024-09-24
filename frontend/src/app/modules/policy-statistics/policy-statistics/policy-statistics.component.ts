@@ -99,10 +99,16 @@ export class PolicyStatisticsComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
+            id: 'edit',
+            title: '',
+            type: 'text',
+            size: '56',
+            tooltip: false
+        }, {
             id: 'options',
             title: '',
             type: 'text',
-            size: 'auto',
+            size: '220',
             tooltip: false
         }]
     }
@@ -242,6 +248,14 @@ export class PolicyStatisticsComponent implements OnInit {
     }
 
     public onChangeStatus($event: string): void {
+        debugger
+    }
+
+    public onCreateInstance(item: any): void {
+        this.router.navigate(['/policy-statistics', item.id, 'report']);
+    }
+
+    public onOpenInstances(item: any): void {
         debugger
     }
 }

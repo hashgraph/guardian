@@ -29,7 +29,7 @@ export class ScoreDialog {
     }
 
     public deleteOption(item: any, $event: any) {
-
+        this.options = this.options.filter((e) => e !== item);
     }
 
     public addOption() {

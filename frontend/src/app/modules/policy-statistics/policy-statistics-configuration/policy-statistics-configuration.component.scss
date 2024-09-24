@@ -725,6 +725,26 @@
                     }
                 }
             }
+
+            .cell-option-values {
+                .cell-option-value {
+                    width: 270px;
+                    height: 30px;
+                    padding: 7px 8px 7px 8px;
+                    border-radius: 6px;
+                    background: #EFF3F7;
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 400;
+                    line-height: 16px;
+                    text-align: left;
+                    color: #848FA9;
+                    margin-bottom: 8px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
         }
     }
 }

@@ -514,7 +514,11 @@
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300">
-
+                                <div  class="cell-option-values">
+                                    <div *ngFor="let option of score.options" class="cell-option-value">
+                                        {{option.description}}
+                                    </div>
+                                </div>
                             </div>
                             <div class="variables-grid-cell cell-btn cell-56">
                                 <button 

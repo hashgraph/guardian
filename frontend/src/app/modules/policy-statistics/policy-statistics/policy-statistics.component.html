@@ -89,7 +89,7 @@
                             <ng-container *ngFor="let column of columns">
                                 <th 
                                     *ngIf="!column.canDisplay || column.canDisplay()"
-                                    class="header-cell-{{column.type}} cell-{{column.size}}" 
+                                    class="header-cell-{{column.type}} col-{{column.size}}" 
                                     >{{column.title}}</th>
                             </ng-container>
                         </tr>
@@ -99,13 +99,13 @@
                             <ng-container *ngFor="let column of columns">
                                 <td 
                                     *ngIf="!column.canDisplay || column.canDisplay()"
-                                    class="row-cell-{{column.type}} cell-{{column.size}}" 
+                                    class="row-cell-{{column.type}} col-{{column.size}}" 
                                     pTooltip="{{row[column.id]}}"
                                     [tooltipDisabled]="!column.tooltip"
                                     tooltipPosition="top"
                                     [ngSwitch]="column.id"
                                 >
-                                    <ng-container *ngSwitchCase="'options'">
+                                    <ng-container *ngSwitchCase="'edit'">
                                         <div 
                                             class="guardian-icon-button big" 
                                             (click)="onEdit(row)">
@@ -115,6 +115,18 @@
                                                 svgClass="icon-color-primary">
                                             </svg-icon>
                                         </div>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'options'">
+                                        <button 
+                                            (click)="onCreateInstance(row)" 
+                                            class="guardian-button guardian-button-secondary grid-btn">
+                                            Create
+                                        </button>
+                                        <button 
+                                            (click)="onOpenInstances(row)" 
+                                            class="guardian-button guardian-button-secondary grid-btn">
+                                            Open
+                                        </button>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'status'">
                                         <status-dropdown
