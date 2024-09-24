@@ -94,11 +94,11 @@ export class WebSocketService {
             }
         };
 
-        this.auth.subscribe(() => {
-            this.reconnectAttempts = 10;
-            this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
-        })
-        this.connect();
+        // this.auth.subscribe(() => {
+        //     this.reconnectAttempts = 10;
+        //     this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
+        // })
+        // this.connect();
     }
 
     static initialize() {
@@ -134,29 +134,39 @@ export class WebSocketService {
     }
 
     private async connect(): Promise<void> {
-        if (this.socket) {
-            this.socket.unsubscribe();
-        }
-        if (this.socketSubscription) {
-            this.socketSubscription.unsubscribe();
-        }
-        if (this.heartbeatTimeout) {
-            clearTimeout(this.heartbeatTimeout);
-        }
-        const accessToken = this.auth.getAccessToken();
-        this.wsSubjectConfig.url = this.getUrl(accessToken);
-        this.socket = webSocket(this.wsSubjectConfig);
-        this.socketSubscription = this.socket?.subscribe(
-            (m: any) => {
-                this.accept(m);
-            },
-            (error: Event) => {
-                if (!this.socket) {
-                    this.reconnect();
-                }
-            });
-        this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
-        this.heartbeat();
+        console.log('connect')
+        // if (this.socket) {
+        //     this.socket.unsubscribe();
+        // }
+        // console.log('connect2')
+        // if (this.socketSubscription) {
+        //     this.socketSubscription.unsubscribe();
+        // }
+        // console.log('connect3')
+        // if (this.heartbeatTimeout) {
+        //     clearTimeout(this.heartbeatTimeout);
+        // }
+        // console.log('connect4')
+        // const accessToken = this.auth.getAccessToken();
+        // console.log('connect5', accessToken)
+        // this.wsSubjectConfig.url = this.getUrl(accessToken);
+        // console.log('connect6', this.wsSubjectConfig.url)
+        // this.socket = webSocket(this.wsSubjectConfig);
+        // console.log('connect7', this.socket)
+        // this.socketSubscription = this.socket?.subscribe(
+        //     (m: any) => {
+        //         this.accept(m);
+        //     },
+        //     (error: Event) => {
+        //         if (!this.socket) {
+        //             this.reconnect();
+        //         }
+        //     });
+        // console.log('connect8', this.socketSubscription)
+        // this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
+        // console.log('connect9')
+        // this.heartbeat();
+        // console.log('connect10')
     }
 
     private heartbeat() {
