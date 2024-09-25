@@ -14,9 +14,10 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../tree-graph/tree-source';
 import { createAutocomplete } from '../lang-modes/autocomplete';
-import { SchemaScores } from './models/schema-scores';
+import { SchemaScore, SchemaScores } from './models/schema-scores';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
+import { IStatistic } from './models/data';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -32,7 +33,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public owner: string;
 
     public id: string;
-    public item: any;
+    public item: IStatistic;
     public policy: any;
     public schemas: Schema[];
 
@@ -471,11 +472,11 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.scores.add();
     }
 
-    public onDeleteScore(score: any) {
+    public onDeleteScore(score: SchemaScore) {
         this.scores.delete(score);
     }
 
-    public onEditScore(score: any) {
+    public onEditScore(score: SchemaScore) {
         const dialogRef = this.dialogService.open(ScoreDialog, {
             showHeader: false,
             header: 'Create New',
@@ -487,7 +488,8 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                Object.assign(score, result);
+                score.description = result.description;
+                score.options = result.options;
             }
         });
     }

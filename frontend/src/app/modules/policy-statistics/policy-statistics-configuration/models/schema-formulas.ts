@@ -1,9 +1,4 @@
-export interface IFormulaData {
-    id: string;
-    type: string;
-    description: string;
-    formula: string;
-}
+import { IFormulaData } from "./data";
 
 export class SchemaFormula implements IFormulaData {
     public id: string;

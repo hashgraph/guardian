@@ -28,7 +28,7 @@
             </div>
             <div *ngIf="options.length" class="dialog-grid-body vertical-border">
                 <ng-container *ngFor="let item of options" >   
-                    <div class="dialog-grid-row">
+                    <div class="dialog-grid-row row-52">
                         <div class="col-auto">
                             <input 
                                 class="guardian-input guardian-input-cell"
@@ -62,7 +62,14 @@
                 </ng-container>
             </div>
             <div *ngIf="!options.length" class="dialog-grid-empty">
-                No Options
+                <div>
+                    <svg-icon
+                        class="icon-btn"
+                        src="/assets/images/icons/list.svg"
+                        svgClass="icon-color-disabled">
+                    </svg-icon>
+                </div>
+                <div>There were no options created yet.</div>
             </div>
         </div> 
         <div class="option-actions">

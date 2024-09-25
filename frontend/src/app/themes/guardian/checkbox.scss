@@ -42,6 +42,11 @@
 }
 
 .guardian-radio-button {
+    .p-disabled, .p-component:disabled {
+        opacity: 1;
+        filter: grayscale(1);
+    }
+
     .p-radiobutton:not(.p-radiobutton-disabled) .p-radiobutton-box.p-focus {
         outline: 0 none;
         outline-offset: 0;

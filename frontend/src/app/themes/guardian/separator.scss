@@ -9,18 +9,51 @@
 
         .guardian-step-separator {
             width: 90px;
+            height: 100%;
             position: relative;
 
             &::before {
                 content: "";
                 display: block;
                 position: absolute;
-                border-top: 2px solid #C4D0E1;
+                border-top: 2px solid var(--guardian-grey-color-3, #AAB7C4);
                 left: 24px;
                 right: 24px;
                 top: calc(50% - 1px);
                 height: 3px;
             }
+        }
+
+        .guardian-step {
+            height: 34px;
+            min-height: 34px;
+        }
+    }
+
+    &.vertical-stepper {
+        flex-direction: column;
+
+        .guardian-step-separator {
+            width: 100%;
+            height: 24px;
+            min-height: 24px;
+            position: relative;
+
+            &::before {
+                content: "";
+                display: block;
+                position: absolute;
+                border-left: 2px solid var(--guardian-grey-color-3, #AAB7C4);
+                left: 19px;
+                top: 0px;
+                bottom: 0px;
+                width: 2px;
+            }
+        }
+
+        .guardian-step {
+            height: 56px;
+            min-height: 56px;
         }
     }
 
@@ -31,7 +64,6 @@
         justify-content: flex-start;
         align-items: center;
         cursor: pointer;
-        height: 34px;
         margin: 3px 0px;
         border-radius: 8px;
         padding: 8px;
@@ -46,19 +78,25 @@
             align-items: center;
 
             svg-icon svg {
-                fill: #AAB7C4;
-                color: #AAB7C4;
+                fill: var(--guardian-grey-color-3, #AAB7C4);
+                color: var(--guardian-grey-color-3, #AAB7C4);
             }
         }
 
         .guardian-step-marker {
             width: 24px;
             height: 24px;
-            background: #AAB7C4;
+            border: 1px solid var(--guardian-grey-color-3, #AAB7C4);
+            background: var(--guardian-grey-color, #EFF3F7);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
+
+            svg-icon svg {
+                fill: var(--guardian-grey-color-3, #AAB7C4);
+                color: var(--guardian-grey-color-3, #AAB7C4);
+            }
         }
 
         .guardian-step-name {
@@ -68,10 +106,14 @@
             font-size: 14px;
             font-weight: 500;
             text-align: left;
-            color: #AAB7C4;
+            color: var(--guardian-grey-color-3, #AAB7C4);
         }
 
         &:hover {
+            background: #f0f3fc;
+        }
+
+        &[highlighted="true"] {
             background: #f0f3fc;
         }
 
@@ -85,6 +127,12 @@
 
             .guardian-step-marker {
                 background: var(--guardian-primary-color, #4169E2);
+                border: 1px solid var(--guardian-primary-color, #4169E2);
+
+                svg-icon svg {
+                    fill: var(--guardian-secondary-color, #FFFFFF);
+                    color: var(--guardian-secondary-color, #FFFFFF);
+                }
             }
 
             .guardian-step-name {

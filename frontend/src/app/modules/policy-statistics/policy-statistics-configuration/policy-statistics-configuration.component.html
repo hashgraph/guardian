@@ -452,7 +452,14 @@
                     </div>
                 </div>
                 <div *ngIf="!variables.variables.length" class="variables-empty-grid">
-                    There were no fields selected yet
+                    <div>
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/list.svg"
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                    </div>
+                    <div>There were no fields selected yet.</div>
                 </div>
             </div>
             <div class="variables-container">
@@ -546,7 +553,14 @@
                     </div>
                 </div>
                 <div *ngIf="!scores.scores.length" class="variables-empty-grid">
-                    There were no fields selected yet
+                    <div>
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/list.svg"
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                    </div>
+                    <div>There were no scores created yet.</div>
                 </div>
                 <div class="variables-actions">
                     <button 

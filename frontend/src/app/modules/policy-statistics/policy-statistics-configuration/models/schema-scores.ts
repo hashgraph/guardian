@@ -1,15 +1,4 @@
-export interface IScoreOption {
-    description: string;
-    value: number;
-}
-
-export interface IScoreData {
-    id: string;
-    type: string;
-    description: string;
-    relationships: string[];
-    options: IScoreOption[];
-}
+import { IScoreData, IScoreOption } from "./data";
 
 export class SchemaScore implements IScoreData {
     public id: string;

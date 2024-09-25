@@ -70,6 +70,7 @@
         background: #fff;
         border-bottom: 1px solid #E1E7EF;
         position: relative;
+        box-shadow: 0px 4px 8px 0px #00000014;
     }
 
     .body-container {
@@ -561,10 +562,11 @@
                     font-size: 14px;
                     font-weight: 400;
                     color: #848FA9;
-                    height: 50px;
+                    height: 87px;
                     display: flex;
                     justify-content: center;
                     align-items: center;
+                    flex-direction: column;
                 }
 
                 .variables-grid {

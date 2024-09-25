@@ -31,5 +31,198 @@
             </div>
         </div>
     </div>
-    
+
+    <div class="body-container">
+        <div class="nav-container">
+
+            <div class="guardian-step-container">
+                <div class="guardian-stepper vertical-stepper">
+                    <div class="guardian-step" [attr.action]="stepper[0]" [attr.highlighted]="stepper[0]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Target</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="stepper[1]" [attr.highlighted]="stepper[1]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Preview</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="stepper[2]" [attr.highlighted]="stepper[2]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Scores</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="stepper[3]" [attr.highlighted]="stepper[3]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Statistics</div>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+
+        <div *ngIf="stepper[0]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Target</div>
+                <div *ngIf="documents" class="dialog-grid-container">
+                    <div *ngIf="documents.length" class="dialog-grid-header">
+                        <div class="col-44"></div>
+                        <div class="col-auto"></div>
+                        <div class="col-120"></div>
+                    </div>
+                    <div *ngIf="documents.length" class="dialog-grid-body">
+                        <ng-container *ngFor="let item of documents" >   
+                            <div class="dialog-grid-row row-64" (click)="onSelectDocument(item)">
+                                <div class="col-44 col-button">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [value]="item.id" 
+                                        [ngModel]="document?.id"></p-radioButton>
+                                </div>
+                                <div class="col-auto">
+                                    {{item.description}}
+                                </div>
+                                <div class="col-120">
+                                    {{item.description}}
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                    <div *ngIf="!documents.length" class="dialog-grid-empty">
+                        No Documents
+                    </div>
+                </div> 
+            </div>
+        </div>
+        <div *ngIf="stepper[1]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Preview</div>
+                <div *ngIf="preview" class="fields-container">
+                    <div *ngFor="let field of preview" class="field-container">
+                        <div class="field-name">
+                            {{field.description}}
+                        </div>
+                        <div class="field-value">
+                            {{field.value}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="stepper[2]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Scores</div>
+                <div *ngIf="scores" class="scores-container">
+                    <div *ngFor="let score of scores" class="score-container">
+                        <div *ngIf="score.relationships" class="fields-container">
+                            <div *ngFor="let field of score.relationships" class="field-container">
+                                <div class="field-name">
+                                    {{field.description}}
+                                </div>
+                                <div class="field-value">
+                                    {{field.value}}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="score-name">
+                            {{score.description}}
+                        </div>
+                        <div *ngIf="score.options" class="options-container">
+                            <div *ngFor="let option of score.options" class="option-container">
+                                <div class="option-checkbox">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [name]="score.id" 
+                                        [value]="option.value" 
+                                        [(ngModel)]="score.value"
+                                        [inputId]="option.id"
+                                        (ngModelChange)="updateScore()"></p-radioButton>
+                                </div>
+                                <label class="option-name" [for]="option.id">
+                                    {{option.description}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div *ngIf="stepper[3]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Statistics</div>
+
+                <div *ngIf="preview" class="fields-container">
+                    <div *ngFor="let field of preview" class="field-container">
+                        <div class="field-name">
+                            {{field.description}}
+                        </div>
+                        <div class="field-value">
+                            {{field.value}}
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let score of scores" class="field-container">
+                        <div class="field-name">
+                            {{score.description}}
+                        </div>
+                        <div *ngIf="score.options" class="options-container">
+                            <div *ngFor="let option of score.options" class="option-container" disabled="true">
+                                <div class="option-checkbox">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [name]="score.id" 
+                                        [value]="option.value" 
+                                        [ngModel]="score.value"
+                                        [disabled]="true"
+                                    ></p-radioButton>
+                                </div>
+                                <label class="option-name">
+                                    {{option.description}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let formula of formulas" class="field-container">
+                        <div class="field-name">
+                            {{formula.description}}
+                        </div>
+                        <div class="field-value">
+                            {{formula.value}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="actions-container">
+        <button *ngIf="!stepper[0]" (click)="onPrev()" class="guardian-button guardian-button-secondary">Previous</button>
+        <button *ngIf="stepper[0]" [disabled]="!document" (click)="onNextStep1()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[1]" (click)="onNextStep2()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[2]" [disabled]="!scoresValid" (click)="onNextStep3()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[3]" (click)="onCreate()" class="guardian-button guardian-button-primary">Create</button>
+    </div>
 </div>
