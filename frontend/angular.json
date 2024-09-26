@@ -3,6 +3,7 @@
     "cli": {
         "analytics": "68a952b6-061b-4e33-a09f-12cc9a4d3085"
     },
+    "defaultProject": "guardian",
     "newProjectRoot": "projects",
     "projects": {
         "guardian": {
