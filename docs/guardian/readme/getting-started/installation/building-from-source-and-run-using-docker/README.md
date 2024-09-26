@@ -214,10 +214,10 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
 
-### How to Configure SSL Encryption:
+### Process on How to Configure SSL Encryption:
 
-1. &#x20;install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
-2. navigate to `certs` folder and execute
+1. &#x20;Install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
+2. Navigate to `certs` folder and execute
 
 ```
 mkcert -install
@@ -225,8 +225,8 @@ mkcert -cert-file server-cert.pem -key-file server-key.pem localhost ::1
 mkcert -client -cert-file client-cert.pem -key-file client-key.pem localhost ::1 email@localhost
 ```
 
-3. edit `configs/nats.conf` and uncomment the `tls` section
-4. set `TLS_NATS` variable to `true` (edited)
+3. Edit `configs/nats.conf` and uncomment the `tls` section
+4. Set `TLS_NATS` variable to `true` (edited)
 
 ### Demo Video
 
