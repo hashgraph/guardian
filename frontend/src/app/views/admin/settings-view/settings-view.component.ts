@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { CommonSettings } from '@guardian/interfaces';
 import { SettingsService } from 'src/app/services/settings.service';
 import { Subscription } from 'rxjs'
@@ -37,7 +37,7 @@ export class SettingsViewComponent implements OnInit, OnDestroy{
     private subscription: Subscription;
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private settingsService: SettingsService) {
         this.subscription = new Subscription();
     }
@@ -62,8 +62,8 @@ export class SettingsViewComponent implements OnInit, OnDestroy{
         );
     }
 
-    getFormControl(formGroup: FormGroup, name: string): FormControl {
-        return formGroup.get(name) as FormControl;
+    getFormControl(formGroup: UntypedFormGroup, name: string): UntypedFormControl {
+        return formGroup.get(name) as UntypedFormControl;
     }
 
     ngOnDestroy() {

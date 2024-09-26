@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { DocumentGenerator, IUser, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -30,7 +30,7 @@ export class RequestDocumentBlockComponent implements OnInit {
     public loading: boolean = true;
     public socket: any;
     public dialogLoading: boolean = false;
-    public dataForm: FormGroup;
+    public dataForm: UntypedFormGroup;
     public schema: any;
     public hideFields: any;
     public type!: string;
@@ -55,7 +55,7 @@ export class RequestDocumentBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private dialog: MatDialog,
         private dialogService: DialogService,
         private router: Router,

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { PolicyCategoryType } from '@guardian/interfaces';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -26,7 +26,7 @@ export class PolicyGuidedSearchComponent implements OnInit {
     loading: boolean = false;
 
     selectedCategoryIds: string[] = [];
-    searchFilter = new FormControl({ value: '', disabled: true });
+    searchFilter = new UntypedFormControl({ value: '', disabled: true });
 
     policyScale: string;
     categories: IPolicyCategory[] = [];

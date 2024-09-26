@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
@@ -20,7 +20,7 @@ import { Subscription } from 'rxjs';
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
-    @Input('form') form!: FormGroup;
+    @Input('form') form!: UntypedFormGroup;
     @Input('field') field!: FieldControl;
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
@@ -39,8 +39,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public loading: boolean = false;
     public keywords: string[] = [];
     public isString: boolean = false;
-    public fieldType: FormControl;
-    public property: FormControl;
+    public fieldType: UntypedFormControl;
+    public property: UntypedFormControl;
     public groupedFieldTypes: any = [
         {
             label: 'Units of measure',
@@ -72,8 +72,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         private ipfs: IPFSService,
         private toastr: ToastrService
     ) {
-        this.fieldType = new FormControl();
-        this.property = new FormControl();
+        this.fieldType = new UntypedFormControl();
+        this.property = new UntypedFormControl();
     }
 
     ngOnInit(): void {
@@ -173,7 +173,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
 
         this.field.controlEnum.clear();
         values.forEach((item: any) => {
-            this.field.controlEnum.push(new FormControl(item));
+            this.field.controlEnum.push(new UntypedFormControl(item));
         });
 
         this.keywords = [];

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 
 @Component({
     selector: 'app-token-configuration',
@@ -7,7 +7,7 @@ import { FormGroup } from '@angular/forms';
     styleUrls: ['./token-configuration.component.css'],
 })
 export class TokenConfigurationComponent implements OnChanges {
-    @Input('dataForm') dataForm!: FormGroup;
+    @Input('dataForm') dataForm!: UntypedFormGroup;
     @Input('readonly') readonly?: any;
     @Input('hide-type') hideType: boolean = false;
     @Input() contracts: any[];

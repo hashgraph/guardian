@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -19,13 +19,13 @@ export class TagCreateDialog {
     title: string = 'New Tag';
     schemas: any[] = [];
     schema: any;
-    schemaForm: FormGroup;
+    schemaForm: UntypedFormGroup;
     canAddDocument = false;
 
     constructor(
         public dialogRef: DynamicDialogRef,
         private changeDetector: ChangeDetectorRef,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         public data: DynamicDialogConfig) {
         this.schemas = data.data?.schemas;
         this.schemaForm = fb.group({});

@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { ISchema, Schema, SchemaCategory, SchemaField, SchemaHelper } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -43,7 +43,7 @@ export class SchemaDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private cdr: ChangeDetectorRef,
         private schemaService: SchemaService,
     ) {

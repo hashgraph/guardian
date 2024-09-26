@@ -4,7 +4,7 @@ import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
 import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
@@ -23,8 +23,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
     public pageSize: number = 25;
     public count: number = 0;
     public permissions: any[] = [];
-    public searchFilter = new FormControl('');
-    public newRole: FormGroup | null = null;
+    public searchFilter = new UntypedFormControl('');
+    public newRole: UntypedFormGroup | null = null;
     public controls: Map<string, any>;
     public group: PermissionsGroup;
     public selectedCategory: ICategory | null = null;
@@ -35,7 +35,7 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         private profileService: ProfileService,
         private route: ActivatedRoute,
         private router: Router,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private dialog: MatDialog
     ) {
     }

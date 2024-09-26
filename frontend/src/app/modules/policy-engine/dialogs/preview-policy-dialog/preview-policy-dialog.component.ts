@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -26,7 +26,7 @@ export class PreviewPolicyDialog {
     public tool!: any;
     public xlsx!: any;
     public errors!: any;
-    public toolForm!: FormGroup;
+    public toolForm!: UntypedFormGroup;
     public isFile?: boolean;
     public mode: string = 'new';
 
@@ -49,7 +49,7 @@ export class PreviewPolicyDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
-        this.toolForm = new FormGroup({});
+        this.toolForm = new UntypedFormGroup({});
         if (this.config.data.policy) {
             const importFile = this.config.data.policy;
 
@@ -88,7 +88,7 @@ export class PreviewPolicyDialog {
             for (const toolConfigs of this.toolConfigs) {
                 this.toolForm.addControl(
                     toolConfigs.messageId,
-                    new FormControl(toolConfigs.messageId, [
+                    new UntypedFormControl(toolConfigs.messageId, [
                         Validators.required,
                         Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
                     ])
@@ -108,7 +108,7 @@ export class PreviewPolicyDialog {
                 for (const toolConfigs of this.toolConfigs) {
                     this.toolForm.addControl(
                         toolConfigs.messageId,
-                        new FormControl(toolConfigs.messageId, [
+                        new UntypedFormControl(toolConfigs.messageId, [
                             Validators.required,
                             Validators.pattern(/^[0-9]{10}\.[0-9]{9}$/),
                         ])

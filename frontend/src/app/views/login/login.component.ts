@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators, } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
@@ -34,12 +34,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     errorMessage: string = '';
     passFieldType: 'password' | 'text' = 'password';
-    loginForm = new FormGroup({
-        login: new FormControl('', [
+    loginForm = new UntypedFormGroup({
+        login: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),
-        password: new FormControl('', [
+        password: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),

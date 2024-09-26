@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges, } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { GeoJsonSchema, GeoJsonType } from '@guardian/interfaces';
 import ajv from 'ajv';
 import { Subject } from 'rxjs';
@@ -12,7 +12,7 @@ import { ajvSchemaValidator } from 'src/app/validators/ajv-schema.validator';
     styleUrls: ['./geojson-type.component.scss'],
 })
 export class GeojsonTypeComponent implements OnInit, OnChanges {
-    @Input('formGroup') control?: FormControl;
+    @Input('formGroup') control?: UntypedFormControl;
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
 

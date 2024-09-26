@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -25,7 +25,7 @@ export class NewModuleDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
         if (this.config?.data) {
             switch (this.config.data.type) {

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -13,7 +13,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 export class PublishPolicyDialog {
     public loading = true;
     public policy: any;
-    public versionControl: FormControl = new FormControl('', [
+    public versionControl: UntypedFormControl = new UntypedFormControl('', [
         Validators.required,
         Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/),
     ]);
