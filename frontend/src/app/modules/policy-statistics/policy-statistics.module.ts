@@ -22,6 +22,7 @@ import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ScoreDialog } from './dialogs/score-dialog/score-dialog.component';
 import { PolicyReportsConfigurationComponent } from './policy-report-configuration/policy-report-configuration.component';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 @NgModule({
     declarations: [
@@ -49,6 +50,7 @@ import { PolicyReportsConfigurationComponent } from './policy-report-configurati
         RadioButtonModule,
         CodemirrorModule,
         MultiSelectModule,
+        OverlayPanelModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

@@ -67,4 +67,13 @@ export class PolicyStatisticsService {
     public update(item: any): Observable<any> {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
+
+    public getDocuments(
+        id: string,
+        pageIndex?: number,
+        pageSize?: number,
+    ): Observable<HttpResponse<any[]>> {
+        const params = PolicyStatisticsService.getOptions({}, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${id}/documents`, { observe: 'response', params });
+    }
 }

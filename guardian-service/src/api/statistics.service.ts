@@ -250,4 +250,66 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    /**
+     * Get documents
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_DOCUMENTS,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            pageIndex?: string,
+            pageSize?: string
+        }) => {
+            try {
+
+                if (!msg) {
+                    return new MessageError('Invalid parameters');
+                }
+                const { id, owner, pageIndex, pageSize } = msg;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                // if (item.status !== EntityStatus.PUBLISHED) {
+                //     throw new Error(`Item is not published`);
+                // }
+
+                const policyId: string = item.policyId;
+                const variables: any[] = item.config?.variables;
+                const schemasIds: Set<string> = new Set<string>();
+                if (variables) {
+                    for (const variable of variables) {
+                        schemasIds.add(variable.schemaId);
+                    }
+                }
+
+                const [items, count] = await DatabaseServer.getStatisticDocumentsAndCount(
+                    {},
+                    otherOptions
+                );
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

@@ -95,7 +95,7 @@ $sizes: (
                 max-height: 52px;
             }
 
-            
+
             &.row-64 {
                 height: 64px;
                 min-height: 64px;
@@ -230,6 +230,7 @@ $sizes: (
             padding: 16px;
             border: none;
             background: transparent;
+            position: relative;
 
             &:first-child {
                 padding-left: 24px;
@@ -239,6 +240,17 @@ $sizes: (
                 padding-left: 24px;
             }
         }
+
+        .text-truncate {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            right: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -50%);
+        }
     }
 
     .guardian-grid-row {
@@ -247,6 +259,7 @@ $sizes: (
         td {
             padding: 16px;
             border-bottom: 1px solid #e9ecef;
+            position: relative;
 
             &:first-child {
                 padding-left: 24px;
@@ -261,7 +274,23 @@ $sizes: (
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
         }
+
+        .text-truncate {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            right: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -50%);
+        }
     }
+
+    // .p-datatable-tbody {
+    //     border: 1px solid #e9ecef;
+    //     border-radius: 6px;
+    // }
 
     @each $name, $size in $sizes {
         .col-#{$name} {
@@ -271,7 +300,53 @@ $sizes: (
         }
     }
 
+    @each $name, $size in $sizes {
+        .col-min-#{$name} {
+            min-width: $size;
+        }
+    }
+
     .col-auto {
         width: 100%;
+    }
+
+    &.grid-scroll {
+        &::before {
+            z-index: 1;
+            border-top: none;
+            border-top-right-radius: 0px;
+        }
+
+        &::after {
+            content: "";
+            display: block;
+            position: absolute;
+            left: -1px;
+            right: 9px;
+            top: 45px;
+            bottom: 73px;
+            pointer-events: none;
+            border: 1px solid #ebebeb;
+            border-radius: 8px;
+            z-index: 1;
+            border-left: none;
+            box-shadow: inset -1px -1px 0px 0px #ffffff, 1px 1px 0px 0px #ffffff;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
+        .p-datatable-tbody {
+            border-radius: 8px;
+        }
+
+        .p-datatable-wrapper {
+            padding-right: 2px;
+            border-bottom: 1px solid #ebebeb;
+        }
+
+        .p-datatable-thead {
+            background: #fff;
+        }
     }
 }

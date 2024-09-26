@@ -36,6 +36,17 @@ interface IFormula {
     formula: string;
 }
 
+interface IColumn {
+    id: string | string[];
+    title: string;
+    type: string;
+    size: string;
+    minSize: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
+}
+
 @Component({
     selector: 'app-policy-report-configuration',
     templateUrl: './policy-report-configuration.component.html',
@@ -60,6 +71,33 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     public scores: IScore[];
     public formulas: IFormula[];
     public scoresValid: boolean = false;
+    public documentsCount: number;
+    public pageIndex: number;
+    public pageSize: number;
+    public columns: IColumn[];
+    public defaultColumns: IColumn[] = [{
+        id: 'checkbox',
+        title: '',
+        type: 'text',
+        size: '56',
+        minSize: '56',
+        tooltip: false
+    }, {
+        id: 'schema',
+        title: 'SCHEMA',
+        type: 'text',
+        size: '150',
+        minSize: '150',
+        tooltip: false
+    }, {
+        id: 'id',
+        title: 'ID',
+        type: 'text',
+        size: 'auto',
+        minSize: '150',
+        tooltip: false
+    }];
+    public userColumns: any[] = [];
 
     private subscription = new Subscription();
 
@@ -71,9 +109,14 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) {
+        this.columns = [...this.defaultColumns];
     }
 
     ngOnInit() {
+        this.documents = [];
+        this.pageIndex = 0;
+        this.pageSize = 10;
+        this.documentsCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 this.loadProfile();
@@ -112,9 +155,8 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.policyStatisticsService.getItem(this.id),
-            this.policyStatisticsService.getRelationships(this.id),
-            this.schemaService.properties()
-        ]).subscribe(([item, relationships, properties]) => {
+            this.policyStatisticsService.getRelationships(this.id)
+        ]).subscribe(([item, relationships]) => {
             this.item = item;
             this.policy = relationships?.policy || {};
             const schemas = relationships?.schemas || [];
@@ -126,15 +168,39 @@ export class PolicyReportsConfigurationComponent implements OnInit {
                     console.log(error);
                 }
             }
-            this.documents = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
-            this.document = null;
-            this.update();
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
+            this.loadDocuments();
         }, (e) => {
             this.loading = false;
         });
+    }
+
+    private loadDocuments() {
+        this.loading = true;
+        this.policyStatisticsService
+            .getDocuments(this.id)
+            .subscribe((documents) => {
+                const { page, count } = this.policyStatisticsService.parsePage(documents);
+                this.documents = page;
+                this.document = null;
+                this.documentsCount = count;
+                this.update();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onPage(event: any): void {
+        if (this.pageSize != event.pageSize) {
+            this.pageIndex = 0;
+            this.pageSize = event.pageSize;
+        } else {
+            this.pageIndex = event.pageIndex;
+            this.pageSize = event.pageSize;
+        }
+        this.loadDocuments();
     }
 
     private update() {
@@ -197,6 +263,52 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         }
 
         this.updateScore();
+
+
+        for (const variable of variables) {
+            const path = [variable.schemaId, ...(variable.path || '').split('.')];
+            this.userColumns.push({
+                id: path,
+                title: (variable.fieldDescription || ''),
+                type: 'text',
+                size: 'auto',
+                minSize: '200',
+                tooltip: false,
+                selected: true
+            })
+        }
+
+        this.columns = [
+            ...this.defaultColumns,
+            ...this.userColumns.filter((c) => c.selected)
+        ];
+    }
+
+    public getCellValue(row: any, column: IColumn): any {
+        if (typeof column.id === 'string') {
+            return row[column.id];
+        } else {
+            if (row.schema === column.id[0]) {
+                let value = row?.document?.credentialSubject;
+                if (Array.isArray(value)) {
+                    value = value[0];
+                }
+                for (let i = 1; i < column.id.length; i++) {
+                    if (value) {
+                        value = value[column.id[i]]
+                    } else {
+                        return 'N/A';
+                    }
+                }
+                if (value) {
+                    return value;
+                } else {
+                    return 'N/A';
+                }
+            } else {
+                return 'N/A';
+            }
+        }
     }
 
     public onBack() {
@@ -241,7 +353,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
 
     public updateScore() {
         for (const score of this.scores) {
-            if(!score.value) {
+            if (!score.value) {
                 this.scoresValid = false;
                 return;
             }
@@ -268,5 +380,13 @@ export class PolicyReportsConfigurationComponent implements OnInit {
 
     private calcFormula(formula: IFormula, state: any) {
         return formula.formula;
+    }
+
+    public changeCol(col: any) {
+        col.selected = !col.selected;
+        this.columns = [
+            ...this.defaultColumns,
+            ...this.userColumns.filter((c) => c.selected)
+        ];
     }
 }

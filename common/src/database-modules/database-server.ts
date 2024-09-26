@@ -3071,7 +3071,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param id
      */
     public static async getContractById(id: string): Promise<ContractCollection | null> {
-        if(!id) return null;
+        if (!id) return null;
         return await new DataBaseHelper(ContractCollection).findOne(id);
     }
 
@@ -3760,4 +3760,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(PolicyStatistic).update(row);
     }
 
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocumentsAndCount(
+        filters?: FilterObject<VcDocumentCollection>,
+        options?: FindOptions<unknown>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
 }

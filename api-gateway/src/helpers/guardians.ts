@@ -2881,6 +2881,25 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return documents
+     *
+     * @param id
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getStatisticDocuments(
+        id: string,
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DOCUMENTS, { id, owner, pageIndex, pageSize });
+    }
+
+    /**
      * Update statistic
      * @param id
      * @param statistic
