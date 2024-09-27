@@ -417,7 +417,9 @@
                 }
             },
             "required": [
-                "tags"
+                "OrganizationName",
+                "Website",
+                "Tags"
             ],
             "additionalProperties": false
         }
