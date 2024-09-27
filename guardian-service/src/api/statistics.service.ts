@@ -1,6 +1,56 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, PolicyStatistic } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, PolicyStatistic, VcDocument } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+
+async function addRelationship(
+    messageId: string,
+    relationships: Set<string>
+) {
+    if (!messageId || relationships.has(messageId)) {
+        return;
+    }
+    relationships.add(messageId);
+    const doc = await DatabaseServer.getStatisticDocument({ messageId });
+    if (doc && doc.relationships) {
+        for (const id of doc.relationships) {
+            await addRelationship(id, relationships);
+        }
+    }
+}
+
+async function findRelationships(
+    target: VcDocument,
+    subDocs: VcDocument[],
+): Promise<VcDocument[]> {
+    const relationships = new Set<string>();
+    relationships.add(target.messageId);
+    if (target && target.relationships) {
+        for (const id of target.relationships) {
+            await addRelationship(id, relationships);
+        }
+    }
+    return subDocs.filter((doc) => relationships.has(doc.messageId));
+}
+
+function getVcId(document: VcDocument): string {
+    let credentialSubject: any = document?.document?.credentialSubject;
+    if (Array.isArray(credentialSubject)) {
+        credentialSubject = credentialSubject[0];
+    }
+    if (credentialSubject && credentialSubject.id) {
+        return credentialSubject.id;
+    }
+    return document.id;
+}
+
+function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
+    const map = new Map<string, VcDocument>();
+    for (const document of documents) {
+        const id = getVcId(document);
+        map.set(id, document);
+    }
+    return Array.from(map.values());
+}
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -116,7 +166,6 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                console.log(item);
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -289,23 +338,45 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                // if (item.status !== EntityStatus.PUBLISHED) {
-                //     throw new Error(`Item is not published`);
-                // }
-
                 const policyId: string = item.policyId;
-                const variables: any[] = item.config?.variables;
-                const schemasIds: Set<string> = new Set<string>();
-                if (variables) {
-                    for (const variable of variables) {
-                        schemasIds.add(variable.schemaId);
-                    }
-                }
+                const rules = item.config?.rules || [];
+                const targets = rules.filter((r) => r.type === 'main');
+                const sub = rules.filter((r) => r.type === 'related');
+                const all = rules.filter((r) => r.type === 'unrelated');
 
-                const [items, count] = await DatabaseServer.getStatisticDocumentsAndCount(
-                    {},
+                const targetSchemas = targets.map((r) => r.schemaId);
+                const subSchemas = sub.map((r) => r.schemaId);
+                const allSchemas = all.map((r) => r.schemaId);
+
+                const allDocs = uniqueDocuments(await DatabaseServer.getStatisticDocuments({
+                    policyId,
+                    owner: owner.creator,
+                    schema: { $in: allSchemas }
+                }));
+
+                const subDocs = uniqueDocuments(await DatabaseServer.getStatisticDocuments({
+                    policyId,
+                    owner: owner.creator,
+                    schema: { $in: subSchemas }
+                }));
+
+                const [targetDocs, count] = await DatabaseServer.getStatisticDocumentsAndCount(
+                    {
+                        policyId,
+                        owner: owner.creator,
+                        schema: { $in: targetSchemas }
+                    },
                     otherOptions
                 );
+
+                const items: any[] = [];
+                for (const target of uniqueDocuments(targetDocs)) {
+                    items.push({
+                        targetDocument: target,
+                        relatedDocuments: await findRelationships(target, subDocs),
+                        unrelatedDocuments: allDocs
+                    })
+                }
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

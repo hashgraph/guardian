@@ -324,13 +324,11 @@ $sizes: (
             left: -1px;
             right: 9px;
             top: 45px;
-            bottom: 73px;
+            bottom: 0px;
             pointer-events: none;
-            border: 1px solid #ebebeb;
+            border-top: 1px solid #ebebeb;
             border-radius: 8px;
             z-index: 1;
-            border-left: none;
-            box-shadow: inset -1px -1px 0px 0px #ffffff, 1px 1px 0px 0px #ffffff;
             border-bottom-left-radius: 0px;
             border-bottom-right-radius: 0px;
             border-top-right-radius: 0px;
@@ -342,11 +340,15 @@ $sizes: (
 
         .p-datatable-wrapper {
             padding-right: 2px;
-            border-bottom: 1px solid #ebebeb;
         }
 
         .p-datatable-thead {
             background: #fff;
         }
+    }
+
+    .p-frozen-column {
+        position: sticky !important;
+        background: #fff !important;
     }
 }

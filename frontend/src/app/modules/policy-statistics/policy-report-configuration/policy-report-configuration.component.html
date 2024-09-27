@@ -120,10 +120,23 @@
                             >
                                 <ng-template pTemplate="header">
                                     <tr class="guardian-grid-header">
+                                        <ng-container *ngFor="let column of defaultColumns">
+                                            <th 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="header-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}"
+                                                [showDelay]="1000"
+                                                pTooltip="{{column.title}}"
+                                                tooltipPosition="top"
+                                                pFrozenColumn
+                                            >
+                                                <span class="text-truncate">{{column.title}}</span>
+                                            </th>
+                                        </ng-container>
                                         <ng-container *ngFor="let column of columns">
                                             <th 
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="header-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}"
+                                                [showDelay]="1000"
                                                 pTooltip="{{column.title}}"
                                                 tooltipPosition="top"
                                             >
@@ -134,32 +147,55 @@
                                 </ng-template>
                                 <ng-template let-row pTemplate="body">
                                     <tr class="guardian-grid-row select-row" (click)="onSelectDocument(row)">
-                                        <ng-container *ngFor="let column of columns">
+                                        <ng-container *ngFor="let column of defaultColumns">
                                             <td 
                                                 *ngIf="!column.canDisplay || column.canDisplay()"
                                                 class="row-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}" 
-                                                pTooltip="{{getCellValue(row, column)}}"
-                                                [tooltipDisabled]="!column.tooltip"
-                                                tooltipPosition="top"
                                                 [ngSwitch]="column.id"
+                                                pFrozenColumn
                                             >
                                                 <ng-container *ngSwitchCase="'checkbox'">
                                                     <p-radioButton 
                                                         class="guardian-radio-button radio-button-24"
-                                                        [value]="row.id" 
-                                                        [ngModel]="document?.id"></p-radioButton>
+                                                        [value]="row.__id" 
+                                                        [ngModel]="document?.__id"></p-radioButton>
                                                 </ng-container>
                                                 <ng-container *ngSwitchCase="'schema'">
-                                                    <span class="text-truncate">{{row.schema}}</span>
+                                                    <span class="text-truncate"
+                                                        [showDelay]="1000" 
+                                                        pTooltip="{{row.__schemaName}}"
+                                                        [tooltipDisabled]="!row.__schemaName"
+                                                        tooltipPosition="top">
+                                                        {{row.__schemaName}}
+                                                    </span>
                                                 </ng-container>
                                                 <ng-container *ngSwitchCase="'id'">
-                                                    <span class="text-truncate">{{row.id}}</span>
+                                                    <span class="text-truncate">{{row.__id}}</span>
                                                 </ng-container>
                                                 <ng-container *ngSwitchDefault>
-                                                    <span class="text-truncate">
+                                                    <span class="text-truncate"
+                                                        [showDelay]="1000" 
+                                                        pTooltip="{{getCellValue(row, column)}}"
+                                                        [tooltipDisabled]="!getCellValue(row, column)"
+                                                        tooltipPosition="top">
                                                         {{getCellValue(row, column)}}
                                                     </span>
                                                 </ng-container>
+                                            </td>
+                                        </ng-container>
+                                        <ng-container *ngFor="let column of columns">
+                                            <td 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="row-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}" 
+                                                [ngSwitch]="column.id"
+                                            >
+                                                <span class="text-truncate"
+                                                    [showDelay]="1000" 
+                                                    pTooltip="{{getCellValue(row, column)}}"
+                                                    [tooltipDisabled]="!getCellValue(row, column)"
+                                                    tooltipPosition="top">
+                                                    {{getCellValue(row, column)}}
+                                                </span>
                                             </td>
                                         </ng-container>
                                     </tr>
@@ -193,13 +229,22 @@
             <div class="step-body-container">
                 <div class="step-body-header">Preview</div>
                 <div *ngIf="preview" class="fields-container">
-                    <div *ngFor="let field of preview" class="field-container">
+                    <div *ngFor="let variable of preview" class="field-container">
                         <div class="field-name">
-                            {{field.description}}
+                            {{variable.description}}
                         </div>
-                        <div class="field-value">
-                            {{field.value}}
-                        </div>
+                        <ng-container *ngIf="variable.isArray">
+                            <div class="field-value-array">
+                                <div *ngFor="let v of variable.value" class="field-value">
+                                    {{v}}
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!variable.isArray">
+                            <div class="field-value">
+                                {{variable.value}}
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
             </div>
@@ -210,13 +255,22 @@
                 <div *ngIf="scores" class="scores-container">
                     <div *ngFor="let score of scores" class="score-container">
                         <div *ngIf="score.relationships" class="fields-container">
-                            <div *ngFor="let field of score.relationships" class="field-container">
+                            <div *ngFor="let variable of score.relationships" class="field-container">
                                 <div class="field-name">
-                                    {{field.description}}
+                                    {{variable.description}}
                                 </div>
-                                <div class="field-value">
-                                    {{field.value}}
-                                </div>
+                                <ng-container *ngIf="variable.isArray">
+                                    <div class="field-value-array">
+                                        <div *ngFor="let v of variable.value" class="field-value">
+                                            {{v}}
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="!variable.isArray">
+                                    <div class="field-value">
+                                        {{variable.value}}
+                                    </div>
+                                </ng-container>
                             </div>
                         </div>
                         <div class="score-name">
@@ -248,13 +302,22 @@
                 <div class="step-body-header">Statistics</div>
 
                 <div *ngIf="preview" class="fields-container">
-                    <div *ngFor="let field of preview" class="field-container">
+                    <div *ngFor="let variable of preview" class="field-container">
                         <div class="field-name">
-                            {{field.description}}
+                            {{variable.description}}
                         </div>
-                        <div class="field-value">
-                            {{field.value}}
-                        </div>
+                        <ng-container *ngIf="variable.isArray">
+                            <div class="field-value-array">
+                                <div *ngFor="let v of variable.value" class="field-value">
+                                    {{v}}
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!variable.isArray">
+                            <div class="field-value">
+                                {{variable.value}}
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
                 <div *ngIf="formulas" class="fields-container">

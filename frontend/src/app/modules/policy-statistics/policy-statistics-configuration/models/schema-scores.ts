@@ -1,4 +1,4 @@
-import { IScoreData, IScoreOption } from "./data";
+import { IScoreData, IScoreOption } from "@guardian/interfaces";
 
 export class SchemaScore implements IScoreData {
     public id: string;
@@ -84,7 +84,7 @@ export class SchemaScores {
         }
     }
 
-    public fromData(data: IScoreData[]) {
+    public fromData(data: IScoreData[] | undefined) {
         this.scores = [];
         if (data) {
             for (let index = 0; index < data.length; index++) {

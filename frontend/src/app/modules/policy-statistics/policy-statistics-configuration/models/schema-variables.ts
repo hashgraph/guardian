@@ -1,7 +1,6 @@
-import { Schema } from "@guardian/interfaces";
+import { IVariableData, Schema } from "@guardian/interfaces";
 import { FieldData, SchemaNode } from "./schema-node";
 import { TreeListItem } from "../../tree-graph/tree-list";
-import { IVariableData } from "./data";
 
 export class SchemaVariable implements IVariableData {
     public id: string;
@@ -122,7 +121,7 @@ export class SchemaVariables {
         return Array.from(names);
     }
 
-    public fromData(data: IVariableData[]) {
+    public fromData(data: IVariableData[] | undefined) {
         const map = new Map<string, SchemaVariable>();
         if (data) {
             for (let index = 0; index < data.length; index++) {

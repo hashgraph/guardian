@@ -119,11 +119,11 @@
             cursor: pointer;
 
             &:hover {
-                background: #f0f3fc;
-            }
+                background: #f0f3fc !important;
 
-            * {
-                pointer-events: none;
+                td {
+                    background: #f0f3fc !important;
+                }
             }
         }
 
@@ -153,6 +153,17 @@
                     text-align: left;
                     color: #23252E;
                     width: 100%;
+                    min-height: 42px;
+                }
+
+                .field-value-array {
+                    .field-value {
+                        margin-bottom: 16px;
+
+                        &:last-child {
+                            margin-bottom: 0px;
+                        }
+                    }
                 }
             }
         }

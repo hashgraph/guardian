@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -17,7 +17,7 @@ import { createAutocomplete } from '../lang-modes/autocomplete';
 import { SchemaScore, SchemaScores } from './models/schema-scores';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
-import { IStatistic } from './models/data';
+import { SchemaRule, SchemaRules } from './models/schema-rules';
 
 @Component({
     selector: 'app-policy-statistics-configuration',
@@ -60,6 +60,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public formulas: SchemaFormulas = new SchemaFormulas();
     public variables: SchemaVariables = new SchemaVariables();
     public scores: SchemaScores = new SchemaScores();
+    public rules: SchemaRules = new SchemaRules();
 
     public overviewForm = new FormGroup({
         name: new FormControl('', Validators.required),
@@ -116,6 +117,14 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     public get roots(): SchemaNode[] {
         return this.source?.roots;
+    }
+
+    public get rule(): SchemaRule | undefined {
+        if (this.rootNode) {
+            return this.rules.get(this.rootNode.id);
+        } else {
+            return undefined
+        }
     }
 
     public codeMirrorOptions: any = {
@@ -237,7 +246,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         }
     }
 
-    private updateForm(item: any) {
+    private updateForm(item: IStatistic) {
         this.overviewForm.setValue({
             name: item.name,
             description: item.description,
@@ -245,10 +254,11 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             // method: item.description,
         });
 
-        const config = item.config || {};
-        this.variables.fromData(config.variables);
-        this.formulas.fromData(config.formulas);
-        this.scores.fromData(config.scores);
+        const config = item.config;
+        this.variables.fromData(config?.variables);
+        this.formulas.fromData(config?.formulas);
+        this.scores.fromData(config?.scores);
+        this.rules.fromData(config?.rules)
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -265,6 +275,9 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
                 rootView.updateHidden();
                 rootView.updateSelected();
             }
+        }
+        for (const root of this.source.roots) {
+            this.rules.add(root.data.iri);
         }
     }
 
@@ -505,11 +518,13 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     public onSave() {
         this.loading = true;
+        this.rules.update(this.variables);
         const value = this.overviewForm.value;
         const config = {
             variables: this.variables.getJson(),
             formulas: this.formulas.getJson(),
-            scores: this.scores.getJson()
+            scores: this.scores.getJson(),
+            rules: this.rules.getJson(),
         };
         const item = {
             ...this.item,

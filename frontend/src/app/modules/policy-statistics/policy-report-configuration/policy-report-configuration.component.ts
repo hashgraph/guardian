@@ -1,13 +1,11 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, Schema, UserPermissions } from '@guardian/interfaces';
+import { GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { IStatistic } from '../policy-statistics-configuration/models/data';
-import { FormGroup } from '@angular/forms';
 
 interface IOption {
     id: string;
@@ -19,6 +17,10 @@ interface IVariable {
     id: string;
     description: string;
     value: any;
+    schemaId: string;
+    path: string[];
+    fullPath: string[];
+    isArray: boolean;
 }
 
 interface IScore {
@@ -47,6 +49,16 @@ interface IColumn {
     canDisplay?: () => boolean;
 }
 
+interface IDocument {
+    targetDocument: IVCDocument;
+    relatedDocuments: IVCDocument[];
+    unrelatedDocuments: IVCDocument[];
+    __id?: string;
+    __schemaId?: string;
+    __schemaName?: string;
+    __cols: Map<IColumn, any>;
+}
+
 @Component({
     selector: 'app-policy-report-configuration',
     templateUrl: './policy-report-configuration.component.html',
@@ -62,11 +74,10 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     public id: string;
     public item: IStatistic;
     public policy: any;
-    public schemas: Schema[];
     public stepper = [true, false, false, false];
     public stepIndex = 0;
-    public documents: any[];
-    public document: any;
+    public documents: IDocument[];
+    public document: IDocument | null;
     public preview: IVariable[];
     public scores: IScore[];
     public formulas: IFormula[];
@@ -98,6 +109,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         tooltip: false
     }];
     public userColumns: any[] = [];
+    public schemas = new Map<string, Schema>();
 
     private subscription = new Subscription();
 
@@ -109,7 +121,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) {
-        this.columns = [...this.defaultColumns];
+        this.columns = [];
     }
 
     ngOnInit() {
@@ -157,17 +169,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
             this.policyStatisticsService.getItem(this.id),
             this.policyStatisticsService.getRelationships(this.id)
         ]).subscribe(([item, relationships]) => {
-            this.item = item;
-            this.policy = relationships?.policy || {};
-            const schemas = relationships?.schemas || [];
-            this.schemas = [];
-            for (const schema of schemas) {
-                try {
-                    this.schemas.push(new Schema(schema));
-                } catch (error) {
-                    console.log(error);
-                }
-            }
+            this.updateMetadata(item, relationships)
             this.loadDocuments();
         }, (e) => {
             this.loading = false;
@@ -183,7 +185,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
                 this.documents = page;
                 this.document = null;
                 this.documentsCount = count;
-                this.update();
+                this.updateDocuments();
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
@@ -191,6 +193,8 @@ export class PolicyReportsConfigurationComponent implements OnInit {
                 this.loading = false;
             });
     }
+
+
 
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
@@ -203,7 +207,23 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         this.loadDocuments();
     }
 
-    private update() {
+    private updateMetadata(
+        item: IStatistic,
+        relationships: any
+    ) {
+        this.item = item;
+        this.policy = relationships?.policy || {};
+        const schemas = relationships?.schemas || [];
+        this.schemas.clear();
+        for (const item of schemas) {
+            try {
+                const schema = new Schema(item);
+                this.schemas.set(schema.iri || schema.id, schema);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
         const config = this.item.config || {};
         const variables = config.variables || [];
         const formulas = config.formulas || [];
@@ -215,10 +235,16 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         this.formulas = [];
 
         for (const variable of variables) {
+            const path = [...(variable.path || '').split('.')];
+            const fullPath = [variable.schemaId, ...path];
             const field: IVariable = {
                 id: variable.id,
-                description: variable.fieldDescription,
-                value: this.getFieldValue(this.document, variable)
+                description: variable.fieldDescription || '',
+                schemaId: variable.schemaId,
+                path: path,
+                fullPath: fullPath,
+                value: null,
+                isArray: false
             }
             this.preview.push(field);
             preview.set(variable.id, field);
@@ -264,12 +290,10 @@ export class PolicyReportsConfigurationComponent implements OnInit {
 
         this.updateScore();
 
-
-        for (const variable of variables) {
-            const path = [variable.schemaId, ...(variable.path || '').split('.')];
+        for (const item of this.preview) {
             this.userColumns.push({
-                id: path,
-                title: (variable.fieldDescription || ''),
+                id: item.fullPath,
+                title: item.description,
                 type: 'text',
                 size: 'auto',
                 minSize: '200',
@@ -279,37 +303,86 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         }
 
         this.columns = [
-            ...this.defaultColumns,
             ...this.userColumns.filter((c) => c.selected)
         ];
     }
 
-    public getCellValue(row: any, column: IColumn): any {
-        if (typeof column.id === 'string') {
-            return row[column.id];
-        } else {
-            if (row.schema === column.id[0]) {
-                let value = row?.document?.credentialSubject;
-                if (Array.isArray(value)) {
-                    value = value[0];
-                }
-                for (let i = 1; i < column.id.length; i++) {
-                    if (value) {
-                        value = value[column.id[i]]
-                    } else {
-                        return 'N/A';
-                    }
-                }
-                if (value) {
-                    return value;
-                } else {
-                    return 'N/A';
-                }
-            } else {
-                return 'N/A';
-            }
+    public updateDocuments() {
+        for (const doc of this.documents) {
+            doc.__id = doc.targetDocument.id;
+            doc.__schemaId = doc.targetDocument.schema || '';
+            doc.__schemaName = this.schemas.get(doc.__schemaId)?.name || doc.__schemaId;
+            doc.__cols = new Map<IColumn, any>();
         }
     }
+
+    public getCellValue(row: IDocument, column: IColumn): any {
+        if (row.__cols.has(column)) {
+            return row.__cols.get(column);
+        } else {
+            let value: any = (typeof column.id === 'string') ?
+                ((row.targetDocument as any)[column.id]) :
+                (this.getFieldValue(row, column.id));
+            if (Array.isArray(value)) {
+                value = `[${value.join(',')}]`;
+            }
+            row.__cols.set(column, value);
+            return value;
+        }
+    }
+
+    private getFieldValue(document: IDocument, fullPath: string[]): any {
+        if (!document) {
+            return null;
+        }
+        const schemaId = fullPath[0];
+        if (document.targetDocument.schema === schemaId) {
+            return this.getFieldValueByPath(document.targetDocument, fullPath);
+        }
+        const result: any[] = [];
+        for (const doc of document.relatedDocuments) {
+            if (doc.schema === schemaId) {
+                result.push(this.getFieldValueByPath(doc, fullPath))
+            }
+        }
+        for (const doc of document.unrelatedDocuments) {
+            if (doc.schema === schemaId) {
+                result.push(this.getFieldValueByPath(doc, fullPath))
+            }
+        }
+        if (result.length > 1) {
+            return result;
+        } else if (result.length === 1) {
+            return result[0];
+        } else {
+            return 'N/A';
+        }
+    }
+
+    private getFieldValueByPath(document: IVCDocument, path: string[]): any {
+        if (document.schema === path[0]) {
+            let value: any = document?.document?.credentialSubject;
+            if (Array.isArray(value)) {
+                value = value[0];
+            }
+            for (let i = 1; i < path.length; i++) {
+                if (value) {
+                    value = value[path[i]]
+                } else {
+                    return '';
+                }
+            }
+            if (value) {
+                return value;
+            } else {
+                return '';
+            }
+        } else {
+            return 'N/A';
+        }
+    }
+
+
 
     public onBack() {
         this.router.navigate(['/policy-statistics']);
@@ -326,11 +399,14 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         this.onStep(this.stepIndex - 1);
     }
 
-    private getFieldValue(document: any, variable: any): string {
-        return 'test';
-    }
-
     public onNextStep1() {
+        if (!this.document) {
+            return;
+        }
+        for (const item of this.preview) {
+            item.value = this.getFieldValue(this.document, item.fullPath);
+            item.isArray = Array.isArray(item.value);
+        }
         this.onStep(1);
     }
 
@@ -347,7 +423,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
 
     }
 
-    public onSelectDocument(item: any) {
+    public onSelectDocument(item: IDocument) {
         this.document = item;
     }
 
@@ -385,7 +461,6 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     public changeCol(col: any) {
         col.selected = !col.selected;
         this.columns = [
-            ...this.defaultColumns,
             ...this.userColumns.filter((c) => c.selected)
         ];
     }

@@ -32,17 +32,32 @@ export interface IScoreData {
     options: IScoreOption[];
 }
 
+export enum RuleType {
+    Main = 'main',
+    Related = 'related',
+    Unrelated = 'unrelated'
+}
+
+export interface IRuleData {
+    schemaId: string;
+    type: RuleType;
+    unique: boolean | string;
+}
+
+export interface IStatisticConfig {
+    variables?: IVariableData[],
+    scores?: IScoreData[],
+    formulas?: IFormulaData[],
+    rules?: IRuleData[]
+}
+
 export interface IStatistic {
-    id: string;
-    name: string;
-    description: string;
-    instanceTopicId: string;
-    policyId: string;
-    owner: string;
-    status: string;
-    config: {
-        variables: IVariableData[],
-        scores: IScoreData[],
-        formulas: IFormulaData[],
-    }
+    id?: string;
+    name?: string;
+    description?: string;
+    instanceTopicId?: string;
+    policyId?: string;
+    owner?: string;
+    status?: string;
+    config?: IStatisticConfig;
 }

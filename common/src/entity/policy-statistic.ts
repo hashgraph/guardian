@@ -1,12 +1,12 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { EntityStatus, GenerateUUIDv4 } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IStatistic, IStatisticConfig } from '@guardian/interfaces';
 
 /**
  * PolicyStatistic collection
  */
 @Entity()
-export class PolicyStatistic extends BaseEntity {
+export class PolicyStatistic extends BaseEntity implements IStatistic {
     /**
      * ID
      */
@@ -83,7 +83,7 @@ export class PolicyStatistic extends BaseEntity {
      * Config
      */
     @Property({ nullable: true, type: 'unknown' })
-    config?: any;
+    config?: IStatisticConfig;
 
     /**
      * Method

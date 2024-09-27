@@ -1,4 +1,5 @@
-import { IFormulaData } from "./data";
+import { IFormulaData } from "@guardian/interfaces";
+
 
 export class SchemaFormula implements IFormulaData {
     public id: string;
@@ -74,7 +75,7 @@ export class SchemaFormulas {
         }
     }
 
-    public fromData(data: IFormulaData[]) {
+    public fromData(data: IFormulaData[] | undefined) {
         this.formulas = [];
         if (data) {
             for (let index = 0; index < data.length; index++) {

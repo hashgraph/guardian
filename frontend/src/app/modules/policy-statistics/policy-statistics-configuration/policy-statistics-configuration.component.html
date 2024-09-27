@@ -322,7 +322,7 @@
                                 </div>
                             </p-tabPanel>
                             <p-tabPanel header="Set Rules">
-                                <div class="rules-list">
+                                <div *ngIf="rule" class="rules-list">
                                     <div class="schema-rule">
                                         <div class="schema-rule-name">
                                             The method of connection documents
@@ -334,7 +334,7 @@
                                                         class="guardian-radio-button radio-button-24"
                                                         name="relationships" 
                                                         value="main" 
-                                                        [(ngModel)]="rootNode.rules.relationships"
+                                                        [(ngModel)]="rule.type"
                                                         inputId="relationships_1"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_1">
@@ -347,7 +347,7 @@
                                                         class="guardian-radio-button radio-button-24"
                                                         name="relationships" 
                                                         value="related" 
-                                                        [(ngModel)]="rootNode.rules.relationships"
+                                                        [(ngModel)]="rule.type"
                                                         inputId="relationships_2"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_2">
@@ -360,7 +360,7 @@
                                                         class="guardian-radio-button radio-button-24"
                                                         name="relationships" 
                                                         value="unrelated" 
-                                                        [(ngModel)]="rootNode.rules.relationships"
+                                                        [(ngModel)]="rule.type"
                                                         inputId="relationships_3"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_3">
@@ -380,7 +380,7 @@
                                                         class="guardian-radio-button radio-button-24"
                                                         name="unique" 
                                                         value="true" 
-                                                        [(ngModel)]="rootNode.rules.unique"
+                                                        [(ngModel)]="rule.unique"
                                                         inputId="unique_1"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="unique_1">
@@ -393,7 +393,7 @@
                                                         class="guardian-radio-button radio-button-24"
                                                         name="unique" 
                                                         value="false" 
-                                                        [(ngModel)]="rootNode.rules.unique"
+                                                        [(ngModel)]="rule.unique"
                                                         inputId="unique_2"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="unique_2">
@@ -418,7 +418,7 @@
                 <div *ngIf="variables.variables.length" class="variables-grid">
                     <div class="variables-grid-header">
                         <div class="variables-grid-cell cell-84">ID</div>
-                        <div class="variables-grid-cell cell-300">SCHEMA</div>
+                        <div class="variables-grid-cell cell-300">PATH</div>
                         <div class="variables-grid-cell cell-300">PROPERTY</div>
                         <div class="variables-grid-cell">FIELD</div>
                         <div class="variables-grid-cell cell-200">TYPE</div>
@@ -435,7 +435,7 @@
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300">
-                                {{variable.schemaPath}}
+                                {{variable.schemaName}} / {{variable.schemaPath}}
                             </div>
                             <div class="variables-grid-cell cell-300">
                                 {{variable.fieldPropertyName}}

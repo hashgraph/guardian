@@ -3771,4 +3771,28 @@ export class DatabaseServer extends AbstractDatabaseServer {
     ): Promise<[VcDocumentCollection[], number]> {
         return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
     }
+
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocuments(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection[]> {
+        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get document
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocument(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
 }

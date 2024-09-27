@@ -18,19 +18,8 @@ export interface FieldData {
     isRef: boolean;
 }
 
-export class SchemaRules {
-    public relationships: 'main' | 'related' | 'unrelated';
-    public unique: 'true' | 'false';
-
-    constructor() {
-        this.relationships = 'unrelated';
-        this.unique = 'false';
-    }
-}
-
 export class SchemaNode extends TreeNode<SchemaData> {
     public fields: TreeListView<FieldData>;
-    public rules: SchemaRules;
 
     public override clone(): SchemaNode {
         const clone = new SchemaNode(this.id, this.type, this.data);
@@ -38,7 +27,6 @@ export class SchemaNode extends TreeNode<SchemaData> {
         clone.data = this.data;
         clone.childIds = new Set(this.childIds);
         clone.fields = this.fields;
-        clone.rules = this.rules;
         return clone;
     }
 
@@ -79,7 +67,6 @@ export class SchemaNode extends TreeNode<SchemaData> {
                 `(${item.propertyName || ''})`.toLocaleLowerCase()
             ];
         })
-        result.rules = new SchemaRules();
         return result;
     }
 }
