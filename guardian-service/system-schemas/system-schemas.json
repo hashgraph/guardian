@@ -394,17 +394,29 @@
                     "type": "string",
                     "readOnly": true
                 },
-                "tags": {
-                    "$comment": "{\"term\": \"tags\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "tags",
-                    "description": "tags",
+                "OrganizationName": {
+                    "title": "OrganizationName",
+                    "description": "OrganizationName",
+                    "readOnly": false,
                     "type": "string",
-                    "readOnly": false
+                    "$comment": "{\"term\":\"OrganizationName\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":0}"
+                },
+                "Website": {
+                    "title": "Website",
+                    "description": "Website",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"Website\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":1}"
+                },
+                "Tags": {
+                    "title": "Tags",
+                    "description": "Tags",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"Tags\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":2}"
                 }
             },
             "required": [
-                "geography",
-                "law",
                 "tags"
             ],
             "additionalProperties": false
