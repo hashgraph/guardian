@@ -3,7 +3,7 @@ import { Subscription } from 'rxjs';
 import { RecordService } from 'src/app/services/record.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ImportFileDialog } from '../../dialogs/import-file-dialog/import-file-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
 import { Router } from '@angular/router';
 import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';

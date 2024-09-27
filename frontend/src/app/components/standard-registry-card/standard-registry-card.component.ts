@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DomSanitizer } from '@angular/platform-browser';
 import { IStandardRegistryResponse } from '@guardian/interfaces';
 

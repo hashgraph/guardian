@@ -2,7 +2,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CompareStorage } from '../../../services/compare-storage.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 
 @Component({
     selector: 'app-compare-viewer',
