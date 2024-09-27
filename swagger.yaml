@@ -12209,6 +12209,64 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
+  /policy-statistics/{id}/documents:
+    get:
+      operationId: PolicyStatisticsApi_getDocuments
+      summary: Return a list of all documents.
+      description: >-
+        Returns all documents. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Statistic ID
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
   /worker-tasks:
     get:
       operationId: WorkerTasksController_getAllWorkerTasks
@@ -12414,83 +12472,121 @@ components:
         - username
         - oldPassword
         - newPassword
-    CredentialSubjectDTO:
+    VcDTO:
       type: object
       properties:
-        geography:
+        id:
           type: string
-        law:
+          example: 00000000-0000-0000-0000-000000000000
+          nullable: true
+        '@context':
+          type: array
+          items:
+            type: string
+        type:
+          type: array
+          items:
+            type: string
+        credentialSubject:
+          type: array
+          items:
+            type: object
+        issuer:
+          type: object
+        issuanceDate:
           type: string
-        tags:
-          type: string
-        ISIC:
-          type: string
+        proof:
+          type: object
+          nullable: true
+      required:
+        - id
+        - '@context'
+        - type
+        - credentialSubject
+        - issuer
+        - issuanceDate
+        - proof
+    VpDTO:
+      type: object
+      properties:
         '@context':
           type: array
           items:
             type: string
         id:
           type: string
+          example: 00000000-0000-0000-0000-000000000000
         type:
-          type: string
+          type: array
+          items:
+            type: string
+        verifiableCredential:
+          type: array
+          items:
+            type: object
+        proof:
+          type: object
       required:
-        - geography
-        - law
-        - tags
-        - ISIC
         - '@context'
         - id
         - type
-    ProofDTO:
-      type: object
-      properties:
-        type:
-          type: string
-        created:
-          format: date-time
-          type: string
-        verificationMethod:
-          type: string
-        proofPurpose:
-          type: string
-        jws:
-          type: string
-      required:
-        - type
-        - created
-        - verificationMethod
-        - proofPurpose
-        - jws
+        - verifiableCredential
+        - proof
     VcDocumentDTO:
       type: object
       properties:
         id:
           type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        hash:
+          type: string
+          example: hash
+        signature:
+          type: number
+          example: 0
+        status:
+          type: string
+          enum:
+            - NEW
+            - ISSUE
+            - REVOKE
+            - SUSPEND
+            - RESUME
+            - FAILED
+          example: NEW
+        tag:
+          type: string
+          example: Block tag
         type:
-          type: array
-          items:
-            type: string
-        issuer:
           type: string
-        issuanceDate:
-          format: date-time
+          example: Document type
+        createDate:
           type: string
-        '@context':
-          type: array
-          items:
-            type: string
-        credentialSubject:
-          $ref: '#/components/schemas/CredentialSubjectDTO'
-        proof:
-          $ref: '#/components/schemas/ProofDTO'
+          example: '1900-01-01T00:00:00.000Z'
+        updateDate:
+          type: string
+          example: '1900-01-01T00:00:00.000Z'
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        document:
+          $ref: '#/components/schemas/VpDTO'
       required:
         - id
+        - policyId
+        - hash
+        - signature
+        - status
+        - tag
         - type
-        - issuer
-        - issuanceDate
-        - '@context'
-        - credentialSubject
-        - proof
+        - createDate
+        - updateDate
+        - owner
+        - document
     PolicyTestDTO:
       type: object
       properties:
@@ -13544,39 +13640,6 @@ components:
       required:
         - taskId
         - expectation
-    VCDocumentDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        '@context':
-          type: array
-          items:
-            type: string
-        type:
-          type: array
-          items:
-            type: string
-        credentialSubject:
-          type: array
-          items:
-            type: object
-        issuer:
-          type: object
-        issuanceDate:
-          type: string
-        proof:
-          type: object
-          nullable: true
-      required:
-        - id
-        - '@context'
-        - type
-        - credentialSubject
-        - issuer
-        - issuanceDate
-        - proof
     ExternalDocumentDTO:
       type: object
       properties:
@@ -13587,7 +13650,7 @@ components:
         document:
           nullable: false
           allOf:
-            - $ref: '#/components/schemas/VCDocumentDTO'
+            - $ref: '#/components/schemas/VcDTO'
       required:
         - owner
         - policyTag
@@ -14861,32 +14924,6 @@ components:
         - uuid
         - name
         - rules
-    VpDTO:
-      type: object
-      properties:
-        '@context':
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          example: 00000000-0000-0000-0000-000000000000
-        type:
-          type: array
-          items:
-            type: string
-        verifiableCredential:
-          type: array
-          items:
-            type: object
-        proof:
-          type: object
-      required:
-        - '@context'
-        - id
-        - type
-        - verifiableCredential
-        - proof
     VpDocumentDTO:
       type: object
       properties:
@@ -15599,3 +15636,50 @@ components:
         - taskId
         - type
         - updateDate
+    CredentialSubjectDTO:
+      type: object
+      properties:
+        geography:
+          type: string
+        law:
+          type: string
+        tags:
+          type: string
+        ISIC:
+          type: string
+        '@context':
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        type:
+          type: string
+      required:
+        - geography
+        - law
+        - tags
+        - ISIC
+        - '@context'
+        - id
+        - type
+    ProofDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        created:
+          format: date-time
+          type: string
+        verificationMethod:
+          type: string
+        proofPurpose:
+          type: string
+        jws:
+          type: string
+      required:
+        - type
+        - created
+        - verificationMethod
+        - proofPurpose
+        - jws
