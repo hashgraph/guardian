@@ -606,7 +606,7 @@
 }
 
 ::ng-deep {
-    .mat-header-cell {
+    .mat-mdc-header-cell {
         color: #848fa9 !important;
         border: none !important;
         font-family: Inter, serif;
@@ -617,7 +617,7 @@
         text-transform: uppercase;
     }
 
-    .mat-cell {
+    .mat-mdc-cell {
         border-bottom: none !important;
     }
 }

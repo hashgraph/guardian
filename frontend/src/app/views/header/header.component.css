@@ -52,7 +52,8 @@
     min-width: 210px;
 }
 
-::ng-deep .nav-bar .mat-tab-nav-bar.mat-background-primary>.mat-tab-header-pagination {
+/*TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
+::ng-deep .nav-bar .mat-mdc-tab-nav-bar.mat-background-primary>.mat-tab-header-pagination {
     background-color: unset;
 }
 
@@ -67,12 +68,13 @@
     background-color: transparent;
 }
 
-::ng-deep .mat-tab-nav-bar.mat-background-primary>.mat-tab-link-container {
+/*TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
+::ng-deep .mat-mdc-tab-nav-bar.mat-background-primary>.mat-tab-link-container {
     background-color: transparent;
     transition: background-color .3s linear;
 }
 
-::ng-deep .mat-tab-nav-bar.mat-background-primary>.mat-tab-link-container .mat-tab-link {
+::ng-deep .mat-mdc-tab-nav-bar.mat-background-primary>.mat-mdc-tab-link-container .mat-tab-link {
     font-size: 20px;
     line-height: 23px;
     font-weight: normal;
@@ -366,7 +368,7 @@ a[hidden="true"] {
         align-self: center;
     }
 
-    ::ng-deep .nav-bar div.mat-tab-links {
+    ::ng-deep .nav-bar div.mat-mdc-tab-links {
         justify-content: center;
     }
 

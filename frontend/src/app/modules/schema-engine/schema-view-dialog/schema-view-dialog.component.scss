@@ -111,7 +111,7 @@ form {
 }
 
 :host ::ng-deep {
-    .mat-dialog-title {
+    .mat-mdc-dialog-title {
         margin-bottom: 32px;
         color: #000;
         font-family: Poppins;
@@ -121,11 +121,11 @@ form {
         line-height: normal;
     }
 
-    .mat-form-field {
+    .mat-mdc-form-field {
         width: 100%;
     }
 
-    .mat-dialog-actions {
+    .mat-mdc-dialog-actions {
         display: flex;
         justify-content: flex-end;
         gap: 16px;

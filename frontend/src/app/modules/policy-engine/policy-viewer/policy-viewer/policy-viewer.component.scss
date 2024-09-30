@@ -387,18 +387,18 @@ a.go-back-link mat-icon {
     z-index: 0;
 
     ::ng-deep {
-        .mat-table {
+        .mat-mdc-table {
             border-collapse: separate;
             border-spacing: 0 8px;
             background: var(--color-grey-1);
         }
 
-        .mat-row {
+        .mat-mdc-row {
             background: var(--color-grey-white);
             box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
         }
 
-        .mat-row:hover {
+        .mat-mdc-row:hover {
             background: var(--color-grey-white);
         }
     }
@@ -414,12 +414,12 @@ a.go-back-link mat-icon {
     width: 100%;
 
     ::ng-deep {
-        .mat-header-row {
+        .mat-mdc-header-row {
             background: var(--color-grey-1);
             box-shadow: none;
         }
 
-        .mat-header-cell {
+        .mat-mdc-header-cell {
             color: var(--color-grey-5) !important;
             border: none !important;
             font-family: Inter, serif;
@@ -430,7 +430,7 @@ a.go-back-link mat-icon {
             text-transform: uppercase;
         }
 
-        .mat-cell {
+        .mat-mdc-cell {
             border-bottom: none;
             color: var(--color-grey-black-1);
             font-family: Inter, sans-serif;
@@ -442,13 +442,13 @@ a.go-back-link mat-icon {
             width: 250px;
         }
 
-        .mat-cell:first-of-type {
+        .mat-mdc-cell:first-of-type {
             border-top-left-radius: 8px;
             border-bottom-left-radius: 8px;
             padding-left: 24px;
         }
 
-        .mat-cell:last-of-type {
+        .mat-mdc-cell:last-of-type {
             border-top-right-radius: 8px;
             border-bottom-right-radius: 8px;
         }

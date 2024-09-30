@@ -34,7 +34,7 @@ form {
 }
 
 :host ::ng-deep {
-    .mat-dialog-title {
+    .mat-mdc-dialog-title {
         margin-bottom: 32px;
         color: #000;
         font-family: Poppins;
@@ -45,7 +45,7 @@ form {
     }
 }
 
-.mat-dialog-actions {
+.mat-mdc-dialog-actions {
     align-self: end;
     padding: 32px 0 0 0;
 }

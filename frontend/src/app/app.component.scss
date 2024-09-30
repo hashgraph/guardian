@@ -141,6 +141,7 @@ body {
 
 
 ::ng-deep .g-dialog {
+    /* TODO(mdc-migration): The following rule targets internal classes of dialog that may no longer apply for the MDC version.*/
     mat-dialog-container {
         padding: 0px;
     }
@@ -154,7 +155,7 @@ body {
         padding: 0px 5px 0 22px;
         margin-bottom: 12px;
 
-        .mat-dialog-actions {
+        .mat-mdc-dialog-actions {
             padding: 0px 0;
             height: 52px;
         }
@@ -250,14 +251,17 @@ body {
     }
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 ::ng-deep body .mat-form-field-wrapper {
     padding-bottom: 12px;
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.*/
 ::ng-deep body .mat-checkbox-checked.mat-primary .mat-checkbox-background {
     background-color: var(--button-primary-color);
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.*/
 ::ng-deep body .mat-checkbox-frame {
     border-width: 1px;
     border-color: rgb(0 0 0 / 40%);
@@ -267,15 +271,17 @@ body {
     height: auto !important;
 }
 
-::ng-deep body .mat-input-element:disabled {
+::ng-deep body .mat-mdc-input-element:disabled {
     color: rgba(0, 0, 0, 0.54);
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.*/
 ::ng-deep body .mat-checkbox-disabled.mat-checkbox-checked .mat-checkbox-background {
     background-color: #b0b0b0;
 }
 
-::ng-deep body .mat-radio-button:not(.mat-radio-disabled).cdk-program-focused .mat-radio-persistent-ripple {
+/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version.*/
+::ng-deep body .mat-mdc-radio-button:not(.mat-radio-disabled).cdk-program-focused .mat-radio-persistent-ripple {
     opacity: 0;
 }
 
@@ -300,7 +306,7 @@ body {
     .content {
         height: calc(var(--vh, 1vh) * 100 - var(--header-height));
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
     ::ng-deep body .mat-form-field-wrapper {
         padding-bottom: 0;
         font-size: 1.75vh;

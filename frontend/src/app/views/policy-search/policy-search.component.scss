@@ -13,14 +13,15 @@
   }
 
   ::ng-deep {
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
     .mat-tab-body-content {
       overflow: unset;
     }
-
-    .mat-tab-body.mat-tab-body-active {
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
+    .mat-mdc-tab-body.mat-tab-body-active {
       overflow: unset;
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
     .mat-tab-label .mat-tab-label-content {
       font-family: Inter;
       font-size: 14px;
@@ -29,7 +30,7 @@
       line-height: normal;
       color: var(--color-grey-5, #848FA9);
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
     .mat-tab-label-active .mat-tab-label-content {
       text-align: center;
       font-family: Inter;
@@ -40,7 +41,7 @@
       color: var(--color-primary, #0681EE);
     }
 
-    .mat-tab-group.mat-primary .mat-ink-bar, .mat-tab-nav-bar.mat-primary .mat-ink-bar {
+    .mat-mdc-tab-group.mat-primary .mat-ink-bar, .mat-mdc-tab-nav-bar.mat-primary .mat-ink-bar {
       border-bottom: 2px solid var(--color-primary, #0681EE);
     }
   }

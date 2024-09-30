@@ -72,7 +72,7 @@
     .g-dialog-header {
         box-shadow: none;
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
     .mat-radio-container {
         background-color: #2C78F6 !important;
         border-color: #2C78F6 !important;
@@ -277,7 +277,7 @@ form {
 }
 
 :host ::ng-deep {
-  .mat-dialog-title {
+  .mat-mdc-dialog-title {
     margin-bottom: 32px;
     color: #000;
     font-family: Poppins;
@@ -287,11 +287,11 @@ form {
     line-height: normal;
   }
 
-  .mat-form-field {
+  .mat-mdc-form-field {
     width: 100%;
   }
 
-  .mat-dialog-actions {
+  .mat-mdc-dialog-actions {
     display: flex;
     justify-content: flex-end;
     gap: 16px;

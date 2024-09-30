@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import {
     AbstractControl,
     UntypedFormArray,
@@ -10,7 +10,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
-import { MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/legacy-radio';
+import { MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
 import { Token } from '@guardian/interfaces';
 import { TokenService } from 'src/app/services/token.service';
 /**

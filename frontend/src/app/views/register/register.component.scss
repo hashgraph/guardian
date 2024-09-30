@@ -113,16 +113,18 @@ form,
     opacity: 1;
 }
 
-form ::ng-deep button.mat-raised-button {
+form ::ng-deep button.mat-mdc-raised-button {
     background: #000000;
     width: 260px;
 }
 
+/*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
 form ::ng-deep button.mat-raised-button-disabled .mat-button-wrapper {
     color: #fff;
 }
 
-form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
+/*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
+form ::ng-deep .mat-mdc-raised-button.mat-button-disabled.mat-button-disabled {
     color: #fff;
     background-color: rgba(0, 0, 0, 0.7);
 }
@@ -191,7 +193,7 @@ mat-form-field {
         border-radius: 5px;
         background: none !important;
     }
-      
+    /*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
     .role-select-step ::ng-deep.mat-button-wrapper {
         display: grid;
         grid-template-columns: 1fr 2fr;
@@ -199,7 +201,7 @@ mat-form-field {
         align-items: start;
         width: 100%;
     }
-
+    /*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
     .role-select-step ::ng-deep.mat-button-wrapper .role-name {
         position: relative;
         top: 50%;
@@ -215,7 +217,7 @@ mat-form-field {
         overflow-wrap: break-word;
         max-width: 100px;
     }
-      
+    /*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
     .role-select-step ::ng-deep.mat-button-wrapper .role-description {
         grid-column: 2;
         font-size: 13px;

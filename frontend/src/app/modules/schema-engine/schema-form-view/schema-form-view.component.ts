@@ -1,7 +1,7 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';

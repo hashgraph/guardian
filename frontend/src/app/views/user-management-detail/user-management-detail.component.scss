@@ -260,11 +260,11 @@
                     min-width: 700px;
                     overflow: hidden;
                     justify-content: flex-start;
-
+                    /* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version.*/
                     mat-radio-group {
                         display: flex;
                     }
-
+                    /* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version.*/
                     mat-radio-button {
                         width: 20px;
                         height: 20px;
@@ -432,6 +432,7 @@
     }
 }
 
+/* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
 .container::ng-deep .mat-tab-label-active {
     color: #0681EE !important;
     opacity: 1 !important;

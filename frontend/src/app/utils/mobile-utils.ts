@@ -1,4 +1,4 @@
-import { MatLegacyDialogConfig as MatDialogConfig } from "@angular/material/legacy-dialog";
+import { MatDialogConfig } from "@angular/material/dialog";
 
 export function mobileDialog<T>(config: MatDialogConfig<T>): MatDialogConfig<T> {
     const innerWidth = window.innerWidth;

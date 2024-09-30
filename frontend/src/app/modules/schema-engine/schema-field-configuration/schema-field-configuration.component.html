@@ -211,19 +211,19 @@
                 class="enum-form-field"
             >
                 <mat-label>Enum data</mat-label>
-                <mat-chip-list #chipList aria-label="Enum values">
-                    <mat-chip
+                <mat-chip-listbox #chipList aria-label="Enum values">
+                    <mat-chip-option
                         *ngFor="let keyword of keywords"
                         class="mat-chip-value"
                     >
                         <div class="mat-chip-value-label">
                             {{ keyword }}
                         </div>
-                    </mat-chip>
-                    <mat-chip *ngIf="keywords.length < field.enum.length">
+                    </mat-chip-option>
+                    <mat-chip-option *ngIf="keywords.length < field.enum.length">
                         ...
-                    </mat-chip>
-                </mat-chip-list>
+                    </mat-chip-option>
+                </mat-chip-listbox>
             </mat-form-field>
             <div
                 (click)="onEditEnum()"

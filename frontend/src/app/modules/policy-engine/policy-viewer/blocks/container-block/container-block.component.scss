@@ -42,14 +42,14 @@
 }
 
 :host ::ng-deep {
-    .mat-tab-header {
+    .mat-mdc-tab-header {
         background-color: var(--color-grey-1) !important;
     }
 
     .mat-ink-bar {
         background-color: var(--primary-color) !important;
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
     .mat-tab-label {
         color: var(--color-grey-5);
         text-align: center;
@@ -60,7 +60,7 @@
         line-height: 16px;
         opacity: unset;
     }
-
+    /* TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
     .mat-tab-label-active {
         color: var(--primary-color);
     }
