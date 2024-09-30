@@ -132,10 +132,14 @@ export class SchemaDialog {
         this.restoreData = null;
     }
 
-    getSubSchemes() {
-        const { topicId, id} = this.scheme ?? {};
+    getSubSchemes(topicId?: string) {
+        const id = this.scheme?.id;
+        let schemaTopicId = this.scheme?.topicId;
+        if (topicId) {
+            schemaTopicId = topicId;
+        }
 
-        this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
+        this.schemaService.getSchemaWithSubSchemas(this.category, id, schemaTopicId).subscribe((data) => {
             this.subSchemas = data.subSchemas;
 
             if(this.scheme && data.schema) {

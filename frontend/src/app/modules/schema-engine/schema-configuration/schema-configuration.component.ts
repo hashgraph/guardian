@@ -386,7 +386,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.mappingSubSchemas();
         }
 
-        this.useUpdateSubSchemas.emit();
+        this.useUpdateSubSchemas.emit(topicId);
     }
 
     mappingSubSchemas(data?: Schema[], topicId?: string): void {
