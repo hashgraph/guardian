@@ -33,18 +33,18 @@
     width: 100%;
 
     ::ng-deep {
-        .mat-mdc-table {
+        .mat-table {
             border-collapse: separate;
             border-spacing: 0 8px;
             background: var(--color-grey-1);
         }
 
-        .mat-mdc-row {
+        .mat-row {
             background: var(--color-grey-white);
             box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
         }
 
-        .mat-mdc-row:hover {
+        .mat-row:hover {
             background: var(--color-grey-white);
         }
     }
@@ -54,12 +54,12 @@
     width: 100%;
 
     ::ng-deep {
-        .mat-mdc-header-row {
+        .mat-header-row {
             background: var(--color-grey-1);
             box-shadow: none;
         }
 
-        .mat-mdc-header-cell {
+        .mat-header-cell {
             color: var(--color-grey-5) !important;
             border: none !important;
             font-family: Inter, serif;
@@ -70,9 +70,9 @@
             text-transform: uppercase;
         }
 
-        .mat-mdc-header-cell:first-of-type {}
+        .mat-header-cell:first-of-type {}
 
-        .mat-mdc-cell {
+        .mat-cell {
             border-bottom: none;
             color: var(--color-grey-black-1);
             font-family: Inter, sans-serif;
@@ -83,13 +83,13 @@
             padding: 0;
         }
 
-        .mat-mdc-cell:first-of-type {
+        .mat-cell:first-of-type {
             border-top-left-radius: 8px;
             border-bottom-left-radius: 8px;
             padding-left: 24px;
         }
 
-        .mat-mdc-cell:last-of-type {
+        .mat-cell:last-of-type {
             border-top-right-radius: 8px;
             border-bottom-right-radius: 8px;
         }
@@ -102,7 +102,7 @@
     }
 }
 
-.mat-mdc-header-cell {
+.mat-header-cell {
     z-index: 9 !important;
 }
 

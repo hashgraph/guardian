@@ -289,7 +289,6 @@
     margin-top: 20px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of chips that may no longer apply for the MDC version.*/
 .mat-chip-value-label {
     overflow: hidden;
     white-space: nowrap;
@@ -297,18 +296,15 @@
     max-width: 100%;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of chips that may no longer apply for the MDC version.*/
 .enum-form-field .mat-chip-value {
     max-width: 95px;
     min-width: 95px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host ::ng-deep .enum-options-container .mat-form-field-infix {
     padding: 10px 0;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of chips that may no longer apply for the MDC version.*/
 :host ::ng-deep .enum-form-field mat-chip-list .mat-chip-list-wrapper {
     overflow-x: hidden;
     flex-wrap: unset;
@@ -330,34 +326,28 @@
     justify-content: space-between;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-color ::ng-deep div.mat-form-field-infix {
     padding: 12px 0;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-font-size ::ng-deep div.mat-form-field-suffix {
     top: 0px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-font-size ::ng-deep div.mat-form-field-prefix {
     top: 7px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-color::ng-deep .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
     transform: translate(-23px, -25px) scale(0.75);
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-font-size::ng-deep .mat-form-field-appearance-outline.mat-form-field-can-float.mat-form-field-should-float .mat-form-field-label {
     transform: translate(-5px, -25px) scale(0.75);
     margin-top: -5px;
     margin-left: 0px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-color ::ng-deep span.mat-form-field-label-wrapper,
 :host .custom-field-font-size ::ng-deep span.mat-form-field-label-wrapper {
     overflow: visible;
@@ -379,13 +369,11 @@
     flex: 10;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-font-size::ng-deep .mat-form-field-empty.mat-form-field-label {
     margin-top: 0px;
     margin-left: 5px;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
 :host .custom-field-font-size ::ng-deep .mat-form-field-outline-start {
     width: 24px !important;
 }
@@ -467,7 +455,6 @@
     background: var(--color-accent-red-2) !important;
 }
 
-/*TODO(mdc-migration): The following rule targets internal classes of checkbox that may no longer apply for the MDC version.*/
 .mat-checkbox-inner-container {
     background: #fff;
 }

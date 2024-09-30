@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { colorToGradient } from '../../static/color-remoter.function';
 import { Subscription } from 'rxjs';
 

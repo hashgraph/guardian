@@ -169,11 +169,11 @@ form[example="true"] .sub-schema {
     margin: 0 auto;
 }
 
-.required-form-field .mat-mdc-input-element {
+.required-form-field .mat-input-element {
     font-size: 18px;
 }
 
-:host ::ng-deep mat-form-field.required-form-field.mat-mdc-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick {
+:host ::ng-deep mat-form-field.required-form-field.mat-form-field-invalid.mat-form-field-invalid .mat-form-field-outline-thick {
     color: #f8c3c3af;
     background-color: #ffefef;
     border-radius: 7px;
@@ -205,7 +205,6 @@ form[example="true"] .sub-schema {
     padding-bottom: 10px;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version. */
 .boolean-form-field.required-boolean-field ::ng-deep .mat-radio-outer-circle {
     background-color: #ffefef;
     border-color: #f8c3c3af;
@@ -221,7 +220,6 @@ form[example="true"] .sub-schema {
     font-size: 30px;
 }
 
-/* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
 .ipfs-url ::ng-deep .mat-form-field-infix {
     padding-right: 35px;
 }
@@ -421,13 +419,12 @@ form[example="true"] .sub-schema {
 }
 
 :host ::ng-deep {
-  /* TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version. */
   .mat-form-field-infix {
     height: 40px;
     padding: 0;
   }
 
-  .mat-mdc-input-element {
+  .mat-input-element {
     color: var(--color-grey-black-1);
     font-family: Inter, sans-serif;
     font-size: 14px !important;

@@ -30,14 +30,14 @@ body>.leader-line-areaAnchor {
     display: none !important;
 }
 
-.mat-body-1,
+.mat-subheading-1,
 .mat-typography h4 {
     font-size: 20px;
     line-height: 23px;
     flex: 0 0 190px;
 }
 
-.mat-mdc-tooltip {
+.mat-tooltip {
     font-size: 14px;
 }
 
@@ -73,20 +73,20 @@ body>.leader-line-areaAnchor {
     border: unset !important;
 }
 
-.list-button button.mat-mdc-raised-button {
+.list-button button.mat-raised-button {
     width: 100%;
     margin-bottom: 20px;
 }
 
 
-.mat-mdc-table {
-    tr.mat-mdc-header-row {
+.mat-table {
+    tr.mat-header-row {
         box-shadow: 0 3px 6px rgb(0 0 0 / 16%);
         position: relative;
     }
 
-    tr.mat-mdc-row,
-    tr.mat-mdc-footer-row {
+    tr.mat-row,
+    tr.mat-footer-row {
         height: var(--table-row-height);
 
         &:hover {
@@ -124,8 +124,8 @@ body>.leader-line-areaAnchor {
     }
 }
 
-button.mat-mdc-raised-button,
-button.mat-mdc-button {
+button.mat-raised-button,
+button.mat-button {
     /*width: 260px;*/
     height: 47px;
     /*background: #000000 0% 0% no-repeat padding-box;*/
@@ -140,18 +140,18 @@ button.mat-mdc-button {
 }
 
 .cdk-overlay-pane {
-    .mat-mdc-dialog-container {
+    .mat-dialog-container {
         padding: 32px;
         border-radius: 16px;
         background: #FFF;
         box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.08);
 
-        .mat-mdc-dialog-content {
+        .mat-dialog-content {
             max-height: unset;
         }
     }
 
-    .mat-mdc-menu-panel {
+    .mat-menu-panel {
         max-width: unset;
         max-height: unset;
     }
@@ -319,15 +319,15 @@ button.mat-mdc-button {
     }
 
     .cdk-overlay-pane {
-        .mat-mdc-dialog-container {
+        .mat-dialog-container {
             border-radius: 5px;
 
-            .mat-mdc-dialog-content {
+            .mat-dialog-content {
                 max-height: unset;
             }
         }
 
-        .mat-mdc-menu-panel {
+        .mat-menu-panel {
             max-width: unset;
             max-height: unset;
         }
@@ -343,7 +343,7 @@ button.mat-mdc-button {
 }
 
 .draft-topic-option {
-    &.mat-mdc-option {
+    &.mat-option {
         overflow: visible;
         margin-bottom: 14px;
     }

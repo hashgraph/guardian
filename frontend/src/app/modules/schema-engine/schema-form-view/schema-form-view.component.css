@@ -89,7 +89,7 @@ form {
     margin: 0 auto;
 }
 
-:host .mat-mdc-input-element {
+:host .mat-input-element {
     font-size: 18px;
 }
 

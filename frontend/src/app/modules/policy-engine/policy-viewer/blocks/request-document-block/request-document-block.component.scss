@@ -169,7 +169,7 @@
     margin-bottom: 10px;
 }
 
-.restore-data button.mat-mdc-raised-button {
+.restore-data button.mat-raised-button {
     padding: 0 12px;
     height: 36px;
 }
@@ -485,7 +485,7 @@
         margin-bottom: 0;
     }
 
-    .mat-mdc-dialog-actions {
+    .mat-dialog-actions {
         width: 90%;
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -519,7 +519,7 @@
 }
 
 :host ::ng-deep {
-    .mat-mdc-dialog-title {
+    .mat-dialog-title {
         color: var(--color-grey-black-1);
         font-family: Poppins, sans-serif;
         font-size: 24px;

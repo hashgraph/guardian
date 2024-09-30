@@ -403,10 +403,10 @@ a[disabled="true"] {
 }
 
 :host::ng-deep {
-    .mat-mdc-tab-header {
+    .mat-tab-header {
         max-width: fit-content;
     }
-    /*TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
+
     .mat-tab-label {
         font-size: 16px;
         font-weight: 400;
@@ -442,19 +442,19 @@ a[disabled="true"] {
         flex-flow: column;
         height: 100%;
 
-        .mat-mdc-outlined-button {
+        .mat-stroked-button {
             border-radius: 25px;
             font-size: 16px;
             width: 180px;
             height: 50px;
         }
-        /*TODO(mdc-migration): The following rule targets internal classes of button that may no longer apply for the MDC version.*/
-        .mat-mdc-outlined-button:not(.mat-button-disabled) {
+
+        .mat-stroked-button:not(.mat-button-disabled) {
             color: var(--button-primary-color);
             border: 1px solid var(--button-primary-color);
         }
 
-        .mat-mdc-raised-button {
+        .mat-raised-button {
             font-size: 16px;
             width: 180px;
             height: 50px;
@@ -479,16 +479,16 @@ a[disabled="true"] {
     }
 
     .user-onboarding-wizard__filters {
-        .mat-mdc-raised-button {
+        .mat-raised-button {
             width: auto;
             margin-left: 0;
             margin: 0 20px;
         }
-        /*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
+
         .mat-form-field-wrapper {
             padding-bottom: 0;
         }
-        /*TODO(mdc-migration): The following rule targets internal classes of form-field that may no longer apply for the MDC version.*/
+
         .mat-form-field-infix {
             padding: 1.3em 0 1em 0;
             border-top: unset;
@@ -626,7 +626,7 @@ a[disabled="true"] {
             flex-direction: column;
             justify-content: space-around;
 
-            .mat-mdc-button-base {
+            .mat-button-base {
                 width: 100%;
                 margin: 0 0 0 20px;
                 height: auto;
@@ -639,10 +639,10 @@ a[disabled="true"] {
     }
 
     :host::ng-deep {
-        .mat-mdc-tab-header {
+        .mat-tab-header {
             max-width: 100%;
         }
-        /*TODO(mdc-migration): The following rule targets internal classes of tabs that may no longer apply for the MDC version.*/
+
         .mat-tab-labels {
             justify-content: space-around;
         }
@@ -654,8 +654,8 @@ a[disabled="true"] {
         .mat-horizontal-content-container {
             padding: 0 20px;
 
-            .mat-mdc-outlined-button,
-            .mat-mdc-raised-button {
+            .mat-stroked-button,
+            .mat-raised-button {
                 width: 45%;
             }
         }
@@ -920,7 +920,6 @@ a[disabled="true"] {
 }
 
 
-/*TODO(mdc-migration): The following rule targets internal classes of radio that may no longer apply for the MDC version.*/
 mat-radio-button {
     display: block;
     height: 30px;

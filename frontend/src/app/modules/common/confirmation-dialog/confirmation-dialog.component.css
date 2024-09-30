@@ -4,7 +4,7 @@
 }
 
 :host ::ng-deep {
-    .mat-mdc-dialog-title {
+    .mat-dialog-title {
         margin-bottom: 32px;
         color: #000;
         font-family: Poppins;
@@ -14,11 +14,11 @@
         line-height: normal;
     }
 
-    .mat-mdc-form-field {
+    .mat-form-field {
         width: 100%;
     }
 
-    .mat-mdc-dialog-actions {
+    .mat-dialog-actions {
         display: flex;
         justify-content: flex-end;
         gap: 16px;
@@ -73,7 +73,7 @@
         width: 100%;
     }
 
-    .mat-mdc-dialog-actions {
+    .mat-dialog-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
         column-gap: 10px;

@@ -27,7 +27,7 @@
   justify-content: space-between;
 }
 
-.mat-mdc-button-base {
+.mat-button-base {
   background-color: rgba(0,0,0,.12);
 }
 
@@ -65,7 +65,7 @@
 }
 
 @media (max-width: 375px) {
-  button.mat-mdc-button-base {
+  button.mat-button-base {
     padding: 0 25px;
   }
 }
