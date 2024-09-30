@@ -16,7 +16,7 @@
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "ES2022",
+    "target": "es2020",
     "module": "es2020",
     "lib": [
       "es2018",
@@ -24,17 +24,10 @@
       "dom.iterable"
     ],
     "paths": {
-      "crypto": [
-        "./node_modules/crypto-browserify/index.js"
-      ],
-      "process": [
-        "./node_modules/process/browser.js"
-      ],
-      "stream": [
-        "./node_modules/stream-browserify/index.js"
-      ]
-    },
-    "useDefineForClassFields": false
+      "crypto": ["./node_modules/crypto-browserify/index.js"],
+      "process": ["./node_modules/process/browser.js"],
+      "stream": ["./node_modules/stream-browserify/index.js"]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
