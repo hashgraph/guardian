@@ -19,7 +19,7 @@ import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { NgxMaskModule } from 'ngx-mask';
 import { NewVersionsComponent } from './new-versions/new-versions.component';
 import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
@@ -63,16 +63,13 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
-        NgxMaskDirective,
+        NgxMaskModule.forRoot(),
         DialogModule,
         InputTextModule,
         DropdownModule,
         ProgressBarModule,
         ButtonModule,
         AngularSvgIconModule.forRoot()
-    ],
-    providers: [
-        provideNgxMask(),
     ],
     exports: [
         DatetimePicker,
@@ -89,7 +86,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         NgxColorsModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
-        NgxMaskDirective,
+        NgxMaskModule,
         NewVersionsComponent,
         CompareBtnComponent,
         CompareViewerComponent,

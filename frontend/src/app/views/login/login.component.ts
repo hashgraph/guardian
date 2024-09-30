@@ -7,7 +7,7 @@ import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
 import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { environment } from 'src/environments/environment';

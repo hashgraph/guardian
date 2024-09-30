@@ -1,11 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
-@import "./variables.scss";
-@import "codemirror/lib/codemirror";
-@import "codemirror/theme/material";
-@import "codemirror/addon/fold/foldgutter.css";
-@import "codemirror/addon/lint/lint.css";
-@import "primeicons/primeicons.css";
-
+@import './variables.scss';
+@import '~codemirror/lib/codemirror';
+@import '~codemirror/theme/material';
+@import '~codemirror/addon/fold/foldgutter.css';
+@import '~codemirror/addon/lint/lint.css';
+@import "~primeicons/primeicons.css";
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 
 html,

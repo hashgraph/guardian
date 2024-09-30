@@ -266,14 +266,14 @@
 
     &__details {
         grid-area: details;
-        justify-self: flex-end;
+        justify-self: end;
     }
 }
 
 .progress-bar {
     display: flex;
     gap: 10px;
-    align-items: flex-end;
+    align-items: end;
     grid-area: progress;
     margin-bottom: 3px;
 

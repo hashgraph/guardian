@@ -106,7 +106,7 @@ export class BrandingService {
             if (companyLogo) {
                 companyLogo.style.display = 'none';
             }
-            if (companyLogo && brandingData.companyLogoUrl) {
+            if (brandingData.companyLogoUrl) {
                 companyLogo.style.display = 'block';
                 companyLogo.src = brandingData.companyLogoUrl;
             }

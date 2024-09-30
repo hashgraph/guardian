@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';

@@ -65,26 +65,7 @@
                     "defaultConfiguration": "development",
                     "options": {
                         "allowedCommonJsDependencies": [
-                            "interfaces",
-                            "codemirror/addon/edit/closebrackets",
-                            "codemirror/addon/edit/matchbrackets",
-                            "codemirror/addon/fold/brace-fold",
-                            "codemirror/addon/fold/foldcode",
-                            "codemirror/addon/fold/foldgutter",
-                            "codemirror/addon/fold/indent-fold",
-                            "codemirror/addon/mode/overlay",
-                            "codemirror/addon/mode/simple",
-                            "codemirror/lib/codemirror",
-                            "codemirror/mode/javascript/javascript",
-                            "codemirror/mode/markdown/markdown",
-                            "codemirror/mode/yaml/yaml",
-                            "events",
-                            "qrcode",
-                            "cronstrue",
-                            "ajv",
-                            "ajv-formats/dist/formats",
-                            "file-saver",
-                            "moment"
+                            "interfaces"
                         ],
                         "assets": [
                             "src/favicon.ico",

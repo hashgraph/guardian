@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { CodeEditorDialogComponent } from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**

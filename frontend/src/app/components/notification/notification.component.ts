@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notify.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatLegacyMenu as MatMenu, MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
     selector: 'app-notification',

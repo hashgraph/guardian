@@ -4,7 +4,7 @@ import { Theme } from '../../structures/storage/theme';
 import { ThemeRule } from '../../structures/storage/theme-rule';
 import { RegisteredService } from '../../services/registered.service';
 import { ImportFileDialog } from '../../dialogs/import-file-dialog/import-file-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { NewThemeDialog } from '../../dialogs/new-theme-dialog/new-theme-dialog.component';
 import { ConfirmationDialog } from '../../policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
 import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
