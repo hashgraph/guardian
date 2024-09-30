@@ -519,3 +519,12 @@ form[example="true"] .sub-schema {
     }
   }
 }
+
+.suggestion-value {
+    color: #0681EE;
+    cursor: pointer;
+}
+
+*[default=true] {
+    color: rgb(173, 173, 0);
+}

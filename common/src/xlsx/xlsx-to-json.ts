@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -333,6 +333,7 @@ export class XlsxToJson {
             field.required = required;
             field.isArray = isArray;
 
+            let typeError = false;
             const fieldType = FieldTypes.findByName(type);
             if (fieldType) {
                 field.type = fieldType?.type;
@@ -358,6 +359,7 @@ export class XlsxToJson {
                 field.type = xlsxResult.addLink(type, hyperlink);
                 field.isRef = true;
             } else {
+                typeError = true;
                 xlsxResult.addError({
                     type: 'error',
                     text: 'Unknown field type.',
@@ -367,6 +369,21 @@ export class XlsxToJson {
                     row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
+            }
+
+            if (!typeError) {
+                const defaultValue = worksheet
+                    .getCell(table.getCol(Dictionary.DEFAULT), row)
+                    .getFormat();
+                const suggest = worksheet
+                    .getCell(table.getCol(Dictionary.SUGGEST), row)
+                    .getFormat();
+                field.default = field.isArray && !field.isRef
+                    ? xlsxToPresetArray(field, defaultValue)
+                    : xlsxToPresetValue(field, defaultValue);
+                field.suggest = field.isArray && !field.isRef
+                    ? xlsxToPresetArray(field, suggest)
+                    : xlsxToPresetValue(field, suggest);
             }
 
             return field;

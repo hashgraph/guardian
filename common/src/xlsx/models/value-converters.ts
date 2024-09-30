@@ -41,6 +41,43 @@ export function xlsxToFont(value: any): any {
     }
 }
 
+export function xlsxToPresetArray(
+    field: { type: string; isRef?: boolean },
+    value: string
+): string[] | number[] {
+    const parseRegex = /("[^"]*")|([^,]+)/g;
+    const matches = value.match(parseRegex);
+    return matches.map((match) => xlsxToPresetValue(field, match)) as
+        | string[]
+        | number[];
+}
+
+export function xlsxToPresetValue(
+    field: { type: string; isRef?: boolean },
+    value: string
+): string | number | boolean | null {
+    if (value === undefined || value === null || value === '') {
+        return null;
+    }
+    if (field.isRef) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return null;
+        }
+    }
+    switch (field.type) {
+        case 'string':
+            return value;
+        case 'number':
+            return Number(value) || 0;
+        case 'boolean':
+            return Boolean(value);
+        default:
+            return null;
+    }
+}
+
 export function unitToXlsx(type: any): string {
     if (type.unitSystem === 'prefix') {
         return `"${type.unit}"#,##0.00`;
@@ -64,22 +101,24 @@ export function booleanToXlsx(value: boolean): string {
 }
 
 export function anyToXlsx(value: any): string {
-    return value !== undefined ? String(value) : '';
+    if (value === undefined || value === null) {
+        return '';
+    }
+    if (Array.isArray(value)) {
+        return value
+            .map((item) => anyToXlsx(item))
+            .filter(Boolean)
+            .join(', ');
+    }
+    if (Object.prototype.toString.call(value) === '[object Object]') {
+        return JSON.stringify(value);
+    }
+    return String(value);
 }
 
 export function examplesToXlsx(field: SchemaField): string {
     if (Array.isArray(field.examples)) {
-        let value = field.examples[0];
-        if (field.isArray) {
-            value = value[0];
-        }
-        if (Array.isArray(value)) {
-            return value.map(i => String(i)).join(',');
-        } if (typeof value === 'object') {
-            return JSON.stringify(value);
-        } else {
-            return value;
-        }
+        return anyToXlsx(field.examples[0]);
     } else {
         return DocumentGenerator.generateExample(field) || '';
     }

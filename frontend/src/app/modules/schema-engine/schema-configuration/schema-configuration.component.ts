@@ -712,7 +712,7 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    private buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+    public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
         const {
             key,
             title,
@@ -729,7 +729,10 @@ export class SchemaConfigurationComponent implements OnInit {
             isPrivate,
             pattern,
             hidden,
-            property
+            property,
+            default: defaultValue,
+            suggest,
+            example,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         return {
@@ -739,6 +742,9 @@ export class SchemaConfigurationComponent implements OnInit {
             required: required,
             isArray: isArray,
             isRef: type.isRef,
+            fields:
+                this.subSchemas.find((schema) => schema.iri === type.type)
+                    ?.fields || [],
             type: type.type,
             format: type.format,
             pattern: type.pattern || pattern,
@@ -760,6 +766,11 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.value?.entity === SchemaEntity.EVC
                     ? isPrivate
                     : undefined,
+            default: defaultValue,
+            suggest,
+            examples: !['', null, undefined].includes(example)
+                ? [example]
+                : undefined,
         };
     }
 

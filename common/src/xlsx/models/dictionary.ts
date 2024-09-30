@@ -28,6 +28,8 @@ export enum Dictionary {
     SCHEMA_TOOL_ID = 'Tool Id',
     ENUM_SCHEMA_NAME = 'Schema name',
     ENUM_FIELD_NAME = 'Field name',
+    DEFAULT = 'Default',
+    SUGGEST = 'Suggest',
 }
 
 export class FieldTypes {

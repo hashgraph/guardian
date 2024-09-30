@@ -478,3 +478,21 @@
     top: -1px;
     margin-left: 5px;
 }
+
+.default-values {
+    margin-top: 10px;
+    display: grid;
+    transition: 250ms grid-template-rows ease;
+
+    &__content {
+        overflow: hidden;
+    }
+
+    &[hide=false] {
+        grid-template-rows: 1fr;
+    }
+
+    &[hide=true] {
+        grid-template-rows: 0fr;
+    }
+}
