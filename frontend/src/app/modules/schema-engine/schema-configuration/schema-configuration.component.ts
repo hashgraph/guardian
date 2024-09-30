@@ -66,6 +66,7 @@ export class SchemaConfigurationComponent implements OnInit {
     public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
+    public buildField!: (fieldConfig: FieldControl, data: any) => SchemaField;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -172,6 +173,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+        this.buildField = this.buildSchemaField.bind(this);
     }
 
     public get isEdit(): boolean {

@@ -107,10 +107,6 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                                 example: null,
                                 ...value,
                             });
-                            console.log(
-                                'control field value',
-                                control?.value
-                            );
                         });
                 this.fieldsFormValue = value;
                 try {
