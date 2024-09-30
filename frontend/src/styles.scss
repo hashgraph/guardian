@@ -1,10 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@import './variables.scss';
-@import '~codemirror/lib/codemirror';
-@import '~codemirror/theme/material';
-@import '~codemirror/addon/fold/foldgutter.css';
-@import '~codemirror/addon/lint/lint.css';
-@import "~primeicons/primeicons.css";
+@import "./variables.scss";
+@import "codemirror/lib/codemirror";
+@import "codemirror/theme/material";
+@import "codemirror/addon/fold/foldgutter.css";
+@import "codemirror/addon/lint/lint.css";
+@import "primeicons/primeicons.css";
+
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 
 html,
@@ -29,14 +30,14 @@ body>.leader-line-areaAnchor {
     display: none !important;
 }
 
-.mat-subheading-1,
+.mat-body-1,
 .mat-typography h4 {
     font-size: 20px;
     line-height: 23px;
     flex: 0 0 190px;
 }
 
-.mat-tooltip {
+.mat-mdc-tooltip {
     font-size: 14px;
 }
 
@@ -72,20 +73,20 @@ body>.leader-line-areaAnchor {
     border: unset !important;
 }
 
-.list-button button.mat-raised-button {
+.list-button button.mat-mdc-raised-button {
     width: 100%;
     margin-bottom: 20px;
 }
 
 
-.mat-table {
-    tr.mat-header-row {
+.mat-mdc-table {
+    tr.mat-mdc-header-row {
         box-shadow: 0 3px 6px rgb(0 0 0 / 16%);
         position: relative;
     }
 
-    tr.mat-row,
-    tr.mat-footer-row {
+    tr.mat-mdc-row,
+    tr.mat-mdc-footer-row {
         height: var(--table-row-height);
 
         &:hover {
@@ -123,8 +124,8 @@ body>.leader-line-areaAnchor {
     }
 }
 
-button.mat-raised-button,
-button.mat-button {
+button.mat-mdc-raised-button,
+button.mat-mdc-button {
     /*width: 260px;*/
     height: 47px;
     /*background: #000000 0% 0% no-repeat padding-box;*/
@@ -139,18 +140,18 @@ button.mat-button {
 }
 
 .cdk-overlay-pane {
-    .mat-dialog-container {
+    .mat-mdc-dialog-container {
         padding: 32px;
         border-radius: 16px;
         background: #FFF;
         box-shadow: 0px 16px 24px 0px rgba(0, 0, 0, 0.08);
 
-        .mat-dialog-content {
+        .mat-mdc-dialog-content {
             max-height: unset;
         }
     }
 
-    .mat-menu-panel {
+    .mat-mdc-menu-panel {
         max-width: unset;
         max-height: unset;
     }
@@ -318,15 +319,15 @@ button.mat-button {
     }
 
     .cdk-overlay-pane {
-        .mat-dialog-container {
+        .mat-mdc-dialog-container {
             border-radius: 5px;
 
-            .mat-dialog-content {
+            .mat-mdc-dialog-content {
                 max-height: unset;
             }
         }
 
-        .mat-menu-panel {
+        .mat-mdc-menu-panel {
             max-width: unset;
             max-height: unset;
         }
@@ -342,7 +343,7 @@ button.mat-button {
 }
 
 .draft-topic-option {
-    &.mat-option {
+    &.mat-mdc-option {
         overflow: visible;
         margin-bottom: 14px;
     }
