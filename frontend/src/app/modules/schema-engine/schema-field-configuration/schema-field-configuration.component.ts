@@ -71,7 +71,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public parsedField!: any;
     public presetFormFields?: any[];
     public fieldsFormValue!: any;
-    public defaultValues: FormGroup = new FormGroup({});
+    public defaultValues?: FormGroup;
+    public defaultValuesSubscription?: Subscription;
     public presetValues: any;
     public isShowMore = false;
     private fieldTypeSub: Subscription;
@@ -88,17 +89,29 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.defaultValues.valueChanges.subscribe((value) => {
-            const control = this.fieldsForm?.get(this.field.name);
-            control?.patchValue({
-                default: null,
-                suggest: null,
-                example: null,
-                ...value
-            });
-        });
         if (this.fieldsForm && this.buildField) {
             const onFieldChange = (value: any) => {
+                this.defaultValuesSubscription?.unsubscribe();
+                this.defaultValues = new FormGroup({});
+                this.defaultValuesSubscription =
+                    this.defaultValues.valueChanges
+                        .pipe(takeUntil(this.destroy$))
+                        // tslint:disable-next-line:no-shadowed-variable
+                        .subscribe((value) => {
+                            const control = this.fieldsForm?.get(
+                                this.field.name
+                            );
+                            control?.patchValue({
+                                default: null,
+                                suggest: null,
+                                example: null,
+                                ...value,
+                            });
+                            console.log(
+                                'control field value',
+                                control?.value
+                            );
+                        });
                 this.fieldsFormValue = value;
                 try {
                     this.parsedField = this.buildField(
@@ -134,7 +147,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                             examples: null,
                         }),
                     ];
-                } catch {}
+                } catch (error) { console.warn(error) }
             };
             onFieldChange(this.fieldsForm?.value);
 
@@ -150,8 +163,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
                         JSON.stringify(oldField?.controlEnum)
-                            ? this.defaultValues.value
+                            ? (this.defaultValues?.value || {})
                             : {};
+
                     onFieldChange(value);
                 }
             });
