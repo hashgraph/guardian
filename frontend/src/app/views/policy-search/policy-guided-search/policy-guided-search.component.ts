@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PolicyCategoryType } from '@guardian/interfaces';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IPolicyCategory } from 'src/app/modules/policy-engine/structures';

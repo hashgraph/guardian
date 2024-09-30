@@ -8,7 +8,7 @@ import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } 
 import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
 import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-roles-view',
