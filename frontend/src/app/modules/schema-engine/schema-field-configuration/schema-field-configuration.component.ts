@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
@@ -77,12 +77,14 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public isShowMore = false;
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
+    private _sd?: any;
 
     constructor(
         public dialog: MatDialog,
         private dialogService: DialogService,
         private ipfs: IPFSService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private cdr: ChangeDetectorRef,
     ) {
         this.fieldType = new FormControl();
         this.property = new FormControl();
@@ -236,11 +238,23 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     value: schemaType.value
                 };
             });
-            this.groupedFieldTypes.push({
+            this._sd = {
                 label: 'Schema defined',
                 value: 'sd',
                 items: newSchemasTypes,
+            };
+            this.groupedFieldTypes.push(this._sd);
+        }
+        if (!changes?.schemaTypes?.firstChange) {
+            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                return {
+                    ...schemaType,
+                    label: schemaType.name,
+                    value: schemaType.value
+                };
             });
+            this._sd.items = newSchemasTypes;
+            this.cdr.detectChanges();
         }
         if (changes.extended && Object.keys(changes).length === 1) {
             return;

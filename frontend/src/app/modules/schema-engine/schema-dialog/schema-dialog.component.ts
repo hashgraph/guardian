@@ -74,7 +74,7 @@ export class SchemaDialog {
             this.started = true;
         });
 
-        this.getSubSchemes()
+        this.getSubSchemes(this.topicId);
     }
 
     handleChangeTab(order: number): void {
@@ -132,11 +132,11 @@ export class SchemaDialog {
         this.restoreData = null;
     }
 
-    getSubSchemes(topicId?: string) {
+    getSubSchemes(topicId: string) {
         const id = this.scheme?.id;
-        let schemaTopicId = this.scheme?.topicId;
-        if (topicId) {
-            schemaTopicId = topicId;
+        let schemaTopicId = topicId;
+        if (this.scheme?.topicId) {
+            schemaTopicId = this.scheme?.topicId;
         }
 
         this.schemaService.getSchemaWithSubSchemas(this.category, id, schemaTopicId).subscribe((data) => {
