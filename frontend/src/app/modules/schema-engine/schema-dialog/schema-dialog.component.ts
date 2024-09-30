@@ -144,8 +144,7 @@ export class SchemaDialog {
                 setTimeout(()=>this.schemaControl.updateFormControls(), 50)
             }
 
-            const subSchemas = SchemaHelper.map(data.subSchemas || []);
-
+            const subSchemas = SchemaHelper.map(data.subSchemas || []).filter(schema => schema.id !== id);
             this.schemaControl.mappingSubSchemas(subSchemas, topicId);
         });
     }
