@@ -3,7 +3,7 @@ import { Examples } from '../examples.js';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
 
-export class StatisticsDTO {
+export class StatisticDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -118,4 +118,8 @@ export class StatisticsDTO {
     @IsOptional()
     @IsObject()
     config?: any;
+}
+
+export class StatisticReportDTO {
+
 }

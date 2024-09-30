@@ -72,6 +72,14 @@ export class SchemaScores {
         return name;
     }
 
+    public getNames(): string[] {
+        const names: Set<string> = new Set<string>();
+        for (const score of this.scores) {
+            names.add(score.id);
+        }
+        return Array.from(names);
+    }
+
     public add() {
         const score = new SchemaScore();
         score.id = this.getName();

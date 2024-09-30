@@ -69,4 +69,8 @@ export interface IVCDocument {
      * Schema IRI
      */
     schema?: string;
+    /**
+     * Message ID
+     */
+    messageId?: string;
 }

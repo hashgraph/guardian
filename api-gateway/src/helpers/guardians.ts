@@ -29,7 +29,7 @@ import {
 } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
-import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO, StatisticsDTO } from '#middlewares';
+import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO, StatisticDTO, StatisticReportDTO } from '#middlewares';
 
 /**
  * Filters type
@@ -2845,7 +2845,7 @@ export class Guardians extends NatsService {
      * @param owner
      * @returns statistic
      */
-    public async createStatistics(statistic: StatisticsDTO, owner: IOwner): Promise<any> {
+    public async createStatistic(statistic: StatisticDTO, owner: IOwner): Promise<any> {
         return await this.sendMessage(MessageAPI.CREATE_STATISTIC, { statistic, owner });
     }
 
@@ -2922,5 +2922,16 @@ export class Guardians extends NatsService {
      */
     public async deleteStatistic(id: string, owner: IOwner): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_STATISTIC, { id, owner });
+    }
+
+    /**
+     * Create statistic report
+     * @param id
+     * @param report
+     * @param owner
+     * @returns statistic report
+     */
+    public async createStatisticReport(id: string, report: StatisticReportDTO, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC_REPORT, { id, report, owner });
     }
 }

@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, StatisticsDTO, VcDocumentDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, StatisticDTO, StatisticReportDTO, VcDocumentDTO, pageHeader } from '#middlewares';
 import { UseCache, Guardians, InternalException, ONLY_SR, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -26,30 +26,30 @@ export class PolicyStatisticsApi {
     })
     @ApiBody({
         description: 'Configuration.',
-        type: StatisticsDTO,
+        type: StatisticDTO,
         required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticsDTO,
+        type: StatisticDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async createNewStatistic(
         @AuthUser() user: IAuthUser,
-        @Body() newItem: StatisticsDTO
-    ): Promise<StatisticsDTO> {
+        @Body() newItem: StatisticDTO
+    ): Promise<StatisticDTO> {
         try {
             if (!newItem) {
                 throw new HttpException('Invalid statistics config', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createStatistics(newItem, owner);
+            return await guardian.createStatistic(newItem, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -82,20 +82,20 @@ export class PolicyStatisticsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: StatisticsDTO
+        type: StatisticDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getStatistics(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
-    ): Promise<StatisticsDTO[]> {
+    ): Promise<StatisticDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
@@ -124,18 +124,18 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticsDTO
+        type: StatisticDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getStatisticById(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string
-    ): Promise<StatisticsDTO> {
+    ): Promise<StatisticDTO> {
         try {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -166,19 +166,19 @@ export class PolicyStatisticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticsDTO
+        type: StatisticDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getStatisticRelationships(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string
-    ): Promise<StatisticsDTO> {
+    ): Promise<StatisticDTO> {
         try {
             if (!id) {
                 throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -231,7 +231,7 @@ export class PolicyStatisticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getDocuments(
         @AuthUser() user: IAuthUser,
@@ -249,17 +249,6 @@ export class PolicyStatisticsApi {
             await InternalException(error, this.logger);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Update statistic
@@ -280,23 +269,23 @@ export class PolicyStatisticsApi {
     @ApiBody({
         description: 'Object that contains a statistic.',
         required: true,
-        type: StatisticsDTO
+        type: StatisticDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticsDTO
+        type: StatisticDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(StatisticsDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async updateStatistic(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() item: StatisticsDTO
-    ): Promise<StatisticsDTO> {
+        @Body() item: StatisticDTO
+    ): Promise<StatisticDTO> {
         try {
             if (!id) {
                 throw new HttpException('Invalid statistic id', HttpStatus.UNPROCESSABLE_ENTITY);
@@ -350,6 +339,54 @@ export class PolicyStatisticsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.deleteStatistic(id, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Creates a new report
+     */
+    @Post('/:id/report')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Creates a new report.',
+        description: 'Creates a new report.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'id',
+        type: 'string',
+        required: true,
+        description: 'Statistic Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiBody({
+        description: 'Configuration.',
+        type: StatisticReportDTO,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticReportDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticReportDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async createNewStatisticReport(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Body() newItem: StatisticReportDTO
+    ): Promise<StatisticReportDTO> {
+        try {
+            if (!newItem) {
+                throw new HttpException('Invalid statistics config', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.createStatisticReport(id, newItem, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

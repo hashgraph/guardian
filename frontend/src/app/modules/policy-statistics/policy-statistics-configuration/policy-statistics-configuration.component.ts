@@ -97,12 +97,6 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }, {
         label: 'Number',
         value: 'number'
-    }, {
-        label: 'Array(String)',
-        value: 'array(string)'
-    }, {
-        label: 'Array(Number)',
-        value: 'array(number)'
     }];
 
     public properties: Map<string, string>;
@@ -458,11 +452,13 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
 
     private updateCodeMirror() {
         const variables = this.variables.getNames();
+        const scores = this.scores.getNames();
+        const all = [...variables, ...scores];
         this.codeMirrorOptions = {
             ...this.codeMirrorOptions,
-            variables: variables,
+            variables: all,
             hintOptions: {
-                hint: createAutocomplete(variables)
+                hint: createAutocomplete(all)
             }
         }
     }

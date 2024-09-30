@@ -1,6 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, PolicyStatistic, VcDocument } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, SchemaConverterUtils, VcDocument, VcHelper } from '@guardian/common';
+import { EntityStatus, GenerateUUIDv4, IOwner, ISchema, MessageAPI, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { generateSchemaContext, publishSchema } from './helpers/index.js';
 
 async function addRelationship(
     messageId: string,
@@ -50,6 +51,113 @@ function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
         map.set(id, document);
     }
     return Array.from(map.values());
+}
+
+async function generateSchema(config: PolicyStatistic) {
+    const uuid = GenerateUUIDv4();
+    const variables = config.config?.variables || [];
+    const scores = config.config?.scores || [];
+    const formulas = config.config?.formulas || [];
+    const properties: any = {}
+    for (const variable of variables) {
+        properties[variable.id] = {
+            $comment: `{"term": "${variable.id}", "@id": "https://www.schema.org/text"}`,
+            title: variable.id,
+            description: variable.fieldDescription,
+            type: variable.fieldType,
+            readOnly: false
+        }
+    }
+    for (const score of scores) {
+        properties[score.id] = {
+            $comment: `{"term": "${score.id}", "@id": "https://www.schema.org/text"}`,
+            title: score.id,
+            description: score.description,
+            type: 'string',
+            readOnly: false
+        }
+    }
+    for (const formula of formulas) {
+        properties[formula.id] = {
+            $comment: `{"term": "${formula.id}", "@id": "https://www.schema.org/text"}`,
+            title: formula.id,
+            description: formula.description,
+            type: 'string',
+            readOnly: false
+        }
+    }
+    const document: any = {
+        $id: `#${uuid}`,
+        $comment: `{ "term": "${uuid}", "@id": "#${uuid}" }`,
+        title: `${uuid}`,
+        description: `${uuid}`,
+        type: 'object',
+        properties: {
+            '@context': {
+                oneOf: [{
+                    type: 'string'
+                }, {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }],
+                readOnly: true
+            },
+            type: {
+                oneOf: [{
+                    type: 'string'
+                }, {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }],
+                readOnly: true
+            },
+            id: {
+                type: 'string',
+                readOnly: true
+            },
+            ...properties
+        },
+        required: [],
+        additionalProperties: false
+    }
+    const newSchema: any = {};
+    newSchema.category = SchemaCategory.STATISTIC;
+    newSchema.readonly = true;
+    newSchema.system = false;
+    newSchema.uuid = uuid
+    newSchema.status = SchemaStatus.PUBLISHED;
+    newSchema.document = document;
+    newSchema.context = generateSchemaContext(newSchema);
+    newSchema.iri = `${uuid}`;
+    newSchema.codeVersion = SchemaConverterUtils.VERSION;
+    newSchema.documentURL = `schema:${uuid}`;
+    newSchema.contextURL = `schema:${uuid}`;
+    const schemaObject = DatabaseServer.createSchema(newSchema);
+    SchemaHelper.setVersion(schemaObject, null, null);
+    SchemaHelper.updateIRI(schemaObject);
+    const savedSchema = await DatabaseServer.saveSchema(schemaObject);
+    return savedSchema;
+}
+
+async function generateVcDocument(document: any, schema: Schema, owner: IOwner): Promise<any> {
+    document.id = GenerateUUIDv4();
+    if (schema) {
+        document = SchemaHelper.updateObjectContext(schema, document);
+    }
+    const vcHelper = new VcHelper();
+    const res = await vcHelper.verifySubject(document);
+    if (!res.ok) {
+        throw Error(JSON.stringify(res.error));
+    }
+    console.log(1, document)
+    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+    const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
+    console.log(2, vcObject)
+    return vcObject;
 }
 
 /**
@@ -287,7 +395,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
-                    throw new Error(`Item already published`);
+                    return new MessageError(`Item already published`);
                 }
                 item.status = EntityStatus.PUBLISHED;
 
@@ -378,6 +486,60 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     })
                 }
                 return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Create new statistic report
+     *
+     * @param payload - statistic report
+     *
+     * @returns {any} new statistic report
+     */
+    ApiResponse(MessageAPI.CREATE_STATISTIC_REPORT,
+        async (msg: {
+            id: string, report: {
+                document: any,
+                target: string,
+                relationships: string[]
+            }, owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters');
+                }
+                const { id, report, owner } = msg;
+
+                if (!report || !report.document) {
+                    return new MessageError('Invalid object.');
+                }
+                const item = await DatabaseServer.getStatisticById(id);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                // if (item.status !== EntityStatus.PUBLISHED) {
+                //     return new MessageError('Item is not published.');
+                // }
+
+                const schema = await generateSchema(item);
+                const schemaObject = new Schema(schema);
+                const vc = await generateVcDocument(report.document, schemaObject, owner)
+
+                const newItem = {
+                    statisticId: item.id,
+                    policyId: item.policyId,
+                    creator: owner.creator,
+                    owner: owner.owner,
+                    target: report.target,
+                    relationships: report.relationships,
+                    document: vc.toJsonTree(),
+                    schema: schema
+                }
+                // const row = await DatabaseServer.createStatisticReport(newItem);
+                return new MessageResponse(newItem);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

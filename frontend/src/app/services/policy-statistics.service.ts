@@ -48,7 +48,7 @@ export class PolicyStatisticsService {
         return { page, count };
     }
 
-    public create(item: any): Observable<void> {
+    public create(item: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, item);
     }
 
@@ -75,5 +75,13 @@ export class PolicyStatisticsService {
     ): Observable<HttpResponse<any[]>> {
         const params = PolicyStatisticsService.getOptions({}, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}/${id}/documents`, { observe: 'response', params });
+    }
+
+    public createReport(id: string, item: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${id}/report`, item);
+    }
+
+    public getReport(statisticId: string, reportId: any): Observable<any> {
+        return this.http.get<any>(`${this.url}/${statisticId}/report/${reportId}`);
     }
 }

@@ -6,6 +6,7 @@ import { PolicyStatisticsService } from 'src/app/services/policy-statistics.serv
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
+import { Formula } from 'src/app/utils';
 
 interface IOption {
     id: string;
@@ -36,6 +37,7 @@ interface IFormula {
     description: string;
     value: any;
     formula: string;
+    type: string;
 }
 
 interface IColumn {
@@ -195,6 +197,17 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     }
 
 
+    public onCreate() {
+        const report = this.generateVcDocument();
+        this.loading = true;
+        this.policyStatisticsService
+            .createReport(this.id, report)
+            .subscribe((vc) => {
+                this.router.navigate(['/policy-statistics', this.id, 'report', vc.id]);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
 
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
@@ -284,7 +297,8 @@ export class PolicyReportsConfigurationComponent implements OnInit {
                 id: formula.id,
                 description: formula.description,
                 value: undefined,
-                formula: formula.formula
+                formula: formula.formula,
+                type: formula.type
             });
         }
 
@@ -411,16 +425,18 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     }
 
     public onNextStep2() {
+        if (!this.document) {
+            return;
+        }
         this.onStep(2);
     }
 
     public onNextStep3() {
+        if (!this.document) {
+            return;
+        }
         this.onStep(3);
         this.calculate();
-    }
-
-    public onCreate() {
-
     }
 
     public onSelectDocument(item: IDocument) {
@@ -438,24 +454,33 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     }
 
     private calculate() {
-        const result: any = {};
+        const document: any = {};
 
         for (const field of this.preview) {
-            result[field.id] = field.value;
+            document[field.id] = field.value;
         }
 
         for (const score of this.scores) {
-            result[score.id] = score.value;
+            document[score.id] = score.value;
         }
 
         for (const formula of this.formulas) {
-            formula.value = this.calcFormula(formula, result);
-            result[formula.id] = formula.value;
+            formula.value = this.calcFormula(formula, document);
+            if (formula.type === 'string') {
+                formula.value = String(formula.value);
+            } else {
+                formula.value = Number(formula.value);
+            }
+            document[formula.id] = formula.value;
         }
     }
 
-    private calcFormula(formula: IFormula, state: any) {
-        return formula.formula;
+    private calcFormula(item: IFormula, scope: any): any {
+        try {
+            return Formula.evaluate(item.formula, scope);
+        } catch (error) {
+            return NaN;
+        }
     }
 
     public changeCol(col: any) {
@@ -463,5 +488,45 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         this.columns = [
             ...this.userColumns.filter((c) => c.selected)
         ];
+    }
+
+    private generateVcDocument() {
+        if (!this.document) {
+            return null;
+        }
+        const document: any = {};
+
+        for (const field of this.preview) {
+            document[field.id] = field.value;
+        }
+        for (const score of this.scores) {
+            document[score.id] = score.value;
+        }
+        for (const formula of this.formulas) {
+            document[formula.id] = formula.value;
+        }
+
+        const target = this.document.targetDocument.messageId;
+        const relationships = new Set<string>();
+        if (target) {
+            relationships.add(target);
+        }
+        for (const doc of this.document.relatedDocuments) {
+            if (doc.messageId) {
+                relationships.add(doc.messageId);
+            }
+        }
+        for (const doc of this.document.unrelatedDocuments) {
+            if (doc.messageId) {
+                relationships.add(doc.messageId);
+            }
+        }
+
+        const report = {
+            document,
+            target,
+            relationships: Array.from(relationships)
+        };
+        return report;
     }
 }
