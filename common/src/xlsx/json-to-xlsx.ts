@@ -297,7 +297,7 @@ export class JsonToXlsx {
         }
 
         let parseType = (val) => val;
-        if (type.pars) {
+        if (type?.pars) {
             parseType = type.pars.bind(type);
         }
         worksheet
