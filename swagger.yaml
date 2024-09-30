@@ -11992,14 +11992,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatisticsDTO'
+              $ref: '#/components/schemas/StatisticDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticsDTO'
+                $ref: '#/components/schemas/StatisticDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12050,7 +12050,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StatisticsDTO'
+                  $ref: '#/components/schemas/StatisticDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12085,7 +12085,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticsDTO'
+                $ref: '#/components/schemas/StatisticDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12119,14 +12119,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatisticsDTO'
+              $ref: '#/components/schemas/StatisticDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticsDTO'
+                $ref: '#/components/schemas/StatisticDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12195,7 +12195,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticsDTO'
+                $ref: '#/components/schemas/StatisticDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12254,6 +12254,48 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /policy-statistics/{id}/report:
+    post:
+      operationId: PolicyStatisticsApi_createNewStatisticReport
+      summary: Creates a new report.
+      description: >-
+        Creates a new report. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Statistic Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticReportDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticReportDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13830,6 +13872,7 @@ components:
             - SYSTEM
             - TAG
             - TOOL
+            - STATISTIC
           example: POLICY
         documentURL:
           type: string
@@ -15555,7 +15598,7 @@ components:
       required:
         - policyIds
         - assign
-    StatisticsDTO:
+    StatisticDTO:
       type: object
       properties:
         id:
@@ -15605,6 +15648,9 @@ components:
           nullable: true
       required:
         - name
+    StatisticReportDTO:
+      type: object
+      properties: {}
     WorkersTasksDTO:
       type: object
       properties:
