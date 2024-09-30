@@ -230,31 +230,32 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 items: newSimpleTypes,
             });
         }
-        if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
-            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return {
-                    ...schemaType,
-                    label: schemaType.name,
-                    value: schemaType.value
+        if (this.schemaTypes) {
+            if (changes?.schemaTypes?.firstChange) {
+                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                    return {
+                        ...schemaType,
+                        label: schemaType.name,
+                        value: schemaType.value
+                    };
+                });
+                this._sd = {
+                    label: 'Schema defined',
+                    value: 'sd',
+                    items: newSchemasTypes,
                 };
-            });
-            this._sd = {
-                label: 'Schema defined',
-                value: 'sd',
-                items: newSchemasTypes,
-            };
-            this.groupedFieldTypes.push(this._sd);
-        }
-        if (!changes?.schemaTypes?.firstChange) {
-            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return {
-                    ...schemaType,
-                    label: schemaType.name,
-                    value: schemaType.value
-                };
-            });
-            this._sd.items = newSchemasTypes;
-            this.cdr.detectChanges();
+                this.groupedFieldTypes.push(this._sd);
+            } else if (changes?.schemaTypes?.firstChange === false) {
+                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                    return {
+                        ...schemaType,
+                        label: schemaType.name,
+                        value: schemaType.value
+                    };
+                });
+                this._sd.items = newSchemasTypes;
+                this.cdr.detectChanges();
+            }
         }
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
