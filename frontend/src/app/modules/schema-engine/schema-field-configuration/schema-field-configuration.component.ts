@@ -1,12 +1,19 @@
 // <<<<<<< HEAD
+// <<<<<<< HEAD
 // import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 // import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 // =======
+// import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+// import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+// // >>>>>>> develop
+// import { MatDialog } from '@angular/material/dialog';
+// import { SchemaField, UnitSystem } from '@guardian/interfaces';
+// =======
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-// >>>>>>> develop
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
+// >>>>>>> 59917a3a8 (feat: migration material[4194])
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';

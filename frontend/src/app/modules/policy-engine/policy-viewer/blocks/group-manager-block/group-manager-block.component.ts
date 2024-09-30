@@ -3,7 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { UntypedFormBuilder } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { InviteDialogComponent } from '../../../dialogs/invite-dialog/invite-dialog.component';
 import { HttpErrorResponse } from '@angular/common/http';
