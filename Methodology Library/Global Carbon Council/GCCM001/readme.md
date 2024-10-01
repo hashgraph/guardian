@@ -81,6 +81,8 @@ The workflow outlined in this policy replicates the procedural steps required fo
 
 This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
+IPFS timestamp: 1726567693.914953000
+
 ## Available Roles
 
 1. **Project Owner**
