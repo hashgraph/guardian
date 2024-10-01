@@ -11980,11 +11980,9 @@ paths:
         - bearer: []
   /policy-statistics:
     post:
-      operationId: PolicyStatisticsApi_createNewStatistic
-      summary: Creates a new statistics.
-      description: >-
-        Creates a new statistics. Only users with the Standard Registry role are
-        allowed to make the request.
+      operationId: PolicyStatisticsApi_createStatisticDefinition
+      summary: Creates a new statistic definition.
+      description: Creates a new statistic definition.
       parameters: []
       requestBody:
         required: true
@@ -11992,14 +11990,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatisticDTO'
+              $ref: '#/components/schemas/StatisticDefinitionDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticDTO'
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12015,11 +12013,9 @@ paths:
       security:
         - bearer: []
     get:
-      operationId: PolicyStatisticsApi_getStatistics
-      summary: Return a list of all statistics.
-      description: >-
-        Returns all statistics. Only users with the Standard Registry role are
-        allowed to make the request.
+      operationId: PolicyStatisticsApi_getStatisticDefinitions
+      summary: Return a list of all statistic definitions.
+      description: Returns all statistic definitions.
       parameters:
         - name: pageIndex
           required: false
@@ -12050,7 +12046,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/StatisticDTO'
+                  $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12064,18 +12060,16 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
-  /policy-statistics/{id}:
+  /policy-statistics/{definitionId}:
     get:
-      operationId: PolicyStatisticsApi_getStatisticById
-      summary: Retrieves statistic configuration.
-      description: >-
-        Retrieves statistic configuration for the specified ID. Only users with
-        the Standard Registry role are allowed to make the request.
+      operationId: PolicyStatisticsApi_getStatisticDefinitionById
+      summary: Retrieves statistic definition.
+      description: Retrieves statistic definition for the specified ID.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic ID
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -12085,7 +12079,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticDTO'
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12100,33 +12094,33 @@ paths:
       security:
         - bearer: []
     put:
-      operationId: PolicyStatisticsApi_updateStatistic
-      summary: Updates statistic configuration.
+      operationId: PolicyStatisticsApi_updateStatisticDefinition
+      summary: Updates statistic definition.
       description: >-
-        Updates statistic configuration for the specified statistic ID. Only
-        users with the Standard Registry role are allowed to make the request.
+        Updates statistic definition configuration for the specified statistic
+        ID.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic Identifier
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
       requestBody:
         required: true
-        description: Object that contains a statistic.
+        description: Object that contains a configuration.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatisticDTO'
+              $ref: '#/components/schemas/StatisticDefinitionDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticDTO'
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12141,16 +12135,14 @@ paths:
       security:
         - bearer: []
     delete:
-      operationId: PolicyStatisticsApi_deleteStatistic
-      summary: Deletes the statistic.
-      description: >-
-        Deletes the statistic with the provided statistic ID. Only users with
-        the Standard Registry role are allowed to make the request.
+      operationId: PolicyStatisticsApi_deleteStatisticDefinition
+      summary: Deletes the statistic definition.
+      description: Deletes the statistic definition with the provided ID.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic Identifier
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -12174,18 +12166,16 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
-  /policy-statistics/{id}/relationships:
+  /policy-statistics/{definitionId}/relationships:
     get:
       operationId: PolicyStatisticsApi_getStatisticRelationships
       summary: Retrieves statistic relationships.
-      description: >-
-        Retrieves statistic relationships for the specified ID. Only users with
-        the Standard Registry role are allowed to make the request.
+      description: Retrieves statistic relationships for the specified ID.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic ID
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -12195,7 +12185,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticDTO'
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -12209,18 +12199,16 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
-  /policy-statistics/{id}/documents:
+  /policy-statistics/{definitionId}/documents:
     get:
-      operationId: PolicyStatisticsApi_getDocuments
+      operationId: PolicyStatisticsApi_getStatisticDocuments
       summary: Return a list of all documents.
-      description: >-
-        Returns all documents. Only users with the Standard Registry role are
-        allowed to make the request.
+      description: Returns all documents.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic ID
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -12267,18 +12255,16 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
-  /policy-statistics/{id}/report:
+  /policy-statistics/{definitionId}/assessment:
     post:
-      operationId: PolicyStatisticsApi_createNewStatisticReport
-      summary: Creates a new report.
-      description: >-
-        Creates a new report. Only users with the Standard Registry role are
-        allowed to make the request.
+      operationId: PolicyStatisticsApi_createStatisticAssessment
+      summary: Creates a new statistic assessment.
+      description: Creates a new statistic assessment.
       parameters:
-        - name: id
+        - name: definitionId
           required: true
           in: path
-          description: Statistic Identifier
+          description: Statistic Definition Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -12288,14 +12274,142 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StatisticReportDTO'
+              $ref: '#/components/schemas/StatisticAssessmentDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatisticReportDTO'
+                $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+    get:
+      operationId: PolicyStatisticsApi_getStatisticAssessments
+      summary: Return a list of all statistic assessment.
+      description: Returns all statistic assessment.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /policy-statistics/{definitionId}/assessment/{assessmentId}:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticAssessment
+      summary: Retrieves statistic relationships.
+      description: Retrieves statistic relationships for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: assessmentId
+          required: true
+          in: path
+          description: Statistic Assessment Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /policy-statistics/{definitionId}/publish:
+    put:
+      operationId: PolicyStatisticsApi_publishStatisticDefinition
+      summary: Publishes statistic definition.
+      description: Publishes statistic definition for the specified statistic ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -15598,7 +15712,7 @@ components:
       required:
         - policyIds
         - assign
-    StatisticDTO:
+    StatisticDefinitionDTO:
       type: object
       properties:
         id:
@@ -15630,7 +15744,10 @@ components:
         policyId:
           type: string
           example: '000000000000000000000001'
-        instanceTopicId:
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
           type: string
           example: 0.0.1
         status:
@@ -15648,7 +15765,7 @@ components:
           nullable: true
       required:
         - name
-    StatisticReportDTO:
+    StatisticAssessmentDTO:
       type: object
       properties: {}
     WorkersTasksDTO:
