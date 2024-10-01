@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiServiceUnavailableResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
 import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
@@ -1462,6 +1462,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockData(user, policyId, uuid, query);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1526,6 +1527,7 @@ export class PolicyApi {
 
             return await engineService.setBlockData(user, policyId, uuid, body);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1590,6 +1592,7 @@ export class PolicyApi {
 
             return await engineService.setBlockDataByTag(user, policyId, tagName, body);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1640,6 +1643,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockByTagName(user, policyId, tagName);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }

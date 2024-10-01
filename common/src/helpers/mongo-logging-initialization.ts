@@ -26,7 +26,6 @@ export async function mongoForLoggingInitialization(options: Record<string, any>
             dbName: process.env.DB_LOGGER_NAME,
             clientUrl: fixConnectionString(process.env.DB_LOGGER_HOST),
             driverOptions: {
-                useUnifiedTopology: true,
                 minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT.MIN_POOL_SIZE, 10),
                 maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT.MAX_POOL_SIZE, 10),
                 maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT.MAX_IDLE_TIME_MS, 10),

@@ -237,7 +237,7 @@ services:
       - 5009
 
   web-proxy:
-    image: gcr.io/hedera-registry/frontend:demo:${GUARDIAN_VERSION:-latest}
+    image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
     init: true
     environment:
       GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m

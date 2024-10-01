@@ -15,7 +15,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - PWRM0002
    - VM0041
    - VMR0006 (Coming Soon)
-4. DOVU Template Methodologies (10) - DOVU
+3. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
    - Carbon Space
@@ -28,7 +28,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - Agricultural soils of Western Australia
    - MMCM
      
-5. CDM Methodologies (18) - Envision
+4. CDM Methodologies (18) - Envision
 
    - ACM0007
    - AMS-II.G
@@ -49,11 +49,12 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - AMS-I.A
    - AMS-I.E
 
-6. Tolam Earth - OCI
-7. Improved Cookstove - OCI
-8. GCC - KrypC
-9. Gold Standard Afforestation / Reforestation - Envision
-10. Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate - Envision
+5. Tolam Earth - OCI
+6. Improved Cookstove - OCI
+7. GCC- Amana - KrypC
+8. Gold Standard Afforestation / Reforestation - Envision
+9. Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate - Envision
+10. GCCM001 - Envision
     
 ### Emission Policies
 
