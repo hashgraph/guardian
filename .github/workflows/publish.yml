@@ -58,7 +58,7 @@ jobs:
 
       - name: application-events-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./application-events/Dockerfile
@@ -67,7 +67,7 @@ jobs:
 
       - name: application-events
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./application-events/Dockerfile
@@ -76,7 +76,7 @@ jobs:
 
       - name: ai-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./ai-service/Dockerfile
@@ -85,7 +85,7 @@ jobs:
 
       - name: ai-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./ai-service/Dockerfile
@@ -94,7 +94,7 @@ jobs:
 
       - name: logger-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./logger-service/Dockerfile
@@ -103,7 +103,7 @@ jobs:
 
       - name: logger-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./logger-service/Dockerfile
@@ -112,7 +112,7 @@ jobs:
 
       - name: notification-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./notification-service/Dockerfile
@@ -121,7 +121,7 @@ jobs:
 
       - name: notification-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./notification-service/Dockerfile
@@ -130,7 +130,7 @@ jobs:
 
       - name: auth-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./auth-service/Dockerfile
@@ -139,7 +139,7 @@ jobs:
 
       - name: auth-service-demo-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./auth-service/Dockerfile.demo
@@ -148,7 +148,7 @@ jobs:
 
       - name: auth-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./auth-service/Dockerfile
@@ -157,7 +157,7 @@ jobs:
 
       - name: auth-service-demo
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./auth-service/Dockerfile.demo
@@ -166,7 +166,7 @@ jobs:
 
       - name: api-gateway-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./api-gateway/Dockerfile
@@ -175,7 +175,7 @@ jobs:
 
       - name: api-gateway-demo-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./api-gateway/Dockerfile.demo
@@ -184,7 +184,7 @@ jobs:
 
       - name: api-gateway
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./api-gateway/Dockerfile
@@ -193,7 +193,7 @@ jobs:
 
       - name: api-gateway-demo
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./api-gateway/Dockerfile.demo
@@ -202,7 +202,7 @@ jobs:
 
       - name: policy-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./policy-service/Dockerfile
@@ -211,7 +211,7 @@ jobs:
 
       - name: policy-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./policy-service/Dockerfile
@@ -220,7 +220,7 @@ jobs:
 
       - name: guardian-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./guardian-service/Dockerfile
@@ -229,7 +229,7 @@ jobs:
 
       - name: guardian-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./guardian-service/Dockerfile
@@ -238,7 +238,7 @@ jobs:
 
       - name: worker-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./worker-service/Dockerfile
@@ -247,7 +247,7 @@ jobs:
 
       - name: worker-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./worker-service/Dockerfile
@@ -256,7 +256,7 @@ jobs:
 
       - name: queue-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./queue-service/Dockerfile
@@ -265,7 +265,7 @@ jobs:
 
       - name: queue-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./queue-service/Dockerfile
@@ -274,7 +274,7 @@ jobs:
 
       - name: topic-viewer-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./topic-viewer/Dockerfile
@@ -283,7 +283,7 @@ jobs:
 
       - name: topic-viewer
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./topic-viewer/Dockerfile
@@ -292,7 +292,7 @@ jobs:
 
       - name: mrv-sender-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./mrv-sender/Dockerfile
@@ -301,7 +301,7 @@ jobs:
 
       - name: mrv-sender
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./mrv-sender/Dockerfile
@@ -310,7 +310,7 @@ jobs:
 
       - name: analytics-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./analytics-service/Dockerfile
@@ -319,7 +319,7 @@ jobs:
 
       - name: analytics-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./analytics-service/Dockerfile
@@ -328,7 +328,7 @@ jobs:
 
       - name: web-proxy-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./web-proxy/Dockerfile.ci
@@ -337,7 +337,7 @@ jobs:
 
       - name: web-proxy
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./web-proxy/Dockerfile.ci
@@ -346,7 +346,7 @@ jobs:
 
       - name: web-proxy-demo-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./web-proxy/Dockerfile.demo
@@ -355,7 +355,7 @@ jobs:
 
       - name: web-proxy-demo
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0 # v5.3.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./web-proxy/Dockerfile.demo
@@ -364,7 +364,7 @@ jobs:
 
       - name: indexer-worker-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-worker-service/Dockerfile
@@ -373,7 +373,7 @@ jobs:
 
       - name: indexer-worker-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-worker-service/Dockerfile
@@ -382,7 +382,7 @@ jobs:
 
       - name: indexer-service-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-service/Dockerfile
@@ -391,7 +391,7 @@ jobs:
 
       - name: indexer-service
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-service/Dockerfile
@@ -400,7 +400,7 @@ jobs:
 
       - name: indexer-api-gateway-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-api-gateway/Dockerfile
@@ -409,7 +409,7 @@ jobs:
 
       - name: indexer-api-gateway
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-api-gateway/Dockerfile
@@ -418,7 +418,7 @@ jobs:
 
       - name: indexer-web-proxy-latest
         if: ${{ steps.latestTag.outputs.value == 'latest'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-web-proxy/Dockerfile
@@ -427,7 +427,7 @@ jobs:
 
       - name: indexer-web-proxy
         if: ${{ steps.latestTag.outputs.value == 'hotfix'}}
-        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a # v2.10.0
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75 # v6.9.0
         with:
           context: .
           file: ./indexer-web-proxy/Dockerfile
