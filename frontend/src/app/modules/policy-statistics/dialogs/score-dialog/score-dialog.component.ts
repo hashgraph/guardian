@@ -41,6 +41,7 @@ export class ScoreDialog {
     }
 
     public onSubmit(): void {
+        this.score.options = this.options;
         this.ref.close(this.score);
     }
 }

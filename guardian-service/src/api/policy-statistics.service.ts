@@ -405,15 +405,17 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const vc = await generateVcDocument(assessment.document, schemaObject, owner)
 
                 const newItem = {
-                    statisticId: item.id,
+                    id: item.id,
+                    definitionId: item.id,
                     policyId: item.policyId,
                     creator: owner.creator,
                     owner: owner.owner,
                     target: assessment.target,
                     relationships: assessment.relationships,
-                    document: vc.toJsonTree(),
-                    schema: schema
+                    document: vc.toJsonTree()
                 }
+
+                console.log('----------------------------')
                 // const row = await DatabaseServer.createStatisticReport(newItem);
                 return new MessageResponse(newItem);
             } catch (error) {

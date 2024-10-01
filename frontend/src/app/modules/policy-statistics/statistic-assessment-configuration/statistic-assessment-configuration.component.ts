@@ -203,6 +203,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         this.policyStatisticsService
             .createAssessment(this.definitionId, report)
             .subscribe((assessment) => {
+                debugger;
                 this.router.navigate([
                     '/policy-statistics',
                     this.definitionId,

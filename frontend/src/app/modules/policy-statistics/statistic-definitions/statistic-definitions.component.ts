@@ -41,15 +41,13 @@ export class StatisticDefinitionsComponent implements OnInit {
         label: 'Draft',
         value: EntityStatus.DRAFT,
         description: 'Return to editing.',
-        disable: (value: string): boolean => {
-            return !(value === EntityStatus.ERROR);
-        }
+        disable: true
     }, {
         label: 'Published',
         value: EntityStatus.PUBLISHED,
         description: 'Release version into public domain.',
         disable: (value: string): boolean => {
-            return !(value === EntityStatus.DRAFT);
+            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
         }
     }, {
         label: 'Error',
@@ -108,7 +106,13 @@ export class StatisticDefinitionsComponent implements OnInit {
             id: 'options',
             title: '',
             type: 'text',
-            size: '220',
+            size: '210',
+            tooltip: false
+        }, {
+            id: 'delete',
+            title: '',
+            type: 'text',
+            size: '64',
             tooltip: false
         }]
     }
@@ -181,8 +185,8 @@ export class StatisticDefinitionsComponent implements OnInit {
                 const { page, count } = this.policyStatisticsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
-                for (const item of  this.page) {
-                    item.policy = this.allPolicies.find((p)=> p.id && p.id === item.policyId)?.name;
+                for (const item of this.page) {
+                    item.policy = this.allPolicies.find((p) => p.id && p.id === item.policyId)?.name;
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -250,8 +254,15 @@ export class StatisticDefinitionsComponent implements OnInit {
         this.router.navigate(['/policy-statistics', item.id]);
     }
 
-    public onChangeStatus($event: string): void {
-        debugger
+    public onChangeStatus($event: string, row: any): void {
+        this.loading = true;
+        this.policyStatisticsService
+            .publishDefinition(row)
+            .subscribe((response) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     public onCreateInstance(item: any): void {
@@ -260,5 +271,16 @@ export class StatisticDefinitionsComponent implements OnInit {
 
     public onOpenInstances(item: any): void {
         this.router.navigate(['/policy-statistics', item.id, 'assessments']);
+    }
+
+    public onDelete(item: any) {
+        this.loading = true;
+        this.policyStatisticsService
+            .deleteDefinition(item)
+            .subscribe((newItem) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

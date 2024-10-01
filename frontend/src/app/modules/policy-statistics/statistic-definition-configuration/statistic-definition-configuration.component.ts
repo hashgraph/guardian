@@ -499,10 +499,12 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     public onAddScore() {
         this.scores.add();
+        this.updateCodeMirror();
     }
 
     public onDeleteScore(score: SchemaScore) {
         this.scores.delete(score);
+        this.updateCodeMirror();
     }
 
     public onEditScore(score: SchemaScore) {

@@ -227,6 +227,11 @@
     }
 }
 
+.grid-container {
+    min-height: 232px;
+    position: relative;
+}
+
 .grid-container::ng-deep .p-datatable-tbody {
     max-height: calc(100vh - 530px);
 }

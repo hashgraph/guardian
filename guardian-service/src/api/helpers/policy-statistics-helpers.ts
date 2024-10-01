@@ -1,6 +1,6 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IFormulaData, IOwner, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { generateSchemaContext } from './schema-publish-helper';
+import { generateSchemaContext } from './schema-publish-helper.js';
 
 export async function addRelationship(
     messageId: string,
@@ -63,7 +63,14 @@ export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
             $comment: `{"term": "${variable.id}", "@id": "https://www.schema.org/text"}`,
             title: variable.id,
             description: variable.fieldDescription,
-            type: variable.fieldType,
+            oneOf: [{
+                type: variable.fieldType,
+            }, {
+                type: 'array',
+                items: {
+                    type: variable.fieldType,
+                }
+            }],
             readOnly: false
         }
     }
@@ -72,7 +79,14 @@ export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
             $comment: `{"term": "${score.id}", "@id": "https://www.schema.org/text"}`,
             title: score.id,
             description: score.description,
-            type: 'string',
+            oneOf: [{
+                type: score.type || 'string'
+            }, {
+                type: 'array',
+                items: {
+                    type: score.type || 'string'
+                }
+            }],
             readOnly: false
         }
     }
@@ -81,7 +95,14 @@ export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
             $comment: `{"term": "${formula.id}", "@id": "https://www.schema.org/text"}`,
             title: formula.id,
             description: formula.description,
-            type: 'string',
+            oneOf: [{
+                type: formula.type || 'string'
+            }, {
+                type: 'array',
+                items: {
+                    type: formula.type || 'string'
+                }
+            }],
             readOnly: false
         }
     }
@@ -154,10 +175,8 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
     if (!res.ok) {
         throw Error(JSON.stringify(res.error));
     }
-    console.log(1, document)
     const didDocument = await vcHelper.loadDidDocument(owner.creator);
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
-    console.log(2, vcObject)
     return vcObject;
 }
 
@@ -190,111 +209,6 @@ export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConf
     await DatabaseServer.saveTopic(topic.toObject());
     return topic;
 }
-
-
-
-
-
-
-
-
-
-
-// const VARIABLE_FIELDS: [string, string][] = [
-//     ['id', 'string'],
-//     ['schemaId', 'string'],
-//     ['path', 'string'],
-//     ['schemaName', 'string'],
-//     ['schemaPath', 'string'],
-//     ['fieldType', 'string'],
-//     ['fieldRef', 'boolean'],
-//     ['fieldArray', 'boolean'],
-//     ['fieldDescription', 'string'],
-//     ['fieldProperty', 'string'],
-//     ['fieldPropertyName', 'string']
-// ]
-
-// const RULE_FIELDS: [string, string][] = [
-//     ['schemaId', 'string'],
-//     ['type', 'string'],
-//     ['unique', 'boolean | string'],
-// ]
-
-// const SCORE_FIELDS: [string, string][] = [
-//     ['id', 'string'],
-//     ['type', 'string'],
-//     ['description', 'string'],
-//     ['relationships', 'string[]'],
-//     ['options', 'IScoreOption[]'],
-// ]
-
-// const FORMULA_FIELDS: [string, string][] = [
-//     ['id', 'string'],
-//     ['type', 'string'],
-//     ['description', 'string'],
-//     ['formula', 'string'],
-// ]
-
-// function validArray(items: any, fields: [string, string][]): any {
-//     if (Array.isArray(items)) {
-//         for (const item of items) {
-//             validFields(item, fields);
-//         }
-//         return items;
-//     } else if (items) {
-//         throw Error('Invalid config.');
-//     } else {
-//         return [];
-//     }
-// }
-
-// function validFields(item: any, fields: [string, string][]) {
-//     for (const [name, value] of Object.entries(item)) {
-//         const field = fields.find((f) => f[0] == name);
-//         if (!field || typeof value !== field[1]) {
-//             throw Error('Invalid config.');
-//         }
-//     }
-// }
-
-// export function validateConfig(config: any): IStatisticConfig {
-//     if (config) {
-//         if (typeof config !== 'object') {
-//             throw Error('Invalid config.');
-//         }
-//         for (const [name, value] of Object.entries(config)) {
-//             switch (name) {
-//                 case 'variables': {
-//                     config[name] = validArray(value, VARIABLE_FIELDS)
-//                     break;
-//                 }
-//                 case 'scores': {
-//                     config[name] = validArray(value, SCORE_FIELDS)
-//                     break;
-//                 }
-//                 case 'rules': {
-//                     config[name] = validArray(value, RULE_FIELDS)
-//                     break;
-//                 }
-//                 case 'formulas': {
-//                     config[name] = validArray(value, FORMULA_FIELDS)
-//                     break;
-//                 }
-//                 default: {
-//                     throw Error('Invalid config.');
-//                 }
-//             }
-//         }
-//         return config;
-//     } else {
-//         return {
-//             formulas: [],
-//             rules: [],
-//             scores: [],
-//             variables: []
-//         }
-//     }
-// }
 
 function validateString(data: string): string {
     if (typeof data === 'string') {

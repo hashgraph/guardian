@@ -65,6 +65,10 @@ export class PolicyStatisticsService {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 
+    public publishDefinition(item: any): Observable<any> {
+        return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
+    }
+
     public createAssessment(definitionId: string, item: any): Observable<any> {
         return this.http.post<any>(`${this.url}/${definitionId}/assessment`, item);
     }

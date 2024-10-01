@@ -107,22 +107,25 @@
                                 >
                                     <ng-container *ngSwitchCase="'edit'">
                                         <div 
+                                            [attr.disabled]="row.status === 'PUBLISHED'"
                                             class="guardian-icon-button big" 
                                             (click)="onEdit(row)">
                                             <svg-icon 
                                                 class="icon-btn"
                                                 src="/assets/images/icons/edit.svg"
-                                                svgClass="icon-color-primary">
+                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-primary'">
                                             </svg-icon>
                                         </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <button 
+                                            [disabled]="row.status !== 'PUBLISHED'"
                                             (click)="onCreateInstance(row)" 
                                             class="guardian-button guardian-button-secondary grid-btn">
                                             Create
                                         </button>
                                         <button 
+                                            [disabled]="row.status !== 'PUBLISHED'"
                                             (click)="onOpenInstances(row)" 
                                             class="guardian-button guardian-button-secondary grid-btn">
                                             Open
@@ -132,7 +135,19 @@
                                         <status-dropdown
                                             [(value)]="row.status"
                                             [options]="statuses"
-                                            (change)="onChangeStatus($event)"></status-dropdown>
+                                            (change)="onChangeStatus($event, row)"></status-dropdown>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'delete'">
+                                        <div 
+                                            [attr.disabled]="row.status === 'PUBLISHED'"
+                                            class="guardian-icon-button big" 
+                                            (click)="onDelete(row)">
+                                            <svg-icon 
+                                                class="icon-btn"
+                                                src="/assets/images/icons/delete.svg"
+                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
+                                            </svg-icon>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchDefault>
                                         <span class="text-truncate">{{row[column.id]}}</span>
