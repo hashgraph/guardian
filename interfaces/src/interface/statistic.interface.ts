@@ -21,7 +21,7 @@ export interface IVariableData {
 
 export interface IScoreOption {
     description: string;
-    value: number;
+    value: number | string;
 }
 
 export interface IScoreData {

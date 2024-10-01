@@ -77,8 +77,17 @@ export class PolicyStatistic extends BaseEntity implements IStatistic {
         nullable: true,
         index: true
     })
-    instanceTopicId?: string;
+    policyTopicId?: string;
 
+    /**
+     * Policy Instance Topic id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyInstanceTopicId?: string;
+    
     /**
      * Config
      */

@@ -62,18 +62,18 @@ interface IDocument {
 }
 
 @Component({
-    selector: 'app-policy-report-configuration',
-    templateUrl: './policy-report-configuration.component.html',
-    styleUrls: ['./policy-report-configuration.component.scss'],
+    selector: 'app-statistic-assessment-configuration',
+    templateUrl: './statistic-assessment-configuration.component.html',
+    styleUrls: ['./statistic-assessment-configuration.component.scss'],
 })
-export class PolicyReportsConfigurationComponent implements OnInit {
+export class StatisticAssessmentConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public owner: string;
-    public id: string;
+    public definitionId: string;
     public item: IStatistic;
     public policy: any;
     public stepper = [true, false, false, false];
@@ -165,11 +165,11 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.id = this.route.snapshot.params['id'];
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         forkJoin([
-            this.policyStatisticsService.getItem(this.id),
-            this.policyStatisticsService.getRelationships(this.id)
+            this.policyStatisticsService.getDefinition(this.definitionId),
+            this.policyStatisticsService.getRelationships(this.definitionId)
         ]).subscribe(([item, relationships]) => {
             this.updateMetadata(item, relationships)
             this.loadDocuments();
@@ -181,7 +181,7 @@ export class PolicyReportsConfigurationComponent implements OnInit {
     private loadDocuments() {
         this.loading = true;
         this.policyStatisticsService
-            .getDocuments(this.id)
+            .getDocuments(this.definitionId)
             .subscribe((documents) => {
                 const { page, count } = this.policyStatisticsService.parsePage(documents);
                 this.documents = page;
@@ -201,9 +201,14 @@ export class PolicyReportsConfigurationComponent implements OnInit {
         const report = this.generateVcDocument();
         this.loading = true;
         this.policyStatisticsService
-            .createReport(this.id, report)
-            .subscribe((vc) => {
-                this.router.navigate(['/policy-statistics', this.id, 'report', vc.id]);
+            .createAssessment(this.definitionId, report)
+            .subscribe((assessment) => {
+                this.router.navigate([
+                    '/policy-statistics',
+                    this.definitionId,
+                    'assessment',
+                    assessment.id
+                ]);
             }, (e) => {
                 this.loading = false;
             });
@@ -395,8 +400,6 @@ export class PolicyReportsConfigurationComponent implements OnInit {
             return 'N/A';
         }
     }
-
-
 
     public onBack() {
         this.router.navigate(['/policy-statistics']);

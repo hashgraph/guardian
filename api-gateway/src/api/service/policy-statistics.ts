@@ -2,8 +2,8 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, StatisticDTO, StatisticReportDTO, VcDocumentDTO, pageHeader } from '#middlewares';
-import { UseCache, Guardians, InternalException, ONLY_SR, EntityOwner, CacheService } from '#helpers';
+import { Examples, InternalServerErrorDTO, StatisticDefinitionDTO, StatisticAssessmentDTO, VcDocumentDTO, pageHeader } from '#middlewares';
+import { UseCache, Guardians, InternalException, EntityOwner, CacheService } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('policy-statistics')
@@ -16,40 +16,40 @@ export class PolicyStatisticsApi {
     }
 
     /**
-     * Creates a new statistics
+     * Creates a new statistic definition
      */
     @Post('/')
     @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
     @ApiOperation({
-        summary: 'Creates a new statistics.',
-        description: 'Creates a new statistics.' + ONLY_SR,
+        summary: 'Creates a new statistic definition.',
+        description: 'Creates a new statistic definition.',
     })
     @ApiBody({
         description: 'Configuration.',
-        type: StatisticDTO,
+        type: StatisticDefinitionDTO,
         required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDTO,
+        type: StatisticDefinitionDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createNewStatistic(
+    async createStatisticDefinition(
         @AuthUser() user: IAuthUser,
-        @Body() newItem: StatisticDTO
-    ): Promise<StatisticDTO> {
+        @Body() definition: StatisticDefinitionDTO
+    ): Promise<StatisticDefinitionDTO> {
         try {
-            if (!newItem) {
-                throw new HttpException('Invalid statistics config', HttpStatus.UNPROCESSABLE_ENTITY);
+            if (!definition) {
+                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createStatistic(newItem, owner);
+            return await guardian.createStatisticDefinition(definition, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -61,8 +61,8 @@ export class PolicyStatisticsApi {
     @Get('/')
     @Auth(Permissions.STATISTICS_STATISTIC_READ)
     @ApiOperation({
-        summary: 'Return a list of all statistics.',
-        description: 'Returns all statistics.' + ONLY_SR,
+        summary: 'Return a list of all statistic definitions.',
+        description: 'Returns all statistic definitions.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -82,24 +82,24 @@ export class PolicyStatisticsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: StatisticDTO
+        type: StatisticDefinitionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getStatistics(
+    async getStatisticDefinitions(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
-    ): Promise<StatisticDTO[]> {
+    ): Promise<StatisticDefinitionDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const { items, count } = await guardians.getStatistics({ pageIndex, pageSize }, owner);
+            const { items, count } = await guardians.getStatisticDefinitions({ pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -109,40 +109,40 @@ export class PolicyStatisticsApi {
     /**
      * Get statistic by id
      */
-    @Get('/:id')
+    @Get('/:definitionId')
     @Auth(Permissions.STATISTICS_STATISTIC_READ)
     @ApiOperation({
-        summary: 'Retrieves statistic configuration.',
-        description: 'Retrieves statistic configuration for the specified ID.' + ONLY_SR
+        summary: 'Retrieves statistic definition.',
+        description: 'Retrieves statistic definition for the specified ID.'
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: String,
-        description: 'Statistic ID',
+        description: 'Statistic Definition Identifier',
         required: true,
         example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDTO
+        type: StatisticDefinitionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getStatisticById(
+    async getStatisticDefinitionById(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string
-    ): Promise<StatisticDTO> {
+        @Param('definitionId') definitionId: string
+    ): Promise<StatisticDefinitionDTO> {
         try {
-            if (!id) {
-                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.getStatisticById(id, owner);
+            return await guardian.getStatisticDefinitionById(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -151,41 +151,41 @@ export class PolicyStatisticsApi {
     /**
       * Get relationships by id
       */
-    @Get('/:id/relationships')
+    @Get('/:definitionId/relationships')
     @Auth(Permissions.STATISTICS_STATISTIC_READ)
     @ApiOperation({
         summary: 'Retrieves statistic relationships.',
-        description: 'Retrieves statistic relationships for the specified ID.' + ONLY_SR
+        description: 'Retrieves statistic relationships for the specified ID.'
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: String,
-        description: 'Statistic ID',
+        description: 'Statistic Definition Identifier',
         required: true,
         example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDTO
+        type: StatisticDefinitionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getStatisticRelationships(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string
-    ): Promise<StatisticDTO> {
+        @Param('definitionId') definitionId: string
+    ): Promise<StatisticDefinitionDTO> {
         try {
-            if (!id) {
-                throw new HttpException('Invalid id', HttpStatus.UNPROCESSABLE_ENTITY);
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.getStatisticRelationships(id, owner);
+            return await guardian.getStatisticRelationships(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -194,16 +194,16 @@ export class PolicyStatisticsApi {
     /**
      * Get page
      */
-    @Get('/:id/documents')
+    @Get('/:definitionId/documents')
     @Auth(Permissions.STATISTICS_STATISTIC_READ)
     @ApiOperation({
         summary: 'Return a list of all documents.',
-        description: 'Returns all documents.' + ONLY_SR,
+        description: 'Returns all documents.',
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: String,
-        description: 'Statistic ID',
+        description: 'Statistic Definition Identifier',
         required: true,
         example: Examples.DB_ID
     })
@@ -231,19 +231,19 @@ export class PolicyStatisticsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getDocuments(
+    async getStatisticDocuments(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
-        @Param('id') id: string,
+        @Param('definitionId') definitionId: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
     ): Promise<VcDocumentDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const { items, count } = await guardians.getStatisticDocuments(id, owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getStatisticDocuments(definitionId, owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -251,71 +251,71 @@ export class PolicyStatisticsApi {
     }
 
     /**
-     * Update statistic
+     * Update statistic definition
      */
-    @Put('/:id')
+    @Put('/:definitionId')
     @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
     @ApiOperation({
-        summary: 'Updates statistic configuration.',
-        description: 'Updates statistic configuration for the specified statistic ID.' + ONLY_SR,
+        summary: 'Updates statistic definition.',
+        description: 'Updates statistic definition configuration for the specified statistic ID.',
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: 'string',
         required: true,
-        description: 'Statistic Identifier',
+        description: 'Statistic Definition Identifier',
         example: Examples.DB_ID,
     })
     @ApiBody({
-        description: 'Object that contains a statistic.',
+        description: 'Object that contains a configuration.',
         required: true,
-        type: StatisticDTO
+        type: StatisticDefinitionDTO
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticDTO
+        type: StatisticDefinitionDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @ApiExtraModels(StatisticDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async updateStatistic(
+    async updateStatisticDefinition(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string,
-        @Body() item: StatisticDTO
-    ): Promise<StatisticDTO> {
+        @Param('definitionId') definitionId: string,
+        @Body() item: StatisticDefinitionDTO
+    ): Promise<StatisticDefinitionDTO> {
         try {
-            if (!id) {
-                throw new HttpException('Invalid statistic id', HttpStatus.UNPROCESSABLE_ENTITY);
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const oldItem = await guardians.getStatisticById(id, owner);
+            const oldItem = await guardians.getStatisticDefinitionById(definitionId, owner);
             if (!oldItem) {
-                throw new HttpException('Statistic not found.', HttpStatus.NOT_FOUND);
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
-            return await guardians.updateStatistic(id, item, owner);
+            return await guardians.updateStatisticDefinition(definitionId, item, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
     }
 
     /**
-     * Delete statistic
+     * Delete statistic definition
      */
-    @Delete('/:id')
+    @Delete('/:definitionId')
     @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
     @ApiOperation({
-        summary: 'Deletes the statistic.',
-        description: 'Deletes the statistic with the provided statistic ID.' + ONLY_SR,
+        summary: 'Deletes the statistic definition.',
+        description: 'Deletes the statistic definition with the provided ID.',
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: 'string',
         required: true,
-        description: 'Statistic Identifier',
+        description: 'Statistic Definition Identifier',
         example: Examples.DB_ID,
     })
     @ApiOkResponse({
@@ -328,65 +328,227 @@ export class PolicyStatisticsApi {
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async deleteStatistic(
+    async deleteStatisticDefinition(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string
+        @Param('definitionId') definitionId: string
     ): Promise<boolean> {
         try {
-            if (!id) {
-                throw new HttpException('Invalid statistic id', HttpStatus.UNPROCESSABLE_ENTITY)
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.deleteStatistic(id, owner);
+            return await guardians.deleteStatisticDefinition(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
     }
 
     /**
-     * Creates a new report
+     * Creates a new statistic assessment
      */
-    @Post('/:id/report')
+    @Post('/:definitionId/assessment')
     @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
     @ApiOperation({
-        summary: 'Creates a new report.',
-        description: 'Creates a new report.' + ONLY_SR,
+        summary: 'Creates a new statistic assessment.',
+        description: 'Creates a new statistic assessment.',
     })
     @ApiParam({
-        name: 'id',
+        name: 'definitionId',
         type: 'string',
         required: true,
-        description: 'Statistic Identifier',
+        description: 'Statistic Definition Identifier',
         example: Examples.DB_ID,
     })
     @ApiBody({
         description: 'Configuration.',
-        type: StatisticReportDTO,
+        type: StatisticAssessmentDTO,
         required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: StatisticReportDTO,
+        type: StatisticAssessmentDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(StatisticReportDTO, InternalServerErrorDTO)
+    @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createNewStatisticReport(
+    async createStatisticAssessment(
         @AuthUser() user: IAuthUser,
-        @Param('id') id: string,
-        @Body() newItem: StatisticReportDTO
-    ): Promise<StatisticReportDTO> {
+        @Param('definitionId') definitionId: string,
+        @Body() assessment: StatisticAssessmentDTO
+    ): Promise<StatisticAssessmentDTO> {
         try {
-            if (!newItem) {
-                throw new HttpException('Invalid statistics config', HttpStatus.UNPROCESSABLE_ENTITY);
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            if (!assessment) {
+                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createStatisticReport(id, newItem, owner);
+            return await guardian.createStatisticAssessment(definitionId, assessment, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get page
+     */
+    @Get('/:definitionId/assessment')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Return a list of all statistic assessment.',
+        description: 'Returns all statistic assessment.',
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: 'string',
+        required: true,
+        description: 'Statistic Definition Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: StatisticAssessmentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticAssessmentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getStatisticAssessments(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('definitionId') definitionId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<StatisticAssessmentDTO[]> {
+        try {
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const { items, count } = await guardians.getStatisticAssessments(definitionId, { pageIndex, pageSize }, owner);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get statistic assessment by id
+     */
+    @Get('/:definitionId/assessment/:assessmentId')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Retrieves statistic relationships.',
+        description: 'Retrieves statistic relationships for the specified ID.'
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: String,
+        description: 'Statistic Definition Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'assessmentId',
+        type: String,
+        description: 'Statistic Assessment Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticAssessmentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @UseCache()
+    async getStatisticAssessment(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string,
+        @Param('assessmentId') assessmentId: string
+    ): Promise<StatisticAssessmentDTO> {
+        try {
+            if (!definitionId || !assessmentId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getStatisticAssessment(definitionId, assessmentId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Publish statistic definition
+     */
+    @Put('/:definitionId/publish')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Publishes statistic definition.',
+        description: 'Publishes statistic definition for the specified statistic ID.',
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: 'string',
+        required: true,
+        description: 'Statistic Definition Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticDefinitionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async publishStatisticDefinition(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string
+    ): Promise<StatisticDefinitionDTO> {
+        try {
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getStatisticDefinitionById(definitionId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.publishStatisticDefinition(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

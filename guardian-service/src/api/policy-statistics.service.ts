@@ -1,0 +1,524 @@
+import { ApiResponse } from './helpers/api-response.js';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticMessage, Users } from '@guardian/common';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { publishSchema } from './helpers/index.js';
+import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
+
+/**
+ * Connect to the message broker methods of working with statistics.
+ */
+export async function statisticsAPI(logger: PinoLogger): Promise<void> {
+    /**
+     * Create new statistic definition
+     *
+     * @param payload - statistic definition
+     *
+     * @returns {any} new statistic definition
+     */
+    ApiResponse(MessageAPI.CREATE_STATISTIC_DEFINITION,
+        async (msg: { definition: PolicyStatistic, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definition, owner } = msg;
+
+                if (!definition) {
+                    return new MessageError('Invalid object.');
+                }
+
+                const policyId = definition.policyId;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                delete definition._id;
+                delete definition.id;
+                delete definition.status;
+                delete definition.owner;
+                delete definition.messageId;
+                definition.creator = owner.creator;
+                definition.owner = owner.owner;
+                definition.policyTopicId = policy.topicId;
+                definition.policyInstanceTopicId = policy.instanceTopicId;
+                definition.status = EntityStatus.DRAFT;
+                definition.config = validateConfig(definition.config);
+                const row = await DatabaseServer.createStatistic(definition);
+                return new MessageResponse(row);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic definitions
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - statistic definitions
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_DEFINITIONS,
+        async (msg: { filters: any, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                otherOptions.fields = [
+                    'id',
+                    'creator',
+                    'owner',
+                    'name',
+                    'description',
+                    'status',
+                    'topicId',
+                    'messageId',
+                    'policyId'
+                ];
+                const [items, count] = await DatabaseServer.getStatisticsAndCount(
+                    {
+                        owner: owner.owner
+                    },
+                    otherOptions
+                );
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic definition
+     *
+     * @param {any} msg - statistic definition id
+     *
+     * @returns {any} - statistic definition
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_DEFINITION,
+        async (msg: { definitionId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                return new MessageResponse(item);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get relationships
+     *
+     * @param {any} msg - statistic definition id
+     *
+     * @returns {any} - relationships
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_RELATIONSHIPS,
+        async (msg: { definitionId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                const policyId = item.policyId;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED)
+                return new MessageResponse({
+                    policy,
+                    schemas: all
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Update statistic definition
+     *
+     * @param payload - statistic definition
+     *
+     * @returns statistic definition
+     */
+    ApiResponse(MessageAPI.UPDATE_STATISTIC_DEFINITION,
+        async (msg: {
+            definitionId: string,
+            definition: PolicyStatistic,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, definition, owner } = msg;
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item published.');
+                }
+
+                item.name = definition.name;
+                item.description = definition.description;
+                item.method = definition.method;
+                item.config = definition.config;
+                item.config = validateConfig(definition.config);
+                const result = await DatabaseServer.updateStatistic(item);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Delete statistic definition
+     *
+     * @param {any} msg - statistic definition id
+     *
+     * @returns {boolean} - Operation success
+     */
+    ApiResponse(MessageAPI.DELETE_STATISTIC_DEFINITION,
+        async (msg: { definitionId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item published.');
+                }
+                await DatabaseServer.removeStatistic(item);
+                return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Publish statistic definition
+     *
+     * @param {any} msg - statistic definition id
+     *
+     * @returns {any} - statistic definition
+     */
+    ApiResponse(MessageAPI.PUBLISH_STATISTIC_DEFINITION,
+        async (msg: { definitionId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner } = msg;
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item already published.`);
+                }
+
+                const statMessage = new StatisticMessage(MessageAction.PublishPolicyStatistic);
+                statMessage.setDocument(item);
+
+                const topic = await getOrCreateTopic(item);
+                const user = await (new Users()).getHederaAccount(owner.creator);
+                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const statMessageResult = await messageServer
+                    .setTopicObject(topic)
+                    .sendMessage(statMessage);
+
+                item.topicId = topic.topicId;
+                item.messageId = statMessageResult.getId();
+                item.status = EntityStatus.PUBLISHED;
+
+                const schema = await generateSchema(item, owner);
+                await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
+                await DatabaseServer.createAndSaveSchema(schema);
+
+                const result = await DatabaseServer.updateStatistic(item);
+                return new MessageResponse(result);
+
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get documents
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - documents
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_DOCUMENTS,
+        async (msg: {
+            definitionId: string,
+            owner: IOwner,
+            pageIndex?: string,
+            pageSize?: string
+        }) => {
+            try {
+
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner, pageIndex, pageSize } = msg;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const policyId: string = item.policyId;
+                const rules = item.config?.rules || [];
+                const targets = rules.filter((r) => r.type === 'main');
+                const sub = rules.filter((r) => r.type === 'related');
+                const all = rules.filter((r) => r.type === 'unrelated');
+
+                const targetSchemas = targets.map((r) => r.schemaId);
+                const subSchemas = sub.map((r) => r.schemaId);
+                const allSchemas = all.map((r) => r.schemaId);
+
+                const allDocs = uniqueDocuments(await DatabaseServer.getStatisticDocuments({
+                    policyId,
+                    owner: owner.creator,
+                    schema: { $in: allSchemas }
+                }));
+
+                const subDocs = uniqueDocuments(await DatabaseServer.getStatisticDocuments({
+                    policyId,
+                    owner: owner.creator,
+                    schema: { $in: subSchemas }
+                }));
+
+                const [targetDocs, count] = await DatabaseServer.getStatisticDocumentsAndCount(
+                    {
+                        policyId,
+                        owner: owner.creator,
+                        schema: { $in: targetSchemas }
+                    },
+                    otherOptions
+                );
+
+                const items: any[] = [];
+                for (const target of uniqueDocuments(targetDocs)) {
+                    items.push({
+                        targetDocument: target,
+                        relatedDocuments: await findRelationships(target, subDocs),
+                        unrelatedDocuments: allDocs
+                    })
+                }
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Create statistic assessment
+     *
+     * @param payload - statistic assessment
+     *
+     * @returns {any} new statistic assessment
+     */
+    ApiResponse(MessageAPI.CREATE_STATISTIC_ASSESSMENT,
+        async (msg: {
+            definitionId: string,
+            assessment: {
+                document: any,
+                target: string,
+                relationships: string[]
+            },
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters');
+                }
+                const { definitionId, assessment, owner } = msg;
+
+                if (!assessment || !assessment.document) {
+                    return new MessageError('Invalid object.');
+                }
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is not published.');
+                }
+
+                const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
+                const schemaObject = new Schema(schema);
+                const vc = await generateVcDocument(assessment.document, schemaObject, owner)
+
+                const newItem = {
+                    statisticId: item.id,
+                    policyId: item.policyId,
+                    creator: owner.creator,
+                    owner: owner.owner,
+                    target: assessment.target,
+                    relationships: assessment.relationships,
+                    document: vc.toJsonTree(),
+                    schema: schema
+                }
+                // const row = await DatabaseServer.createStatisticReport(newItem);
+                return new MessageResponse(newItem);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic assessments
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_ASSESSMENTS,
+        async (msg: {
+            definitionId: string,
+            filters: any,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is not published.');
+                }
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                otherOptions.fields = [
+                    'id',
+                    'creator',
+                    'owner',
+                    'name',
+                    'description',
+                    'status',
+                    'topicId',
+                    'messageId',
+                    'policyId'
+                ];
+
+                console.log('----------------------------')
+                const [items, count] = await DatabaseServer.getStatisticsAndCount(
+                    {
+                        owner: owner.owner
+                    },
+                    otherOptions
+                );
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic assessment
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_ASSESSMENT,
+        async (msg: {
+            definitionId: string,
+            assessmentId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, assessmentId, owner } = msg;
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is not published.');
+                }
+
+                console.log('----------------------------')
+                return new MessageResponse(item);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+}

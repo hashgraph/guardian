@@ -337,12 +337,14 @@ export class TreeListView<T> {
     }
 
     public searchItems(text: string, ruleIndex: number): void {
-        this._data.searchItems(text, ruleIndex);
+        const value = (text || '').trim().toLocaleLowerCase();
+        this._data.searchItems(value, ruleIndex);
     }
 
     public searchView(text: string): void {
+        const value = (text || '').trim().toLocaleLowerCase();
         this._searchHighlighted = false;
-        if (text && this._search.includes(text)) {
+        if (value && this._search.includes(value)) {
             this._searchHighlighted = true;
         }
     }

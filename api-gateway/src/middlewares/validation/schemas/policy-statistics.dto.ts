@@ -3,7 +3,7 @@ import { Examples } from '../examples.js';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
 
-export class StatisticDTO {
+export class StatisticDefinitionDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -89,7 +89,16 @@ export class StatisticDTO {
     })
     @IsOptional()
     @IsString()
-    instanceTopicId?: string;
+    policyTopicId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyInstanceTopicId?: string;
 
     @ApiProperty({
         type: 'string',
@@ -120,6 +129,6 @@ export class StatisticDTO {
     config?: any;
 }
 
-export class StatisticReportDTO {
+export class StatisticAssessmentDTO {
 
 }

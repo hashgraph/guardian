@@ -24,7 +24,8 @@ export class NewPolicyStatisticsDialog {
     ) {
         this.policies = this.config.data?.policies || [];
         this.policies = this.policies.filter((p) => p.instanceTopicId);
-        this.policy = this.config.data?.policy || null;
+        const instanceTopicId = this.config.data?.policy?.instanceTopicId;
+        this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
         this.dataForm.setValue({
             name: '',
             description: '',
@@ -51,8 +52,8 @@ export class NewPolicyStatisticsDialog {
         if (this.dataForm.valid) {
             const { name, description, policy } = this.dataForm.value;
             this.ref.close({
-                name, 
-                description, 
+                name,
+                description,
                 policyId: policy?.id,
                 instanceTopicId: policy?.instanceTopicId,
             });

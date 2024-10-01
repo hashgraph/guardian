@@ -33,7 +33,14 @@ export class PolicyStatisticsService {
         return params;
     }
 
-    public page(
+
+    public parsePage(response: HttpResponse<any[]>) {
+        const page = response.body || [];
+        const count = Number(response.headers.get('X-Total-Count')) || page.length;
+        return { page, count };
+    }
+
+    public getDefinitions(
         pageIndex?: number,
         pageSize?: number,
         filters?: any
@@ -42,46 +49,51 @@ export class PolicyStatisticsService {
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
-    public parsePage(response: HttpResponse<any[]>) {
-        const page = response.body || [];
-        const count = Number(response.headers.get('X-Total-Count')) || page.length;
-        return { page, count };
-    }
-
-    public create(item: any): Observable<any> {
+    public createDefinition(item: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, item);
     }
 
-    public getItem(id: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${id}`);
+    public getDefinition(definitionId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}`);
     }
 
-    public getRelationships(id: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${id}/relationships`);
-    }
-
-    public delete(item: any): Observable<any> {
+    public deleteDefinition(item: any): Observable<any> {
         return this.http.delete<boolean>(`${this.url}/${item.id}`);
     }
 
-    public update(item: any): Observable<any> {
+    public updateDefinition(item: any): Observable<any> {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 
+    public createAssessment(definitionId: string, item: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${definitionId}/assessment`, item);
+    }
+
+    public getAssessments(
+        definitionId: string,
+        pageIndex?: number,
+        pageSize?: number,
+        filters?: any
+    ): Observable<HttpResponse<any[]>> {
+        const params = PolicyStatisticsService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${definitionId}/assessment`, { observe: 'response', params });
+    }
+
+    public getAssessment(definitionId: string, assessmentId: any): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}/assessment/${assessmentId}`);
+    }
+
+    public getRelationships(definitionId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}/relationships`);
+    }
+
     public getDocuments(
-        id: string,
+        definitionId: string,
         pageIndex?: number,
         pageSize?: number,
     ): Observable<HttpResponse<any[]>> {
         const params = PolicyStatisticsService.getOptions({}, pageIndex, pageSize);
-        return this.http.get<any>(`${this.url}/${id}/documents`, { observe: 'response', params });
+        return this.http.get<any>(`${this.url}/${definitionId}/documents`, { observe: 'response', params });
     }
 
-    public createReport(id: string, item: any): Observable<any> {
-        return this.http.post<any>(`${this.url}/${id}/report`, item);
-    }
-
-    public getReport(statisticId: string, reportId: any): Observable<any> {
-        return this.http.get<any>(`${this.url}/${statisticId}/report/${reportId}`);
-    }
 }

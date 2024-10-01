@@ -25,7 +25,7 @@ import { PolicyServiceChannelsContainer } from './helpers/policy-service-channel
 import { PolicyEngine } from './policy-engine/policy-engine.js';
 import { modulesAPI } from './api/module.service.js';
 import { toolsAPI } from './api/tool.service.js';
-import { statisticsAPI } from './api/statistics.service.js';
+import { statisticsAPI } from './api/policy-statistics.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';

@@ -19,11 +19,11 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-policy-statistics',
-    templateUrl: './policy-statistics.component.html',
-    styleUrls: ['./policy-statistics.component.scss'],
+    selector: 'app-statistic-definitions',
+    templateUrl: './statistic-definitions.component.html',
+    styleUrls: ['./statistic-definitions.component.scss'],
 })
-export class PolicyStatisticsComponent implements OnInit {
+export class StatisticDefinitionsComponent implements OnInit {
     public readonly title: string = 'Statistics';
 
     public loading: boolean = true;
@@ -75,7 +75,13 @@ export class PolicyStatisticsComponent implements OnInit {
             size: 'auto',
             tooltip: true
         }, {
-            id: 'topic',
+            id: 'policy',
+            title: 'Policy',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'topicId',
             title: 'Topic',
             type: 'text',
             size: 'auto',
@@ -83,12 +89,6 @@ export class PolicyStatisticsComponent implements OnInit {
         }, {
             id: 'status',
             title: 'Status',
-            type: 'text',
-            size: 'auto',
-            tooltip: false
-        }, {
-            id: 'method',
-            title: 'Trigger',
             type: 'text',
             size: 'auto',
             tooltip: false
@@ -172,7 +172,7 @@ export class PolicyStatisticsComponent implements OnInit {
         }
         this.loading = true;
         this.policyStatisticsService
-            .page(
+            .getDefinitions(
                 this.pageIndex,
                 this.pageSize,
                 filters
@@ -181,6 +181,9 @@ export class PolicyStatisticsComponent implements OnInit {
                 const { page, count } = this.policyStatisticsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
+                for (const item of  this.page) {
+                    item.policy = this.allPolicies.find((p)=> p.id && p.id === item.policyId)?.name;
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -235,7 +238,7 @@ export class PolicyStatisticsComponent implements OnInit {
     private create(item: any) {
         this.loading = true;
         this.policyStatisticsService
-            .create(item)
+            .createDefinition(item)
             .subscribe((newItem) => {
                 this.loadData();
             }, (e) => {
@@ -252,10 +255,10 @@ export class PolicyStatisticsComponent implements OnInit {
     }
 
     public onCreateInstance(item: any): void {
-        this.router.navigate(['/policy-statistics', item.id, 'report']);
+        this.router.navigate(['/policy-statistics', item.id, 'assessment']);
     }
 
     public onOpenInstances(item: any): void {
-        debugger
+        this.router.navigate(['/policy-statistics', item.id, 'assessments']);
     }
 }

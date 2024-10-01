@@ -8,12 +8,10 @@ import { SchemaEngineModule } from '../schema-engine/schema-engine.module';
 import { CommonComponentsModule } from '../common/common-components.module';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { PolicyStatisticsComponent } from './policy-statistics/policy-statistics.component';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { NewPolicyStatisticsDialog } from './dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { PolicyStatisticsConfigurationComponent } from './policy-statistics-configuration/policy-statistics-configuration.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -21,17 +19,23 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ScoreDialog } from './dialogs/score-dialog/score-dialog.component';
-import { PolicyReportsConfigurationComponent } from './policy-report-configuration/policy-report-configuration.component';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { StatisticAssessmentConfigurationComponent } from './statistic-assessment-configuration/statistic-assessment-configuration.component';
+import { StatisticAssessmentViewComponent } from './statistic-assessment-view/statistic-assessment-view.component';
+import { StatisticAssessmentsComponent } from './statistic-assessments/statistic-assessments.component';
+import { StatisticDefinitionsComponent } from './statistic-definitions/statistic-definitions.component';
+import { StatisticDefinitionConfigurationComponent } from './statistic-definition-configuration/statistic-definition-configuration.component';
 
 @NgModule({
     declarations: [
-        PolicyStatisticsComponent,
-        PolicyStatisticsConfigurationComponent,
         NewPolicyStatisticsDialog,
         ScoreDialog,
         TreeGraphComponent,
-        PolicyReportsConfigurationComponent
+        StatisticAssessmentConfigurationComponent,
+        StatisticAssessmentViewComponent,
+        StatisticAssessmentsComponent,
+        StatisticDefinitionConfigurationComponent,
+        StatisticDefinitionsComponent
     ],
     imports: [
         CommonModule,

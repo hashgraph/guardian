@@ -20,11 +20,11 @@ import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
 import { SchemaRule, SchemaRules } from './models/schema-rules';
 
 @Component({
-    selector: 'app-policy-statistics-configuration',
-    templateUrl: './policy-statistics-configuration.component.html',
-    styleUrls: ['./policy-statistics-configuration.component.scss'],
+    selector: 'app-statistic-definition-configuration',
+    templateUrl: './statistic-definition-configuration.component.html',
+    styleUrls: ['./statistic-definition-configuration.component.scss'],
 })
-export class PolicyStatisticsConfigurationComponent implements OnInit {
+export class StatisticDefinitionConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
     public loading: boolean = true;
@@ -32,7 +32,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
 
-    public id: string;
+    public definitionId: string;
     public item: IStatistic;
     public policy: any;
     public schemas: Schema[];
@@ -187,11 +187,11 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.id = this.route.snapshot.params['id'];
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         forkJoin([
-            this.policyStatisticsService.getItem(this.id),
-            this.policyStatisticsService.getRelationships(this.id),
+            this.policyStatisticsService.getDefinition(this.definitionId),
+            this.policyStatisticsService.getRelationships(this.definitionId),
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
@@ -358,28 +358,48 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         this.updateVariables();
     }
 
-    public onSchemaFilter() {
+    public onSchemaFilter(type: number) {
         clearTimeout(this._selectTimeout3);
         this.nodeLoading = true;
-        const value = (this.searchField || '').trim().toLocaleLowerCase();
         if (this.source) {
+            let highlighted: any;
+
             const roots = this.source.roots;
             for (const root of roots) {
-                root.fields.searchItems(value, this.schemaFilterType);
+                root.fields.searchItems(this.searchField, this.schemaFilterType);
             }
 
             for (const node of this.source.nodes) {
-                node.fields.searchView(value);
+                node.fields.searchView(this.searchField);
+                if (!highlighted && node.fields.searchHighlighted) {
+                    highlighted = node;
+                }
             }
 
             if (this.rootNode) {
                 const rootView = this.rootNode.fields;
                 rootView.updateHidden();
             }
+
+            if (type === 1 && highlighted) {
+                this.onNavTarget(highlighted);
+            }
         }
         this._selectTimeout3 = setTimeout(() => {
             this.nodeLoading = false;
-        }, 200)
+        }, 250)
+    }
+
+    public onNavTarget(highlighted: SchemaNode) {
+        const el = document.querySelector(`.tree-node[node-id="${highlighted.uuid}"]`);
+        const grid = el?.parentElement?.parentElement;
+        if (el && grid) {
+            const elCoord = el.getBoundingClientRect();
+            const gridCoord = grid.getBoundingClientRect();
+            const x = elCoord.left - gridCoord.left;
+            const y = elCoord.top - gridCoord.top;
+            this.tree?.move(-x + 50, -y + 56);
+        }
     }
 
     public onNavRoot(root: SchemaNode) {
@@ -447,7 +467,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
         } else {
             this.schemaFilterType = 1;
         }
-        this.onSchemaFilter();
+        this.onSchemaFilter(0);
     }
 
     private updateCodeMirror() {
@@ -530,7 +550,7 @@ export class PolicyStatisticsConfigurationComponent implements OnInit {
             config
         };
         this.policyStatisticsService
-            .update(item)
+            .updateDefinition(item)
             .subscribe((item) => {
                 this.item = item;
                 this.updateForm(this.item);
