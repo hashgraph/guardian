@@ -1,8 +1,8 @@
 <form
-        *ngIf="options"
-        [attr.childSchema]="isChildSchema"
-        [attr.dialogForm]="comesFromDialog"
-        [formGroup]="options"
+    *ngIf="options"
+    [attr.childSchema]="isChildSchema"
+    [attr.dialogForm]="comesFromDialog"
+    [formGroup]="options"
     [attr.showButtons]="showButtons"
     [attr.pageButtons]="fields && showButtons && !isChildSchema"
     [attr.example]="example"
@@ -19,8 +19,16 @@
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
                 </div>
-                <span *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion-value"
-                    [pTooltip]="item.suggest" tooltipStyleClass="pre" (click)="patchSuggestValue(item)">Suggestion</span>
+                <div class="suggestion">
+                    <button
+                        *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)"
+                        [pTooltip]="item.suggest" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="!isFormForFinishSetup && item.required" class="required-field">* Required</div>
                 <div *ngIf="!isFormForFinishSetup && !isHelpText(item)" class="label-field"
                     [attr.default]="item.default && !item.isPreset && !item.control.dirty">{{ item.description }}</div>
@@ -118,8 +126,16 @@
                         <b>Please make sure all fields in schema contain a valid value</b>
                     </span>
                 </div>
-                <span *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value)" class="suggestion-value"
-                    [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre" (click)="patchSuggestValue(item)">Suggestion</span>
+                <div class="suggestion">
+                    <button
+                        *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value)"
+                        [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i + 1}}/{{fields.length}}</div>
@@ -167,8 +183,16 @@
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
                 </div>
-                <span *ngIf="item.suggest && isEmpty(item.control.value)" class="suggestion-value" [pTooltip]="item.suggest"
-                    tooltipStyleClass="pre" (click)="patchSuggestValue(item)">Suggestion</span>
+                <div class="suggestion">
+                    <button
+                        *ngIf="item.suggest && isEmpty(item.control.value)"
+                        [pTooltip]="item.suggest" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
@@ -268,8 +292,16 @@
                         <b>Please make sure all fields in schemas contain a valid value</b>
                     </span>
                 </div>
-                <span *ngIf="item.suggest && isEmptyRef(item.control.value)" class="suggestion-value" [pTooltip]="getJSON(item.suggest)"
-                    tooltipStyleClass="pre" (click)="patchSuggestValue(item)">Suggestion</span>
+                <div class="suggestion">
+                    <button
+                        *ngIf="item.suggest && isEmptyRef(item.control.value)"
+                        [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>

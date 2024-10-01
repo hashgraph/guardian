@@ -520,9 +520,14 @@ form[example="true"] .sub-schema {
   }
 }
 
-.suggestion-value {
-    color: #0681EE;
-    cursor: pointer;
+.suggestion {
+    margin: 5px 0;
+    &__btn {
+        height: 28px;
+        width: 220px;
+        padding: 0px;
+        background-color: white !important;
+    }
 }
 
 *[default=true] {

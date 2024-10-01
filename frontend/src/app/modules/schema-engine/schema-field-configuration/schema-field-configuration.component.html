@@ -234,13 +234,18 @@
                 <span class="enum-edit-button-label">Edit values</span>
             </div>
         </div>
-        <div *ngIf="!helpText && presetFormFields && defaultValues">
-            <button
-                pButton
-                class="p-button-outlined p-button-secondary"
-                (click)="isShowMore=!isShowMore">
-                    {{isShowMore ? 'Show Less' : 'Show More'}}
-            </button>
+        <div *ngIf="!helpText && presetFormFields && defaultValues" class="selected-values">
+            <div>
+                <span class="selected-values__title">Selected values</span>
+            </div>
+            <div class="selected-values__action">
+                <button
+                    [label]="isShowMore ? 'Show Less' : 'Show More'"
+                    pButton
+                    class="selected-values__show-button button secondary"
+                    (click)="isShowMore=!isShowMore">
+                </button>
+            </div>
             <div class="default-values" [attr.hide]="!isShowMore">
                 <div class="default-values__content">
                     <app-schema-form
