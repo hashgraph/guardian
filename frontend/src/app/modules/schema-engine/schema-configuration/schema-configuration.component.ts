@@ -714,6 +714,10 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
+    private isNotEmpty(value: any) {
+        return !['', undefined, null].includes(value);
+    }
+
     public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
         const {
             key,
@@ -732,17 +736,40 @@ export class SchemaConfigurationComponent implements OnInit {
             pattern,
             hidden,
             property,
-            default: defaultValue,
+            default: defaultValueRaw,
             suggest,
             example,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
+        let suggestValue;
+        let defaultValue;
+        let exampleValue;
+        if (isArray) {
+            if (suggest) {
+                suggestValue =
+                    suggest.length > 0
+                        ? suggest.filter(this.isNotEmpty)
+                        : undefined;
+            }
+            if (defaultValueRaw) {
+                defaultValue =
+                    defaultValueRaw.length > 0
+                        ? defaultValueRaw.filter(this.isNotEmpty)
+                        : undefined;
+            }
+            if (example) {
+                exampleValue =
+                    example.length > 0
+                        ? example.filter(this.isNotEmpty)
+                        : undefined;
+            }
+        }
         return {
             name: key,
-            title: title,
-            description: description,
-            required: required,
-            isArray: isArray,
+            title,
+            description,
+            required,
+            isArray,
             isRef: type.isRef,
             fields:
                 this.subSchemas.find((schema) => schema.iri === type.type)
@@ -769,9 +796,9 @@ export class SchemaConfigurationComponent implements OnInit {
                     ? isPrivate
                     : undefined,
             default: defaultValue,
-            suggest,
-            examples: !['', null, undefined].includes(example)
-                ? [example]
+            suggest: suggestValue,
+            examples: this.isNotEmpty(exampleValue)
+                ? [exampleValue]
                 : undefined,
         };
     }
