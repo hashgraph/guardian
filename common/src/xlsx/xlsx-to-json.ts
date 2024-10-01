@@ -371,19 +371,31 @@ export class XlsxToJson {
                 }, field);
             }
 
-            if (!typeError) {
+            if (!typeError && type !== 'Auto-Calculate') {
+                let parseType = (val) => val;
+                if (fieldType) {
+                    parseType = fieldType.pars.bind(fieldType);
+                }
+
+                const exampleValue = worksheet
+                    .getCell(table.getCol(Dictionary.ANSWER), row)
+                    .getValue() as string;
                 const defaultValue = worksheet
                     .getCell(table.getCol(Dictionary.DEFAULT), row)
-                    .getFormat();
+                    .getValue() as string;
                 const suggest = worksheet
                     .getCell(table.getCol(Dictionary.SUGGEST), row)
-                    .getFormat();
+                    .getValue() as string;
+
+                field.examples = [field.isArray && !field.isRef
+                    ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
+                    : parseType(xlsxToPresetValue(field, exampleValue))];
                 field.default = field.isArray && !field.isRef
-                    ? xlsxToPresetArray(field, defaultValue)
-                    : xlsxToPresetValue(field, defaultValue);
+                    ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
+                    : parseType(xlsxToPresetValue(field, defaultValue));
                 field.suggest = field.isArray && !field.isRef
-                    ? xlsxToPresetArray(field, suggest)
-                    : xlsxToPresetValue(field, suggest);
+                    ? xlsxToPresetArray(field, suggest)?.map(parseType)
+                    : parseType(xlsxToPresetValue(field, suggest));
             }
 
             return field;
@@ -585,11 +597,6 @@ export class XlsxToJson {
                     const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
                     if (formulae) {
                         field.formulae = formulae;
-                    }
-                } else {
-                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
-                    if (answer) {
-                        field.examples = xlsxToArray(answer, field.isArray);
                     }
                 }
             }

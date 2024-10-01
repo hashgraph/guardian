@@ -44,18 +44,25 @@ export function xlsxToFont(value: any): any {
 export function xlsxToPresetArray(
     field: { type: string; isRef?: boolean },
     value: string
-): string[] | number[] {
-    const parseRegex = /("[^"]*")|([^,]+)/g;
-    const matches = value.match(parseRegex);
-    return matches.map((match) => xlsxToPresetValue(field, match)) as
-        | string[]
-        | number[];
+): any[] {
+    const parseRegex = /"([^"]*)"|([^,]+)/g;
+    const matches = value?.matchAll(parseRegex) || [];
+    const results = [];
+    for (const match of matches) {
+        for (let i = 1; i < match.length; i++) {
+            const group = match[i];
+            if (group !== undefined) {
+                results.push(xlsxToPresetValue(field, group));
+            }
+        }
+    }
+    return results.length > 0 ? results : null;
 }
 
 export function xlsxToPresetValue(
     field: { type: string; isRef?: boolean },
     value: string
-): string | number | boolean | null {
+): any {
     if (value === undefined || value === null || value === '') {
         return null;
     }
@@ -66,16 +73,7 @@ export function xlsxToPresetValue(
             return null;
         }
     }
-    switch (field.type) {
-        case 'string':
-            return value;
-        case 'number':
-            return Number(value) || 0;
-        case 'boolean':
-            return Boolean(value);
-        default:
-            return null;
-    }
+    return value;
 }
 
 export function unitToXlsx(type: any): string {
@@ -108,7 +106,7 @@ export function anyToXlsx(value: any): string {
         return value
             .map((item) => anyToXlsx(item))
             .filter(Boolean)
-            .join(', ');
+            .join(',');
     }
     if (Object.prototype.toString.call(value) === '[object Object]') {
         return JSON.stringify(value);

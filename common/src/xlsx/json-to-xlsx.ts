@@ -296,19 +296,16 @@ export class JsonToXlsx {
             }
         }
 
-        let parseType = (val) => val;
-        if (type?.pars) {
-            parseType = type.pars.bind(type);
-        }
         worksheet
             .getCell(table.getCol(Dictionary.ANSWER), row)
-            .setValue(parseType(examplesToXlsx(field)));
+            .setValue(examplesToXlsx(field));
         worksheet
             .getCell(table.getCol(Dictionary.DEFAULT), row)
-            .setValue(parseType(anyToXlsx(field.default)));
+            .setValue(anyToXlsx(field.default));
         worksheet
             .getCell(table.getCol(Dictionary.SUGGEST), row)
-            .setValue(parseType(anyToXlsx(field.suggest)));
+            .setValue(anyToXlsx(field.suggest));
+
         if (field.hidden) {
             worksheet
                 .getCell(table.getCol(Dictionary.VISIBILITY), row)
