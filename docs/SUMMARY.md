@@ -662,6 +662,7 @@
     * [🍚 Methane Emission Reduction by Adjusted Water Management Practice in Rice Cultivation](guardian/demo-guide/carbon-offsets/methane-emission-reduction-by-adjusted-water-management-practice-in-rice-cultivation.md)
     * [⛽ Verra VMR0006: Energy Efficiency and Fuel Switch Measures in Thermal Applications](guardian/demo-guide/carbon-offsets/verra-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications.md)
     * [🌩️ AMS-I.E Switch from Non-Renewable Biomass for Thermal Applications by the User](guardian/demo-guide/carbon-offsets/ams-i.e-switch-from-non-renewable-biomass-for-thermal-applications-by-the-user.md)
+    * [GCCM001 v.4 Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid](guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid.md)
   * [🏭 Carbon Emissions](guardian/demo-guide/carbon-emissions/README.md)
     * [🏡 Remote Work GHG Policy](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/README.md)
       * [📖 Introduction to Remote Work GHG](guardian/demo-guide/carbon-emissions/remote-work-ghg-policy/introduction-to-remote-work-ghg.md)
