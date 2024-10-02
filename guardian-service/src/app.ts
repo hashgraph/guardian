@@ -26,6 +26,7 @@ import {
     Environment,
     ExternalDocument,
     ExternalEventChannel,
+    GenerateTLSOptionsNats,
     IPFS,
     LargePayloadContainer,
     MessageBrokerChannel,
@@ -187,7 +188,8 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
