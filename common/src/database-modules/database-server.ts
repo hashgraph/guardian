@@ -2,7 +2,9 @@ import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
+    Artifact,
     ArtifactChunk as ArtifactChunkCollection,
+    AssignEntity,
     BlockCache,
     BlockState,
     Contract as ContractCollection,
@@ -17,11 +19,15 @@ import {
     MultiPolicy,
     MultiPolicyTransaction,
     Policy,
+    PolicyCache,
+    PolicyCacheData,
     PolicyCategory,
     PolicyInvitations,
     PolicyModule,
     PolicyRoles as PolicyRolesCollection,
+    PolicyTest,
     Record,
+    RetirePool,
     Schema as SchemaCollection,
     SplitDocuments,
     SuggestionsConfig,
@@ -32,24 +38,9 @@ import {
     VcDocument as VcDocumentCollection,
     VpDocument,
     VpDocument as VpDocumentCollection,
-    PolicyCache,
-    PolicyCacheData,
-    RetirePool,
-    AssignEntity,
-    PolicyTest,
-    Artifact,
 } from '../entity/index.js';
 import { Binary } from 'bson';
-import {
-    AssignedEntityType,
-    GenerateUUIDv4,
-    IVC,
-    MintTransactionStatus,
-    PolicyTestStatus, PolicyType,
-    SchemaEntity,
-    TokenType,
-    TopicType,
-} from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyType, SchemaEntity, TokenType, TopicType, } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
@@ -2749,7 +2740,10 @@ export class DatabaseServer extends AbstractDatabaseServer  {
                 'username',
                 'hederaAccountId',
                 'active'
-            ] as unknown as PopulatePath.ALL[]
+            ] as unknown as PopulatePath.ALL[],
+            orderBy: {
+                createDate: 1
+            }
         }));
     }
 
