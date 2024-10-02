@@ -745,24 +745,22 @@ export class SchemaConfigurationComponent implements OnInit {
         let defaultValue;
         let exampleValue;
         if (isArray) {
-            if (suggest) {
-                suggestValue =
-                    suggest.length > 0
-                        ? suggest.filter(this.isNotEmpty)
-                        : undefined;
-            }
-            if (defaultValueRaw) {
-                defaultValue =
-                    defaultValueRaw.length > 0
-                        ? defaultValueRaw.filter(this.isNotEmpty)
-                        : undefined;
-            }
-            if (example) {
-                exampleValue =
-                    example.length > 0
-                        ? example.filter(this.isNotEmpty)
-                        : undefined;
-            }
+            suggestValue =
+                suggest && suggest.length > 0
+                    ? suggest.filter(this.isNotEmpty)
+                    : undefined;
+            defaultValue =
+                defaultValueRaw && defaultValueRaw.length > 0
+                    ? defaultValueRaw.filter(this.isNotEmpty)
+                    : undefined;
+            exampleValue =
+                example && example.length > 0
+                    ? example.filter(this.isNotEmpty)
+                    : undefined;
+        } else {
+            suggestValue = suggest;
+            defaultValue = defaultValueRaw;
+            exampleValue = example;
         }
         return {
             name: key,

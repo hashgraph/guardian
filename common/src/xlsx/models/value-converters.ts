@@ -43,10 +43,13 @@ export function xlsxToFont(value: any): any {
 
 export function xlsxToPresetArray(
     field: { type: string; isRef?: boolean },
-    value: string
+    value: string | number | boolean
 ): any[] {
+    if (value === undefined || value === null) {
+        return null;
+    }
     const parseRegex = /"([^"]*)"|([^,]+)/g;
-    const matches = value?.matchAll(parseRegex) || [];
+    const matches = String(value).matchAll(parseRegex) || [];
     const results = [];
     for (const match of matches) {
         for (let i = 1; i < match.length; i++) {
@@ -61,16 +64,16 @@ export function xlsxToPresetArray(
 
 export function xlsxToPresetValue(
     field: { type: string; isRef?: boolean },
-    value: string
+    value: string | number | boolean
 ): any {
     if (value === undefined || value === null || value === '') {
-        return null;
+        return '';
     }
     if (field.isRef) {
         try {
-            return JSON.parse(value);
+            return JSON.parse(value as string);
         } catch {
-            return null;
+            return '';
         }
     }
     return value;
@@ -98,27 +101,33 @@ export function booleanToXlsx(value: boolean): string {
     return value === true ? 'Yes' : (value === false ? 'No' : '');
 }
 
-export function anyToXlsx(value: any): string {
+export function anyToXlsx(value: any): string | number | boolean {
     if (value === undefined || value === null) {
         return '';
     }
     if (Array.isArray(value)) {
         return value
             .map((item) => anyToXlsx(item))
-            .filter(Boolean)
-            .join(',');
+            .filter(item =>
+                item !== undefined
+                && item !== null
+                && item !== ''
+            )
+            .join();
     }
-    if (Object.prototype.toString.call(value) === '[object Object]') {
+    if (typeof value === 'object') {
         return JSON.stringify(value);
     }
-    return String(value);
+    return value;
 }
 
-export function examplesToXlsx(field: SchemaField): string {
+export function examplesToXlsx(field: SchemaField): string | number | boolean {
     if (Array.isArray(field.examples)) {
         return anyToXlsx(field.examples[0]);
-    } else {
+    } else if (!field.isRef) {
         return DocumentGenerator.generateExample(field) || '';
+    } else {
+        return '';
     }
 }
 

@@ -208,12 +208,12 @@ export class Table {
                 .setWidth(50)
         );
         this._fieldHeaders.set(Dictionary.DEFAULT,
-            new TableHeader(Dictionary.DEFAULT, true)
+            new TableHeader(Dictionary.DEFAULT, false)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
         this._fieldHeaders.set(Dictionary.SUGGEST,
-            new TableHeader(Dictionary.SUGGEST, true)
+            new TableHeader(Dictionary.SUGGEST, false)
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
@@ -250,6 +250,10 @@ export class Table {
 
     public get schemaHeaders(): IterableIterator<TableHeader> {
         return this._schemaHeaders.values();
+    }
+
+    public hasCol(name: Dictionary): boolean {
+        return this._fieldHeaders.get(name)?.column !== -1;
     }
 
     public getCol(name: Dictionary): number {

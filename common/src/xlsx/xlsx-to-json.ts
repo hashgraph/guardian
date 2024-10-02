@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -379,23 +379,29 @@ export class XlsxToJson {
 
                 const exampleValue = worksheet
                     .getCell(table.getCol(Dictionary.ANSWER), row)
-                    .getValue() as string;
-                const defaultValue = worksheet
-                    .getCell(table.getCol(Dictionary.DEFAULT), row)
-                    .getValue() as string;
-                const suggest = worksheet
-                    .getCell(table.getCol(Dictionary.SUGGEST), row)
-                    .getValue() as string;
-
-                field.examples = [field.isArray && !field.isRef
+                    .getValue<any>();
+                const example = field.isArray && !field.isRef
                     ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
-                    : parseType(xlsxToPresetValue(field, exampleValue))];
-                field.default = field.isArray && !field.isRef
-                    ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
-                    : parseType(xlsxToPresetValue(field, defaultValue));
-                field.suggest = field.isArray && !field.isRef
-                    ? xlsxToPresetArray(field, suggest)?.map(parseType)
-                    : parseType(xlsxToPresetValue(field, suggest));
+                    : parseType(xlsxToPresetValue(field, exampleValue))
+                field.examples = example ? [example] : null;
+
+                if (table.hasCol(Dictionary.DEFAULT)) {
+                    const defaultValue = worksheet
+                        .getCell(table.getCol(Dictionary.DEFAULT), row)
+                        .getValue<any>();
+                    field.default = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, defaultValue));
+                }
+
+                if (table.hasCol(Dictionary.SUGGEST)) {
+                    const suggest = worksheet
+                        .getCell(table.getCol(Dictionary.SUGGEST), row)
+                        .getValue<any>();
+                    field.suggest = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, suggest)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, suggest));
+                }
             }
 
             return field;

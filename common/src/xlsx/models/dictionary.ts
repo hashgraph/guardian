@@ -86,7 +86,12 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => !!(value)
+            pars: (value: any) => {
+                if (typeof value === 'string') {
+                    return value.toLowerCase() === 'true';
+                }
+                return !!value;
+            }
         },
         {
             name: 'Date',
