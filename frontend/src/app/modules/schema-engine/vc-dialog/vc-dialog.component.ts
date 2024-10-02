@@ -73,7 +73,7 @@ export class VCViewerDialog {
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
 
-        this.getSubSchemes(schemaId, topicId, category)
+        this.getSubSchemes(schemaId, topicId, category);
     }
 
     onClick(): void {

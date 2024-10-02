@@ -576,10 +576,15 @@ export class Guardians extends NatsService {
      *
      * @param {string} type - schema type
      *
+     * @param owner
      * @returns {ISchema} - schema
      */
-    public async getSchemaByType(type: string): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA, { type });
+    public async getSchemaByType(type: string, owner?: string): Promise<ISchema> {
+        if (owner) {
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, {type, owner});
+        } else {
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, {type});
+        }
     }
 
     /**

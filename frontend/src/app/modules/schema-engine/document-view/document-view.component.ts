@@ -47,10 +47,10 @@ export class DocumentViewComponent implements OnInit {
         this.issuerOptions = [];
         this.proofJson = this.document.proof
             ? JSON.stringify(this.document.proof, null, 4)
-            : "";
+            : '';
         this.evidenceJson = this.document.evidence
             ? JSON.stringify(this.document.evidence, null, 4)
-            : "";
+            : '';
         this.isIssuerObject = typeof this.document.issuer === 'object';
         if (this.isIssuerObject) {
             for (const key in this.document.issuer) {
