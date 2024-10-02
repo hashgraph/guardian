@@ -394,39 +394,32 @@
                     "type": "string",
                     "readOnly": true
                 },
-                "geography": {
-                    "$comment": "{\"term\": \"geography\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "geography",
-                    "description": "geography",
+                "OrganizationName": {
+                    "title": "OrganizationName",
+                    "description": "OrganizationName",
+                    "readOnly": false,
                     "type": "string",
-                    "readOnly": false
+                    "$comment": "{\"term\":\"OrganizationName\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":0}"
                 },
-                "law": {
-                    "$comment": "{\"term\": \"law\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "law",
-                    "description": "law",
+                "Website": {
+                    "title": "Website",
+                    "description": "Website",
+                    "readOnly": false,
                     "type": "string",
-                    "readOnly": false
+                    "$comment": "{\"term\":\"Website\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":1}"
                 },
-                "tags": {
-                    "$comment": "{\"term\": \"tags\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "tags",
-                    "description": "tags",
+                "Tags": {
+                    "title": "Tags",
+                    "description": "Tags",
+                    "readOnly": false,
                     "type": "string",
-                    "readOnly": false
-                },
-                "ISIC": {
-                    "$comment": "{\"term\": \"ISIC\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "ISIC",
-                    "description": "ISIC",
-                    "type": "string",
-                    "readOnly": false
+                    "$comment": "{\"term\":\"Tags\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":2}"
                 }
             },
             "required": [
-                "geography",
-                "law",
-                "tags"
+                "OrganizationName",
+                "Website",
+                "Tags"
             ],
             "additionalProperties": false
         }
