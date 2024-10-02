@@ -214,9 +214,9 @@ export class ReportService {
         const modules = await databaseServer.find(Module, { uuid });
         const users = await databaseServer.find(User, { uuid });
         const tags = await databaseServer.find(Tag, { uuid, action: MessageAction.PublishTag });
-        const userTopicCount = await databaseServer.find(Topic, { uuid });
-        const schemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSchema });
-        const systemSchemaCount = await databaseServer.find(Schema, { uuid, action: MessageAction.PublishSystemSchema });
+        const userTopicCount = await databaseServer.count(Topic, { uuid });
+        const schemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSchema });
+        const systemSchemaCount = await databaseServer.count(Schema, { uuid, action: MessageAction.PublishSystemSchema });
 
         const docByPolicy =
             await databaseServer.aggregate(Document, databaseServer.getAnalyticsDocAggregationFilters(MAP_REPORT_ANALYTICS_AGGREGATION_FILTERS.DOC_BY_POLICY, uuid) as FilterObject<any>[])

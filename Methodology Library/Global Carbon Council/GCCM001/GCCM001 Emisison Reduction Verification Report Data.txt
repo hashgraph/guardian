@@ -1,0 +1,181 @@
+var _pp = {
+  "field0": "GreenCheck Verifications Ltd. Reference No.: PV-2024-00765",
+  "field1": "CDM Accreditation",
+  "field2": "https://www.greencheckverifications.com/credentials/12388",
+  "field3": "GHG Sectoral Scope 1 - Energy Industries (renewable / nonrenewable sources) GCC scopes – GHG-SS #1 - Energy Industries (renewable / nonrenewable sources) Environmental no-net harm (E+) Social no-net harm (S+) UN Sustainability Development Goals (SDG+)",
+  "field4": {
+    "field0": "2023-10-08",
+    "field1": "2025-08-01"
+  },
+  "field5": "Large-Scale Solar PV Plant in Uzbekistan by Eco Solutions LLC, 12/18/2023, Version 7",
+  "field6": "Large-Scale Solar PV Plant in Uzbekistan by Eco Solutions LLC",
+  "field7": [
+    "S102"
+  ],
+  "field8": {
+    "field0": "2023-01-01",
+    "field1": "2023-12-31"
+  },
+  "field9": "Large-Scale Solar PV Plant in Uzbekistan by Eco Solutions LLC, 04/30/2024, Version 4",
+  "field10": [
+    "A1"
+  ],
+  "field11": "Eco Solutions LLC",
+  "field12": "John@ecosolutions.com",
+  "field13": "Uzbekistan",
+  "field14": [
+    {
+      "type": "Point",
+      "coordinates": [
+        69.2797,
+        41.3111
+      ]
+    }
+  ],
+  "field15": "GCCM001 Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid or Captive Consumers, version 4.0",
+  "field16": "GHG-SS 1 (Energy Industries (renewable-/non renewable sources)",
+  "field20": "The GCC Emission Reduction Verifier Enviance Services Private Limited, certifies the following with respect to the registered GCC Project Activity First Large-Scale Solar PV Plant in Uzbekistan by Nur Navoi Solar FE LLC, with registration number S00115, for the chosen monitoring period from 01/01/2023 to 31/12/2023: The Project Owner has implemented the Project Activity as indicated in the registered Project Submission Form",
+  "field21": "Version 04 Reference Number: GCC_S0001",
+  "field22": "2024-05-22",
+  "field23": "ipfs://66e308b9c37a8ddd6bc4692c",
+  "field24": "GreenCheck was appointed by EcoSolutions  LLC to perform the 2nd Emission reduction Verification covering the monitoring period from 01/01/2023 to 31/12/2023 for the registered GCC project activity ",
+  "field25": [
+    {
+      "field0": "LA/TE",
+      "field1": "LA/TE",
+      "field2": "Doe",
+      "field3": "John",
+      "field4": "GreenCheck",
+      "field5": "Y",
+      "field6": "Y",
+      "field7": "Y",
+      "field8": "Y"
+    }
+  ],
+  "field26": [
+    {
+      "field0": "Team Leader/ Technical Expert",
+      "field1": "IR",
+      "field2": "Doe",
+      "field3": "John",
+      "field4": "GreenCheck"
+    }
+  ],
+  "field27": [
+    {
+      "field0": "Human errors: Readings from Meters (if not automatic)",
+      "field1": "LOW",
+      "field2": "Human error is likely to occur if the monitoring personnel are not trained well or inexperienced in data recording procedures and monitoring processes.",
+      "field3": "All the personnel are well trained to monitor and collect data and thus, the risk associated with Human error is minimized. On the basis of the training records/17/ the emission reduction verification team confirm that all the personnel are well trained to handle the activities related to monitoring. Also, as the training records/17/ covered the entire monitoring period, it was found that the personnel are well trained to monitor and collect"
+    }
+  ],
+  "field28": "As per the Paragraph 46 of GCC Verification Standard (version 03.1)/01/ states that “The materiality thresholds stipulated for the CDM shall be applicable.” Hence, the threshold of materiality was evaluated based on “Guideline: Application of materiality in verifications” (version 02.0)/04/ and paragraph 326 (c) of CDM VVS for project activities (version 03.0)/03/ . ",
+  "field29": "The Emission Reduction Verification Team performed desk/document review on the basis of the Project Monitoring report/09/ and the supporting relevant documents. This process included review of data and information presented to verify their completeness and review of the monitoring plan and monitoring methodology/12/, paying particular attention to the frequency of measurements, the quality of metering equipment used to include calibration requirements, and the QA/QC procedures, and an evaluation of data management and the QA/QC system in the context of their influence on the generation and reporting of emission reduction.",
+  "field30": [
+    {
+      "field0": {
+        "field0": "2024-01-28",
+        "field1": "2024-01-28"
+      },
+      "field1": "The Emission Reduction verification team conducted site audit to confirm the information and to resolve issues identified in the document review. This involved: 1) an assessment of the implementation and operation of the GCC project activity as per the registered PSF 2) a review of information flows for generating, aggregating and reporting of the monitoring parameters 3) interviews with relevant personnel to confirm that the operational and data collection procedures are implemented in accordance with the Monitoring Plan 4) a cross-check between information provided in the PMR and data from other sources 5) a check of the monitoring equipment including calibration performance, and observations of monitoring practices against the requirements of the PSF and the applied methodology 6) a review of calculations and assumptions made in determining the GHG data and ERs",
+      "field2": "Solar park",
+      "field3": "2024-01-28",
+      "field4": "John Doe"
+    }
+  ],
+  "field31": [
+    {
+      "field0": "Doe",
+      "field1": "Jane",
+      "field2": "EcoSolutions",
+      "field3": "2024-12-28",
+      "field4": "Project operation, ACC calculation and completeness of monitoring report Q/A and Q/C procedure Compliance of monitoring plan with monitoring methodology and PSF Calibration requirements Employment details Role in the project activity",
+      "field5": "John Doe"
+    }
+  ],
+  "field32": "During on site visit and Desk review, the Emission reduction verification team has checked the commissioning certificates/20/ , electricity generation statements/15/ and invoices/15/ , plant records/25/ for the entire monitoring period. Hence, no sampling approach is applied.",
+  "field33": "n/a",
+  "field34": {
+    "field0": "The Project monitoring report/09/ submitted by the Project owner is found to be completed in the valid latest version of the Project Monitoring report Template. Also, it is found by the Emission reduction verification Team that all the sections of the submitted Project Monitoring report/09/ is in accordance with the instructions provided in the project Monitoring report Template.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field35": {
+    "field0": "The Emission Reduction Verification Team has referred to the project verification report and Emission Reduction Verification report/29/ of the 1st monitoring report.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field36": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , Project Monitoring report/09/ , desk review and onsite audit determined whether the project implementation and operation is in compliance with the registered PSF",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field37": {
+    "field0": "The Emission reduction verification team on the basis of the submitted PMR/09/ and onsite visit determined whether the monitoring plan followed",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field38": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ and on-site visit determined the ex- ante parameter used for the calculation Emission Reduction Calculations.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field39": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ and on-site visit determined the ex- post parameter and their monitoring is as per the monitoring plan mentioned in the registered PSF",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field40": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ and on-site visit determined the ex- post parameter and their monitoring is as per the monitoring plan mentioned in the registered PSF",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field41": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ and calibration certificates/16/ has determined whether the calibration frequency is complied.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field42": {
+    "field0": "the entire monitoring period determined whether the data and calculations of the achieved Baseline GHG emission reductions from the registered GCC project activity is carried out in accordance with the formulae and methods described in the registered monitoring plan.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field43": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ , ER sheet/10/ , determined whether the data and calculations of the achieved project GHG emission reductions from the registered GCC project activity is carried out in accordance with the formulae and methods described in the registered monitoring plan.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field44": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ , ER sheet/10/ , determined whether the data and calculations of the leakage GHG emission reductions from the registered GCC project activity is carried out in accordance with the formulae and methods described in the registered monitoring plan",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field45": {
+    "field0": "The Emission reduction verification team on the basis of the registered PSF/06/ , submitted PMR/09/ , ER sheet/10/ , determined whether the data and calculations of the achieved net GHG emission reductions from the registered GCC project activity is carried out in accordance with the formulae and methods described in the registered monitoring plan",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field46": {
+    "field0": "The Emission reduction Verification team on the basis of the registered PSF/06/ , Project Monitoring report/09/ and ER sheet/10/ determines the comparison between the emission reductions achieved during this monitoring period with the estimated value",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field47": {
+    "field0": "The Emission reduction Verification team on the basis of the registered PSF/06/ , Project Monitoring report/09/ and ER sheet/10/ determines the difference between the emission reductions achieved during this monitoring period with the estimated value.",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field48": {
+    "field0": "The Emission Reduction Team on the basis of the Registered PSF/06/ , Project Monitoring report/09/ , Emission Reduction Verification Report of the previous Monitoring report/29/ determines the actual GHG emission reductions by the project activity",
+    "field1": "No findings raised.",
+    "field2": "Project owner has completed the Project Monitoring report"
+  },
+  "field49": "The final documentation including the Emission Reduction Verification Report prepared by the Emission Reduction Verification Team undergo an Internal quality control by the Technical Reviewer. The details of the Technical Reviewer are mentioned in section B.2 and Appendix 2 of this report.",
+  "field50": "On the basis of the Onsite audit and desk review, the Emission reduction Verification Team concludes that the project activity has achieved 55 tCO2 equivalents Emission Reduction during the current Monitoring period ",
+  "field53": [],
+  "field54": [],
+  "field55": [],
+  "field56": [],
+  "field57": 55.800000000000004
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

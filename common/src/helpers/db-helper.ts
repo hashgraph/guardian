@@ -628,8 +628,12 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Entity
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findOne(filters: FilterQuery<T> | string | ObjectId, options: FindOneOptions<object> = {}): Promise<T | null> {
+    public async findOne(filters: FilterQuery<T> | string | ObjectId | null, options: FindOneOptions<object> = {}): Promise<T | null> {
         let query: FilterQuery<T>;
+
+        if(!filters) {
+            return null
+        }
 
         if (typeof filters === 'string' || filters instanceof ObjectId) {
             query = { _id: filters } as FilterQuery<T>;
