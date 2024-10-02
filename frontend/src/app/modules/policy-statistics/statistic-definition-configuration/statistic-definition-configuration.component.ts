@@ -7,17 +7,17 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
 import { TreeNode } from '../tree-graph/tree-node';
 import { TreeListItem } from '../tree-graph/tree-list';
-import { SchemaData, SchemaNode } from './models/schema-node';
-import { SchemaVariables } from "./models/schema-variables";
-import { SchemaFormulas } from "./models/schema-formulas";
+import { SchemaData, SchemaNode } from '../models/schema-node';
+import { SchemaVariables } from "../models/schema-variables";
+import { SchemaFormulas } from "../models/schema-formulas";
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../tree-graph/tree-source';
 import { createAutocomplete } from '../lang-modes/autocomplete';
-import { SchemaScore, SchemaScores } from './models/schema-scores';
+import { SchemaScore, SchemaScores } from '../models/schema-scores';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
-import { SchemaRule, SchemaRules } from './models/schema-rules';
+import { SchemaRule, SchemaRules } from '../models/schema-rules';
 
 @Component({
     selector: 'app-statistic-definition-configuration',

@@ -1,0 +1,188 @@
+.guardian-page {
+    position: relative;
+    padding: 0px;
+    user-select: none;
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .header-container {
+        padding: 56px 48px 10px 48px;
+        background: var(--guardian-primary-color, #4169E2);
+        min-height: 178px;
+        height: 178px;
+
+        .guardian-user-back-button {
+            width: 200px;
+
+            button {
+                border-color: #fff;
+            }
+        }
+
+        .guardian-user-page-header {
+            color: #fff;
+        }
+
+
+        .policy-name {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 16px;
+            position: absolute;
+            top: 34px;
+            right: 0;
+
+            .policy-version {
+                padding-left: 16px;
+            }
+        }
+    }
+
+    .step-container {
+        min-height: 40px;
+        height: 40px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 0px;
+        background: #fff;
+        border-bottom: 1px solid #E1E7EF;
+        position: relative;
+        box-shadow: 0px 4px 8px 0px #00000014;
+    }
+
+    .body-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .nav-body-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        padding: 24px 48px 24px 48px;
+        overflow: auto;
+
+        .step-body-container {
+            display: flex;
+            width: 100%;
+            min-height: 100px;
+            height: fit-content;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px 0px #00000014;
+            background: #fff;
+            padding: 24px;
+            flex-direction: column;
+            margin-bottom: 16px;
+
+            .step-body-header {
+                font-size: 24px;
+                font-weight: 600;
+                line-height: 32px;
+                text-align: left;
+                color: #181818;
+                margin-bottom: 24px;
+            }
+        }
+    }
+
+    .fields-container {
+        .field-container {
+            margin-bottom: 16px;
+
+            .field-name {
+                font-family: Inter;
+                font-size: 12px;
+                font-weight: 500;
+                line-height: 14px;
+                text-align: left;
+                color: #181818;
+                padding: 8px 0px;
+            }
+
+            .field-value {
+                padding: 12px 16px 12px 16px;
+                border-radius: 8px;
+                border: 1px solid #E1E7EF;
+                background: #F9FAFC;
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 16px;
+                text-align: left;
+                color: #23252E;
+                width: 100%;
+                min-height: 42px;
+            }
+
+            .field-value-array {
+                .field-value {
+                    margin-bottom: 16px;
+
+                    &:last-child {
+                        margin-bottom: 0px;
+                    }
+                }
+            }
+        }
+    }
+
+    .scores-container {
+        .score-container {
+            border: 1px solid #AAB7C4;
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+
+            .score-name {
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 700;
+                line-height: 18px;
+                text-align: left;
+                color: #000000;
+                margin-bottom: 16px;
+                padding: 8px 0px;
+            }
+        }
+    }
+
+    .options-container {
+        .option-container {
+            display: flex;
+            flex-direction: row;
+
+            border-radius: 6px;
+
+            &:not([disabled]) {
+                cursor: pointer;
+            }
+
+            &:not([disabled]):hover {
+                background: #f0f3fc;
+            }
+
+            .option-checkbox {
+                cursor: pointer;
+                min-height: 40px;
+                width: 42px;
+                min-width: 42px;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+                padding-left: 4px;
+            }
+
+            .option-name {
+                cursor: pointer;
+                min-height: 40px;
+                width: 100%;
+                display: flex;
+                justify-content: flex-start;
+                align-items: center;
+            }
+        }
+    }
+}

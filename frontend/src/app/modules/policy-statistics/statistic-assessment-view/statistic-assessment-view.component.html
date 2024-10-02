@@ -1,3 +1,173 @@
 <div class="guardian-page">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
 
+    <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+    </div>
+
+    <div class="header-container">
+        <div class="guardian-user-back-button">
+            <button 
+                (click)="onBack()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Assessments</div>
+            </button>
+        </div>
+    
+        <div class="guardian-user-page-header">
+            <span>{{definition?.name}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/list.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Overview</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Document</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/tree.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Relationships</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="body-container">
+        <div *ngIf="stepper[0]" class="nav-body-container">
+            <div class="step-body-container">
+
+                <div class="fields-container">
+                    <div class="field-container">
+                        <div class="field-name">Name</div>
+                        <div class="field-value">{{definition.name}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Name</div>
+                        <div class="field-value">{{policy.name}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Version</div>
+                        <div class="field-value">{{policy.version}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Topic ID</div>
+                        <div class="field-value">{{assessment.policyInstanceTopicId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Topic ID</div>
+                        <div class="field-value">{{assessment.topicId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Message ID</div>
+                        <div class="field-value">{{assessment.messageId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Target Document</div>
+                        <div class="field-value">{{assessment.target}}</div>
+                    </div>
+                </div>
+
+
+
+            </div>
+        </div>
+        <div *ngIf="stepper[1]" class="nav-body-container">
+            <div class="step-body-container">
+                <div *ngIf="preview" class="fields-container">
+                    <div *ngFor="let variable of preview" class="field-container">
+                        <div class="field-name">
+                            {{variable.description}}
+                        </div>
+                        <ng-container *ngIf="variable.isArray">
+                            <div class="field-value-array">
+                                <div *ngFor="let v of variable.value" class="field-value">
+                                    {{v}}
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!variable.isArray">
+                            <div class="field-value">
+                                {{variable.value}}
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let score of scores" class="field-container">
+                        <div class="field-name">
+                            {{score.description}}
+                        </div>
+                        <div *ngIf="score.options" class="options-container">
+                            <div *ngFor="let option of score.options" class="option-container" disabled="true">
+                                <div class="option-checkbox">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [name]="score.id" 
+                                        [value]="option.value" 
+                                        [ngModel]="score.value"
+                                        [disabled]="true"
+                                    ></p-radioButton>
+                                </div>
+                                <label class="option-name">
+                                    {{option.description}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let formula of formulas" class="field-container">
+                        <div class="field-name">
+                            {{formula.description}}
+                        </div>
+                        <div class="field-value">
+                            {{formula.value}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="stepper[2]" class="nav-body-container">
+            <div class="step-body-container">
+
+
+            </div>
+        </div>
+    </div>
 </div>

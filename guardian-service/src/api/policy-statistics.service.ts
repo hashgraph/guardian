@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, PolicyStatisticDocument, StatisticAssessmentMessage, StatisticMessage, Users, VcDocument } from '@guardian/common';
+import { DocumentStatus, EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
 
@@ -96,6 +96,12 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     },
                     otherOptions
                 );
+                for (const item of items) {
+                    (item as any).documents = await DatabaseServer.getStatisticAssessmentCount({
+                        definitionId: item.id,
+                        owner: owner.owner
+                    });
+                }
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -313,6 +319,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 } else {
                     otherOptions.orderBy = { createDate: 'DESC' };
                     otherOptions.limit = 100;
+                    otherOptions.offset = 0;
                 }
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
@@ -342,14 +349,11 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     schema: { $in: subSchemas }
                 }));
 
-                const [targetDocs, count] = await DatabaseServer.getStatisticDocumentsAndCount(
-                    {
-                        policyId,
-                        owner: owner.creator,
-                        schema: { $in: targetSchemas }
-                    },
-                    otherOptions
-                );
+                const targetDocs = await DatabaseServer.getStatisticDocuments({
+                    policyId,
+                    owner: owner.creator,
+                    schema: { $in: targetSchemas }
+                });
 
                 const items: any[] = [];
                 for (const target of uniqueDocuments(targetDocs)) {
@@ -359,7 +363,10 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                         unrelatedDocuments: allDocs
                     })
                 }
-                return new MessageResponse({ items, count });
+                return new MessageResponse({ 
+                    items: items.slice(otherOptions.offset, otherOptions.offset + otherOptions.limit), 
+                    count: items.length 
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -402,22 +409,35 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
                 const schemaObject = new Schema(schema);
-                const vc = await generateVcDocument(assessment.document, schemaObject, owner)
+                const vcObject = await generateVcDocument(assessment.document, schemaObject, owner);
 
-                const newItem = {
-                    id: item.id,
+                const topic = await getOrCreateTopic(item);
+                const user = await (new Users()).getHederaAccount(owner.creator);
+                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+
+                const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
+                vcMessage.setDefinition(item);
+                vcMessage.setDocument(vcObject);
+                vcMessage.setTarget(assessment.target);
+                vcMessage.setRelationships(assessment.relationships);
+                const vcMessageResult = await messageServer
+                    .setTopicObject(topic)
+                    .sendMessage(vcMessage);
+
+                const row = await DatabaseServer.createStatisticAssessment({
                     definitionId: item.id,
                     policyId: item.policyId,
+                    policyTopicId: item.policyTopicId,
+                    policyInstanceTopicId: item.policyInstanceTopicId,
                     creator: owner.creator,
                     owner: owner.owner,
-                    target: assessment.target,
-                    relationships: assessment.relationships,
-                    document: vc.toJsonTree()
-                }
-
-                console.log('----------------------------')
-                // const row = await DatabaseServer.createStatisticReport(newItem);
-                return new MessageResponse(newItem);
+                    messageId: vcMessageResult.getId(),
+                    topicId: vcMessageResult.getTopicId(),
+                    target: vcMessageResult.getTarget(),
+                    relationships: vcMessageResult.getRelationships(),
+                    document: vcMessageResult.getDocument()
+                });
+                return new MessageResponse(row);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -465,19 +485,20 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 otherOptions.fields = [
                     'id',
+                    'definitionId',
+                    'policyId',
                     'creator',
                     'owner',
-                    'name',
-                    'description',
-                    'status',
+                    'target',
+                    'relationships',
                     'topicId',
                     'messageId',
-                    'policyId'
+                    'document'
                 ];
 
-                console.log('----------------------------')
-                const [items, count] = await DatabaseServer.getStatisticsAndCount(
+                const [items, count] = await DatabaseServer.getStatisticAssessmentsAndCount(
                     {
+                        definitionId,
                         owner: owner.owner
                     },
                     otherOptions
@@ -516,8 +537,12 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item is not published.');
                 }
 
-                console.log('----------------------------')
-                return new MessageResponse(item);
+                const result = await DatabaseServer.getStatisticAssessment({
+                    id: assessmentId,
+                    definitionId,
+                    owner: owner.owner
+                });
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

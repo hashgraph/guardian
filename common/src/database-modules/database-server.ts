@@ -38,7 +38,8 @@ import {
     AssignEntity,
     PolicyTest,
     Artifact,
-    PolicyStatistic
+    PolicyStatistic,
+    PolicyStatisticDocument
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -3699,7 +3700,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Create Statistic
      * @param statistic
      */
-    public static async createStatistic(statistic: PolicyStatistic): Promise<PolicyStatistic> {
+    public static async createStatistic(
+        statistic: FilterObject<PolicyStatistic>
+    ): Promise<PolicyStatistic> {
         const item = new DataBaseHelper(PolicyStatistic).create(statistic);
         return await new DataBaseHelper(PolicyStatistic).save(item);
     }
@@ -3794,5 +3797,48 @@ export class DatabaseServer extends AbstractDatabaseServer {
         options?: unknown
     ): Promise<VcDocumentCollection> {
         return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Create Statistic
+     * @param assessment
+     */
+    public static async createStatisticAssessment(
+        assessment: FilterObject<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument> {
+        const item = new DataBaseHelper(PolicyStatisticDocument).create(assessment);
+        return await new DataBaseHelper(PolicyStatisticDocument).save(item);
+    }
+
+    /**
+     * Get statistic assessment
+     * @param filters
+     */
+    public static async getStatisticAssessment(
+        filters: FilterQuery<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument | null> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findOne(filters);
+    }
+
+    /**
+     * Get statistic assessments
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticAssessmentsAndCount(
+        filters?: FilterObject<PolicyStatisticDocument>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyStatisticDocument[], number]> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic assessment count
+     * @param filters
+     */
+    public static async getStatisticAssessmentCount(
+        filters?: FilterObject<PolicyStatisticDocument>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyStatisticDocument).count(filters);
     }
 }

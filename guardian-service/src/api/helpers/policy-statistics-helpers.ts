@@ -1,6 +1,7 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IFormulaData, IOwner, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
+import { createHash } from 'crypto';
 
 export async function addRelationship(
     messageId: string,
@@ -30,26 +31,6 @@ export async function findRelationships(
         }
     }
     return subDocs.filter((doc) => relationships.has(doc.messageId));
-}
-
-export function getVcId(document: VcDocument): string {
-    let credentialSubject: any = document?.document?.credentialSubject;
-    if (Array.isArray(credentialSubject)) {
-        credentialSubject = credentialSubject[0];
-    }
-    if (credentialSubject && credentialSubject.id) {
-        return credentialSubject.id;
-    }
-    return document.id;
-}
-
-export function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
-    const map = new Map<string, VcDocument>();
-    for (const document of documents) {
-        const id = getVcId(document);
-        map.set(id, document);
-    }
-    return Array.from(map.values());
 }
 
 export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
@@ -349,10 +330,55 @@ function validateRules(data?: IRuleData[]): IRuleData[] {
 
 export function validateConfig(data: IStatisticConfig): IStatisticConfig {
     const config: IStatisticConfig = {
-        variables: validateVariables(data.variables),
-        scores: validateScores(data.scores),
-        formulas: validateFormulas(data.formulas),
-        rules: validateRules(data.rules),
+        variables: validateVariables(data?.variables),
+        scores: validateScores(data?.scores),
+        formulas: validateFormulas(data?.formulas),
+        rules: validateRules(data?.rules),
     }
     return config;
+}
+
+function getSubject(document: VcDocument): any {
+    let credentialSubject: any = document?.document?.credentialSubject;
+    if (Array.isArray(credentialSubject)) {
+        credentialSubject = credentialSubject[0];
+    }
+    if (credentialSubject && credentialSubject.id) {
+        return credentialSubject;
+    }
+    return document;
+}
+
+function getVcHash(document: VcDocument): string {
+    return document.schema;
+}
+
+export function uniqueDocuments(documents: VcDocument[]): VcDocument[] {
+    const map = new Map<string, Map<string, any>>();
+    for (const document of documents) {
+        const hash = getVcHash(document);
+        const item = map.get(hash) || (new Map<string, any>());
+        item.set(document.messageId, document);
+        map.set(hash, item);
+    }
+    const result: VcDocument[] = [];
+    for (const item of map.values()) {
+        console.log(item.size)
+        for (const doc of item.values()) {
+            if (Array.isArray(doc.relationships)) {
+                for (const messageId of doc.relationships) {
+                    const old = item.get(messageId);
+                    if (old) {
+                        old.__duplicate = true
+                    }
+                }
+            }
+        }
+        for (const doc of item.values()) {
+            if (!doc.__duplicate) {
+                result.push(doc);
+            }
+        }
+    }
+    return result;
 }

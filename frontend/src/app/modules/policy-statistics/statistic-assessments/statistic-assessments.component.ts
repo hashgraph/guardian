@@ -6,7 +6,16 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
+
+interface IColumn {
+    id: string;
+    title: string;
+    type: string;
+    size: string;
+    tooltip: boolean;
+    permissions?: (user: UserPermissions) => boolean;
+    canDisplay?: () => boolean;
+}
 
 @Component({
     selector: 'app-statistic-assessments',
@@ -14,6 +23,8 @@ import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dial
     styleUrls: ['./statistic-assessments.component.scss'],
 })
 export class StatisticAssessmentsComponent implements OnInit {
+    public readonly title: string = 'Assessments';
+
     public loading: boolean = true;
     public isConfirmed: boolean = false;
     public user: UserPermissions = new UserPermissions();
@@ -23,6 +34,10 @@ export class StatisticAssessmentsComponent implements OnInit {
     public pageSize: number;
     public pageCount: number;
     public definitionId: string;
+    public definition: any;
+    public columns: IColumn[];
+    public policy: any;
+    public schemas: any[];
 
     private subscription = new Subscription();
 
@@ -34,7 +49,43 @@ export class StatisticAssessmentsComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute
     ) {
-
+        this.columns = [ {
+            id: 'definition',
+            title: 'Definition',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'policy',
+            title: 'Policy',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'topicId',
+            title: 'Topic',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'target',
+            title: 'Target',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'messageId',
+            title: 'Message ID',
+            type: 'text',
+            size: 'auto',
+            tooltip: false
+        }, {
+            id: 'options',
+            title: '',
+            type: 'text',
+            size: '100',
+            tooltip: false
+        }]
     }
 
     ngOnInit() {
@@ -54,30 +105,34 @@ export class StatisticAssessmentsComponent implements OnInit {
     }
 
     private loadProfile() {
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.isConfirmed = false;
         this.loading = true;
-        this.profileService
-            .getProfile()
-            .subscribe((profile) => {
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.user = new UserPermissions(profile);
-                this.owner = this.user.did;
-
-                if (this.isConfirmed) {
-                    this.loadData();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            }, (e) => {
-                this.loading = false;
-            });
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyStatisticsService.getDefinition(this.definitionId),
+            this.policyStatisticsService.getRelationships(this.definitionId)
+        ]).subscribe(([profile, definition, relationships]) => {
+            this.isConfirmed = !!(profile && profile.confirmed);
+            this.user = new UserPermissions(profile);
+            this.owner = this.user.did;
+            this.definition = definition;
+            this.policy = relationships?.policy || {};
+            this.schemas = relationships?.schemas || [];
+            if (this.isConfirmed) {
+                this.loadData();
+            } else {
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }
+        }, (e) => {
+            this.loading = false;
+        });
     }
 
     private loadData() {
         const filters: any = {};
-        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         this.policyStatisticsService
             .getAssessments(
@@ -90,6 +145,10 @@ export class StatisticAssessmentsComponent implements OnInit {
                 const { page, count } = this.policyStatisticsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
+                for (const item of this.page) {
+                    item.definition = this.definition?.name;
+                    item.policy = this.policy?.name;
+                }
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -107,5 +166,18 @@ export class StatisticAssessmentsComponent implements OnInit {
             this.pageSize = event.pageSize;
         }
         this.loadData();
+    }
+
+    public onBack() {
+        this.router.navigate(['/policy-statistics']);
+    }
+
+    public onOpen(row: any) {
+        this.router.navigate([
+            '/policy-statistics',
+            this.definitionId,
+            'assessment',
+            row.id
+        ]);
     }
 }

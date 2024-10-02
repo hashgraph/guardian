@@ -1,6 +1,6 @@
 import { IVariableData, Schema } from "@guardian/interfaces";
 import { FieldData, SchemaNode } from "./schema-node";
-import { TreeListItem } from "../../tree-graph/tree-list";
+import { TreeListItem } from "../tree-graph/tree-list";
 
 export class SchemaVariable implements IVariableData {
     public id: string;

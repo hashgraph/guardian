@@ -91,7 +91,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
-            id: 'docs',
+            id: 'documents',
             title: 'Documents',
             type: 'text',
             size: 'auto',

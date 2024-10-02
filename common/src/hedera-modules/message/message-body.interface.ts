@@ -603,3 +603,33 @@ export interface StatisticMessageBody extends MessageBody {
      */
     uri: string;
 }
+
+/**
+ * Statistic Assessment message body
+ */
+export interface StatisticAssessmentMessageBody extends MessageBody {
+    /**
+     * Issuer
+     */
+    issuer: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Target
+     */
+    target: string;
+    /**
+     * Definition
+     */
+    definition: string;
+}

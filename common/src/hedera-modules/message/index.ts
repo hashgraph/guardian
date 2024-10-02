@@ -20,3 +20,4 @@ export { ContractMessage } from './contract-message.js';
 export { GuardianRoleMessage } from './guardian-role-message.js';
 export { UserPermissionsMessage } from './user-permissions-message.js';
 export { StatisticMessage } from './statistic-message.js';
+export { StatisticAssessmentMessage } from './statistic-assessment-message.js';

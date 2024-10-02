@@ -7,59 +7,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Formula } from 'src/app/utils';
-
-interface IOption {
-    id: string;
-    description: string;
-    value: any;
-}
-
-interface IVariable {
-    id: string;
-    description: string;
-    value: any;
-    schemaId: string;
-    path: string[];
-    fullPath: string[];
-    isArray: boolean;
-}
-
-interface IScore {
-    id: string;
-    description: string;
-    value: any;
-    relationships: IVariable[];
-    options: IOption[]
-}
-
-interface IFormula {
-    id: string;
-    description: string;
-    value: any;
-    formula: string;
-    type: string;
-}
-
-interface IColumn {
-    id: string | string[];
-    title: string;
-    type: string;
-    size: string;
-    minSize: string;
-    tooltip: boolean;
-    permissions?: (user: UserPermissions) => boolean;
-    canDisplay?: () => boolean;
-}
-
-interface IDocument {
-    targetDocument: IVCDocument;
-    relatedDocuments: IVCDocument[];
-    unrelatedDocuments: IVCDocument[];
-    __id?: string;
-    __schemaId?: string;
-    __schemaName?: string;
-    __cols: Map<IColumn, any>;
-}
+import { IDocument, IFormula, IOption, IScore, IVariable } from '../models/assessment';
+import { IColumn } from '../models/grid';
 
 @Component({
     selector: 'app-statistic-assessment-configuration',
@@ -203,7 +152,6 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         this.policyStatisticsService
             .createAssessment(this.definitionId, report)
             .subscribe((assessment) => {
-                debugger;
                 this.router.navigate([
                     '/policy-statistics',
                     this.definitionId,
