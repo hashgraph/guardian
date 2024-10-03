@@ -2293,7 +2293,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2306,6 +2307,11 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2352,7 +2358,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2367,6 +2374,10 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return res.status(202).send(task);
     }
 
