@@ -238,7 +238,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param filters
      * @param options
      */
-    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T>, options?: FindOptions<unknown>): Promise<number> {
+    public async count<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T>, options?: FindOptions<unknown>): Promise<number> {
         if (this.dryRun) {
 
             const _filters = {
@@ -280,7 +280,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param filters
      * @param options
      */
-    public async findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
+    public async findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: FilterQuery<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
         return await new DataBaseHelper(entityClass).findAndCount(filters, options);
     }
 
