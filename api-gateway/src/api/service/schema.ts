@@ -884,7 +884,8 @@ export class SchemaApi {
     async createNewSchemaAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Body() newSchema: SchemaDTO
+        @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const owner = new EntityOwner(user);
         const guardians = new Guardians();
@@ -903,6 +904,11 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return task;
     }
 
