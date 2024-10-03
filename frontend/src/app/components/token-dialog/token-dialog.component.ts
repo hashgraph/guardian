@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TokenService } from '../../services/token.service';
 import { ITokenInfo, Token } from '@guardian/interfaces';
@@ -13,7 +13,7 @@ import { noWhitespaceValidator } from '../../validators/no-whitespace-validator'
 })
 export class TokenDialogComponent implements OnInit {
     preset?: any;
-    dataForm!: FormGroup;
+    dataForm!: UntypedFormGroup;
     readonly!: boolean;
     hideType!: boolean;
     contracts: any[];
@@ -25,19 +25,19 @@ export class TokenDialogComponent implements OnInit {
         public dialogConfig: DynamicDialogConfig,
         private tokenService: TokenService,
     ) {
-        this.dataForm = new FormGroup({
-            draftToken: new FormControl(true, [Validators.required]),
-            tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
-            tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
-            tokenType: new FormControl('fungible', [Validators.required]),
-            decimals: new FormControl('2'),
-            initialSupply: new FormControl('0'),
-            enableAdmin: new FormControl(true, [Validators.required]),
-            changeSupply: new FormControl(true, [Validators.required]),
-            enableFreeze: new FormControl(false, [Validators.required]),
-            enableKYC: new FormControl(false, [Validators.required]),
-            enableWipe: new FormControl(true, [Validators.required]),
-            wipeContractId: new FormControl(),
+        this.dataForm = new UntypedFormGroup({
+            draftToken: new UntypedFormControl(true, [Validators.required]),
+            tokenName: new UntypedFormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
+            tokenSymbol: new UntypedFormControl('F', [Validators.required, noWhitespaceValidator()]),
+            tokenType: new UntypedFormControl('fungible', [Validators.required]),
+            decimals: new UntypedFormControl('2'),
+            initialSupply: new UntypedFormControl('0'),
+            enableAdmin: new UntypedFormControl(true, [Validators.required]),
+            changeSupply: new UntypedFormControl(true, [Validators.required]),
+            enableFreeze: new UntypedFormControl(false, [Validators.required]),
+            enableKYC: new UntypedFormControl(false, [Validators.required]),
+            enableWipe: new UntypedFormControl(true, [Validators.required]),
+            wipeContractId: new UntypedFormControl(),
         });
     }
 

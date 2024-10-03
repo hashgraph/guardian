@@ -4,7 +4,7 @@ import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfa
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 
 /**
@@ -32,11 +32,11 @@ export class SearchPoliciesComponent implements OnInit {
     public tagEntity = TagType.Policy;
     public tagSchemas: any[] = [];
     public tagOptions: string[] = [];
-    public filtersForm = new FormGroup({
-        policyName: new FormControl('', {
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl('', {
             updateOn: 'change'
         }),
-        tag: new FormControl('', {
+        tag: new UntypedFormControl('', {
             updateOn: 'change'
         }),
     });

@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
 import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { saveAs } from 'file-saver';
@@ -47,7 +47,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     filters: any = {};
     attributes?: any;
 
-    dateRangeForm: FormControl = new FormControl('');
+    dateRangeForm: UntypedFormControl = new UntypedFormControl('');
 
     types: any = [
         { id: '', label: 'All' },
@@ -71,7 +71,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     };
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private logService: LoggerService,
         public dialog: DialogService,
         private route: ActivatedRoute,

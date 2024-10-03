@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { PolicyProgressService } from '../../../services/policy-progress.service';
@@ -29,7 +29,7 @@ export class RolesBlockComponent implements OnInit {
     groups?: string[];
     title?: any;
     description?: any;
-    roleForm: FormGroup;
+    roleForm: UntypedFormGroup;
     type: any = 'new';
     groupMap: any;
 
@@ -46,7 +46,7 @@ export class RolesBlockComponent implements OnInit {
         private policyProgressService: PolicyProgressService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
         this.roleForm = fb.group({
             roleOrGroup: ['', Validators.required],

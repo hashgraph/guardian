@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
 import { Observable, ReplaySubject } from 'rxjs';
@@ -40,7 +40,7 @@ export class ImportSchemaDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private schemaService: SchemaService,
         private informService: InformService,
         private taskService: TasksService

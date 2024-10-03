@@ -17,7 +17,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
@@ -219,11 +219,11 @@ export class PoliciesComponent implements OnInit {
     ];
 
     private filteredPolicies: any[] = [];
-    public filtersForm = new FormGroup({
-        policyName: new FormControl(''),
-        tag: new FormControl(''),
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl(''),
+        tag: new UntypedFormControl(''),
     }, (fg) => {
-        for (const key in (fg as FormGroup).controls) {
+        for (const key in (fg as UntypedFormGroup).controls) {
             if (!fg.get(key)) {
                 continue;
             }

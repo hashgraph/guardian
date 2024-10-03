@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
 
 /**
@@ -15,7 +15,7 @@ import { SchemaService } from '../../../services/schema.service';
 export class SchemaFormDialog {
     public schema: Schema;
     public started: boolean = false;
-    public dataForm: FormGroup;
+    public dataForm: UntypedFormGroup;
     public presetDocument: any;
     public hideFields: any;
     public example: boolean = false;
@@ -24,7 +24,7 @@ export class SchemaFormDialog {
 
     constructor(
         public dialogRef: MatDialogRef<SchemaFormDialog>,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private schemaService: SchemaService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {

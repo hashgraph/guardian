@@ -1,7 +1,7 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
@@ -64,7 +64,7 @@ export class SchemaFormComponent implements OnInit {
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('formGroup') group!: FormGroup;
+    @Input('formGroup') group!: UntypedFormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
     @Input('preset') presetDocument: any = null;
@@ -87,7 +87,7 @@ export class SchemaFormComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<boolean>();
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
-    public options: FormGroup | undefined;
+    public options: UntypedFormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
     public isShown: boolean[] = [true];
@@ -138,7 +138,7 @@ export class SchemaFormComponent implements OnInit {
                             this.presetDocument[elseField?.name];
                     }
                 }
-                const conditionForm = new FormGroup({});
+                const conditionForm = new UntypedFormGroup({});
                 this.subscribeCondition(conditionForm);
                 this.conditionFields.push(...cond.thenFields);
                 this.conditionFields.push(...cond.elseFields);
@@ -200,7 +200,7 @@ export class SchemaFormComponent implements OnInit {
 
     public addGroup(item: any) {
         item.control =
-            item.customType === ('geo' || 'sentinel') ? new FormControl({}) : new FormGroup({});
+            item.customType === ('geo' || 'sentinel') ? new UntypedFormControl({}) : new UntypedFormGroup({});
         this.options?.addControl(item.name, item.control);
         this.change.emit();
         this.changeDetectorRef.detectChanges();
@@ -275,7 +275,7 @@ export class SchemaFormComponent implements OnInit {
         if (!field.isArray && !field.isRef) {
             item.fileUploading = false;
             const validators = this.getValidators(item);
-            item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
+            item.control = new UntypedFormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
                 item.fileUploading = true;
                 this.ipfs
@@ -297,13 +297,13 @@ export class SchemaFormComponent implements OnInit {
             if (field.required || item.preset) {
                 item.control =
                     item.customType === ('geo' || 'sentinel')
-                        ? new FormControl({})
-                        : new FormGroup({});
+                        ? new UntypedFormControl({})
+                        : new UntypedFormGroup({});
             }
         }
 
         if (field.isArray && !field.isRef) {
-            item.control = new FormArray([]);
+            item.control = new UntypedFormArray([]);
             item.list = [];
             if (field.remoteLink) {
                 item.fileUploading = true;
@@ -337,7 +337,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (field.isArray && field.isRef) {
-            item.control = new FormArray([]);
+            item.control = new UntypedFormArray([]);
             item.list = [];
             item.fields = field.fields;
             if (item.preset && item.preset.length) {
@@ -392,12 +392,12 @@ export class SchemaFormComponent implements OnInit {
         if (item.isRef) {
             listItem.control =
                 item.customType === ('geo' || 'sentinel')
-                    ? new FormControl({})
-                    : new FormGroup({});
+                    ? new UntypedFormControl({})
+                    : new UntypedFormGroup({});
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
-            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
+            listItem.control = new UntypedFormControl(preset === null || preset === undefined ? "" : preset, validators);
             this.postFormat(item, listItem.control);
         }
 
@@ -549,14 +549,14 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public removeConditionFields(fields: SchemaField[], condition: any) {
-        condition.conditionForm = new FormGroup({});
+        condition.conditionForm = new UntypedFormGroup({});
         this.subscribeCondition(condition.conditionForm);
         fields.forEach(item => {
             setTimeout(() => this.options?.removeControl(item.name, { emitEvent: false }));
         });
     }
 
-    private subscribeCondition(controlCondition: FormGroup) {
+    private subscribeCondition(controlCondition: UntypedFormGroup) {
         let oldValue: string[] = [];
         controlCondition.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -606,7 +606,7 @@ export class SchemaFormComponent implements OnInit {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    private postFormat(item: any, control: FormControl): any {
+    private postFormat(item: any, control: UntypedFormControl): any {
         const format = item.format;
         const type = item.type;
         const pattern = item.pattern;
