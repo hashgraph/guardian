@@ -1081,7 +1081,8 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: element
+                scheme: element,
+                category: this.getCategory(),
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {

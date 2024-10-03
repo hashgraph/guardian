@@ -27,6 +27,9 @@ export class FieldControl {
     public controlBold: FormControl;
     public controlPrivate: FormControl;
     public controlPattern: FormControl;
+    public controlDefault: FormControl;
+    public controlSuggest: FormControl;
+    public controlExample: FormControl;
     private readonly _defaultFieldMap!: any;
     private _entityType: FormControl | undefined;
 
@@ -68,6 +71,9 @@ export class FieldControl {
             this.controlSize = new FormControl(field.textSize && +field.textSize.replace('px', '') || 18);
             this.controlBold = new FormControl(field.textBold || false);
             this.controlPattern = new FormControl(field.pattern);
+            this.controlDefault = new FormControl(field.default);
+            this.controlSuggest = new FormControl(field.suggest);
+            this.controlExample = new FormControl(field.examples?.[0]);
         } else {
             this.controlKey = new FormControl(name || this.name, [
                 Validators.required,
@@ -90,6 +96,9 @@ export class FieldControl {
             this.controlBold = new FormControl(false);
             this.controlPrivate = new FormControl(false);
             this.controlPattern = new FormControl('');
+            this.controlDefault = new FormControl();
+            this.controlSuggest = new FormControl();
+            this.controlExample = new FormControl();
             this.hidden = new FormControl(false);
             this.property = new FormControl('');
         }
@@ -159,6 +168,18 @@ export class FieldControl {
         return this.controlPrivate.value;
     }
 
+    public get default(): any {
+        return this.controlDefault.value;
+    }
+
+    public get suggest(): any {
+        return this.controlSuggest.value;
+    }
+
+    public get example(): any {
+        return this.controlExample.value;
+    }
+
     public createGroup(): FormGroup {
         return new FormGroup({
             controlKey: this.controlKey,
@@ -177,6 +198,9 @@ export class FieldControl {
             controlPattern: this.controlPattern,
             hidden: this.hidden,
             property: this.property,
+            default: this.controlDefault,
+            suggest: this.controlSuggest,
+            example: this.controlExample,
         });
     }
 
@@ -201,6 +225,8 @@ export class FieldControl {
             const pattern = group.controlPattern;
             const hidden = group.hidden;
             const property = group.property;
+            const suggest = group.suggest;
+            const example = group.example;
             return {
                 key,
                 title,
@@ -217,7 +243,10 @@ export class FieldControl {
                 isPrivate,
                 pattern,
                 hidden,
-                property
+                property,
+                default: group.default,
+                suggest,
+                example,
             };
         } else {
             return null;

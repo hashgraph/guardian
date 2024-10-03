@@ -74,7 +74,7 @@ export class SchemaDialog {
             this.started = true;
         });
 
-        this.getSubSchemes()
+        this.getSubSchemes(this.topicId);
     }
 
     handleChangeTab(order: number): void {
@@ -132,10 +132,14 @@ export class SchemaDialog {
         this.restoreData = null;
     }
 
-    getSubSchemes() {
-        const { topicId, id} = this.scheme ?? {};
+    getSubSchemes(topicId: string) {
+        const id = this.scheme?.id;
+        let schemaTopicId = topicId;
+        if (this.scheme?.topicId) {
+            schemaTopicId = this.scheme?.topicId;
+        }
 
-        this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
+        this.schemaService.getSchemaWithSubSchemas(this.category, id, schemaTopicId).subscribe((data) => {
             this.subSchemas = data.subSchemas;
 
             if(this.scheme && data.schema) {
@@ -144,8 +148,7 @@ export class SchemaDialog {
                 setTimeout(()=>this.schemaControl.updateFormControls(), 50)
             }
 
-            const subSchemas = SchemaHelper.map(data.subSchemas || []);
-
+            const subSchemas = SchemaHelper.map(data.subSchemas || []).filter(schema => schema.id !== id);
             this.schemaControl.mappingSubSchemas(subSchemas, topicId);
         });
     }

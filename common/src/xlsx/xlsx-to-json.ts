@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -333,6 +333,7 @@ export class XlsxToJson {
             field.required = required;
             field.isArray = isArray;
 
+            let typeError = false;
             const fieldType = FieldTypes.findByName(type);
             if (fieldType) {
                 field.type = fieldType?.type;
@@ -358,6 +359,7 @@ export class XlsxToJson {
                 field.type = xlsxResult.addLink(type, hyperlink);
                 field.isRef = true;
             } else {
+                typeError = true;
                 xlsxResult.addError({
                     type: 'error',
                     text: 'Unknown field type.',
@@ -367,6 +369,39 @@ export class XlsxToJson {
                     row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
+            }
+
+            if (!typeError && type !== 'Auto-Calculate') {
+                let parseType = (val) => val;
+                if (fieldType) {
+                    parseType = fieldType.pars.bind(fieldType);
+                }
+
+                const exampleValue = worksheet
+                    .getCell(table.getCol(Dictionary.ANSWER), row)
+                    .getValue<any>();
+                const example = field.isArray && !field.isRef
+                    ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
+                    : parseType(xlsxToPresetValue(field, exampleValue))
+                field.examples = example ? [example] : null;
+
+                if (table.hasCol(Dictionary.DEFAULT)) {
+                    const defaultValue = worksheet
+                        .getCell(table.getCol(Dictionary.DEFAULT), row)
+                        .getValue<any>();
+                    field.default = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, defaultValue));
+                }
+
+                if (table.hasCol(Dictionary.SUGGEST)) {
+                    const suggest = worksheet
+                        .getCell(table.getCol(Dictionary.SUGGEST), row)
+                        .getValue<any>();
+                    field.suggest = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, suggest)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, suggest));
+                }
             }
 
             return field;
@@ -568,11 +603,6 @@ export class XlsxToJson {
                     const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
                     if (formulae) {
                         field.formulae = formulae;
-                    }
-                } else {
-                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
-                    if (answer) {
-                        field.examples = xlsxToArray(answer, field.isArray);
                     }
                 }
             }
