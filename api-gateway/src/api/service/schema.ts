@@ -1279,8 +1279,7 @@ export class SchemaApi {
     @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(
-        @Body() body: MessageSchemaDTO,
-        @Req() req
+        @Body() body: MessageSchemaDTO
     ): Promise<SchemaDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1288,11 +1287,6 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
-
             return await guardians.previewSchemasByMessages([messageId]);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1335,8 +1329,7 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(
         @AuthUser() user: IAuthUser,
-        @Body() body: MessageSchemaDTO,
-        @Req() req
+        @Body() body: MessageSchemaDTO
     ): Promise<TaskDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1351,10 +1344,6 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
         return task;
     }
 
@@ -1386,8 +1375,7 @@ export class SchemaApi {
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(
-        @Body() zip: any,
-        @Req() req
+        @Body() zip: any
     ): Promise<SchemaDTO[]> {
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1395,11 +1383,6 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const { schemas } = await SchemaImportExport.parseZipFile(zip);
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
-
             return await guardians.previewSchemasByFile(schemas);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2310,8 +2293,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any,
-        @Req() req
+        @Response() res: any
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2324,11 +2306,6 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2375,8 +2352,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any,
-        @Req() req
+        @Response() res: any
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2391,11 +2367,6 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
-
-        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
         return res.status(202).send(task);
     }
 
@@ -2430,8 +2401,7 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: ArrayBuffer,
-        @Req() req
+        @Body() file: ArrayBuffer
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2439,11 +2409,6 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
-
             return await guardians.previewSchemasByFileXlsx(owner, file);
         } catch (error) {
             await InternalException(error, this.logger);
