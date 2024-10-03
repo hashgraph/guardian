@@ -1,14 +1,15 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { UnitSystem } from '@guardian/interfaces';
+import { SchemaField, UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
 import { FieldControl } from '../field-control';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 /**
  * Schemas constructor
@@ -22,17 +23,21 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
     @Input('form') form!: FormGroup;
     @Input('field') field!: FieldControl;
+    @Input() fieldsForm?: AbstractControl | null;
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
     @Input('schemaTypes') schemaTypes!: any[];
+    @Input() schemaTypeMap!: any;
     @Input('extended') extended!: boolean;
     @Input('value') value!: any;
     @Input('private') canBePrivate!: boolean;
     @Input('properties') properties: { title: string; _id: string; value: string }[];
     @Input('errors') errors!: any[];
+    @Input() buildField: (fieldConfig: FieldControl, data: any) => SchemaField;
 
     @Output('remove') remove = new EventEmitter<any>();
 
+    public destroy$: Subject<boolean> = new Subject<boolean>();
     public unit: boolean = true;
     public enum: boolean = false;
     public helpText: boolean = false;
@@ -63,20 +68,107 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
 
     ];
     public error: any;
+    public parsedField!: any;
+    public presetFormFields?: any[];
+    public fieldsFormValue!: any;
+    public defaultValues?: FormGroup;
+    public defaultValuesSubscription?: Subscription;
+    public presetValues: any;
+    public isShowMore = false;
     private fieldTypeSub: Subscription;
     private fieldPropertySub: Subscription;
+    private _sd?: any;
 
     constructor(
         public dialog: MatDialog,
         private dialogService: DialogService,
         private ipfs: IPFSService,
-        private toastr: ToastrService
+        private toastr: ToastrService,
+        private cdr: ChangeDetectorRef,
     ) {
         this.fieldType = new FormControl();
         this.property = new FormControl();
     }
 
     ngOnInit(): void {
+        if (this.fieldsForm && this.buildField) {
+            const onFieldChange = (value: any) => {
+                this.defaultValuesSubscription?.unsubscribe();
+                this.defaultValues = new FormGroup({});
+                this.defaultValuesSubscription =
+                    this.defaultValues.valueChanges
+                        .pipe(takeUntil(this.destroy$))
+                        // tslint:disable-next-line:no-shadowed-variable
+                        .subscribe((value) => {
+                            const control = this.fieldsForm?.get(
+                                this.field.name
+                            );
+                            control?.patchValue({
+                                default: null,
+                                suggest: null,
+                                example: null,
+                                ...value,
+                            });
+                        });
+                this.fieldsFormValue = value;
+                try {
+                    this.parsedField = this.buildField(
+                        this.field,
+                        this.fieldsFormValue
+                    );
+                    this.presetFormFields = [
+                        Object.assign({}, this.parsedField, {
+                            name: 'default',
+                            description: 'Default Value',
+                            required: false,
+                            hidden: false,
+                            default: null,
+                            suggest: null,
+                            examples: null,
+                        }),
+                        Object.assign({}, this.parsedField, {
+                            name: 'suggest',
+                            description: 'Suggested Value',
+                            required: false,
+                            hidden: false,
+                            default: null,
+                            suggest: null,
+                            examples: null,
+                        }),
+                        Object.assign({}, this.parsedField, {
+                            name: 'example',
+                            description: 'Test Value',
+                            required: false,
+                            hidden: false,
+                            default: null,
+                            suggest: null,
+                            examples: null,
+                        }),
+                    ];
+                } catch (error) { console.warn(error) }
+            };
+            onFieldChange(this.fieldsForm?.value);
+
+            this.fieldsForm?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
+                const oldField = this.fieldsFormValue?.[this.field.name];
+                const newField = value?.[this.field.name];
+                if (
+                    oldField?.fieldType !== newField?.fieldType ||
+                    oldField?.fieldArray !== newField?.fieldArray ||
+                    JSON.stringify(oldField?.controlEnum) !==
+                        JSON.stringify(newField?.controlEnum)
+                ) {
+                    this.presetValues =
+                        JSON.stringify(newField?.controlEnum) !==
+                        JSON.stringify(oldField?.controlEnum)
+                            ? (this.defaultValues?.value || {})
+                            : {};
+
+                    onFieldChange(value);
+                }
+            });
+        }
+
         if (this.field) {
             const enumValues = this.field.controlEnum.value;
             if (enumValues && enumValues.length) {
@@ -138,24 +230,42 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 items: newSimpleTypes,
             });
         }
-        if (changes?.schemaTypes?.firstChange && this.schemaTypes) {
-            const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
-                return {
-                    ...schemaType,
-                    label: schemaType.name,
-                    value: schemaType.value
+        if (this.schemaTypes) {
+            if (changes?.schemaTypes?.firstChange) {
+                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                    return {
+                        ...schemaType,
+                        label: schemaType.name,
+                        value: schemaType.value
+                    };
+                });
+                this._sd = {
+                    label: 'Schema defined',
+                    value: 'sd',
+                    items: newSchemasTypes,
                 };
-            });
-            this.groupedFieldTypes.push({
-                label: 'Schema defined',
-                value: 'sd',
-                items: newSchemasTypes,
-            });
+                this.groupedFieldTypes.push(this._sd);
+            } else if (changes?.schemaTypes?.firstChange === false) {
+                const newSchemasTypes = this.schemaTypes.map((schemaType: any) => {
+                    return {
+                        ...schemaType,
+                        label: schemaType.name,
+                        value: schemaType.value
+                    };
+                });
+                this._sd.items = newSchemasTypes;
+                this.cdr.detectChanges();
+            }
         }
         if (changes.extended && Object.keys(changes).length === 1) {
             return;
         }
-        if (this.field) {
+        if (changes.field) {
+            this.presetValues = {
+                default: this.field.default,
+                suggest: this.field.suggest,
+                example: this.field.example,
+            };
             const type = this.field.controlType;
             this.onTypeChange(type);
         }
@@ -164,6 +274,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         this.fieldPropertySub.unsubscribe();
         this.fieldTypeSub.unsubscribe();
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     updateControlEnum(values: string[]) {

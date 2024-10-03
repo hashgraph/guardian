@@ -622,3 +622,16 @@ svg-icon.svg-icon-32 {
     background: inherit;
     z-index: 1;
 }
+
+// Dropdown option of Angular material is overlap by PrimeNG dialog
+.cdk-overlay-container {
+    z-index: 9000;
+}
+
+.pre {
+    max-width: fit-content;
+
+    .p-tooltip-text {
+        white-space: pre;
+    }
+}
