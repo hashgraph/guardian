@@ -168,7 +168,7 @@ export class SchemaFormComponent implements OnInit {
             if (this.hide[field.name] || this.conditionFields.find(elem => elem.name === field.name)) {
                 continue
             }
-            const item = this.createFieldControl(field);
+            const item = this.createFieldControl(field, this.presetDocument);
             fields.push(item);
             if (item.control) {
                 group[field.name] = item.control;
@@ -259,17 +259,18 @@ export class SchemaFormComponent implements OnInit {
         input.click();
     }
 
-    private createFieldControl(field: SchemaField): any {
+    private createFieldControl(field: SchemaField, preset?: any): any {
         const item: any = {
             ...field,
             hide: false,
-            id: GenerateUUIDv4()
+            id: GenerateUUIDv4(),
+            field,
         }
 
-        if (this.presetDocument) {
-            item.preset = this.presetDocument[field.name];
-        } else {
-            item.preset = null;
+        item.preset = field.default;
+        if (preset) {
+            item.isPreset = true;
+            item.preset = preset[field.name];
         }
 
         if (!field.isArray && !field.isRef) {
@@ -793,5 +794,68 @@ export class SchemaFormComponent implements OnInit {
 
     public onSubmitBtnClick(fields: any) {
         this.submitBtnEvent.emit(fields);
+    }
+
+    public patchSuggestValue(item: {
+        isRef?: boolean;
+        isArray?: boolean;
+        control: any;
+        list: any[];
+        suggest: any;
+        field?: any;
+    }) {
+        const suggest = item.suggest;
+        if (item.isRef) {
+            const newItem = this.createFieldControl(item.field, {
+                [item.field.name]: suggest,
+            });
+            this.options?.removeControl(item.field.name);
+            this.options?.addControl(item.field.name, newItem.control);
+            this.fields = this.fields?.map(field => field === item ? newItem : field);
+            newItem.control.markAsDirty();
+            this.changeDetectorRef.detectChanges();
+            return;
+        }
+        if (item.isArray) {
+            item.control.clear();
+            item.list = [];
+            let count = suggest.length;
+            while(count-- > 0) {
+                const control = this.createListControl(item);
+                item.list.push(control);
+                item.control.push(control.control);
+            }
+        }
+        item.control.patchValue(suggest);
+        item.control.markAsDirty();
+    }
+
+    public isEmpty(value: any): boolean {
+        if (value === undefined || value === null || value === '') {
+            return true;
+        }
+        if (Array.isArray(value)) {
+            return !value.some(item => !this.isEmpty(item));
+        }
+        return [undefined, null, ''].includes(value);
+    }
+
+    public isEmptyRef(value: any): boolean {
+        if (value === undefined || value === null) {
+            return true;
+        }
+        if (Array.isArray(value)) {
+            return !value.some(item => !this.isEmptyRef(item));
+        }
+        for (const val of Object.values(value)) {
+            if (!this.isEmpty(val)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public getJSON(value: any) {
+        return JSON.stringify(value, null, 4);
     }
 }

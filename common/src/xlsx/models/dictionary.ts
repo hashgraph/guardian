@@ -28,6 +28,8 @@ export enum Dictionary {
     SCHEMA_TOOL_ID = 'Tool Id',
     ENUM_SCHEMA_NAME = 'Schema name',
     ENUM_FIELD_NAME = 'Field name',
+    DEFAULT = 'Default',
+    SUGGEST = 'Suggest',
 }
 
 export class FieldTypes {
@@ -84,7 +86,12 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: undefined,
             hidden: false,
-            pars: (value: any) => !!(value)
+            pars: (value: any) => {
+                if (typeof value === 'string') {
+                    return value.toLowerCase() === 'true';
+                }
+                return !!value;
+            }
         },
         {
             name: 'Date',

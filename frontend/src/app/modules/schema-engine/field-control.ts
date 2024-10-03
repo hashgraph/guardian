@@ -11,6 +11,24 @@ export const SYSTEM_FIELDS = [
 export class FieldControl {
     public readonly name: string;
 
+// <<<<<<< HEAD
+//     public controlKey: UntypedFormControl;
+//     public controlTitle: UntypedFormControl;
+//     public hidden: UntypedFormControl;
+//     public controlDescription: UntypedFormControl;
+//     public controlType: UntypedFormControl;
+//     public property: UntypedFormControl;
+//     public controlRequired: UntypedFormControl;
+//     public controlArray: UntypedFormControl;
+//     public controlUnit: UntypedFormControl;
+//     public controlRemoteLink: UntypedFormControl;
+//     public controlEnum: UntypedFormArray;
+//     public controlColor: UntypedFormControl;
+//     public controlSize: UntypedFormControl;
+//     public controlBold: UntypedFormControl;
+//     public controlPrivate: UntypedFormControl;
+//     public controlPattern: UntypedFormControl;
+// =======
     public controlKey: UntypedFormControl;
     public controlTitle: UntypedFormControl;
     public hidden: UntypedFormControl;
@@ -27,6 +45,10 @@ export class FieldControl {
     public controlBold: UntypedFormControl;
     public controlPrivate: UntypedFormControl;
     public controlPattern: UntypedFormControl;
+    public controlDefault: UntypedFormControl;
+    public controlSuggest: UntypedFormControl;
+    public controlExample: UntypedFormControl;
+// >>>>>>> develop
     private readonly _defaultFieldMap!: any;
     private _entityType: UntypedFormControl | undefined;
 
@@ -64,10 +86,14 @@ export class FieldControl {
             field.enum?.forEach(item => {
                 this.controlEnum.push(new UntypedFormControl(item))
             });
+
             this.controlColor = new UntypedFormControl(field.textColor || '#000000');
             this.controlSize = new UntypedFormControl(field.textSize && +field.textSize.replace('px', '') || 18);
             this.controlBold = new UntypedFormControl(field.textBold || false);
             this.controlPattern = new UntypedFormControl(field.pattern);
+            this.controlDefault = new UntypedFormControl(field.default);
+            this.controlSuggest = new UntypedFormControl(field.suggest);
+            this.controlExample = new UntypedFormControl(field.examples?.[0]);
         } else {
             this.controlKey = new UntypedFormControl(name || this.name, [
                 Validators.required,
@@ -90,6 +116,9 @@ export class FieldControl {
             this.controlBold = new UntypedFormControl(false);
             this.controlPrivate = new UntypedFormControl(false);
             this.controlPattern = new UntypedFormControl('');
+            this.controlDefault = new UntypedFormControl();
+            this.controlSuggest = new UntypedFormControl();
+            this.controlExample = new UntypedFormControl();
             this.hidden = new UntypedFormControl(false);
             this.property = new UntypedFormControl('');
         }
@@ -159,6 +188,22 @@ export class FieldControl {
         return this.controlPrivate.value;
     }
 
+// <<<<<<< HEAD
+//     public createGroup(): UntypedFormGroup {
+//         return new UntypedFormGroup({
+// =======
+    public get default(): any {
+        return this.controlDefault.value;
+    }
+
+    public get suggest(): any {
+        return this.controlSuggest.value;
+    }
+
+    public get example(): any {
+        return this.controlExample.value;
+    }
+
     public createGroup(): UntypedFormGroup {
         return new UntypedFormGroup({
             controlKey: this.controlKey,
@@ -177,6 +222,9 @@ export class FieldControl {
             controlPattern: this.controlPattern,
             hidden: this.hidden,
             property: this.property,
+            default: this.controlDefault,
+            suggest: this.controlSuggest,
+            example: this.controlExample,
         });
     }
 
@@ -201,6 +249,8 @@ export class FieldControl {
             const pattern = group.controlPattern;
             const hidden = group.hidden;
             const property = group.property;
+            const suggest = group.suggest;
+            const example = group.example;
             return {
                 key,
                 title,
@@ -217,7 +267,10 @@ export class FieldControl {
                 isPrivate,
                 pattern,
                 hidden,
-                property
+                property,
+                default: group.default,
+                suggest,
+                example,
             };
         } else {
             return null;

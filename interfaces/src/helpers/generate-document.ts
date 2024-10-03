@@ -170,7 +170,7 @@ export class DocumentGenerator {
         if (!option.enableHiddenFields && field.hidden) {
             return undefined;
         }
-        if (field.isRef) {
+        if (field.isRef && !field.examples?.[0]) {
             if (field.type === '#GeoJSON') {
                 return DocumentGenerator._generateGeoJSON(field, context, option);
             } else if (field.type === '#SentinelHUB') {

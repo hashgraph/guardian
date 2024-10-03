@@ -115,11 +115,14 @@
                             [types]="types"
                             [field]="field"
                             [form]="dataForm"
+                            [fieldsForm]="fieldsForm"
                             [measureTypes]="measureTypes"
                             [private]="dataForm.value?.entity === 'EVC'"
                             [properties]="properties"
                             [schemaTypes]="schemaTypes"
+                            [schemaTypeMap]="schemaTypeMap"
                             [errors]="errors"
+                            [buildField]="buildField"
                     >
                     </schema-field-configuration>
                 </div>
@@ -276,11 +279,14 @@
                                         [field]="conditionField"
                                         [types]="types"
                                         [form]="dataForm"
+                                        [fieldsForm]="conditionsForm.get(condition.name)?.get('thenFieldControls')"
                                         [measureTypes]="measureTypes"
                                         [properties]="properties"
                                         [extended]="extended"
                                         [schemaTypes]="schemaTypes"
+                                        [schemaTypeMap]="schemaTypeMap"
                                         [errors]="errors"
+                                        [buildField]="buildField"
                                     >
                                     </schema-field-configuration>
                                 </div>
@@ -312,11 +318,14 @@
                                         [field]="conditionField"
                                         [types]="types"
                                         [form]="dataForm"
+                                        [fieldsForm]="conditionsForm.get(condition.name)?.get('elseFieldControls')"
                                         [measureTypes]="measureTypes"
                                         [properties]="properties"
                                         [extended]="extended"
                                         [schemaTypes]="schemaTypes"
+                                        [schemaTypeMap]="schemaTypeMap"
                                         [errors]="errors"
+                                        [buildField]="buildField"
                                     >
                                     </schema-field-configuration>
                                 </div>

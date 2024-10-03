@@ -66,6 +66,7 @@ export class SchemaConfigurationComponent implements OnInit {
     public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
+    public buildField!: (fieldConfig: FieldControl, data: any) => SchemaField;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -172,6 +173,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+        this.buildField = this.buildSchemaField.bind(this);
     }
 
     public get isEdit(): boolean {
@@ -384,7 +386,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.mappingSubSchemas();
         }
 
-        this.useUpdateSubSchemas.emit();
+        this.useUpdateSubSchemas.emit(topicId);
     }
 
     mappingSubSchemas(data?: Schema[], topicId?: string): void {
@@ -712,7 +714,11 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    private buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+    private isNotEmpty(value: any) {
+        return !['', undefined, null].includes(value);
+    }
+
+    public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
         const {
             key,
             title,
@@ -729,16 +735,43 @@ export class SchemaConfigurationComponent implements OnInit {
             isPrivate,
             pattern,
             hidden,
-            property
+            property,
+            default: defaultValueRaw,
+            suggest,
+            example,
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
+        let suggestValue;
+        let defaultValue;
+        let exampleValue;
+        if (isArray) {
+            suggestValue =
+                suggest && suggest.length > 0
+                    ? suggest.filter(this.isNotEmpty)
+                    : undefined;
+            defaultValue =
+                defaultValueRaw && defaultValueRaw.length > 0
+                    ? defaultValueRaw.filter(this.isNotEmpty)
+                    : undefined;
+            exampleValue =
+                example && example.length > 0
+                    ? example.filter(this.isNotEmpty)
+                    : undefined;
+        } else {
+            suggestValue = suggest;
+            defaultValue = defaultValueRaw;
+            exampleValue = example;
+        }
         return {
             name: key,
-            title: title,
-            description: description,
-            required: required,
-            isArray: isArray,
+            title,
+            description,
+            required,
+            isArray,
             isRef: type.isRef,
+            fields:
+                this.subSchemas.find((schema) => schema.iri === type.type)
+                    ?.fields || [],
             type: type.type,
             format: type.format,
             pattern: type.pattern || pattern,
@@ -760,6 +793,11 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.value?.entity === SchemaEntity.EVC
                     ? isPrivate
                     : undefined,
+            default: defaultValue,
+            suggest: suggestValue,
+            examples: this.isNotEmpty(exampleValue)
+                ? [exampleValue]
+                : undefined,
         };
     }
 

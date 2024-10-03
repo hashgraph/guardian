@@ -62,6 +62,13 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     ) {
     }
 
+    setControlValue(value: any, dirty = true) {
+        this.control?.patchValue(value);
+        if (dirty) {
+            this.control?.markAsDirty();
+        }
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.isDisabled && !changes?.isDisabled.firstChange) {
             this.onViewTypeChange(this.control?.value);
@@ -69,24 +76,24 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
-        this.onTypeChange();
+        this.onTypeChange(false);
         this.control?.setValidators(
             ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
         );
         this.control?.updateValueAndValidity();
         this.updateCoordinates.subscribe(this.onCoordinatesUpdate.bind(this));
-        this.onViewTypeChange(this.presetDocument);
+        this.onViewTypeChange(this.presetDocument, false);
     }
 
     onCoordinatesUpdate(value: any) {
         if (!value) {
             this.coordinates = '';
-            this.control?.patchValue({});
+            this.setControlValue({});
             return;
         }
 
         this.coordinates = JSON.stringify(value, null, 4);
-        this.control?.patchValue({
+        this.setControlValue({
             type: this.type,
             coordinates: value,
         });
@@ -271,8 +278,8 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         }
     }
 
-    onTypeChange() {
-        this.control?.patchValue({});
+    onTypeChange(dirty = true) {
+        this.setControlValue({}, dirty);
         this.coordinates = '';
         this.markers = [];
         this.polygons = [];
@@ -371,7 +378,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
         }
     }
 
-    onViewTypeChange(value: any) {
+    onViewTypeChange(value: any, dirty = true) {
         if (!value) {
             return;
         }
@@ -382,30 +389,30 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
 
         if (!this.isJSON || this.isDisabled) {
             this.type = value?.type;
-            this.onTypeChange();
+            this.onTypeChange(dirty);
             this.coordinates = JSON.stringify(value?.coordinates, null, 4);
-            this.coordinatesChanged();
+            this.coordinatesChanged(dirty);
         }
     }
 
     jsonChanged() {
         try {
-            this.control?.patchValue(JSON.parse(this.jsonInput));
+            this.setControlValue(JSON.parse(this.jsonInput));
         } catch {
-            this.control?.patchValue({});
+            this.setControlValue({});
         }
     }
 
-    coordinatesChanged() {
+    coordinatesChanged(dirty = true) {
         this.markers = [];
         this.polygons = [];
         this.lines = [];
         try {
             const parsedCoordinates = JSON.parse(this.coordinates);
-            this.control?.patchValue({
+            this.setControlValue({
                 type: this.type,
                 coordinates: parsedCoordinates,
-            });
+            }, dirty);
             switch (this.type) {
                 case GeoJsonType.POINT:
                     this.markers.push({
@@ -485,7 +492,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
                     break;
             }
         } catch {
-            this.control?.patchValue({});
+            this.setControlValue({});
         }
     }
 

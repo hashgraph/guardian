@@ -21,9 +21,6 @@ const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().su
 Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
-        driverOptions: {
-            useUnifiedTopology: true
-        },
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('QUEUE_SERVICE'),
