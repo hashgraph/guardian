@@ -1,6 +1,6 @@
 # 🛣️ Roadmap
 
-<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="roadmap.md#development-of-ams-i.e-and-mass-comparison-on-cookstove-methodologies-for-the-webinar">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#indexer-api">Indexer API</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#development-of-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications-v1.2v">Development of VMR0006</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#filtering-data-for-blocks-is-stateful-api-introduce-stateless-data-filters-for-api-usage">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#auto-testing-community-submitted-policies">Auto-testing community submitted policies</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#code-audit-support-and-resolution-of-issues">Code audit: support and resolution of issues</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#ghg-scorecards-research">GHG Scorecards Research</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#token-action-block-to-work-with-token-templates">Token action block to work with token templates</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#different-token-ids-for-different-projects-by-the-same-policy">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhance-mongodb-integration-by-incorporating-seamless-support-for-popular-third-party-services-such">Enhance MongoDB Integration</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#leverage-the-pre-built-images-as-the-default-way-to-start-guardian-locally">Leverage the pre-built images as the default way to start Guardian locall</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#global-carbon-council-gcc-gccm001-methodology-for-renewable-energy-generation-projects-supplying-ele">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#default-values-for-schema-defined-fields">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#rationalize-api-and-ui-return-error-codes">Rationalize API and UI return error codes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#simplify-default-sr-schema-to-take-out-optional-properties">Simplify default SR schema to take out optional properties</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#development-of-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-versioning-and-support-deprecation-schedule">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#scope-3-pcf-referencing-demo-methodology-breakdown">Scope 3/PCF Referencing Demo (Methodology Breakdown)</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-bottom-up-data-traceability">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#data-parameterization-and-conditional-review-logic">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#calculation-logic-for-values-in-automatic-fields-in-schemas">Calculation logic for values in 'automatic fields' in schemas</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#architecture-for-redd-transactions-art-the-redd-environmental-excellence-standard-trees-version-2">Architecture for REDD+ Transactions (ART) The REDD+  Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-facilities-to-retrieve-unique-references-ids-of-results-for-api-triggered-operations">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-insights-and-top-down-data-way-points">Guardian analytics: insights and top-down data way points</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#climate-action-reserve-car-u.s.-urban-forest-management">Climate Action Reserve (CAR) U.S. Urban Forest Management Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#trustchain-support-for-contract-based-issuance-and-retirement-implementation">Trustchain support for contract-based issuance and retirement implementation</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#reviewing-and-verifying-atma-policy">Reviewing and Verifying Atma policy</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#american-carbon-registry-acr-acr-methodology-for-quantifying-monitoring-reporting-and-verifying-gree">American Carbon Registry (ACR) Methodology Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#emissions-reduction-removals-errs-calculation-pre-calculator-in-guardian">Emissions Reduction/Removals (ERRs) Calculation Pre-Calculator in Guardian</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#formula-driven-definitions-and-schema-tree-enhancement">Formula Driven Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#dry-run-policy-execution-savepoints-restart-policy-dry-run-from-the-list-of-saved-places">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#standardize-ui-on-angular-material-remove-replace-primeng">Standardize UI on Angular Material, remove/replace PrimeNG</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancing-research-on-indexer-and-analytics-use-cases">Enhancing Research on Indexer and Analytics Use Cases</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#clean-cooking-and-climate-consortium-comprehensive-lowered-emissions-assessment-and-reporting-clear">CLEAR Methodology Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr></tbody></table>
+<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="roadmap.md#development-of-ams-i.e-and-mass-comparison-on-cookstove-methodologies-for-the-webinar">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#indexer-api">Indexer API</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#development-of-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications-v1.2v">Development of VMR0006</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#filtering-data-for-blocks-is-stateful-api-introduce-stateless-data-filters-for-api-usage">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#auto-testing-community-submitted-policies">Auto-testing community submitted policies</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#code-audit-support-and-resolution-of-issues">Code audit: support and resolution of issues</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#ghg-scorecards-research">GHG Scorecards Research</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#token-action-block-to-work-with-token-templates">Token action block to work with token templates</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#different-token-ids-for-different-projects-by-the-same-policy">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhance-mongodb-integration-by-incorporating-seamless-support-for-popular-third-party-services-such">Enhance MongoDB Integration</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#leverage-the-pre-built-images-as-the-default-way-to-start-guardian-locally">Leverage the pre-built images as the default way to start Guardian locall</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#global-carbon-council-gcc-gccm001-methodology-for-renewable-energy-generation-projects-supplying-ele">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#default-values-for-schema-defined-fields">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#rationalize-api-and-ui-return-error-codes">Rationalize API and UI return error codes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#simplify-default-sr-schema-to-take-out-optional-properties">Simplify default SR schema to take out optional properties</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-versioning-and-support-deprecation-schedule">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#scope-3-pcf-referencing-demo-methodology-breakdown">Scope 3/PCF Referencing Demo (Methodology Breakdown)</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-bottom-up-data-traceability">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#data-parameterization-and-conditional-review-logic">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#calculation-logic-for-values-in-automatic-fields-in-schemas">Calculation logic for values in 'automatic fields' in schemas</a></td><td align="center">October 2024</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#verify-and-fix-the-features-that-got-affected-by-mirror-node-changes">Verify and Fix the features that got affected by Mirror node changes</a></td><td align="center">October 2024</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#climate-action-reserves-u.s.-landfill-protocol">Climate Action Reserve's U.S. Landfill Protocol</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#architecture-for-redd-transactions-art-the-redd-environmental-excellence-standard-trees-version-2">Architecture for REDD+ Transactions (ART) The REDD+  Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#development-of-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-facilities-to-retrieve-unique-references-ids-of-results-for-api-triggered-operations">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-insights-and-top-down-data-way-points">Guardian analytics: insights and top-down data way points</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#trustchain-support-for-contract-based-issuance-and-retirement-implementation">Trustchain support for contract-based issuance and retirement implementation</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#reviewing-and-verifying-atma-policy">Reviewing and Verifying Atma policy</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#american-carbon-registry-acr-acr-methodology-for-quantifying-monitoring-reporting-and-verifying-gree">American Carbon Registry (ACR) Methodology Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#emissions-reduction-removals-errs-calculation-pre-calculator-in-guardian">Emissions Reduction/Removals (ERRs) Calculation Pre-Calculator in Guardian</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#formula-driven-definitions-and-schema-tree-enhancement">Formula Driven Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#dry-run-policy-execution-savepoints-restart-policy-dry-run-from-the-list-of-saved-places">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#standardize-ui-on-angular-material-remove-replace-primeng">Standardize UI on Angular Material, remove/replace PrimeNG</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancing-research-on-indexer-and-analytics-use-cases">Enhancing Research on Indexer and Analytics Use Cases</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#clean-cooking-and-climate-consortium-comprehensive-lowered-emissions-assessment-and-reporting-clear">CLEAR Methodology Webinar</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr></tbody></table>
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
@@ -66,6 +66,9 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3551](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3705](https://github.com/hashgraph/guardian/issues/3705)
 
+Documentation
+Link: [https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid](https://docs.hedera.com/guardian-dev-1/guardian/demo-guide/carbon-offsets/gccm001-v.4-methodology-for-renewable-energy-generation-projects-supplying-electricity-to-grid)
+
 ### API versioning and support/deprecation schedule
 
 Introduce versioning of Guardian API such that:&#x20;
@@ -80,6 +83,8 @@ Introduce versioning of Guardian API such that:&#x20;
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3236](https://github.com/hashgraph/guardian/issues/3236)
 
+Documentation Link:&#x20;
+
 ### Default values for schema-defined fields
 
 * Introduce facilities into the Guardian schema language which would allow Guardian policy engine (and humans when they
@@ -91,6 +96,8 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3236](https://githu
 * All standard tools/libraries (e.g. for verification) should work with such schemas out of the box&#x20;
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2942](https://github.com/hashgraph/guardian/issues/2942)
+
+Documentation Link:&#x20;
 
 ### Calculation Logic for values in 'automatic fields' in schemas
 
@@ -148,33 +155,23 @@ Once the approach has been approved, we can update the GHGP policy and run the e
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3723](https://github.com/hashgraph/guardian/issues/3723)
 
-### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
+### Verify and Fix the features that got affected by Mirror Node changes
 
-1. Designing the Schema for the methodology
-2. Development of the policy
-3. Development of all the tools involved in this policy
-   * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
-   * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity generation
-   * Tool 06- Project emissions from flaring
-   * Tool 07- Tool to calculate the emission factor for an electricity system
-   * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
-   * Tool 12- Project and leakage emissions from transportation of freight
-   * Tool 16- Project and leakage emissions from biomas
-   * Tool 19- Demonstration of additionality of microscale project activities
-   * Tool 21- Demonstration of additionality of small-scale project activities 
-   * Tool 22- Leakage in biomass small-scale project activities
+1. Need to research on all the features, which got affected by this change.
+2. Fix all the features issues and make sure all the data related to Mirror node is displayed and not missed.
+3. Test all the features affected.
 
-Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
+Referral Link: [https://github.com/hashgraph/guardian/issues/4204](https://github.com/hashgraph/guardian/issues/4204)
 
-Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
+## Climate Action Reserve's U.S. Landfill Protocol
 
-## Calculation logic for values in 'automatic fields' in schemas
+1. Creating Schema design for this methodology.&#x20;
+2. Development of the schema and policy.&#x20;
+3. Testing the policy development through Guardian UI and configurator.&#x20;
 
-* Introduce facilities into schema definition language which would allow for the referencing of other fields/values and
-  specification of mathematics needed to calculate the field value based on those.
-* It should be possible to reference fields from 'other' schemas in the chain - parents/children.
+Referral Link: [https://github.com/hashgraph/guardian/issues/3709](https://github.com/hashgraph/guardian/issues/3709)
 
-Referral Link: [https://github.com/hashgraph/guardian/issues/2986](https://github.com/hashgraph/guardian/issues/2986)
+## ---- January 2025----
 
 ### API facilities to retrieve unique references (IDs) of results for API-triggered operations
 
@@ -187,16 +184,6 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2986](https://githu
 * Consider packaging this into Interactions Resilience Module (see related [Hedera interactions resilience module #2905](https://github.com/hashgraph/guardian/issues/2905))
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3139](https://github.com/hashgraph/guardian/issues/3139)
-
-## Architecture for REDD+ Transactions (ART) The REDD+ Environmental Excellence Standard (TREES) - Version 2.0 #3707
-
-1. Creating Schema design for this methodology.&#x20;
-2. Development of the schema and policy.&#x20;
-3. Testing the policy development through Guardian UI and configurator.&#x20;
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3707](https://github.com/hashgraph/guardian/issues/3707)
-
-## ---- January 2025----
 
 ### Guardian analytics: insights and top-down data way points
 
@@ -222,14 +209,6 @@ diagnostics.&#x20;
   data.&#x20;
 
 Referral Link: [ https://github.com/hashgraph/guardian/issues/3341](https://github.com/hashgraph/guardian/issues/3341)
-
-## Climate Action Reserve (CAR) U.S. Urban Forest Management&#x20;
-
-1. Creating Schema design for this methodology.&#x20;
-2. Development of the schema and policy.&#x20;
-3. Testing the policy development through Guardian UI and configurator.&#x20;
-
-Referral Link: [https://github.com/hashgraph/guardian/issues/3709](https://github.com/hashgraph/guardian/issues/3709)
 
 ### Trustchain support for contract-based issuance and retirement implementation
 
@@ -293,6 +272,28 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3711](https://githu
 Identify and map out potential uses cases for the indexer and what type of analytics if could be used for.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3730](https://github.com/hashgraph/guardian/issues/3730)
+
+### Development of AMS-I.C.: Thermal Energy Production with or Without Electricity
+
+1. Designing the Schema for the methodology
+2. Development of the policy
+3. Development of all the tools involved in this policy
+    * Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion
+    * Tool 05- Baseline, project and/or leakage emissions from electricity consumption and monitoring of electricity
+      generation
+    * Tool 06- Project emissions from flaring
+    * Tool 07- Tool to calculate the emission factor for an electricity system
+    * Tool 09- Determining the baseline efficiency of thermal or electric energy generation systems
+    * Tool 12- Project and leakage emissions from transportation of freight
+    * Tool 16- Project and leakage emissions from biomas
+    * Tool 19- Demonstration of additionality of microscale project activities
+    * Tool 21- Demonstration of additionality of small-scale project activities* Tool 22- Leakage in biomass small-scale
+                                                                                 project activities
+
+Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
+
+Documentation
+Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
