@@ -795,7 +795,9 @@ export class SchemaApi {
             const schemas = await guardians.createSchema(newSchema, owner);
             SchemaHelper.updatePermission(schemas, owner);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -830,7 +832,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async copySchemaAsync(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const guardians = new Guardians();
@@ -844,6 +847,11 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return task;
     }
 
@@ -1040,7 +1048,9 @@ export class SchemaApi {
             const schemas = (await guardians.deleteSchema(schemaId, owner, true) as ISchema[]);
             SchemaHelper.updatePermission(schemas, owner);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user))
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
@@ -1269,7 +1279,8 @@ export class SchemaApi {
     @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(
-        @Body() body: MessageSchemaDTO
+        @Body() body: MessageSchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1277,6 +1288,11 @@ export class SchemaApi {
         }
         try {
             const guardians = new Guardians();
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
+
             return await guardians.previewSchemasByMessages([messageId]);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1319,7 +1335,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessagePreviewAsync(
         @AuthUser() user: IAuthUser,
-        @Body() body: MessageSchemaDTO
+        @Body() body: MessageSchemaDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1334,6 +1351,10 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return task;
     }
 
@@ -1365,7 +1386,8 @@ export class SchemaApi {
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(
-        @Body() zip: any
+        @Body() zip: any,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1373,6 +1395,11 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const { schemas } = await SchemaImportExport.parseZipFile(zip);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], req.user))
+
             return await guardians.previewSchemasByFile(schemas);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1426,7 +1453,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() body: MessageSchemaDTO,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
         const messageId = body?.messageId;
@@ -1440,6 +1468,11 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1491,6 +1524,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() body: MessageSchemaDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1506,6 +1540,11 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return task;
     }
 
@@ -1548,7 +1587,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() zip: any,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         const guardians = new Guardians();
         if (!zip) {
@@ -1562,6 +1602,11 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1605,6 +1650,7 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() zip: any,
+        @Req() req
     ): Promise<TaskDTO> {
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1620,6 +1666,11 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return task;
     }
 
@@ -1794,7 +1845,9 @@ export class SchemaApi {
             SchemaHelper.updateOwner(newSchema, owner);
             const schema = await guardians.createSystemSchema(newSchema);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return SchemaUtils.toOld(schema);
         } catch (error) {
@@ -1963,6 +2016,7 @@ export class SchemaApi {
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
+        @Req() req
     ): Promise<any> {
         try {
             const guardians = new Guardians();
@@ -1979,6 +2033,10 @@ export class SchemaApi {
                 throw new HttpException('Schema is active.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             await guardians.deleteSchema(schemaId, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -2252,7 +2310,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2265,6 +2324,11 @@ export class SchemaApi {
                 category: SchemaCategory.POLICY
             }, owner);
             SchemaHelper.updatePermission(items, owner);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return res.status(201).header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2311,7 +2375,8 @@ export class SchemaApi {
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
         @Body() file: ArrayBuffer,
-        @Response() res: any
+        @Response() res: any,
+        @Req() req
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2326,6 +2391,11 @@ export class SchemaApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
+
+        const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
         return res.status(202).send(task);
     }
 
@@ -2360,7 +2430,8 @@ export class SchemaApi {
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
-        @Body() file: ArrayBuffer
+        @Body() file: ArrayBuffer,
+        @Req() req
     ) {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2368,6 +2439,11 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
+
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
+
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return await guardians.previewSchemasByFileXlsx(owner, file);
         } catch (error) {
             await InternalException(error, this.logger);
