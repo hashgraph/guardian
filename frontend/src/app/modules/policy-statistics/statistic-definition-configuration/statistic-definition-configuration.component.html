@@ -1,4 +1,4 @@
-<div class="guardian-page">
+<div class="guardian-page" [attr.readonly]="readonly">
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
@@ -71,11 +71,11 @@
             <form [formGroup]="overviewForm">
                 <div class="guardian-input-container">
                     <label class="form-label" htmlFor="version">* Name</label>
-                    <input formControlName="name" id="name" pInputText type="text"/>
+                    <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
                 </div>
                 <div class="guardian-input-container">
                     <label class="form-label" htmlFor="version">Description</label>
-                    <input formControlName="description" id="description" pInputText type="text"/>
+                    <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
                 </div>
     
                 <div class="guardian-input-container">
@@ -255,10 +255,12 @@
                                                     <p-checkbox 
                                                         class="guardian-checkbox checkbox-24"
                                                         [ngModel]="item.selected" 
-                                                        [binary]="true"></p-checkbox>
+                                                        [binary]="true"
+                                                        [disabled]="readonly"></p-checkbox>
                                                 </div>
                                                 <div 
                                                     class="field-name" 
+                                                    [attr.readonly]="readonly"
                                                     (click)="onSelectField(item)"
                                                 >
                                                     {{item.data.description}}
@@ -308,10 +310,12 @@
                                                     <p-checkbox 
                                                         class="guardian-checkbox checkbox-24"
                                                         [ngModel]="item.selected" 
-                                                        [binary]="true"></p-checkbox>
+                                                        [binary]="true"
+                                                        [disabled]="readonly"></p-checkbox>
                                                 </div>
                                                 <div 
-                                                    class="field-name" 
+                                                    class="field-name"
+                                                    [attr.readonly]="readonly"
                                                     (click)="onSelectField(item)"
                                                 >
                                                     {{item.data.propertyName || item.data.description}}
@@ -335,7 +339,8 @@
                                                         name="relationships" 
                                                         value="main" 
                                                         [(ngModel)]="rule.type"
-                                                        inputId="relationships_1"></p-radioButton>
+                                                        inputId="relationships_1"
+                                                        [disabled]="readonly"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_1">
                                                     Main document
@@ -348,7 +353,8 @@
                                                         name="relationships" 
                                                         value="related" 
                                                         [(ngModel)]="rule.type"
-                                                        inputId="relationships_2"></p-radioButton>
+                                                        inputId="relationships_2"
+                                                        [disabled]="readonly"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_2">
                                                     Related document
@@ -361,7 +367,8 @@
                                                         name="relationships" 
                                                         value="unrelated" 
                                                         [(ngModel)]="rule.type"
-                                                        inputId="relationships_3"></p-radioButton>
+                                                        inputId="relationships_3"
+                                                        [disabled]="readonly"></p-radioButton>
                                                 </div>
                                                 <label class="schema-rule-value-name" for="relationships_3">
                                                     Unrelated
@@ -369,7 +376,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="schema-rule">
+                                    <!-- <div class="schema-rule">
                                         <div class="schema-rule-name">
                                             Re-use of documents
                                         </div>
@@ -401,7 +408,7 @@
                                                 </label>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </p-tabPanel>
                         </p-tabView>
@@ -431,7 +438,8 @@
                                     [(ngModel)]="variable.id" 
                                     id="formula.id" 
                                     pInputText 
-                                    type="text"/>
+                                    type="text"
+                                    [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300">
@@ -484,7 +492,8 @@
                                     [(ngModel)]="score.id" 
                                     id="formula.id" 
                                     pInputText 
-                                    type="text"/>
+                                    type="text"
+                                    [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
                             <!-- <div class="variables-grid-cell cell-200">
@@ -496,7 +505,8 @@
                                     [(ngModel)]="score.description" 
                                     id="formula.description" 
                                     pInputText 
-                                    type="text"/>
+                                    type="text"
+                                    [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-300 cell-multiselect">
@@ -508,7 +518,8 @@
                                     optionLabel="id"
                                     optionValue="id"
                                     placeholder="Not selected"
-                                    panelStyleClass="guardian-multiselect-panel">
+                                    panelStyleClass="guardian-multiselect-panel"
+                                    [readonly]="readonly">
                                     <ng-template let-value pTemplate="selectedItems">
                                         <div *ngFor="let option of value" class="multiselect-selected-value">
                                             {{ getRelationshipsName(option) }}
@@ -530,22 +541,24 @@
                             <div class="variables-grid-cell cell-btn cell-56">
                                 <button 
                                     class="guardian-icon-button big" 
-                                    (click)="onEditScore(score)">
+                                    (click)="onEditScore(score)"
+                                    [disabled]="readonly">
                                     <svg-icon
                                         class="icon-btn svg-icon"
                                         src="/assets/images/icons/edit.svg"
-                                        svgClass="icon-color-primary">
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-primary'">
                                     </svg-icon>
                                 </button>
                             </div>
                             <div class="variables-grid-cell cell-btn">
                                 <button 
                                     class="guardian-icon-button big" 
-                                    (click)="onDeleteScore(score)">
+                                    (click)="onDeleteScore(score)"
+                                    [disabled]="readonly">
                                     <svg-icon
                                         class="icon-btn svg-icon"
                                         src="/assets/images/icons/delete.svg"
-                                        svgClass="icon-color-delete">
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
                                     </svg-icon>
                                 </button>
                             </div>
@@ -562,7 +575,7 @@
                     </div>
                     <div>There were no scores created yet.</div>
                 </div>
-                <div class="variables-actions">
+                <div *ngIf="readonly" class="variables-actions">
                     <button 
                         (click)="onAddScore()" 
                         class="guardian-button guardian-button-secondary">
@@ -597,7 +610,8 @@
                                     [(ngModel)]="formula.id" 
                                     id="formula.id" 
                                     pInputText 
-                                    type="text"/>
+                                    type="text"
+                                    [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell cell-200">
@@ -618,36 +632,33 @@
                                     [(ngModel)]="formula.description" 
                                     id="formula.description" 
                                     pInputText 
-                                    type="text"/>
+                                    type="text"
+                                    [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
                             <div class="variables-grid-cell">
-                                <!-- <input 
-                                    class="guardian-input guardian-input-cell"
-                                    [(ngModel)]="formula.formula" 
-                                    id="formula.formula" 
-                                    pInputText 
-                                    type="text"/>
-                                <div class="cell-focus"></div> -->
                                 <ngx-codemirror 
+                                    [attr.codemirror-readonly]="readonly"
                                     [(ngModel)]="formula.formula" 
-                                    [options]="codeMirrorOptions"></ngx-codemirror>
+                                    [options]="codeMirrorOptions"
+                                    [disabled]="readonly"></ngx-codemirror>
                             </div>
                             <div class="variables-grid-cell cell-btn">
                                 <button 
                                     class="guardian-icon-button big" 
-                                    (click)="onDeleteVariable(formula)">
+                                    (click)="onDeleteVariable(formula)"
+                                    [disabled]="readonly">
                                     <svg-icon
                                         class="icon-btn svg-icon"
                                         src="/assets/images/icons/delete.svg"
-                                        svgClass="icon-color-delete">
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
                                     </svg-icon>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="variables-actions">
+                <div *ngIf="readonly" class="variables-actions">
                     <button 
                         (click)="onAddVariable()" 
                         class="guardian-button guardian-button-secondary">
@@ -665,7 +676,8 @@
         </div>
     </div>
 
-    <div class="actions-container">
+    <div *ngIf="!!readonly" class="actions-container">
+        <button (click)="onPreview()" class="guardian-button guardian-button-primary">Preview</button>
         <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>

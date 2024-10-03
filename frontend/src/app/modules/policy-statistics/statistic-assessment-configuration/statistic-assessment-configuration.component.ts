@@ -452,7 +452,8 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
             document[field.id] = field.value;
         }
         for (const score of this.scores) {
-            document[score.id] = score.value;
+            const option = score.options.find((o) => o.value === score.value);
+            document[score.id] = option?.description || String(score.value);
         }
         for (const formula of this.formulas) {
             document[formula.id] = formula.value;

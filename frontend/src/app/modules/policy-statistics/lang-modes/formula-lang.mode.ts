@@ -6,11 +6,12 @@ import 'codemirror/mode/meta';
 import CodeMirror, { Mode, StringStream } from 'codemirror';
 
 CodeMirror.defineMode('formula-lang', function (config, parserConfig) {
-    const variables = (config as any).variables as string[];
-    const variablesName = variables.map((v) => `(${v})`).join('|');
-    const isVariables = variables.length ? new RegExp(variablesName) : null;
     const policySyntaxOverlay: Mode<any> = {
         token: function (stream: StringStream) {
+            const variables = (config as any).variables as string[];
+            const variablesName = variables.map((v) => `(${v})`).join('|');
+            const isVariables = variables.length ? new RegExp(variablesName) : null;
+
             if (isVariables && stream.match(isVariables)) {
                 return 'formula-variable';
             } else if(stream.match(/([a-zA-Z]+)\(/, false)) {

@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -18,6 +18,7 @@ import { SchemaScore, SchemaScores } from '../models/schema-scores';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
 import { SchemaRule, SchemaRules } from '../models/schema-rules';
+import { StatisticPreviewDialog } from '../dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
 
 @Component({
     selector: 'app-statistic-definition-configuration',
@@ -49,6 +50,8 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     public searchField: string = '';
 
     public stepper = [true, false, false];
+
+    public readonly: boolean = false;
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -195,6 +198,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
+            this.readonly = this.item?.status === EntityStatus.PUBLISHED;
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
@@ -299,7 +303,6 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         this._selectTimeout1 = setTimeout(() => {
             this._updateSelectNode();
         }, 350)
-
     }
 
     private _updateSelectNode() {
@@ -349,6 +352,9 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
+        if(this.readonly) {
+            return;
+        }
         field.selected = !field.selected;
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
@@ -562,5 +568,32 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public onPreview() {
+        this.rules.update(this.variables);
+        const value = this.overviewForm.value;
+        const config = {
+            variables: this.variables.getJson(),
+            formulas: this.formulas.getJson(),
+            scores: this.scores.getJson(),
+            rules: this.rules.getJson(),
+        };
+        const item = {
+            ...this.item,
+            name: value.name,
+            description: value.description,
+            config
+        };
+        const dialogRef = this.dialogService.open(StatisticPreviewDialog, {
+            showHeader: false,
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                item
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 }

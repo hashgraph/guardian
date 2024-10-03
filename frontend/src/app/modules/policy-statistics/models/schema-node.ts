@@ -70,3 +70,22 @@ export class SchemaNode extends TreeNode<SchemaData> {
         return result;
     }
 }
+
+export class DocumentNode extends TreeNode<any> {
+    public override clone(): DocumentNode {
+        const clone = new DocumentNode(this.id, this.type, this.data);
+        clone.type = this.type;
+        clone.data = this.data;
+        clone.childIds = new Set(this.childIds);
+        return clone;
+    }
+
+    public override update() {
+    }
+
+    public static from(document: any, type: 'root' | 'sub'): DocumentNode {
+        const id = document.messageId;
+        const result = new DocumentNode(id, type, document);
+        return result;
+    }
+}

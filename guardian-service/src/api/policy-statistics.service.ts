@@ -92,8 +92,11 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 ];
                 const [items, count] = await DatabaseServer.getStatisticsAndCount(
                     {
-                        owner: owner.owner
-                    },
+                        $or: [
+                            { status: EntityStatus.PUBLISHED },
+                            { creator: owner.creator }
+                        ]
+                    } as any,
                     otherOptions
                 );
                 for (const item of items) {
@@ -124,7 +127,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { definitionId, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
                 return new MessageResponse(item);
@@ -149,7 +152,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { definitionId, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
                 const policyId = item.policyId;
@@ -158,11 +161,20 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED)
-                return new MessageResponse({
-                    policy,
-                    schemas: all
-                });
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED);
+                if (item.status === EntityStatus.PUBLISHED) {
+                    const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
+                    return new MessageResponse({
+                        policy,
+                        schemas: all,
+                        schema
+                    });
+                } else {
+                    return new MessageResponse({
+                        policy,
+                        schemas: all
+                    });
+                }
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -189,7 +201,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const { definitionId, definition, owner } = msg;
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!item || item.creator !== owner.creator) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
@@ -224,7 +236,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { definitionId, owner } = msg;
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!item || item.creator !== owner.creator) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
@@ -254,7 +266,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const { definitionId, owner } = msg;
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!item || item.creator !== owner.creator) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
@@ -323,7 +335,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -363,9 +375,9 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                         unrelatedDocuments: allDocs
                     })
                 }
-                return new MessageResponse({ 
-                    items: items.slice(otherOptions.offset, otherOptions.offset + otherOptions.limit), 
-                    count: items.length 
+                return new MessageResponse({
+                    items: items.slice(otherOptions.offset, otherOptions.offset + otherOptions.limit),
+                    count: items.length
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -400,7 +412,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid object.');
                 }
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status !== EntityStatus.PUBLISHED) {
@@ -465,7 +477,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const { pageIndex, pageSize } = filters;
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status !== EntityStatus.PUBLISHED) {
@@ -498,8 +510,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 const [items, count] = await DatabaseServer.getStatisticAssessmentsAndCount(
                     {
-                        definitionId,
-                        owner: owner.owner
+                        definitionId
                     },
                     otherOptions
                 );
@@ -530,19 +541,32 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 const { definitionId, assessmentId, owner } = msg;
 
                 const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!item || item.owner !== owner.owner) {
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status !== EntityStatus.PUBLISHED) {
                     return new MessageError('Item is not published.');
                 }
 
-                const result = await DatabaseServer.getStatisticAssessment({
+                const document = await DatabaseServer.getStatisticAssessment({
                     id: assessmentId,
                     definitionId,
                     owner: owner.owner
                 });
-                return new MessageResponse(result);
+
+                const relationships = await DatabaseServer.getStatisticDocuments({
+                    messageId: { $in: document?.relationships }
+                });
+
+                const target = await DatabaseServer.getStatisticDocument({
+                    messageId: document?.target
+                });
+
+                return new MessageResponse({
+                    document,
+                    target,
+                    relationships
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

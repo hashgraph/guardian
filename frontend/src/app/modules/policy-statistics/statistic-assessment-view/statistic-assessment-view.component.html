@@ -69,9 +69,13 @@
     </div>
 
     <div class="body-container">
-        <div *ngIf="stepper[0]" class="nav-body-container">
-            <div class="step-body-container">
 
+        <div *ngIf="navLoading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <div *ngIf="stepper[0]" class="nav-body-container">
+            <div *ngIf="definition" class="step-body-container">
                 <div class="fields-container">
                     <div class="field-container">
                         <div class="field-name">Name</div>
@@ -102,9 +106,6 @@
                         <div class="field-value">{{assessment.target}}</div>
                     </div>
                 </div>
-
-
-
             </div>
         </div>
         <div *ngIf="stepper[1]" class="nav-body-container">
@@ -164,10 +165,106 @@
             </div>
         </div>
         <div *ngIf="stepper[2]" class="nav-body-container">
-            <div class="step-body-container">
-
-
+            <div class="tree-container">
+                <app-tree-graph 
+                    (init)="initTree($event)"
+                    (render)="createNodes($event)"
+                    (select)="onSelectNode($event)"
+                >
+                    <ng-template 
+                        #nodeTemplate 
+                        let-node="node" 
+                    >
+                        <div  class="tree-node {{node.type}}-node selected-type-{{node.selected}}">
+                            <div class="node-header">
+                                {{node.data.schemaName}}
+                            </div>
+                        </div>
+                    </ng-template>
+                </app-tree-graph>
             </div>
+
+            <div class="zoom-toolbar" [attr.hidden-schema]="!selectedNode">
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(0)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/center.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/add.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <div class="zoom-label">{{zoom}}%</div>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(-1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/minus.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="schema-fields" [attr.hidden-schema]="!selectedNode">
+                <div *ngIf="nodeLoading" class="guardian-loading">
+                    <div class="guardian-loading-image"></div>
+                </div>
+                <div *ngIf="selectedNode" class="schema-fields-container">
+                    <div class="schema-name">
+                        {{selectedNode.data.schemaName}}
+                        <div class="schema-close" (click)="onClearNode()">
+                            <svg-icon 
+                                src="/assets/images/icons/close.svg" 
+                                svgClass="icon-color-close"></svg-icon>
+                        </div>
+                    </div>
+                    <div class="schema-config">
+
+
+                        <div class="fields-container">
+                            <div class="field-container">
+                                <div class="field-name">Message ID</div>
+                                <div class="field-value">{{selectedNode.data?.messageId}}</div>
+                            </div>
+                            <div class="field-container">
+                                <div class="field-name">Issuer</div>
+                                <div class="field-value">{{selectedNode.data?.document?.issuer}}</div>
+                            </div>
+                        </div>
+
+                        <button 
+                            (click)="openVCDocument(selectedNode.data)" 
+                            class="guardian-button guardian-button-secondary">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon"
+                                    src="/assets/images/icons/document.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">View document</div>
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

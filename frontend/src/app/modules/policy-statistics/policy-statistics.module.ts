@@ -25,12 +25,14 @@ import { StatisticAssessmentViewComponent } from './statistic-assessment-view/st
 import { StatisticAssessmentsComponent } from './statistic-assessments/statistic-assessments.component';
 import { StatisticDefinitionsComponent } from './statistic-definitions/statistic-definitions.component';
 import { StatisticDefinitionConfigurationComponent } from './statistic-definition-configuration/statistic-definition-configuration.component';
+import { StatisticPreviewDialog } from './dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
 
 @NgModule({
     declarations: [
         NewPolicyStatisticsDialog,
         ScoreDialog,
         TreeGraphComponent,
+        StatisticPreviewDialog,
         StatisticAssessmentConfigurationComponent,
         StatisticAssessmentViewComponent,
         StatisticAssessmentsComponent,
