@@ -128,7 +128,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                         }),
                         Object.assign({}, this.parsedField, {
                             name: 'suggest',
-                            description: 'Suggest Value',
+                            description: 'Suggested Value',
                             required: false,
                             hidden: false,
                             default: null,
