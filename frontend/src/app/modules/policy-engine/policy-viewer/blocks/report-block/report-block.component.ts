@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -58,7 +58,7 @@ export class ReportBlockComponent implements OnInit {
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         public dialog: MatDialog,
         private dialogService: DialogService,
         iconRegistry: MatIconRegistry,

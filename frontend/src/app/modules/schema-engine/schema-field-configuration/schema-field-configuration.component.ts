@@ -1,5 +1,10 @@
+// <<<<<<< HEAD
+// import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+// import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+// =======
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+// >>>>>>> develop
 import { MatDialog } from '@angular/material/dialog';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
@@ -21,7 +26,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
-    @Input('form') form!: FormGroup;
+    @Input('form') form!: UntypedFormGroup;
     @Input('field') field!: FieldControl;
     @Input() fieldsForm?: AbstractControl | null;
     @Input('types') types!: any[];
@@ -44,8 +49,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public loading: boolean = false;
     public keywords: string[] = [];
     public isString: boolean = false;
-    public fieldType: FormControl;
-    public property: FormControl;
+    public fieldType: UntypedFormControl;
+    public property: UntypedFormControl;
     public groupedFieldTypes: any = [
         {
             label: 'Units of measure',
@@ -71,7 +76,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public parsedField!: any;
     public presetFormFields?: any[];
     public fieldsFormValue!: any;
-    public defaultValues?: FormGroup;
+    public defaultValues?: UntypedFormGroup;
     public defaultValuesSubscription?: Subscription;
     public presetValues: any;
     public isShowMore = false;
@@ -86,15 +91,15 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         private toastr: ToastrService,
         private cdr: ChangeDetectorRef,
     ) {
-        this.fieldType = new FormControl();
-        this.property = new FormControl();
+        this.fieldType = new UntypedFormControl();
+        this.property = new UntypedFormControl();
     }
 
     ngOnInit(): void {
         if (this.fieldsForm && this.buildField) {
             const onFieldChange = (value: any) => {
                 this.defaultValuesSubscription?.unsubscribe();
-                this.defaultValues = new FormGroup({});
+                this.defaultValues = new UntypedFormGroup({});
                 this.defaultValuesSubscription =
                     this.defaultValues.valueChanges
                         .pipe(takeUntil(this.destroy$))
@@ -285,7 +290,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
 
         this.field.controlEnum.clear();
         values.forEach((item: any) => {
-            this.field.controlEnum.push(new FormControl(item));
+            this.field.controlEnum.push(new UntypedFormControl(item));
         });
 
         this.keywords = [];

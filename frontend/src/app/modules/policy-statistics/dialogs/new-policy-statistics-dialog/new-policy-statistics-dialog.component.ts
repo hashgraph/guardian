@@ -12,9 +12,9 @@ export class NewPolicyStatisticsDialog {
     public policy: any;
     public policies: any[];
     public dataForm = new FormGroup({
-        name: new FormControl('', Validators.required),
-        description: new FormControl(''),
-        policy: new FormControl(null, Validators.required)
+        name: new FormControl<string>('', Validators.required),
+        description: new FormControl<string>(''),
+        policy: new FormControl<any>(null, Validators.required)
     });
 
     constructor(

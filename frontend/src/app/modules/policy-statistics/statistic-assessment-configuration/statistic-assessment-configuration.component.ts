@@ -23,7 +23,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public definitionId: string;
-    public item: IStatistic;
+    public item: IStatistic | undefined;
     public policy: any;
     public stepper = [true, false, false, false];
     public stepIndex = 0;

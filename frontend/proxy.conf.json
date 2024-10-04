@@ -1,5 +1,5 @@
 {
-    "/api/v1/*": {
+    "/api/v1/": {
         "target": "http://localhost:3002/",
         "secure": false,
         "logLevel": "debug",
@@ -9,7 +9,7 @@
             "/api/v1": ""
         }
     },
-    "/ws/*": {
+    "/ws/": {
         "target": "http://localhost:3002/",
         "secure": false,
         "ws": true,
@@ -19,7 +19,7 @@
             "/ws": ""
         }
     },
-    "/openai/*": {
+    "/openai/": {
         "target": "http://localhost:3002/",
         "secure": false,
         "ws": true,

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 /**
@@ -11,7 +11,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./set-version-dialog.component.scss'],
 })
 export class SetVersionDialog {
-    versionControl: FormControl = new FormControl('', [
+    versionControl: UntypedFormControl = new UntypedFormControl('', [
         Validators.required,
         Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/),
     ]);

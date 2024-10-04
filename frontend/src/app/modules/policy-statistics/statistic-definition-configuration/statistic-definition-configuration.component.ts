@@ -34,7 +34,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     public owner: string;
 
     public definitionId: string;
-    public item: IStatistic;
+    public item: IStatistic | undefined;
     public policy: any;
     public schemas: Schema[];
 
@@ -66,10 +66,9 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     public rules: SchemaRules = new SchemaRules();
 
     public overviewForm = new FormGroup({
-        name: new FormControl('', Validators.required),
-        description: new FormControl(''),
-        policy: new FormControl('', Validators.required),
-        // method: new FormControl('', Validators.required)
+        name: new FormControl<string>('', Validators.required),
+        description: new FormControl<string>(''),
+        policy: new FormControl<string>('', Validators.required),
     });
 
     public schemaFilterType: number = 1;
@@ -202,7 +201,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
-            this.updateForm(this.item);
+            this.updateForm(item);
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
@@ -246,9 +245,9 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     private updateForm(item: IStatistic) {
         this.overviewForm.setValue({
-            name: item.name,
-            description: item.description,
-            policy: this.policy?.name,
+            name: item.name || '',
+            description: item.description || '',
+            policy: this.policy?.name || '',
             // method: item.description,
         });
 
@@ -352,7 +351,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
-        if(this.readonly) {
+        if (this.readonly) {
             return;
         }
         field.selected = !field.selected;
@@ -561,7 +560,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             .updateDefinition(item)
             .subscribe((item) => {
                 this.item = item;
-                this.updateForm(this.item);
+                this.updateForm(item);
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
@@ -594,6 +593,6 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
                 item
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 }

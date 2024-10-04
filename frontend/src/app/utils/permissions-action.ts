@@ -1,4 +1,4 @@
-import { FormControl } from "@angular/forms";
+import { UntypedFormControl } from "@angular/forms";
 import { Permissions, PermissionActions } from "@guardian/interfaces";
 import { IAction, IEntity, IPermission } from "./permissions-interface";
 
@@ -6,7 +6,7 @@ export class ActionGroup implements IAction {
     public readonly parent: IEntity;
     public readonly id: PermissionActions;
     public readonly permission: Permissions;
-    public readonly control: FormControl;
+    public readonly control: UntypedFormControl;
     public readonly refs: ActionGroup[];
     public tooltip: string;
     private _disable: boolean;
@@ -15,7 +15,7 @@ export class ActionGroup implements IAction {
         this.parent = parent;
         this.id = permission.action;
         this.permission = permission.name;
-        this.control = new FormControl(false);
+        this.control = new UntypedFormControl(false);
         this.refs = [];
         this.tooltip = '';
         this._disable = false;

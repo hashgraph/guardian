@@ -1,11 +1,11 @@
-import { FormControl, FormGroup } from "@angular/forms";
+import { UntypedFormControl, UntypedFormGroup } from "@angular/forms";
 import { Permissions, PermissionCategories } from "@guardian/interfaces";
 import { CategoryAccess, CategoryDelegate, CategoryDetails, CategoryGroup } from "./permissions-category";
 import { IAction, ICategory, IPermission } from "./permissions-interface";
 
 export class PermissionsGroup {
-    public readonly form = new FormGroup({});
-    public readonly controls = new Map<Permissions, FormControl>();
+    public readonly form = new UntypedFormGroup({});
+    public readonly controls = new Map<Permissions, UntypedFormControl>();
     public readonly actions = new Map<Permissions, IAction>();
     public readonly map = new Map<PermissionCategories, ICategory>();
     public readonly categories: ICategory[] = [];

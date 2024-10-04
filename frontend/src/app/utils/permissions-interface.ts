@@ -1,4 +1,4 @@
-import { FormControl } from "@angular/forms";
+import { UntypedFormControl } from "@angular/forms";
 import { Permissions, PermissionActions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
 
 export interface IPermission {
@@ -15,7 +15,7 @@ export interface IAction {
     readonly parent: IEntity;
     readonly id: PermissionActions | string;
     readonly permission: Permissions;
-    readonly control: FormControl;
+    readonly control: UntypedFormControl;
     readonly refs: IAction[];
     tooltip: string;
 
@@ -66,7 +66,7 @@ export interface IEntity {
     readonly type: string;
     readonly actions: IAction[];
     readonly map: Map<PermissionActions, IAction>;
-    readonly control: FormControl;
+    readonly control: UntypedFormControl;
     readonly canAll: boolean;
     all: boolean;
 
