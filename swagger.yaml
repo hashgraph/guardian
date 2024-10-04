@@ -12033,6 +12033,13 @@ paths:
           example: 20
           schema:
             type: number
+        - name: policyInstanceTopicId
+          required: false
+          in: query
+          description: Policy Instance Topic Id
+          example: 0.0.1
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.
