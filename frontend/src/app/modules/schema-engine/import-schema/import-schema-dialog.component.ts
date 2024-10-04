@@ -1,8 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { ImportType, Schema, SchemaHelper } from '@guardian/interfaces';
-import { Observable, ReplaySubject } from 'rxjs';
+import { ImportType } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
