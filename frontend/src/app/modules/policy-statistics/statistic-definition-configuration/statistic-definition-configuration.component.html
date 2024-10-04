@@ -677,7 +677,7 @@
     </div>
 
     <div *ngIf="!!readonly" class="actions-container">
-        <button (click)="onPreview()" class="guardian-button guardian-button-primary">Preview</button>
+        <button *ngIf="stepper[2]" (click)="onPreview()" class="guardian-button guardian-button-primary">Preview</button>
         <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>
