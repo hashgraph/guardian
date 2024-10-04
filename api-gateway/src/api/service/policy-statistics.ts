@@ -74,6 +74,13 @@ export class PolicyStatisticsApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'policyInstanceTopicId',
+        type: String,
+        description: 'Policy Instance Topic Id',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -90,12 +97,13 @@ export class PolicyStatisticsApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('policyInstanceTopicId') policyInstanceTopicId?: string
     ): Promise<StatisticDefinitionDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const { items, count } = await guardians.getStatisticDefinitions({ pageIndex, pageSize }, owner);
+            const { items, count } = await guardians.getStatisticDefinitions({ policyInstanceTopicId, pageIndex, pageSize }, owner);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger);

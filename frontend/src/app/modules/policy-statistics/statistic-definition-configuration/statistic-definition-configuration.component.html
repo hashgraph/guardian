@@ -575,7 +575,7 @@
                     </div>
                     <div>There were no scores created yet.</div>
                 </div>
-                <div *ngIf="readonly" class="variables-actions">
+                <div *ngIf="!readonly" class="variables-actions">
                     <button 
                         (click)="onAddScore()" 
                         class="guardian-button guardian-button-secondary">
@@ -614,7 +614,7 @@
                                     [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
-                            <div class="variables-grid-cell cell-200">
+                            <div class="variables-grid-cell cell-200 cell-select">
                                 <p-dropdown
                                     [(ngModel)]="formula.type"
                                     [options]="formulaTypes"
@@ -658,7 +658,7 @@
                         </div>
                     </div>
                 </div>
-                <div *ngIf="readonly" class="variables-actions">
+                <div *ngIf="!readonly" class="variables-actions">
                     <button 
                         (click)="onAddVariable()" 
                         class="guardian-button guardian-button-secondary">
@@ -676,7 +676,7 @@
         </div>
     </div>
 
-    <div *ngIf="!!readonly" class="actions-container">
+    <div *ngIf="!readonly" class="actions-container">
         <button *ngIf="stepper[2]" (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
         <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>

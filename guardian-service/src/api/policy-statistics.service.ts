@@ -66,7 +66,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid parameters.');
                 }
                 const { filters, owner } = msg;
-                const { pageIndex, pageSize } = filters;
+                const { policyInstanceTopicId, pageIndex, pageSize } = filters;
 
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
@@ -90,15 +90,16 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     'messageId',
                     'policyId'
                 ];
-                const [items, count] = await DatabaseServer.getStatisticsAndCount(
-                    {
-                        $or: [
-                            { status: EntityStatus.PUBLISHED },
-                            { creator: owner.creator }
-                        ]
-                    } as any,
-                    otherOptions
-                );
+                const query: any = {
+                    $or: [
+                        { status: EntityStatus.PUBLISHED },
+                        { creator: owner.creator }
+                    ]
+                };
+                if (policyInstanceTopicId) {
+                    query.policyInstanceTopicId = policyInstanceTopicId;
+                }
+                const [items, count] = await DatabaseServer.getStatisticsAndCount(query, otherOptions);
                 for (const item of items) {
                     (item as any).documents = await DatabaseServer.getStatisticAssessmentCount({
                         definitionId: item.id,

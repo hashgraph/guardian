@@ -65,25 +65,25 @@ export class StatisticAssessmentsComponent implements OnInit {
             id: 'topicId',
             title: 'Topic',
             type: 'text',
-            size: 'auto',
+            size: '150',
             tooltip: false
         }, {
             id: 'target',
             title: 'Target',
             type: 'text',
-            size: 'auto',
+            size: '200',
             tooltip: false
         }, {
             id: 'messageId',
             title: 'Message ID',
             type: 'text',
-            size: 'auto',
+            size: '200',
             tooltip: false
         }, {
             id: 'options',
             title: '',
             type: 'text',
-            size: '100',
+            size: '135',
             tooltip: false
         }]
     }

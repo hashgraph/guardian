@@ -12,17 +12,16 @@
 
         .guardian-user-back-button {
             button {
-                border-color: #fff;
+                border-color: var(--guardian-background, #FFFFFF);
             }
         }
 
         .guardian-user-page-header {
-            color: #fff;
+            color: var(--guardian-background, #FFFFFF);
         }
 
-
         .policy-name {
-            color: #fff;
+            color: var(--guardian-background, #FFFFFF);
             font-size: 14px;
             font-weight: 500;
             line-height: 16px;
@@ -43,8 +42,8 @@
         display: flex;
         justify-content: flex-end;
         padding: 12px 48px;
-        background: #fff;
-        border-top: 1px solid #E1E7EF;
+        background: var(--guardian-background, #FFFFFF);
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
         position: relative;
 
         button {
@@ -72,8 +71,8 @@
                 height: 337px;
                 padding: 8px 0px 8px 0px;
                 border-radius: 8px;
-                box-shadow: 0px 4px 8px 0px #00000014;
-                background: #fff;
+                box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+                background: var(--guardian-background, #FFFFFF);
 
                 .guardian-step {
                     padding-left: 24px;
@@ -98,8 +97,8 @@
                 min-height: 100px;
                 height: fit-content;
                 border-radius: 8px;
-                box-shadow: 0px 4px 8px 0px #00000014;
-                background: #fff;
+                box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+                background: var(--guardian-background, #FFFFFF);
                 padding: 24px;
                 flex-direction: column;
                 margin-bottom: 16px;
@@ -109,7 +108,7 @@
                     font-weight: 600;
                     line-height: 32px;
                     text-align: left;
-                    color: #181818;
+                    color: var(--guardian-font-color, #23252E);
                     margin-bottom: 24px;
                 }
             }
@@ -119,10 +118,10 @@
             cursor: pointer;
 
             &:hover {
-                background: #f0f3fc !important;
+                background: var(--guardian-hover, #F0F3FC) !important;
 
                 td {
-                    background: #f0f3fc !important;
+                    background: var(--guardian-hover, #F0F3FC) !important;
                 }
             }
         }
@@ -137,21 +136,21 @@
                     font-weight: 500;
                     line-height: 14px;
                     text-align: left;
-                    color: #181818;
+                    color: var(--guardian-font-color, #23252E);
                     padding: 8px 0px;
                 }
 
                 .field-value {
                     padding: 12px 16px 12px 16px;
                     border-radius: 8px;
-                    border: 1px solid #E1E7EF;
-                    background: #F9FAFC;
+                    border: 1px solid var(--guardian-border-color, #E1E7EF);
+                    background: var(--guardian-grey-background, #F9FAFC);
                     font-family: Inter;
                     font-size: 14px;
                     font-weight: 400;
                     line-height: 16px;
                     text-align: left;
-                    color: #23252E;
+                    color: var(--guardian-font-color, #23252E);
                     width: 100%;
                     min-height: 42px;
                 }
@@ -170,7 +169,7 @@
 
         .scores-container {
             .score-container {
-                border: 1px solid #AAB7C4;
+                border: 1px solid var(--guardian-grey-color-3, #AAB7C4);
                 padding: 24px;
                 border-radius: 8px;
                 margin-bottom: 24px;
@@ -181,7 +180,7 @@
                     font-weight: 700;
                     line-height: 18px;
                     text-align: left;
-                    color: #000000;
+                    color: var(--guardian-font-color, #23252E);
                     margin-bottom: 16px;
                     padding: 8px 0px;
                 }
@@ -200,7 +199,7 @@
                 }
 
                 &:not([disabled]):hover {
-                    background: #f0f3fc;
+                    background: var(--guardian-hover, #F0F3FC);
                 }
 
                 .option-checkbox {
@@ -278,7 +277,7 @@
         }
 
         &:hover {
-            background: #f0f3fc;
+            background: var(--guardian-hover, #F0F3FC);
         }
     }
 }

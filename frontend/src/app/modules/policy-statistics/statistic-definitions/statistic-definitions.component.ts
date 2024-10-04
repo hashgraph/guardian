@@ -82,19 +82,19 @@ export class StatisticDefinitionsComponent implements OnInit {
             id: 'topicId',
             title: 'Topic',
             type: 'text',
-            size: 'auto',
+            size: '135',
             tooltip: false
         }, {
             id: 'status',
             title: 'Status',
             type: 'text',
-            size: 'auto',
+            size: '180',
             tooltip: false
         }, {
             id: 'documents',
             title: 'Documents',
             type: 'text',
-            size: 'auto',
+            size: '125',
             tooltip: false
         }, {
             id: 'edit',
@@ -172,7 +172,7 @@ export class StatisticDefinitionsComponent implements OnInit {
     private loadData() {
         const filters: any = {};
         if (this.currentPolicy?.instanceTopicId) {
-            filters.topicId = this.currentPolicy?.instanceTopicId;
+            filters.policyInstanceTopicId = this.currentPolicy?.instanceTopicId;
         }
         this.loading = true;
         this.policyStatisticsService
