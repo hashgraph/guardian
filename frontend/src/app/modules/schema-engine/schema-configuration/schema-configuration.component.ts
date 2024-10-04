@@ -11,6 +11,7 @@ import { FieldControl } from '../field-control';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { SchemaService } from 'src/app/services/schema.service';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
+import {DropdownChangeEvent} from 'primeng/dropdown';
 
 enum SchemaType {
     System = 'system',
@@ -887,7 +888,7 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
-    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
+    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false
