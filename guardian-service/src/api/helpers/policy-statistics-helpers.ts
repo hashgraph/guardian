@@ -1,7 +1,6 @@
 import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VcHelper } from '@guardian/common';
 import { GenerateUUIDv4, IFormulaData, IOwner, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
-import { createHash } from 'crypto';
 
 export async function addRelationship(
     messageId: string,
@@ -162,8 +161,9 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
 }
 
 export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConfig> {
+    let topic: TopicConfig;
     if (item.topicId) {
-        const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
+        topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.topicId), true);
         if (topic) {
             return topic;
         }
@@ -177,7 +177,7 @@ export async function getOrCreateTopic(item: PolicyStatistic): Promise<TopicConf
     const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true);
     const root = await (new Users()).getHederaAccount(item.owner);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const topic = await topicHelper.create({
+    topic = await topicHelper.create({
         type: TopicType.StatisticTopic,
         owner: policy.owner,
         name: 'POLICY_STATISTICS',
@@ -338,7 +338,7 @@ export function validateConfig(data: IStatisticConfig): IStatisticConfig {
     return config;
 }
 
-function getSubject(document: VcDocument): any {
+export function getSubject(document: VcDocument): any {
     let credentialSubject: any = document?.document?.credentialSubject;
     if (Array.isArray(credentialSubject)) {
         credentialSubject = credentialSubject[0];

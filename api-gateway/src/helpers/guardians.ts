@@ -36,7 +36,9 @@ import {
     TokenDTO,
     ToolDTO,
     StatisticDefinitionDTO,
-    StatisticAssessmentDTO
+    StatisticAssessmentDTO,
+    StatisticAssessmentRelationshipsDTO,
+    StatisticDefinitionRelationshipsDTO
 } from '#middlewares';
 
 /**
@@ -2849,7 +2851,7 @@ export class Guardians extends NatsService {
 
     /**
      * Create statistic definition
-     * 
+     *
      * @param definition
      * @param owner
      * @returns statistic
@@ -2872,7 +2874,7 @@ export class Guardians extends NatsService {
 
     /**
      * Get statistic definition
-     * 
+     *
      * @param id
      * @param owner
      * @returns Operation Success
@@ -2883,13 +2885,13 @@ export class Guardians extends NatsService {
 
     /**
      * Get relationships
-     * 
+     *
      * @param id
      * @param owner
-     * 
+     *
      * @returns Relationships
      */
-    public async getStatisticRelationships(definitionId: string, owner: IOwner): Promise<any> {
+    public async getStatisticRelationships(definitionId: string, owner: IOwner): Promise<StatisticDefinitionRelationshipsDTO> {
         return await this.sendMessage(MessageAPI.GET_STATISTIC_RELATIONSHIPS, { definitionId, owner });
     }
 
@@ -2914,10 +2916,11 @@ export class Guardians extends NatsService {
 
     /**
      * Update statistic definition
-     * 
+     *
      * @param id
      * @param definition
      * @param owner
+     *
      * @returns theme
      */
     public async updateStatisticDefinition(
@@ -2930,9 +2933,10 @@ export class Guardians extends NatsService {
 
     /**
      * Delete statistic definition
-     * 
+     *
      * @param id
      * @param owner
+     *
      * @returns Operation Success
      */
     public async deleteStatisticDefinition(definitionId: string, owner: IOwner): Promise<boolean> {
@@ -2941,9 +2945,10 @@ export class Guardians extends NatsService {
 
     /**
      * Delete statistic definition
-     * 
+     *
      * @param id
      * @param owner
+     *
      * @returns Operation Success
      */
     public async publishStatisticDefinition(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
@@ -2952,10 +2957,11 @@ export class Guardians extends NatsService {
 
     /**
      * Create statistic assessment
-     * 
+     *
      * @param id
      * @param report
      * @param owner
+     *
      * @returns statistic report
      */
     public async createStatisticAssessment(
@@ -2985,10 +2991,11 @@ export class Guardians extends NatsService {
 
     /**
      * Get statistic assessment
-     * 
+     *
      * @param definitionId
      * @param assessmentId
      * @param owner
+     *
      * @returns Operation Success
      */
     public async getStatisticAssessment(
@@ -2997,5 +3004,22 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<StatisticAssessmentDTO> {
         return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT, { definitionId, assessmentId, owner });
+    }
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param definitionId
+     * @param assessmentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getStatisticAssessmentRelationships(
+        definitionId: string,
+        assessmentId: string,
+        owner: IOwner
+    ): Promise<StatisticAssessmentRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS, { definitionId, assessmentId, owner });
     }
 }

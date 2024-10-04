@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -110,14 +109,20 @@ export class StatisticAssessmentViewComponent implements OnInit {
             this.policyStatisticsService.getDefinition(this.definitionId),
             this.policyStatisticsService.getRelationships(this.definitionId),
             this.policyStatisticsService.getAssessment(this.definitionId, this.assessmentId),
-        ]).subscribe(([definition, relationships, assessment]) => {
+            this.policyStatisticsService.getAssessmentRelationships(this.definitionId, this.assessmentId),
+        ]).subscribe(([
+            definition,
+            definitionRelationships,
+            assessment,
+            assessmentRelationships
+        ]) => {
             this.definition = definition;
-            this.policy = relationships?.policy || {};
-            this.schemas = relationships?.schemas || [];
-            this.schema = relationships?.schema;
-            this.assessment = assessment?.document || {};
-            this.target = assessment?.target || {};
-            this.relationships = assessment?.relationships || [];
+            this.policy = definitionRelationships?.policy || {};
+            this.schemas = definitionRelationships?.schemas || [];
+            this.schema = definitionRelationships?.schema;
+            this.assessment = assessment || {};
+            this.target = assessmentRelationships?.target || {};
+            this.relationships = assessmentRelationships?.relationships || [];
             this.updateMetadata();
 
             setTimeout(() => {

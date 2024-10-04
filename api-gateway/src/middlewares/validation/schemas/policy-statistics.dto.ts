@@ -1,7 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
+import { VpDocumentDTO } from './document.dto.js';
+import { PolicyDTO } from './policies.dto.js';
+import { SchemaDTO } from './schemas.dto.js';
 
 export class StatisticDefinitionDTO {
     @ApiProperty({
@@ -111,15 +114,6 @@ export class StatisticDefinitionDTO {
     status?: EntityStatus;
 
     @ApiProperty({
-        type: 'string',
-        required: false,
-        example: ''
-    })
-    @IsOptional()
-    @IsString()
-    method?: string;
-
-    @ApiProperty({
         type: 'object',
         nullable: true,
         required: false
@@ -130,5 +124,160 @@ export class StatisticDefinitionDTO {
 }
 
 export class StatisticAssessmentDTO {
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    id?: string;
 
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    definitionId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyTopicId: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyInstanceTopicId: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    topicId: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    creator?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DID
+    })
+    @IsOptional()
+    @IsString()
+    owner?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    messageId: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    target: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        isArray: true,
+        example: [Examples.MESSAGE_ID]
+    })
+    @IsOptional()
+    @IsArray()
+    relationships?: string[];
+
+    @ApiProperty({
+        type: 'object',
+        nullable: true,
+        required: false
+    })
+    @IsOptional()
+    @IsObject()
+    document?: any;
+}
+
+@ApiExtraModels(VpDocumentDTO)
+export class StatisticAssessmentRelationshipsDTO {
+    @ApiProperty({
+        type: () => VpDocumentDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    target?: VpDocumentDTO;
+
+    @ApiProperty({
+        type: () => VpDocumentDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    relationships?: VpDocumentDTO[];
+}
+
+@ApiExtraModels(PolicyDTO, SchemaDTO)
+export class StatisticDefinitionRelationshipsDTO {
+    @ApiProperty({
+        type: () => PolicyDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    policy?: PolicyDTO;
+
+    @ApiProperty({
+        type: () => SchemaDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: SchemaDTO[];
+
+    @ApiProperty({
+        type: () => SchemaDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    schema?: SchemaDTO;
 }

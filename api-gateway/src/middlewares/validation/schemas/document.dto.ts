@@ -163,7 +163,6 @@ export class VpDocumentDTO {
     document?: VpDTO[];
 }
 
-
 @ApiExtraModels(VcDTO)
 export class VcDocumentDTO {
     @ApiProperty({

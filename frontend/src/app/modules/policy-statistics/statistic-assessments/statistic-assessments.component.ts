@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, UserPermissions } from '@guardian/interfaces';
+import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';

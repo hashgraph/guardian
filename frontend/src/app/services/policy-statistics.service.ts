@@ -87,6 +87,10 @@ export class PolicyStatisticsService {
         return this.http.get<any>(`${this.url}/${definitionId}/assessment/${assessmentId}`);
     }
 
+    public getAssessmentRelationships(definitionId: string, assessmentId: any): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}/assessment/${assessmentId}/relationships`);
+    }
+
     public getRelationships(definitionId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${definitionId}/relationships`);
     }

@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, PolicyStatisticDocument, StatisticAssessmentMessage, StatisticMessage, Users, VcDocument } from '@guardian/common';
-import { DocumentStatus, EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
 
@@ -539,20 +539,48 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid parameters.');
                 }
                 const { definitionId, assessmentId, owner } = msg;
-
-                const item = await DatabaseServer.getStatisticById(definitionId);
-                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
-                    return new MessageError('Item does not exist.');
-                }
-                if (item.status !== EntityStatus.PUBLISHED) {
-                    return new MessageError('Item is not published.');
-                }
-
                 const document = await DatabaseServer.getStatisticAssessment({
                     id: assessmentId,
                     definitionId,
                     owner: owner.owner
                 });
+                if (!document) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                return new MessageResponse(document);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS,
+        async (msg: {
+            definitionId: string,
+            assessmentId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, assessmentId, owner } = msg;
+                const document = await DatabaseServer.getStatisticAssessment({
+                    id: assessmentId,
+                    definitionId,
+                    owner: owner.owner
+                });
+                if (!document) {
+                    return new MessageError('Item does not exist.');
+                }
 
                 const relationships = await DatabaseServer.getStatisticDocuments({
                     messageId: { $in: document?.relationships }
@@ -563,7 +591,6 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 });
 
                 return new MessageResponse({
-                    document,
                     target,
                     relationships
                 });
