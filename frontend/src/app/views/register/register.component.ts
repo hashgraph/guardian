@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { UserCategory, UserRole } from '@guardian/interfaces';
@@ -28,11 +28,11 @@ export class RegisterComponent implements OnInit {
     loading: boolean = false;
     error?: string;
 
-    loginForm = new FormGroup({
-        login: new FormControl(Math.random().toString(36).substring(2, 10), [Validators.required, noWhitespaceValidator()]),
-        role: new FormControl('USER', [Validators.required]),
-        password: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
-        confirmPassword: new FormControl('test', [Validators.required, noWhitespaceValidator()]),
+    loginForm = new UntypedFormGroup({
+        login: new UntypedFormControl(Math.random().toString(36).substring(2, 10), [Validators.required, noWhitespaceValidator()]),
+        role: new UntypedFormControl('USER', [Validators.required]),
+        password: new UntypedFormControl('test', [Validators.required, noWhitespaceValidator()]),
+        confirmPassword: new UntypedFormControl('test', [Validators.required, noWhitespaceValidator()]),
     }, { validators: checkPasswords });
 
     private _isRoleSelected$ = new ReplaySubject<boolean>(1);

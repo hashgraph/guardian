@@ -3,7 +3,7 @@ import { PermissionsService } from '../../services/permissions.service';
 import { ProfileService } from '../../services/profile.service';
 import { UserPermissions } from '@guardian/interfaces';
 import { Subscription, forkJoin } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 
 @Component({
@@ -32,7 +32,7 @@ export class UsersManagementComponent implements OnInit, OnDestroy {
         name: 'Inactive',
         color: ''
     }]
-    public searchFilter = new FormControl('');
+    public searchFilter = new UntypedFormControl('');
     public roleMap = new Map<string, string>();
 
     private _queryObserver?: Subscription;

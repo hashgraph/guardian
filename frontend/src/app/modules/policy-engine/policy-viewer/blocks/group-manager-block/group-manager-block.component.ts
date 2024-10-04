@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { FormBuilder } from '@angular/forms';
+import { UntypedFormBuilder } from '@angular/forms';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -50,7 +50,7 @@ export class GroupManagerBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private dialog: MatDialog
     ) {
     }

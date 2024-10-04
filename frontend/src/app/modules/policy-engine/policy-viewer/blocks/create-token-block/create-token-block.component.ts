@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { ContractType } from '@guardian/interfaces';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -22,7 +22,7 @@ export class CreateTokenBlockComponent implements OnInit {
 
     loading: boolean = true;
     socket: any;
-    dataForm: FormGroup;
+    dataForm: UntypedFormGroup;
     title: any;
     description: any;
     isExist: boolean = false;
@@ -33,7 +33,7 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
     }
 

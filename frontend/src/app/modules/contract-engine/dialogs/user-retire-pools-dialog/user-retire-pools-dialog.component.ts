@@ -1,10 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import {
     AbstractControl,
-    FormArray,
-    FormControl,
+    UntypedFormArray,
+    UntypedFormControl,
     FormControlDirective,
-    FormGroup,
+    UntypedFormGroup,
     ValidationErrors,
     ValidatorFn,
     Validators,
@@ -33,7 +33,7 @@ export class UserRetirePoolsDialogComponent implements OnInit {
 
     retireMod: boolean = false;
 
-    retireForm: FormArray = new FormArray(
+    retireForm: UntypedFormArray = new UntypedFormArray(
         [],
         [Validators.required, this.rationValidator()]
     );
@@ -118,11 +118,11 @@ export class UserRetirePoolsDialogComponent implements OnInit {
         );
         this.selectedPool = pool;
         for (const token of pool.tokens) {
-            const tokenControl = new FormControl(token.token);
-            const countControl = new FormControl(0);
-            const serialsControl = new FormControl([]);
+            const tokenControl = new UntypedFormControl(token.token);
+            const countControl = new UntypedFormControl(0);
+            const serialsControl = new UntypedFormControl([]);
             this.retireForm.push(
-                new FormGroup({
+                new UntypedFormGroup({
                     token: tokenControl,
                     count: countControl,
                     serials: serialsControl,
@@ -155,7 +155,7 @@ export class UserRetirePoolsDialogComponent implements OnInit {
     }
 
     getRetireForm(index: number) {
-        return this.retireForm.controls[index] as FormGroup;
+        return this.retireForm.controls[index] as UntypedFormGroup;
     }
 
     rationValidator(): ValidatorFn {

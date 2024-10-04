@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PolicyType } from '@guardian/interfaces';
 
@@ -17,7 +17,7 @@ export class ArtifactImportDialog {
 
     constructor(
         public dialogRef: MatDialogRef<ArtifactImportDialog>,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         if (data) {
             this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];

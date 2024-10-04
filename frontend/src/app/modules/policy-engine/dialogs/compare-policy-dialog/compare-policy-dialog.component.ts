@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CompareStorage } from 'src/app/services/compare-storage.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -23,10 +23,10 @@ export class ComparePolicyDialog {
     public localItemsFiltered: any[] = [];
     public fixed: boolean = false;
     public type: string = 'id';
-    public messageForm = new FormGroup({
-        messageId: new FormControl('', Validators.required)
+    public messageForm = new UntypedFormGroup({
+        messageId: new UntypedFormControl('', Validators.required)
     }, (fg) => {
-        for (const key in (fg as FormGroup).controls) {
+        for (const key in (fg as UntypedFormGroup).controls) {
             if (!fg.get(key)) {
                 continue;
             }

@@ -10,7 +10,7 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 
 enum OperationMode {
@@ -60,18 +60,18 @@ export class ListOfTokensUserComponent implements OnInit {
     public tokenDialogVisible: boolean = false;
     public deleteTokenVisible: boolean = false;
     public currentTokenId: any;
-    public dataForm = new FormGroup({
-        draftToken: new FormControl(true, [Validators.required]),
-        tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
-        tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
-        tokenType: new FormControl('fungible', [Validators.required]),
-        decimals: new FormControl('2'),
-        initialSupply: new FormControl('0'),
-        enableAdmin: new FormControl(true, [Validators.required]),
-        changeSupply: new FormControl(true, [Validators.required]),
-        enableFreeze: new FormControl(false, [Validators.required]),
-        enableKYC: new FormControl(false, [Validators.required]),
-        enableWipe: new FormControl(true, [Validators.required])
+    public dataForm = new UntypedFormGroup({
+        draftToken: new UntypedFormControl(true, [Validators.required]),
+        tokenName: new UntypedFormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
+        tokenSymbol: new UntypedFormControl('F', [Validators.required, noWhitespaceValidator()]),
+        tokenType: new UntypedFormControl('fungible', [Validators.required]),
+        decimals: new UntypedFormControl('2'),
+        initialSupply: new UntypedFormControl('0'),
+        enableAdmin: new UntypedFormControl(true, [Validators.required]),
+        changeSupply: new UntypedFormControl(true, [Validators.required]),
+        enableFreeze: new UntypedFormControl(false, [Validators.required]),
+        enableKYC: new UntypedFormControl(false, [Validators.required]),
+        enableWipe: new UntypedFormControl(true, [Validators.required])
     });
     public dataFormPristine: any = this.dataForm.value;
     public readonlyForm: boolean = false;

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
@@ -41,7 +41,7 @@ export class ImportPolicyDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,

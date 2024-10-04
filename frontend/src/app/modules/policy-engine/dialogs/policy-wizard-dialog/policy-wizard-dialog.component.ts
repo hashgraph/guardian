@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Inject, OnInit, TemplateRef, ViewChild, } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { IWizardConfig, PolicyCategoryType, Schema, SchemaField, SchemaHelper, Token } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -42,11 +42,11 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
 
     policyForm = this.fb.group({
         name: ['', Validators.required],
-        sectoralScope: new FormControl({
+        sectoralScope: new UntypedFormControl({
             value: '',
             disabled: this.loading,
         }),
-        projectScale: new FormControl({
+        projectScale: new UntypedFormControl({
             value: '',
             disabled: this.loading,
         }),
@@ -56,15 +56,15 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         typicalProjects: [''],
         topicDescription: [''],
         description: [''],
-        appliedTechnologyType: new FormControl({
+        appliedTechnologyType: new UntypedFormControl({
             value: '',
             disabled: this.loading,
         }),
-        migrationActivityType: new FormControl({
+        migrationActivityType: new UntypedFormControl({
             value: [],
             disabled: this.loading,
         }),
-        subType: new FormControl({value: [], disabled: this.loading}),
+        subType: new UntypedFormControl({value: [], disabled: this.loading}),
         atValidation: [''],
         monitored: [''],
     });
@@ -72,7 +72,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     policySchemasForm = this.fb.array([]);
     trustChainForm = this.fb.array([]);
 
-    dataForm: FormGroup = this.fb.group({
+    dataForm: UntypedFormGroup = this.fb.group({
         policy: this.policyForm,
         roles: this.policyRolesForm,
         schemas: this.policySchemasForm,
@@ -96,7 +96,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     private existingTopicIds: Set<string>;
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private cdRef: ChangeDetectorRef,
         @Inject(GET_SCHEMA_NAME)
         public getSchemaName: (
@@ -370,7 +370,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                     for (const roleConfig of schemaConfig.rolesConfig) {
                         const schemaRoleConfigControl = schemaNode.control.get(
                             'rolesConfig'
-                        ) as FormArray;
+                        ) as UntypedFormArray;
                         const initialRolesForControl: any = schemaNode.control.get(
                             'initialRolesFor'
                         );
@@ -446,14 +446,14 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     onSchemaRolesConfigChange(
-        schemaConfigControl: FormGroup,
+        schemaConfigControl: UntypedFormGroup,
         roles: string[],
         fields: any[],
         options: any
     ) {
         const schemaRoleConfigControl = schemaConfigControl.get(
             'rolesConfig'
-        ) as FormArray;
+        ) as UntypedFormArray;
         const deletedRoles = options.displayedInRoles.filter(
             (displayedRole: any) => !roles.includes(displayedRole)
         );
@@ -507,10 +507,10 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     onSchemaRoleConfigChange(
         role: string,
         fields: SchemaField[],
-        schemaRoleConfigControl: FormArray,
-        initialRolesForControl: FormControl,
-        isApproveEnableControl: FormControl,
-        dependencySchemaControl: FormControl,
+        schemaRoleConfigControl: UntypedFormArray,
+        initialRolesForControl: UntypedFormControl,
+        isApproveEnableControl: UntypedFormControl,
+        dependencySchemaControl: UntypedFormControl,
         node: any
     ) {
         const dependencySchema = this.selectedSchemas.find(
@@ -594,7 +594,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         this.destroy$.unsubscribe();
     }
 
-    onAddRole(control: FormControl, name: string) {
+    onAddRole(control: UntypedFormControl, name: string) {
         const selectedRoles: any[] = control?.value;
         if (!name || selectedRoles.indexOf(name) >= 0) {
             return;
@@ -603,7 +603,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         control.updateValueAndValidity();
     }
 
-    onRemoveRole(control: FormControl, name: string) {
+    onRemoveRole(control: UntypedFormControl, name: string) {
         const array = control?.value;
         if (array.indexOf(name) >= 0 && name !== 'OWNER') {
             array?.splice(array.indexOf(name), 1);
@@ -824,7 +824,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     deleteControlsFromFormArray(
-        arrayControl: FormArray,
+        arrayControl: UntypedFormArray,
         deleteItems: AbstractControl | AbstractControl[]
     ) {
         if (Array.isArray(deleteItems)) {

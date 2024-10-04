@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 
 /**
  * Dialog for creating policy.
@@ -11,7 +11,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
     styleUrls: ['./data-input-dialog.component.css'],
 })
 export class DataInputDialogComponent {
-    dataForm = new FormGroup({});
+    dataForm = new UntypedFormGroup({});
     loading: boolean = false;
 
     title: string = '';
@@ -29,7 +29,7 @@ export class DataInputDialogComponent {
         this.fieldsConfig.forEach((item: any) => {
             this.dataForm.addControl(
                 item.name,
-                new FormControl(
+                new UntypedFormControl(
                     item.initialValue,
                     item.validators
                 )

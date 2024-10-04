@@ -1,4 +1,4 @@
-import { FormControl } from "@angular/forms";
+import { UntypedFormControl } from "@angular/forms";
 import { Permissions, PermissionActions, PermissionEntities } from "@guardian/interfaces";
 import { ActionGroup } from "./permissions-action";
 import { ICategory, IEntity, IPermission, accessIndexes, actionIndexes, entityNames } from "./permissions-interface";
@@ -22,7 +22,7 @@ export class EntityDelegate implements IEntity {
         this.actions = new Array(1);
     }
 
-    public get control(): FormControl {
+    public get control(): UntypedFormControl {
         return null as any;
     }
 
@@ -98,7 +98,7 @@ export class EntityGroup implements IEntity {
         }
     }
 
-    public get control(): FormControl {
+    public get control(): UntypedFormControl {
         return null as any;
     }
 
@@ -186,7 +186,7 @@ export class EntityAccess implements IEntity {
     public readonly actions: ActionGroup[];
     public readonly map = new Map<PermissionActions, ActionGroup>();
     public readonly canAll = true;
-    public readonly control: FormControl;
+    public readonly control: UntypedFormControl;
 
     public all: boolean = false;
 
@@ -196,7 +196,7 @@ export class EntityAccess implements IEntity {
         this.name = entityNames.get(permission.entity) || '';
         this.type = 'radio';
         this.actions = new Array(4);
-        this.control = new FormControl('Assigned & Published');
+        this.control = new UntypedFormControl('Assigned & Published');
         this.control.valueChanges.subscribe(value => {
             for (const action of this.actions) {
                 if (action) {
