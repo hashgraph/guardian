@@ -758,14 +758,10 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
-// <<<<<<< HEAD
-//         const contract = await dataBaseServer.save(Contract, {
-// =======
         const version = await getContractVersion(
             log
         );
         const contract = await dataBaseServer.save(Contract, {
-// >>>>>>> develop
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,

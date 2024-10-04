@@ -11,24 +11,6 @@ export const SYSTEM_FIELDS = [
 export class FieldControl {
     public readonly name: string;
 
-// <<<<<<< HEAD
-//     public controlKey: UntypedFormControl;
-//     public controlTitle: UntypedFormControl;
-//     public hidden: UntypedFormControl;
-//     public controlDescription: UntypedFormControl;
-//     public controlType: UntypedFormControl;
-//     public property: UntypedFormControl;
-//     public controlRequired: UntypedFormControl;
-//     public controlArray: UntypedFormControl;
-//     public controlUnit: UntypedFormControl;
-//     public controlRemoteLink: UntypedFormControl;
-//     public controlEnum: UntypedFormArray;
-//     public controlColor: UntypedFormControl;
-//     public controlSize: UntypedFormControl;
-//     public controlBold: UntypedFormControl;
-//     public controlPrivate: UntypedFormControl;
-//     public controlPattern: UntypedFormControl;
-// =======
     public controlKey: UntypedFormControl;
     public controlTitle: UntypedFormControl;
     public hidden: UntypedFormControl;
@@ -48,7 +30,7 @@ export class FieldControl {
     public controlDefault: UntypedFormControl;
     public controlSuggest: UntypedFormControl;
     public controlExample: UntypedFormControl;
-// >>>>>>> develop
+
     private readonly _defaultFieldMap!: any;
     private _entityType: UntypedFormControl | undefined;
 
@@ -188,10 +170,6 @@ export class FieldControl {
         return this.controlPrivate.value;
     }
 
-// <<<<<<< HEAD
-//     public createGroup(): UntypedFormGroup {
-//         return new UntypedFormGroup({
-// =======
     public get default(): any {
         return this.controlDefault.value;
     }
