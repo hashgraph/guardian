@@ -394,12 +394,30 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param filter
      */
     async save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
+        if(Array.isArray(item)) {
+            return await this.saveMany(entityClass, item, filter) as any
+        }
+
         if (this.dryRun) {
             this.addDryRunId(entityClass, item);
             return await new DataBaseHelper(DryRun).save(item, filter) as unknown as T;
         }
 
         return await new DataBaseHelper(entityClass).save(item as Partial<T>, filter)
+    }
+
+    /**
+     * Save many
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    async saveMany<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: FilterObject<T>): Promise<T[]> {
+        if (this.dryRun) {
+            this.addDryRunId(entityClass, item);
+            return await new DataBaseHelper(DryRun).saveMany(item, filter) as unknown as T[];
+        }
+        return await new DataBaseHelper(entityClass).saveMany(item as Partial<T>[], filter)
     }
 
     /**
@@ -411,13 +429,36 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     async update<T extends BaseEntity>(
         entityClass: new () => T,
         criteria: FilterQuery<T>,
-        row: unknown
+        row: unknown | unknown[]
     ): Promise<T> {
+        if(Array.isArray(criteria)) {
+            return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
+        }
+
         if (this.dryRun) {
             this.addDryRunId(entityClass, row);
             return (await new DataBaseHelper(DryRun).update(row as DryRun, criteria as FilterQuery<DryRun>)) as unknown as T;
         } else {
             return await new DataBaseHelper(entityClass).update(row as T, criteria);
+        }
+    }
+
+    /**
+     * Update many method
+     * @param entityClass
+     * @param entities
+     * @param filter
+     */
+    async updateMany<T extends BaseEntity>(
+        entityClass: new () => T,
+        entities: T[],
+        filter?: FilterQuery<T>,
+    ): Promise<DryRun[] | T[]> {
+        if (this.dryRun) {
+            this.addDryRunId(entityClass, entities);
+            return (await new DataBaseHelper(DryRun).updateMany(entities as unknown as DryRun[], filter as FilterQuery<DryRun>));
+        } else {
+            return await new DataBaseHelper(entityClass).updateMany(entities as T[], filter);
         }
     }
 
@@ -1363,7 +1404,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
         for (const group of groups) {
             group.active = group.uuid === uuid;
         }
-        await this.save(PolicyRolesCollection, groups as unknown);
+        await this.saveMany(PolicyRolesCollection, groups);
     }
 
     /**
@@ -1723,7 +1764,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param residue
      */
     public async setResidue(residue: SplitDocuments[]): Promise<void> {
-        await this.save(SplitDocuments, residue as unknown);
+        await this.saveMany(SplitDocuments, residue);
     }
 
     /**
@@ -1853,11 +1894,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public async updateTag(row: Tag): Promise<Tag> {
-        return await this.update(Tag, row.id, row);
+    public async updateTag(tag: Tag): Promise<Tag> {
+        return await this.update(Tag, tag.id, tag);
+    }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public async updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]> {
+        return await this.updateMany(Tag, tags)
     }
 
     /**
@@ -2338,7 +2387,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get schema
+     * Save schema
      * @param item
      */
     public static async saveSchema(item: SchemaCollection): Promise<SchemaCollection> {
@@ -2346,15 +2395,11 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get schema
-     * @param item
+     * Save schemas
+     * @param items
      */
-    public static async saveSchemas(item: SchemaCollection[]): Promise<SchemaCollection[]> {
-        const result = [];
-        for await (const schema of item) {
-            result.push(await new DataBaseHelper(SchemaCollection).save(schema));
-        }
-        return result;
+    public static async saveSchemas(items: SchemaCollection[]): Promise<SchemaCollection[]> {
+        return await new DataBaseHelper(SchemaCollection).saveMany(items);
     }
 
     /**
@@ -2479,11 +2524,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Get policy
+     * Update policy
      * @param model
      */
     public static async updatePolicy(model: Policy): Promise<Policy> {
         return await new DataBaseHelper(Policy).save(model);
+    }
+
+    /**
+     * Update policies
+     * @param models
+     */
+    public static async savePolicies(models: Policy[]): Promise<Policy[]> {
+        return await new DataBaseHelper(Policy).saveMany(models);
     }
 
     /**
@@ -2935,6 +2988,15 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
+     * Save Artifacts
+     * @param artifacts Artifacts
+     * @returns Saved Artifacts
+     */
+    public static async saveArtifacts(artifacts: ArtifactCollection[]): Promise<ArtifactCollection[]> {
+        return await new DataBaseHelper(ArtifactCollection).saveMany(artifacts);
+    }
+
+    /**
      * Get Artifact
      * @param filters Filters
      * @returns Artifact
@@ -3294,11 +3356,19 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     }
 
     /**
-     * Update tags
-     * @param row
+     * Update tag
+     * @param tag
      */
-    public static async updateTag(row: Tag): Promise<Tag> {
-        return await new DataBaseHelper(Tag).update(row);
+    public static async updateTag(tag: Tag): Promise<Tag> {
+        return await new DataBaseHelper(Tag).update(tag);
+    }
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public static async updateTags(tags: Tag[]): Promise<Tag[]> {
+        return await new DataBaseHelper(Tag).updateMany(tags);
     }
 
     /**
@@ -3325,6 +3395,14 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      */
     public static async updateTagCache(row: TagCache): Promise<TagCache> {
         return await new DataBaseHelper(TagCache).update(row);
+    }
+
+    /**
+     * Update tags cache
+     * @param rows
+     */
+    public static async updateTagsCache(rows: TagCache[]): Promise<TagCache[]> {
+        return await new DataBaseHelper(TagCache).updateMany(rows);
     }
 
     /**

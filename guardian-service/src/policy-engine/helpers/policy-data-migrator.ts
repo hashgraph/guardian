@@ -659,6 +659,8 @@ export class PolicyDataMigrator {
     ) {
         const result: any = {};
 
+        const tokenObjects = []
+
         const dataBaseServer = new DatabaseServer();
 
         for (const [tokenTemplate, tokenId] of Object.entries(tokenTemplates)) {
@@ -673,7 +675,8 @@ export class PolicyDataMigrator {
                 delete existingToken._id;
                 delete existingToken.id;
                 existingToken.policyId = this._policyId;
-                await dataBaseServer.save(Token, existingToken);
+
+                tokenObjects.push(existingToken);
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -694,10 +697,14 @@ export class PolicyDataMigrator {
                 }) as any
             );
             tokenObject.policyId = this._policyId;
-            await dataBaseServer.save(Token, tokenObject);
+
+            tokenObjects.push(tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
         }
+
+        await dataBaseServer.saveMany(Token, tokenObjects);
+
         return result;
     }
 
@@ -758,14 +765,10 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
-// <<<<<<< HEAD
-//         const contract = await dataBaseServer.save(Contract, {
-// =======
         const version = await getContractVersion(
             log
         );
         const contract = await dataBaseServer.save(Contract, {
-// >>>>>>> develop
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,
