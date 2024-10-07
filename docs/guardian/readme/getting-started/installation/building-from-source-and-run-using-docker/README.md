@@ -126,6 +126,10 @@ This configuration allows you to leave untouched all the data referring to Mainn
 **Note** for any other GUARDIAN\_ENV name of your choice just copy and paste the file `/configs/.env.template.guardian.system` and rename as `/configs/.env.<choosen name>.guardian.system`
 {% endhint %}
 
+#### 3.2 Setting up JWT keys in /`.env` file
+
+To start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+
 4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 
 #### 4.1 Setting up IPFS Local node:
@@ -216,7 +220,7 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 
 ### Process on How to Configure SSL Encryption:
 
-1. &#x20;Install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
+1. Install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
 2. Navigate to `certs` folder and execute
 
 ```
