@@ -39,7 +39,7 @@ $sizes: (
     }
 
     .col-auto {
-        width: auto;
+        width: 100%;
     }
 
     @each $name, $size in $sizes {
