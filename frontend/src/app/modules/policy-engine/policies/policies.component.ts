@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { ContractType, IUser, PolicyHelper, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
