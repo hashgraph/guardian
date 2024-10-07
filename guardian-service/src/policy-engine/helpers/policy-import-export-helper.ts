@@ -347,7 +347,6 @@ export class PolicyImport {
 
         for (const addedArtifact of this.artifactsResult.artifacts) {
             addedArtifact.policyId = policy.id;
-            // await DatabaseServer.saveArtifact(addedArtifact);
 
             artifactObjects.push(addedArtifact);
         }

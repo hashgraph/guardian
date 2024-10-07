@@ -756,8 +756,6 @@ export class PolicyEngine extends NatsService {
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
 
-            // const policyObjects = []
-
             for (const token of tokens) {
                 let _token = token;
                 if (token.draftToken) {
@@ -770,11 +768,7 @@ export class PolicyEngine extends NatsService {
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
 
                     model = await DatabaseServer.updatePolicy(model);
-
-                    // policyObjects.push(model);
                 }
-
-                // await DatabaseServer.savePolicies(policyObjects);
 
                 const tokenMessage = new TokenMessage(MessageAction.UseToken);
                 tokenMessage.setDocument(_token);

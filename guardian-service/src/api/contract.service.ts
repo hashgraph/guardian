@@ -497,8 +497,6 @@ export async function syncWipeContract(
             break;
         }
 
-        // const wiperRequestRecords = []
-
         for (const log of result) {
             const eventName = eventAbi.getEventName(log.topics[0]);
             const data = eventAbi.decodeEventLog(eventName, log.data);
@@ -591,11 +589,6 @@ export async function syncWipeContract(
                             contractId,
                         });
 
-                        // wiperRequestRecords.push({
-                        //     user,
-                        //     contractId,
-                        // });
-
                         if (!sendNotifications) {
                             break;
                         }
@@ -623,12 +616,6 @@ export async function syncWipeContract(
                             contractId,
                             token
                         });
-
-                        // wiperRequestRecords.push({
-                        //     user,
-                        //     contractId,
-                        //     token
-                        // });
 
                         if (!sendNotifications) {
                             break;
@@ -687,8 +674,6 @@ export async function syncWipeContract(
                     break;
             }
         }
-
-        // await dataBaseServer.saveMany(Token, wiperRequestRecords);
 
         lastTimeStamp = result[result.length - 1].timestamp;
         timestamps.push(lastTimeStamp);
