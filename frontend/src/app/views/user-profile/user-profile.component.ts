@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { forkJoin } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';

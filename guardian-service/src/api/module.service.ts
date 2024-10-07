@@ -492,11 +492,15 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 if (Array.isArray(schemas)) {
+                    const schemaObjects = []
+
                     for (const schema of schemas) {
                         const schemaObject = DatabaseServer.createSchema(schema);
                         schemaObject.category = SchemaCategory.MODULE;
-                        await DatabaseServer.saveSchema(schemaObject);
+
+                        schemaObjects.push(schemaObject);
                     }
+                    await DatabaseServer.saveSchemas(schemaObjects);
                 }
 
                 return new MessageResponse(item);

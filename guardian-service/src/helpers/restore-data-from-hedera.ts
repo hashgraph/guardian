@@ -213,25 +213,32 @@ export class RestoreDataFromHedera {
     ): Promise<void> {
         const dataBaseServer = new DatabaseServer();
 
+        const didDocumentObjects = []
+        const vcDocumentObjects = []
+        const vpDocumentObjects = []
+
         for (const row of topicMessages) {
             await this.loadIPFS(row);
             switch (row.constructor) {
                 case DIDMessage: {
                     const message = row as DIDMessage;
-                    await dataBaseServer.save(DidDocumentCollection, {
+
+                    didDocumentObjects.push({
                         did: message.document.id,
                         document: message.document,
                         status: DidDocumentStatus.CREATE,
                         messageId: message.id,
                         topicId: message.topicId,
                     });
+
                     break;
                 }
 
                 case VCMessage: {
                     const message = row as VCMessage;
                     const vcDoc = VcDocument.fromJsonTree(message.document);
-                    await dataBaseServer.save(VcDocumentCollection, {
+
+                    vcDocumentObjects.push({
                         hash: vcDoc.toCredentialHash(),
                         owner,
                         messageId: message.id,
@@ -240,13 +247,15 @@ export class RestoreDataFromHedera {
                         document: vcDoc.toJsonTree(),
                         type: undefined,
                     });
+
                     break;
                 }
 
                 case VPMessage: {
                     const message = row as VPMessage;
                     const vpDoc = VpDocument.fromJsonTree(message.document);
-                    await dataBaseServer.save(VpDocumentCollection, {
+
+                    vpDocumentObjects.push({
                         hash: vpDoc.toCredentialHash(),
                         policyId,
                         owner,
@@ -255,6 +264,7 @@ export class RestoreDataFromHedera {
                         document: vpDoc.toJsonTree(),
                         type: undefined,
                     });
+
                     break;
                 }
 
@@ -312,6 +322,12 @@ export class RestoreDataFromHedera {
                     console.error('Unknown message type', row);
             }
         }
+
+        await dataBaseServer.saveMany(DidDocumentCollection, didDocumentObjects);
+
+        await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentObjects);
+
+        await dataBaseServer.saveMany(VpDocumentCollection, vpDocumentObjects);
     }
 
     /**

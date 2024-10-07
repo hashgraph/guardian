@@ -342,10 +342,16 @@ export class PolicyImport {
 
     private async saveArtifacts(policy: Policy) {
         this.notifier.completedAndStart('Saving artifacts in DB');
+
+        const artifactObjects = []
+
         for (const addedArtifact of this.artifactsResult.artifacts) {
             addedArtifact.policyId = policy.id;
-            await DatabaseServer.saveArtifact(addedArtifact);
+
+            artifactObjects.push(addedArtifact);
         }
+
+        await DatabaseServer.saveArtifacts(artifactObjects);
     }
 
     private async saveTests(policy: Policy) {
