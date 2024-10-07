@@ -12,7 +12,7 @@ import {
     PinoLogger,
     RetirePool,
     RetireRequest,
-    Schema as SchemaCollection, Token,
+    Schema as SchemaCollection,
     Topic,
     TopicConfig,
     TopicHelper,
