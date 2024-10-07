@@ -577,7 +577,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Entities and count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async findAndCount(filters: FilterObject<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
+    public async findAndCount(filters: FilterQuery<T> | string | ObjectId, options?: unknown): Promise<[T[], number]> {
         return await this._em.findAndCount(this.entityClass, filters, options);
     }
 
@@ -588,7 +588,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
      * @returns Count
      */
     @CreateRequestContext(() => DataBaseHelper.orm)
-    public async count(filters?: FilterObject<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
+    public async count(filters?: FilterQuery<T> | string | ObjectId, options?: FindOptions<unknown>): Promise<number> {
         return await this._em.count(this.entityClass, filters, options);
     }
 

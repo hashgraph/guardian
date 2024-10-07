@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -16,20 +16,20 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 })
 export class ChangePasswordComponent implements OnInit {
     public loading: boolean = false;
-    public changeForm = new FormGroup({
-        login: new FormControl('', [
+    public changeForm = new UntypedFormGroup({
+        login: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),
-        oldPassword: new FormControl('', [
+        oldPassword: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),
-        newPassword: new FormControl('', [
+        newPassword: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),
-        confirmPassword: new FormControl('', [
+        confirmPassword: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),

@@ -1,5 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Subscription } from 'rxjs';
@@ -29,15 +29,15 @@ const MY_FORMATS = {
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     public key: string;
     subscription = new Subscription();
-    @Input('formGroup') control: FormGroup;
+    @Input('formGroup') control: UntypedFormGroup;
     public formattedImageLink = ''
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
-    public datePicker = new FormGroup({
-        from: new FormControl(),
-        to: new FormControl()
+    public datePicker = new UntypedFormGroup({
+        from: new UntypedFormControl(),
+        to: new UntypedFormControl()
     });
-    protected readonly FormControl = FormControl;
+    protected readonly FormControl = UntypedFormControl;
 
     constructor(
         private cdkRef: ChangeDetectorRef,
@@ -48,16 +48,16 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     ngOnChanges(changes: SimpleChanges): void {
     }
 
-    get formControl(): FormGroup {
-        return this.control || new FormGroup({})
+    get formControl(): UntypedFormGroup {
+        return this.control || new UntypedFormGroup({})
     }
 
-    getControlByName(name: string): FormControl {
-        return this.control.get(name) as FormControl;
+    getControlByName(name: string): UntypedFormControl {
+        return this.control.get(name) as UntypedFormControl;
     }
 
-    getDateByName(name: string): FormControl {
-        return this.datePicker.get(name) as FormControl;
+    getDateByName(name: string): UntypedFormControl {
+        return this.datePicker.get(name) as UntypedFormControl;
     }
 
     ngOnDestroy() {
@@ -65,13 +65,13 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngOnInit(): void {
-        this.control.registerControl('layers', new FormControl('NATURAL-COLOR', Validators.required));
-        this.control.registerControl('format', new FormControl('image/jpeg', Validators.required));
-        this.control.registerControl('maxcc', new FormControl(30, Validators.required));
-        this.control.registerControl('width', new FormControl(512, Validators.required));
-        this.control.registerControl('height', new FormControl(512, Validators.required));
-        this.control.registerControl('bbox', new FormControl('', Validators.required));
-        this.control.registerControl('time', new FormControl(undefined, Validators.required));
+        this.control.registerControl('layers', new UntypedFormControl('NATURAL-COLOR', Validators.required));
+        this.control.registerControl('format', new UntypedFormControl('image/jpeg', Validators.required));
+        this.control.registerControl('maxcc', new UntypedFormControl(30, Validators.required));
+        this.control.registerControl('width', new UntypedFormControl(512, Validators.required));
+        this.control.registerControl('height', new UntypedFormControl(512, Validators.required));
+        this.control.registerControl('bbox', new UntypedFormControl('', Validators.required));
+        this.control.registerControl('time', new UntypedFormControl(undefined, Validators.required));
 
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {

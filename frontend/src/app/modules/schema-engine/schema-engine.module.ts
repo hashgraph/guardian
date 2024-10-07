@@ -37,6 +37,7 @@ import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     declarations: [
@@ -79,6 +80,7 @@ import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.
         InputTextareaModule,
         CheckboxModule,
         DropdownModule,
+        TooltipModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [

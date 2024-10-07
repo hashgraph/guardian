@@ -478,3 +478,45 @@
     top: -1px;
     margin-left: 5px;
 }
+
+.default-values {
+    display: grid;
+    transition: 250ms grid-template-rows ease;
+
+    &__content {
+        overflow: hidden;
+    }
+
+    &[hide=false] {
+        grid-template-rows: 1fr;
+        margin-top: 16px;
+    }
+
+    &[hide=true] {
+        grid-template-rows: 0fr;
+    }
+}
+
+.selected-values {
+    border-radius: 8px;
+    background-color: var(--color-grey-1);
+    border: 1px solid var(--color-grey-3);
+    padding: 16px;
+
+    &__show-button {
+        padding: 0;
+        width: 108px;
+        height: 28px;
+        background-color: white !important;
+    }
+
+    &__title {
+        font-weight: 500;
+        font-size: 12px;
+        color: var(--color-grey-black-1);
+    }
+
+    &__action {
+        margin-top: 16px;
+    }
+}

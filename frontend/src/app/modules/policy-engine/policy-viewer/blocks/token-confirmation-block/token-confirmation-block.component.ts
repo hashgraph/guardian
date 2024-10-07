@@ -2,7 +2,7 @@ import { Component, ElementRef, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
 /**
@@ -28,14 +28,14 @@ export class TokenConfirmationBlockComponent implements OnInit {
     tokenName: string | null = null;
     tokenId: string | null = null;
 
-    dataForm: FormGroup;
+    dataForm: UntypedFormGroup;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private elRef: ElementRef,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
         this.dataForm = this.fb.group({
             privateKey: ['', Validators.required],

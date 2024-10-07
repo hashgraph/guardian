@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
@@ -8,8 +8,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     styleUrls: ['./forgot-password-dialog.component.scss']
 })
 export class ForgotPasswordDialogComponent implements OnInit {
-    forgotPasswordFormGroup: FormGroup = new FormGroup({
-        username: new FormControl(''),
+    forgotPasswordFormGroup: UntypedFormGroup = new UntypedFormGroup({
+        username: new UntypedFormControl(''),
     });
 
     constructor(private dialogRef: DynamicDialogRef, private dialogConfig: DynamicDialogConfig,) {

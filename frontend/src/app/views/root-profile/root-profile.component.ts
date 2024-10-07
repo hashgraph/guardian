@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
@@ -57,12 +57,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                     Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
                 ])]
     });
-    public selectedTokenId = new FormControl(null, Validators.required);
-    public vcForm = new FormGroup({});
-    public didDocumentForm = new FormControl(null, Validators.required);
-    public didDocumentType = new FormControl(false, Validators.required);
+    public selectedTokenId = new UntypedFormControl(null, Validators.required);
+    public vcForm = new UntypedFormGroup({});
+    public didDocumentForm = new UntypedFormControl(null, Validators.required);
+    public didDocumentType = new UntypedFormControl(false, Validators.required);
     public didKeys: any[] = [];
-    public didKeysControl = new FormGroup({});
+    public didKeysControl = new UntypedFormGroup({});
     public hidePrivateFields = {
         id: true
     };
@@ -78,7 +78,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     constructor(
         private router: Router,
         private auth: AuthService,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private otherService: DemoService,
@@ -196,7 +196,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         }
     }
 
-    private setErrors(form: FormControl | FormGroup, type?: string): void {
+    private setErrors(form: UntypedFormControl | UntypedFormGroup, type?: string): void {
         const errors: any = {};
         errors[type || 'incorrect'] = true;
         form.setErrors(errors);
@@ -227,12 +227,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                             return;
                         }
                         this.didKeys = [];
-                        this.didKeysControl = new FormGroup({});
+                        this.didKeysControl = new UntypedFormGroup({});
                         const names = Object.keys(result.keys);
                         for (const name of names) {
-                            const keyNameControl = new FormControl('', [Validators.required]);
-                            const keyValueControl = new FormControl('', [Validators.required]);
-                            const keyControl = new FormGroup({
+                            const keyNameControl = new UntypedFormControl('', [Validators.required]);
+                            const keyValueControl = new UntypedFormControl('', [Validators.required]);
+                            const keyControl = new UntypedFormGroup({
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
