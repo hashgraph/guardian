@@ -139,7 +139,7 @@
                 height: 40px;
                 z-index: 2;
                 background: var(--guardian-grey-background, #F9FAFC);
-                padding: 8px 16px 0px 16px;
+                padding: 0px 16px 0px 16px;
                 display: flex;
                 flex-direction: row;
                 border-top: 1px solid var(--guardian-border-color, #E1E7EF);
@@ -159,6 +159,7 @@
                     height: 30px;
                     min-width: 70px;
                     padding: 0 5px;
+                    margin-top: 5px;
 
                     .tree-tabs-nav-left {
                         width: 30px;
@@ -220,9 +221,9 @@
                     color: var(--guardian-font-color, #23252E);
                     border: 1px solid #C4D0E1;
                     border-radius: 6px;
-                    border-bottom-width: 0;
-                    border-bottom-left-radius: 0;
-                    border-bottom-right-radius: 0;
+                    border-top-width: 0;
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
                     height: 30px;
                     cursor: pointer;
                     margin-right: 8px;

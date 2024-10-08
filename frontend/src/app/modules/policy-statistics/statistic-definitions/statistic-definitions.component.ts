@@ -275,7 +275,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete Statistic',
-                text: 'Are you sure want to delete statistic?',
+                text: `Are you sure want to delete statistic (${item.name})?`,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -324,7 +324,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     header: 'Publish Statistic',
-                    text: 'Are you sure want to publish statistic?',
+                    text: `Are you sure want to publish statistic (${row.name})?`,
                     buttons: [{
                         name: 'Close',
                         class: 'secondary'
