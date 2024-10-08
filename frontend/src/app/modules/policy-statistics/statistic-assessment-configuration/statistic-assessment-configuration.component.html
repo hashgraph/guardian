@@ -57,16 +57,20 @@
                         <div class="guardian-step-name">Preview</div>
                     </div>
                     <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" [attr.action]="stepper[2]" [attr.highlighted]="stepper[2]">
-                        <div class="guardian-step-marker">
-                            <svg-icon
-                                class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/right-arrow.svg">
-                            </svg-icon>
+
+                    <ng-container *ngIf="scores?.length">
+                        <div class="guardian-step" [attr.action]="stepper[2]" [attr.highlighted]="stepper[2]">
+                            <div class="guardian-step-marker">
+                                <svg-icon
+                                    class="icon-btn svg-icon-16"
+                                    src="/assets/images/icons/16/right-arrow.svg">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-step-name">Scores</div>
                         </div>
-                        <div class="guardian-step-name">Scores</div>
-                    </div>
-                    <div class="guardian-step-separator"></div>
+                        <div class="guardian-step-separator"></div>
+                    </ng-container>
+
                     <div class="guardian-step" [attr.action]="stepper[3]" [attr.highlighted]="stepper[3]">
                         <div class="guardian-step-marker">
                             <svg-icon
@@ -358,9 +362,9 @@
     </div>
     <div class="actions-container">
         <button *ngIf="!stepper[0]" (click)="onPrev()" class="guardian-button guardian-button-secondary">Previous</button>
-        <button *ngIf="stepper[0]" [disabled]="!document" (click)="onNextStep1()" class="guardian-button guardian-button-primary">Next</button>
-        <button *ngIf="stepper[1]" (click)="onNextStep2()" class="guardian-button guardian-button-primary">Next</button>
-        <button *ngIf="stepper[2]" [disabled]="!scoresValid" (click)="onNextStep3()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[0]" [disabled]="!document" (click)="onNextPreview()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[1]" (click)="onNextScores()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[2]" [disabled]="!scoresValid" (click)="onNextFinish()" class="guardian-button guardian-button-primary">Next</button>
         <button *ngIf="stepper[3]" (click)="onCreate()" class="guardian-button guardian-button-primary">Create</button>
     </div>
 </div>

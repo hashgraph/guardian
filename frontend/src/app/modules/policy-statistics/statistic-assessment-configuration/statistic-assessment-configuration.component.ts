@@ -365,7 +365,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         this.onStep(this.stepIndex - 1);
     }
 
-    public onNextStep1() {
+    public onNextPreview() {
         if (!this.document) {
             return;
         }
@@ -376,14 +376,18 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         this.onStep(1);
     }
 
-    public onNextStep2() {
+    public onNextScores() {
         if (!this.document) {
             return;
         }
-        this.onStep(2);
+        if(this.scores && this.scores.length) {
+            this.onStep(2);
+        } else {
+            this.onNextFinish();
+        }
     }
 
-    public onNextStep3() {
+    public onNextFinish() {
         if (!this.document) {
             return;
         }
