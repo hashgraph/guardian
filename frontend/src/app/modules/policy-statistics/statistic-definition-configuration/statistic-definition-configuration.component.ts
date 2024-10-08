@@ -19,6 +19,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
 import { SchemaRule, SchemaRules } from '../models/schema-rules';
 import { StatisticPreviewDialog } from '../dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
+import { DeleteDialogComponent } from '../../common/delete-dialog/delete-dialog.component';
 
 @Component({
     selector: 'app-statistic-definition-configuration',
@@ -499,7 +500,20 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteVariable(formula: any) {
-        this.formulas.delete(formula);
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete formula',
+                text: 'Are you sure want to delete formula?'
+            },
+        });
+        dialogRef.onClose.subscribe((result) => {
+            if (result) {
+                this.formulas.delete(formula);
+            }
+        });
     }
 
     public onAddScore() {
@@ -508,8 +522,21 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteScore(score: SchemaScore) {
-        this.scores.delete(score);
-        this.updateCodeMirror();
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete score',
+                text: 'Are you sure want to delete score?'
+            },
+        });
+        dialogRef.onClose.subscribe((result) => {
+            if (result) {
+                this.scores.delete(score);
+                this.updateCodeMirror();
+            }
+        });
     }
 
     public onEditScore(score: SchemaScore) {

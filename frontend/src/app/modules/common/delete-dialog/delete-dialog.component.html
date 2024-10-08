@@ -1,0 +1,31 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ header }}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div class="confirmation-text">{{ text }}</div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button delete-button">
+            <button 
+                (click)="oneDelete()" 
+                class="guardian-button guardian-button-delete">Delete</button>
+        </div>
+    </div>
+</div>

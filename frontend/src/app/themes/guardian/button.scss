@@ -15,6 +15,7 @@
     cursor: pointer;
     border: 1px solid transparent;
     text-overflow: ellipsis;
+    outline: none !important;
 
     &:hover {
         filter: brightness(0.95);

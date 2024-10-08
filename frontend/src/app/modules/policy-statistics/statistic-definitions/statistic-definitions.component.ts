@@ -7,6 +7,7 @@ import { PolicyStatisticsService } from 'src/app/services/policy-statistics.serv
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
+import { DeleteDialogComponent } from '../../common/delete-dialog/delete-dialog.component';
 
 interface IColumn {
     id: string;
@@ -274,13 +275,26 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     public onDelete(item: any) {
-        this.loading = true;
-        this.policyStatisticsService
-            .deleteDefinition(item)
-            .subscribe((newItem) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete Statistic',
+                text: 'Are you sure want to delete statistic?'
+            },
+        });
+        dialogRef.onClose.subscribe((result) => {
+            if (result) {
+                this.loading = true;
+                this.policyStatisticsService
+                    .deleteDefinition(item)
+                    .subscribe((newItem) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

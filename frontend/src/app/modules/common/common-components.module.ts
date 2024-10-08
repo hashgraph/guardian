@@ -33,6 +33,7 @@ import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { StatusDropdown } from './status-dropdown/status-dropdown.component';
+import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
 
 @NgModule({
     declarations: [
@@ -56,7 +57,8 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
         CompareViewerComponent,
         AlertComponent,
         PaginatorComponent,
-        StatusDropdown
+        StatusDropdown,
+        DeleteDialogComponent
     ],
     imports: [
         CommonModule,
@@ -97,7 +99,8 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
         CompareViewerComponent,
         PaginatorComponent,
         DataInputDialogComponent,
-        StatusDropdown
+        StatusDropdown,
+        DeleteDialogComponent
     ]
 })
 export class CommonComponentsModule { }
