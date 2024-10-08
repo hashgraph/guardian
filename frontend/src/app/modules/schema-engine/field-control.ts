@@ -10,6 +10,7 @@ export const SYSTEM_FIELDS = [
 
 export class FieldControl {
     public readonly name: string;
+
     public controlKey: UntypedFormControl;
     public controlTitle: UntypedFormControl;
     public hidden: UntypedFormControl;
@@ -29,6 +30,7 @@ export class FieldControl {
     public controlDefault: UntypedFormControl;
     public controlSuggest: UntypedFormControl;
     public controlExample: UntypedFormControl;
+
     private readonly _defaultFieldMap!: any;
     private _entityType: UntypedFormControl | undefined;
 

@@ -172,6 +172,7 @@ export class QueueService extends NatsService{
         const workers = await this.getFreeWorkers();
 
         const dataBaseServer = new DatabaseServer();
+
         for (const worker of workers) {
             const task = await dataBaseServer.findOne(TaskEntity, {
                 priority: {
