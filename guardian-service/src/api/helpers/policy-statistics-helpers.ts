@@ -328,7 +328,7 @@ function validateRules(data?: IRuleData[]): IRuleData[] {
     return rules;
 }
 
-export function validateConfig(data: IStatisticConfig): IStatisticConfig {
+export function validateConfig(data?: IStatisticConfig): IStatisticConfig {
     const config: IStatisticConfig = {
         variables: validateVariables(data?.variables),
         scores: validateScores(data?.scores),
@@ -336,6 +336,17 @@ export function validateConfig(data: IStatisticConfig): IStatisticConfig {
         rules: validateRules(data?.rules),
     }
     return config;
+}
+
+export function publishConfig(data?: IStatisticConfig): IStatisticConfig {
+    const rules = data?.rules || [];
+    const variables = data?.variables || [];
+    const schemas = new Set<string>();
+    for (const variable of variables) {
+        schemas.add(variable.schemaId);
+    }
+    data.rules = rules.filter((r) => schemas.has(r.schemaId));
+    return data;
 }
 
 export function getSubject(document: VcDocument): any {

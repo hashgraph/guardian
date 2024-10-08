@@ -3,7 +3,7 @@
     [(ngModel)]="value"
     [options]="list"
     [showClear]="false"
-    class="guardian-dropdown guardian-dropdown-status status-{{value}}"
+    class="guardian-dropdown guardian-dropdown-status status-{{status}}"
     appendTo="body"
     optionLabel="label" 
     optionValue="value"
@@ -25,6 +25,6 @@
         </div>
     </ng-template>
 </p-dropdown>
-<div *ngIf="disabled" class="guardian-disabled-status status-{{value}}">
+<div *ngIf="disabled" class="guardian-disabled-status status-{{status}}">
     {{label}}
 </div>

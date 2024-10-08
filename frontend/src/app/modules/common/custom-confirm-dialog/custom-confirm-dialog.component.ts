@@ -2,14 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
-    selector: 'app-delete-dialog',
-    templateUrl: './delete-dialog.component.html',
-    styleUrls: ['./delete-dialog.component.scss'],
+    selector: 'app-custom-confirm-dialog',
+    templateUrl: './custom-confirm-dialog.component.html',
+    styleUrls: ['./custom-confirm-dialog.component.scss'],
 })
-export class DeleteDialogComponent implements OnInit {
+export class CustomCustomDialogComponent implements OnInit {
     public loading = true;
     public header: string;
     public text: string;
+    public buttons: {
+        name: string,
+        class: string,
+    }[];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -17,17 +21,14 @@ export class DeleteDialogComponent implements OnInit {
     ) {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
+        this.buttons = this.config.data.buttons;
     }
 
     ngOnInit() {
         this.loading = false;
     }
 
-    onClose(): void {
-        this.ref.close(false);
-    }
-
-    oneDelete() {
-        this.ref.close(true);
+    onClick(button?: any): void {
+        this.ref.close(button?.name);
     }
 }

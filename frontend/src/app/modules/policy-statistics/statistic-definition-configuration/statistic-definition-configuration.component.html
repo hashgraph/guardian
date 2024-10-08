@@ -251,7 +251,7 @@
                                                     >
                                                     </div>
                                                 </div>
-                                                <div class="field-select" (click)="onSelectField(item)">
+                                                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
                                                     <p-checkbox 
                                                         class="guardian-checkbox checkbox-24"
                                                         [ngModel]="item.selected" 
@@ -306,7 +306,7 @@
                                                     >
                                                     </div>
                                                 </div>
-                                                <div class="field-select" (click)="onSelectField(item)">
+                                                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
                                                     <p-checkbox 
                                                         class="guardian-checkbox checkbox-24"
                                                         [ngModel]="item.selected" 

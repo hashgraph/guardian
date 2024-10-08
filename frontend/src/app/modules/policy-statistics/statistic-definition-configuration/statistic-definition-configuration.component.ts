@@ -19,7 +19,8 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
 import { SchemaRule, SchemaRules } from '../models/schema-rules';
 import { StatisticPreviewDialog } from '../dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
-import { DeleteDialogComponent } from '../../common/delete-dialog/delete-dialog.component';
+import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+
 
 @Component({
     selector: 'app-statistic-definition-configuration',
@@ -352,7 +353,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
-        if (this.readonly) {
+        if (this.readonly || field.expandable) {
             return;
         }
         field.selected = !field.selected;
@@ -500,17 +501,24 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteVariable(formula: any) {
-        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete formula',
-                text: 'Are you sure want to delete formula?'
+                text: 'Are you sure want to delete formula?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
             },
         });
-        dialogRef.onClose.subscribe((result) => {
-            if (result) {
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
                 this.formulas.delete(formula);
             }
         });
@@ -522,17 +530,24 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onDeleteScore(score: SchemaScore) {
-        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete score',
-                text: 'Are you sure want to delete score?'
+                text: 'Are you sure want to delete score?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
             },
         });
-        dialogRef.onClose.subscribe((result) => {
-            if (result) {
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
                 this.scores.delete(score);
                 this.updateCodeMirror();
             }
@@ -568,7 +583,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
 
     public onSave() {
         this.loading = true;
-        this.rules.update(this.variables);
+        // this.rules.update(this.variables);
         const value = this.overviewForm.value;
         const config = {
             variables: this.variables.getJson(),
@@ -597,7 +612,7 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onPreview() {
-        this.rules.update(this.variables);
+        // this.rules.update(this.variables);
         const value = this.overviewForm.value;
         const config = {
             variables: this.variables.getJson(),

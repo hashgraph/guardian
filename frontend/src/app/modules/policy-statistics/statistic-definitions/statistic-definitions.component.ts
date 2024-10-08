@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { DeleteDialogComponent } from '../../common/delete-dialog/delete-dialog.component';
+import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+
 
 interface IColumn {
     id: string;
@@ -256,14 +257,7 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     public onChangeStatus($event: string, row: any): void {
-        this.loading = true;
-        this.policyStatisticsService
-            .publishDefinition(row)
-            .subscribe((response) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+        this.publish(row)
     }
 
     public onCreateInstance(item: any): void {
@@ -275,17 +269,24 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     public onDelete(item: any) {
-        const dialogRef = this.dialogService.open(DeleteDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete Statistic',
-                text: 'Are you sure want to delete statistic?'
+                text: 'Are you sure want to delete statistic?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
             },
         });
-        dialogRef.onClose.subscribe((result) => {
-            if (result) {
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
                 this.loading = true;
                 this.policyStatisticsService
                     .deleteDefinition(item)
@@ -296,5 +297,55 @@ export class StatisticDefinitionsComponent implements OnInit {
                     });
             }
         });
+    }
+
+    private publish(row: IStatistic) {
+        const rules = row?.config?.rules || [];
+        const main = rules.find((r) => r.type === 'main');
+        if (!main) {
+            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Publish Statistic',
+                    text: 'Statistics cannot be published. Please select main schema.',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result) => { });
+        } else {
+            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Publish Statistic',
+                    text: 'Are you sure want to publish statistic?',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Publish',
+                        class: 'primary'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Publish') {
+                    this.loading = true;
+                    this.policyStatisticsService
+                        .publishDefinition(row)
+                        .subscribe((response) => {
+                            this.loadData();
+                        }, (e) => {
+                            this.loading = false;
+                        });
+                }
+            });
+        }
     }
 }

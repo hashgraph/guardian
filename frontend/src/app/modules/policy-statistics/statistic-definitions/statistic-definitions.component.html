@@ -132,7 +132,8 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'status'">
                                         <status-dropdown
-                                            [(value)]="row.status"
+                                            [status]="row.status"
+                                            [value]="row.status"
                                             [options]="statuses"
                                             (change)="onChangeStatus($event, row)"></status-dropdown>
                                     </ng-container>

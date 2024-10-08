@@ -18,6 +18,7 @@ interface IOptions {
 export class StatusDropdown {
     @Input('options') options!: IOptions[];
     @Input('value') value!: string;
+    @Input('status') status!: string;
     @Output('valueChange') valueChange = new EventEmitter<string>();
     @Output('change') change = new EventEmitter<string>();
 

@@ -2,7 +2,7 @@ import { ApiResponse } from './helpers/api-response.js';
 import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
-import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
+import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -88,7 +88,8 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     'status',
                     'topicId',
                     'messageId',
-                    'policyId'
+                    'policyId',
+                    'config'
                 ];
                 const query: any = {
                     $or: [
@@ -212,7 +213,6 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.name = definition.name;
                 item.description = definition.description;
                 item.method = definition.method;
-                item.config = definition.config;
                 item.config = validateConfig(definition.config);
                 const result = await DatabaseServer.updateStatistic(item);
                 return new MessageResponse(result);
@@ -274,6 +274,9 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item already published.`);
                 }
 
+                item.status = EntityStatus.PUBLISHED;
+                item.config = publishConfig(item.config);
+
                 const statMessage = new StatisticMessage(MessageAction.PublishPolicyStatistic);
                 statMessage.setDocument(item);
 
@@ -286,7 +289,6 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
-                item.status = EntityStatus.PUBLISHED;
 
                 const schema = await generateSchema(item, owner);
                 await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
