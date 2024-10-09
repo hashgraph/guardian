@@ -27,7 +27,7 @@ import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
 import { SuggestionsApi } from './api/service/suggestions.js';
 import { MatchConstraint } from './helpers/decorators/match.validator.js';
-import { NotificationService } from '@guardian/common';
+import { GenerateTLSOptionsNats, NotificationService } from '@guardian/common';
 import { NotificationsApi } from './api/service/notifications.js';
 import { ApplicationEnvironment } from './environment.js';
 import { AuthGuard } from './auth/auth-guard.js';
@@ -55,6 +55,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
+                tls: GenerateTLSOptionsNats()
                 // serializer: new LogClientSerializer(),
                 // deserializer: new LogClientDeserializer()
             }
