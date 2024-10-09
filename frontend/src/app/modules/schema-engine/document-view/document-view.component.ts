@@ -92,7 +92,7 @@ export class DocumentViewComponent implements OnInit {
             this.ref.detectChanges();
         }
         if (type) {
-            this.schemaService.getSchemasByType(type)
+            this.schemaService.getSchemasByTypeAndUser(type)
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((result) => {
                     if (result) {

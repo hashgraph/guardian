@@ -547,6 +547,64 @@ export class SchemaApi {
         try {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
+            schema = await guardians.getSchemaByType(schemaType);
+            if (!schema) {
+                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
+            }
+            if (schema.system && !schema.active && schema.owner !== owner.username && schema.owner !== owner.creator) {
+                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
+            }
+            if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
+                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
+            }
+            return {
+                uuid: schema.uuid,
+                iri: schema.iri,
+                name: schema.name,
+                version: schema.version,
+                document: schema.document,
+                documentURL: schema.documentURL,
+                context: schema.context,
+                contextURL: schema.contextURL,
+            };
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get schema by type
+     */
+    @Get('/type-by-user/:schemaType')
+    @Auth()
+    @ApiOperation({
+        summary: 'Finds the schema using the json document type.',
+        description: 'Finds the schema using the json document type.',
+    })
+    @ApiParam({
+        name: 'schemaType',
+        type: String,
+        description: 'Type',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaByTypeAndUser(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaType') schemaType: string
+    ): Promise<SchemaDTO> {
+        let schema: ISchema;
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
             schema = await guardians.getSchemaByType(schemaType, user.did);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);

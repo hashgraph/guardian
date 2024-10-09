@@ -98,6 +98,10 @@ export class SchemaService {
         return this.http.get<ISchema>(`${this.url}/type/${type}`);
     }
 
+    public getSchemasByTypeAndUser(type: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/type-by-user/${type}`);
+    }
+
     public publish(id: string, version: string): Observable<ISchema[]> {
         return this.http.put<any[]>(`${this.url}/${id}/publish`, { version });
     }
