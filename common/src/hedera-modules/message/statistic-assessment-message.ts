@@ -112,7 +112,7 @@ export class StatisticAssessmentMessage extends Message {
      * To documents
      */
     public async toDocuments(key: string): Promise<ArrayBuffer[]> {
-        let document = JSON.stringify(this.document);
+        const document = JSON.stringify(this.document);
         const buffer = Buffer.from(document);
         return [buffer];
     }

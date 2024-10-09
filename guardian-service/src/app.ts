@@ -49,7 +49,7 @@ import {
     PolicyModule,
     PolicyProperty,
     PolicyRoles,
-    PolicyStatistic, 
+    PolicyStatistic,
     PolicyStatisticDocument,
     PolicyTest,
     PolicyTool,
@@ -451,7 +451,7 @@ Promise.all([
         'policy-discontinue',
         async () => {
             const date = new Date();
-            const policiesToDiscontunie = await dataBaseServer.find(Policy,{
+            const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });

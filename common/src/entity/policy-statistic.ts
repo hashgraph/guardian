@@ -87,7 +87,7 @@ export class PolicyStatistic extends BaseEntity implements IStatistic {
         index: true
     })
     policyInstanceTopicId?: string;
-    
+
     /**
      * Config
      */

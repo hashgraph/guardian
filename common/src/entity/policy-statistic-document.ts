@@ -109,7 +109,6 @@ export class PolicyStatisticDocument extends BaseEntity implements IStatistic {
     @Property({ nullable: true })
     documentFileId?: ObjectId;
 
-
     /**
      * Set defaults
      */
@@ -117,7 +116,6 @@ export class PolicyStatisticDocument extends BaseEntity implements IStatistic {
     setDefaults() {
         this.uuid = this.uuid || GenerateUUIDv4();
     }
-
 
     /**
      * Create document
