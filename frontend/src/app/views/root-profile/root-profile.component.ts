@@ -635,6 +635,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 title,
                 type: 'VC',
                 viewDocument: true,
+                getByUser: true
             },
         });
         dialogRef.onClose.subscribe(async (result) => {

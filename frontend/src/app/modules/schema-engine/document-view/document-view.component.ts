@@ -15,6 +15,7 @@ import { SchemaService } from 'src/app/services/schema.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
@@ -92,25 +93,47 @@ export class DocumentViewComponent implements OnInit {
             this.ref.detectChanges();
         }
         if (type) {
-            this.schemaService.getSchemasByTypeAndUser(type)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((result) => {
-                    if (result) {
-                        try {
-                            this.schemaMap[type] = new Schema(result);
-                        } catch (error) {
+            if (this.getByUser) {
+                this.schemaService.getSchemasByTypeAndUser(type)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe((result) => {
+                        if (result) {
+                            try {
+                                this.schemaMap[type] = new Schema(result);
+                            } catch (error) {
+                                this.schemaMap[type] = null;
+                            }
+                        } else {
                             this.schemaMap[type] = null;
                         }
-                    } else {
+                        this.loading--;
+                        this.ref.detectChanges();
+                    }, (error) => {
                         this.schemaMap[type] = null;
-                    }
-                    this.loading--;
-                    this.ref.detectChanges();
-                }, (error) => {
-                    this.schemaMap[type] = null;
-                    this.loading--;
-                    this.ref.detectChanges();
-                });
+                        this.loading--;
+                        this.ref.detectChanges();
+                    });
+            } else {
+                this.schemaService.getSchemasByType(type)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe((result) => {
+                        if (result) {
+                            try {
+                                this.schemaMap[type] = new Schema(result);
+                            } catch (error) {
+                                this.schemaMap[type] = null;
+                            }
+                        } else {
+                            this.schemaMap[type] = null;
+                        }
+                        this.loading--;
+                        this.ref.detectChanges();
+                    }, (error) => {
+                        this.schemaMap[type] = null;
+                        this.loading--;
+                        this.ref.detectChanges();
+                    });
+            }
         } else {
             this.schemaMap[type] = null;
             this.loading--;
