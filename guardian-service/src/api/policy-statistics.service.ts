@@ -1,6 +1,6 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
 import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
 
@@ -163,7 +163,9 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
-                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED);
+                const all = []
+                    .concat(schemas, toolSchemas)
+                    .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
                 if (item.status === EntityStatus.PUBLISHED) {
                     const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
                     return new MessageResponse({
@@ -343,7 +345,16 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policyId: string = item.policyId;
-                const rules = item.config?.rules || [];
+                let rules = item.config?.rules || [];
+
+                const schemas = await DatabaseServer.getSchemas({
+                    topicId: item.policyTopicId,
+                    entity: { $nin: [SchemaEntity.EVC] }
+                });
+                const schemasMap = new Set<string>(schemas.map((s) => s.iri));
+
+                rules = rules.filter((r) => schemasMap.has(r.schemaId));
+
                 const targets = rules.filter((r) => r.type === 'main');
                 const sub = rules.filter((r) => r.type === 'related');
                 const all = rules.filter((r) => r.type === 'unrelated');

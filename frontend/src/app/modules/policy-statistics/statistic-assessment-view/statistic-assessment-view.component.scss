@@ -120,6 +120,7 @@
                 min-height: 42px;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                user-select: text;
             }
 
             .field-value-array {
