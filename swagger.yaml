@@ -7499,6 +7499,38 @@ paths:
       tags: *ref_13
       security:
         - bearer: []
+  /schemas/type-by-user/{schemaType}:
+    get:
+      operationId: SchemaApi_getSchemaByTypeAndUser
+      summary: Finds the schema using the json document type.
+      description: Finds the schema using the json document type.
+      parameters:
+        - name: schemaType
+          required: true
+          in: path
+          description: Type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearer: []
   /schemas/list/all:
     get:
       operationId: SchemaApi_getAll

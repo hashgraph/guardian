@@ -1,4 +1,6 @@
 import express from 'express'
+import http from 'http'
+import https from 'https'
 import { hostname } from 'os';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
@@ -51,7 +53,39 @@ export class LargePayloadContainer {
      */
     private readonly DOMAIN: string;
 
+    /**
+     * Enable TLS
+     * @private
+     */
+    public enableTLS: boolean;
+
+    /**
+     * TLS cert
+     * @private
+     */
+    private readonly tlsCert: string;
+
+    /**
+     * TLS key
+     */
+    private readonly tlsKey: string;
+
+    /**
+     * TLS CA
+     * @private
+     */
+    private readonly tlsCA: string;
+
     constructor() {
+        this.enableTLS = false;
+
+        if (process.env.TLS_SERVER_CERT && process.env.TLS_SERVER_KEY) {
+            this.enableTLS = true;
+            this.tlsCert = process.env.TLS_SERVER_CERT;
+            this.tlsKey = process.env.TLS_SERVER_KEY;
+            this.tlsCA = process.env.TLS_SERVER_CA
+        }
+
         if (process.env.DIRECT_MESSAGE_PORT) {
             this.PORT = parseInt(process.env.DIRECT_MESSAGE_PORT, 10);
             this._portGenerated = false;
@@ -60,7 +94,8 @@ export class LargePayloadContainer {
             this.PORT = this.generateRandom(50000, 59999);
         }
         this.DOMAIN = (process.env.DIRECT_MESSAGE_HOST) ? process.env.DIRECT_MESSAGE_HOST : hostname();
-        this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : 'http';
+        const defaultProtocol = this.enableTLS ? 'https' : 'http';
+        this.PROTOCOL = (process.env.DIRECT_MESSAGE_PROTOCOL) ? process.env.DIRECT_MESSAGE_PROTOCOL as any : defaultProtocol;
 
         this.objectsMap = new Map();
         this._started = false;
@@ -85,7 +120,19 @@ export class LargePayloadContainer {
             res.send(buf);
         })
 
-        const server = app.listen(this.PORT, () => {
+        let s: http.Server | https.Server;
+
+        if (this.enableTLS) {
+            s = https.createServer({
+                key: this.tlsKey,
+                cert: this.tlsCert,
+                ca: this.tlsCA
+            }, app);
+        } else {
+            s = http.createServer(app);
+        }
+
+        const server = s.listen(this.PORT, () => {
             this._started = true;
             try {
                 // this.logger.info(`Large objects server starts on ${this.PORT} port`, [process.env.SERVICE_CHANNEL?.toUpperCase()]);

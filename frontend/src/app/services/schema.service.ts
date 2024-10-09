@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -96,6 +96,10 @@ export class SchemaService {
 
     public getSchemasByType(type: string): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/type/${type}`);
+    }
+
+    public getSchemasByTypeAndUser(type: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.url}/type-by-user/${type}`);
     }
 
     public publish(id: string, version: string): Observable<ISchema[]> {

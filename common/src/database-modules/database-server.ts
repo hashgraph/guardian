@@ -47,7 +47,8 @@ import {
     GenerateUUIDv4,
     IVC,
     MintTransactionStatus,
-    PolicyTestStatus, PolicyType,
+    PolicyTestStatus,
+    PolicyType,
     SchemaEntity,
     TokenType,
     TopicType,
@@ -2804,7 +2805,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 'username',
                 'hederaAccountId',
                 'active'
-            ] as unknown as PopulatePath.ALL[]
+            ] as unknown as PopulatePath.ALL[],
+            orderBy: {
+                createDate: 1
+            }
         }));
     }
 

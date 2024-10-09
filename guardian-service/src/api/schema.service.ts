@@ -3,7 +3,7 @@ import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { Controller } from '@nestjs/common';
 import { BinaryMessageResponse, DatabaseServer, GenerateBlocks, JsonToXlsx, MessageError, MessageResponse, PinoLogger, RunFunctionAsync, Schema as SchemaCollection, Users, XlsxToJson } from '@guardian/common';
 import { IOwner, ISchema, MessageAPI, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaNode, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { SchemaImportExportHelper, checkForCircularDependency, deleteSchema, copySchemaAsync, createSchemaAndArtifacts, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
+import { checkForCircularDependency, copySchemaAsync, createSchemaAndArtifacts, deleteSchema, findAndPublishSchema, getPageOptions, getSchemaCategory, getSchemaTarget, importSubTools, importTagsByFiles, prepareSchemaPreview, previewToolByMessage, SchemaImportExportHelper, updateSchemaDefs, updateToolConfig } from './helpers/index.js';
 import { PolicyImportExportHelper } from '../policy-engine/helpers/policy-import-export-helper.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
@@ -116,7 +116,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
      * @returns {ISchema[]} - all schemas
      */
     ApiResponse(MessageAPI.GET_SCHEMA,
-        async (msg: { type: string, id: string }) => {
+        async (msg: { type: string, id: string, owner: string }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid load schema parameter');
@@ -126,9 +126,15 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(schema);
                 }
                 if (msg.type) {
-                    const iri = `#${msg.type}`;
-                    const schema = await DatabaseServer.getSchema({ iri });
-                    return new MessageResponse(schema);
+                    if (msg.owner) {
+                        const iri = `#${msg.type}`;
+                        const schema = await DatabaseServer.getSchema({iri, owner: msg.owner});
+                        return new MessageResponse(schema);
+                    } else {
+                        const iri = `#${msg.type}`;
+                        const schema = await DatabaseServer.getSchema({iri});
+                        return new MessageResponse(schema);
+                    }
                 }
                 return new MessageError('Invalid load schema parameter');
             } catch (error) {
