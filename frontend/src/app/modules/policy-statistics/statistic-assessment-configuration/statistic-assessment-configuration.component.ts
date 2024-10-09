@@ -323,7 +323,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         } else if (result.length === 1) {
             return result[0];
         } else {
-            return 'N/A';
+            return undefined;
         }
     }
 
@@ -337,16 +337,12 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
                 if (value) {
                     value = value[path[i]]
                 } else {
-                    return '';
+                    return undefined;
                 }
             }
-            if (value) {
-                return value;
-            } else {
-                return '';
-            }
+            return value;
         } else {
-            return 'N/A';
+            return undefined;
         }
     }
 
@@ -380,7 +376,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         if (!this.document) {
             return;
         }
-        if(this.scores && this.scores.length) {
+        if (this.scores && this.scores.length) {
             this.onStep(2);
         } else {
             this.onNextFinish();
@@ -422,12 +418,14 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
 
         for (const formula of this.formulas) {
             formula.value = this.calcFormula(formula, document);
-            if (formula.type === 'string') {
-                formula.value = String(formula.value);
-            } else {
-                formula.value = Number(formula.value);
+            if (formula.value) {
+                if (formula.type === 'string') {
+                    formula.value = String(formula.value);
+                } else {
+                    formula.value = Number(formula.value);
+                }
+                document[formula.id] = formula.value;
             }
-            document[formula.id] = formula.value;
         }
     }
 
@@ -453,7 +451,9 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
         const document: any = {};
 
         for (const field of this.preview) {
-            document[field.id] = field.value;
+            if (field.value !== undefined) {
+                document[field.id] = field.value;
+            }
         }
         for (const score of this.scores) {
             const option = score.options.find((o) => o.value === score.value);
@@ -485,5 +485,13 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
             relationships: Array.from(relationships)
         };
         return report;
+    }
+
+    public getVariableValue(value: any): any {
+        if (value === undefined) {
+            return 'N/A';
+        } else {
+            return value;
+        }
     }
 }

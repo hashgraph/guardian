@@ -95,6 +95,6 @@ export class SchemaFormulas {
     }
 
     public getJson(): any[] {
-        return this.formulas.map((f) => f.getJson());
+        return this.formulas.filter((f) => f.description || f.formula).map((f) => f.getJson());
     }
 }

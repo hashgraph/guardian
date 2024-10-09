@@ -240,13 +240,13 @@
                         <ng-container *ngIf="variable.isArray">
                             <div class="field-value-array">
                                 <div *ngFor="let v of variable.value" class="field-value">
-                                    {{v}}
+                                    {{getVariableValue(v)}}
                                 </div>
                             </div>
                         </ng-container>
                         <ng-container *ngIf="!variable.isArray">
                             <div class="field-value">
-                                {{variable.value}}
+                                {{getVariableValue(variable.value)}}
                             </div>
                         </ng-container>
                     </div>
@@ -266,13 +266,13 @@
                                 <ng-container *ngIf="variable.isArray">
                                     <div class="field-value-array">
                                         <div *ngFor="let v of variable.value" class="field-value">
-                                            {{v}}
+                                            {{getVariableValue(v)}}
                                         </div>
                                     </div>
                                 </ng-container>
                                 <ng-container *ngIf="!variable.isArray">
                                     <div class="field-value">
-                                        {{variable.value}}
+                                        {{getVariableValue(variable.value)}}
                                     </div>
                                 </ng-container>
                             </div>
@@ -313,13 +313,13 @@
                         <ng-container *ngIf="variable.isArray">
                             <div class="field-value-array">
                                 <div *ngFor="let v of variable.value" class="field-value">
-                                    {{v}}
+                                    {{getVariableValue(v)}}
                                 </div>
                             </div>
                         </ng-container>
                         <ng-container *ngIf="!variable.isArray">
                             <div class="field-value">
-                                {{variable.value}}
+                                {{getVariableValue(variable.value)}}
                             </div>
                         </ng-container>
                     </div>
