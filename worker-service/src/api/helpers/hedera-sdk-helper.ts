@@ -1546,7 +1546,7 @@ export class HederaSDKHelper {
         options: { params?: any },
         type: 'nfts' | 'transactions' | 'logs',
         filters?: { [key: string]: any },
-        limit?,
+        limit?: number,
     ) {
         const params: any = {
             ...options,
