@@ -15659,6 +15659,8 @@ components:
             - PERMISSIONS_ROLE_MANAGE
             - STATISTICS_STATISTIC_READ
             - STATISTICS_STATISTIC_CREATE
+            - SCHEMAS_RULE_READ
+            - SCHEMAS_RULE_CREATE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -15743,6 +15745,7 @@ components:
             - TRUST_CHAIN
             - ROLE
             - STATISTIC
+            - RULE
           example: POLICY
         action:
           type: string
@@ -15835,6 +15838,7 @@ components:
             - DRAFT
             - PUBLISHED
             - ERROR
+            - ACTIVE
           example: DRAFT
         config:
           type: object
@@ -15983,3 +15987,51 @@ components:
         - verificationMethod
         - proofPurpose
         - jws
+    SchemaRuleDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    SchemaRuleRelationshipsDTO:
+      type: object
+      properties: {}
