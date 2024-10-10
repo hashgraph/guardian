@@ -46,7 +46,7 @@ export class SchemaFormulas {
     public setDefault() {
         this.names.clear();
         this.startIndex = 1;
-        this.add();
+        // this.add();
     }
 
     public getName(): string {

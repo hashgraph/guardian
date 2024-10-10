@@ -594,7 +594,7 @@
                 <div class="variables-header">
                     Output Fields
                 </div>
-                <div class="variables-grid">
+                <div *ngIf="formulas.formulas.length" class="variables-grid">
                     <div class="variables-grid-header">
                         <div class="variables-grid-cell cell-84">ID</div>
                         <div class="variables-grid-cell cell-200">TYPE</div>
@@ -657,6 +657,16 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                <div *ngIf="!formulas.formulas.length" class="variables-empty-grid">
+                    <div>
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/list.svg"
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                    </div>
+                    <div>There were no formulas created yet.</div>
                 </div>
                 <div *ngIf="!readonly" class="variables-actions">
                     <button 
