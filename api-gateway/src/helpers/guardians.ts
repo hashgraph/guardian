@@ -38,7 +38,9 @@ import {
     StatisticDefinitionDTO,
     StatisticAssessmentDTO,
     StatisticAssessmentRelationshipsDTO,
-    StatisticDefinitionRelationshipsDTO
+    StatisticDefinitionRelationshipsDTO,
+    SchemaRuleDTO,
+    SchemaRuleRelationshipsDTO
 } from '#middlewares';
 
 /**
@@ -591,9 +593,9 @@ export class Guardians extends NatsService {
      */
     public async getSchemaByType(type: string, owner?: string): Promise<ISchema> {
         if (owner) {
-            return await this.sendMessage(MessageAPI.GET_SCHEMA, {type, owner});
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type, owner });
         } else {
-            return await this.sendMessage(MessageAPI.GET_SCHEMA, {type});
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type });
         }
     }
 
@@ -2880,7 +2882,7 @@ export class Guardians extends NatsService {
     /**
      * Get statistic definition
      *
-     * @param id
+     * @param definitionId
      * @param owner
      * @returns Operation Success
      */
@@ -2891,7 +2893,7 @@ export class Guardians extends NatsService {
     /**
      * Get relationships
      *
-     * @param id
+     * @param definitionId
      * @param owner
      *
      * @returns Relationships
@@ -2903,7 +2905,7 @@ export class Guardians extends NatsService {
     /**
      * Return documents
      *
-     * @param id
+     * @param definitionId
      * @param owner
      * @param pageIndex
      * @param pageSize
@@ -2922,7 +2924,7 @@ export class Guardians extends NatsService {
     /**
      * Update statistic definition
      *
-     * @param id
+     * @param definitionId
      * @param definition
      * @param owner
      *
@@ -2939,7 +2941,7 @@ export class Guardians extends NatsService {
     /**
      * Delete statistic definition
      *
-     * @param id
+     * @param definitionId
      * @param owner
      *
      * @returns Operation Success
@@ -2949,9 +2951,9 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Delete statistic definition
+     * Publish statistic definition
      *
-     * @param id
+     * @param definitionId
      * @param owner
      *
      * @returns Operation Success
@@ -2963,8 +2965,8 @@ export class Guardians extends NatsService {
     /**
      * Create statistic assessment
      *
-     * @param id
-     * @param report
+     * @param definitionId
+     * @param assessment
      * @param owner
      *
      * @returns statistic report
@@ -3026,5 +3028,109 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<StatisticAssessmentRelationshipsDTO> {
         return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS, { definitionId, assessmentId, owner });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Create schema rule
+     *
+     * @param rule
+     * @param owner
+     * @returns schema rule
+     */
+    public async createSchemaRule(rule: SchemaRuleDTO, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_RULE, { rule, owner });
+    }
+
+    /**
+     * Return schema rules
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<SchemaRuleDTO>}
+     */
+    public async getSchemaRules(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<SchemaRuleDTO>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULES, { filters, owner });
+    }
+
+    /**
+     * Get schema rule
+     *
+     * @param ruleId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getSchemaRuleById(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getSchemaRuleRelationships(ruleId: string, owner: IOwner): Promise<SchemaRuleRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_RELATIONSHIPS, { ruleId, owner });
+    }
+
+    /**
+     * Update schema rule
+     *
+     * @param ruleId
+     * @param definition
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updateSchemaRule(
+        ruleId: string,
+        rule: SchemaRuleDTO,
+        owner: IOwner
+    ): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_SCHEMA_RULE, { ruleId, rule, owner });
+    }
+
+    /**
+     * Delete schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteSchemaRule(ruleId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Activate schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
     }
 }

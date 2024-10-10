@@ -1,5 +1,5 @@
 import { IVCDocument } from "@guardian/interfaces";
-import { IColumn } from "./grid";
+import { IColumn } from "../../common/models/grid";
 
 export interface IOption {
     id: string;

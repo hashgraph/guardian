@@ -64,7 +64,8 @@ export enum PermissionEntities {
     TOKEN = 'TOKEN',
     TRUST_CHAIN = 'TRUST_CHAIN',
     ROLE = 'ROLE',
-    STATISTIC = 'STATISTIC'
+    STATISTIC = 'STATISTIC',
+    RULE = 'RULE'
 }
 
 /**
@@ -219,7 +220,10 @@ export enum Permissions {
     DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
     //STATISTICS
     STATISTICS_STATISTIC_CREATE = 'STATISTICS_STATISTIC_CREATE',
-    STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ'
+    STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ',
+    //SCHEMA RULES
+    SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
+    SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ'
 }
 
 /**
@@ -1140,6 +1144,21 @@ export const PermissionsArray: {
             action: PermissionActions.CREATE,
             disabled: false
         },
+        //SCHEMA RULE
+        {
+            name: Permissions.SCHEMAS_RULE_READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.SCHEMAS_RULE_CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.CREATE,
+            disabled: false
+        },
         //ACCESS
         {
             name: Permissions.ACCESS_POLICY_ALL,
@@ -1278,7 +1297,9 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_ROLE_UPDATE,
     Permissions.PERMISSIONS_ROLE_DELETE,
     Permissions.PERMISSIONS_ROLE_MANAGE,
-    Permissions.ACCESS_POLICY_ALL
+    Permissions.ACCESS_POLICY_ALL,
+    Permissions.SCHEMAS_RULE_CREATE,
+    Permissions.SCHEMAS_RULE_READ
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

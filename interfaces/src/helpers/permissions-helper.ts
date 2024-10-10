@@ -507,6 +507,15 @@ export class UserPermissions {
         return this.check(Permissions.STATISTICS_STATISTIC_READ);
     }
 
+    //SCHEMA RULES
+    public get SCHEMAS_RULE_CREATE(): boolean {
+        return this.check(Permissions.SCHEMAS_RULE_CREATE);
+    }
+
+    public get SCHEMAS_RULE_READ(): boolean {
+        return this.check(Permissions.SCHEMAS_RULE_READ);
+    }
+
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

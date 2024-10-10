@@ -39,7 +39,8 @@ import {
     PolicyTest,
     Artifact,
     PolicyStatistic,
-    PolicyStatisticDocument
+    PolicyStatisticDocument,
+    SchemaRule
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -397,7 +398,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filter
      */
     async save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
-        if(Array.isArray(item)) {
+        if (Array.isArray(item)) {
             return await this.saveMany(entityClass, item, filter) as any
         }
 
@@ -434,7 +435,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         criteria: FilterQuery<T>,
         row: unknown | unknown[]
     ): Promise<T> {
-        if(Array.isArray(criteria)) {
+        if (Array.isArray(criteria)) {
             return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
         }
 
@@ -3918,5 +3919,52 @@ export class DatabaseServer extends AbstractDatabaseServer {
         filters?: FilterObject<PolicyStatisticDocument>
     ): Promise<number> {
         return await new DataBaseHelper(PolicyStatisticDocument).count(filters);
+    }
+
+    /**
+     * Create Schema Rule
+     * @param rule
+     */
+    public static async createSchemaRule(
+        rule: FilterObject<SchemaRule>
+    ): Promise<SchemaRule> {
+        const item = new DataBaseHelper(SchemaRule).create(rule);
+        return await new DataBaseHelper(SchemaRule).save(item);
+    }
+
+    /**
+     * Get Schema Rule
+     * @param filters
+     * @param options
+     */
+    public static async getSchemaRulesAndCount(
+        filters?: FilterObject<SchemaRule>,
+        options?: FindOptions<unknown>
+    ): Promise<[SchemaRule[], number]> {
+        return await new DataBaseHelper(SchemaRule).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Schema Rule By ID
+     * @param id
+     */
+    public static async getSchemaRuleById(id: string): Promise<SchemaRule | null> {
+        return await new DataBaseHelper(SchemaRule).findOne(id);
+    }
+
+    /**
+     * Update Schema Rule
+     * @param rule
+     */
+    public static async updateSchemaRule(rule: SchemaRule): Promise<SchemaRule> {
+        return await new DataBaseHelper(SchemaRule).update(rule);
+    }
+
+    /**
+     * Delete Schema Rule
+     * @param rule
+     */
+    public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
+        return await new DataBaseHelper(SchemaRule).remove(rule);
     }
 }

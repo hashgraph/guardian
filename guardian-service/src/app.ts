@@ -51,6 +51,7 @@ import {
     PolicyRoles,
     PolicyStatistic,
     PolicyStatisticDocument,
+    SchemaRule,
     PolicyTest,
     PolicyTool,
     Record,
@@ -88,6 +89,7 @@ import { PolicyEngine } from './policy-engine/policy-engine.js';
 import { modulesAPI } from './api/module.service.js';
 import { toolsAPI } from './api/tool.service.js';
 import { statisticsAPI } from './api/policy-statistics.service.js';
+import { schemaRulesAPI } from './api/schema-rules.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
@@ -158,7 +160,8 @@ const necessaryEntity = [
     AssignEntity,
     PolicyTest,
     PolicyStatistic,
-    PolicyStatisticDocument
+    PolicyStatisticDocument,
+    SchemaRule
 ]
 
 Promise.all([
@@ -262,6 +265,7 @@ Promise.all([
         await AssignedEntityAPI(logger)
         await permissionAPI(logger);
         await statisticsAPI(logger);
+        await schemaRulesAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
