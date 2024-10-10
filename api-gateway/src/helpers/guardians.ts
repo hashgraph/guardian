@@ -29,7 +29,17 @@ import {
 } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
-import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO } from '#middlewares';
+import {
+    ModuleDTO,
+    TagDTO,
+    ThemeDTO,
+    TokenDTO,
+    ToolDTO,
+    StatisticDefinitionDTO,
+    StatisticAssessmentDTO,
+    StatisticAssessmentRelationshipsDTO,
+    StatisticDefinitionRelationshipsDTO
+} from '#middlewares';
 
 /**
  * Filters type
@@ -527,7 +537,7 @@ export class Guardians extends NatsService {
      * @returns {any} Demo Key
      */
     public async generateDemoKey(role: string, userId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role, userId });
     }
 
     /**
@@ -537,7 +547,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task, userId });
     }
 
     /**
@@ -2823,7 +2833,7 @@ export class Guardians extends NatsService {
      * @param pageSize
      */
     public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { userId: user.id.toString(), pageIndex, pageSize });
     }
 
     /**
@@ -2832,7 +2842,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async restartTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.RESTART_TASK, { taskId, userId });
     }
 
     /**
@@ -2841,6 +2851,180 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async deleteTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.DELETE_TASK, { taskId, userId });
+    }
+
+    /**
+     * Create statistic definition
+     *
+     * @param definition
+     * @param owner
+     * @returns statistic
+     */
+    public async createStatisticDefinition(definition: StatisticDefinitionDTO, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC_DEFINITION, { definition, owner });
+    }
+
+    /**
+     * Return statistic definitions
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<StatisticDefinitionDTO>}
+     */
+    public async getStatisticDefinitions(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<StatisticDefinitionDTO>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DEFINITIONS, { filters, owner });
+    }
+
+    /**
+     * Get statistic definition
+     *
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getStatisticDefinitionById(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param id
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getStatisticRelationships(definitionId: string, owner: IOwner): Promise<StatisticDefinitionRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_RELATIONSHIPS, { definitionId, owner });
+    }
+
+    /**
+     * Return documents
+     *
+     * @param id
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getStatisticDocuments(
+        definitionId: string,
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DOCUMENTS, { definitionId, owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Update statistic definition
+     *
+     * @param id
+     * @param definition
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updateStatisticDefinition(
+        definitionId: string,
+        definition: StatisticDefinitionDTO,
+        owner: IOwner
+    ): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_STATISTIC_DEFINITION, { definitionId, definition, owner });
+    }
+
+    /**
+     * Delete statistic definition
+     *
+     * @param id
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteStatisticDefinition(definitionId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Delete statistic definition
+     *
+     * @param id
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async publishStatisticDefinition(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Create statistic assessment
+     *
+     * @param id
+     * @param report
+     * @param owner
+     *
+     * @returns statistic report
+     */
+    public async createStatisticAssessment(
+        definitionId: string,
+        assessment: StatisticAssessmentDTO,
+        owner: IOwner
+    ): Promise<StatisticAssessmentDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC_ASSESSMENT, { definitionId, assessment, owner });
+    }
+
+    /**
+     * Return statistic assessments
+     *
+     * @param definitionId
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<StatisticAssessmentDTO>}
+     */
+    public async getStatisticAssessments(
+        definitionId: string,
+        filters: IFilter,
+        owner: IOwner
+    ): Promise<ResponseAndCount<StatisticAssessmentDTO>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENTS, { definitionId, filters, owner });
+    }
+
+    /**
+     * Get statistic assessment
+     *
+     * @param definitionId
+     * @param assessmentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getStatisticAssessment(
+        definitionId: string,
+        assessmentId: string,
+        owner: IOwner
+    ): Promise<StatisticAssessmentDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT, { definitionId, assessmentId, owner });
+    }
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param definitionId
+     * @param assessmentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getStatisticAssessmentRelationships(
+        definitionId: string,
+        assessmentId: string,
+        owner: IOwner
+    ): Promise<StatisticAssessmentRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS, { definitionId, assessmentId, owner });
     }
 }

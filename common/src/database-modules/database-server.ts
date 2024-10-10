@@ -2,9 +2,7 @@ import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
-    Artifact,
     ArtifactChunk as ArtifactChunkCollection,
-    AssignEntity,
     BlockCache,
     BlockState,
     Contract as ContractCollection,
@@ -19,15 +17,11 @@ import {
     MultiPolicy,
     MultiPolicyTransaction,
     Policy,
-    PolicyCache,
-    PolicyCacheData,
     PolicyCategory,
     PolicyInvitations,
     PolicyModule,
     PolicyRoles as PolicyRolesCollection,
-    PolicyTest,
     Record,
-    RetirePool,
     Schema as SchemaCollection,
     SplitDocuments,
     SuggestionsConfig,
@@ -38,9 +32,27 @@ import {
     VcDocument as VcDocumentCollection,
     VpDocument,
     VpDocument as VpDocumentCollection,
+    PolicyCache,
+    PolicyCacheData,
+    RetirePool,
+    AssignEntity,
+    PolicyTest,
+    Artifact,
+    PolicyStatistic,
+    PolicyStatisticDocument
 } from '../entity/index.js';
 import { Binary } from 'bson';
-import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyType, SchemaEntity, TokenType, TopicType, } from '@guardian/interfaces';
+import {
+    AssignedEntityType,
+    GenerateUUIDv4,
+    IVC,
+    MintTransactionStatus,
+    PolicyTestStatus,
+    PolicyType,
+    SchemaEntity,
+    TokenType,
+    TopicType,
+} from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
@@ -57,7 +69,7 @@ import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 /**
  * Database server
  */
-export class DatabaseServer extends AbstractDatabaseServer  {
+export class DatabaseServer extends AbstractDatabaseServer {
     /**
      * Dry-run
      * @private
@@ -292,7 +304,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      */
     public async aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: FilterObject<T>[]): Promise<T[]> {
         if (this.dryRun) {
-            const dryRunClass =  this.classMap.get(entityClass)
+            const dryRunClass = this.classMap.get(entityClass)
 
             return await new DataBaseHelper(DryRun).aggregateDryRan(aggregation, this.dryRun, dryRunClass) as unknown as T[];
         } else {
@@ -1043,7 +1055,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      *
      * @virtual
      */
-    public async createAggregateDocuments(item: VcDocumentCollection & {blockId: string}, blockId: string): Promise<void> {
+    public async createAggregateDocuments(item: VcDocumentCollection & { blockId: string }, blockId: string): Promise<void> {
         item.blockId = blockId;
         const newVC = this.create(AggregateVC, item);
         await this.save(AggregateVC, newVC);
@@ -1458,7 +1470,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      *
      * @virtual
      */
-    public async getGroupsByUser(policyId: string, did: string, options?: unknown ): Promise<PolicyRolesCollection[]> {
+    public async getGroupsByUser(policyId: string, did: string, options?: unknown): Promise<PolicyRolesCollection[]> {
         if (!did) {
             return [];
         }
@@ -2904,7 +2916,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
     public static async setVirtualFile(
         policyId: string,
         file: ArrayBuffer,
-        url: {url: string}
+        url: { url: string }
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
             document: {
@@ -3379,7 +3391,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      * @param filters
      * @param options
      */
-    public static async getTagCache(filters?: FilterQuery<TagCache> , options?: FindOptions<TagCache>): Promise<TagCache[]> {
+    public static async getTagCache(filters?: FilterQuery<TagCache>, options?: FindOptions<TagCache>): Promise<TagCache[]> {
         return await new DataBaseHelper(TagCache).find(filters, options);
     }
 
@@ -3488,7 +3500,7 @@ export class DatabaseServer extends AbstractDatabaseServer  {
             extendedFilters.dryRunId = dryRun;
             extendedFilters.dryRunClass = 'VpDocumentCollection';
 
-            const items = await new DataBaseHelper(DryRun).find(extendedFilters );
+            const items = await new DataBaseHelper(DryRun).find(extendedFilters);
 
             for (const item of items) {
                 Object.assign(item, value);
@@ -3760,5 +3772,151 @@ export class DatabaseServer extends AbstractDatabaseServer  {
      */
     public deleteEntity<T extends BaseEntity>(entityClass: new () => T, filters: FilterObject<T> | string | ObjectId): Promise<number> {
         return new DataBaseHelper(entityClass).delete(filters);
+    }
+
+    /**
+     * Create Statistic
+     * @param statistic
+     */
+    public static async createStatistic(
+        statistic: FilterObject<PolicyStatistic>
+    ): Promise<PolicyStatistic> {
+        const item = new DataBaseHelper(PolicyStatistic).create(statistic);
+        return await new DataBaseHelper(PolicyStatistic).save(item);
+    }
+
+    /**
+     * Get Statistics
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticsAndCount(
+        filters?: FilterObject<PolicyStatistic>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyStatistic[], number]> {
+        return await new DataBaseHelper(PolicyStatistic).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Statistic By ID
+     * @param id
+     */
+    public static async getStatisticById(id: string): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(id);
+    }
+
+    /**
+     * Get Statistic
+     * @param filters
+     */
+    public static async getStatistic(filters: FilterQuery<PolicyStatistic>): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(filters);
+    }
+
+    /**
+     * Delete Statistic
+     * @param statistic
+     */
+    public static async removeStatistic(statistic: PolicyStatistic): Promise<void> {
+        return await new DataBaseHelper(PolicyStatistic).remove(statistic);
+    }
+
+    /**
+     * Get Statistics
+     * @param filters
+     * @param options
+     */
+    public static async getStatistics(
+        filters?: FilterQuery<PolicyStatistic>,
+        options?: unknown
+    ): Promise<PolicyStatistic[]> {
+        return await new DataBaseHelper(PolicyStatistic).find(filters, options);
+    }
+
+    /**
+     * Update Statistic
+     * @param row
+     */
+    public static async updateStatistic(row: PolicyStatistic): Promise<PolicyStatistic> {
+        return await new DataBaseHelper(PolicyStatistic).update(row);
+    }
+
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocumentsAndCount(
+        filters?: FilterObject<VcDocumentCollection>,
+        options?: FindOptions<unknown>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
+
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocuments(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection[]> {
+        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get document
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocument(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Create Statistic
+     * @param assessment
+     */
+    public static async createStatisticAssessment(
+        assessment: FilterObject<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument> {
+        const item = new DataBaseHelper(PolicyStatisticDocument).create(assessment);
+        return await new DataBaseHelper(PolicyStatisticDocument).save(item);
+    }
+
+    /**
+     * Get statistic assessment
+     * @param filters
+     */
+    public static async getStatisticAssessment(
+        filters: FilterQuery<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument | null> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findOne(filters);
+    }
+
+    /**
+     * Get statistic assessments
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticAssessmentsAndCount(
+        filters?: FilterObject<PolicyStatisticDocument>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyStatisticDocument[], number]> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic assessment count
+     * @param filters
+     */
+    public static async getStatisticAssessmentCount(
+        filters?: FilterObject<PolicyStatisticDocument>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyStatisticDocument).count(filters);
     }
 }

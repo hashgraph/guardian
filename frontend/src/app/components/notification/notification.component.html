@@ -21,7 +21,7 @@
                         class="link-btn">Mark all as read
                     </button>
                 </div>
-                <div (scroll)="onScrollNotifications($event)" *ngIf="progressNotifications?.length"
+                <div (scroll)="onScrollNotifications($event)" *ngIf="progressNotifications.length"
                     class="notification-list">
                     <div *ngFor="let notification of progressNotifications" [attr.unread]="true" class="notification">
                         <div *ngIf="notification.taskId" [routerLink]="'/task/' + notification.taskId"

@@ -38,6 +38,36 @@ export async function accessSchema(
 }
 
 /**
+ * Generate Schema Context
+ * @param item
+ */
+export function generateSchemaContext(item: SchemaCollection) {
+    const itemDocument = item.document;
+    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
+    const names = Object.keys(itemDocument.properties);
+    for (const name of names) {
+        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
+        if (!field.type) {
+            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
+        }
+        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
+            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
+        }
+    }
+    let additionalContexts: Map<string, any>;
+    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
+        additionalContexts = new Map<string, any>();
+        if (itemDocument.$defs['#GeoJSON']) {
+            additionalContexts.set('#GeoJSON', GeoJsonContext);
+        }
+        if (itemDocument.$defs['#SentinelHUB']) {
+            additionalContexts.set('#SentinelHUB', SentinelHubContext);
+        }
+    }
+    return schemasToContext([...defsArray, itemDocument], additionalContexts);
+}
+
+/**
  * Publish schema
  * @param item
  * @param user
@@ -53,32 +83,8 @@ export async function publishSchema(
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
     }
-    const itemDocument = item.document;
-    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
 
-    const names = Object.keys(itemDocument.properties);
-    for (const name of names) {
-        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
-        if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}`);
-        }
-        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
-            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
-        }
-    }
-
-    let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
-        additionalContexts = new Map<string, any>();
-        if (itemDocument.$defs['#GeoJSON']) {
-            additionalContexts.set('#GeoJSON', GeoJsonContext);
-        }
-        if (itemDocument.$defs['#SentinelHUB']) {
-            additionalContexts.set('#SentinelHUB', SentinelHubContext);
-        }
-    }
-
-    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
+    item.context = generateSchemaContext(item);
 
     const relationships = await SchemaImportExportHelper.exportSchemas([item.id]);
 
@@ -266,31 +272,7 @@ export async function findAndDryRunSchema(
         throw new Error('Invalid status');
     }
 
-    const itemDocument = item.document;
-    const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
-
-    const names = Object.keys(itemDocument.properties);
-    for (const name of names) {
-        const field = SchemaHelper.parseProperty(name, itemDocument.properties[name]);
-        if (!field.type) {
-            throw new Error(`Field type is not set. Field: ${name}, Schema: ${item.uuid}`);
-        }
-        if (field.isRef && (!itemDocument.$defs || !itemDocument.$defs[field.type])) {
-            throw new Error(`Dependent schema not found: ${item.iri}. Field: ${name}`);
-        }
-    }
-    let additionalContexts: Map<string, any>;
-    if (itemDocument.$defs && (itemDocument.$defs['#GeoJSON'] || itemDocument.$defs['#SentinelHUB'])) {
-        additionalContexts = new Map<string, any>();
-        if (itemDocument.$defs['#GeoJSON']) {
-            additionalContexts.set('#GeoJSON', GeoJsonContext);
-        }
-        if (itemDocument.$defs['#SentinelHUB']) {
-            additionalContexts.set('#SentinelHUB', SentinelHubContext);
-        }
-    }
-
-    item.context = schemasToContext([...defsArray, itemDocument], additionalContexts);
+    item.context = generateSchemaContext(item);
     // item.status = SchemaStatus.PUBLISHED;
 
     SchemaHelper.updateIRI(item);

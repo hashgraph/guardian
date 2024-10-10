@@ -49,6 +49,8 @@ import {
     PolicyModule,
     PolicyProperty,
     PolicyRoles,
+    PolicyStatistic,
+    PolicyStatisticDocument,
     PolicyTest,
     PolicyTool,
     Record,
@@ -85,6 +87,7 @@ import { PolicyServiceChannelsContainer } from './helpers/policy-service-channel
 import { PolicyEngine } from './policy-engine/policy-engine.js';
 import { modulesAPI } from './api/module.service.js';
 import { toolsAPI } from './api/tool.service.js';
+import { statisticsAPI } from './api/policy-statistics.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
@@ -153,7 +156,9 @@ const necessaryEntity = [
     PolicyCacheData,
     PolicyCache,
     AssignEntity,
-    PolicyTest
+    PolicyTest,
+    PolicyStatistic,
+    PolicyStatisticDocument
 ]
 
 Promise.all([
@@ -256,6 +261,7 @@ Promise.all([
         await projectsAPI(logger);
         await AssignedEntityAPI(logger)
         await permissionAPI(logger);
+        await statisticsAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -445,7 +451,7 @@ Promise.all([
         'policy-discontinue',
         async () => {
             const date = new Date();
-            const policiesToDiscontunie = await dataBaseServer.find(Policy,{
+            const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });

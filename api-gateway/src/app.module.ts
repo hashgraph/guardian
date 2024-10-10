@@ -40,6 +40,7 @@ import { cacheProvider } from './helpers/providers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
 import { WorkerTasksController } from './api/service/worker-tasks.js';
+import { PolicyStatisticsApi } from './api/service/policy-statistics.js';
 import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -92,6 +93,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
         RecordApi,
         AISuggestionsAPI,
         PermissionsApi,
+        PolicyStatisticsApi,
         WorkerTasksController
     ],
     providers: [
