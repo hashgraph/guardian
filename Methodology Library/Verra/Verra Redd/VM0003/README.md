@@ -32,7 +32,7 @@ This policy can be imported via Github (.policy file) or IPFS timestamp.
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| VM0003 1.0.0  | 1728491334.273105000 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/Verra%20Redd/VM0003/Verra%20VM003%20Policy.policy) | Verra Methodology |
+| VM0003 1.0.0  | 1728491334.273105000 | [Link](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/Verra/Verra%20Redd/VM00003/Verra%20VM003%20Policy.policy) | Verra Methodology |
 
 
 ### Available Roles
