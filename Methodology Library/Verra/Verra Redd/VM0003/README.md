@@ -1,4 +1,4 @@
-# VM0003 Methodology for Improved Forest Management through Extension of Rotation Age (v1.3)
+![Screenshot 2024-09-14 101000](https://github.com/user-attachments/assets/3c826033-5338-4ef0-bf91-1ff203ed99bc)# VM0003 Methodology for Improved Forest Management through Extension of Rotation Age (v1.3)
 
 ## Summary
 
@@ -13,7 +13,8 @@ Verra VM0003 is a carbon offset methodology titled "Improved Forest Management (
 
 ## Workflow Description
 
-![Workflow Description](VM0003%20Images/Workflow%20Diagram.png)
+![Workflow Diagram](https://github.com/user-attachments/assets/f3bd6e89-1381-476e-881a-9f908522bbe3)
+
 
 1. **Project Proponent Submission**: The project proponent begins by submitting the Project Design (PD) to Verra. This document includes ex-ante estimates of monitoring parameters and detailed project information demonstrating compliance with VCS program requirements specific to VM0003.
 2. **Verra's Initial Review**: Verra reviews the submitted Project Design and adds the project to the Project Pipeline.
@@ -58,72 +59,72 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 1. Create a new user and assign role as Project Proponent.
 
-   ![Screenshot 2024-09-14 100539.png](VM0003%20Images/Screenshot%202024-09-14%20100539.png)
+   ![Screenshot 2024-09-14 100539](https://github.com/user-attachments/assets/c7fb3c72-4fed-496b-ad21-734a7837748a)
 
-   ![Screenshot 2024-09-14 100605.png](VM0003%20Images/Screenshot%202024-09-14%20100605.png)
+   ![Screenshot 2024-09-14 100605](https://github.com/user-attachments/assets/f7b44c75-71ee-48a1-9917-dbf7f08ed22e)
 
 2. Click on "New Project" button and enter all the required details.
 
-   ![Screenshot 2024-09-15 030726.png](VM0003%20Images/Screenshot%202024-09-15%20030726.png)
+   ![Screenshot 2024-09-15 030726](https://github.com/user-attachments/assets/da15e670-8690-4d35-8a05-7cda850fef28)
 
-   ![Screenshot 2024-09-14 100819.png](VM0003%20Images/Screenshot%202024-09-14%20100819.png)
+   ![Screenshot 2024-09-14 100819](https://github.com/user-attachments/assets/11691c00-ac25-4f79-8087-2fc36bd07f16)
 
 3. Once project details are submitted, Verra adds the project to the project pipeline.
 
-   ![Screenshot 2024-09-14 101021.png](VM0003%20Images/Screenshot%202024-09-14%20101021.png)
+   ![Screenshot 2024-09-14 101021](https://github.com/user-attachments/assets/ee49cad4-d26b-4e22-835c-a05ac6637216)
 
-   ![Screenshot 2024-09-14 101150.png](VM0003%20Images/Screenshot%202024-09-14%20101150.png)
+   ![Screenshot 2024-09-14 101150](https://github.com/user-attachments/assets/a0ba020d-d17b-4305-8744-239685d88a71)
 
 4. Now, we create a new user and assign its role as VVB.
 
-   ![Screenshot 2024-09-14 100904.png](VM0003%20Images/Screenshot%202024-09-14%20100904.png)
+   ![Screenshot 2024-09-14 100904](https://github.com/user-attachments/assets/a1591be0-40c4-4de6-9f17-fbab9c732e08)
 
 5. We need to set VVB name.
 
-   ![Screenshot 2024-09-14 100926.png](VM0003%20Images/Screenshot%202024-09-14%20100926.png)
+   ![Screenshot 2024-09-14 100926](https://github.com/user-attachments/assets/66ab1ac2-7cae-4779-afb5-6ace0a67c6d8)
 
 6. Once VVB name is set, it waits for SR to approve it.
 
-   ![Screenshot 2024-09-14 100941.png](VM0003%20Images/Screenshot%202024-09-14%20100941.png)
+   ![Screenshot 2024-09-14 100941](https://github.com/user-attachments/assets/fa542553-09e4-4ad5-96e0-aebd20e571cc)
 
 7. Now we login as SR and approve VVB.
 
-   ![Screenshot 2024-09-14 101000.png](VM0003%20Images/Screenshot%202024-09-14%20101000.png)
+   ![Screenshot 2024-09-14 101000](https://github.com/user-attachments/assets/1b8eca67-c97f-4718-be70-a65c0dd6536c)
 
 8. Now we login as the Project Proponent and assign project to VVB.
 
-   ![Screenshot 2024-09-14 101246.png](VM0003%20Images/Screenshot%202024-09-14%20101246.png)
+   ![Screenshot 2024-09-14 101246](https://github.com/user-attachments/assets/c5d8712e-3750-4b57-9bb1-74274c438878)
 
 9. Now we login as VVB and validate the project by viewing project document details. Once validated, VVB clicks on Validate button.
 
-   ![Screenshot 2024-09-14 101525.png](VM0003%20Images/Screenshot%202024-09-14%20101525.png)
+   ![Screenshot 2024-09-14 101525](https://github.com/user-attachments/assets/0f9da3a7-fedf-41a3-99ec-52b212294b4d)
 
-   ![Screenshot 2024-09-14 101556.png](VM0003%20Images/Screenshot%202024-09-14%20101556.png)
+   ![Screenshot 2024-09-14 101556](https://github.com/user-attachments/assets/ef8f9363-11b1-4cd9-8a5e-de675fb5295b)
 
 10. Once validated, we login as Project Proponent and Add Monitoring Report.
 
-    ![Screenshot 2024-09-14 101620.png](VM0003%20Images/Screenshot%202024-09-14%20101620.png)
+    ![Screenshot 2024-09-14 101620](https://github.com/user-attachments/assets/99ebac73-1891-4eb8-aca6-bb9ab2e45b04)
 
-    ![Screenshot 2024-09-14 101627.png](VM0003%20Images/Screenshot%202024-09-14%20101627.png)
+    ![Screenshot 2024-09-14 101627](https://github.com/user-attachments/assets/cf05bd39-9854-4bd4-a079-a41f52bb4f46)
 
 11. Once report is submitted, we now login as VVB and validate the monitoring report by clicking on Verify button.
 
-    ![Screenshot 2024-09-14 101742.png](VM0003%20Images/Screenshot%202024-09-14%20101742.png)
+    ![Screenshot 2024-09-14 101742](https://github.com/user-attachments/assets/68df8b28-70b5-4e41-a3a6-72dbcbba8c2a)
 
-    ![Screenshot 2024-09-14 101806.png](VM0003%20Images/Screenshot%202024-09-14%20101806.png)
+    ![Screenshot 2024-09-14 101806](https://github.com/user-attachments/assets/88efcc69-21bb-4a0e-b9d8-c995ee4ddd6f)
 
-12. Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
+13. Once monitoring report is validated, we login as SR and click on Mint to mint the tokens.
 
-    ![Screenshot 2024-09-14 101836.png](VM0003%20Images/Screenshot%202024-09-14%20101836.png)
+    ![Screenshot 2024-09-14 101836](https://github.com/user-attachments/assets/6a1aa109-78b2-4e6f-a948-c7f4ffaa2d72)
 
-    ![Screenshot 2024-09-14 101843.png](VM0003%20Images/Screenshot%202024-09-14%20101843.png)
+    ![Screenshot 2024-09-14 101843](https://github.com/user-attachments/assets/64420da6-c01f-4d1b-aebc-b2b542b92a50)
 
-13. Once minting is completed, we can view tokens in Token History tab.
+15. Once minting is completed, we can view tokens in Token History tab.
 
-    ![Screenshot 2024-09-15 033243.png](VM0003%20Images/Screenshot%202024-09-15%20033243.png)
+    ![Screenshot 2024-09-15 033243](https://github.com/user-attachments/assets/8bbfe41c-f849-4eeb-8130-ae499cfbbacf)
 
-14. TrustChain can also be viewed by clicking on View TrustChain button.
+16. TrustChain can also be viewed by clicking on View TrustChain button.
 
-    ![Screenshot 2024-09-15 033603.png](VM0003%20Images/Screenshot%202024-09-15%20033603.png)
+    ![Screenshot 2024-09-15 033603](https://github.com/user-attachments/assets/74c97ba1-db3d-4ae6-8476-dbfb0f34af68)
 
-    ![Screenshot 2024-09-15 033618.png](VM0003%20Images/Screenshot%202024-09-15%20033618.png)
+    ![Screenshot 2024-09-15 033618](https://github.com/user-attachments/assets/b58cad1d-c484-4b9b-8a86-0b06825150d7)
