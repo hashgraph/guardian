@@ -1,4 +1,4 @@
-![Screenshot 2024-09-14 101000](https://github.com/user-attachments/assets/3c826033-5338-4ef0-bf91-1ff203ed99bc)# VM0003 Methodology for Improved Forest Management through Extension of Rotation Age (v1.3)
+# VM0003 Methodology for Improved Forest Management through Extension of Rotation Age (v1.3)
 
 ## Summary
 
