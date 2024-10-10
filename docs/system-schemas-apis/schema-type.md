@@ -38,6 +38,14 @@ Schema Type
 ```
 {% endswagger-response %}
 
+{% swagger-response status="404: Not Found" description="Not Found" %}
+
+
+```
+Schema not found.
+```
+{% endswagger-response %}
+
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
 ```javascript
 {

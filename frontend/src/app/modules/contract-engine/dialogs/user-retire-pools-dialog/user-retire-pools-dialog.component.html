@@ -1,0 +1,89 @@
+<app-dialog-wrapper (cancel)="onNoClick()" [confirmVisible]="retireMod" [syncVisible]="false" [loading]="loading"
+    [confirmDisabled]="!this.retireForm.valid" [title]="'Retire'" [paginatorVisible]="!retireMod" [length]="length"
+    [pageSize]="pageSize" (page)="onPage($event)" (confirm)="confirm()">
+    <ng-container *ngIf="!retireMod; else retireView">
+        <div class="action-buttons">
+            <mat-form-field appearance="outline">
+                <mat-label>Tokens</mat-label>
+                <mat-select [(value)]="selectedTokens" multiple (selectionChange)="loadPools()">
+                    <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenSymbol}}
+                        ({{token.tokenId}})</mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div *ngIf="pools?.length; else noPools">
+            <div *ngFor="let pool of pools" class="pool">
+                <div class="tokens">
+                    <div class="token-card" *ngFor="let token of pool.tokens">
+                        <span class="token-card__token">
+                            <mat-icon>abc</mat-icon>
+                            <span>{{token.tokenSymbol}}</span>
+                        </span>
+                        <span class="token-card__token">
+                            <mat-icon>generating_tokens</mat-icon>
+                            <span>{{token.token}}</span>
+                        </span>
+                        <span class="token-card__count">
+                            <mat-icon>calculate</mat-icon>
+                            <span>{{token.count | tokenCount: token.decimals }}</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="approve">
+                    <span class="approve__label--approve" *ngIf="!pool.immediately">Requires approval</span>
+                    <span class="approve__label--no-approve" *ngIf="pool.immediately">Without approval</span>
+                </div>
+                <div class="pool-actions">
+                    <button (click)="retire(pool)" mat-flat-button class="btn btn--retire">Retire</button>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</app-dialog-wrapper>
+<ng-template #noPools>
+    <div class="no-pools">There are no pools</div>
+</ng-template>
+
+<ng-template #retireView>
+    <div class="retire">
+        <button class="retire__back" mat-icon-button (click)="back()"><mat-icon>arrow_back</mat-icon></button>
+        <div class="tokens">
+            <div class="token-card" *ngFor="let token of selectedPool.tokens; let i = index">
+                <span class="token-card__token">
+                    <mat-icon>abc</mat-icon>
+                    <span>{{token.tokenSymbol}}</span>
+                </span>
+                <span class="token-card__token">
+                    <mat-icon>generating_tokens</mat-icon>
+                    <span>{{token.token}}</span>
+                </span>
+                <span class="token-card__count">
+                    <mat-icon>calculate</mat-icon>
+                    <span>{{token.count | tokenCount: token.decimals }}</span>
+                </span>
+
+
+
+                <form [formGroup]="getRetireForm(i)">
+                    <mat-form-field *ngIf="token.type == 'fungible'" appearance="outline"
+                        style="transform: scale(0.8) translateY(5px); width: 100px;">
+                        <mat-label>Count</mat-label>
+                        <input matInput formControlName="count" type="number" placeholder="1">
+                    </mat-form-field>
+
+                    <mat-form-field *ngIf="token.type == 'non-fungible'" appearance="outline"
+                        style="transform: scale(0.8) translateY(5px); width: 100px;">
+                        <mat-label>Serials</mat-label>
+                        <mat-select formControlName="serials" multiple placeholder="Serials">
+                            <mat-option
+                                *ngFor="let serial of token.serials"
+                                [value]="serial">{{serial}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </form>
+
+            </div>
+        </div>
+        <!-- <div>{{errorMessage}}</div> -->
+    </div>
+</ng-template>

@@ -1,0 +1,14 @@
+<div mat-dialog-title class="header">
+  <span class="header-title">Icon Preview</span>
+  <mat-icon class="close-icon" (click)="onClose()">close</mat-icon>
+</div>
+
+<div mat-dialog-content class="content-container">
+    <ng-container [ngSwitch]="iconType">
+        <div *ngSwitchCase="'custom'">
+          <mat-spinner *ngIf="loading" class="loading"></mat-spinner>
+          <img [hidden]="loading" [src]="icon" class="image-container" alt="Icon not found"/>
+        </div>
+        <mat-icon *ngSwitchCase="'common'" class="icon-container" style="font-size: 250px;">{{icon}}</mat-icon>
+    </ng-container>
+</div>

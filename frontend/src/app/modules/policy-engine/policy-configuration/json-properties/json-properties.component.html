@@ -1,0 +1,23 @@
+<div [attr.readonly]="readonly">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+    <div class="toolbar">
+        <div class="toolbar-btn toolbar__save-btn" [attr.readonly]="readonly" (click)="onSave()">
+            <mat-icon>save</mat-icon>
+            <span>Save</span>
+        </div>
+        <div class="toolbar-btn toolbar__close-btn" [attr.readonly]="readonly" (click)="onClose()">
+            <mat-icon>close</mat-icon>
+            <span>Cancel</span>
+        </div>
+    </div>
+    <div *ngIf="errors && errors.length" class="json-errors">
+        <div *ngFor="let item of errors" class="errors-property">
+            <span></span>{{item}}
+        </div>
+    </div>
+    <div class="textarea-code">
+        <ngx-codemirror [(ngModel)]="code" [options]="codeMirrorOptions" ></ngx-codemirror>
+    </div>
+</div>

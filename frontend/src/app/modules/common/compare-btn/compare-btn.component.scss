@@ -1,0 +1,45 @@
+
+.context {
+    display: flex;
+}
+
+.compare-btn {
+    color: var(--button-primary-color);
+    border: 1px solid var(--button-primary-color);
+    margin: 0px;
+    min-width: 105px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    font-size: 14px;
+    height: 34px;
+    padding: 7px 14px 7px 34px !important;
+    box-sizing: border-box;
+    width: fit-content;
+    margin-right: 8px;
+
+    &[disable="true"] {
+        color: #888;
+        border: 1px solid #888;
+        cursor: not-allowed;
+    }
+
+    &:hover {
+        background-color: rgba(112, 112, 112, 0.04);
+    }
+
+    &[disable="true"]:hover {
+        background-color: transparent;
+    }
+}
+
+.compare-checkbox {
+    position: absolute;
+    left: 7px;
+    top: 7px;
+    pointer-events: none;
+    outline: none;
+}

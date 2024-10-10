@@ -10,7 +10,7 @@ Roles can be created by adding Role Property and its Value in Policy Configurato
 
 <figure><img src="../.gitbook/assets/image (13) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/Role1.1.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/Role1.1 (1).png" alt=""><figcaption></figcaption></figure>
 
 #### 1.2 Usage
 
@@ -42,11 +42,9 @@ Groups are separate sets of documents access , which can be limited to users who
 | Relationship Type | <p>· Single – only a single user can be included in the group. This type is maintained for backward compatibility with historic policy versions.</p><p>· Multiple – the group can include multiple users. This is the new mode of operation.</p>                                                      |
 | Access Type       | <p>· Global – static group is created at the start. The creator of the group is the creator of the policy.</p><p>· Private – a new instance of the group is created every time a user selects group creation action. The creator of the group is the user who executed the group creation action.</p> |
 
-
-
 <figure><img src="../.gitbook/assets/image (22) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (17) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Usage
 
@@ -67,4 +65,4 @@ Groups are separate sets of documents access , which can be limited to users who
 
 When a policy contains multiple groups, users have an option to switch between those they are included in. The selection menu also allows to switch to the ‘no group’ default state, i.e. the state in which the user is not acting as a member of any group.
 
-<figure><img src="../.gitbook/assets/image (32).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/image (32) (1) (1).png" alt=""><figcaption></figcaption></figure>

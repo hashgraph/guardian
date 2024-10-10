@@ -1,0 +1,6 @@
+node_modules/
+reports/
+screenshots/
+test_results/
+.gitignore
+0_fullflow.cy.js

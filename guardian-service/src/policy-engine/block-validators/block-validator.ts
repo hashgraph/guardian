@@ -1,47 +1,56 @@
 import * as mathjs from 'mathjs';
-import { PolicyValidator } from './policy-validator';
-import { IBlockErrors } from './interfaces/block-errors.interface';
-import { IBlockProp } from './interfaces/block-prop.interface';
-import { InterfaceDocumentActionBlock } from './blocks/action-block';
-import { AggregateBlock } from './blocks/aggregate-block';
-import { ButtonBlock } from './blocks/button-block';
-import { CalculateContainerBlock } from './blocks/calculate-block';
-import { CalculateMathAddon } from './blocks/calculate-math-addon';
-import { CalculateMathVariables } from './blocks/calculate-math-variables';
-import { InterfaceContainerBlock } from './blocks/container-block';
-import { CreateTokenBlock } from './blocks/create-token-block';
-import { CustomLogicBlock } from './blocks/custom-logic-block';
-import { DocumentValidatorBlock } from './blocks/document-validator-block';
-import { InterfaceDocumentsSource } from './blocks/documents-source';
-import { DocumentsSourceAddon } from './blocks/documents-source-addon';
-import { ExternalDataBlock } from './blocks/external-data-block';
-import { FiltersAddonBlock } from './blocks/filters-addon-block';
-import { GroupManagerBlock } from './blocks/group-manager';
-import { HistoryAddon } from './blocks/history-addon';
-import { HttpRequestBlock } from './blocks/http-request-block';
-import { TokenOperationAddon } from './blocks/impact-addon';
-import { InformationBlock } from './blocks/information-block';
-import { MintBlock } from './blocks/mint-block';
-import { MultiSignBlock } from './blocks/multi-sign-block';
-import { PaginationAddon } from './blocks/pagination-addon';
-import { PolicyRolesBlock } from './blocks/policy-roles';
-import { ReassigningBlock } from './blocks/reassigning.block';
-import { ReportBlock } from './blocks/report-block';
-import { ReportItemBlock } from './blocks/report-item-block';
-import { RequestVcDocumentBlock } from './blocks/request-vc-document-block';
-import { RetirementBlock } from './blocks/retirement-block';
-import { RevokeBlock } from './blocks/revoke-block';
-import { SelectiveAttributes } from './blocks/selective-attributes-addon';
-import { SendToGuardianBlock } from './blocks/send-to-guardian-block';
-import { SetRelationshipsBlock } from './blocks/set-relationships-block';
-import { SplitBlock } from './blocks/split-block';
-import { InterfaceStepBlock } from './blocks/step-block';
-import { SwitchBlock } from './blocks/switch-block';
-import { TimerBlock } from './blocks/timer-block';
-import { TokenActionBlock } from './blocks/token-action-block';
-import { TokenConfirmationBlock } from './blocks/token-confirmation-block';
-import { ModuleValidator } from './module-validator';
-import { ModuleBlock } from './blocks/module';
+import { PolicyValidator } from './policy-validator.js';
+import { IBlockErrors } from './interfaces/block-errors.interface.js';
+import { IBlockProp } from './interfaces/block-prop.interface.js';
+import { InterfaceDocumentActionBlock } from './blocks/action-block.js';
+import { AggregateBlock } from './blocks/aggregate-block.js';
+import { ButtonBlock } from './blocks/button-block.js';
+import { CalculateContainerBlock } from './blocks/calculate-block.js';
+import { CalculateMathAddon } from './blocks/calculate-math-addon.js';
+import { CalculateMathVariables } from './blocks/calculate-math-variables.js';
+import { InterfaceContainerBlock } from './blocks/container-block.js';
+import { CreateTokenBlock } from './blocks/create-token-block.js';
+import { CustomLogicBlock } from './blocks/custom-logic-block.js';
+import { DocumentValidatorBlock } from './blocks/document-validator-block.js';
+import { InterfaceDocumentsSource } from './blocks/documents-source.js';
+import { DocumentsSourceAddon } from './blocks/documents-source-addon.js';
+import { ExternalDataBlock } from './blocks/external-data-block.js';
+import { FiltersAddonBlock } from './blocks/filters-addon-block.js';
+import { GroupManagerBlock } from './blocks/group-manager.js';
+import { HistoryAddon } from './blocks/history-addon.js';
+import { HttpRequestBlock } from './blocks/http-request-block.js';
+import { TokenOperationAddon } from './blocks/impact-addon.js';
+import { InformationBlock } from './blocks/information-block.js';
+import { MintBlock } from './blocks/mint-block.js';
+import { MultiSignBlock } from './blocks/multi-sign-block.js';
+import { PaginationAddon } from './blocks/pagination-addon.js';
+import { PolicyRolesBlock } from './blocks/policy-roles.js';
+import { ReassigningBlock } from './blocks/reassigning.block.js';
+import { ReportBlock } from './blocks/report-block.js';
+import { ReportItemBlock } from './blocks/report-item-block.js';
+import { RequestVcDocumentBlock } from './blocks/request-vc-document-block.js';
+import { RetirementBlock } from './blocks/retirement-block.js';
+import { RevokeBlock } from './blocks/revoke-block.js';
+import { RevocationBlock } from './blocks/revocation-block.js';
+import { SelectiveAttributes } from './blocks/selective-attributes-addon.js';
+import { SendToGuardianBlock } from './blocks/send-to-guardian-block.js';
+import { SetRelationshipsBlock } from './blocks/set-relationships-block.js';
+import { SplitBlock } from './blocks/split-block.js';
+import { InterfaceStepBlock } from './blocks/step-block.js';
+import { SwitchBlock } from './blocks/switch-block.js';
+import { TimerBlock } from './blocks/timer-block.js';
+import { TokenActionBlock } from './blocks/token-action-block.js';
+import { TokenConfirmationBlock } from './blocks/token-confirmation-block.js';
+import { ModuleValidator } from './module-validator.js';
+import { ModuleBlock } from './blocks/module.js';
+import { TagsManagerBlock } from './blocks/tag-manager.js';
+import { ExternalTopicBlock } from './blocks/external-topic-block.js';
+import { MessagesReportBlock } from './blocks/messages-report-block.js';
+import { NotificationBlock } from './blocks/notification.block.js';
+import { ISchema, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ToolValidator } from './tool-validator.js';
+import { ToolBlock } from './blocks/tool.js';
+import { ExtractDataBlock } from './blocks/extract-data.js';
 
 export const validators = [
     InterfaceDocumentActionBlock,
@@ -73,6 +82,7 @@ export const validators = [
     RequestVcDocumentBlock,
     RetirementBlock,
     RevokeBlock,
+    RevocationBlock,
     SelectiveAttributes,
     SendToGuardianBlock,
     SetRelationshipsBlock,
@@ -82,7 +92,13 @@ export const validators = [
     TimerBlock,
     TokenActionBlock,
     TokenConfirmationBlock,
-    ModuleBlock
+    ModuleBlock,
+    TagsManagerBlock,
+    ExternalTopicBlock,
+    MessagesReportBlock,
+    NotificationBlock,
+    ToolBlock,
+    ExtractDataBlock
 ];
 
 /**
@@ -98,7 +114,7 @@ export class BlockValidator {
      * Errors
      * @private
      */
-    private readonly validator: PolicyValidator | ModuleValidator;
+    private readonly validator: PolicyValidator | ModuleValidator | ToolValidator;
     /**
      * UUID
      * @private
@@ -132,7 +148,7 @@ export class BlockValidator {
 
     constructor(
         config: any,
-        validator: PolicyValidator | ModuleValidator
+        validator: PolicyValidator | ModuleValidator | ToolValidator
     ) {
         this.errors = [];
         this.validator = validator;
@@ -242,8 +258,8 @@ export class BlockValidator {
      * Get Schema
      * @param iri
      */
-    public async getSchema(iri: string): Promise<any> {
-        return await this.validator.getSchema(iri);
+    public getSchema(iri: string): ISchema {
+        return this.validator.getSchema(iri);
     }
 
     /**
@@ -258,8 +274,95 @@ export class BlockValidator {
      * Schema not exist
      * @param iri
      */
-    public async schemaNotExist(iri: string): Promise<boolean> {
-        return !await this.validator.getSchema(iri);
+    public schemaNotExist(iri: string): boolean {
+        return !this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Schema exist
+     * @param iri
+     */
+    public schemaExist(iri: string): boolean {
+        return this.validator.schemaExist(iri);
+    }
+
+    /**
+     * Validate schema
+     * @param iri
+     */
+    public validateSchema(iri: string): string | null {
+        if (this.validator.unsupportedSchema(iri)) {
+            return `Schema with id "${iri}" refers to non-existing schema`;
+        }
+        if (this.validator.schemaExist(iri)) {
+            return null;
+        } else {
+            return `Schema with id "${iri}" does not exist`;
+        }
+    }
+
+    /**
+     * Validate schema variable
+     * @param name
+     * @param value
+     * @param required
+     */
+    public validateSchemaVariable(
+        name: string,
+        value: any,
+        required: boolean = false
+    ): string | null {
+        if (!value) {
+            if (required) {
+                return `Option "${name}" is not set`;
+            } else {
+                return null;
+            }
+        }
+        if (typeof value !== 'string') {
+            return `Option "${name}" must be a string`;
+        }
+        return this.validateSchema(value);
+    }
+
+    /**
+     * Validate base schema
+     * @param iri
+     */
+    public validateBaseSchema(
+        baseSchema: ISchema | string,
+        schema: ISchema | string
+    ): string | null {
+        if (!baseSchema) {
+            return null;
+        }
+        let baseSchemaObject: ISchema;
+        if (typeof baseSchema === 'string') {
+            baseSchemaObject = this.getSchema(baseSchema);
+        } else {
+            baseSchemaObject = baseSchema;
+        }
+
+        let schemaObject: ISchema;
+        if (typeof schema === 'string') {
+            schemaObject = this.getSchema(schema);
+        } else {
+            schemaObject = schema;
+        }
+
+        if (!baseSchemaObject) {
+            return `Schema with id "${baseSchema}" does not exist`;
+        }
+
+        if (!schemaObject) {
+            return `Schema with id "${schema}" does not exist`;
+        }
+
+        if (!this.compareSchema(baseSchemaObject, schemaObject)) {
+            return `Schema is not supported`;
+        }
+
+        return null;
     }
 
     /**
@@ -292,6 +395,14 @@ export class BlockValidator {
      */
     public groupNotExist(group: string) {
         return !this.validator.getGroup(group);
+    }
+
+    /**
+     * Get artifact
+     * @param uuid
+     */
+    public async getArtifact(uuid: string) {
+        return await this.validator.getArtifact(uuid);
     }
 
     /**
@@ -332,8 +443,8 @@ export class BlockValidator {
      * @param uuid
      * @param error
      */
-    public checkBlockError(error: string): void {
-        if (error !== null) {
+    public checkBlockError(error: string | null): void {
+        if (error) {
             this.addError(error);
         }
     }
@@ -354,6 +465,100 @@ export class BlockValidator {
         } else {
             console.error(error);
             return 'Unidentified error';
+        }
+    }
+
+    public compareSchema(baseSchema: ISchema, schema: ISchema): boolean {
+        if (!baseSchema) {
+            return true
+        }
+        const baseFields = this.getSchemaFields(baseSchema.document);
+        const schemaFields = this.getSchemaFields(schema.document);
+        return this.ifExtendFields(schemaFields, baseFields);
+    }
+
+    /**
+     * Compare Schema Fields
+     * @param f1
+     * @param f2
+     * @private
+     */
+    private compareFields(f1: SchemaField, f2: SchemaField): boolean {
+        if (
+            f1.name !== f2.name ||
+            f1.title !== f2.title ||
+            f1.description !== f2.description ||
+            f1.required !== f2.required ||
+            f1.isArray !== f2.isArray ||
+            f1.isRef !== f2.isRef
+        ) {
+            return false;
+        }
+        if (f1.isRef) {
+            return true;
+        } else {
+            return (
+                f1.type === f2.type &&
+                f1.format === f2.format &&
+                f1.pattern === f2.pattern &&
+                f1.unit === f2.unit &&
+                f1.unitSystem === f2.unitSystem &&
+                f1.customType === f2.customType
+            );
+        }
+        // remoteLink?: string;
+        // enum?: string[];
+    }
+
+    /**
+     * Compare Schemas
+     * @param extension
+     * @param base
+     * @private
+     */
+    private ifExtendFields(extension: SchemaField[], base: SchemaField[]): boolean {
+        try {
+            if (!extension || !base) {
+                return false;
+            }
+            const map = new Map<string, SchemaField>();
+            for (const f of extension) {
+                map.set(f.name, f);
+            }
+            for (const baseField of base) {
+                const extensionField = map.get(baseField.name)
+                if (!extensionField) {
+                    return false;
+                }
+                if (!this.compareFields(baseField, extensionField)) {
+                    return false;
+                }
+                if (baseField.isRef) {
+                    if (!this.ifExtendFields(extensionField.fields, baseField.fields)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    /**
+     * Get Schema Fields
+     * @param document
+     * @private
+     */
+    private getSchemaFields(document: any): SchemaField[] {
+        try {
+            if (typeof document === 'string') {
+                document = JSON.parse(document);
+            }
+            const schemaCache = new Map<string, any>();
+            return SchemaHelper.parseFields(document, null, schemaCache, null, false);
+        } catch (error) {
+            return null;
         }
     }
 }

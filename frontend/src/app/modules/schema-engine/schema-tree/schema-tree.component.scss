@@ -1,0 +1,30 @@
+.content {
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: auto;
+    cursor: grab;
+}
+
+.content::-webkit-scrollbar {
+    display: none;
+}
+
+.loading {
+    margin: 50px auto;
+}
+
+.dialog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    h1 {
+        margin: 0;
+    }
+}
+
+.dialog-actions {
+    display: flex;
+    width: 80px;
+    justify-content: space-between;
+    align-items: center;
+}

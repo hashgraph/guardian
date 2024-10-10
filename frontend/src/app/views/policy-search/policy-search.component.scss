@@ -1,0 +1,142 @@
+.policy-search {
+  padding: 56px 48px 0 48px;
+
+  h1 {
+    // font-family: Poppins;
+    font-family: Inter;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 40px;
+    margin-bottom: 24px;
+    color: #000;
+  }
+
+  ::ng-deep {
+    .mat-tab-body-content {
+      overflow: unset;
+    }
+
+    .mat-tab-body.mat-tab-body-active {
+      overflow: unset;
+    }
+
+    .mat-tab-label .mat-tab-label-content {
+      font-family: Inter;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: normal;
+      color: var(--color-grey-5, #848FA9);
+    }
+
+    .mat-tab-label-active .mat-tab-label-content {
+      text-align: center;
+      font-family: Inter;
+      font-size: 14px;
+      font-style: normal;
+      font-weight: 600;
+      line-height: 16px;
+      color: var(--color-primary, #0681EE);
+    }
+
+    .mat-tab-group.mat-primary .mat-ink-bar, .mat-tab-nav-bar.mat-primary .mat-ink-bar {
+      border-bottom: 2px solid var(--color-primary, #0681EE);
+    }
+  }
+}
+
+.not-exist {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 56px;
+  top: calc(56px + 132px);
+  color: var(--color-grey-black-2);
+  font-family: Inter, serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: 8px;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.loading-progress {
+  width: 80%;
+  height: 80%;
+}
+
+.preloader-image {
+  width: 16px;
+  height: 16px;
+  border-top: 3px solid var(--color-primary);
+  border-left: 3px solid rgba(0, 0, 0, 0);
+  border-right: 3px solid rgba(0, 0, 0, 0);
+  border-bottom: 3px solid rgba(0, 0, 0, 0);
+  border-radius: 100%;
+  filter: brightness(100%);
+  animation-name: preloaderRotationColored;
+  animation-duration: 7.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.preloader-image-l-size {
+  width: 56px;
+  height: 56px;
+}
+
+@keyframes preloaderRotationColored {
+  0% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  25% {
+    transform: rotate(360deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+  }
+  50% {
+    transform: rotate(720deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid var(--color-primary);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+  }
+  75% {
+    transform: rotate(1080deg);
+    border-top: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-left: 3px solid var(--color-primary);
+  }
+  100% {
+    transform: rotate(1440deg);
+    border-top: 3px solid var(--color-primary);
+    border-left: 3px solid rgba(0, 0, 0, 0);
+    border-right: 3px solid rgba(0, 0, 0, 0);
+    border-bottom: 3px solid rgba(0, 0, 0, 0);
+  }
+}

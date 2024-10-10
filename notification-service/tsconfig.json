@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "module": "ESNext",
+        "target": "es2022",
+        "lib": [
+            "es6"
+        ],
+        "emitDecoratorMetadata": true,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist/",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src",
+        "paths": {
+            "@entity/*": ["entity/*"],
+            "@api/*": ["api/*"],
+            "#constants": ["constants/index.js"]
+        }
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compileOnSave": true
+}

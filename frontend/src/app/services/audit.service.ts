@@ -9,7 +9,7 @@ import { API_BASE_URL } from "./api";
  */
 @Injectable()
 export class AuditService {
-    private readonly url: string = `${API_BASE_URL}/trustchains`;
+    private readonly url: string = `${API_BASE_URL}/trust-chains`;
 
     constructor(
         private http: HttpClient

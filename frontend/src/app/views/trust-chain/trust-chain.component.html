@@ -11,13 +11,13 @@
 
     <ng-template #chainTpl>
         <div *ngIf="chain" class="display-chain">
-            <div class="verified-presentation">
+            <div class="verifiable-presentation">
                 <div *ngIf="vp" class="header">
                     <a routerLink="/audit" class="go-back-link">
                         <mat-icon>chevron_left</mat-icon>
                         {{vp.label}}: {{vp.id}}
                     </a>
-                    Verified Presentation
+                    Verifiable Presentation
                     <mat-icon>check_circle</mat-icon>
 
                     <a class="open-vp" (click)="openVPDocument(vp)">VP File</a>
@@ -122,6 +122,6 @@
     </ng-template>
 
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <div class="preloader-image preloader-image-l-size"></div>
     </div>
 </div>

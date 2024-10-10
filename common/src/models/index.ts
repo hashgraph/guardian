@@ -1,2 +1,2 @@
-export * from './base-entity';
-export * from './message-response';
+export * from './base-entity.js';
+export * from './message-response.js';

@@ -1,0 +1,582 @@
+[
+    [
+        [
+            "d33b8e79-c6c8-43c0-aea1-4660e7d87b81",
+            {
+                "pageContent": "Methodology name: ACM0001 (Flaring or use of landfill gas)\r\n\r\nTypical project(s): Capture of landfill gas (LFG) and its flaring and/or use to produce energy and/or use to\r\nsupply consumers through natural gas distribution network or trucks\r\n\r\nType of GHG emissions mitigation action: \r\nGHG destruction.\r\nDestruction of methane emissions and displacement of a more-GHG-intensive service\r\n\r\nImportant conditions under which the methodology is applicable: \r\n• Captured landfill gas is flared, and/or;\r\n• Captured landfill gas is used to produce energy, and or;\r\n• Captured gas is used to supply consumers through natural gas distribution network,\r\ntrucks or the dedicated pipeline.\r\n\r\nImportant parameters: \r\nMonitored:\r\n• Amount of landfill gas captured;\r\n• Methane fraction in the landfill gas;\r\n• If applicable: electricity generation using landfill gas.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0001.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 20
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "2c4f947c-aada-4d79-990b-83206cbf7bd0",
+            {
+                "pageContent": "Methodology name: ACM0002 (Grid-connected electricity generation from renewable sources)\r\n\r\nTypical project(s):\r\nRetrofit, rehabilitation (or refurbishment), replacement or capacity addition of an\r\nexisting power plant or construction and operation of a new power plant/unit that uses\r\nrenewable energy sources and supplies electricity to the grid.\r\nBattery energy storage system can be integrated under certain conditions.\r\nType of GHG emissions mitigation action: \r\n• Renewable energy.\r\nDisplacement of electricity that would be provided to the grid by more-GHG-intensive means.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• The project power plant is using one of the following sources: hydro, wind, geothermal,\r\nsolar, wave or tidal power. Biomass-fired power plants are not applicable;\r\n• In the case of capacity additions, retrofits, rehabilitation or replacements, the existing\r\npower plant started commercial operation prior to the start of a minimum historical",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0002.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 16
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "3e98927e-e844-4800-8806-973bd0ef70fe",
+            {
+                "pageContent": "reference period of five years, and no capacity expansion or retrofit, rehabilitation or\r\nreplacement of the plant has been undertaken between the start of this minimum\r\nhistorical reference period and the implementation of the project;\r\n• In case of hydro power:\r\n– The project has to be implemented in an existing reservoir, with no change in\r\nthe volume of reservoir;\r\n– The project has to be implemented in an existing reservoir, where the volume of\r\nreservoir is increased and the power density is greater than 4 W/m2;\r\n– The project results in new reservoirs and the power density is greater than 4 W/m2; or\r\n– The project activity is an integrated hydro power project involving multiple reservoirs;\r\n• Integration with a Battery Energy Storage System is possible for a Greenfield\r\nrenewable energy generation technology or an existing solar photovoltaic or wind\r\npower plant.\r\n\r\nImportant parameters:\r\n\r\nAt validation:\r\n• Grid emission factor (can also be monitored ex post).\r\n\r\nMonitored:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0002.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 17,
+                            "to": 36
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "176756f3-3ebe-4234-9ad7-16fb9963aea7",
+            {
+                "pageContent": "Monitored:\r\n• Electricity supplied to the grid by the project;\r\n• If applicable: methane emissions of the project.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0002.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 36,
+                            "to": 38
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "40493714-9f46-474c-81c3-79b7d44deb62",
+            {
+                "pageContent": "Methodology name: ACM0006 (Electricity and heat generation from biomass)\r\n\r\nTypical project(s):\r\nGeneration of power and heat in thermal power plants, including cogeneration plants\r\nusing biomass. Typical activities are new plant, capacity expansion, energy efficiency\r\nimprovements or fuel switch projects.\r\n\r\nType of GHG emissions mitigation action:\r\n• Renewable energy;\r\n• Energy efficiency;\r\n• Fuel switch;\r\n• GHG emission avoidance.\r\nDisplacement of more-GHG-intensive electricity generation in grid or heat and\r\nelectricity generation on-site. Avoidance of methane emissions from anaerobic decay\r\nof biomass residues.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Only power and heat or cogeneration plants are applicable;\r\n• Only biomass residues, biogas and biomass from dedicated plantations are eligible;\r\n• Fossil fuels may be co-fired in the project plant. The amount of fossil fuels co-fired\r\nshall not exceed 80% of the total fuel fired on an energy basis;",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0006.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 21
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "c1545415-9520-495e-bd95-fedebe30b578",
+            {
+                "pageContent": "• Planted biomass is eligible if specific conditions elaborated in “Project and leakage\r\nemissions from biomass” are met.\r\n\r\nImportant parameters At validation:\r\n• Grid emission factor (can also be monitored ex post).\r\nMonitored:\r\n• Quantity and moisture content of the biomass used in the project activity;\r\n• Electricity and heat generated in the project activity;\r\n• Electricity and, if applicable, fossil fuel consumption of the project activity.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0006.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 22,
+                            "to": 30
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "37cc46b9-8de2-4c4e-9da5-b48b7dfb3b86",
+            {
+                "pageContent": "Methodology name: ACM0007 (Conversion from single cycle to combined cycle power generation)\r\n\r\nTypical project(s): \r\nConversion from an open-cycle gas power plant to a combined-cycle gas power plant.\r\n\r\nType of GHG emissions mitigation action:\r\n• Energy efficiency.\r\nFuel savings through energy efficiency improvement.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• The project does not increase the lifetime of the existing gas turbine\r\nor engine during the crediting period;\r\n• Waste heat generated on the project site is not utilizable for any\r\nother purpose.\r\n\r\nImportant parameters:\r\nAt validation:\r\n• Electricity generation of the existing open-cycle gas power plant (can also be\r\nmonitored ex post);\r\n• Fuel consumption of the existing open-cycle gas power plant.\r\nMonitored:\r\n• Electricity generation of the combined-cycle gas power plant;\r\n• Fuel consumption of the combined-cycle gas power plant;\r\n• Grid emission factor",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0007.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 24
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "02ce7845-d7b7-4b44-8291-54ef39591328",
+            {
+                "pageContent": "Methodology name: ACM0018 (Electricity generation from biomass in power-only plants)\r\n\r\nTypical project(s):\r\nGeneration of power using biomass as fuel, in new biomass based power plants at sites\r\nwhere currently no power generation occurs (Greenfield), replacement or installation\r\nof operation units next to existing power plants (capacity expansion projects), energy\r\nefficiency improvement projects or replacement of fossil fuel by biomass in existing\r\npower plants (fuel switch projects). The biomass based power generation may be\r\ncombined with solar thermal power generation.\r\n\r\nType of GHG emissions mitigation action\r\n• Renewable energy;\r\n• Energy efficiency;\r\n• Fuel switch.\r\nDisplacement of more GHG-intensive electricity generation in the grid or on-site.\r\nAvoidance of methane emissions from anaerobic decay of biomass residues.\r\nDisplacement of more-GHG-intensive fossil fuel for combustion in stationary installations.\r\n\r\nImportant conditions under which the methodology is applicable:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0018.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 19
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "29f37e7b-9e47-41ee-a112-1819c9d6334b",
+            {
+                "pageContent": "• If biomass from a production process is used, the implementation of the project\r\nshall not result in an increase of the processing capacity of raw input;\r\n• The methodology is applicable to power-only plants;\r\n• Planted biomass is eligible if specific conditions elaborated in “Project and leakage\r\nemissions from biomass” are met;\r\n• Fossil fuels may be co-fired in the project plant. However, the amount of fossil\r\nfuels co-fired shall not exceed 80% of the total fuel fired on an energy basis;\r\n• In case of existing facilities, three years of historical data is required for the\r\ncalculation of emissions reductions;\r\n• Projects that chemically process the biomass prior to combustion\r\n(e.g. by means of esterification of waste oils, fermentation and gasification, etc.)\r\nare not eligible under this methodology. The biomass can however be processed\r\nphysically such as by means of drying, pelletization, shredding and briquetting.\r\n\r\nImportant parameters: \r\nAt validation:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0018.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 20,
+                            "to": 35
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "aaff152a-f798-4e0d-8b8c-5a7b14dfad7e",
+            {
+                "pageContent": "Important parameters: \r\nAt validation:\r\n• If applicable: grid emission factor (can also be monitored ex post).\r\nMonitored:\r\n• Electricity generated in the project;\r\n• Quantity and moisture content of the biomass used in the project and electricity and\r\nfossil fuel consumption of the project.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\ACM0018.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 35,
+                            "to": 41
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "a8d93f4d-0ff5-48ed-85eb-8f7221195bb5",
+            {
+                "pageContent": "Methodology name: AMS-I.A (Electricity generation by the user)\r\n\r\nTypical project(s): \r\nRenewable electricity generation such as solar, hydro, wind or biomass gasification\r\nare implemented by the users as new installations (Greenfield) or replacement of\r\nexisting onsite fossil-fuel-fired generation.\r\n\r\nType of GHG emissions mitigation action\r\n• Renewable energy.\r\nDisplacement of more-GHG-intensive, non-renewable electricity applications by\r\nintroducing renewable energy technologies.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Users are in off-grid locations, i.e. they do not have connection to a national/\r\nregional grid, unless exceptional situations, e.g. weak grids;\r\n• Users are included in the project boundary;\r\n• Conditions apply for reservoir-based hydro plants.\r\n\r\nImportant parameters:\r\nAt validation:\r\n• Trend-adjusted projection of historical fuel consumption if an existing technology\r\nis replaced (e.g. for lighting, daily use duration can be applied).",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.A.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 22
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "683c9082-1ddb-4e59-9154-d3a906dae413",
+            {
+                "pageContent": "Monitored:\r\n• An annual check of all systems or a sample thereof to ensure that they are still\r\noperating, or metering of generated electricity;\r\n• If applicable, consumption of energy sources (e.g. biomass, fossil fuel);\r\n• If applicable, availability of connected grid.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.A.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 23,
+                            "to": 27
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "0b3176aa-9c16-4253-859b-4ffe069b0b2d",
+            {
+                "pageContent": "Methodology name: AMS-I.C (Thermal energy production with or without electricity)\r\n\r\nTypical project(s): \r\nThermal energy production using renewable energy sources including biomass-based\r\ncogeneration and/or trigeneration. Projects that seek to retrofit or modify existing facilities\r\nfor renewable energy generation are also applicable.\r\n\r\nType of GHG emissions mitigation action\r\n• Renewable energy.\r\nDisplacement of more-GHG-intensive thermal energy production, displacement of\r\nmore-GHG-intensive thermal energy and/or electricity generation.\r\n\r\nImportant conditions under which the methodology is applicable\r\n• Thermal energy and/or electricity production using biomass-based cogeneration\r\nand trigeneration system is eligible;\r\n• If solid biomass is used, it has to be demonstrated that solely renewable biomass\r\nis used. If charcoal or biomass fuel is used, all project or leakage emissions\r\n(e.g. release of methane) from the fuel production have to be considered;",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.C.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 18
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "7f6ad657-b6a6-4663-93b4-c2d45a640a54",
+            {
+                "pageContent": "• If project equipment contains refrigerants, then the refrigerant used in the project\r\ncase shall have no ozone depleting potential (ODP).\r\n\r\nImportant parameters Monitored:\r\n• The moisture content of biomass of homogeneous quality may be fixed ex ante\r\nor monitored for each batch of biomass if the emission reductions are calculated\r\nbased on energy input;\r\n• Thermal energy (mass flow, temperature, pressure for heat/cooling) delivered\r\nby the project and the amount of grid and/or captive electricity displaced;\r\n• Quantity of biomass and fossil fuel consumed;\r\n• Net calorific value of biomass shall be determined once in the first year of\r\nthe crediting period;\r\n• The chilled water mass flow-rate for chiller(s);\r\n• Cooling output of baseline chiller displaced as a result of the installation of project\r\nactivity;\r\n• Quantity of refrigerant used to replace refrigerant that has leaked.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.C.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 19,
+                            "to": 34
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "2a38e243-a1e6-4e64-8605-3000918e91f5",
+            {
+                "pageContent": "Methodology name: AMS-I.F (Renewable electricity generation for captive use and mini-grid)\r\n\r\nTypical project(s): \r\nProduction of electricity using renewable energy technologies such as photovoltaic, hydro,\r\ntidal/wave, wind, geothermal and renewable biomass that supply electricity to user(s).\r\n\r\nType of GHG emissions mitigation action:\r\n• Renewable energy.\r\nDisplacement of electricity that would be provided to the user(s) by more-GHGintensive means.\r\n\r\nImportant conditions under which the methodology is applicable\r\n• The project will displace electricity from an electricity distribution system that is or\r\nwould have been supplied by at least one fossil fuel fired generating unit;\r\n• Electricity is produced by installing a new power plant (Greenfield) or by capacity\r\naddition/retrofit/replacement of (an) existing plant(s);\r\n• Special conditions apply for reservoir-based hydro plants;\r\n• Cogeneration projects are not eligible.\r\n\r\nImportant parameters: \r\nAt validation:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.F.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 20
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "145cf39a-52d2-4a72-b8a7-92c0865ee5a6",
+            {
+                "pageContent": "Important parameters: \r\nAt validation:\r\n• If applicable: grid emission factor (can also be monitored ex post).\r\nMonitored:\r\n• Net electricity generation, quantity of fossil fuel and biomass consumption.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-I.F.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 20,
+                            "to": 24
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "7898bd2a-3c1a-497e-b62b-374c0f17aade",
+            {
+                "pageContent": "Methodology name: AMS-II.G (Energy efficiency measures in thermal applications of non-renewable biomass)\r\n\r\nTypical project(s): \r\nIntroduction of new efficient thermal energy generation units, e.g. efficient biomass fired\r\ncook stoves or ovens or dryers or retrofitting of existing units to reduce the use of\r\nnonrenewable biomass for combustion.\r\n\r\nType of GHG emissions mitigation action\r\n• Energy efficiency.\r\nDisplacement or energy efficiency enhancement of existing heat generation units results\r\nin saving of non-renewable biomass and reduction of GHG emissions.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• It shall be demonstrated that non-renewable biomass has been used since 31\r\nDecember 1989;\r\n• The methodology is applicable to single pot or multi pot portable or in-situ cook\r\nstoves with rated efficiency of at least 25 per cent.\r\n\r\nImportant parameters:\r\nMonitored:\r\n• Annual or biennial check of operation of the project appliances (e.g. by",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-II.G.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 21
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "ef650358-59bc-4152-bf22-550370a8b027",
+            {
+                "pageContent": "representative sample);\r\n• Annual check of the efficiency of the project appliances (e.g. by representative\r\nsample). Other options to determine efficiency include a sample survey of the\r\ndevices in the first batch and applying default annual efficiency drop values;\r\n• Fraction of woody biomass saved by the project activity that can be established as\r\nnon-renewable biomass, as per the methodological tool “Calculation of fraction of\r\nnon-renewable biomass”;\r\n• Leakage: the amount of woody biomass saved under the project that is used by\r\nnon-project households/users (who previously used renewable energy sources)\r\nshall be assessed from surveys",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-II.G.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 22,
+                            "to": 31
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "60c868a2-36f9-4e6d-be86-5613142203ba",
+            {
+                "pageContent": "Methodology name: AMS-II.J (Demand-side activities for efficient lighting technologies)\r\n\r\nTypical project(s): \r\nActivities for adoption of energy efficient light bulbs (e.g. CFLs and LED lamps) to replace\r\nless efficient light bulbs in residential applications.\r\n\r\nType of GHG emissions mitigation action\r\n• Energy efficiency.\r\nDisplacement of more-GHG-intensive lighting by technology switch.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Total light output of the project lamp should be equal to or more than that of the\r\nbaseline lamp being replaced and project lamps shall, in addition to the standard\r\nlamp specifications, be marked for clear unique identification for the project;\r\n• Rated average life of the efficient light bulbs shall be known ex ante and the CDM\r\nPDD shall cite the standard used by the manufacturer;\r\n• Determination of daily operating hours: either default value of 3.5 hours or\r\nmeasured value.\r\n\r\nImportant parameters: \r\nAt validation:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-II.J.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 21
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "606cdec8-c104-4c41-bec9-c8352e985784",
+            {
+                "pageContent": "Important parameters: \r\nAt validation:\r\n• Average life time of the project lamp (can also be monitored ex post);\r\n• The number and power of the replaced baseline lamps;\r\n• Number of project lamps distributed under the project,\r\nidentified by the type of project lamps and the date of supply;\r\n• Grid emission factor (can also be monitored ex post).\r\nMonitored:\r\n• If applicable: measurement of average daily operating hours;\r\n• Lamp failure rate surveys.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-II.J.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 21,
+                            "to": 30
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "785d36dc-3e38-4e1a-8ac2-32b2285afee1",
+            {
+                "pageContent": "AMS-III.AR (Substituting fossil fuel based lighting with LED/CFL lighting systems)\r\n\r\nTypical project(s): \r\nActivities that replace portable fossil fuel based lamps (e.g. wick-based kerosene lanterns)\r\nwith battery-charged LED or CFL based lighting systems in residential and/or non-residential\r\napplications (e.g. ambient lights, task lights, portable lights).\r\n\r\nType of GHG emissions mitigation action:\r\n• Renewable energy;\r\n• Energy efficiency.\r\nDisplacement of more-GHG-intensive service (lighting).\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Project lamps whose batteries are through:\r\n– A renewable energy system (e.g. a photovoltaic system or mechanical system\r\nsuch as a hand crank charger);\r\n– A standalone distributed generation system (e.g. a diesel generator set) or a\r\nmini-grid;\r\n– A grid that is connected to regional/national grid;\r\n– A combination of the above options;\r\n• When the LED/CFL lighting system has more than one LED/ CFL lamp connected to",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.AR.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 21
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "f45af351-218f-4be7-a8e8-b2367332572c",
+            {
+                "pageContent": "a single rechargeable battery system, each LED/CFL lamp may be considered as one\r\nproject lamp;\r\n• At a minimum, project lamps shall be certified by their manufacturer to have a rated\r\naverage operational life of at least:\r\n– 5,000 hours where project lamps are assumed to operate for two years after\r\ndistribution to end-users (i.e. emission reductions are not credited beyond\r\ntwo years). Under this option, ex post monitoring surveys to determine the\r\npercentage of project lamps in service in year y are not required;\r\n– 10,000 hours where project lamps are assumed to operate for up to seven years\r\nafter distribution to end-users (i.e. emission reductions are not credited beyond\r\nseven years). Under this option, more stringent requirements (e.g. test on light\r\noutput, ex post monitoring surveys) are specified;\r\n• Project lamps shall have a minimum of one year warranty;\r\n• The replaced baseline lamps are those that directly consume fossil fuel.\r\n\r\nImportant parameters: \r\nMonitored:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.AR.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 22,
+                            "to": 38
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "710dea23-1ef2-4e22-8dd7-107fa4232cef",
+            {
+                "pageContent": "Important parameters: \r\nMonitored:\r\n• Recording of project lamp distribution data;\r\n• In some cases, ex post monitoring surveys to determine percentage of project lamps\r\ndistributed to end users that are operating and in service in year y.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.AR.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 38,
+                            "to": 42
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "a244ac6c-83bd-4314-8777-029451cd865e",
+            {
+                "pageContent": "Methodology name: AMS-III.AV (Low greenhouse gas emitting safe drinking water production systems)\r\n\r\nTypical project(s): \r\nProject activities that introduce low GHG emitting water purification systems to provide safe\r\ndrinking water and displace water boiling using non-renewable biomass or fossil fuels.\r\nWater kiosks that treat water using one or more of the following technologies: chlorination,\r\ncombined flocculant/disinfection powders and solar disinfection are also eligible.\r\n\r\nType of GHG emissions mitigation action:\r\nDisplacement of a more-GHG-intensive output.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Prior to the implementation of the project activity, a public distribution network\r\nsupplying safe drinking water to the project boundary does not exist;\r\n• The application of the project technology/equipment shall achieve compliance either\r\nwith: (i) the comprehensive protection performance target as per “Evaluating household",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.AV.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 16
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "0d6116dc-0cab-4e26-8237-be57fd8bce02",
+            {
+                "pageContent": "water treatment options: Health based targets and microbiological performance\r\nspecifications” (WHO, 2011); or (ii) an applicable national standard or guideline;\r\n• In cases where the life span of the water treatment technologies is shorter than\r\nthe crediting period of the project activity, there shall be documented measures in\r\nplace to ensure that end users have access to replacement purification systems of\r\ncomparable quality.\r\n\r\nImportant parameters: \r\nMonitored:\r\n• Checking of appliances to ensure that they are still operating or are replaced by\r\nan equivalent;\r\n• Quantity of purified water;\r\n• Annual check if a safe drinking water public distribution network is installed;\r\n• Safe drinking water quality;\r\n• Total electricity and fossil fuel consumption by the project activity.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.AV.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 17,
+                            "to": 31
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "51a3ce07-23fd-4cf3-9ebf-718f34f407e4",
+            {
+                "pageContent": "Methodology name: AMS-III.BB (Electrification of communities through grid extension or construction of new mini-grids)\r\n\r\nTypical project(s): \r\nThe project activity supplies electricity to consumers who, prior to project implementation,\r\nwere not connected to a national/regional grid and were supplied by a high-carbonintensive mini-grid or stand-alone power generators. Also fuel-based lighting systems\r\nmight have been used before the project implementation.\r\n\r\nType of GHG emissions mitigation action:\r\n• Displacement of more-GHG-intensive output.\r\nLow-carbon-intensive grid/mini-grid electricity displaces high-carbon-intensive\r\nelectricity or lighting services.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Limited to communities with no access to a national or regional grid;\r\n• At least 75% of the end users (by number) shall be households.\r\n\r\nImportant parameters: \r\nAt validation:\r\n• The physical location of each consumer and the anticipated connected load and",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.BB.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 19
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "9c98da05-1378-4649-97e4-407cca168041",
+            {
+                "pageContent": "usage hours of each consumer.\r\nMonitored:\r\n• Metering of total electricity delivered to consumers (e.g. at a substation). Prepaid\r\ndevices for purchase of electricity can also be used for the purpose of metering;\r\n• Metering of electricity consumption of all non-household end users (e.g. commercial\r\nconsumers, SMMEs, public institutions, street lighting, irrigation pumps) and\r\nhousehold end-users expected to consume more than 1000 kWh/year.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.BB.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 20,
+                            "to": 26
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "cf339c7a-55f4-46b1-af42-109aa303330a",
+            {
+                "pageContent": "Methodology name: AMS-III.D (Methane recovery in animal manure management systems)\r\n\r\nTypical project(s): \r\nReplacement or modification of existing anaerobic manure management systems in\r\nlivestock farms, or treatment of manure collected from several farms in a centralized plant\r\nto achieve methane recovery and destruction by flaring/combustion or energetic use of\r\nthe recovered methane.\r\n\r\nType of GHG emissions mitigation action:\r\n• GHG destruction.\r\nGHG destruction and displacement of more-GHG-intensive service.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Manure or the streams obtained after treatment are not discharged into natural\r\nwater resources (e.g. river or estuaries);\r\n• In the baseline scenario the retention time of manure waste in the anaerobic\r\ntreatment system is greater than one month, and in case of anaerobic lagoons\r\nin the baseline, their depths are at least 1 m;\r\n• Final sludge must be handled aerobically;",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.D.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 19
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "498285aa-1875-40ad-871b-84427c70b53d",
+            {
+                "pageContent": "• Final sludge must be handled aerobically;\r\n• The storage time of the manure after removal from the animal barns, including\r\ntransportation, should not exceed 45 days before being fed into the anaerobic\r\ndigester, unless it can be demonstrated that the dry matter content of the manure\r\nwhen removed from the animal barns is more than 20%.\r\n\r\nImportant parameters: \r\nMonitored:\r\n• Amount of biogas recovered and fuelled, flared or used gainfully;\r\n• The annual amount of fossil fuel or electricity used to operate the facility or\r\nauxiliary equipment;\r\n• Fraction of the manure handled in the manure management system;\r\n• Proper soil application (not resulting in methane emissions) of the final sludge\r\nmust be monitored.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.D.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 19,
+                            "to": 32
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "2a7307c9-0201-40c7-bb66-daf4e9800983",
+            {
+                "pageContent": "Methodology name: AMS-III.F (Avoidance of methane emissions through composting)\r\n\r\nTypical project(s): \r\nControlled biological treatment of biomass or other organic matter is introduced through\r\naerobic treatment by composting and proper soil application of the compost.\r\n\r\nType of GHG emissions mitigation action:\r\n• GHG emission avoidance.\r\nAvoidance of GHG emissions by alternative treatment process.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Recovery and combustion of landfill gas is not eligible;\r\n• Identified landfill(s) should be able to accommodate the waste to be used for the\r\nproject for the duration of the crediting period; or it is common practice in the region\r\nto dispose of the waste in solid waste disposal sites (landfills).\r\n\r\nImportant parameters: \r\nMonitored:\r\n• Quantity of waste biologically treated and its composition through representative\r\nsampling;\r\n• When project includes co-treating of wastewater, the volume of co-treated",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.F.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 21
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "5645c010-133e-4b66-ace9-23df05ac2156",
+            {
+                "pageContent": "wastewater and its COD content through representative sampling;\r\n• Annual amount of fossil fuel or electricity used to operate the facilities or\r\nauxiliary equipment.",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.F.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 22,
+                            "to": 24
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "93c01827-7753-4d98-801b-fbcf558c777b",
+            {
+                "pageContent": "Methodology name: AMS-III.H (Methane recovery in wastewater treatment)\r\n\r\nTypical project(s): \r\nRecovery of biogas resulting from anaerobic decay of organic matter in wastewaters\r\nthrough introduction of anaerobic treatment system for wastewater and/or sludge\r\ntreatment.\r\n\r\nType of GHG emissions mitigation action\r\n• GHG destruction.\r\nDestruction of methane emissions and displacement of more-GHG-intensive service.\r\n\r\nImportant conditions under which the methodology is applicable:\r\n• Anaerobic lagoons should be deeper than 2 metres, without aeration, ambient\r\ntemperature above 15°C, at least during part of the year, on a monthly average\r\nbasis. The minimum interval between two consecutive sludge removal events shall\r\nbe 30 days;\r\n• In determining baseline emissions, historical records of at least one year prior\r\nto the project implementation shall be available. Otherwise, a representative\r\nmeasurement campaign is required.\r\n\r\nImportant parameters: \r\nAt validation:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.H.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 22
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "75a4ac84-3422-4ac9-a6ea-6943ebefd13a",
+            {
+                "pageContent": "Important parameters: \r\nAt validation:\r\n• COD removal efficiency of the baseline system.\r\nMonitored:\r\n• Flow of wastewater;\r\n• Chemical oxygen demand of the wastewater before and after the treatment system;\r\n• Amount of sludge as dry matter in each sludge treatment system;\r\n• Amount of biogas recovered, fuelled, flared or utilized (e.g. injected into a natural\r\ngas distribution grid or distributed via a dedicated piped network).",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\AMS-III.H.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 22,
+                            "to": 30
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "fe7f0f3a-1051-4481-928a-45b1079d3b8e",
+            {
+                "pageContent": "Categorization Methodologies by Scale\r\n\r\n1. Large-Scale: ACM0001, ACM0002, ACM0006, ACM0007, ACM0018\r\n2. Small-Scale: AMS-I.A, AMS-I.C, AMS-I.F, AMS-II.G, AMS-II.J, AMS-III.AR, AMS-III.AV, AMS-III.BB, AMS-III.D, AMS-III.F, AMS-III.H\r\n\r\nCategorization Methodologies by Applied Technology Type/Measure\r\n\r\n1. Landfill gas: ACM0001\r\n2. Grid electricity: ACM0002\r\n3. Biomass electricity: ACM0006, ACM0018\r\n4. Energy efficiency: ACM0007\r\n5. Offgrid electricity/ isolated grids: AMS-I.A\r\n6. Renewable thermal energy: AMS-I.C\r\n7. Captive power: AMS-I.F\r\n8. Cookstove: AMS-II.G\r\n9. Lighting: AMS-II.J, AMS-III.AR\r\n10. Water purifier: AMS-III.AV\r\n11. Electricity grid connection: AMS-III.BB\r\n12. Manure and comparable animal waste: AMS-III.D\r\n13. Alternative treatment – composting: AMS-III.F\r\n14. Lagoons and biodigester – biogas: AMS-III.H\r\n\r\nCategorization Methodologies by Mitigation Activity Type\r\n\r\n1. GHG destruction: ACM0001, AMS-III.D, AMS-III.H",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\metadata.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 1,
+                            "to": 25
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "4f7fce7a-9e42-48a5-b41c-c5ecc9aec77d",
+            {
+                "pageContent": "2. Renewable energy: ACM0002, ACM0006, ACM0018, AMS-I.A, AMS-I.C, AMS-I.F, AMS-III.AR\r\n3. Energy efficiency: ACM0006, ACM0007, ACM0018, AMS-II.G, AMS-II.J, AMS-III.AR, AMS-III.AV, AMS-III.BB\r\n4. Fuel/feedstock switch: ACM0006, ACM0018, AMS-III.BB\r\n5. GHG emission avoidance: AMS-III.F\r\n\r\nCategorization Methodologies by Sub Type\r\n\r\n1. Electricity generation and supply: ACM0002, ACM0006, ACM0007, ACM0018, AMS-I.A, AMS-I.C, AMS-I.F, AMS-III.BB\r\n2. Energy for industries: ACM0006, ACM0018, AMS-I.C, AMS-I.F, AMS-II.G\r\n3. Energy for households and buildings: AMS-I.A, AMS-I.C, AMS-I.F, AMS-II.G, AMS-II.J, AMS-III.AR, AMS-III.AV\r\n\r\nMethodologies Sectoral Scope Name\r\n\r\n1. Waste handling and disposal: ACM0001, AMS-III.D, AMS-III.F, AMS-III.H\r\n2. Energy industries (renewable-/ non renewable sources: ACM0002, ACM0006, ACM0007, ACM0018, AMS-I.A, AMS-I.C, AMS-I.F\r\n3. Energy demand: AMS-II.G, AMS-II.J, AMS-III.AR, AMS-III.AV\r\n4. Energy distribution: AMS-III.BB\r\n\r\nSectoral Scope Number:",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\metadata.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 26,
+                            "to": 44
+                        }
+                    }
+                }
+            }
+        ],
+        [
+            "710b8bc7-b60b-4bad-8192-5ef1bee56080",
+            {
+                "pageContent": "Sectoral Scope Number:\r\nWaste handling and disposal: 13\r\nEnergy industries (renewable-/ non renewable sources): 1\r\nEnergy demand: 3\r\nEnergy distribution: 2",
+                "metadata": {
+                    "source": "C:\\_BS\\MyProjects\\unfccc-demo\\backend\\short-descriptions\\metadata.txt",
+                    "loc": {
+                        "lines": {
+                            "from": 44,
+                            "to": 48
+                        }
+                    }
+                }
+            }
+        ]
+    ],
+    {
+        "0": "d33b8e79-c6c8-43c0-aea1-4660e7d87b81",
+        "1": "2c4f947c-aada-4d79-990b-83206cbf7bd0",
+        "2": "3e98927e-e844-4800-8806-973bd0ef70fe",
+        "3": "176756f3-3ebe-4234-9ad7-16fb9963aea7",
+        "4": "40493714-9f46-474c-81c3-79b7d44deb62",
+        "5": "c1545415-9520-495e-bd95-fedebe30b578",
+        "6": "37cc46b9-8de2-4c4e-9da5-b48b7dfb3b86",
+        "7": "02ce7845-d7b7-4b44-8291-54ef39591328",
+        "8": "29f37e7b-9e47-41ee-a112-1819c9d6334b",
+        "9": "aaff152a-f798-4e0d-8b8c-5a7b14dfad7e",
+        "10": "a8d93f4d-0ff5-48ed-85eb-8f7221195bb5",
+        "11": "683c9082-1ddb-4e59-9154-d3a906dae413",
+        "12": "0b3176aa-9c16-4253-859b-4ffe069b0b2d",
+        "13": "7f6ad657-b6a6-4663-93b4-c2d45a640a54",
+        "14": "2a38e243-a1e6-4e64-8605-3000918e91f5",
+        "15": "145cf39a-52d2-4a72-b8a7-92c0865ee5a6",
+        "16": "7898bd2a-3c1a-497e-b62b-374c0f17aade",
+        "17": "ef650358-59bc-4152-bf22-550370a8b027",
+        "18": "60c868a2-36f9-4e6d-be86-5613142203ba",
+        "19": "606cdec8-c104-4c41-bec9-c8352e985784",
+        "20": "785d36dc-3e38-4e1a-8ac2-32b2285afee1",
+        "21": "f45af351-218f-4be7-a8e8-b2367332572c",
+        "22": "710dea23-1ef2-4e22-8dd7-107fa4232cef",
+        "23": "a244ac6c-83bd-4314-8777-029451cd865e",
+        "24": "0d6116dc-0cab-4e26-8237-be57fd8bce02",
+        "25": "51a3ce07-23fd-4cf3-9ebf-718f34f407e4",
+        "26": "9c98da05-1378-4649-97e4-407cca168041",
+        "27": "cf339c7a-55f4-46b1-af42-109aa303330a",
+        "28": "498285aa-1875-40ad-871b-84427c70b53d",
+        "29": "2a7307c9-0201-40c7-bb66-daf4e9800983",
+        "30": "5645c010-133e-4b66-ace9-23df05ac2156",
+        "31": "93c01827-7753-4d98-801b-fbcf558c777b",
+        "32": "75a4ac84-3422-4ac9-a6ea-6943ebefd13a",
+        "33": "fe7f0f3a-1051-4481-928a-45b1079d3b8e",
+        "34": "4f7fce7a-9e42-48a5-b41c-c5ecc9aec77d",
+        "35": "710b8bc7-b60b-4bad-8192-5ef1bee56080"
+    }
+]

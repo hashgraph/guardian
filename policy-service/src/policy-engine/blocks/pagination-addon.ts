@@ -1,9 +1,9 @@
-import { SourceAddon, StateField } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { SourceAddon, StateField } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicySourceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Pagination addon
@@ -42,7 +42,7 @@ export class PaginationAddon {
      * Get pagination state
      * @param user
      */
-    public async getState(user: IPolicyUser):Promise<any> {
+    public async getState(user: PolicyUser):Promise<any> {
         if (!this.state[user.id]) {
             this.state[user.id] = {
                 size: 20,
@@ -61,10 +61,27 @@ export class PaginationAddon {
     }
 
     /**
+     * Set pagination state
+     * @param user
+     * @param data
+     */
+    public async setState(user: PolicyUser, data: any): Promise<any> {
+        const {size, itemsPerPage, page} = data;
+        this.state[user.id] = {size, itemsPerPage, page};
+
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const totalCount = await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null, true);
+
+        if (this.state[user.id].size !== totalCount) {
+            this.state[user.id].size = totalCount;
+        }
+    }
+
+    /**
      * Get block data
      * @param user
      */
-    public async getData(user: IPolicyUser): Promise<any> {
+    public async getData(user: PolicyUser): Promise<any> {
         return this.getState(user);
     }
 
@@ -73,14 +90,13 @@ export class PaginationAddon {
      * @param user
      * @param data
      */
-    public async setData(user: IPolicyUser, data: any): Promise<void> {
+    public async setData(user: PolicyUser, data: any): Promise<void> {
         const oldState = this.state;
         oldState[user.id] = data;
         this.state = oldState;
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
-
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 }

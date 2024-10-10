@@ -4,5 +4,6 @@
 
 export enum ModuleStatus {
     DRAFT = 'DRAFT',
-    PUBLISHED = 'PUBLISHED'
+    PUBLISHED = 'PUBLISHED',
+    PUBLISH_ERROR= 'PUBLISH_ERROR'
 }

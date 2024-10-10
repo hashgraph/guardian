@@ -1,0 +1,30 @@
+<app-dialog-wrapper (cancel)="onNoClick()" title="Wiper requests" [confirmVisible]="false" [syncVisible]="false"
+    [loading]="loading">
+    <ng-container *ngIf="requests?.length; else noRequests">
+        <div *ngFor="let request of requests" class="request">
+            <div class="profile">
+                <mat-icon class="profile__icon">person</mat-icon>
+                <span class="profile__id">{{request.user}}</span>
+            </div>
+            <div class="request__actions">
+                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
+                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
+                    matTooltipClass="guardian-tooltip"
+                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Approve</button>
+                <button (click)="rejectRequest(request.id)" mat-flat-button class="btn btn--reject"
+                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
+                    matTooltipClass="guardian-tooltip"
+                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Reject</button>
+                <button (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn--ban"
+                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
+                    matTooltipClass="guardian-tooltip"
+                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Ban</button>
+            </div>
+        </div>
+        <mat-paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10]"
+            (page)="onPage($event)"></mat-paginator>
+    </ng-container>
+</app-dialog-wrapper>
+<ng-template #noRequests>
+    <div class="no-requests"><span class="no-requests__label">Contract has no requests, try to sync.</span></div>
+</ng-template>

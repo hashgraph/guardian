@@ -1,7 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+
 /**
  * Services for working from user profile.
  */
@@ -20,8 +21,22 @@ export class IPFSService {
         });
     }
 
+    public addFileDryRun(file: any, policyId: string): Observable<any> {
+        return this.http.post<string>(`${this.url}/file/dry-run/${policyId}`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
     public getFile(cid: string): Observable<ArrayBuffer> {
         return this.http.get(`${this.url}/file/${cid}`, {
+            responseType: 'arraybuffer',
+        });
+    }
+
+    public getFileFromDryRunStorage(cid: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/file/${cid}/dry-run`, {
             responseType: 'arraybuffer',
         });
     }
@@ -32,8 +47,26 @@ export class IPFSService {
 
     public getImageByLink(link: string): Promise<string> {
         return new Promise((resolve, reject) => {
-            let cidMatches = link.match(this.cidPattern);
+            const cidMatches = link.match(this.cidPattern);
             this.getFile((cidMatches && cidMatches[0]) || '').subscribe(
+                (res) => {
+                    resolve(
+                        `data:image/jpg;base64,${btoa(
+                            Array.from(new Uint8Array(res))
+                                .map((b) => String.fromCharCode(b))
+                                .join('')
+                        )}`
+                    );
+                },
+                reject
+            );
+        });
+    }
+
+    public getImageFromDryRunStorage(link: string): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const imageIdMatches = link.match(/.+\/\/(.+)/);
+            this.getFileFromDryRunStorage((imageIdMatches && imageIdMatches[1]) || '').subscribe(
                 (res) => {
                     resolve(
                         `data:image/jpg;base64,${btoa(

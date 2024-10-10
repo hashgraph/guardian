@@ -1,12 +1,15 @@
-const axios = require("axios");
-const BASE_URL = 'http://localhost:3002'
+import axios from 'axios';
+
+const BASE_URL = 'http://localhost:3002';
 
 let tokens = [
 ];
 
 async function GenerateTokens() {
+    this.timeout(60000);
     tokens = [];
     let result;
+    let username;
     result = await axios.post(
         GetURL('accounts', 'login'),
         JSON.stringify({
@@ -19,7 +22,19 @@ async function GenerateTokens() {
             }
         }
     );
-    SaveToken(result.data.username, result.data.accessToken);
+    username = result.data.username;
+    result = await axios.post(
+        GetURL('accounts', 'access-token'),
+        JSON.stringify({
+            refreshToken: result.data.refreshToken
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(username, result.data.accessToken);
     result = await axios.post(
         GetURL('accounts', 'login'),
         JSON.stringify({
@@ -32,7 +47,19 @@ async function GenerateTokens() {
             }
         }
     );
-    SaveToken(result.data.username, result.data.accessToken);
+    username = result.data.username;
+    result = await axios.post(
+        GetURL('accounts', 'access-token'),
+        JSON.stringify({
+            refreshToken: result.data.refreshToken
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(username, result.data.accessToken);
     result = await axios.post(
         GetURL('accounts', 'login'),
         JSON.stringify({
@@ -45,7 +72,19 @@ async function GenerateTokens() {
             }
         }
     );
-    SaveToken(result.data.username, result.data.accessToken);
+    username = result.data.username;
+    result = await axios.post(
+        GetURL('accounts', 'access-token'),
+        JSON.stringify({
+            refreshToken: result.data.refreshToken
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(username, result.data.accessToken);
     result = await axios.post(
         GetURL('accounts', 'login'),
         JSON.stringify({
@@ -58,7 +97,19 @@ async function GenerateTokens() {
             }
         }
     );
-    SaveToken(result.data.username, result.data.accessToken);
+    username = result.data.username;
+    result = await axios.post(
+        GetURL('accounts', 'access-token'),
+        JSON.stringify({
+            refreshToken: result.data.refreshToken
+        }),
+        {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }
+    );
+    SaveToken(username, result.data.accessToken);
 }
 
 function SaveToken(name, token) {
@@ -89,11 +140,11 @@ function GenerateUUIDv4() {
     });
 }
 
-module.exports = {
+export {
     sleep,
     GetURL,
     SaveToken,
     GetToken,
     GenerateTokens,
-    GenerateUUIDv4
-}
+    GenerateUUIDv4,
+};

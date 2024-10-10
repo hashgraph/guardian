@@ -1,13 +1,12 @@
-import { TokenAddon } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { TokenAddon } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { VcDocument } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { BlockActionError } from '@policy-engine/errors';
+import { VcDocumentDefinition as VcDocument, VcHelper } from '@guardian/common';
+import { BlockActionError } from '../errors/index.js';
 
 /**
  * Calculate math addon
@@ -77,7 +76,7 @@ export class TokenOperationAddon {
     async getSchema(): Promise<Schema> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ACTIVITY_IMPACT);
+            this.schema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.ACTIVITY_IMPACT);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
@@ -90,7 +89,11 @@ export class TokenOperationAddon {
      * @param documents
      * @param user
      */
-    public async run(documents: VcDocument[], root: IHederaAccount, user: IPolicyUser): Promise<any> {
+    public async run(
+        documents: VcDocument[],
+        root: UserCredentials,
+        user: PolicyUser
+    ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const policySchema = await this.getSchema();
         const amount = PolicyUtils.aggregate(ref.options.amount, documents);
@@ -110,7 +113,14 @@ export class TokenOperationAddon {
         if (ref.options.description) {
             vcSubject.description = ref.options.description;
         }
-        const vc = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const didDocument = await root.loadDidDocument(ref);
+        const uuid = await ref.components.generateUUID();
+        const vc = await vcHelper.createVerifiableCredential(
+            vcSubject,
+            didDocument,
+            null,
+            { uuid }
+        );
         return vc;
     }
 }

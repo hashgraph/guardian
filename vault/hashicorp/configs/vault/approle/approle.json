@@ -1,0 +1,42 @@
+[
+  {
+    "role_name": "auth_service",
+    "policies": ["secretkey_auth","secretkey_auth_emptyenv"],
+    "env_path": [
+      "auth-service"
+    ],
+    "env_name": [
+      "auth"
+    ]
+  },
+  {
+    "role_name": "guardian_service",
+    "policies": ["wallet","operator","wallet_emptyenv","operator_emptyenv"],
+    "env_path": [
+      "guardian-service"
+    ],
+    "env_name": [
+      "guardian"
+    ]
+  },
+  {
+    "role_name": "policy_service",
+    "policies": ["wallet","operator","wallet_emptyenv","operator_emptyenv"],
+    "env_path": [
+      "policy-service"
+    ],
+    "env_name": [
+      "policy"
+    ]
+  },
+  {
+    "role_name": "worker_service",
+    "policies": ["apikey_ipfs","apikey_ipfs_emptyenv"],
+    "env_path": [
+      "worker-service"
+    ],
+    "env_name": [
+      "worker"
+    ]
+  }
+]

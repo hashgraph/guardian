@@ -1,0 +1,17 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="type == 'loader'">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+    <div *ngIf="type == 'text'">
+        <div class="title">{{ title }}</div>
+        <div class="description">{{ description }}</div>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

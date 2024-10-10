@@ -1,0 +1,28 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: topic-viewer
+  name: topic-viewer
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: topic-viewer
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: topic-viewer
+    spec:
+      containers:
+        - image: gcr.io/hedera-registry/topic-viewer:2.14.2
+          name: topic-viewer
+          ports:
+            - containerPort: 3006
+            - containerPort: 5009
+          resources: {}
+      restartPolicy: Always
+status: {}

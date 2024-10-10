@@ -1,13 +1,11 @@
-import { Logger } from '@guardian/common';
+import { KeyType, PinoLogger, Wallet } from '@guardian/common';
 import { MongoEntityManager } from '@mikro-orm/mongodb';
-import { KeyType, Wallet } from '@helpers/wallet';
 
 /**
  * Migration function
  * @constructor
  */
-export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
-    const logger = new Logger();
+export async function sendKeysToVault(em: MongoEntityManager, logger: PinoLogger): Promise<void> {
     const wallet = new Wallet();
     try {
         logger.info('Start send keys to vault', ['GUARDIAN_SERVICE']);
@@ -27,37 +25,37 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                 continue;
             }
             await Promise.all([
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_TREASURY_KEY,
                     token.tokenId,
                     token.adminKey
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_ADMIN_KEY,
                     token.tokenId,
                     token.adminKey
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_FREEZE_KEY,
                     token.tokenId,
                     token.freezeKey
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_KYC_KEY,
                     token.tokenId,
                     token.kycKey
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_SUPPLY_KEY,
                     token.tokenId,
                     token.supplyKey
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     token.owner,
                     KeyType.TOKEN_WIPE_KEY,
                     token.tokenId,
@@ -96,7 +94,7 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
             );
             updatedTokens++;
         }
-        logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
+        await logger.info(`Updated ${updatedTokens} tokens`, ['GUARDIAN_SERVICE']);
 
         const topicCollection = em.getCollection('Topic');
         const topics = topicCollection.find();
@@ -107,13 +105,13 @@ export async function sendKeysToVault(em: MongoEntityManager): Promise<void> {
                 continue;
             }
             await Promise.all([
-                wallet.setUserKey(
+                wallet.setKey(
                     topic.owner,
                     KeyType.TOPIC_ADMIN_KEY,
                     topic.topicId,
                     topic.key
                 ),
-                wallet.setUserKey(
+                wallet.setKey(
                     topic.owner,
                     KeyType.TOPIC_SUBMIT_KEY,
                     topic.topicId,

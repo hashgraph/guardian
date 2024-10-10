@@ -1,11 +1,11 @@
-import { DataSourceBlock } from '@policy-engine/helpers/decorators/data-source-block';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType } from '@policy-engine/interfaces';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { StateField } from '@policy-engine/helpers/decorators';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType } from '../interfaces/index.js';
+import { PolicyUser } from '../policy-user.js';
+import { StateField } from '../helpers/decorators/index.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
 
 /**
@@ -38,6 +38,20 @@ export class InterfaceDocumentsSource {
     @StateField()
     private state;
 
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.uiMetaData?.fields
+            ?.filter((field) => field?.name?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.name.replace('document.', ''));
+            });
+    }
+
     constructor() {
         if (!this.state) {
             this.state = {};
@@ -49,13 +63,14 @@ export class InterfaceDocumentsSource {
      * @param user
      * @param data
      */
-    public async setData(user: IPolicyUser, data: any): Promise<void> {
+    public async setData(user: PolicyUser, data: any): Promise<void> {
         const oldState = this.state || {};
         oldState[user.id] = data;
         this.state = oldState;
 
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        PolicyComponentsUtils.BlockUpdateFn(ref.parent.uuid, {}, user, ref.tag);
+
+        PolicyComponentsUtils.BlockUpdateFn(ref.parent, user);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
@@ -65,16 +80,40 @@ export class InterfaceDocumentsSource {
      * @param uuid
      * @param queryParams
      */
-    async getData(user: IPolicyUser, uuid: string, queryParams: any): Promise<any> {
+    async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
 
-        const filters = ref.getFiltersAddons().map(addon => {
+        if (!queryParams) {
+            queryParams = {};
+        }
+
+        const {itemsPerPage, page, size, filterByUUID, sortDirection, sortField, useStrict, ...filterIds} = queryParams;
+
+        const filterAddons = ref.getFiltersAddons();
+        const filters = filterAddons.map(addon => {
             return {
                 id: addon.uuid,
                 uiMetaData: addon.options.uiMetaData,
                 blockType: addon.blockType
             }
         });
+
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filterValue = filterIds[filterId];
+
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                    } else {
+                        await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                    }
+                }
+            }
+        }
 
         const commonAddonBlocks = ref.getCommonAddons();
         const commonAddons = commonAddonBlocks.map(addon => {
@@ -90,7 +129,15 @@ export class InterfaceDocumentsSource {
         }) as IPolicyAddonBlock;
 
         let paginationData = null;
+
         if (pagination) {
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.setState(user, {
+                    itemsPerPage: parseInt(itemsPerPage, 10),
+                    page: parseInt(page, 10),
+                });
+            }
+
             paginationData = await pagination.getState(user);
         }
 
@@ -98,22 +145,21 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        // Property viewHistory was deprecated in documentsSourceAddon blocks 11.02.23
-        const deprecatedViewHistory = !!commonAddonBlocks
-            .filter((addon) => addon.blockType === 'documentsSourceAddon')
-            .find((addon) => {
-                return addon.options.viewHistory;
-            });
-
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting;
-        const sortState = this.state[user.id] || {};
+        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField);
+        let sortState = this.state[user.id] || {};
+        if (sortDirection && sortField) {
+            sortState = {
+                orderDirection: sortDirection,
+                orderField: sortField
+            };
+            this.state[user.id] = sortState;
+        }
         let data: any = enableCommonSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, deprecatedViewHistory, history)
+            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
             : await ref.getGlobalSources(user, paginationData);
 
         if (
-            !enableCommonSorting &&
-            (history || deprecatedViewHistory)
+            !enableCommonSorting && history
         ) {
             for (const document of data) {
                 document.history = (
@@ -128,17 +174,17 @@ export class InterfaceDocumentsSource {
                                 state.document,
                                 history
                                     ? history.options.timelineLabelPath ||
-                                          'option.status'
+                                    'option.status'
                                     : 'option.status'
                             ),
                             comment: ObjGet(
                                 state.document,
                                 history
                                     ? history.options.timelineDescriptionPath ||
-                                          'option.comment'
+                                    'option.comment'
                                     : 'option.comment'
                             ),
-                            created: state.created,
+                            created: state.createDate,
                         }
                     )
                 );
@@ -149,6 +195,24 @@ export class InterfaceDocumentsSource {
             data = await child.joinData(data, user, ref);
         }
 
+        if (filterByUUID) {
+            const doc = data.find(d => d.document.id === filterByUUID);
+            data = [doc];
+        }
+
+        if (filterIds) {
+            for (const filterId of Object.keys(filterIds)) {
+                const filter = filterAddons.find((_filter) => {
+                    return (_filter.uuid === filterId) || (_filter.tag === filterId);
+                });
+                if (filter) {
+                    if (useStrict === 'true') {
+                        await (filter as IPolicyAddonBlock).resetFilters(user);
+                    }
+                }
+            }
+        }
+
         return Object.assign(
             {
                 data,
@@ -156,7 +220,7 @@ export class InterfaceDocumentsSource {
                 commonAddons,
             },
             Object.assign(ref.options.uiMetaData, {
-                viewHistory: !!history || deprecatedViewHistory,
+                viewHistory: !!history,
             }),
             sortState
         );
@@ -170,7 +234,7 @@ export class InterfaceDocumentsSource {
      * @param paginationData Paginaton data
      * @returns Data
      */
-    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: IPolicyUser, sortState: any, paginationData: any, deprecatedHistory?: boolean, history? : IPolicyAddonBlock) {
+    private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
         const aggregation = [...filtersAndDataType.filters, {
             $match: {
@@ -195,7 +259,7 @@ export class InterfaceDocumentsSource {
             $unset: 'newOptions',
         }];
 
-        if (history || deprecatedHistory) {
+        if (history) {
             aggregation.push({
                 $lookup: {
                     from: `${
@@ -219,7 +283,7 @@ export class InterfaceDocumentsSource {
                                           .timelineDescriptionPath ||
                                           'option.comment')
                                     : '$document.option.comment',
-                                created: '$created',
+                                created: '$createDate',
                             },
                         },
                     ],
@@ -271,7 +335,11 @@ export class InterfaceDocumentsSource {
                         policyId: { $eq: ref.policyId }
                     }
                 });
-                return await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
+                const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
+                for (const item of data as any[]) {
+                    [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
+                }
+                return data;
             case 'approve':
                 aggregation.unshift({
                     $match: {

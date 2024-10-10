@@ -1,32 +1,12 @@
-<div class="g-dialog-content">
-    <div class="g-dialog-header">
-        <div class="g-dialog-cancel">
-            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <mat-icon>close</mat-icon>
-            </div>
-        </div>
-        <div class="g-dialog-title">
-            {{title}}
-        </div>
-        <div *ngIf="token" class="g-dialog-title">
-
-        </div>
-        <div class="g-dialog-actions">
-            <div *ngIf="!token" class="g-dialog-actions-btn" (click)="onCreate()"
-                [attr.disabled]="!(valid && started)">
-                Create
-            </div>
-            <div *ngIf="token" class="g-dialog-actions-btn" (click)="onSave()" [attr.disabled]="!(valid && started)">
-                Save
-            </div>
-        </div>
+<div class="dialog-content">
+    <div class="token-configuration">
+        <app-token-configuration [dataForm]="dataForm" [hide-type]="hideType" [contracts]="contracts"
+                                [readonly]="readonly"></app-token-configuration>
     </div>
-    <div class="g-dialog-body">
-        <div *ngIf="description" style="padding: 20px 35px 10px 35px">
-            {{description}}
-        </div>
-        <div style="padding: 20px 35px 30px 35px">
-            <app-token-configuration [dataForm]="dataForm" [readonly]="readonly" [hide-type]="hideType"></app-token-configuration>
-        </div>
+    <div class="dialog-footer">
+        <button (click)="this.dialogRef.close()" class="button secondary" label="Close" pButton
+                type="button"></button>
+        <button (click)="this.dialogRef.close(dataForm)" [disabled]="dataForm.invalid" [label]="currentTokenId ? 'Save' : 'Create'" class="button" pButton
+                type="button"></button>
     </div>
 </div>

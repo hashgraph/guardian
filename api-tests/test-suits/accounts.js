@@ -1,6 +1,7 @@
-const axios = require('axios');
-const assert = require('assert')
-const {GetURL, sleep, SaveToken, GetToken} = require('../helpers');
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Accounts() {
     it('/accounts/login', async function() {
@@ -17,7 +18,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -36,7 +38,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -55,7 +58,8 @@ function Accounts() {
                 }
             }
         );
-        SaveToken(result.data.username, result.data.accessToken);
+        // SaveToken(result.data.username, result.data.accessToken);
+        delete result.data.refreshToken;
         delete result.data.accessToken;
         delete result.data.did;
         assert.deepEqual(result.data, {
@@ -120,6 +124,9 @@ function Accounts() {
         delete result.data.id;
         delete result.data.password;
         delete result.data.walletToken;
+        delete result.data.createDate;
+        delete result.data.updateDate;
+        delete result.data.refreshToken;
         assert.deepEqual(result.data, {
             role: 'STANDARD_REGISTRY',
             username: 'StandardRegistry',
@@ -135,12 +142,15 @@ function Accounts() {
             }
         );
         delete result.data.did;
+        delete result.data.refreshToken;
         delete result.data.iat;
         delete result.data._id;
         delete result.data.hederaAccountId;
         delete result.data.id;
         delete result.data.password;
         delete result.data.walletToken;
+        delete result.data.createDate;
+        delete result.data.updateDate;
         assert.deepEqual(result.data, { username: 'Installer', role: 'USER' });
     });
 
@@ -149,7 +159,7 @@ function Accounts() {
 
         result = await axios.post(
             GetURL('accounts', 'register'),
-            {username: 'apiTest', password: 'apiTest'},
+            {username: 'apiTest', password: 'apiTest', password_confirmation: 'apiTest', role: 'USER'},
             {
                 headers: {
                     'Content-Type': 'application/json'
@@ -161,6 +171,8 @@ function Accounts() {
         delete result.data._id;
         delete result.data.parent;
         delete result.data.walletToken
+        delete result.data.createDate;
+        delete result.data.updateDate;
         assert.deepEqual(result.data, {
             username: 'apiTest',
             did: null,
@@ -169,6 +181,6 @@ function Accounts() {
     });
 }
 
-module.exports = {
-    Accounts
-}
+export {
+    Accounts,
+};

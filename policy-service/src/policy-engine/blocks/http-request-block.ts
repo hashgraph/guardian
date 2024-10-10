@@ -1,20 +1,14 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ActionCallback } from '@policy-engine/helpers/decorators';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import {
-    IPolicyCalculateBlock,
-    IPolicyDocument,
-    IPolicyEventState
-} from '@policy-engine/policy-engine.interface';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Workers } from '@helpers/workers';
+import { BasicBlock } from '../helpers/decorators/basic-block.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ActionCallback } from '../helpers/decorators/index.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { VcDocumentDefinition as VcDocument, VcHelper, Workers } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
-import { VcHelper } from '@helpers/vc-helper';
-import { VcDocument } from '@hedera-modules';
 
 /**
  * Http request block
@@ -123,7 +117,7 @@ export class HttpRequestBlock {
         }
 
         if (!verify) {
-            throw new Error('Document is not VC');
+            throw new Error('Received data is not VC');
         }
 
         return VcDocument.fromJsonTree(res);
@@ -158,28 +152,27 @@ export class HttpRequestBlock {
             variablesObj.document = inputObject = (event?.data?.data as IPolicyDocument)?.document;
         }
 
-        try {
-            const method = ref.options.method;
-            const url = this.replaceVariablesInString(ref.options.url, variablesObj);
-            const headers = {};
-            if (Array.isArray(ref.options.headers)) {
-                for (const header of ref.options.headers) {
-                    headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
-                }
+        const method = ref.options.method;
+        const url = this.replaceVariablesInString(ref.options.url, variablesObj);
+        const headers = {};
+        if (Array.isArray(ref.options.headers)) {
+            for (const header of ref.options.headers) {
+                headers[header.name] = this.replaceVariablesInString(header.value, variablesObj)
             }
-            const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
-
-            const doc = await this.requestDocument(method, url, headers, JSON.parse(requestBody));
-            const item = PolicyUtils.createVC(ref, event.user, doc);
-
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, {data: item});
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, {data: item});
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                documents: ExternalDocuments({data: item})
-            }));
-        } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
         }
+        const requestBody = this.replaceVariablesInString(JSON.stringify(inputObject), variablesObj);
+
+        const doc = await this.requestDocument(method, url, headers, requestBody ? JSON.parse(requestBody) : undefined);
+        const item = PolicyUtils.createVC(ref, event.user, doc);
+
+        const state: IPolicyEventState = { data: item };
+        ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, state);
+        ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+        ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, state);
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                documents: ExternalDocuments(item)
+            })
+        );
     }
 }

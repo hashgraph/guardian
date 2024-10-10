@@ -1,4 +1,4 @@
-import { IconType, IVCDocument, IVPDocument } from '..';
+import { IconType, IVCDocument, IVPDocument } from '../index.js';
 
 /**
  * Chain item interface
@@ -173,9 +173,21 @@ export interface ITokenReport {
      */
     date: string;
     /**
+     * Token expected
+     */
+    expected?: string;
+    /**
      * Token amount
      */
-    amount: string;
+    amount?: string;
+    /**
+     * Was transfer needed
+     */
+    wasTransferNeeded?: boolean;
+    /**
+     * Token amount
+     */
+    transferAmount?: string;
     /**
      * Report tag
      */

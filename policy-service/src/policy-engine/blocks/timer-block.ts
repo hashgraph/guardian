@@ -1,13 +1,14 @@
 import moment from 'moment';
 import { CronJob } from 'cron';
-import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { IPolicyEvent } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ActionCallback, BasicBlock, StateField } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
+import { IPolicyEvent } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyType } from '@guardian/interfaces';
 
 /**
  * Timer block
@@ -70,7 +71,9 @@ export class TimerBlock {
      */
     afterInit() {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        this.startCron(ref);
+        if (ref.policyInstance.status !== PolicyType.DISCONTINUED) {
+            this.startCron(ref);
+        }
     }
 
     /**
@@ -213,14 +216,14 @@ export class TimerBlock {
         ref.log(`tick scheduler`);
 
         const users = Object.keys(this.state);
-        const map = [];
+        const map: string[] = [];
         for (const id of users) {
             if (this.state[id] === true) {
                 map.push(id);
             }
         }
 
-        ref.triggerEvents(PolicyOutputEventType.TimerEvent, null, map);
+        ref.triggerEvents<string[]>(PolicyOutputEventType.TimerEvent, null, map);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickCron, ref, null, null));
     }
 

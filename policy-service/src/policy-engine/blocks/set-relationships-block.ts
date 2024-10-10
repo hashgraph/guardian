@@ -1,14 +1,14 @@
-import { ActionCallback, EventBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ActionCallback, SetRelationshipsBlock as SetRelationships } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyDocument, IPolicyEventState, IPolicyRequestBlock } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Set document relationships action
  */
-@EventBlock({
+@SetRelationships({
     blockType: 'setRelationshipsBlock',
     commonBlock: false,
     about: {

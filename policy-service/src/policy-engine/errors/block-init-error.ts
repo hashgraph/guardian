@@ -1,4 +1,4 @@
-import { BlockError } from '@policy-engine/interfaces';
+import { BlockError } from '../interfaces/index.js';
 
 /**
  * Error fires when block init

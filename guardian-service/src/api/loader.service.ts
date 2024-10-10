@@ -1,20 +1,18 @@
-import { Schema } from '@entity/schema';
-import { DidDocument } from '@entity/did-document';
-import { DidRootKey } from '@hedera-modules';
-import { ApiResponse } from '@api/api-response';
-import { MessageResponse, MessageError, Logger, DataBaseHelper } from '@guardian/common';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { DataBaseHelper, DidDocument, DidURL, MessageError, MessageResponse, PinoLogger, Schema } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
  *
- * @param channel - channel
  * @param didDocumentLoader - DID Documents Loader
  * @param schemaDocumentLoader - Schema Documents Loader
+ * @param logger - pino logger
  */
 export async function loaderAPI(
     didDocumentRepository: DataBaseHelper<DidDocument>,
-    schemaRepository: DataBaseHelper<Schema>
+    schemaRepository: DataBaseHelper<Schema>,
+    logger: PinoLogger,
 ): Promise<void> {
     /**
      * Return DID Document
@@ -27,7 +25,7 @@ export async function loaderAPI(
     ApiResponse(MessageAPI.LOAD_DID_DOCUMENT, async (msg) => {
         try {
             const iri = msg.did;
-            const did = DidRootKey.create(iri).getController();
+            const did = DidURL.getController(iri);
             const reqObj = { where: { did: { $eq: did } } };
             const didDocuments = await didDocumentRepository.findOne(reqObj);
             if (didDocuments) {
@@ -35,7 +33,7 @@ export async function loaderAPI(
             }
             return new MessageError('Document not found');
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -65,7 +63,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -94,7 +92,7 @@ export async function loaderAPI(
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

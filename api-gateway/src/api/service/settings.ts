@@ -1,53 +1,139 @@
-import { permissionHelper } from '@auth/authorization-helper';
-import { Guardians } from '@helpers/guardians';
-import { Request, Response, Router } from 'express';
-import { CommonSettings, UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
+import { AboutInterface, CommonSettings, Permissions } from '@guardian/interfaces';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SettingsDTO, InternalServerErrorDTO } from '#middlewares';
+import { Auth } from '#auth';
+import { Guardians, InternalException } from '#helpers';
+import process from 'process';
+import { PinoLogger } from '@guardian/common';
 
-/**
- * Settings route
- */
-export const settingsAPI = Router();
+@Controller('settings')
+@ApiTags('settings')
+export class SettingsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
 
-settingsAPI.post('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
-    try {
-        const settings = req.body as CommonSettings;
-        if (!settings || Object.keys(settings).length === 0) {
-            throw new Error('Invalid settings');
+    /**
+     * Set settings
+     */
+    @Post('/')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Set settings.',
+        description: 'Set settings. For users with the Standard Registry role only.',
+    })
+    @ApiBody({
+        description: 'Settings.',
+        required: true,
+        type: SettingsDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async updateSettings(
+        @Body() body: SettingsDTO
+    ): Promise<any> {
+        try {
+            const settings = body as CommonSettings;
+            const guardians = new Guardians();
+            await Promise.all([guardians.updateSettings(settings)]);
+            return null;
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
-        const guardians = new Guardians();
-        await Promise.all([
-            guardians.updateSettings(settings)
-        ]);
-        res.json(null);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
     }
-});
 
-settingsAPI.get('/', permissionHelper(UserRole.STANDARD_REGISTRY), async (req: Request, res: Response) => {
-    try {
-        const guardians = new Guardians();
-        const [guardiansSettings] = await Promise.all([
-            guardians.getSettings()
-        ]);
-        res.json({
-            ...guardiansSettings
-        });
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+    /**
+     * Get settings
+     */
+    @Get('/')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns current settings.',
+        description: 'Returns current settings. For users with the Standard Registry role only.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SettingsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SettingsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSettings(): Promise<SettingsDTO> {
+        try {
+            const guardians = new Guardians();
+            const [guardiansSettings] = await Promise.all([guardians.getSettings()]);
+            return { ...guardiansSettings } as any;
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
     }
-});
 
-settingsAPI.get('/environment', async (req: Request, res: Response) => {
-    try {
-        const guardians = new Guardians();
-        const environment = await guardians.getEnvironment();
-        res.send(environment);
-    } catch (error) {
-        new Logger().error(error, ['API_GATEWAY']);
-        res.status(500).json({ code: 500, message: error.message });
+    /**
+     * Get settings
+     */
+    @Get('/environment')
+    @Auth()
+    @ApiOperation({
+        summary: 'Returns current environment name.',
+        description: 'Returns current environment name.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: String
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getEnvironment(): Promise<string> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.getEnvironment();
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
     }
-})
+
+    /**
+     * Get about
+     */
+    @Get('/about')
+    @Auth(
+        Permissions.SETTINGS_SETTINGS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns package version.',
+        description: 'Returns package version. For users with the Standard Registry role only.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getAbout(): Promise<AboutInterface> {
+        return { version: process.env.npm_package_version };
+    }
+}

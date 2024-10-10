@@ -1,4 +1,5 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
+import { CommonBlock } from './common.js';
 
 /**
  * Document Buttons with UI
@@ -16,6 +17,7 @@ export class ButtonBlock {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
             if (!ref.options.uiMetaData || (typeof ref.options.uiMetaData !== 'object')) {
                 validator.addError('Option "uiMetaData" is not set');
             } else {

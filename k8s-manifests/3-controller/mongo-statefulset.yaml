@@ -1,0 +1,34 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  annotations:
+    kompose.controller.type: statefulset
+  labels:
+    io.kompose.service: mongo
+  name: mongo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: mongo
+  serviceName: mongo
+  template:
+    metadata:
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: mongo
+    spec:
+      containers:
+        - args:
+            - --setParameter
+            - allowDiskUseByDefault=true
+          image: mongo:6.0.3
+          name: mongo
+          ports:
+            - containerPort: 27017
+          resources: {}
+      restartPolicy: Always
+  updateStrategy: {}
+status:
+  replicas: 0

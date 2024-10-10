@@ -1,7 +1,8 @@
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
-import { BasicBlock } from './basic-block';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
+import { BasicBlock } from './basic-block.js';
+import { BlockActionError } from '../../errors/index.js';
+import { PolicyUser } from '../../policy-user.js';
+import { PolicyType } from '@guardian/interfaces';
 
 /**
  * Event block decorator
@@ -19,12 +20,24 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             public readonly blockClassName = 'EventBlock';
 
             /**
+             * Access block methods map
+             */
+            private readonly _accessMap = new Map<string, boolean>();
+
+            /**
              * Get block data
              * @param args
              */
             async getData(...args) {
                 if (typeof super.getData === 'function') {
-                    return await super.getData(...args);
+                    const userDid = args[0]?.did;
+                    const result = await super.getData(...args);
+                    return result
+                        ? {
+                              ...result,
+                              active: !this._accessMap.get(userDid),
+                          }
+                        : result;
                 }
                 return {};
             }
@@ -37,10 +50,25 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 if (!this.isActive(args[0])) {
                     throw new BlockActionError('Block not available', this.blockType, this.uuid);
                 }
-                if (typeof super.getData === 'function') {
-                    return await super.setData(...args);
+                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                    throw new BlockActionError(`Policy is discontinued and can't produce new artifacts`, this.blockType, this.uuid);
                 }
-                return {};
+                const user = args[0];
+                if (this._accessMap.get(user?.did) === true) {
+                    throw new BlockActionError('Block is unavailable', this.blockType, this.uuid);
+                }
+                this._accessMap.set(user?.did, true);
+                let result = {};
+                if (typeof super.getData === 'function') {
+                    try {
+                        result = await super.setData(...args);
+                    } catch (err) {
+                        this._accessMap.delete(user?.did);
+                        throw err;
+                    }
+                }
+                this._accessMap.delete(user?.did);
+                return result;
             }
 
             /**
@@ -49,7 +77,7 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: PolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

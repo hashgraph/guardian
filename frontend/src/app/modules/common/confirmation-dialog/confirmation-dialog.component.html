@@ -1,0 +1,22 @@
+<h2 mat-dialog-title>{{dialogTitle}}</h2>
+<div class="content" mat-dialog-content>
+    <div>
+        {{ dialogText }}
+    </div>
+    <div mat-dialog-actions>
+        <div class="cancel-button">
+            <p-button
+                    (click)="onNoClick()"
+                    label="Cancel"
+                    class="toolbar-btn-outlined"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <p-button 
+                class="toolbar-btn-primary"
+                (click)="onSubmit()" 
+                label="Confirm"></p-button>
+        </div>
+    </div>
+</div>

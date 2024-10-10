@@ -1,4 +1,5 @@
-import { BlockValidator, IBlockProp, PropertyValidator } from '@policy-engine/block-validators';
+import { BlockValidator, IBlockProp, PropertyValidator } from '../../block-validators/index.js';
+import { CommonBlock } from './common.js';
 
 /**
  * Calculate math addon
@@ -16,6 +17,8 @@ export class TokenOperationAddon {
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
         try {
+            await CommonBlock.validate(validator, ref);
+
             validator.checkBlockError(
                 PropertyValidator.inputValidator('amount', ref.options.amount, 'string')
             );

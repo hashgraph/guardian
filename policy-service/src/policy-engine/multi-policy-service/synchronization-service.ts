@@ -1,18 +1,7 @@
-import {
-    IRootConfig,
-    PolicyType,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import { Workers } from '@helpers/workers';
-import { DatabaseServer } from '@database-modules';
-import { MessageAction, MessageServer, SynchronizationMessage, TopicConfig } from '@hedera-modules';
+import { IRootConfig, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
-import { Policy } from '@entity/policy';
-import { MintService } from './mint-service';
-import { Users } from '@helpers/users';
-import { MultiPolicyTransaction } from '@entity/multi-policy-transaction';
-import { Token } from '@entity/token';
-import { Logger } from '@guardian/common';
+import { MintService } from '../mint/mint-service.js';
+import { DatabaseServer, MessageAction, MessageServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, SynchronizationMessage, Token, TopicConfig, Users, Workers } from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -22,47 +11,63 @@ export class SynchronizationService {
      * Cron job
      * @private
      */
-    private static job: CronJob;
+    private job: CronJob;
     /**
      * Cron Mask
      * @private
      */
-    private static readonly cronMask = `0 0 * * *`;
+    private readonly cronMask = `0 0 * * *`;
     /**
      * Task Status
      * @private
      */
-    private static taskStatus: boolean = false;
+    private taskStatus: boolean = false;
     /**
      * Users service
      * @private
      */
-    private static readonly users = new Users();
+    private readonly users = new Users();
+    /**
+     * Policy
+     * @private
+     */
+    private readonly policy: Policy;
+
+    constructor(policy: Policy, private readonly logger: PinoLogger) {
+        this.policy = policy;
+    }
 
     /**
      * Start scheduler
      */
-    public static start() {
-        if (SynchronizationService.job) {
-            return;
+    public start(): boolean {
+        if (
+            this.policy.status !== PolicyType.PUBLISH ||
+            !this.policy.synchronizationTopicId
+        ) {
+            return false;
         }
-        const cronMask = process.env.MULTI_POLICY_SCHEDULER || SynchronizationService.cronMask;
-        SynchronizationService.taskStatus = false;
-        SynchronizationService.job = new CronJob(cronMask, () => {
-            SynchronizationService.task().then();
+        if (this.job) {
+            return true;
+        }
+        const cronMask = process.env.MULTI_POLICY_SCHEDULER || this.cronMask;
+        this.taskStatus = false;
+        this.job = new CronJob(cronMask, () => {
+            this.task().then();
         }, null, false, 'UTC');
-        SynchronizationService.job.start();
-        new Logger().info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        this.job.start();
+        this.logger.info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        return true;
     }
 
     /**
      * Stop scheduler
      */
-    public static stop() {
-        if (SynchronizationService.job) {
-            SynchronizationService.job.stop();
-            SynchronizationService.job = null;
-            SynchronizationService.taskStatus = false;
+    public stop() {
+        if (this.job) {
+            this.job.stop();
+            this.job = null;
+            this.taskStatus = false;
         }
     }
 
@@ -70,37 +75,22 @@ export class SynchronizationService {
      * Tick
      * @private
      */
-    private static async task() {
+    private async task() {
         try {
-            if (SynchronizationService.taskStatus) {
+            if (this.taskStatus) {
                 return;
             }
-            new Logger().info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
 
-            SynchronizationService.taskStatus = true;
+            this.taskStatus = true;
+            await this.taskByPolicy(this.policy);
+            this.taskStatus = false;
 
-            const policies = await DatabaseServer.getPolicies({
-                where: {
-                    status: PolicyType.PUBLISH,
-                    synchronizationTopicId: { $exists: true }
-                }
-            }, {
-                fields: ['id', 'owner', 'instanceTopicId', 'synchronizationTopicId']
-            });
-
-            const tasks: any[] = [];
-            for (const policy of policies) {
-                tasks.push(SynchronizationService.taskByPolicy(policy));
-            }
-            await Promise.all<any[][]>(tasks);
-
-            SynchronizationService.taskStatus = false;
-
-            new Logger().info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         } catch (error) {
-            SynchronizationService.taskStatus = false;
+            this.taskStatus = false;
             console.error(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
@@ -109,16 +99,17 @@ export class SynchronizationService {
      * @param policy
      * @private
      */
-    private static async taskByPolicy(policy: Policy) {
+    private async taskByPolicy(policy: Policy) {
         try {
-            const root = await SynchronizationService.users.getHederaAccount(policy.owner);
+            const root = await this.users.getHederaAccount(policy.owner);
             const count = await DatabaseServer.countMultiPolicyTransactions(policy.id);
+
             if (!count) {
                 return;
             }
 
             const topic = new TopicConfig({ topicId: policy.synchronizationTopicId }, null, null);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey).setTopicObject(topic);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions).setTopicObject(topic);
 
             const workers = new Workers();
             const messages = await workers.addRetryableTask({
@@ -129,7 +120,7 @@ export class SynchronizationService {
                     dryRun: false,
                     topic: policy.synchronizationTopicId
                 }
-            }, 1);
+            }, 10);
 
             const policyMap: { [x: string]: SynchronizationMessage[] } = {};
             const vpMap: { [x: string]: Map<string, SynchronizationMessage> } = {};
@@ -163,17 +154,20 @@ export class SynchronizationService {
                     console.log(`${message?.id}: ${error}`);
                 }
             }
+
             const users = Object.keys(policyMap);
-            const tasks: any[] = [];
-            for (const user of users) {
-                tasks.push(SynchronizationService.taskByUser(
-                    messageServer, root, policy, user, policyMap[user], vpMap[user])
-                );
+            const chunkSize = 10;
+            for (let i = 0; i < users.length; i += chunkSize) {
+                const chunk = users.slice(i, i + chunkSize);
+                const tasks: any[] = [];
+                for (const user of chunk) {
+                    tasks.push(this.taskByUser(messageServer, root, policy, user, policyMap[user], vpMap[user]));
+                }
+                await Promise.all<any[][]>(tasks);
             }
-            await Promise.all<any[][]>(tasks);
         } catch (error) {
             console.error(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
@@ -187,7 +181,7 @@ export class SynchronizationService {
      * @param vps
      * @private
      */
-    private static async taskByUser(
+    private async taskByUser(
         messageServer: MessageServer,
         root: IRootConfig,
         policy: Policy,
@@ -221,12 +215,27 @@ export class SynchronizationService {
         const transactions = await DatabaseServer.getMultiPolicyTransactions(policy.id, user);
         for (const transaction of transactions) {
             if (transaction.amount <= min) {
-                const token = await DatabaseServer.getTokenById(transaction.tokenId);
-                const status = await SynchronizationService.completeTransaction(
-                    messageServer, root, token, transaction, policies, vpMap
+                const users = new Users();
+                const userAccount = await users.getUserById(user);
+                const policyOwner = await users.getUserById(policy.owner);
+                const notifier = NotificationHelper.init([userAccount?.id, policyOwner?.id]);
+                const token = await DatabaseServer.getToken(transaction.tokenId);
+                const messageIds = await this.completeTransaction(
+                    messageServer, root, token, transaction, policies, vpMap, notifier
                 );
-                if (status) {
+                if (messageIds) {
                     min -= transaction.amount;
+                    MintService.multiMint(
+                        root,
+                        token,
+                        transaction.amount,
+                        transaction.target,
+                        messageIds,
+                        transaction.vpMessageId,
+                        notifier,
+                    ).catch(error => {
+                        this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+                    });
                 }
             }
         }
@@ -242,14 +251,15 @@ export class SynchronizationService {
      * @param vpMap
      * @private
      */
-    private static async completeTransaction(
+    private async completeTransaction(
         messageServer: MessageServer,
         root: IRootConfig,
         token: Token,
         transaction: MultiPolicyTransaction,
         policies: SynchronizationMessage[],
-        vpMap: { [x: string]: SynchronizationMessage[] }
-    ): Promise<boolean> {
+        vpMap: { [x: string]: SynchronizationMessage[] },
+        notifier?: NotificationHelper,
+    ): Promise<string[] | null> {
         try {
             if (!token) {
                 throw new Error('Bad token id');
@@ -278,21 +288,18 @@ export class SynchronizationService {
                     i++;
                 }
             }
-            await SynchronizationService.updateMessages(messageServer, updateMessages);
-            await MintService.multiMint(
-                root,
-                token,
-                transaction.amount,
-                transaction.target,
-                messagesIDs
-            );
+            await this.updateMessages(messageServer, updateMessages);
+
             transaction.status = 'Completed';
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
-            return true;
+
+            return messagesIDs;
         } catch (error) {
             transaction.status = 'Failed';
+            console.error(error);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
-            return false;
+            return null;
         }
     }
 
@@ -302,7 +309,7 @@ export class SynchronizationService {
      * @param updateMessages
      * @private
      */
-    private static async updateMessages(
+    private async updateMessages(
         messageServer: MessageServer,
         updateMessages: SynchronizationMessage[]
     ): Promise<boolean> {

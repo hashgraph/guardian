@@ -1,0 +1,11 @@
+/**
+ * Entity owner
+ */
+export enum AccessType {
+    NONE = 'NONE',
+    ASSIGNED = 'ASSIGNED',
+    PUBLISHED = 'PUBLISHED',
+    ASSIGNED_AND_PUBLISHED = 'ASSIGNED_AND_PUBLISHED',
+    ASSIGNED_OR_PUBLISHED = 'ASSIGNED_OR_PUBLISHED',
+    ALL = 'ALL'
+}

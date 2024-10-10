@@ -1,14 +1,13 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { AggregateVC } from '@entity/aggregate-documents';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { VcDocument } from '@hedera-modules';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent } from '@policy-engine/interfaces/policy-event';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { AggregateVC, VcDocumentDefinition as VcDocument } from '@guardian/common';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent } from '../interfaces/policy-event.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/policy-event-type.js';
 import ObjGet from 'lodash.get';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Aggregate block
@@ -59,6 +58,21 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
     variables: []
 })
 export class AggregateBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.groupByFields
+            ?.filter((field) => field?.fieldPath?.startsWith('document.'))
+            .forEach((field) => {
+                documentCacheFields.add(field.fieldPath.replace('document.', ''));
+            });
+    }
+
     /**
      * Tick cron
      * @event PolicyEventType.PopEvent
@@ -112,7 +126,7 @@ export class AggregateBlock {
         const groupByUser = !disableUserGrouping;
 
         const map = new Map<string, AggregateVC[]>();
-        const removeMsp: AggregateVC[] = [];
+        let removeMsp: AggregateVC[] = [];
 
         for (const element of rawEntities) {
             const id = PolicyUtils.getScopeId(element);
@@ -141,9 +155,7 @@ export class AggregateBlock {
             }
         }
 
-        if (removeMsp.length) {
-            await ref.databaseServer.removeAggregateDocuments(removeMsp);
-        }
+        removeMsp = await this.removeDocuments(ref, removeMsp);
 
         for (const [key, documents] of map) {
             await this.sendCronDocuments(
@@ -160,13 +172,10 @@ export class AggregateBlock {
      * @param documents Documents
      */
     private async sendCronDocuments(ref: AnyBlockType, userId: string, documents: AggregateVC[]) {
-        if (documents.length) {
-            await ref.databaseServer.removeAggregateDocuments(documents);
-        }
-
+        documents = await this.removeDocuments(ref, documents);
         if (documents.length || ref.options.emptyData) {
-            const state = { data: documents };
-            const user = PolicyUtils.getPolicyUserById(ref, userId);
+            const state: IPolicyEventState = { data: documents };
+            const user = await PolicyUtils.getPolicyUserById(ref, userId);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(
@@ -250,7 +259,7 @@ export class AggregateBlock {
             }
         }
 
-        const rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
+        let rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
 
         const scopes: any[] = [];
         for (const doc of rawEntities) {
@@ -266,9 +275,9 @@ export class AggregateBlock {
         }
 
         if (result === true) {
-            const user = PolicyUtils.getPolicyUser(ref, document.owner, document.group);
-            await ref.databaseServer.removeAggregateDocuments(rawEntities);
-            const state = { data: rawEntities };
+            const user = await PolicyUtils.getDocumentOwner(ref, document);
+            rawEntities = await this.removeDocuments(ref, rawEntities);
+            const state: IPolicyEventState = { data: rawEntities };
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, state);
             PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.TickAggregate, ref, user, {
@@ -282,9 +291,37 @@ export class AggregateBlock {
      * @param ref
      * @param doc
      */
-    async saveDocuments(ref: AnyBlockType, doc: IPolicyDocument): Promise<void> {
-        const item = PolicyUtils.cloneVC(ref, doc);
+    private async saveDocuments(
+        ref: AnyBlockType,
+        doc: IPolicyDocument
+    ): Promise<void> {
+        const item: any = PolicyUtils.cloneVC(ref, doc);
+        item.sourceDocumentId = item._id;
+        delete item._id;
+        delete item.id;
         await ref.databaseServer.createAggregateDocuments(item, ref.uuid);
+    }
+
+    /**
+     * Remove documents
+     * @param ref
+     * @param documents
+     */
+    private async removeDocuments(
+        ref: AnyBlockType,
+        documents: AggregateVC[]
+    ): Promise<AggregateVC[]> {
+        if (documents.length) {
+            await ref.databaseServer.removeAggregateDocuments(documents);
+            documents
+                .filter((document) => document.sourceDocumentId)
+                .forEach((document: any) => {
+                    document._id = document.sourceDocumentId;
+                    document.id = document.sourceDocumentId.toString();
+                    delete document.sourceDocumentId;
+                });
+        }
+        return documents;
     }
 
     /**

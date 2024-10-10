@@ -1,0 +1,35 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </div>
+        </div>
+        <div *ngIf="example" class="g-dialog-title">
+            Example
+        </div>
+        <div *ngIf="!example" class="g-dialog-title">
+            Preview
+        </div>
+        <div class="g-dialog-actions">
+            <div 
+                *ngIf="example"
+                class="g-dialog-actions-btn" 
+                (click)="onSave()">
+                Save
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <app-schema-form 
+                [formGroup]="dataForm" 
+                [schema]="schema"
+                [private-fields]="hideFields"
+                [preset]="presetDocument" 
+                [showButtons]="false"
+                [example]="example">
+            </app-schema-form>
+        </div>
+    </div>
+</div>

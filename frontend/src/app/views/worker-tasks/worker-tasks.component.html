@@ -1,0 +1,77 @@
+<div class="container">
+    <ng-container [ngTemplateOutlet]="header"></ng-container>
+    <ng-container *ngIf="!loading">
+        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+    </ng-container>
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+</div>
+
+<ng-template #header>
+    <div class="header">
+        <h1>Worker Tasks</h1>
+    </div>
+</ng-template>
+
+<ng-template #tableContainer>
+    <ng-container *ngIf="workerTasks && workerTasks.length > 0 else noData">
+        <div class="table-container">
+            <table>
+                <colgroup>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col/>
+                    <col style="width: 100px;"/>
+                </colgroup>
+                <tr class="row-header">
+                    <th>CREATED</th>
+                    <th>STARTED</th>
+                    <th>TYPE</th>
+                    <th>STATUS</th>
+                    <th></th>
+                </tr>
+                <ng-container *ngFor="let task of workerTasks">
+                    <tr class="row-item">
+                        <td style="min-width: 200px;">{{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}</td>
+                        <td *ngIf="task.processedTime"
+                            style="min-width: 200px;">{{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
+                        </td>
+                        <td *ngIf="!task.processedTime" style="min-width: 200px;">Not started yet</td>
+                        <td style="min-width: 200px;">
+                            <div>{{ task.type }}</div>
+                        </td>
+                        <td>{{ taskStatus(task) }}</td>
+                        <td>
+                            <div class="operations-container">
+                                <button (click)="restartTask(task)" [disabled]="!(task.isError && task.isRetryableTask)"
+                                        class="p-button-raised p-button-rounded p-button-text" icon="pi pi-undo"
+                                        pButton type="button"></button>
+                                <button (click)="deleteTask(task)" [disabled]="!task.isError" class="p-button-raised p-button-rounded p-button-text" icon="pi pi-minus"
+                                        pButton type="button"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+            </table>
+
+            <app-paginator
+                    (page)="onPage($event)"
+                    [length]="workerTasksCount"
+                    [pageIndex]="pageIndex"
+                    [pageSize]="pageSize"
+            ></app-paginator>
+
+        </div>
+    </ng-container>
+</ng-template>
+
+<ng-template #noData>
+    <div class="not-exist">
+        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+        </svg-icon>
+        <span class="info-text-strong">No active tasks</span>
+        <span class="info-text"></span>
+    </div>
+</ng-template>

@@ -1,12 +1,13 @@
-import { ModelHelper } from '../helpers/model-helper';
-import { SchemaHelper } from '../helpers/schema-helper';
-import { SchemaCondition } from '../interface/schema-condition.interface';
-import { ISchemaDocument } from '../interface/schema-document.interface';
-import { ISchema } from '../interface/schema.interface';
-import { SchemaEntity } from '../type/schema-entity.type';
-import { SchemaStatus } from '../type/schema-status.type';
-import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4';
-import { SchemaField } from '../interface/schema-field.interface';
+import { ModelHelper } from '../helpers/model-helper.js';
+import { SchemaHelper } from '../helpers/schema-helper.js';
+import { SchemaCondition } from '../interface/schema-condition.interface.js';
+import { ISchemaDocument } from '../interface/schema-document.interface.js';
+import { ISchema } from '../interface/schema.interface.js';
+import { SchemaEntity } from '../type/schema-entity.type.js';
+import { SchemaStatus } from '../type/schema-status.type.js';
+import { GenerateUUIDv4 } from '../helpers/generate-uuid-v4.js';
+import { SchemaField } from '../interface/schema-field.interface.js';
+import { SchemaCategory } from '../type/schema-category.type.js';
 
 /**
  * Schema class
@@ -62,6 +63,10 @@ export class Schema implements ISchema {
      */
     public version?: string;
     /**
+     * Source version
+     */
+    public sourceVersion?: string;
+    /**
      * Creator
      */
     public creator?: string;
@@ -114,14 +119,26 @@ export class Schema implements ISchema {
      */
     public system?: boolean;
     /**
+     * Schema Category
+     */
+    public category?: SchemaCategory;
+    /**
+     * Parent component
+     */
+    public component?: string;
+    /**
+     * Errors
+     */
+    public errors?: any[];
+    /**
      * User DID
      * @private
      */
     private userDID: string;
-
     /**
      * Schema constructor
      * @param schema
+     * @param includeSystemProperties
      * @constructor
      */
     constructor(schema?: ISchema, includeSystemProperties: boolean = false) {
@@ -139,6 +156,7 @@ export class Schema implements ISchema {
             this.system = schema.system || false;
             this.active = schema.active || false;
             this.version = schema.version || '';
+            this.sourceVersion = schema.sourceVersion || '';
             this.creator = schema.creator || '';
             this.owner = schema.owner || '';
             this.topicId = schema.topicId || '';
@@ -146,6 +164,11 @@ export class Schema implements ISchema {
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';
             this.iri = schema.iri || '';
+            this.category = schema.category || (
+                this.system ?
+                    SchemaCategory.SYSTEM :
+                    SchemaCategory.POLICY
+            );
             if (schema.isOwner) {
                 this.userDID = this.owner;
             }
@@ -170,6 +193,8 @@ export class Schema implements ISchema {
             } else {
                 this.context = null;
             }
+            this.component = (schema as any).component || (schema as any).__component;
+            this.errors = schema.errors;
         } else {
             this._id = undefined;
             this.id = undefined;
@@ -185,13 +210,15 @@ export class Schema implements ISchema {
             this.document = null;
             this.context = null;
             this.version = '';
+            this.sourceVersion = '';
             this.creator = '';
             this.owner = '';
             this.topicId = '';
             this.messageId = '';
             this.documentURL = '';
-            this.contextURL = '';
+            this.contextURL = `schema:${this.uuid}`;
             this.iri = '';
+            this.errors = [];
         }
         if (this.document) {
             this.parseDocument(includeSystemProperties);
@@ -206,8 +233,9 @@ export class Schema implements ISchema {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
         const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
-        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, null, includeSystemProperties);
-        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields);
+        const schemaCache = new Map<string, any>();
+        this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
+        this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
     }
 
     /**
@@ -284,6 +312,37 @@ export class Schema implements ISchema {
     }
 
     /**
+     * Set new fields
+     * @param fields
+     * @param conditions
+     * @param force
+     */
+    public setFields(
+        fields?: SchemaField[],
+        conditions?: SchemaCondition[],
+        force = false
+    ): void {
+        if (force) {
+            this.fields = fields || [];
+            this.conditions = conditions || [];
+        } else {
+            if (Array.isArray(fields)) {
+                this.fields = fields;
+            }
+            if (Array.isArray(conditions)) {
+                this.conditions = conditions;
+            }
+        }
+    }
+
+    /**
+     * Update Document
+     */
+    public updateDocument(): void {
+        this.document = SchemaHelper.buildDocument(this, this.fields, this.conditions);
+    }
+
+    /**
      * Update
      * @param fields
      * @param conditions
@@ -296,6 +355,7 @@ export class Schema implements ISchema {
         if (!this.fields) {
             return null;
         }
+
         this.document = SchemaHelper.buildDocument(this, fields, conditions);
     }
 
@@ -333,10 +393,25 @@ export class Schema implements ISchema {
             f.path = path + f.name;
             if (filter(f)) {
                 result.push(f);
-                if (f.fields) {
-                    this._searchFields(f.fields, filter, result, f.path + '.');
-                }
             }
+            if (Array.isArray(f.fields)) {
+                this._searchFields(f.fields, filter, result, f.path + '.');
+            }
+        }
+    }
+
+    /**
+     * Set example data
+     * @param data
+     */
+    public setExample(data: any): void {
+        if (data) {
+            this.document = SchemaHelper.updateFields(this.document, (name: string, property: any) => {
+                if (!(property.$ref && !property.type) && data.hasOwnProperty(name)) {
+                    property.examples = [data[name]];
+                }
+                return property;
+            });
         }
     }
 }

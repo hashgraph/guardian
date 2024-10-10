@@ -2,14 +2,7 @@
 
 ### Properties
 
-| Block Property   | Definition                                                                        | Example Input                                   | Status                                     |
-| ---------------- | --------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ |
-| type             | A block type which can display a notification or a progress bar.                  | **InformationBlock** (Can't be changed).        |                                            |
-| tag              | Unique name for the logic block.                                                  | wait\_for\_approval.                            |                                            |
-| permissions      | Which entity has rights to interact at this part of the workflow.                 | Installer.                                      |                                            |
-| defaultActive    | Shows whether this block is active at this time and whether it needs to be shown. | Checked or unchecked.                           |                                            |
-| dependencies     | Establish workflow dependancies that need to be completed prior.                  | Select the appropriate block from the dropdown. | <mark style="color:red;">Deprecated</mark> |
-| stop Propagation | End processing here, don't pass control to the next block.                        | Checked or Unchecked.                           |                                            |
+<table><thead><tr><th width="192.33333333333331">Block Property</th><th>Definition</th><th>Example Input</th><th>Status</th></tr></thead><tbody><tr><td>type</td><td>A block type which can display a notification or a progress bar.</td><td><strong>InformationBlock</strong> (Can't be changed).</td><td></td></tr><tr><td>tag</td><td>Unique name for the logic block.</td><td>wait_for_approval.</td><td></td></tr><tr><td>permissions</td><td>Which entity has rights to interact at this part of the workflow.</td><td>Installer.</td><td></td></tr><tr><td>defaultActive</td><td>Shows whether this block is active at this time and whether it needs to be shown.</td><td>Checked or unchecked.</td><td></td></tr><tr><td>dependencies</td><td>Establish workflow dependancies that need to be completed prior.</td><td>Select the appropriate block from the dropdown.</td><td><mark style="color:red;">Deprecated</mark></td></tr><tr><td>stop Propagation</td><td>End processing here, don't pass control to the next block.</td><td>Checked or Unchecked.</td><td></td></tr></tbody></table>
 
 {% hint style="info" %}
 RefreshEvents are used to refreshing the UI, instead of "dependencies" property.

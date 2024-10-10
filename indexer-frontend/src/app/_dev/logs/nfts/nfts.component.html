@@ -1,0 +1,51 @@
+<div>
+    <div class="table">
+        <div class="table-filters">
+            <div class="filter">
+                <mat-form-field>
+                    <mat-label>Token Id</mat-label>
+                    <input matInput placeholder="0.0.1621155" (input)="onTokenId($event)">
+                </mat-form-field>
+            </div>
+            <div class="filter">
+                <mat-form-field>
+                    <mat-label>Serial Number</mat-label>
+                    <input matInput placeholder="1" (input)="onSerialNumber($event)">
+                </mat-form-field>
+            </div>
+            <div class="filter">
+                <mat-form-field>
+                    <mat-label>Metadata</mat-label>
+                    <input matInput placeholder="1706869494.794865903" (input)="onMetadata($event)">
+                </mat-form-field>
+            </div>
+
+        </div>
+        <div class="table-body">
+            <table mat-table [dataSource]="items" matSort class="mat-elevation-z8">
+
+                <ng-container matColumnDef="tokenId">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Token Id </th>
+                    <td mat-cell *matCellDef="let element"> {{element.tokenId}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="serialNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Serial Number </th>
+                    <td mat-cell *matCellDef="let element"> {{element.serialNumber}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="metadata">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Metadata </th>
+                    <td mat-cell *matCellDef="let element"> {{element.__metadata}} </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+        <div class="table-paginator">
+            <mat-paginator showFirstLastButtons [length]="total" [pageSize]="pageSize"
+                [pageSizeOptions]="[5, 10, 25, 100]" (page)="onPage($event)"></mat-paginator>
+        </div>
+    </div>
+</div>

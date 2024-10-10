@@ -20,6 +20,19 @@ test
 {% swagger-parameter in="body" name="role" type="String" required="true" %}
 STANDARD_REGISTRY
 {% endswagger-parameter %}
+
+{% swagger-response status="201: Created" description="Created" %}
+
+
+```typescript
+{
+  username: string
+  password: string
+  password_confirmation: string
+  role: string
+}
+```
+{% endswagger-response %}
 {% endswagger %}
 
 ### **Login**
@@ -38,22 +51,22 @@ test
 {% endswagger-parameter %}
 
 {% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+````javascript
+```typescript
 {
-    {
-	"username":"njkgur8x",
-	"did":null,
-	"role":"STANDARD_REGISTRY",
-	"accessToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5qa2d1cjh4IiwiZGlkIjpudWxsLCJyb2xlIjoiUk9PVF9BVVRIT1JJVFkiLCJpYXQiOjE2NDMwMTkxMDh9.Z4l77uhaPu09gkjSZpqcF2H0S27oGvFfOA-bytzrsL4"
-}
+  username: string
+  did: any
+  role: string
+  accessToken: string
 }
 ```
+````
 {% endswagger-response %}
 {% endswagger %}
 
 ### **Hedera account creation**
 
-{% swagger method="get" path="" baseUrl="/api/v1/demo/randomKey" summary="" %}
+{% swagger method="get" path="" baseUrl="/api/v1/demo/random-key" summary="" %}
 {% swagger-description %}
 
 {% endswagger-description %}
@@ -188,6 +201,34 @@ VC
 {% swagger-parameter in="body" name="version" required="true" %}
 {"version":"1.0.0"}
 {% endswagger-parameter %}
+
+{% swagger-response status="200: OK" description="Ok" %}
+
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="Forbidden" %}
+
+{% endswagger-response %}
+
+{% swagger-response status="404: Not Found" description="Not Found" %}
+
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+Version already exists.
+```
+
+```
+Schema is published.
+```
+{% endswagger-response %}
+
+{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+
+{% endswagger-response %}
 {% endswagger %}
 
 ### **Token creation**
@@ -237,7 +278,7 @@ true
 true
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     
@@ -246,6 +287,14 @@ true
 		...
 	
 }
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+User not registered
 ```
 {% endswagger-response %}
 {% endswagger %}

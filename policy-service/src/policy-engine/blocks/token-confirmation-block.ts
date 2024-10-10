@@ -1,19 +1,19 @@
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyComponentsUtils } from '../policy-components-utils';
-import { ActionCallback, BasicBlock, StateField } from '@policy-engine/helpers/decorators';
-import { IPolicyBlock, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { Token as TokenCollection } from '@entity/token';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ActionCallback, EventBlock, StateField } from '../helpers/decorators/index.js';
+import { IPolicyBlock, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { Token as TokenCollection } from '@guardian/common';
+import { BlockActionError } from '../errors/index.js';
+import { PolicyUser } from '../policy-user.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Information block
  */
-@BasicBlock({
+@EventBlock({
     blockType: 'tokenConfirmationBlock',
     commonBlock: false,
     about: {
@@ -43,7 +43,26 @@ export class TokenConfirmationBlock {
      * @private
      */
     @StateField()
-    private readonly state: { [key: string]: any } = {};
+    private readonly state: {
+        [key: string]: {
+            /**
+             * Hedera account
+             */
+            accountId: string,
+            /**
+             * Event data
+             */
+            data: IPolicyEventState,
+            /**
+             * Event user
+             */
+            user: PolicyUser,
+            /**
+             * Token id
+             */
+            tokenId: string
+        }
+    } = {};
 
     /**
      * Token
@@ -57,7 +76,7 @@ export class TokenConfirmationBlock {
     async getToken(): Promise<TokenCollection> {
         if (!this.token) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+            this.token = await ref.databaseServer.getToken(ref.options.tokenId);
         }
         return this.token;
     }
@@ -66,9 +85,9 @@ export class TokenConfirmationBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser) {
+    async getData(user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-        const blockState = this.state[user?.id] || {};
+        const blockState: any = this.state[user?.id] || {};
         const token = await this.getToken();
         const block: any = {
             id: ref.uuid,
@@ -87,7 +106,7 @@ export class TokenConfirmationBlock {
      * @param user
      * @param data
      */
-    async setData(user: IPolicyUser, data: any) {
+    async setData(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`setData`);
 
@@ -121,15 +140,14 @@ export class TokenConfirmationBlock {
      */
     private async confirm(ref: IPolicyBlock, data: any, state: any, skip: boolean = false) {
         const account = {
-            did: null,
             hederaAccountId: state.accountId,
             hederaAccountKey: data.hederaAccountKey
         }
 
-        let token:any;
+        let token: any;
         if (ref.options.useTemplate) {
             if (state.tokenId) {
-                token = await ref.databaseServer.getTokenById(state.tokenId, ref.dryRun);
+                token = await ref.databaseServer.getToken(state.tokenId, ref.dryRun);
             }
         } else {
             token = await this.getToken();
@@ -140,8 +158,9 @@ export class TokenConfirmationBlock {
         }
 
         await PolicyUtils.checkAccountId(account);
-        const policyOwner = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, policyOwner);
+        const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+        const hederaCredentials = await policyOwner.loadHederaCredentials(ref);
+        const hederaAccountInfo = await PolicyUtils.getHederaAccountInfo(ref, account.hederaAccountId, hederaCredentials);
 
         if (skip) {
             switch (ref.options.action) {

@@ -1,4 +1,4 @@
-import { SchemaCondition } from '..';
+import { SchemaCondition } from '../index.js';
 
 /**
  * Schema field
@@ -52,6 +52,10 @@ export interface SchemaField {
      * Unit system
      */
     unitSystem: string;
+    /**
+     * Property
+     */
+    property: string;
     /**
      * Custom Type
      */
@@ -116,4 +120,34 @@ export interface SchemaField {
      * Is field private
      */
     isPrivate?: boolean;
+
+    /**
+     * Is hidden field
+     */
+    hidden?: boolean;
+
+    /**
+     * Examples data
+     */
+    examples?: any[];
+
+    /**
+     * Order
+     */
+    order?: number;
+
+    /**
+     * Font style
+     */
+    font?: any;
+
+    /**
+     * Errors
+     */
+    errors?: any[];
+
+    /**
+     * Formulae
+     */
+    formulae?: string;
 }

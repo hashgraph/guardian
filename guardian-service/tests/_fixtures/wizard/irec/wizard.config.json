@@ -1,0 +1,127 @@
+{
+    "policy": {
+        "name": "test",
+        "description": "",
+        "topicDescription": ""
+    },
+    "roles": [
+        "OWNER",
+        "Registrant"
+    ],
+    "schemas": [
+        {
+            "name": "Profile",
+            "iri": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+            "isApproveEnable": true,
+            "isMintSchema": false,
+            "mintOptions": {
+                "tokenId": "",
+                "rule": ""
+            },
+            "dependencySchemaIri": "",
+            "relationshipsSchemaIri": "",
+            "initialRolesFor": [
+                "Registrant"
+            ],
+            "rolesConfig": [
+                {
+                    "role": "OWNER",
+                    "isApprover": true,
+                    "isCreator": false,
+                    "gridColumns": [
+                        {
+                            "title": "Name",
+                            "field": "field0"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Device",
+            "iri": "#fe641042-3cfe-4cde-a6f3-aaa39366d94e",
+            "isApproveEnable": true,
+            "isMintSchema": false,
+            "mintOptions": {
+                "tokenId": "",
+                "rule": ""
+            },
+            "dependencySchemaIri": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+            "relationshipsSchemaIri": "#b6bad72d-f13d-411c-aff3-18eb831be626",
+            "initialRolesFor": [],
+            "rolesConfig": [
+                {
+                    "role": "OWNER",
+                    "isApprover": true,
+                    "isCreator": false,
+                    "gridColumns": [
+                        {
+                            "title": "Device ID",
+                            "field": "field0"
+                        }
+                    ]
+                },
+                {
+                    "role": "Registrant",
+                    "isApprover": false,
+                    "isCreator": true,
+                    "gridColumns": [
+                        {
+                            "title": "Device ID",
+                            "field": "field0"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Issue Request",
+            "iri": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5",
+            "isApproveEnable": true,
+            "isMintSchema": true,
+            "mintOptions": {
+                "tokenId": "09f61063-5c3a-454e-80cf-36542639da0e",
+                "rule": "field0"
+            },
+            "dependencySchemaIri": "",
+            "relationshipsSchemaIri": "",
+            "initialRolesFor": [],
+            "rolesConfig": [
+                {
+                    "role": "OWNER",
+                    "isApprover": true,
+                    "isCreator": false,
+                    "gridColumns": [
+                        {
+                            "title": "Emissions Count",
+                            "field": "field0"
+                        }
+                    ]
+                },
+                {
+                    "role": "Registrant",
+                    "isApprover": false,
+                    "isCreator": false,
+                    "gridColumns": [
+                        {
+                            "title": "Emissions Count",
+                            "field": "field0"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "trustChain": [
+        {
+            "role": "OWNER",
+            "viewOnlyOwnDocuments": false,
+            "mintSchemaIri": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5"
+        },
+        {
+            "role": "Registrant",
+            "viewOnlyOwnDocuments": true,
+            "mintSchemaIri": "#37f146d7-f065-4ec4-bb19-7ccf30c615f5"
+        }
+    ]
+}

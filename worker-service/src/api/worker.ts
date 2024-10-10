@@ -1,23 +1,9 @@
-import {
-    Logger,
-    MessageBrokerChannel,
-    MessageResponse,
-    NatsService,
-    SettingsContainer,
-    ValidateConfiguration
-} from '@guardian/common';
-import {
-    ExternalMessageEvents, GenerateUUIDv4,
-    ITask,
-    ITaskResult,
-    WorkerEvents,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper';
-import { IpfsClient } from './ipfs-client';
-import Blob from 'cross-blob';
-import { AccountId, ContractFunctionParameters, PrivateKey, TokenId } from '@hashgraph/sdk';
-import { HederaUtils } from './helpers/utils';
+import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
+import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
+import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
+import { IpfsClientClass } from './ipfs-client-class.js';
+import { AccountId, ContractFunctionParameters, ContractId, PrivateKey, TokenId } from '@hashgraph/sdk';
+import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
 import process from 'process';
 
@@ -36,13 +22,7 @@ function rejectTimeout(t: number): Promise<void> {
 /**
  * Worker class
  */
-export class Worker extends NatsService{
-    /**
-     * Logger instance
-     * @private
-     */
-    private readonly logger: Logger;
-
+export class Worker extends NatsService {
     /**
      * Message queue name
      */
@@ -63,7 +43,7 @@ export class Worker extends NatsService{
     /**
      * Ipfs client
      */
-    private ipfsClient: IpfsClient;
+    private ipfsClient: IpfsClientClass;
 
     /**
      * Current task ID
@@ -110,14 +90,34 @@ export class Worker extends NatsService{
      */
     private readonly taskTimeout: number;
 
+    /**
+     * Worker ID
+     * @private
+     */
+    //private readonly workerID: string;
+
+    /**
+     * Analytics Service
+     * @private
+     */
+    private readonly analyticsService: string;
+
     constructor(
+        private w3cKey: string,
+        private w3cProof: string,
+        private readonly filebaseKey: string,
+        private readonly workerID: string,
+        private readonly logger: PinoLogger
     ) {
         super();
-        const { IPFS_STORAGE_API_KEY } = new SettingsContainer().settings;
+        //this.workerID = this._workerID;
+        this.ipfsClient = new IpfsClientClass(
+            this.w3cKey,
+            this.w3cProof,
+            this.filebaseKey
+        );
 
-        this.logger = new Logger();
-        this.ipfsClient = new IpfsClient(IPFS_STORAGE_API_KEY);
-
+        this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -129,6 +129,12 @@ export class Worker extends NatsService{
     public async init(): Promise<void> {
         await super.init();
         this.channel = new MessageBrokerChannel(this.connection, 'worker');
+
+        try {
+            await this.ipfsClient.createClient()
+        } catch (e) {
+            this.logger.error(`Could not create IPFS client instance. ${e.message}`, [this.workerID, 'WORKER'])
+        }
 
         this.subscribe(WorkerEvents.GET_FREE_WORKERS, async (msg) => {
             if (!this.isInUse) {
@@ -144,39 +150,27 @@ export class Worker extends NatsService{
             this.isInUse = true;
             this.currentTaskId = task.id;
 
-            this.logger.info(`Task started: ${task.id}, ${task.type}`, [process.env.SERVICE_CHANNEL]);
+            this.logger.info(`Task started: ${task.id}, ${task.type}`, [this.workerID, 'WORKER']);
 
             const result = await this.processTaskWithTimeout(task);
 
             try {
                 // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('-'), result);
                 if (result?.error) {
-                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [process.env.SERVICE_CHANNEL]);
+                    this.logger.error(`Task error: ${this.currentTaskId}, ${result?.error}`, [this.workerID, 'WORKER']);
                 } else {
-                    this.logger.info(`Task completed: ${this.currentTaskId}`, [process.env.SERVICE_CHANNEL]);
+                    this.logger.info(`Task completed: ${this.currentTaskId}`, [this.workerID, 'WORKER']);
                 }
             } catch (error) {
-                this.logger.error(error.message, [process.env.SERVICE_CHANNEL]);
+                this.logger.error(error.message, [this.workerID, 'WORKER']);
                 this.clearState();
 
             }
 
-            const completeTask = (data) => {
-                // let count = 0;
-                const fn = async () => {
-                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
-                    // if (count < 5) {
-                    //     setTimeout(async () => {
-                    //         await fn()
-                    //     })
-                    //     count++
-                    // }
-                }
-                fn();
+            const completeTask = async (data) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data)
             }
-
             await completeTask(result);
-            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
@@ -195,23 +189,34 @@ export class Worker extends NatsService{
         })
 
         this.subscribe(WorkerEvents.UPDATE_SETTINGS, async (msg: any) => {
-            await new SettingsContainer().updateSetting('IPFS_STORAGE_API_KEY', msg.ipfsStorageApiKey);
             try {
-                this.ipfsClient = new IpfsClient(msg.ipfsStorageApiKey);
-                const validator = new ValidateConfiguration();
-                await validator.validate();
+                const ipfsStorageApiKey = msg?.ipfsStorageApiKey;
+                if (!ipfsStorageApiKey) {
+                    throw new Error('Ipfs storage api key setting is empty');
+                }
+                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
+                const ipfsClient = new IpfsClientClass(
+                    w3cKey,
+                    w3cProof
+                );
+                await ipfsClient.createClient();
+                this.w3cKey = w3cKey;
+                this.w3cProof = w3cProof;
+                this.ipfsClient = ipfsClient;
+                const secretManager = SecretManager.New();
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
             } catch (error) {
                 this.logger.error(`Update settings error, ${error.message}`, ['WORKER']);
             }
         });
 
-        HederaSDKHelper.setTransactionResponseCallback(async (client: any) => {
+        HederaSDKHelper.setTransactionResponseCallback(async (operatorAccountId: string) => {
             try {
-                const balance = await HederaSDKHelper.balance(client, client.operatorAccountId);
+                const balance = await HederaSDKHelper.balanceRest(operatorAccountId);
                 await this.sendMessage('update-user-balance', {
                     balance,
                     unit: 'Hbar',
-                    operatorAccountId: client.operatorAccountId.toString()
+                    operatorAccountId
                 });
             } catch (error) {
                 throw new Error(`Worker (${['api-gateway', 'update-user-balance'].join('.')}) send: ` + error);
@@ -226,6 +231,18 @@ export class Worker extends NatsService{
     private clearState(): void {
         this.isInUse = false;
         this.currentTaskId = null;
+    }
+
+    /**
+     * Safe destroy hedera client
+     * @param client Hedera client
+     */
+    private safeDestroyClient(client: HederaSDKHelper): void {
+        try {
+            client?.destroy();
+        } catch (error) {
+            console.error(`Error while client destroy : ${error?.message}`);
+        }
     }
 
     /**
@@ -244,6 +261,7 @@ export class Worker extends NatsService{
             nodes: task.data.nodes,
             mirrorNodes: task.data.mirrorNodes
         }
+        let client: HederaSDKHelper;
         try {
             switch (task.type) {
                 case WorkerTaskType.ADD_FILE: {
@@ -252,8 +270,8 @@ export class Worker extends NatsService{
                     if (data && data.body) {
                         fileContent = Buffer.from(data.body, 'base64')
                     }
-                    const blob: any = new Blob([fileContent]);
-                    const r = await this.ipfsClient.addFile(blob);
+                    //const blob: any = new Blob([fileContent]);
+                    const r = await this.ipfsClient.addFile(fileContent);
                     this.publish(ExternalMessageEvents.IPFS_ADDED_FILE, r);
                     result.data = r;
                     break;
@@ -290,6 +308,25 @@ export class Worker extends NatsService{
                     break;
                 }
 
+                case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
+                    const { options } = task.data.payload;
+                    try {
+                        const response = await axios.post(
+                            `${this.analyticsService}/analytics/search/policy`,
+                            options,
+                            { responseType: 'json' }
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
+                    break;
+                }
+
                 case WorkerTaskType.HTTP_REQUEST: {
                     const { method, url, headers, body } = task.data.payload;
                     const response = await axios({
@@ -304,15 +341,16 @@ export class Worker extends NatsService{
 
                 case WorkerTaskType.SEND_HEDERA: {
                     const { operatorId, operatorKey, dryRun } = task.data.clientOptions;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
+                    const signOptions: ISignOptions = task.data.signOptions;
+                    client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
                     const { topicId, buffer, submitKey, memo } = task.data;
-                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo);
+                    result.data = await client.submitMessage(topicId, buffer, submitKey, memo, signOptions);
                     break;
                 }
 
                 case WorkerTaskType.GENERATE_DEMO_KEY: {
                     const { operatorId, operatorKey, initialBalance } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
+                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const treasury = await client.newAccount(initialBalance);
                     result.data = {
                         id: treasury.id.toString(),
@@ -323,7 +361,7 @@ export class Worker extends NatsService{
 
                 case WorkerTaskType.GET_USER_BALANCE: {
                     const { hederaAccountId, hederaAccountKey } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, null, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, null, networkOptions);
                     result.data = await client.balance(hederaAccountId);
 
                     break;
@@ -331,7 +369,7 @@ export class Worker extends NatsService{
 
                 case WorkerTaskType.GET_ACCOUNT_INFO: {
                     const { userID, userKey, hederaAccountId } = task.data;
-                    const client = new HederaSDKHelper(userID, userKey, null, networkOptions);
+                    client = new HederaSDKHelper(userID, userKey, null, networkOptions);
                     result.data = await client.accountInfo(hederaAccountId);
 
                     break;
@@ -341,6 +379,7 @@ export class Worker extends NatsService{
                     const {
                         operatorId,
                         operatorKey,
+                        memo,
                         decimals,
                         enableAdmin,
                         enableFreeze,
@@ -349,9 +388,10 @@ export class Worker extends NatsService{
                         initialSupply,
                         tokenName,
                         tokenSymbol,
-                        tokenType
+                        tokenType,
+                        wipeContractId,
                     } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
+                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const nft = tokenType === 'non-fungible';
                     const _decimals = nft ? 0 : decimals;
                     const _initialSupply = nft ? 0 : initialSupply;
@@ -361,8 +401,12 @@ export class Worker extends NatsService{
                     const adminKey = enableAdmin ? PrivateKey.generate() : null;
                     const freezeKey = enableFreeze ? PrivateKey.generate() : null;
                     const kycKey = enableKYC ? PrivateKey.generate() : null;
-                    const wipeKey = enableWipe ? PrivateKey.generate() : null;
-                    const tokenMemo = '';
+                    const wipeKey = enableWipe
+                        ? wipeContractId
+                            ? ContractId.fromString(wipeContractId)
+                            : PrivateKey.generate()
+                        : null;
+                    const tokenMemo = memo || '';
                     const tokenId = await client.newToken(
                         tokenName,
                         tokenSymbol,
@@ -391,8 +435,10 @@ export class Worker extends NatsService{
                         adminKey: adminKey ? adminKey.toString() : null,
                         freezeKey: freezeKey ? freezeKey.toString() : null,
                         kycKey: kycKey ? kycKey.toString() : null,
-                        wipeKey: wipeKey ? wipeKey.toString() : null
+                        wipeKey: wipeKey && !wipeContractId ? wipeKey.toString() : null,
+                        wipeContractId
                     }
+
                     break;
                 }
 
@@ -414,7 +460,7 @@ export class Worker extends NatsService{
                     if (changes.wipeKey) {
                         changes.wipeKey = PrivateKey.generate();
                     }
-                    const client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
+                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const status = await client.updateToken(
                         TokenId.fromString(tokenId),
                         HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key'),
@@ -439,7 +485,7 @@ export class Worker extends NatsService{
                         adminKey,
                     } = task.data;
 
-                    const client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
+                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     result.data = await client.deleteToken(
                         TokenId.fromString(tokenId),
                         HederaUtils.parsPrivateKey(adminKey, true, 'Admin Key')
@@ -450,7 +496,7 @@ export class Worker extends NatsService{
 
                 case WorkerTaskType.ASSOCIATE_TOKEN: {
                     const { userID, userKey, associate, tokenId, dryRun } = task.data;
-                    const client = new HederaSDKHelper(userID, userKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(userID, userKey, dryRun, networkOptions);
                     if (associate) {
                         result.data = await client.associate(tokenId, userID, userKey);
                     } else {
@@ -465,19 +511,24 @@ export class Worker extends NatsService{
                         hederaAccountId,
                         hederaAccountKey,
                         userHederaAccountId,
-                        tokenId,
+                        token,
                         kycKey,
                         grant,
                         dryRun
                     } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
 
                     if (grant) {
-                        result.data = await client.grantKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.grantKyc(token.tokenId, userHederaAccountId, kycKey);
                     } else {
-                        result.data = await client.revokeKyc(tokenId, userHederaAccountId, kycKey);
+                        result.data = await client.revokeKyc(token.tokenId, userHederaAccountId, kycKey);
                     }
-
+                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    await NotificationHelper.info(
+                        `${grant ? 'Grant' : 'Revok'} KYC`,
+                        `KYC ${grant ? 'granted for' : 'revoked for'} ${token.tokenName}`,
+                        user?.id
+                    );
                     break;
                 }
 
@@ -486,24 +537,29 @@ export class Worker extends NatsService{
                         hederaAccountId,
                         hederaAccountKey,
                         userHederaAccountId,
-                        tokenId,
+                        token,
                         freezeKey,
                         freeze,
                         dryRun
                     } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     if (freeze) {
-                        result.data = await client.freeze(tokenId, userHederaAccountId, freezeKey);
+                        result.data = await client.freeze(token.tokenId, userHederaAccountId, freezeKey);
                     } else {
-                        result.data = await client.unfreeze(tokenId, userHederaAccountId, freezeKey);
+                        result.data = await client.unfreeze(token.tokenId, userHederaAccountId, freezeKey);
                     }
-
+                    const user = await new Users().getUserByAccount(userHederaAccountId);
+                    await NotificationHelper.info(
+                        `${freeze ? 'Freeze' : 'Unfreeze'} token`,
+                        `${token.tokenName} ${freeze ? 'frozen' : 'unfrozen'}`,
+                        user.id
+                    );
                     break;
                 }
 
                 case WorkerTaskType.MINT_NFT: {
                     const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, metaData, transactionMemo } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     let data: Uint8Array[];
                     if (Array.isArray(metaData)) {
                         data = new Array<Uint8Array>(metaData.length);
@@ -514,6 +570,7 @@ export class Worker extends NatsService{
                         data = [new Uint8Array(Buffer.from(metaData))];
                     }
                     result.data = await client.mintNFT(tokenId, supplyKey, data, transactionMemo);
+
                     break;
                 }
 
@@ -529,15 +586,18 @@ export class Worker extends NatsService{
                         element,
                         transactionMemo
                     } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
-                    result.data = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    const status = await client.transferNFT(tokenId, targetAccount, treasuryId, treasuryKey, element, transactionMemo);
+                    result.data = status ? element : null
+
                     break;
                 }
 
                 case WorkerTaskType.MINT_FT: {
                     const { hederaAccountId, hederaAccountKey, dryRun, tokenId, supplyKey, tokenValue, transactionMemo } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.mint(tokenId, supplyKey, tokenValue, transactionMemo);
+
                     break;
                 }
 
@@ -553,8 +613,9 @@ export class Worker extends NatsService{
                         tokenValue,
                         transactionMemo
                     } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     result.data = await client.transfer(tokenId, targetAccount, treasuryId, treasuryKey, tokenValue, transactionMemo);
+
                     break;
                 }
 
@@ -569,19 +630,20 @@ export class Worker extends NatsService{
                         wipeKey,
                         uuid
                     } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     if (token.tokenType === 'non-fungible') {
                         result.error = 'unsupported operation';
                     } else {
                         await client.wipe(token.tokenId, targetAccount, wipeKey, tokenValue, uuid);
                         result.data = {}
                     }
+
                     break;
                 }
 
                 case WorkerTaskType.NEW_TOPIC: {
                     const { hederaAccountId, hederaAccountKey, dryRun, topicMemo, keys } = task.data;
-                    const client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
+                    client = new HederaSDKHelper(hederaAccountId, hederaAccountKey, dryRun, networkOptions);
                     let adminKey: any = null;
                     let submitKey: any = null;
                     if (keys) {
@@ -604,29 +666,43 @@ export class Worker extends NatsService{
                     break;
                 }
 
-                case WorkerTaskType.GET_TOPIC_MESSAGE: {
-                    const {
-                        operatorId,
-                        operatorKey,
-                        dryRun,
-                        timeStamp
-                    } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
-                    result.data = await client.getTopicMessage(timeStamp);
+                case WorkerTaskType.GET_TOKEN_INFO: {
+                    const { tokenId } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTokenInfo(tokenId);
+                    break;
+                }
 
+                case WorkerTaskType.GET_TOPIC_MESSAGE: {
+                    const { timeStamp } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessage(timeStamp);
                     break;
                 }
 
                 case WorkerTaskType.GET_TOPIC_MESSAGES: {
-                    const {
-                        operatorId,
-                        operatorKey,
-                        dryRun,
-                        topic
-                    } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, dryRun, networkOptions);
-                    result.data = await client.getTopicMessages(topic);
+                    const { topic, timeStamp } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessages(topic, timeStamp);
+                    break;
+                }
 
+                case WorkerTaskType.GET_TOPIC_MESSAGE_BY_INDEX: {
+                    const { topic, index } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessageByIndex(topic, index);
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOPIC_MESSAGE_CHUNKS: {
+                    const { topic, timeStamp, next } = task.data;
+                    result.data = await HederaSDKHelper
+                        .setNetwork(networkOptions)
+                        .getTopicMessageChunks(topic, timeStamp, next);
                     break;
                 }
 
@@ -643,8 +719,11 @@ export class Worker extends NatsService{
                         hederaAccountKey,
                         topicKey,
                         bytecodeFileId,
+                        memo,
+                        gas
                     } = task.data;
-                    const client = new HederaSDKHelper(
+                    const contractMemo = memo || '';
+                    client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
                         null,
@@ -652,70 +731,100 @@ export class Worker extends NatsService{
                     );
                     result.data = await client.createContract(
                         bytecodeFileId,
-                        new ContractFunctionParameters().addString(topicKey)
+                        new ContractFunctionParameters().addString(topicKey),
+                        gas,
+                        contractMemo
                     );
+
                     break;
                 }
 
-                case WorkerTaskType.ADD_CONTRACT_USER: {
+                case WorkerTaskType.CONTRACT_CALL: {
                     const {
                         hederaAccountId,
                         hederaAccountKey,
-                        userId,
                         contractId,
+                        functionName,
+                        gas,
+                        parameters,
                     } = task.data;
-                    const client = new HederaSDKHelper(
+                    client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
                         null,
                         networkOptions
                     );
                     result.data = await client.contractCall(
-                        contractId, 'addUser',
-                        new ContractFunctionParameters().addAddress(AccountId.fromString(userId).toSolidityAddress())
+                        contractId, gas, functionName,
+                        parameters
                     );
                     break;
                 }
 
-                case WorkerTaskType.ADD_CONTRACT_PAIR: {
+                case WorkerTaskType.CONTRACT_QUERY: {
                     const {
                         hederaAccountId,
                         hederaAccountKey,
                         contractId,
-                        baseTokenId,
-                        oppositeTokenId,
-                        baseTokenCount,
-                        oppositeTokenCount,
-                        grantKycKeys,
+                        functionName,
+                        parameters,
+                        gas
                     } = task.data;
-                    const client = new HederaSDKHelper(
+                    client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
                         null,
                         networkOptions
                     );
-                    result.data = await client.contractCall(
-                        contractId,
-                        'addPair',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addUint32(Math.floor(baseTokenCount || 0))
-                            .addUint32(Math.floor(oppositeTokenCount || 0)),
-                        grantKycKeys
+                    const contractQueryResult = await client.contractQuery(
+                        contractId, gas, functionName,
+                        parameters
                     );
+                    result.data = Buffer.from(contractQueryResult.asBytes());
+                    break;
+                }
+
+                case WorkerTaskType.CUSTOM_CONTRACT_CALL: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        contractId,
+                        gas,
+                        parameters,
+                    } = task.data;
+                    client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey,
+                        null,
+                        networkOptions
+                    );
+                    const dataParameters = Buffer.from((parameters as string).slice(2), `hex`);
+                    result.data = await client.customContractCall(
+                        contractId, gas,
+                        dataParameters
+                    );
+                    break;
+                }
+
+                case WorkerTaskType.CUSTOM_CONTRACT_QUERY: {
+                    const {
+                        hederaAccountId,
+                        hederaAccountKey,
+                        contractId,
+                        parameters,
+                        gas
+                    } = task.data;
+                    client = new HederaSDKHelper(
+                        hederaAccountId,
+                        hederaAccountKey,
+                        null,
+                        networkOptions
+                    );
+                    const contractQueryResult = await client.customContractQuery(
+                        contractId, gas,
+                        parameters
+                    );
+                    result.data = Buffer.from(contractQueryResult.asBytes());
                     break;
                 }
 
@@ -725,256 +834,34 @@ export class Worker extends NatsService{
                         hederaAccountKey,
                         contractId,
                     } = task.data;
-                    const client = new HederaSDKHelper(
+                    client = new HederaSDKHelper(
                         hederaAccountId,
                         hederaAccountKey,
                         null,
                         networkOptions
                     );
-                    result.data = AccountId.fromSolidityAddress(
-                        (
-                            await client.contractQuery(
-                                contractId,
-                                'getOwner',
-                                new ContractFunctionParameters()
-                            )
-                        ).getAddress()
-                    ).toString();
-                    break;
-                }
-
-                case WorkerTaskType.CHECK_STATUS: {
-                    const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        contractId,
-                    } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    result.data = (await client.contractQuery(
-                        contractId, 'checkStatus',
-                        new ContractFunctionParameters()
-                    )).getBool();
-                    break;
-                }
-
-                case WorkerTaskType.RETIRE_TOKENS: {
-                    const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        baseTokenId,
-                        oppositeTokenId,
-                        userId,
-                        contractId,
-                        wipeKeys
-                    } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    result.data = await client.contractCall(
-                        contractId,
-                        'retire',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                AccountId.fromString(userId).toSolidityAddress()
-                            )
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            ),
-                        wipeKeys
-                    );
-                    break;
-                }
-
-                case WorkerTaskType.CANCEL_RETIRE_REQUEST: {
-                    const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        baseTokenId,
-                        oppositeTokenId,
-                        contractId
-                    } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    result.data = await client.contractCall(
-                        contractId,
-                        'cancelUserRequest',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                    );
-                    break;
-                }
-
-                case WorkerTaskType.GET_CONTRACT_PAIR: {
-                    const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        baseTokenId,
-                        oppositeTokenId,
-                        contractId
-                    } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    const contractQueryResult = await client.contractQuery(
-                        contractId,
-                        'getPair',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                    );
+                    // const address = await client.contractQuery(
+                    //     contractId,
+                    //     'getOwner',
+                    //     new ContractFunctionParameters()
+                    // );
+                    // const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
+                    const info = await client.getContractInfo(contractId);
                     result.data = {
-                        baseTokenRate: contractQueryResult.getUint32(0),
-                        oppositeTokenRate: contractQueryResult.getUint32(1),
-                        contractId
+                        memo: info.contractMemo
                     };
+
                     break;
                 }
 
-                case WorkerTaskType.ADD_RETIRE_REQUEST: {
+                case WorkerTaskType.GET_CONTRACT_EVENTS: {
                     const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        baseTokenId,
-                        oppositeTokenId,
-                        baseTokenCount,
-                        oppositeTokenCount,
-                        baseTokenSerials,
-                        oppositeTokenSerials,
-                        contractId
-                    } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    result.data = await client.contractCall(
+                        timestamp,
                         contractId,
-                        'addUserRequest',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addUint32(baseTokenCount)
-                            .addUint32(oppositeTokenCount)
-                            .addInt64Array(
-                                baseTokenSerials && baseTokenSerials.length
-                                    ? baseTokenSerials
-                                    : [0]
-                            )
-                            .addInt64Array(
-                                oppositeTokenSerials &&
-                                    oppositeTokenSerials.length
-                                    ? oppositeTokenSerials
-                                    : [0]
-                            )
-                    );
-                    break;
-                }
-
-                case WorkerTaskType.GET_RETIRE_REQUEST: {
-                    const {
-                        hederaAccountId,
-                        hederaAccountKey,
-                        baseTokenId,
-                        oppositeTokenId,
-                        userId,
-                        contractId
+                        order,
+                        limit
                     } = task.data;
-                    const client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    const contractQueryResult = await client.contractQuery(
-                        contractId,
-                        'getUserRequest',
-                        new ContractFunctionParameters()
-                            .addAddress(
-                                AccountId.fromString(userId).toSolidityAddress()
-                            )
-                            .addAddress(
-                                baseTokenId
-                                    ? TokenId.fromString(
-                                          baseTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                            .addAddress(
-                                oppositeTokenId
-                                    ? TokenId.fromString(
-                                          oppositeTokenId
-                                      ).toSolidityAddress()
-                                    : new TokenId(0).toSolidityAddress()
-                            )
-                    );
-                    result.data = {
-                        baseTokenCount: contractQueryResult.getUint32(0) || contractQueryResult.getUint32(2),
-                        oppositeTokenCount: contractQueryResult.getUint32(1) || contractQueryResult.getUint32(3)
-                    }
+                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order, limit);
                     break;
                 }
 
@@ -984,7 +871,7 @@ export class Worker extends NatsService{
                         operatorKey,
                         tokenId,
                     } = task.data;
-                    const client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
+                    client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const nfts = (await client.getSerialsNFT(tokenId)) || [];
                     const serials = {};
                     nfts.forEach(item => {
@@ -995,6 +882,36 @@ export class Worker extends NatsService{
                         }
                     });
                     result.data = serials;
+
+                    break;
+                }
+
+                case WorkerTaskType.GET_TOKEN_NFTS: {
+                    const {
+                        tokenId,
+                        accountId,
+                        serialnumber,
+                        order,
+                        filter,
+                        limit,
+                    } = task.data;
+                    const nfts = await HederaSDKHelper.getNFTTokenSerials(tokenId, accountId, serialnumber, order, filter, limit);
+                    result.data = nfts?.map(nft => nft.serial_number) || [];
+                    break;
+                }
+
+                case WorkerTaskType.GET_TRANSACTIONS: {
+                    const {
+                        accountId,
+                        transactiontype,
+                        timestamp,
+                        order,
+                        filter,
+                        limit,
+                        findOne,
+                    } = task.data;
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
+                    result.data = transactions || [];
                     break;
                 }
 
@@ -1004,6 +921,9 @@ export class Worker extends NatsService{
             ///////
         } catch (e) {
             result.error = e.message;
+            result.isTimeoutError = e.isTimeoutError;
+        } finally {
+            this.safeDestroyClient(client);
         }
 
         return result;

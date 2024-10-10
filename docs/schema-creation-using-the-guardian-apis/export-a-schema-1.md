@@ -1,6 +1,6 @@
 # Export Files from Schema
 
-### EXPORTING SCHEMA FILES FOR THE SCHEMA
+### [NextCreation of Schema related to the topic](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bOsLGPRQ1YXxw4wDcVrE/\~/changes/334/guardian/standard-registry/schemas/schema-creation-using-apis/creation-of-schema-related-to-the-topic)EXPORTING SCHEMA FILES FOR THE SCHEMA
 
 {% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/file" summary="Return zip file with schemas" %}
 {% swagger-description %}
@@ -33,6 +33,10 @@ Selected schema ID
     // Response
 }
 ```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
 {% endswagger-response %}
 
 {% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}

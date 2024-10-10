@@ -1,11 +1,11 @@
-import { findOptions, getVCIssuer } from '@helpers/utils';
-import { ReportItem } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyReportItemBlock } from '@policy-engine/policy-engine.interface';
+import { findOptions, getVCIssuer } from '@guardian/common';
+import { ReportItem } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyReportItemBlock } from '../policy-engine.interface.js';
 import { IReportItem } from '@guardian/interfaces';
-import { BlockActionError } from '@policy-engine/errors';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { BlockActionError } from '../errors/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Report item block
@@ -27,6 +27,29 @@ import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/exte
     variables: []
 })
 export class ReportItemBlock {
+
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref =
+            PolicyComponentsUtils.GetBlockRef<IPolicyReportItemBlock>(this);
+        const documentCacheFields =
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        ref.options?.filters
+            ?.filter((filter) => filter?.field?.startsWith('document.'))
+            .forEach((filter) => {
+                documentCacheFields.add(filter.field.replace('document.', ''));
+            });
+        ref.options?.variables
+            ?.filter((variable) => variable.value?.startsWith('document.'))
+            .forEach((variable) => {
+                documentCacheFields.add(
+                    variable.value.replace('document.', '')
+                );
+            });
+    }
+
     /**
      * Run logic
      * @param resultFields
@@ -45,7 +68,7 @@ export class ReportItemBlock {
         const multiple = ref.options.multiple;
         const dynamicFilters = ref.options.dynamicFilters;
 
-        const filtersToVc:any = {};
+        const filtersToVc: any = {};
         if (ref.options.filters) {
             for (const filter of ref.options.filters) {
                 let expr: any;
@@ -86,6 +109,7 @@ export class ReportItemBlock {
             }
         }
         filtersToVc.policyId = { $eq: ref.policyId };
+        filtersToVc.schema = { $ne: '#UserRole' };
 
         const item: any = {
             type: 'VC',
@@ -95,46 +119,47 @@ export class ReportItemBlock {
             visible,
             iconType,
             multiple,
-            dynamicFilters
+            dynamicFilters,
+            document: multiple ? [] : null
         }
         resultFields.push(item);
 
-        const vcDocuments: any = multiple
+        const _documents: any[] = multiple
             ? await ref.databaseServer.getVcDocuments(filtersToVc)
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
-        const notFoundDocuments = vcDocuments.filter((vc) => vc).length < 1;
+
+        const vcDocuments: any[] = _documents.filter((vc) => vc);
+        const notFoundDocuments = vcDocuments.length < 1;
         item.notFoundDocuments = notFoundDocuments;
 
         for (const vcDocument of vcDocuments) {
-            if (vcDocument) {
-                if (multiple) {
-                    item.document = item.document || [];
-                    item.document.push({
-                        tag: vcDocument.tag,
-                        issuer: getVCIssuer(vcDocument),
-                        username: getVCIssuer(vcDocument),
-                        document: vcDocument
-                    });
-                } else {
-                    item.tag = vcDocument.tag;
-                    item.issuer = getVCIssuer(vcDocument);
-                    item.username = getVCIssuer(vcDocument);
-                    item.document = vcDocument;
-                }
+            if (multiple) {
+                item.document = item.document || [];
+                item.document.push({
+                    tag: vcDocument.tag,
+                    issuer: getVCIssuer(vcDocument),
+                    username: getVCIssuer(vcDocument),
+                    document: vcDocument
+                });
+            } else {
+                item.tag = vcDocument.tag;
+                item.issuer = getVCIssuer(vcDocument);
+                item.username = getVCIssuer(vcDocument);
+                item.document = vcDocument;
+            }
 
-                if (ref.options.variables) {
-                    for (const variable of ref.options.variables) {
-                        const findOptionsResult = findOptions(vcDocument, variable.value);
-                        if (multiple) {
-                            variables[variable.name] = variables[variable.name] || []
-                            if (Array.isArray(findOptionsResult)) {
-                                variables[variable.name].push(...findOptionsResult);
-                            } else {
-                                variables[variable.name].push(findOptionsResult);
-                            }
+            if (ref.options.variables) {
+                for (const variable of ref.options.variables) {
+                    const findOptionsResult = findOptions(vcDocument, variable.value);
+                    if (multiple) {
+                        variables[variable.name] = variables[variable.name] || []
+                        if (Array.isArray(findOptionsResult)) {
+                            variables[variable.name].push(...findOptionsResult);
                         } else {
-                            variables[variable.name] = findOptionsResult;
+                            variables[variable.name].push(findOptionsResult);
                         }
+                    } else {
+                        variables[variable.name] = findOptionsResult;
                     }
                 }
             }

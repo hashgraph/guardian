@@ -1,0 +1,29 @@
+<div class="new-versions" *ngIf="visible">
+    <mat-icon class="new-versions__info-icon"> info </mat-icon>
+    <b class="new-versions__info-label">New versions of {{ type }} exist</b>
+    <div class="new-versions__links">
+        <div class="new-versions__link" *ngFor="let newVersion of newVersions">
+            <span
+                class="new-versions__link-label"
+                [title]="newVersion.messageId"
+                (click)="onClick(newVersion.messageId)"
+                >{{ newVersion.version }}
+            </span>
+            <mat-icon
+                matTooltip="Copy message identifier"
+                matTooltipClass="guardian-tooltip"
+                matTooltipPosition="above"
+                [cdkCopyToClipboard]="newVersion.messageId"
+                class="new-versions__link-copy"
+                (click)="onCopyClick(newVersion)"
+                [ngClass]="{
+                    'new-versions__link-copy--hidden': newVersion.copied
+                }"
+                >content_copy
+            </mat-icon>
+            <mat-icon class="new-versions__copy-done" *ngIf="newVersion.copied"
+                >done
+            </mat-icon>
+        </div>
+    </div>
+</div>

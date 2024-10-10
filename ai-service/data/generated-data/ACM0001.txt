@@ -1,0 +1,20 @@
+Methodology name: ACM0001 (Flaring or use of landfill gas)
+
+Typical project(s): Capture of landfill gas (LFG) and its flaring and/or use to produce energy and/or use to
+supply consumers through natural gas distribution network or trucks
+
+Type of GHG emissions mitigation action: 
+GHG destruction.
+Destruction of methane emissions and displacement of a more-GHG-intensive service
+
+Important conditions under which the methodology is applicable: 
+• Captured landfill gas is flared, and/or;
+• Captured landfill gas is used to produce energy, and or;
+• Captured gas is used to supply consumers through natural gas distribution network,
+trucks or the dedicated pipeline.
+
+Important parameters: 
+Monitored:
+• Amount of landfill gas captured;
+• Methane fraction in the landfill gas;
+• If applicable: electricity generation using landfill gas.

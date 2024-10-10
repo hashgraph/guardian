@@ -1,4 +1,4 @@
-# 💻 Verra Redd+ Demo UI Guide
+# 💻 Verra Redd VM0007 Demo UI Guide
 
 This folder contains a sample file that is referenced in the Demo Usage Guide
 
@@ -22,14 +22,12 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
 ```
-REDD 1.1.0 = 1674823276.261149647
-REDD 2.2.2 = 1674823441.956296415
-Verra REDD Policy 3 groups = 1674823642.126585003
-Verra REDD 4 = 1677110652.603453479
-Verra REDD 5 = 1679441780.655736003
+REDD 1.1.0 = 1707207018.434778003
+REDD 2.2.2 = 1707207149.487956003
+Verra REDD Policy 3 groups = 1707207286.119377003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
@@ -61,7 +59,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 9\. Now, we logout as VVB and login as Standard Registry and review the document and approve VVB by clicking on Approve button.
 
-<figure><img src="../../../.gitbook/assets/3_9.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/3_9 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 10\. Now we login as Project Proponent and repeat same steps as Step 5, Step 6.
 

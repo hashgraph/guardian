@@ -9,7 +9,7 @@ Creates a new token. Only users with the Standard Registry role are allowed to m
 Object that contains token information
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:
@@ -33,6 +33,30 @@ Object that contains token information
 {
     // Response
 }
+```
+{% endswagger-response %}
+
+{% swagger-response status="403: Forbidden" description="" %}
+
+{% endswagger-response %}
+
+{% swagger-response status="404: Not Found" description="Not Found" %}
+
+
+```
+Token not found
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+The field tokenId is required
+```
+
+```
+User not registered
 ```
 {% endswagger-response %}
 

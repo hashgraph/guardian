@@ -1,94 +1,101 @@
-import {
-    accountAPI,
-    trustchainsAPI,
-    demoAPI,
-    profileAPI,
-    schemaAPI,
-    tokenAPI,
-    externalAPI,
-    ipfsAPI,
-    analyticsAPI,
-    moduleAPI
-} from '@api/service';
-import { Guardians } from '@helpers/guardians';
-import express from 'express';
-import { createServer } from 'http';
-import { authorizationHelper } from '@auth/authorization-helper';
-import { IPFS } from '@helpers/ipfs';
-import { policyAPI } from '@api/service/policy';
-import { PolicyEngine } from '@helpers/policy-engine';
-import { WebSocketsService } from '@api/service/websockets';
-import { Users } from '@helpers/users';
-import { Wallet } from '@helpers/wallet';
-import { settingsAPI } from '@api/service/settings';
-import { loggerAPI } from '@api/service/logger';
-import { MessageBrokerChannel, Logger } from '@guardian/common';
-import { taskAPI } from '@api/service/task';
-import { TaskManager } from '@helpers/task-manager';
-import { singleSchemaRoute } from '@api/service/schema';
-import { artifactAPI } from '@api/service/artifact';
-import fileupload from 'express-fileupload';
-import { contractAPI } from '@api/service/contract';
-import { mapAPI } from '@api/service/map';
+import { Guardians } from './helpers/guardians.js';
+import { IPFS } from './helpers/ipfs.js';
+import { PolicyEngine } from './helpers/policy-engine.js';
+import { WebSocketsService } from './api/service/websockets.js';
+import { Users } from './helpers/users.js';
+import { Wallet } from './helpers/wallet.js';
+import { LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
+import { TaskManager } from './helpers/task-manager.js';
+import { AppModule } from './app.module.js';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
+import { SwaggerModule } from '@nestjs/swagger';
+import { SwaggerConfig } from './helpers/swagger-config.js';
+import { MeecoAuth } from './helpers/meeco.js';
+import * as extraModels from './middlewares/index.js'
+import { ProjectService } from './helpers/projects.js';
+import { AISuggestions } from './helpers/ai-suggestions.js';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import fastifyFormbody from '@fastify/formbody'
+import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
-const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
-const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
+
+const BODY_LIMIT = 1024 * 1024 * 1024
 
 Promise.all([
+    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
+        rawBody: true,
+        bodyParser: false,
+    }),
     MessageBrokerChannel.connect('API_GATEWAY'),
-]).then(async ([cn]) => {
+]).then(async ([app, cn]) => {
     try {
-        const app = express();
+        app.connectMicroservice<MicroserviceOptions>({
+            transport: Transport.NATS,
+            options: {
+                name: `${process.env.SERVICE_CHANNEL}`,
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ]
+            },
+        });
+        app.enableVersioning({
+            type: VersioningType.HEADER,
+            header: 'Api-Version',
+        });
+        app.useGlobalPipes(new ValidationPipe({
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
+        }));
 
-        app.use(express.json({
-            limit: JSON_REQUEST_LIMIT
-        }));
-        app.use(express.raw({
-            inflate: true,
-            limit: RAW_REQUEST_LIMIT,
-            type: 'binary/octet-stream'
-        }));
-        app.use(fileupload());
-        new Logger().setConnection(cn);
+        const logger: PinoLogger= app.get(PinoLogger);
+
+        await app.register(fastifyFormbody);
+        await app.register(fastifyMultipart);
+
+        app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
+        app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
+
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
         await new PolicyEngine().setConnection(cn).init();
         await new Users().setConnection(cn).init();
         await new Wallet().setConnection(cn).init();
+        await new AISuggestions().setConnection(cn).init();
+        await new ProjectService().setConnection(cn).init();
 
-        const server = createServer(app);
-        const wsService = new WebSocketsService(server, cn);
-        wsService.init();
+        await new MeecoAuth().setConnection(cn).init();
+        await new MeecoAuth().registerListeners();
 
-        new TaskManager().setDependecies(wsService, cn);
+        const server = app.getHttpServer();
+        const wsService = new WebSocketsService(logger);
+        wsService.setConnection(server, cn).init();
 
-        ////////////////////////////////////////
+        new TaskManager().setDependencies(wsService, cn);
 
-        // Config routes
-        app.use('/policies', authorizationHelper, policyAPI);
-        app.use('/accounts/', accountAPI);
-        app.use('/profiles/', authorizationHelper, profileAPI);
-        app.use('/settings/', authorizationHelper, settingsAPI);
-        app.use('/schema', authorizationHelper, singleSchemaRoute);
-        app.use('/schemas', authorizationHelper, schemaAPI);
-        app.use('/tokens', authorizationHelper, tokenAPI);
-        app.use('/artifact', authorizationHelper, artifactAPI);
-        app.use('/trustchains/', authorizationHelper, trustchainsAPI);
-        app.use('/external/', externalAPI);
-        app.use('/demo/', demoAPI);
-        app.use('/ipfs', authorizationHelper, ipfsAPI);
-        app.use('/logs', authorizationHelper, loggerAPI);
-        app.use('/tasks/', taskAPI);
-        app.use('/analytics/', authorizationHelper, analyticsAPI);
-        app.use('/contracts', authorizationHelper, contractAPI);
-        app.use('/modules', authorizationHelper, moduleAPI);
-        app.use('/map', mapAPI);
-        /////////////////////////////////////////
+        const document = SwaggerModule.createDocument(app, SwaggerConfig, {
+            extraModels: Object.values(extraModels).filter((constructor: new (...args: any[]) => any) => {
+                try {
+                    // tslint:disable-next-line:no-unused-expression
+                    new constructor();
+                    return true
+                } catch {
+                    return false;
+                }
+            }) as any
+        });
+        // Object.assign(document.paths, SwaggerPaths)
+        // Object.assign(document.components.schemas, SwaggerModels.schemas);
+        SwaggerModule.setup('api-docs', app, document);
 
-        server.setTimeout()
-        server.setTimeout(12000000).listen(PORT, () => {
-            new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
+        app.listen(PORT, '0.0.0.0', async () => {
+           await logger.info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {
         console.error(error.message);

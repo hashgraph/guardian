@@ -1,0 +1,95 @@
+  # https://docs.docker.com/compose/environment-variables/envvars-precedence/
+  # Environment leverage the gerarchy defined in the docker compose between "env_file" and "environment" attributes
+  # ecosystem variables defined in the "env_file" .env.${GUARDIAN_ENV}.guardian.system
+  # specific service variables defined by "environment" can override what is defined in the ecosystem file
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0.13
+    command: "--setParameter allowDiskUseByDefault=true"
+    restart: always
+    expose:
+      - 27017
+
+  message-broker:
+    image: nats:2.9.24
+    expose:
+      - 4222
+    ports:
+      - '8222:8222'
+    command: '--http_port 8222'
+
+  logger-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./logger-service/Dockerfile
+    depends_on:
+      - message-broker
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    volumes:
+      - ./logger-service/configs:/usr/local/logger-service/configs:ro
+
+  auth-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./auth-service/Dockerfile
+    ports:
+      - '5005:5005'
+    volumes:
+      - ./auth-service/tls:/usr/local/auth-service/tls:ro
+      - ./auth-service/configs:/usr/local/auth-service/configs:ro
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+      - 5005
+
+  worker-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./worker-service/Dockerfile
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    depends_on:
+      auth-service:
+        condition: service_started
+    expose:
+      - 6555
+    volumes:
+      - ./worker-service/tls:/usr/local/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/worker-service/configs:ro
+    deploy:
+      replicas: 10
+
+  analytics-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./analytics-service/Dockerfile
+    depends_on:
+      - message-broker
+      - worker-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+    ports:
+      - "3000:3020"
+    volumes:
+      - ./analytics-service/configs:/usr/local/analytics-service/configs:ro
+
+networks:
+  monitoring:
+    driver: bridge

@@ -1,0 +1,250 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: absolute;
+    z-index: 99;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+form,
+.role-select-step {
+    display: flex;
+    flex-direction: column;
+    /*width: 400px;*/
+    padding: 40px 40px 70px 40px;
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -65%);
+    /*box-shadow: 0px 2px 4px -1px rgb(0 0 0 / 20%), 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);*/
+    
+    background: #fff;
+    border-radius: 30px;
+    width: 839px;
+    /*height: 653px;*/
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.select-role-title {
+    text-align: center;
+}
+
+.select-role-title,
+.login-header {
+    font-size: 20px;
+    color: #838383;
+    padding-bottom: 20px;
+}
+
+.login-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+
+    mat-icon {
+        font-size: 30px;
+        margin-right: 4px;
+    }
+
+    &__title {
+        flex-grow: 1;
+        text-align: center;
+        padding-right: 10%;
+    }
+
+    &__back-button {
+        display: flex;
+        align-items: flex-end;
+        font-size: 16px;
+        color: var(--button-primary-color);
+        cursor: pointer;
+        border: none;
+        background-color: transparent;
+        max-width: fit-content;
+    }
+}
+
+.login-content {
+    display: flex;
+    flex-direction: column;
+    padding: 0 40px;
+}
+
+.password-control {
+    display: flex;
+    align-items: center;
+}
+
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.close-button {
+    position: absolute;
+    right: 16px;
+    top: 13px;
+    opacity: 0.44;
+}
+
+.close-button:hover {
+    opacity: 1;
+}
+
+form ::ng-deep button.mat-raised-button {
+    background: #000000;
+    width: 260px;
+}
+
+form ::ng-deep button.mat-raised-button-disabled .mat-button-wrapper {
+    color: #fff;
+}
+
+form ::ng-deep .mat-raised-button.mat-button-disabled.mat-button-disabled {
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+mat-form-field {
+    width: 653px;
+    margin: 18px 0;
+}
+
+.role-name {
+    display: block;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 23px;
+    color: #2F2F2F;
+}
+
+.role-select-step {
+    height: auto;
+}
+
+.role-select-step button:not(.close-button) {
+    height: 106px;
+    width: 90%;
+    border-radius: 53px;
+    margin: 12px 0;
+}
+
+.role-description {
+    font-size: 20px;
+    font-weight: normal;
+    color: #2F2F2F;
+    line-height: 23px;
+}
+
+.field-error {
+    position: absolute;
+    color: #f00;
+    bottom: -20px;
+    left: 0;
+
+    & + .field-error {
+        bottom: -40px;
+    }
+}
+
+.eye-icon {
+    margin: 0 0 10px 15px;
+    cursor: pointer;
+}
+
+@media (max-width: 810px) {
+
+    /* Role Select Menu */
+    
+    .role-select-step {
+        width: 90%;
+        height: 70vh;
+        padding: 40px;
+    }
+      
+    .role-select-step button:not(.close-button) {
+        width: 81vw !important;
+        padding: 0 !important;
+        border: 1px solid #2C78F6;
+        border-radius: 5px;
+        background: none !important;
+    }
+      
+    .role-select-step ::ng-deep.mat-button-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 10px;
+        align-items: start;
+        width: 100%;
+    }
+
+    .role-select-step ::ng-deep.mat-button-wrapper .role-name {
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        display: grid;
+        grid-column: 1;
+        justify-content: center;
+        align-content: center;
+        font-size: 18px;
+        font-weight: 500;
+        line-height: normal;
+        white-space: normal;
+        overflow-wrap: break-word;
+        max-width: 100px;
+    }
+      
+    .role-select-step ::ng-deep.mat-button-wrapper .role-description {
+        grid-column: 2;
+        font-size: 13px;
+        line-height: normal;
+        white-space: normal;
+        overflow-wrap: break-word;
+        color: #999;
+        text-align: start;
+    }
+      
+
+    /* Credential Creation */
+    .credential-creation {
+        width: 90vw;
+        padding: 40px;
+        top: 50%;
+    }
+
+    .credential-creation .example-full-width {
+        width: 70vw;
+        margin: 18px 0 0;
+    }
+
+    .credential-creation button:not(.login-header__back-button) {
+        margin-top: 36px;
+        width: 81vw;
+    }
+
+    .eye-icon {
+        margin: 24px 0 10px 15px;
+    }
+}

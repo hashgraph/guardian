@@ -1,0 +1,95 @@
+.loading {
+  background: #fff;
+  position: absolute;
+  z-index: 99;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.row-container {
+  display: flex;
+}
+
+.action-buttons {
+  display: flex;
+}
+
+.cancel-button {
+  margin-left: auto;
+  margin-right: 15px;
+}
+
+.policy-dropdown-container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+  min-width: 285px;
+  max-width: 285px;
+  margin-right: 20px;
+}
+
+.form-label {
+  color: #181818;
+  font-family: Inter, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.dialog-body {
+  height: 20vh;
+  overflow-y: auto;
+}
+
+::ng-deep {
+  .p-dialog-title {
+    font-family: Poppins, sans-serif;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .p-dialog {
+    box-shadow: none;
+  }
+
+  .p-dialog-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+  }
+
+  .p-dialog-content {
+    padding: 0 1.5rem 2rem 1.5rem !important;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+
+  .p-button {
+    border-radius: 8px;
+  }
+
+  .p-dropdown {
+    width: 100%;
+  }
+
+  .p-multiselect {
+    width: 100%;
+  }
+
+  .p-focus {
+    box-shadow: none !important;
+  }
+
+  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    max-width: 250px;
+    overflow: hidden;
+    text-wrap: wrap;
+  }
+}

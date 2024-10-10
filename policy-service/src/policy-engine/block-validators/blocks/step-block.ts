@@ -1,4 +1,5 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
+import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
+import { CommonBlock } from './common.js';
 
 /**
  * Step block
@@ -15,6 +16,12 @@ export class InterfaceStepBlock {
      * @param config
      */
     public static async validate(validator: BlockValidator, ref: IBlockProp): Promise<void> {
-        return;
+        try {
+            await CommonBlock.validate(validator, ref);
+        } catch (error) {
+            validator.addError(
+                `Unhandled exception ${validator.getErrorMessage(error)}`
+            );
+        }
     }
 }

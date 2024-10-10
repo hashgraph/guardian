@@ -1,19 +1,21 @@
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { PolicyComponentsUtils } from '../policy-components-utils';
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IHederaAccount, PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { SplitDocuments } from '@entity/split-documents';
-import { VcHelper } from '@helpers/vc-helper';
-import { Inject } from '@helpers/decorators/inject';
-import { VcDocument } from '@hedera-modules';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
+import {
+    SplitDocuments,
+    Schema as SchemaCollection,
+    VcHelper,
+    VcDocumentDefinition as VcDocument,
+} from '@guardian/common';
 import { SchemaEntity } from '@guardian/interfaces';
-import { BlockActionError } from '@policy-engine/errors';
-import { Schema as SchemaCollection } from '@entity/schema';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { BlockActionError } from '../errors/index.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { Inject } from '../../helpers/decorators/inject.js';
 
 /**
  * Split block
@@ -57,7 +59,7 @@ export class SplitBlock {
      * @private
      */
     @Inject()
-    private readonly vcHelper: VcHelper;
+    declare private vcHelper: VcHelper;
 
     /**
      * Schema
@@ -71,7 +73,7 @@ export class SplitBlock {
     async getSchema(): Promise<SchemaCollection> {
         if (!this.schema) {
             const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
-            this.schema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.CHUNK);
+            this.schema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.CHUNK);
             if (!this.schema) {
                 throw new BlockActionError('Waiting for schema', ref.blockType, ref.uuid);
             }
@@ -102,7 +104,7 @@ export class SplitBlock {
      */
     private async createNewDoc(
         ref: IPolicyBlock,
-        root: IHederaAccount,
+        root: UserCredentials,
         document: IPolicyDocument,
         newValue: number,
         chunkNumber: number,
@@ -128,7 +130,14 @@ export class SplitBlock {
                 maxChunks
             });
         }
-        vc = await this.vcHelper.issueVC(root.did, root.hederaAccountKey, vc);
+        const uuid = await ref.components.generateUUID();
+        const didDocument = await root.loadDidDocument(ref);
+        vc = await this.vcHelper.issueVerifiableCredential(
+            vc,
+            didDocument,
+            null,
+            { uuid }
+        );
         clone.document = vc.toJsonTree();
         clone.hash = vc.toCredentialHash();
         clone = PolicyUtils.setDocumentRef(clone, document) as any;
@@ -146,8 +155,8 @@ export class SplitBlock {
      */
     private async split(
         ref: IPolicyBlock,
-        root: IHederaAccount,
-        user: IPolicyUser,
+        root: UserCredentials,
+        user: PolicyUser,
         result: SplitDocuments[][],
         residue: SplitDocuments[],
         document: IPolicyDocument
@@ -233,9 +242,9 @@ export class SplitBlock {
      * @param user
      * @param documents
      */
-    private async addDocs(ref: IPolicyBlock, user: IPolicyUser, documents: IPolicyDocument[]) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[]) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
         let current = residue;
 
@@ -248,7 +257,7 @@ export class SplitBlock {
         await ref.databaseServer.setResidue(current);
 
         for (const chunk of data) {
-            const state = {
+            const state: IPolicyEventState = {
                 data: chunk.map(c => {
                     delete c.document.id;
                     delete c.document._id;

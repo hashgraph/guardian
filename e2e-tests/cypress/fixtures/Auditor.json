@@ -1,0 +1,1 @@
+{"username":"Auditor","role":"AUDITOR","permissions":["ACCOUNTS_STANDARD_REGISTRY_READ","DEMO_KEY_CREATE","IPFS_FILE_READ","IPFS_FILE_CREATE","PROFILES_USER_READ","PROFILES_USER_UPDATE","PROFILES_BALANCE_READ","POLICIES_POLICY_AUDIT","AUDIT_TRUST_CHAIN_READ"],"confirmed":false,"failed":false,"didDocument":null,"vcDocument":null}

@@ -1,174 +1,737 @@
-import { ApiResponse } from '@api/api-response';
-import { DatabaseServer } from '@database-modules';
-import { MessageResponse, MessageError, Logger } from '@guardian/common';
-import { MessageAPI } from '@guardian/interfaces';
-import * as crypto from 'crypto';
-import { PolicyComparator, PolicyModel, PropertyType, SchemaComparator, SchemaModel, TokenModel } from '@analytics';
+import {
+    PolicyLoader,
+    CompareOptions,
+    DocumentComparator,
+    DocumentModel,
+    HashComparator,
+    IChildrenLvl,
+    IEventsLvl,
+    IPropertiesLvl,
+    ModuleComparator,
+    ModuleModel,
+    PolicyComparator,
+    PolicyModel,
+    PolicySearchModel,
+    RootSearchModel,
+    SchemaComparator,
+    SchemaModel,
+    ToolComparator,
+    ToolModel,
+    ToolLoader,
+    DocumentLoader,
+    SchemaLoader
+} from '../analytics/index.js';
+import {
+    DataBaseHelper,
+    DatabaseServer,
+    IAuthUser,
+    MessageError,
+    MessageResponse,
+    Policy,
+    VpDocument as VpDocumentCollection,
+    VcDocument as VcDocumentCollection,
+    Workers,
+    PinoLogger
+} from '@guardian/common';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
+import { Controller, Module } from '@nestjs/common';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import process from 'process';
+
+interface ISearchResult {
+    type: string,
+    id: string,
+    topicId: string,
+    messageId: string,
+    uuid: string,
+    name: string,
+    description: string,
+    version: string,
+    status: string,
+    owner: string,
+    vcCount: number,
+    vpCount: number,
+    tokensCount: number,
+    rate: number,
+    tags: string[]
+}
+
+async function localSearch(
+    user: IOwner,
+    type: string,
+    options: {
+        text?: string,
+        owner?: string,
+        minVcCount?: number,
+        minVpCount?: number,
+        minTokensCount?: number,
+        blocks?: {
+            hash: string;
+            hashMap: any;
+            threshold: number;
+        };
+    }
+): Promise<ISearchResult[]> {
+    const filter: any = {
+        $and: []
+    };
+    if (type === 'Local') {
+        filter.$and.push({
+            status: 'PUBLISH',
+            hash: { $exists: true, $ne: null }
+        });
+    } else {
+        filter.$and.push({
+            owner: user.creator,
+            hash: { $exists: true, $ne: null }
+        });
+    }
+    if (options.text) {
+        const keywords = options.text.split(' ');
+        for (const keyword of keywords) {
+            filter.$and.push({
+                'name': {
+                    $regex: `.*${keyword.trim()}.*`,
+                    $options: 'si',
+                },
+            });
+        }
+    }
+    if (options.owner) {
+        filter.$and.push({
+            owner: options.owner
+        });
+    }
+
+    let policies: any[] = await new DataBaseHelper(Policy).find(filter);
+    for (const policy of policies) {
+        policy.vcCount = await new DataBaseHelper(VcDocumentCollection).count({ policyId: policy.id });
+    }
+    if (options.minVcCount) {
+        policies = policies.filter((policy) => policy.vcCount >= options.minVcCount);
+    }
+    for (const policy of policies) {
+        policy.vpCount = await new DataBaseHelper(VpDocumentCollection).count({ policyId: policy.id });
+    }
+    if (options.minVpCount) {
+        policies = policies.filter((policy) => policy.vpCount >= options.minVpCount);
+    }
+    for (const policy of policies) {
+        policy.tokensCount = 0;
+    }
+    if (options.minTokensCount) {
+        policies = policies.filter((policy) => policy.tokensCount >= options.minTokensCount);
+    }
+    if (options.blocks) {
+        for (const policy of policies) {
+            try {
+                policy.rate = HashComparator.compare(options.blocks, policy);
+            } catch (error) {
+                policy.rate = 0;
+            }
+        }
+        policies = policies.filter((policy) => policy.rate >= options.blocks.threshold);
+        policies.sort((a, b) => a.rate > b.rate ? -1 : 1);
+    }
+
+    const ids = policies.map(p => p.id.toString());
+    const tags = await DatabaseServer.getTags({
+        localTarget: { $in: ids }
+    }, {
+        fields: ['localTarget', 'name']
+    })
+    const mapTags = new Map<string, Set<string>>();
+    for (const tag of tags) {
+        if (mapTags.has(tag.localTarget)) {
+            mapTags.get(tag.localTarget).add(tag.name);
+        } else {
+            mapTags.set(tag.localTarget, new Set([tag.name]));
+        }
+    }
+
+    return policies.map((policy) => {
+        const policyTags = mapTags.has(policy.id) ? Array.from(mapTags.get(policy.id)) : [];
+        return {
+            type: 'Local',
+            id: policy.id,
+            topicId: policy.topicId,
+            messageId: policy.messageId,
+            uuid: policy.uuid,
+            name: policy.name,
+            description: policy.description,
+            version: policy.version,
+            status: policy.status,
+            owner: policy.owner,
+            vcCount: policy.vcCount,
+            vpCount: policy.vpCount,
+            tokensCount: policy.tokensCount,
+            rate: policy.rate,
+            tags: policyTags
+        }
+    })
+}
+
+async function globalSearch(options: any): Promise<ISearchResult[]> {
+    const policies = await new Workers().addNonRetryableTask({
+        type: WorkerTaskType.ANALYTICS_SEARCH_POLICIES,
+        data: {
+            payload: { options }
+        }
+    }, 2);
+    if (!policies) {
+        throw new Error('Invalid response');
+    }
+    return policies.map((policy: any) => {
+        return {
+            type: 'Global',
+            topicId: policy.topicId,
+            messageId: policy.messageId,
+            uuid: policy.uuid,
+            name: policy.name,
+            description: policy.description,
+            version: policy.version,
+            status: 'PUBLISH',
+            owner: policy.owner,
+            vcCount: policy.vcCount,
+            vpCount: policy.vpCount,
+            tokensCount: policy.tokensCount,
+            rate: policy.rate,
+            tags: policy.tags,
+        }
+    })
+}
+
+@Controller()
+export class AnalyticsController {
+}
 
 /**
  * API analytics
- * @param channel
  * @constructor
  */
-export async function analyticsAPI(): Promise<void> {
-    ApiResponse(MessageAPI.COMPARE_POLICIES, async (msg) => {
+export async function analyticsAPI(logger: PinoLogger): Promise<void> {
+    ApiResponse<any>(MessageAPI.COMPARE_POLICIES,
+        async (msg: {
+            user: IOwner,
+            type: string,
+            policies: {
+                type: 'id' | 'file' | 'message',
+                value: string | {
+                    id: string,
+                    name: string,
+                    value: string
+                }
+            }[],
+            options: {
+                propLvl: string | number,
+                childrenLvl: string | number,
+                eventsLvl: string | number,
+                idLvl: string | number
+            }
+        }) => {
+            try {
+                const { user, type, policies, options } = msg;
+                const compareOptions = CompareOptions.from(options);
+
+                const compareModels: PolicyModel[] = [];
+                for (const policy of policies) {
+                    const rawData = await PolicyLoader.load(policy, user);
+                    const compareModel = await PolicyLoader.create(rawData, compareOptions);
+                    compareModels.push(compareModel);
+                }
+
+                const comparator = new PolicyComparator(compareOptions);
+                const results = comparator.compare(compareModels);
+                const result = comparator.to(results, type);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse<any>(MessageAPI.COMPARE_MODULES,
+        async (msg: {
+            user: IAuthUser,
+            type: string,
+            moduleId1: string,
+            moduleId2: string,
+            eventsLvl: string | number,
+            propLvl: string | number,
+            childrenLvl: string | number,
+            idLvl: string | number
+        }) => {
+            try {
+                const {
+                    type,
+                    moduleId1,
+                    moduleId2,
+                    eventsLvl,
+                    propLvl,
+                    childrenLvl,
+                    idLvl
+                } = msg;
+                const options = new CompareOptions(
+                    propLvl,
+                    childrenLvl,
+                    eventsLvl,
+                    idLvl,
+                    null,
+                    null,
+                    null
+                );
+
+                //Policy
+                const module1 = await DatabaseServer.getModuleById(moduleId1);
+                const module2 = await DatabaseServer.getModuleById(moduleId2);
+
+                if (!module1 || !module2) {
+                    throw new Error('Unknown modules');
+                }
+
+                const model1 = new ModuleModel(module1, options);
+                const model2 = new ModuleModel(module2, options);
+
+                //Compare
+                model1.update();
+                model2.update();
+
+                const comparator = new ModuleComparator(options);
+                const result = comparator.compare(model1, model2);
+                if (type === 'csv') {
+                    const csv = comparator.csv(result);
+                    return new MessageResponse(csv);
+                } else {
+                    return new MessageResponse(result);
+                }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse<any>(MessageAPI.COMPARE_SCHEMAS,
+        async (msg: {
+            user: IOwner,
+            type: string,
+            schemas: {
+                type: 'id' | 'policy-message' | 'policy-file',
+                value: string,
+                policy?: string | {
+                    id: string,
+                    name: string,
+                    value: string
+                }
+            }[],
+            idLvl: string | number
+        }) => {
+            try {
+                const {
+                    user,
+                    type,
+                    schemas,
+                    idLvl
+                } = msg;
+                const options = new CompareOptions(
+                    IPropertiesLvl.All,
+                    IChildrenLvl.None,
+                    IEventsLvl.None,
+                    idLvl,
+                    null,
+                    null,
+                    null
+                );
+
+                const compareModels: SchemaModel[] = [];
+                for (const schema of schemas) {
+                    const rawData = await SchemaLoader.load(schema, user);
+                    const compareModel = await SchemaLoader.create(rawData, options);
+                    compareModels.push(compareModel);
+                }
+
+                const comparator = new SchemaComparator(options);
+                const result = comparator.compare(compareModels[0], compareModels[1]);
+                if (type === 'csv') {
+                    const csv = comparator.csv(result);
+                    return new MessageResponse(csv);
+                } else {
+                    return new MessageResponse(result);
+                }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse<any>(MessageAPI.SEARCH_POLICIES,
+        async (msg: {
+            user: IOwner,
+            filters: {
+                policyId?: string;
+                type?: string;
+                minVcCount?: number;
+                minVpCount?: number;
+                minTokensCount?: number;
+                text?: string;
+                owner?: string;
+                threshold?: number;
+            }
+        }) => {
+            try {
+                const { user, filters } = msg;
+                const {
+                    policyId,
+                    type,
+                    text,
+                    owner,
+                    minVcCount,
+                    minVpCount,
+                    minTokensCount,
+                    threshold
+                } = filters;
+                const options = {
+                    text,
+                    owner,
+                    minVcCount,
+                    minVpCount,
+                    minTokensCount,
+                    blocks: undefined
+                }
+                const result: any = {
+                    target: null,
+                    result: []
+                };
+                if (policyId) {
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy || !policy.hashMap || policy.owner !== user.creator) {
+                        return new MessageResponse(null);
+                    }
+                    options.blocks = {
+                        hash: policy.hash,
+                        hashMap: policy.hashMap,
+                        threshold: threshold && threshold > 0 ? threshold : 0
+                    }
+                    result.target = {
+                        id: policyId,
+                        messageId: policy.messageId,
+                        topicId: policy.topicId,
+                        uuid: policy.uuid,
+                        name: policy.name,
+                        description: policy.description,
+                        version: policy.version,
+                        status: policy.status,
+                        owner: policy.owner,
+                    };
+                }
+
+                let policies: ISearchResult[];
+                if (type === 'Global') {
+                    policies = await globalSearch(options)
+                } else {
+                    policies = await localSearch(user, type, options)
+                }
+                for (const item of policies) {
+                    if (
+                        result.target &&
+                        (
+                            (result.target.id && item.id === result.target.id) ||
+                            (result.target.messageId && item.messageId === result.target.messageId)
+                        )
+                    ) {
+                        result.target = item;
+                    } else {
+                        result.result.push(item);
+                    }
+                }
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse<any>(MessageAPI.COMPARE_DOCUMENTS,
+        async (msg: {
+            user: IAuthUser,
+            type: string,
+            ids: string[],
+            eventsLvl: string | number,
+            propLvl: string | number,
+            childrenLvl: string | number,
+            idLvl: string | number,
+            keyLvl: string | number,
+            refLvl: string | number
+        }) => {
+            try {
+                const {
+                    user,
+                    type,
+                    ids,
+                    eventsLvl,
+                    propLvl,
+                    childrenLvl,
+                    idLvl,
+                    keyLvl,
+                    refLvl
+                } = msg;
+                const options = new CompareOptions(
+                    propLvl,
+                    childrenLvl,
+                    eventsLvl,
+                    idLvl,
+                    keyLvl,
+                    refLvl,
+                    user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+                );
+
+                const compareModels: DocumentModel[] = [];
+                const loader = new DocumentLoader(options);
+                for (const documentsId of ids) {
+                    const compareModel = await loader.createDocument(documentsId);
+                    if (!compareModel) {
+                        return new MessageError('Unknown document');
+                    }
+                    compareModels.push(compareModel);
+                }
+
+                const comparator = new DocumentComparator(options);
+                const results = comparator.compare(compareModels);
+                if (results.length === 1) {
+                    if (type === 'csv') {
+                        const file = DocumentComparator.tableToCsv(results);
+                        return new MessageResponse(file);
+                    } else {
+                        const result = results[0];
+                        return new MessageResponse(result);
+                    }
+                } else if (results.length > 1) {
+                    if (type === 'csv') {
+                        const file = DocumentComparator.tableToCsv(results);
+                        return new MessageResponse(file);
+                    } else {
+                        const result = comparator.mergeCompareResults(results);
+                        return new MessageResponse(result);
+                    }
+                } else {
+                    return new MessageError('Invalid size');
+                }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse<any>(MessageAPI.COMPARE_VP_DOCUMENTS, async (msg: {
+        user: IAuthUser,
+        type: string,
+        ids: string[],
+        eventsLvl: string | number,
+        propLvl: string | number,
+        childrenLvl: string | number,
+        idLvl: string | number,
+        keyLvl: string | number,
+        refLvl: string | number
+    }) => {
         try {
             const {
+                user,
+                // type,
+                ids,
+                eventsLvl,
+                propLvl,
+                childrenLvl,
+                idLvl,
+                keyLvl,
+                refLvl
+            } = msg;
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                keyLvl,
+                refLvl,
+                user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+            );
+
+            const vpDocuments: VpDocumentCollection[][] = await Promise.all(ids.map(async (id) => {
+                return await DatabaseServer.getVPs({ policyId: id });
+            }))
+            // const minLength = Math.min.apply(null, vpDocuments.map(d => d.length));
+
+            const comparisonVpArray = []
+
+            const loader = new DocumentLoader(options);
+            const preComparator = new DocumentComparator(options);
+            for (const vp1 of vpDocuments[0]) {
+                let r;
+                let lastRate = 0;
+                for (const vp2 of vpDocuments[1]) {
+                    const _r = preComparator.compare([
+                        await loader.createDocument(vp1.id),
+                        await loader.createDocument(vp2.id)
+                    ])
+                    if (Array.isArray(_r) && _r[0]) {
+                        if (!r) {
+                            lastRate = _r[0].total;
+                            r = _r
+                        } else {
+                            if (_r[0].total > lastRate) {
+                                lastRate = _r[0].total;
+                                r = _r
+                            }
+                        }
+                    }
+                }
+                if (Array.isArray(r) && r[0]) {
+                    comparisonVpArray.push(r[0]);
+                }
+            }
+            return new MessageResponse(comparisonVpArray);
+
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
+    ApiResponse<any>(MessageAPI.COMPARE_TOOLS, async (msg: {
+        user: IAuthUser,
+        type: string,
+        ids: string[],
+        eventsLvl: string | number,
+        propLvl: string | number,
+        childrenLvl: string | number,
+        idLvl: string | number
+    }) => {
+        try {
+            const {
+                user,
                 type,
-                policyId1,
-                policyId2,
+                ids,
                 eventsLvl,
                 propLvl,
                 childrenLvl,
                 idLvl
             } = msg;
-            const options = {
-                propLvl: parseInt(propLvl, 10),
-                childLvl: parseInt(childrenLvl, 10),
-                eventLvl: parseInt(eventsLvl, 10),
-                idLvl: parseInt(idLvl, 10),
-            };
+            const options = new CompareOptions(
+                propLvl,
+                childrenLvl,
+                eventsLvl,
+                idLvl,
+                null,
+                null,
+                user?.role === UserRole.STANDARD_REGISTRY ? user.did : null
+            );
 
-            //Policy
-            const policy1 = await DatabaseServer.getPolicyById(policyId1);
-            const policy2 = await DatabaseServer.getPolicyById(policyId2);
-
-            if (!policy1 || !policy2) {
-                throw new Error('Unknown policies');
+            const compareModels: ToolModel[] = [];
+            for (const toolId of ids) {
+                const rawData = await ToolLoader.load(toolId);
+                const compareModel = await ToolLoader.create(rawData, options);
+                if (!compareModel) {
+                    return new MessageError('Unknown tool');
+                }
+                compareModels.push(compareModel);
             }
 
-            const policyModel1 = (new PolicyModel(policy1, options));
-            const policyModel2 = (new PolicyModel(policy2, options));
-
-            //Schemas
-            const schemas1 = await DatabaseServer.getSchemas({ topicId: policy1.topicId });
-            const schemas2 = await DatabaseServer.getSchemas({ topicId: policy2.topicId });
-
-            const schemaModels1: SchemaModel[] = [];
-            const schemaModels2: SchemaModel[] = [];
-            for (const schema of schemas1) {
-                const m = new SchemaModel(schema, options);
-                m.setPolicy(policy1);
-                m.update(options);
-                schemaModels1.push(m);
-            }
-            for (const schema of schemas2) {
-                const m = new SchemaModel(schema, options);
-                m.setPolicy(policy2);
-                m.update(options);
-                schemaModels2.push(m);
-            }
-            policyModel1.setSchemas(schemaModels1);
-            policyModel2.setSchemas(schemaModels2);
-
-            //Tokens
-            const tokensIds1 = policyModel1.getAllProp<string>(PropertyType.Token)
-                .filter(t => t.value)
-                .map(t => t.value);
-            const tokensIds2 = policyModel2.getAllProp<string>(PropertyType.Token)
-                .filter(t => t.value)
-                .map(t => t.value);
-
-            const tokens1 = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds1 } } });
-            const tokens2 = await DatabaseServer.getTokens({ where: { tokenId: { $in: tokensIds2 } } });
-
-            const tokenModels1: TokenModel[] = [];
-            const tokenModels2: TokenModel[] = [];
-            for (const token of tokens1) {
-                const t = new TokenModel(token, options);
-                t.update(options);
-                tokenModels1.push(t);
-            }
-            for (const token of tokens2) {
-                const t = new TokenModel(token, options);
-                t.update(options);
-                tokenModels2.push(t);
-            }
-            policyModel1.setTokens(tokenModels1);
-            policyModel2.setTokens(tokenModels2);
-
-            //Artifacts
-            const files1 = await DatabaseServer.getArtifacts({ policyId: policyId1 });
-            const files2 = await DatabaseServer.getArtifacts({ policyId: policyId2 });
-            const artifactsModels1: any[] = [];
-            const artifactsModels2: any[] = [];
-            for (const file of files1) {
-                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-                const sha256 = crypto
-                    .createHash('sha256')
-                    .update(data)
-                    .digest()
-                    .toString();
-                artifactsModels1.push({ uuid: file.uuid, data: sha256 });
-            }
-            for (const file of files2) {
-                const data = await DatabaseServer.getArtifactFileByUUID(file.uuid);
-                const sha256 = crypto
-                    .createHash('sha256')
-                    .update(data)
-                    .digest()
-                    .toString();
-                artifactsModels2.push({ uuid: file.uuid, data: sha256 });
-            }
-            policyModel1.setArtifacts(artifactsModels1);
-            policyModel2.setArtifacts(artifactsModels2);
-
-            //Compare
-            policyModel1.update();
-            policyModel2.update();
-
-            const comparator = new PolicyComparator(options);
-            const result = comparator.compare(policyModel1, policyModel2);
-            if(type === 'csv') {
-                const csv = comparator.csv(result);
-                return new MessageResponse(csv);
+            const comparator = new ToolComparator(options);
+            const results = comparator.compare(compareModels);
+            if (results.length === 1) {
+                if (type === 'csv') {
+                    const file = ToolComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = results[0];
+                    return new MessageResponse(result);
+                }
+            } else if (results.length > 1) {
+                if (type === 'csv') {
+                    const file = ToolComparator.tableToCsv(results);
+                    return new MessageResponse(file);
+                } else {
+                    const result = ToolComparator.mergeCompareResults(results);
+                    return new MessageResponse(result);
+                }
             } else {
-                return new MessageResponse(result);
+                return new MessageError('Invalid size');
             }
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
 
-    ApiResponse(MessageAPI.COMPARE_SCHEMAS, async (msg) => {
-        try {
-            const {
-                type,
-                schemaId1,
-                schemaId2,
-                idLvl
-            } = msg;
+    ApiResponse(MessageAPI.SEARCH_BLOCKS,
+        async (msg: { config: any, blockId: string, user: IAuthUser }) => {
+            try {
+                const {
+                    config,
+                    blockId
+                } = msg;
 
-            const schema1 = await DatabaseServer.getSchemaById(schemaId1);
-            const schema2 = await DatabaseServer.getSchemaById(schemaId2);
-            const options = {
-                propLvl: 2,
-                childLvl: 0,
-                eventLvl: 0,
-                idLvl: parseInt(idLvl, 10)
-            }
+                const filterPolicyModel = RootSearchModel.fromConfig(config);
+                const filterBlock = filterPolicyModel.findBlock(blockId);
+                if (!filterBlock) {
+                    return new MessageError('Unknown block');
+                }
 
-            const policy1 = await DatabaseServer.getPolicy({ topicId: schema1?.topicId });
-            const policy2 = await DatabaseServer.getPolicy({ topicId: schema2?.topicId });
+                const policyModels: PolicySearchModel[] = [];
+                const policies = await DatabaseServer.getPolicies({ status: { $in: [PolicyType.PUBLISH, PolicyType.DISCONTINUED] } });
+                for (const row of policies) {
+                    try {
+                        const model = new PolicySearchModel(row);
+                        policyModels.push(model);
+                    } catch (error) {
+                        await logger.error(error, ['GUARDIAN_SERVICE']);
+                    }
+                }
 
-            const model1 = new SchemaModel(schema1, options);
-            const model2 = new SchemaModel(schema2, options);
-            model1.setPolicy(policy1);
-            model2.setPolicy(policy2);
-            model1.update(options);
-            model2.update(options);
-            const comparator = new SchemaComparator(options);
-            const result = comparator.compare(model1, model2);
-            if(type === 'csv') {
-                const csv = comparator.csv(result);
-                return new MessageResponse(csv);
-            } else {
+                const result: any[] = [];
+                for (const policyModel of policyModels) {
+                    const chains = policyModel
+                        .search(filterBlock)
+                        .map(item => item.toJson());
+                    if (chains.length) {
+                        const max = chains[0].hash;
+                        result.push({
+                            name: policyModel.name,
+                            description: policyModel.description,
+                            version: policyModel.version,
+                            owner: policyModel.owner,
+                            topicId: policyModel.topicId,
+                            messageId: policyModel.messageId,
+                            hash: max,
+                            chains
+                        })
+                    }
+                }
+                result.sort((a, b) => a.hash > b.hash ? -1 : 1);
                 return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
             }
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+        });
 }
+
+@Module({
+    imports: [
+        ClientsModule.register([{
+            name: 'analytics-service',
+            transport: Transport.NATS,
+            options: {
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ],
+                queue: 'analytics-service',
+                // serializer: new OutboundResponseIdentitySerializer(),
+                // deserializer: new InboundMessageIdentityDeserializer(),
+            }
+        }]),
+    ],
+    controllers: [
+        AnalyticsController
+    ]
+})
+export class AnalyticsModule { }

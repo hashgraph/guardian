@@ -1,0 +1,145 @@
+<div class="content">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+        <div>{{error}}</div>
+    </div>
+
+    <div *ngIf="result" class="merge-options">
+        <div class="merge-back">
+            <div *ngIf="parent" (click)="onBack()">
+                <mat-icon>chevron_left</mat-icon>
+                <span>Back</span>
+            </div>
+        </div>
+        <div class="merge-lvl">
+            <div *ngIf="isEventsLvl" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Events:</mat-label>
+                    <mat-select [(value)]="eventsLvl" (selectionChange)="onFilterChange()">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">All events</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div *ngIf="isPropertiesLvl" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Properties:</mat-label>
+                    <mat-select [(value)]="propLvl" (selectionChange)="onFilterChange()">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">Only simple properties</mat-option>
+                        <mat-option value="2">All properties</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div *ngIf="isChildrenLvl" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>Children:</mat-label>
+                    <mat-select [(value)]="childrenLvl" (selectionChange)="onFilterChange()">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">Only child blocks of the first level</mat-option>
+                        <mat-option value="2">All children</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div *ngIf="isUUIDLvl" class="f1">
+                <mat-form-field appearance="outline">
+                    <mat-label>UUID:</mat-label>
+                    <mat-select [(value)]="idLvl" (selectionChange)="onFilterChange()">
+                        <mat-option value="0">Don't compare</mat-option>
+                        <mat-option value="1">All UUID</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+        <div class="merge-lvl-apply">
+            <div 
+                [attr.need-apple]="needApplyFilters"
+                *ngIf="isApplyBtn"
+                 class="merge-lvl-btn"
+                (click)="onApply()">Apply</div>
+        </div>
+        <div>
+            <div class="export-btn" (click)="onExport()">
+                <mat-icon>download</mat-icon>
+                Export
+            </div>
+        </div>
+        <div class="merge-type">
+            <div class="f2">
+                <mat-form-field appearance="outline">
+                    <mat-label>Type:</mat-label>
+                    <mat-select [(value)]="visibleType">
+                        <mat-option value="tree">Tree</mat-option>
+                        <mat-option value="table">Table</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="isPolicies" class="content-result">
+        <app-compare-policy
+                [childrenLvl]="childrenLvl"
+                [eventsLvl]="eventsLvl"
+                [idLvl]="idLvl"
+                [propLvl]="propLvl"
+                [type]="visibleType"
+                [value]="result"
+                (change)="onChange($event)"></app-compare-policy>
+    </div>
+
+    <div *ngIf="isSchemas" class="content-result">
+        <app-compare-schema
+                [type]="visibleType"
+                [value]="result"
+                [idLvl]="idLvl"
+                (change)="onChange($event)"></app-compare-schema>
+    </div>
+
+    <div *ngIf="isModules" class="content-result">
+        <app-compare-module
+                [childrenLvl]="childrenLvl"
+                [eventsLvl]="eventsLvl"
+                [idLvl]="idLvl"
+                [propLvl]="propLvl"
+                [type]="visibleType"
+                [value]="result"
+                (change)="onChange($event)"></app-compare-module>
+    </div>
+
+    <div *ngIf="isMultiPolicies" class="content-result">
+        <app-multi-compare-policy
+                [childrenLvl]="childrenLvl"
+                [eventsLvl]="eventsLvl"
+                [idLvl]="idLvl"
+                [propLvl]="propLvl"
+                [type]="visibleType"
+                [value]="result"
+                (change)="onChange($event)"></app-multi-compare-policy>
+    </div>
+
+    <div *ngIf="isDocuments" class="content-result">
+        <app-compare-document
+                [childrenLvl]="childrenLvl"
+                [eventsLvl]="eventsLvl"
+                [idLvl]="idLvl"
+                [propLvl]="propLvl"
+                [type]="visibleType"
+                [value]="result"
+                (change)="onChange($event)"></app-compare-document>
+    </div>
+
+    <div *ngIf="isTools" class="content-result">
+        <app-compare-tool
+                [childrenLvl]="childrenLvl"
+                [eventsLvl]="eventsLvl"
+                [idLvl]="idLvl"
+                [propLvl]="propLvl"
+                [type]="visibleType"
+                [value]="result"
+                (change)="onChange($event)"></app-compare-tool>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+{
+    "extends": "tslint-config-standard",
+    "rules": {
+        "semicolon": false,
+        "trailing-comma": false,
+        "object-literal-sort-keys": false,
+        "handle-callback-err": false
+    },
+    "include": ["./src/**/*.ts"]
+}

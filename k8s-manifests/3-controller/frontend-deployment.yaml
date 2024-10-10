@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.service.expose: "true"
+    kompose.service.type: loadbalancer
+  labels:
+    io.kompose.service: frontend
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: frontend
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        kompose.service.expose: "true"
+        kompose.service.type: loadbalancer
+      labels:
+        io.kompose.network/guardian-default: "true"
+        io.kompose.service: frontend
+    spec:
+      containers:
+        - image: gcr.io/hedera-registry/frontend:2.14.2
+          env:
+            # this prevents the use of the image built-in nginx config template, not needed when using an ingress controller
+            - name: NGINX_ENVSUBST_TEMPLATE_DIR
+              value: "/tmp/foo"
+          name: frontend
+          ports:
+            - containerPort: 80
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d/default.conf
+              name: frontend-service-nginx-conf
+              subPath: default.conf
+      restartPolicy: Always
+      volumes:
+        - configMap:
+            items:
+              - key: default.conf
+                path: default.conf
+            name: frontend-service-nginx-conf
+          name: frontend-service-nginx-conf
+status: {}

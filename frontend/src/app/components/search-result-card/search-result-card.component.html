@@ -1,0 +1,10 @@
+<div class="search-result-card">
+    <h5>{{ label }}</h5>
+    <p>{{ text }}</p>
+    <div class="card-buttons">
+        <button (click)="onRegisterProject(id)" class="button secondary" label="Register Project" pButton
+                type="button"></button>
+        <button (click)="onLearnMore()" *ngIf="detailsUrl" class="button" label="Learn More" pButton
+                type="button"></button>
+    </div>
+</div>

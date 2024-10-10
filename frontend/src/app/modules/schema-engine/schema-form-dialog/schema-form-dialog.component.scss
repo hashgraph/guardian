@@ -1,0 +1,58 @@
+.context {
+    padding: 0px 50px 30px 55px;
+    max-height: inherit;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+.mat-button-base:not([started]) {
+    background-color: rgba(0, 0, 0, .12);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 452px;
+    height: 540px;
+    overflow: visible;
+}
+
+textarea {
+    min-height: 100px;
+}
+
+.switch-btn {
+    height: 46px;
+    font-weight: 500;
+    font-size: 20px;
+    color: #fff;
+    box-sizing: border-box;
+    min-width: 250px;
+    text-align: center;
+    cursor: pointer;
+}
+
+:host ::ng-deep .cdk-drop-list-dragging *:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+:host .restore-data {
+    flex: 1.7;
+}
+
+:host button.restore-data-button {
+    padding: 0 27px;
+    height: 43px;
+    background-color: unset;
+}
+
+:host .restore-data button mat-icon {
+    margin-left: 5px;
+}
+
+.g-dialog-body {
+    position: relative;
+    padding: 0px 0px 0px 0px;
+    overflow-y: hidden;
+    margin: 25px 8px 25px 2px;
+}

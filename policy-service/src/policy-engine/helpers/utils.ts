@@ -1,57 +1,11 @@
-import { Token } from '@entity/token';
-import { Topic } from '@entity/topic';
-import { VcDocument, VcDocument as HVcDocument, TopicHelper, VpDocument, TopicConfig, DIDDocument } from '@hedera-modules';
 import * as mathjs from 'mathjs';
-import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import {
-    DidDocumentStatus,
-    DocumentSignature,
-    DocumentStatus,
-    IRootConfig,
-    Schema,
-    SchemaEntity,
-    TopicType,
-    WorkerTaskType
-} from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
-import { Schema as SchemaCollection } from '@entity/schema';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { DidDocumentStatus, DocumentSignature, DocumentStatus, Schema, SchemaEntity, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { HederaDidDocument, IAuthUser, KeyType, NotificationHelper, Schema as SchemaCollection, Token, Topic, TopicConfig, TopicHelper, Users, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VcDocumentDefinition as HVcDocument, VcSubject, VpDocumentDefinition as VpDocument, Wallet, Workers } from '@guardian/common';
 import { TokenId, TopicId } from '@hashgraph/sdk';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { KeyType, Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import { VcDocument as VcDocumentCollection } from '@entity/vc-document';
-import { Workers } from '@helpers/workers';
-import { DocumentType } from '@policy-engine/interfaces/document.type';
-
-/**
- * Data types
- */
-export enum DataTypes {
-    MRV = 'mrv',
-    REPORT = 'report',
-    MINT = 'mint',
-    RETIREMENT = 'retirement',
-    USER_ROLE = 'user-role',
-    MULTI_SIGN = 'MULTI_SIGN'
-}
-
-/**
- * Hedera Account interface
- */
-export interface IHederaAccount {
-    /**
-     * Account id
-     */
-    hederaAccountId: string;
-    /**
-     * Account key
-     */
-    hederaAccountKey: string;
-    /**
-     * Account did
-     */
-    did: string;
-}
+import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
+import { DocumentType } from '../interfaces/document.type.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 
 /**
  * Policy engine utils
@@ -61,10 +15,12 @@ export class PolicyUtils {
      * User service
      */
     private static readonly users = new Users();
+
     /**
      * Wallet service
      */
     private static readonly wallet = new Wallet();
+
     /**
      * Custom Functions
      */
@@ -149,6 +105,17 @@ export class PolicyUtils {
      */
     public static getVCScope(item: VcDocument) {
         return item.getCredentialSubject(0).getFields();
+    }
+
+    /**
+     * Get VC scope
+     * @param item
+     */
+    public static createVcFromSubject(subject: any): VcDocument {
+        const vc = new VcDocument();
+        const credentialSubject = VcSubject.create(subject);
+        vc.addCredentialSubject(credentialSubject);
+        return vc;
     }
 
     /**
@@ -261,8 +228,8 @@ export class PolicyUtils {
      * @param defaultAccount
      * @param schema
      */
-    public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): any {
-        const result: any = {};
+    public static getHederaAccounts(vc: HVcDocument, defaultAccount: string, schema: Schema): { [x: string]: string } {
+        const result: { [x: string]: string } = {};
         if (schema) {
             const fields = schema.searchFields((f) => f.customType === 'hederaAccount');
             for (const field of fields) {
@@ -461,7 +428,11 @@ export class PolicyUtils {
      * @param user Client User
      * @returns Token's map
      */
-    public static async getHederaAccountInfo(ref: AnyBlockType, hederaAccountId: string, user: IHederaAccount): Promise<any> {
+    public static async getHederaAccountInfo(
+        ref: AnyBlockType,
+        hederaAccountId: string,
+        user: IHederaCredentials
+    ): Promise<any> {
         if (ref.dryRun) {
             return await ref.databaseServer.getVirtualHederaAccountInfo(hederaAccountId);
         } else {
@@ -473,21 +444,26 @@ export class PolicyUtils {
                     userKey: user.hederaAccountKey,
                     hederaAccountId
                 }
-            }, 1);
+            }, 20);
         }
     }
 
     /**
      * associate
+     * @param ref
      * @param token
      * @param user
      */
-    public static async associate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
+    public static async associate(
+        ref: AnyBlockType,
+        token: Token,
+        user: IHederaCredentials
+    ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualAssociate(user.hederaAccountId, token);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -496,21 +472,35 @@ export class PolicyUtils {
                     associate: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Associate token`,
+                `${token.tokenName} associated`,
+                userProfile?.id
+            );
+            return result;
         }
     }
 
     /**
      * dissociate
+     * @param ref
      * @param token
      * @param user
      */
-    public static async dissociate(ref: AnyBlockType, token: Token, user: IHederaAccount): Promise<boolean> {
+    public static async dissociate(
+        ref: AnyBlockType,
+        token: Token,
+        user: IHederaCredentials
+    ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualDissociate(user.hederaAccountId, token.tokenId);
         } else {
             const workers = new Workers();
-            return await workers.addNonRetryableTask({
+            const result = await workers.addNonRetryableTask({
                 type: WorkerTaskType.ASSOCIATE_TOKEN,
                 data: {
                     tokenId: token.tokenId,
@@ -519,7 +509,16 @@ export class PolicyUtils {
                     associate: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
+            const userProfile = await new Users().getUserByAccount(
+                user.hederaAccountId
+            );
+            await NotificationHelper.info(
+                `Dissociate token`,
+                `${token.tokenName} dissociated`,
+                userProfile?.id
+            );
+            return result
         }
     }
 
@@ -532,8 +531,8 @@ export class PolicyUtils {
     public static async freeze(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaAccount,
-        root: IHederaAccount
+        user: IHederaCredentials,
+        root: IHederaCredentials
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualFreeze(user.hederaAccountId, token.tokenId);
@@ -546,11 +545,11 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -563,8 +562,8 @@ export class PolicyUtils {
     public static async unfreeze(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaAccount,
-        root: IHederaAccount
+        user: IHederaCredentials,
+        root: IHederaCredentials
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualUnfreeze(user.hederaAccountId, token.tokenId);
@@ -577,11 +576,11 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     freezeKey,
-                    tokenId: token.tokenId,
+                    token,
                     freeze: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -594,8 +593,8 @@ export class PolicyUtils {
     public static async grantKyc(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaAccount,
-        root: IHederaAccount
+        user: IHederaCredentials,
+        root: IHederaCredentials
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualGrantKyc(user.hederaAccountId, token.tokenId);
@@ -608,12 +607,12 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: true,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -626,8 +625,8 @@ export class PolicyUtils {
     public static async revokeKyc(
         ref: AnyBlockType,
         token: Token,
-        user: IHederaAccount,
-        root: IHederaAccount
+        user: IHederaCredentials,
+        root: IHederaCredentials
     ): Promise<boolean> {
         if (ref.dryRun) {
             return await ref.databaseServer.virtualRevokeKyc(user.hederaAccountId, token.tokenId);
@@ -640,12 +639,12 @@ export class PolicyUtils {
                     hederaAccountId: root.hederaAccountId,
                     hederaAccountKey: root.hederaAccountKey,
                     userHederaAccountId: user.hederaAccountId,
-                    tokenId: token.tokenId,
+                    token,
                     kycKey,
                     grant: false,
                     dryRun: ref.dryRun
                 }
-            }, 1);
+            }, 20);
         }
     }
 
@@ -659,7 +658,7 @@ export class PolicyUtils {
     public static async createTokenByTemplate(
         ref: AnyBlockType,
         tokenTemplate: any,
-        user: IHederaAccount
+        user: UserCredentials
     ): Promise<Token> {
         let tokenId;
         const owner = user.did;
@@ -667,14 +666,15 @@ export class PolicyUtils {
         const adminId = user.hederaAccountId;
         if (!ref.dryRun) {
             const workers = new Workers();
+            const hederaAccountKey = await user.loadHederaKey(ref);
             const createdToken = await workers.addRetryableTask({
                 type: WorkerTaskType.CREATE_TOKEN,
                 data: {
                     operatorId: user.hederaAccountId,
-                    operatorKey: user.hederaAccountKey,
+                    operatorKey: hederaAccountKey,
                     ...tokenTemplate
                 }
-            }, 1);
+            }, 20);
             tokenId = createdToken.tokenId;
 
             const wallet = new Wallet();
@@ -733,14 +733,14 @@ export class PolicyUtils {
      * revokeKyc
      * @param account
      */
-    public static async checkAccountId(account: IHederaAccount): Promise<void> {
+    public static async checkAccountId(account: IHederaCredentials): Promise<void> {
         const workers = new Workers();
         return await workers.addNonRetryableTask({
             type: WorkerTaskType.CHECK_ACCOUNT,
             data: {
                 hederaAccountId: account.hederaAccountId,
             }
-        }, 1);
+        }, 20);
     }
 
     /**
@@ -753,8 +753,8 @@ export class PolicyUtils {
     public static async getOrCreateTopic(
         ref: AnyBlockType,
         topicName: string,
-        root: IRootConfig,
-        user: any,
+        root: UserCredentials,
+        user: UserCredentials,
         memoObj?: any
     ): Promise<TopicConfig> {
         const rootTopic = await TopicConfig.fromObject(
@@ -789,9 +789,16 @@ export class PolicyUtils {
             }), !ref.dryRun);
 
         if (!topic) {
-            const topicAccountId = config.static ? root.hederaAccountId : user.hederaAccountId;
-            const topicAccountKey = config.static ? root.hederaAccountKey : user.hederaAccountKey;
-            const topicHelper = new TopicHelper(topicAccountId, topicAccountKey, ref.dryRun);
+            const hederaCred = config.static
+                ? (await root.loadHederaCredentials(ref))
+                : (await user.loadHederaCredentials(ref));
+
+            const signOptions = config.static
+                ? (await root.loadSignOptions(ref))
+                : (await user.loadSignOptions(ref));
+            const topicHelper = new TopicHelper(
+                hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun,
+            );
             topic = await topicHelper.create({
                 type: TopicType.DynamicTopic,
                 owner: topicOwner,
@@ -850,9 +857,12 @@ export class PolicyUtils {
      * @param ref
      * @param did
      */
-    public static getPolicyUser(ref: AnyBlockType, did: string, uuid: string): IPolicyUser {
-        const user = new PolicyUser(did, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid });
+    public static async getPolicyUser(ref: AnyBlockType, did: string, uuid: string): Promise<PolicyUser> {
+        if (uuid) {
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
+        } else {
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, null, ref);
+        }
     }
 
     /**
@@ -860,8 +870,13 @@ export class PolicyUtils {
      * @param ref
      * @param userId
      */
-    public static getPolicyUserById(ref: AnyBlockType, userId: string): IPolicyUser {
-        return PolicyUser.fromUserId(userId, null, !!ref.dryRun);
+    public static async getPolicyUserById(ref: AnyBlockType, userId: string): Promise<PolicyUser> {
+        if (userId.startsWith('did:')) {
+            return await PolicyComponentsUtils.GetPolicyUserByDID(userId, null, ref);
+        } else {
+            const [uuid, did] = userId.split(/:(.*)/s, 2);
+            return await PolicyComponentsUtils.GetPolicyUserByDID(did, uuid, ref);
+        }
     }
 
     /**
@@ -869,9 +884,18 @@ export class PolicyUtils {
      * @param ref
      * @param document
      */
-    public static getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): IPolicyUser {
-        const user = new PolicyUser(document.owner, !!ref.dryRun);
-        return user.setGroup({ role: null, uuid: document.group });
+    public static async getDocumentOwner(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+        return await PolicyComponentsUtils.GetPolicyUserByDID(document.owner, document.group, ref);
+    }
+
+    /**
+     * Get Policy User
+     * @param ref
+     * @param document
+     */
+    public static async getUserByIssuer(ref: AnyBlockType, document: IPolicyDocument): Promise<PolicyUser> {
+        const did = PolicyUtils.getDocumentIssuer(document.document) || document.owner;
+        return await PolicyComponentsUtils.GetPolicyUserByDID(did, document.group, ref);
     }
 
     /**
@@ -922,40 +946,8 @@ export class PolicyUtils {
      * @param ref
      * @param did
      */
-    public static async getHederaAccount(ref: AnyBlockType, did: string): Promise<IHederaAccount> {
-        if (ref.dryRun) {
-            const userFull = await ref.databaseServer.getVirtualUser(did);
-            if (!userFull) {
-                throw new Error('Virtual User not found');
-            }
-            const userID = userFull.hederaAccountId;
-            const userDID = userFull.did;
-            if (!userDID || !userID) {
-                throw new Error('Hedera Account not found');
-            }
-            const userKey = await ref.databaseServer.getVirtualKey(did, did);
-            return {
-                did,
-                hederaAccountId: userID,
-                hederaAccountKey: userKey
-            }
-        } else {
-            const userFull = await PolicyUtils.users.getUserById(did);
-            if (!userFull) {
-                throw new Error('User not found');
-            }
-            const userID = userFull.hederaAccountId;
-            const userDID = userFull.did;
-            if (!userDID || !userID) {
-                throw new Error('Hedera Account not found');
-            }
-            const userKey = await PolicyUtils.wallet.getKey(userFull.walletToken, KeyType.KEY, userDID);
-            return {
-                did,
-                hederaAccountId: userID,
-                hederaAccountKey: userKey
-            }
-        }
+    public static async getUserCredentials(ref: AnyBlockType, did: string): Promise<UserCredentials> {
+        return await UserCredentials.create(ref, did);
     }
 
     /**
@@ -1030,7 +1022,10 @@ export class PolicyUtils {
                 documentRef = await ref.databaseServer.getVcDocument({
                     where: {
                         'policyId': { $eq: policyId },
-                        'document.credentialSubject.id': { $eq: refId }
+                        $or: [
+                            {'document.credentialSubject.id': {$eq: refId}},
+                            {'document.credentialSubject.0.id': {$eq: refId}}
+                        ]
                     }
                 });
             } else if (typeof (refId) === 'object') {
@@ -1084,12 +1079,18 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createPolicyDocument(ref: AnyBlockType, owner: IPolicyUser, document: any): IPolicyDocument {
-        document.policyId = ref.policyId;
-        document.tag = ref.tag;
-        document.owner = owner.did;
-        document.group = owner.group;
-        return document;
+    public static createPolicyDocument(
+        ref: AnyBlockType,
+        owner: PolicyUser,
+        document: any
+    ): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            document,
+            owner: owner.did,
+            group: owner.group
+        };
     }
 
     /**
@@ -1098,7 +1099,11 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createDID(ref: AnyBlockType, owner: IPolicyUser, document: DIDDocument): IPolicyDocument {
+    public static createDID(
+        ref: AnyBlockType,
+        owner: PolicyUser,
+        document: HederaDidDocument
+    ): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1116,7 +1121,11 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createVP(ref: AnyBlockType, owner: IPolicyUser, document: VpDocument): IPolicyDocument {
+    public static createVP(
+        ref: AnyBlockType,
+        owner: PolicyUser,
+        document: VpDocument,
+    ): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1125,7 +1134,7 @@ export class PolicyUtils {
             owner: owner.did,
             group: owner.group,
             status: DocumentStatus.NEW,
-            signature: DocumentSignature.NEW
+            signature: DocumentSignature.NEW,
         };
     }
 
@@ -1135,7 +1144,21 @@ export class PolicyUtils {
      * @param owner
      * @param document
      */
-    public static createVC(ref: AnyBlockType, owner: IPolicyUser, document: VcDocument): IPolicyDocument {
+    public static createUnsignedVC(ref: AnyBlockType, document: VcDocument): IPolicyDocument {
+        return {
+            policyId: ref.policyId,
+            tag: ref.tag,
+            document: document.toJsonTree()
+        };
+    }
+
+    /**
+     * Create VC Document
+     * @param ref
+     * @param owner
+     * @param document
+     */
+    public static createVC(ref: AnyBlockType, owner: PolicyUser, document: VcDocument): IPolicyDocument {
         return {
             policyId: ref.policyId,
             tag: ref.tag,
@@ -1193,13 +1216,14 @@ export class PolicyUtils {
      * @param ref
      * @param user
      */
-    public static async getGroupContext(ref: AnyBlockType, user: IPolicyUser): Promise<any> {
-        if (!ref.isMultipleGroups) {
+    public static async getGroupContext(ref: AnyBlockType, user: PolicyUser): Promise<any> {
+        const policyGroups = PolicyUtils.getGroupTemplates<any>(ref);
+        if (policyGroups.length === 0) {
             return null;
         }
         const group = await ref.databaseServer.getUserInGroup(ref.policyId, user.did, user.group);
         if (group && group.messageId) {
-            const groupSchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.ISSUER);
+            const groupSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.ISSUER);
             return {
                 groupId: group.messageId,
                 context: groupSchema.contextURL,
@@ -1214,7 +1238,7 @@ export class PolicyUtils {
      * @param document
      */
     public static getDocumentIssuer(document: any): string {
-        if (document) {
+        if (document && document.issuer) {
             if (typeof document.issuer === 'string') {
                 return document.issuer;
             } else {
@@ -1223,5 +1247,76 @@ export class PolicyUtils {
         } else {
             return null
         }
+    }
+
+    /**
+     * Load schema by type
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByType(ref: AnyBlockType, type: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByType(type);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param type
+     */
+    public static async loadSchemaByID(ref: AnyBlockType, id: SchemaEntity): Promise<SchemaCollection> {
+        return await ref.components.loadSchemaByID(id);
+    }
+
+    /**
+     * Load schema by id
+     * @param ref
+     * @param uuid
+     */
+    public static async getArtifactFile(ref: AnyBlockType, uuid: string): Promise<string> {
+        if (!uuid) {
+            throw new Error(`File does not exist`);
+        }
+        const file = await ref.components.loadArtifactByID(uuid);
+        if (typeof file === 'string') {
+            return file;
+        } else {
+            throw new Error(`File does not exist`);
+        }
+    }
+
+    /**
+     * Load token template by name
+     * @param ref
+     * @param name
+     */
+    public static getTokenTemplate<T>(ref: AnyBlockType, name: any): T {
+        return ref.components.getTokenTemplate<T>(name);
+    }
+
+    /**
+     * Find Group Template
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getGroupTemplate<T>(name);
+    }
+
+    /**
+     * Get Group Templates
+     * @param ref
+     * @param name
+     */
+    public static getGroupTemplates<T>(ref: AnyBlockType): T[] {
+        return ref.components.getGroupTemplates<T>();
+    }
+
+    /**
+     * Find Role Template
+     * @param ref
+     * @param name
+     */
+    public static getRoleTemplate<T>(ref: AnyBlockType, name: string): T {
+        return ref.components.getRoleTemplate<T>(name);
     }
 }

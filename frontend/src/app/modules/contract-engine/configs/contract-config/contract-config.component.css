@@ -1,0 +1,212 @@
+.content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: block;
+}
+
+.loading {
+    background: #fff;
+    position: fixed;
+    z-index: 99;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.table {
+    width: 100%;
+}
+
+.btn-publish::ng-deep > * {
+    background: #4caf50 !important;
+    color: #fff !important;
+    min-width: 121px;
+    cursor: pointer !important;
+}
+
+.not-exist {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 20px;
+    color: darkgrey;
+}
+
+.table-container {
+    max-height: calc(100vh - var(--header-height) - 170px);
+    min-height: 100px;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid #eee;
+}
+
+.table-container .mat-column-contractId {
+    padding-left: 8px;
+    width: 150px;
+    max-width: 150px;
+}
+
+.table-container .mat-column-description {
+    border-right: 1px solid #dddddd;
+    padding-left: 8px;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-container .mat-column-operations {
+    padding-left: 8px;
+    width: 200px;
+    min-width: 200px;
+    max-width: 200px;
+    border-right: 1px solid #dddddd;
+}
+
+.table-container .mat-column-retire {
+    padding-left: 8px;
+    width: 137px;
+    min-width: 137px;
+    max-width: 137px;
+}
+
+.table-container .mat-column-owner {
+    width: 300px;
+    max-width: 500px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions-container {
+    display: block;
+    z-index: 2;
+}
+
+.table-paginator {
+    height: 60px;
+    border-top: 1px solid #eee;
+    margin-top: 5px;
+    z-index: 0;
+}
+
+.action-btn {
+    background: #4caf50;
+    color: #fff;
+    border-radius: 6px;
+    display: inline-block;
+    padding: 6px 0;
+    width: 173px;
+    margin: 0px 5px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: center;
+    -webkit-user-select: none;
+    user-select: none;
+    position: relative;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.action-btn.view-btn {
+    width: 143px;
+}
+
+.table-container .mat-column-tags {
+    max-width: 175px;
+    min-width: 175px;
+    width: 175px;
+    border-right: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.table-container .mat-column-permissions {
+    width: 100px;
+    border-right: 1px solid #dddddd;
+    padding-left: 10px;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    padding: 14px 14px 14px 14px;
+    border-bottom: 1px solid #eee;
+    margin: 0;
+    height: 92px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.actions ::ng-deep button.mat-raised-button.mat-primary {
+    margin: 8px 10px 0 10px;
+}
+
+.toolbar-btn {
+    margin: 15px;
+    min-width: 120px;
+    cursor: pointer;
+    font-weight: 500;
+    text-align: left;
+    user-select: none;
+    position: relative;
+    border-radius: 8px;
+    padding: 0;
+    font-size: 14px;
+    padding-left: 48px !important;
+    padding-right: 30px;
+}
+
+.toolbar-btn mat-icon {
+    position: absolute;
+    left: 14px;
+    top: 10px;
+}
+
+.toolbar-btn.add mat-icon {
+    font-size: 30px;
+    left: 10px;
+    top: 7px;
+}
+
+.permissions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.permissions, .permissions__roles {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.permissions__roles {
+    font-weight: bold;
+}
+
+.permissions__roles .role[has="true"] {
+    color: darkgreen;
+}
+
+.permissions__roles .role[has="false"] {
+    color: gray;
+}
+
+.contract-operations {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

@@ -1,4 +1,4 @@
-import { PolicyInputEventType, PolicyOutputEventType } from './policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
 
 /**
  * Children type
@@ -39,7 +39,8 @@ export enum PropertyType {
 export enum SelectItemType {
     Schemas = 'Schemas',
     Block = 'Block',
-    Children = 'Children'
+    Children = 'Children',
+    Roles = 'Roles',
 }
 
 /**
@@ -70,6 +71,11 @@ export interface BlockProperties {
      * Required fields
      */
     required?:boolean;
+
+    /**
+     * Visible expression
+     */
+    visible?: string;
 }
 
 /**

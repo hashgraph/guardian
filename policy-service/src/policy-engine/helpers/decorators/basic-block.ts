@@ -1,15 +1,15 @@
-import { PolicyBlockDefaultOptions } from '@policy-engine/helpers/policy-block-default-options';
-import { EventConfig } from '@policy-engine/interfaces';
-import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '@policy-engine/interfaces/block-options';
-import { PolicyRole, PolicyType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface';
-import { PolicyComponentsUtils } from '../../policy-components-utils';
-import { IPolicyEvent, PolicyLink } from '@policy-engine/interfaces/policy-event';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
-import { Logger } from '@guardian/common';
-import { DatabaseServer } from '@database-modules';
+import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
+import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
+import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
+import { PolicyHelper, PolicyRole, PolicyType } from '@guardian/interfaces';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
+import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
+import { DatabaseServer, Policy, PinoLogger } from '@guardian/common';
 import deepEqual from 'deep-equal';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
+import { PolicyUser } from '../../policy-user.js';
+import { ComponentsService } from '../components-service.js';
 
 /**
  * Basic block decorator
@@ -92,12 +92,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Logger instance
              * @protected
              */
-            protected logger: Logger;
-            /**
-             * Database instance
-             * @protected
-             */
-            protected databaseServer: DatabaseServer;
+            protected logger: PinoLogger;
             /**
              * Policy id
              */
@@ -109,11 +104,15 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Policy instance
              */
-            public policyInstance: any;
+            public policyInstance: Policy;
             /**
              * Topic id
              */
             public topicId: string;
+            /**
+             * Topic id
+             */
+            public toolId: string;
             /**
              * Source links
              */
@@ -142,6 +141,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Block variables
              */
             public readonly variables: any[];
+            /**
+             * Components service
+             */
+            public readonly components: ComponentsService;
+            /**
+             * Database service
+             */
+            public readonly databaseServer: DatabaseServer;
 
             constructor(
                 _uuid: string,
@@ -149,7 +156,8 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 _tag: string,
                 _permissions: PolicyRole[],
                 _parent: IPolicyBlock,
-                _options: any
+                _options: any,
+                _components: ComponentsService
             ) {
                 const tag = _tag || defaultOptions.tag;
                 const permissions = _permissions || defaultOptions.permissions;
@@ -166,9 +174,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     parent,
                     _options
                 );
+                this.components = _components;
+                this.databaseServer = this.components.databaseServer;
                 this._dryRun = null;
-                this.logger = new Logger();
-                this.databaseServer = new DatabaseServer(this.dryRun);
+                this.logger = new PinoLogger();
 
                 if (this.parent) {
                     this.parent.registerChild(this as any as IPolicyBlock);
@@ -177,9 +186,12 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 this.sourceLinks = [];
                 this.targetLinks = [];
 
-                if (!Array.isArray(this.actions)) {
+                if (Array.isArray(super.actions)) {
+                    this.actions = [...super.actions]
+                } else {
                     this.actions = [];
                 }
+
                 this.actions.push([PolicyInputEventType.RunEvent, this.runAction]);
                 this.actions.push([PolicyInputEventType.RefreshEvent, this.refreshAction]);
 
@@ -213,20 +225,6 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     return this.parent.getNextChild(this.uuid);
                 }
                 return undefined;
-            }
-
-            /**
-             * If policy contain multiple groups
-             */
-            public get isMultipleGroups(): boolean {
-                if (
-                    this.policyInstance &&
-                    this.policyInstance.policyGroups &&
-                    this.policyInstance.policyGroups.length
-                ) {
-                    return true;
-                }
-                return false;
             }
 
             /**
@@ -298,7 +296,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addSourceLink(link: PolicyLink<any>): void {
-                this.sourceLinks.push(link)
+                if (
+                    !this.sourceLinks.some((sourceLink) =>
+                        sourceLink.equals(link)
+                    )
+                ) {
+                    this.sourceLinks.push(link);
+                }
             }
 
             /**
@@ -306,7 +310,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param link
              */
             public addTargetLink(link: PolicyLink<any>): void {
-                this.targetLinks.push(link)
+                if (
+                    !this.targetLinks.some((targetLink) =>
+                        targetLink.equals(link)
+                    )
+                ) {
+                    this.targetLinks.push(link);
+                }
             }
 
             /**
@@ -315,7 +325,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvents(output: PolicyOutputEventType, user?: IPolicyUser, data?: any): void {
+            public triggerEvents<U>(
+                output: PolicyOutputEventType,
+                user: PolicyUser,
+                data: U
+            ): void {
                 for (const link of this.sourceLinks) {
                     if (link.outputType === output) {
                         link.run(user, data);
@@ -329,7 +343,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param data
              */
-            public triggerEvent(event: any, user?: IPolicyUser, data?: any): void {
+            public triggerEvent<U>(
+                event: IPolicyEvent<U>,
+                user: PolicyUser,
+                data: U
+            ): void {
                 console.error('triggerEvent');
             }
 
@@ -339,6 +357,9 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param {IPolicyEvent} event
              */
             public async runAction(event: IPolicyEvent<any>): Promise<any> {
+                if (this.policyInstance.status === PolicyType.DISCONTINUED) {
+                    return;
+                }
                 const parent = this.parent as any;
                 if (parent && (typeof parent.changeStep === 'function')) {
                     await parent.changeStep(event.user, event.data, this);
@@ -365,11 +386,13 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             /**
              * Join GET Data
              * @param {IPolicyDocument | IPolicyDocument[]} data
-             * @param {IPolicyUser} user
+             * @param {PolicyUser} user
              * @param {AnyBlockType} parent
              */
             public async joinData<U extends IPolicyDocument | IPolicyDocument[]>(
-                data: U, user: IPolicyUser, parent: AnyBlockType
+                data: U,
+                user: PolicyUser,
+                parent: AnyBlockType
             ): Promise<U> {
                 if (typeof super.joinData === 'function') {
                     return await super.joinData(data, user, parent);
@@ -383,40 +406,21 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param user
              * @param tag
              */
-            public async updateBlock(state: any, user: IPolicyUser, tag: string) {
+            public async updateBlock(state: any, user: PolicyUser, tag: string) {
                 await this.saveState();
-                const users: { [x: string]: IPolicyUser } = {};
-                if (!this.options.followUser) {
-                    if (this.dryRun) {
-                        const virtualUser = await DatabaseServer.getVirtualUser(this.policyId);
-                        const group = await this.databaseServer.getActiveGroupByUser(this.policyId, virtualUser?.did);
-                        users[virtualUser?.did] = (new PolicyUser(virtualUser?.did, !!this.dryRun))
-                            .setGroup(group);
-                    } else {
-                        const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
-                        for (const userRole of allUsers) {
-                            if (this.permissions.includes(userRole.role)) {
-                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
-                            } else if (this.permissions.includes('ANY_ROLE')) {
-                                users[userRole.did] = PolicyUser.create(userRole, !!this.dryRun);
-                            }
-                        }
-                        if (this.permissions.includes('OWNER') || this.permissions.includes('ANY_ROLE')) {
-                            users[this.policyOwner] = new PolicyUser(this.policyOwner);
-                        }
-                        if (user) {
-                            if (this.permissions.includes(user.role)) {
-                                users[user.did] = user;
-                            } else if (this.permissions.includes('ANY_ROLE')) {
-                                users[user.did] = user;
-                            }
-                        }
+                const users: Map<string, PolicyUser> = new Map<string, PolicyUser>();
+                if (this.options.followUser) {
+                    if (user) {
+                        users.set(user.did, user);
                     }
-                } else if (user) {
-                    users[user.did] = user;
+                } else {
+                    const allUsers = await this.allAvailableUsers(user);
+                    for (const item of allUsers.values()) {
+                        users.set(item.did, item);
+                    }
                 }
-                for (const item of Object.values(users)) {
-                    PolicyComponentsUtils.BlockUpdateFn(this.uuid, state, item, tag);
+                for (const item of users.values()) {
+                    PolicyComponentsUtils.BlockUpdateFn(this as any, item);
                 }
             }
 
@@ -425,7 +429,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param state
              * @return {boolean} - true if state was changed
              */
-            public updateDataState(user: IPolicyUser, state: any): boolean {
+            public updateDataState(user: PolicyUser, state: any): boolean {
                 this.oldDataState[user.id] = this.currentDataState[user.id];
                 this.currentDataState[user.id] = { state };
                 return !deepEqual(this.currentDataState[user.id], this.oldDataState[user.id], {
@@ -462,15 +466,14 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param policyId
              * @param policy
              */
-            public setPolicyInstance(policyId: string, policy: any) {
+            public setPolicyInstance(policyId: string, policy: Policy) {
                 this.policyInstance = policy;
                 this.policyId = policyId;
-                if (this.policyInstance && this.policyInstance.status === PolicyType.DRY_RUN) {
+                if (PolicyHelper.isDryRunMode(this.policyInstance)) {
                     this._dryRun = this.policyId;
                 } else {
                     this._dryRun = null;
                 }
-                this.databaseServer.setDryRun(this._dryRun);
             }
 
             /**
@@ -482,23 +485,11 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
-             * Register Variables
+             * Set tool id
+             * @param id
              */
-            public registerVariables(): void {
-                const modules = PolicyComponentsUtils.GetModule<any>(this);
-                if(!modules) {
-                    return;
-                }
-
-                for (let index = 0; index < this.permissions.length; index++) {
-                    this.permissions[index] = modules.getModuleVariable(this.permissions[index], 'Role');
-                }
-
-                for (const variable of this.variables) {
-                    PolicyComponentsUtils.ReplaceObjectValue(this, variable.path, (value: any) => {
-                        return modules.getModuleVariable(value, variable.type);
-                    });
-                }
+            public setToolId(id: string): void {
+                this.toolId = id;
             }
 
             /**
@@ -506,7 +497,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param child
              * @param user
              */
-            public isChildActive(child: AnyBlockType, user: IPolicyUser): boolean {
+            public isChildActive(child: AnyBlockType, user: PolicyUser): boolean {
                 if (typeof super.isChildActive === 'function') {
                     return super.isChildActive(child, user);
                 }
@@ -517,7 +508,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              * Is block active
              * @param user
              */
-            isActive(user: IPolicyUser): boolean {
+            public isActive(user: PolicyUser): boolean {
                 if (!this.parent) {
                     return true;
                 }
@@ -558,37 +549,75 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             }
 
             /**
+             * Get all users
+             * @param currentUser
+             */
+            public async allAvailableUsers(currentUser: PolicyUser): Promise<Map<string, PolicyUser>> {
+                const result: Map<string, PolicyUser> = new Map<string, PolicyUser>();
+                if (this.dryRun) {
+                    const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any);
+                    if (virtualUser) {
+                        result.set(virtualUser.did, virtualUser);
+                    }
+                } else {
+                    const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
+                    for (const group of allUsers) {
+                        const user = await PolicyComponentsUtils.GetPolicyUserByGroup(group, this as any);
+                        if (this.hasPermission(user)) {
+                            result.set(user.did, user);
+                        }
+                    }
+                    if (this.hasPermission(currentUser)) {
+                        result.set(currentUser.did, currentUser);
+                    }
+                    if (
+                        this.permissions.includes('OWNER') ||
+                        this.permissions.includes('ANY_ROLE')
+                    ) {
+                        //debugger
+                        const owners = [this.policyOwner];
+                        for (const owner of owners) {
+                            if (!result.has(owner)) {
+                                const user = await PolicyComponentsUtils.GetPolicyUserByDID(owner, null, this as any);
+                                if (user) {
+                                    result.set(user.did, user);
+                                }
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+
+            /**
              * Check user permission
              * @param role
              * @param user
              */
-            public hasPermission(role: PolicyRole | null, user: IPolicyUser | null): boolean {
-                let hasAccess = false;
-                if (this.permissions.includes('NO_ROLE')) {
-                    if (!role && user.did !== this.policyOwner) {
-                        hasAccess = true;
+            public hasPermission(user: PolicyUser | null): boolean {
+                if (user) {
+                    if (this.permissions.includes('ANY_ROLE')) {
+                        return true;
                     }
-                }
-                if (this.permissions.includes('ANY_ROLE')) {
-                    hasAccess = true;
-                }
-                if (this.permissions.includes('OWNER')) {
-                    if (user && user.did === this.policyOwner) {
+                    if (this.permissions.indexOf(user.role) > -1) {
+                        return true;
+                    }
+                    if (this.permissions.includes('NO_ROLE') && !user.role && !user.isAdmin) {
+                        return true;
+                    }
+                    if (this.permissions.includes('OWNER') && user.isAdmin) {
                         return true;
                     }
                 }
-                if (this.permissions.indexOf(role) > -1) {
-                    hasAccess = true;
-                }
-                return hasAccess;
+                return false;
             }
 
             /**
              * Check Permission and Active
              * @param user
              */
-            public async isAvailable(user: IPolicyUser): Promise<boolean> {
-                if (this.isActive(user) && this.hasPermission(user.role, user)) {
+            public async isAvailable(user: PolicyUser): Promise<boolean> {
+                if (this.isActive(user) && this.hasPermission(user)) {
                     if (this.parent) {
                         return this.parent.isAvailable(user);
                     } else {
@@ -692,6 +721,75 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
              */
             protected triggerInternalEvent(type: string, data: any) {
                 PolicyComponentsUtils.TriggerInternalEvent(type, this.policyId, data);
+            }
+
+            /**
+             * Get Cache
+             * @param {string} name - variable name
+             * @param {PolicyUser | string} [user] - user DID
+             * @returns {V} - variable value
+             * @protected
+             */
+            protected async getCache<V>(name: string, user?: PolicyUser | string): Promise<V> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                const record = await this.databaseServer.getBlockCache(this.policyId, this.uuid, did, name);
+                return record ? record.value : null;
+            }
+
+            /**
+             * Set Cache
+             * @param {BlockCacheType} type - variable size
+             * @param {string} name - variable name
+             * @param {V} value - variable value
+             * @param {PolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setCache<V>(
+                type: BlockCacheType,
+                name: string,
+                value: V,
+                user?: PolicyUser | string
+            ): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, type === BlockCacheType.Long
+                );
+            }
+
+            /**
+             * Set Cache
+             * @param {string} name - variable name
+             * @param {V} value - variable value
+             * @param {PolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setShortCache<V>(
+                name: string,
+                value: V,
+                user?: PolicyUser | string
+            ): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, false
+                );
+            }
+
+            /**
+             * Set Cache (Big value)
+             * @param {string} name - variable name
+             * @param {V} value - variable value
+             * @param {PolicyUser | string} [user] - user DID
+             * @protected
+             */
+            protected async setLongCache<V>(
+                name: string,
+                value: V,
+                user?: PolicyUser | string
+            ): Promise<void> {
+                const did = user ? (typeof user === 'object' ? user.did : user) : 'all';
+                await this.databaseServer.saveBlockCache(
+                    this.policyId, this.uuid, did, name, value, true
+                );
             }
         };
     };

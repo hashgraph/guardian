@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from 'src/app/services/audit.service';
+import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from 'src/app/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import { PolicyEngineService } from '../../services/policy-engine.service';
 import { HttpResponse } from '@angular/common/http';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Page with the list of VP Documents.
@@ -44,11 +45,12 @@ export class AuditComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private policyEngineService: PolicyEngineService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        private dialogService: DialogService,
     ) {
         this.dataCount = 0;
         this.pageIndex = 0;
-        this.pageSize = 25;
+        this.pageSize = 10;
     }
 
     ngOnInit() {
@@ -102,7 +104,7 @@ export class AuditComponent implements OnInit {
         this.loading = true;
         this.dataCount = 0;
         this.pageIndex = 0;
-        this.pageSize = 25;
+        this.pageSize = 10;
         this.currentPolicy = this.route.snapshot.queryParams['policyId'] || '';
         this.currentUser = this.route.snapshot.queryParams['owner'] || '';
         forkJoin([
@@ -122,9 +124,9 @@ export class AuditComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, (error) => {
+        }, ({ message }) => {
             this.loading = false;
-            console.error(error);
+            console.error(message);
         });
     }
 
@@ -137,17 +139,23 @@ export class AuditComponent implements OnInit {
         this.currentPolicy = this.policies.find(p => p.id == this.currentPolicy)?.id || '';
     }
 
-    openVP(document: any) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+    openVP(element: any) {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
+            closable: true,
+            header: 'VP',
+            styleClass: 'custom-dialog',
             data: {
-                document: document,
+                id: element.id,
+                dryRun: !!element.dryRunId,
+                document: element.document,
                 title: 'VP',
                 type: 'VP',
                 viewDocument: true
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     setFilter(type: string, value: string) {

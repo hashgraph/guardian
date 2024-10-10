@@ -1,0 +1,107 @@
+<div class="dialog-body" [attr.file-type]="type">
+    <p-tabView class="action-tabs">
+        <p-tabPanel *ngFor="let tab of items; let i = index">
+            <ng-template pTemplate="header">
+                <div (click)="handleChangeTab(i)" class="tabview-label">
+                    {{ tab.label }}
+                </div>
+            </ng-template>
+        </p-tabPanel>
+    </p-tabView>
+
+    <ng-container [ngSwitch]="importType">
+        <ng-template [ngSwitchCase]="0">
+            <app-file-drag-n-drop
+                    *ngIf="type === 'policy'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Policy .policy file"
+                    fileExtension="policy"
+            ></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type === 'module'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Module .module file"
+                    fileExtension="module"
+            ></app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type==='tool'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import Tool .tool file"
+                    fileExtension="tool">
+            </app-file-drag-n-drop>
+            <app-file-drag-n-drop
+                    *ngIf="type==='xlsx'"
+                    (onFileLoaded)="importFromFile($event)"
+                    dropZoneLabel="Import .xlsx file"
+                    fileExtension="xlsx">
+            </app-file-drag-n-drop>
+        </ng-template>
+        <ng-template [ngSwitchCase]="1">
+            <form [formGroup]="dataForm">
+                <label class="form-label" htmlFor="timestamp">Message timestamp</label>
+                <input
+                    formControlName="timestamp"
+                    id="timestamp"
+                    pInputText
+                    placeholder="Timestamp"
+                    type="text"
+                />
+            </form>
+        </ng-template>
+        <!-- <ng-template [ngSwitchCase]="2">
+            <label class="form-label" htmlFor="selectPolicy"
+                >Select Policy</label
+            >
+            <div class="policy-selection">
+                <p-dropdown
+                    id="selectPolicy"
+                    [options]="openSourcePolicies"
+                    [(ngModel)]="selectedOpenSourcePolicy"
+                    [showClear]="true"
+                    optionLabel="name"
+                    optionValue="topicId"
+                    placeholder="Policy"
+                    class="policy-dropdown"
+                ></p-dropdown>
+                <p>Token Type: CRU</p>
+            </div>
+            <div class="policy-actions">
+                <p-button
+                    label="View Documentation"
+                    (click)="OnViewDocumentation()"
+                ></p-button>
+                <p-button
+                    label="Direct Download"
+                    (click)="OnDirectDownload()"
+                ></p-button>
+            </div>
+        </ng-template> -->
+    </ng-container>
+
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <async-progress
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            *ngIf="loading && taskId"
+            [taskId]="taskId"
+    ></async-progress>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()" class="button secondary"
+                    label="Close"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="importType === 1 ? importFromMessage() : ''" class="button"
+                    label="Import"
+                    pButton
+            ></button>
+        </div>
+    </div>
+</div>

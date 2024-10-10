@@ -6,19 +6,22 @@
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "strictPropertyInitialization": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
     "downlevelIteration": true,
     "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "importHelpers": true,
     "target": "es2017",
     "module": "es2020",
     "lib": [
       "es2018",
-      "dom"
+      "dom",
+      "dom.iterable"
     ],
     "paths": {
       "crypto": ["./node_modules/crypto-browserify/index.js"],

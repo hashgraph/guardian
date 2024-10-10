@@ -1,0 +1,40 @@
+<app-dialog-wrapper (cancel)="onNoClick()" (confirm)="onCreate()" [confirmDisabled]="loading || !this.form.valid"
+    confirmBtnLabel="Set" [title]="'Set pool'" [loading]="loading">
+    <div class="content">
+        <div class="content__tokens tokens">
+            <div class="token-card" *ngFor="let tokenControl of tokenControls; let i=index;" [formGroup]="tokenControl">
+                <div class="token-card__token">
+                    <mat-icon>generating_tokens</mat-icon>
+                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
+                        <mat-label>Token</mat-label>
+                        <mat-select #select formControlName="token" placeholder="Choose Token">
+                            <mat-option *ngFor="let token of getTokenList(select.value)"
+                                [value]="token.tokenId">{{token.tokenSymbol}} ({{token.tokenId}})</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="token-card__count">
+                    <mat-icon>calculate</mat-icon>
+                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
+                        <mat-label>Count</mat-label>
+                        <input matInput formControlName="count" type="number" placeholder="1">
+                    </mat-form-field>
+                </div>
+
+                <button mat-flat-button color="primary" class="token-card__remove"
+                    (click)="removeToken(i)">remove</button>
+            </div>
+
+            <div class="token-add-card" (click)="addToken()" *ngIf="tokens?.controls && tokens.controls.length < 2">
+                <mat-icon>add</mat-icon>
+            </div>
+        </div>
+        <div class="content__delimiter">
+        </div>
+        <div class="content__approval">
+            <mat-checkbox color="primary" [formControl]="immediately">Without approval</mat-checkbox>
+        </div>
+
+    </div>
+
+</app-dialog-wrapper>

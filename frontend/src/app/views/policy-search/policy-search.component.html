@@ -1,0 +1,29 @@
+<div class="content user-profile">
+    <!-- <async-progress *ngIf="loading && taskId" [taskId]="taskId"
+            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress> -->
+
+    <div class="policy-search">
+        <h1>Search for Policies</h1>
+        <mat-tab-group (selectedIndexChange)="onChange($event)" *ngIf="!loading && isConfirmed"
+                       [selectedIndex]="selectedIndex" style="height: calc(100vh - 120px);">
+            <mat-tab *useWithServiceDecorator="'AI_SERVICE'" label="Search with AI">
+                <app-policy-ai-search></app-policy-ai-search>
+            </mat-tab>
+            <mat-tab label="Guided Search">
+                <app-policy-guided-search></app-policy-guided-search>
+            </mat-tab>
+        </mat-tab-group>
+
+        <div *ngIf="!loading && !isConfirmed" class="not-exist">
+            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+        </div>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

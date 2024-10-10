@@ -1,25 +1,43 @@
-<h1 mat-dialog-title>Log Details</h1>
-
 <form [formGroup]="dataForm">
-    <mat-form-field appearance="outline">
-        <mat-label>TYPE:</mat-label>
-        <input matInput type="text" formControlName="type" [readonly]="true">
-    </mat-form-field>
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">Type</div>
+            <div class="form-field-value">
+                <input [readonly]="true" class="p-field-input" formControlName="type" pInputText>
+            </div>
+        </div>
+    </div>
 
-    <mat-form-field appearance="outline">
-        <mat-label>DATETIME:</mat-label>
-        <input matInput type="text" formControlName="datetime" [readonly]="true">
-    </mat-form-field>
-    
-    <mat-form-field appearance="outline">
-        <mat-label>MESSAGE:</mat-label>
-        <textarea class="textarea-message" matInput formControlName="message" [readonly]="true"></textarea>
-    </mat-form-field>
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">DATETIME</div>
+            <div class="form-field-value">
+                <input [readonly]="true" class="p-field-input" formControlName="datetime" pInputText>
+            </div>
+        </div>
+    </div>
 
-    <mat-form-field appearance="outline">
-        <mat-label>ATTRIBUTES:</mat-label>
-        <textarea class="textarea-attributes" matInput formControlName="attributes" [readonly]="true"></textarea>
-    </mat-form-field>
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">MESSAGE</div>
+            <div class="form-field-value">
+                <textarea [readonly]="true" class="p-field-input" formControlName="message" pInputTextarea></textarea>
+            </div>
+        </div>
+    </div>
 
-    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <div class="form-field-container">
+        <div class="form-field">
+            <div class="label-field">ATTRIBUTES</div>
+            <div class="form-field-value">
+                <textarea [readonly]="true" class="p-field-input" formControlName="attributes"
+                          pInputTextarea></textarea>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="display: flex; align-items: center; justify-content: end; margin-top: 10px;">
+        <button (click)="dialogRef.destroy()" class="button secondary" pButton>Close</button>
+    </div>
 </form>

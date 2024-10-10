@@ -9,7 +9,7 @@ Associates the user with the provided Hedera token. Only users with the Standard
 Token ID
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="202: Accepted" description="Accepted" %}
 ```javascript
 {
     content:
@@ -33,6 +33,14 @@ Token ID
 {
     // Response
 }
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+User not registered
 ```
 {% endswagger-response %}
 

@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "module": "esnext",
+        "target": "esnext",
+        "lib": [
+            "esnext"
+        ],
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "dist/",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "declaration": true,
+        "skipLibCheck": true
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "compileOnSave": true
+}

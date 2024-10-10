@@ -1,0 +1,23 @@
+.sync {
+    display: flex;
+    align-items: center;
+    &__date {
+        text-wrap: nowrap;
+        color: #646464;
+        font-weight: 500;
+        font-size: 16px;
+    }
+}
+
+.content {
+    position: relative;
+}
+
+.loading {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+}

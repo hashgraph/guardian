@@ -1,0 +1,304 @@
+<div class="content" [style.min-width.px]="minWidth">
+    <div *ngIf="!headers.length && type==='tree'" class="total-info" [attr.total]="totalRate">
+        Documents are <span>{{totalRate}}%</span> the same.
+    </div>
+   
+    <div *ngIf="headers.length && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
+        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
+            <span class="item-header-name">
+                {{item.name}}
+            </span>
+            <span class="item-header-rate item-header-color-{{item.color}}">
+                {{item.rate}}
+            </span>
+        </div>
+    </div>
+
+    <div *ngIf="resultContext" class="list">
+        <mat-accordion multi>
+            <mat-expansion-panel expanded>
+                <mat-expansion-panel-header>
+                    <mat-panel-title>
+                        <div class="header">Description</div>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="info-container" [style.grid-template-columns]="_gridStyle">
+                    <ng-container *ngFor="let context of resultContext">
+                        <div class="middle-compare-result compare-result" 
+                            *ngIf="context.right"
+                            [style.grid-column-start]="2 * context.index" 
+                            [attr.open]="true">
+                        </div>
+                        <div 
+                            [style.grid-column-start]="2 * context.index + 1" 
+                            [attr.open]="true"
+                            [ngClass]="{
+                                'left-compare-result': context.left,
+                                'right-compare-result': context.right,
+                                'compare-result': true
+                            }">
+                            <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>
+                        </div>
+                    </ng-container>
+                </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel expanded *ngIf="treeContext">
+                <mat-expansion-panel-header>
+                    <div class="header">Policy Documents</div>
+                </mat-expansion-panel-header>
+
+                <div class="merge-container">
+                    <div class="legend" 
+                        [attr.type-1]="_type1" 
+                        [attr.type-2]="_type2" 
+                        [attr.type-3]="_type3"
+                        [attr.type-4]="_type4">
+                        <div class="legend-item" (click)="_type1=!_type1">
+                            <div class="legend-icon legend-l1"></div>
+                            <div class="legend-text">
+                                Documents are equal.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="_type2=!_type2">
+                            <div class="legend-icon legend-l2"></div>
+                            <div class="legend-text">
+                                Documents are equal except for dynamic fields.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="_type3=!_type3">
+                            <div class="legend-icon legend-l3"></div>
+                            <div class="legend-text">
+                                Documents are of the same type and are partially equal.
+                            </div>
+                        </div>
+                        <div class="legend-item" (click)="_type4=!_type4">
+                            <div class="legend-icon legend-l4"></div>
+                            <div class="legend-text">
+                                Documents are absent in the other Policy.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='tree'" class="merge-tree" 
+                        [attr.tree-size]="size"
+                        [attr.open]="_panelOpenState" 
+                        [attr.type-1]="_type1"
+                        [attr.type-2]="_type2" 
+                        [attr.type-3]="_type3" 
+                        [attr.type-4]="_type4">
+
+                        <div *ngFor="let row of treeContext" class="report-item report-item-number"
+                            [attr.hidden]="row.hidden" 
+                            [style.grid-template-columns]="_gridStyle">
+
+                            <div class="report-number">{{row.number}}</div>
+                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
+                                <mat-icon class="open-icon">remove</mat-icon>
+                                <mat-icon class="collapse-icon">add</mat-icon>
+                            </div>
+
+                            <ng-container *ngFor="let treeItemContext of row.contexts">
+                                <div 
+                                    [attr.offset]="row.lvl" 
+                                    [attr.rate]="treeItemContext.rate" 
+                                    [attr.type]="treeItemContext.type"
+                                    [style.padding-left.px]="row.offset"
+                                    [style.grid-column-start]="2 * treeItemContext.index + 1" 
+                                    [ngClass]="{
+                                        'left-tree': treeItemContext.left,
+                                        'right-tree': treeItemContext.right,
+                                        'hidden-item': true,
+                                        'fantom-tree': treeItemContext.fantom
+                                    }">
+                                    <div class="block-tree" (click)="row.open = !row.open">
+                                        <div class="block-index">
+                                            {{treeItemContext.data.docIndex}}
+                                        </div>
+                                        <div class="block-icon">
+                                            <mat-icon>{{treeItemContext.data.docIcon}}</mat-icon>
+                                        </div>
+                                        <div class="block-type">{{treeItemContext.data.docName}}</div>
+                                    </div>
+                                </div>
+
+                                <div *ngIf="treeItemContext.right" class="middle-tree"
+                                    [style.grid-column-start]="2 * treeItemContext.index">
+                                    <div class="compare-btn" (click)="row.open = !row.open">
+                                        <mat-icon *ngIf="!row.open">unfold_more</mat-icon>
+                                        <mat-icon *ngIf="row.open">unfold_less</mat-icon>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-container *ngIf="row.open">
+                                <ng-container *ngFor="let treeDetailContext of row.detailContexts">
+                                    <div [attr.open]="row.open" 
+                                        [style.padding-left.px]="row.offset"
+                                        [style.grid-column-start]="2 * treeDetailContext.index + 1" 
+                                        [ngClass]="{
+                                            'left-compare-result': treeDetailContext.left,
+                                            'right-compare-result': treeDetailContext.right,
+                                            'fantom-block': treeDetailContext.fantom,
+                                            'hidden-item': true,
+                                            'compare-result': true
+                                        }">
+                                        <ng-container *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
+                                    </div>
+                                    <div class="middle-compare-result compare-result" 
+                                        *ngIf="treeDetailContext.right"
+                                        [style.grid-column-start]="2 * treeDetailContext.index" 
+                                        [attr.open]="row.open"></div>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </div>
+
+                    <div *ngIf="type==='table'" class="merge-table" [attr.open]="_panelOpenState">
+                        <div class="merge-table-content">
+                            <mat-table *ngIf="treeContext" [dataSource]="treeContext" class="table">
+                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">
+                                    <mat-header-cell *cdkHeaderCellDef>
+                                        {{ column.label }}
+                                    </mat-header-cell>
+                                    <mat-cell *cdkCellDef="let row">
+                                        <span class="table-value" 
+                                            [title]="row.data[column.name]"
+                                            [attr.value]="row.data[column.name]" 
+                                            [attr.display-type]="column.display">
+                                            {{ row.data[column.name] }}
+                                        </span>
+                                    </mat-cell>
+                                </ng-container>
+                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+                            </mat-table>
+                        </div>
+                    </div>
+
+                </div>
+            </mat-expansion-panel>
+        </mat-accordion>
+    </div>
+</div>
+
+<ng-template #resultInfo let-data="data">
+    <div *ngIf="_toInfoContext(data); let data" class="result-info">
+        <div class="result-info-field">
+            <div class="result-info-field-name">Documents</div>
+            <div class="result-info-field-value">{{data.documents}}</div>
+        </div>
+        <div class="result-info-field">
+            <div class="result-info-field-name">Tokens</div>
+            <div class="result-info-field-value">{{data.tokens}}</div>
+        </div>
+        <!-- <div class="result-info-field">
+            <div class="result-info-field-name">Owner</div>
+            <div class="result-info-field-value">{{data.owner}}</div>
+        </div>
+        <div *ngIf="data.policy" class="result-info-field">
+            <div class="result-info-field-name">Policy</div>
+            <div class="result-info-field-value">{{data.policy}}</div>
+        </div> -->
+    </div>
+</ng-template>
+
+<ng-template #resultDetails let-data="data">
+    <div *ngIf="_toDetailsContext(data); let data" class="prop-container">
+        <!-- <div class="prop">
+            <div class="prop-name">Options Rate: </div>
+            <div class="prop-value" [attr.rate]="data.optionsRate">{{data.optionsRate}}</div>
+        </div> -->
+        <div class="prop">
+            <div class="prop-name">Document Rate: </div>
+            <div class="prop-value" [attr.rate]="data.documentRate">{{data.documentRate}}</div>
+        </div>
+
+        <div class="prop-delimiter"></div>
+
+        <!-- <div class="prop">
+            <div class="prop-name">ID: </div>
+            <div class="prop-value">{{data.id}}</div>
+        </div> -->
+
+        <!-- <div class="prop">
+            <div class="prop-name">Message: </div>
+            <div class="prop-value">{{data.messageId}}</div>
+        </div> -->
+
+        <div class="prop">
+            <div class="prop-name">Type: </div>
+            <div class="prop-value">{{data.type}}</div>
+        </div>
+
+        <div class="prop">
+            <div class="prop-name">Schema: </div>
+            <div class="prop-value">{{data.schema}}</div>
+        </div>
+
+        <!-- <div class="prop">
+            <div class="prop-name">Owner: </div>
+            <div class="prop-value">{{data.owner}}</div>
+        </div> -->
+
+        <div class="prop-delimiter"></div>
+
+        <div class="prop-table" [attr.system]="_systemProp">
+            <div class="prop-table-header">
+                Documents: 
+                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
+                    <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>
+                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>
+                </div>
+            </div>
+            <div class="prop-table-body">
+                <div *ngFor="let field of data.fields" class="prop-table-row" 
+                    [attr.fantom]="field.fantom"
+                    [attr.type]="field.type" 
+                    [attr.offset]="field.lvl" 
+                    [attr.index]="data.index"
+                    [attr.system]="field.system">
+                    <div class="prop-table-name" 
+                        [style.padding-left.px]="field.offset"
+                        [title]="field.name">
+                        {{field.label}}:
+                    </div>
+                    <div class="prop-table-value" [attr.prop-type]="field.propType">
+                        <div class="compare-btn" (click)="compareSchema(field)">
+                            <mat-icon>search</mat-icon>
+                        </div>
+                        <span *ngIf="field.propType" [title]="field.value">
+                            {{field.value}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="prop-delimiter"></div>
+
+        <!-- <div class="prop-table">
+            <div class="prop-table-header">Attributes: </div>
+            <div class="prop-table-body">
+                <div *ngFor="let attribute of data.attributes" class="prop-table-row" 
+                    [attr.fantom]="attribute.fantom"
+                    [attr.type]="attribute.type" 
+                    [attr.offset]="attribute.lvl" 
+                    [attr.index]="data.index">
+                    <div class="prop-table-name" 
+                        [style.padding-left.px]="attribute.offset"
+                        [title]="attribute.name">
+                        {{attribute.label}}:
+                    </div>
+                    <div class="prop-table-value" [attr.prop-type]="attribute.propType">
+                        <span *ngIf="attribute.propType" [title]="attribute.value">
+                            {{attribute.value}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>  
+
+        <div class="prop-delimiter"></div> -->
+    </div>
+</ng-template>

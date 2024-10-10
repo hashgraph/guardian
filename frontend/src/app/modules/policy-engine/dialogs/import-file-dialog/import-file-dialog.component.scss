@@ -1,0 +1,22 @@
+.loading {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    justify-content: center;
+    align-content: center;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: #fff;
+    z-index: 1;
+}
+
+.content-header {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding-bottom: 20px;
+    cursor: pointer;
+}

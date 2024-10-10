@@ -1,6 +1,6 @@
 # Returns all Artifacts
 
-{% swagger method="get" path="" baseUrl="/artifact" summary="Returns all artifacts." %}
+{% swagger method="get" path="" baseUrl="/artifacts" summary="Returns all artifacts." %}
 {% swagger-description %}
 Returns all artifacts.
 {% endswagger-description %}

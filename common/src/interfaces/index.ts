@@ -1,1 +1,2 @@
-export * from './auth.interface'
+export * from './auth.interface.js'
+export * from './providers/meeco.js'

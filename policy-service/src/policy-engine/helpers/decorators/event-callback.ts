@@ -1,4 +1,4 @@
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces/policy-event-type';
+import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
 
 /**
  * Action callback decorator

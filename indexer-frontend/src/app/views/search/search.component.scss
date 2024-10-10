@@ -1,0 +1,114 @@
+.container {
+    .main {
+        width: 100%;
+        // min-height: calc(480px - var(--header-height));
+        // height: calc(50vh - var(--header-height));
+        height: 30%;
+        background-image: url("@assets/main.jfif");
+        background-position-y: calc(0px - var(--header-height));
+        background-size: 100% auto;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            display: block;
+            background: #4169e263;
+            width: 100%;
+            height: 100%;
+            // min-height: calc(480px - var(--header-height));
+            // height: calc(50vh - var(--header-height));
+        }
+
+        .search-container {
+            z-index: 2;
+            width: 530px;
+            height: 144px;
+
+            .search-label {
+                color: white;
+                text-align: center;
+                margin-bottom: 32px;
+
+                &__header {
+                    font-family: var(--font-family-inter);
+                    font-size: 32px;
+                    font-weight: bold;
+                }
+
+                &__description {
+                    font-family: var(--font-family-inter);
+                    font-size: var(--font-size-small-1);
+                }
+            }
+
+            .search-control {
+                width: 530px;
+                height: 40px;
+                position: relative;
+                display: flex;
+
+                &__form {
+                    width: 100%;
+                    display: flex;
+                }
+
+                &__input {
+                    width: 100%;
+                    height: 40px;
+                    input {
+                        width: 100%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.result {
+    padding: 50px 100px;
+    height: 70%;
+    background-color: #f8f8f8;
+}
+
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    height: 100%;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background-color: white;
+    height: 200px;
+    width: 300px;
+    border: 1px solid var(--color-gray-2);
+    border-radius: 10px;
+
+    &__title {
+        color: var(--color-gray-3);
+    }
+}
+
+.card-value {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    &__value {
+        font-size: 32px;
+        color: var(--color-black);
+        font-weight: bold;
+    }
+}

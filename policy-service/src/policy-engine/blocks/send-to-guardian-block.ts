@@ -1,27 +1,15 @@
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { DocumentStatus } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import {
-    MessageAction,
-    MessageServer,
-    VcDocument,
-    VpDocument,
-    DIDDocument,
-    VCMessage,
-    MessageMemo,
-    VPMessage,
-    DIDMessage,
-    Message
-} from '@hedera-modules';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { DocumentType } from '@policy-engine/interfaces/document.type';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocumentDefinition as VcDocument, VCMessage, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { DocumentType } from '../interfaces/document.type.js';
 
 /**
  * Document Operations
@@ -86,6 +74,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVcDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
@@ -138,6 +127,7 @@ export class SendToGuardianBlock {
         if (document.hash) {
             old = await ref.databaseServer.getVpDocument({
                 where: {
+                    policyId: { $eq: ref.policyId },
                     hash: { $eq: document.hash },
                     hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
                 }
@@ -258,7 +248,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVC(old);
+            await ref.databaseServer.updateVC(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -288,7 +279,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateDid(old);
+            await ref.databaseServer.updateDid(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -316,7 +308,8 @@ export class SendToGuardianBlock {
             } else {
                 old.messageIds = [document.messageId];
             }
-            return await ref.databaseServer.updateVP(old);
+            await ref.databaseServer.updateVP(old);
+            return document;
         } else {
             if (Array.isArray(document.messageIds)) {
                 document.messageIds.push(document.messageId);
@@ -357,6 +350,9 @@ export class SendToGuardianBlock {
         document: IPolicyDocument,
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         switch (ref.options.dataType) {
             case 'vc-documents': {
                 return await this.updateVCRecord(document, Operation.auto, ref);
@@ -384,6 +380,9 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
         if (type === DocumentType.DID) {
             return await this.updateDIDRecord(document, operation, ref);
         } else if (type === DocumentType.VerifiableCredential) {
@@ -405,23 +404,28 @@ export class SendToGuardianBlock {
         ref: AnyBlockType
     ): Promise<IPolicyDocument> {
         try {
-            const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
-            const user = await PolicyUtils.getHederaAccount(ref, document.owner);
+            const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
+            const user = await PolicyUtils.getUserCredentials(ref, document.owner);
 
             let topicOwner = user;
             if (ref.options.topicOwner === 'user') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, user.did);
+                topicOwner = await PolicyUtils.getUserCredentials(ref, user.did);
             } else if (ref.options.topicOwner === 'issuer') {
-                topicOwner = await PolicyUtils.getHederaAccount(ref, PolicyUtils.getDocumentIssuer(document.document));
+                topicOwner = await PolicyUtils.getUserCredentials(ref, PolicyUtils.getDocumentIssuer(document.document));
             } else {
                 topicOwner = user;
             }
             if (!topicOwner) {
                 throw new Error(`Topic owner not found`);
             }
+
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
-            const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, ref.dryRun);
+            const userHederaCred = await user.loadHederaCredentials(ref);
+            const signOptions = await user.loadSignOptions(ref);
+            const messageServer = new MessageServer(
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
+            );
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer
                 .setTopicObject(topic)
@@ -430,6 +434,7 @@ export class SendToGuardianBlock {
             document.hederaStatus = DocumentStatus.ISSUE;
             document.messageId = vcMessageResult.getId();
             document.topicId = vcMessageResult.getTopicId();
+
             return document;
         } catch (error) {
             throw new BlockActionError(PolicyUtils.getErrorMessage(error), ref.blockType, ref.uuid)
@@ -439,9 +444,8 @@ export class SendToGuardianBlock {
     /**
      * Document sender
      * @param document
-     * @param user
      */
-    private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
+    private async documentSender(document: IPolicyDocument): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -449,27 +453,31 @@ export class SendToGuardianBlock {
         // Create Message
         //
         let message: Message;
-        let docObject: DIDDocument | VcDocument | VpDocument;
+        let docObject: VcDocument | VpDocument | HederaDidDocument;
         if (type === DocumentType.DID) {
-            const did = DIDDocument.fromJsonTree(document.document);
+            const did = HederaDidDocument.fromJsonTree(document.document);
             const didMessage = new DIDMessage(MessageAction.CreateDID);
             didMessage.setDocument(did);
             didMessage.setRelationships(document.relationships);
             message = didMessage;
             docObject = did;
         } else if (type === DocumentType.VerifiableCredential) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vc = VcDocument.fromJsonTree(document.document);
             const vcMessage = new VCMessage(MessageAction.CreateVC);
             vcMessage.setDocument(vc);
             vcMessage.setDocumentStatus(document.option?.status || DocumentStatus.NEW);
             vcMessage.setRelationships(document.relationships);
+            vcMessage.setUser(owner.roleMessage);
             message = vcMessage;
             docObject = vc;
         } else if (type === DocumentType.VerifiablePresentation) {
+            const owner = await PolicyUtils.getUserByIssuer(ref, document);
             const vp = VpDocument.fromJsonTree(document.document);
             const vpMessage = new VPMessage(MessageAction.CreateVP);
             vpMessage.setDocument(vp);
             vpMessage.setRelationships(document.relationships);
+            vpMessage.setUser(owner.roleMessage);
             message = vpMessage;
             docObject = vp;
         }
@@ -521,10 +529,6 @@ export class SendToGuardianBlock {
         } else {
             throw new BlockActionError(`dataSource "${ref.options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
-
-        console.log(' -- end', ref.uuid);
-        console.log(' ');
-
         return document;
     }
 
@@ -549,12 +553,12 @@ export class SendToGuardianBlock {
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                const newDoc = await this.documentSender(doc, event.user);
+                const newDoc = await this.documentSender(doc);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            event.data.data = await this.documentSender(docs, event.user);
+            event.data.data = await this.documentSender(docs);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

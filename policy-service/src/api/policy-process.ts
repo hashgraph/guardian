@@ -1,24 +1,46 @@
-import '../config'
-import { Environment, MessageServer } from '@hedera-modules';
+import '../config.js'
 import {
     COMMON_CONNECTION_CONFIG,
-    DB_DI, ExternalEventChannel, Logger, MessageBrokerChannel
+    DataBaseHelper,
+    DatabaseServer,
+    entities,
+    Environment,
+    ExternalEventChannel,
+    IPFS,
+    LargePayloadContainer,
+    mongoForLoggingInitialization,
+    PinoLogger,
+    pinoLoggerInitialization,
+    MessageBrokerChannel,
+    MessageServer,
+    NotificationService,
+    OldSecretManager,
+    Users,
+    Wallet,
+    Workers,
 } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { BlockTreeGenerator } from '@policy-engine/block-tree-generator';
-import { PolicyValidator } from '@policy-engine/block-validators';
-import { Wallet } from '@helpers/wallet';
-import { Users } from '@helpers/users';
-import { Workers } from '@helpers/workers';
+import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'process';
-import { IPFS } from '@helpers/ipfs';
-import { CommonVariables } from '@helpers/common-variables';
+import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
-import { DatabaseServer } from '@database-modules';
+import { GridFSBucket } from 'mongodb';
+import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { DEFAULT_MONGO } from '#constants';
+
+@Module({
+    providers: [
+        NotificationService,
+    ]
+})
+class AppModule {}
 
 const {
-    policy,
     policyId,
     policyServiceName,
     skipRegistration
@@ -30,26 +52,47 @@ Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
+            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
+            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
         },
         ensureIndexes: true,
+        entities
     }),
-    MessageBrokerChannel.connect(policyServiceName)
+    MessageBrokerChannel.connect(policyServiceName),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
+        transport: Transport.NATS,
+        options: {
+            name: `${process.env.SERVICE_CHANNEL}`,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
+    mongoForLoggingInitialization()
 ]).then(async values => {
-    const [db, cn] = values;
-    DB_DI.orm = db;
-
+    const [db, cn, app, loggerMongo] = values;
+    app.listen();
+    DataBaseHelper.orm = db;
+    // @ts-ignore
+    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);
+
+    const policyConfig = await DatabaseServer.getPolicyById(policyId);
+
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
     if (process.env.HEDERA_CUSTOM_NODES) {
         try {
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
             Environment.setNodes(nodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -61,10 +104,10 @@ Promise.all([
             );
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                    error.message,
-                ['POLICY', policy.name, policyId.toString()]
+                error.message,
+                ['POLICY', policyConfig.name, policyId.toString()]
             );
             console.warn(error);
         }
@@ -74,25 +117,38 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, policyServiceName);
     new CommonVariables().setVariable('channel', channel);
 
-    new Logger().setConnection(cn);
     new BlockTreeGenerator().setConnection(cn);
     IPFS.setChannel(channel);
     new ExternalEventChannel().setChannel(channel);
-    await new Wallet().setConnection(cn).init();
+    await new OldSecretManager().setConnection(cn).init();
     await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();;
     workersHelper.initListeners();
 
-    new Logger().info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
+    // try {
+    await logger.info(`Process for with id ${policyId} was started started PID: ${process.pid}`, ['POLICY', policyId]);
 
-    const policyConfig = await DatabaseServer.getPolicyById(policyId);
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    await generator.generate(policyConfig, skipRegistration, policyValidator);
+    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger);
+    if ((policyModel as { type: 'error', message: string }).type === 'error') {
+        await generator.publish(PolicyEvents.POLICY_READY, {
+            policyId: policyId.toString(),
+            error: (policyModel as { type: 'error', message: string }).message
+        });
+        process.exit(0);
+        // throw new Error((policyModel as {type: 'error', message: string}).message);
+    }
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, () => {
+    const synchronizationService = new SynchronizationService(policyConfig, logger);
+    synchronizationService.start();
+
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async () => {
+        await generator.destroyModel(policyId, logger)
+        synchronizationService.stop();
         process.exit(0);
     });
 
@@ -100,5 +156,14 @@ Promise.all([
         policyId: policyId.toString(),
         data: policyValidator.getSerializedErrors()
     });
-    new Logger().info('Start policy', ['POLICY', policy.name, policyId.toString()]);
+
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
+
+    await logger.info('Start policy', ['POLICY', policyConfig.name, policyId.toString()]);
+    // } catch (e) {
+    //     process.exit(500);
+    // }
 });

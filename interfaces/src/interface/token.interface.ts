@@ -1,4 +1,4 @@
-import { TokenType } from '../type/token.type';
+import { TokenType } from '../type/token.type.js';
 
 /**
  * Token interface
@@ -69,6 +69,16 @@ export interface IToken {
      * Is token draft
      */
     draftToken?: boolean;
+
+    /**
+     * Can delete
+     */
+    canDelete?: boolean;
+
+    /**
+     * Wipe contract identifier
+     */
+    wipeContractId?: string;
 }
 
 /**

@@ -1,0 +1,42 @@
+<!--<mat-form-field appearance="outline" class="type-selector">-->
+<!--    <mat-label>Layers</mat-label>-->
+<!--    <mat-select [disabled]="isDisabled" required>-->
+<!--        <mat-option>NATURAL-COLOR</mat-option>-->
+<!--    </mat-select>-->
+<!--</mat-form-field>-->
+<!--<mat-form-field appearance="outline" class="type-selector">-->
+<!--    <mat-label>format</mat-label>-->
+<!--    <input matInput required/>-->
+<!--</mat-form-field>-->
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>Maxcc</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getControlByName('maxcc')" matInput required type="number"/>
+</mat-form-field>
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>Width</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getControlByName('width')" matInput required type="number"/>
+</mat-form-field>
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>Height</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getControlByName('height')" matInput required type="number"/>
+</mat-form-field>
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>BBox</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getControlByName('bbox')" matInput pattern="\d+,\d+,\d+,\d+" placeholder="11111,22222,33333,44444"
+           required/>
+</mat-form-field>
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>From</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getDateByName('from')" [ngxMatDatetimePicker]="dateTimePicker1"
+           matInput>
+    <mat-datepicker-toggle [for]="$any(dateTimePicker1)" matSuffix></mat-datepicker-toggle>
+    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
+</mat-form-field>
+<mat-form-field appearance="outline" class="type-selector">
+    <mat-label>To</mat-label>
+    <input [disabled]="isDisabled" [formControl]="getDateByName('to')" [ngxMatDatetimePicker]="dateTimePicker2"
+           matInput>
+    <mat-datepicker-toggle [for]="$any(dateTimePicker2)" matSuffix></mat-datepicker-toggle>
+    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
+</mat-form-field>
+<img *ngIf="formattedImageLink" [src]="formattedImageLink" class="image">

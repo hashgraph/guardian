@@ -16,7 +16,7 @@
         "prefer-readonly": true,
         "binary-expression-operand-order": true,
         "class-name": true,
-        "completed-docs": [true, "classes", "functions", "enums", "interfaces", "methods", "properties", "types"],
+//        "completed-docs": [true, "classes", "functions", "enums", "interfaces", "methods", "properties", "types"],
         "file-name-casing": [true, "kebab-case"],
         "no-arg": true,
         "no-any": false,

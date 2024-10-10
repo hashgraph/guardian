@@ -1,0 +1,26 @@
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div class="confirmation-text">Are you sure want to delete schema?</div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <p-button
+                    (click)="onClose()"
+                    label="Cancel"
+                    styleClass="p-button-outlined"
+            ></p-button>
+        </div>
+        <div>
+            <p-button
+                    (click)="handleDeleteSchema()"
+                    label="Delete"
+                    styleClass="p-button-danger"
+            ></p-button>
+        </div>
+    </div>
+</div>

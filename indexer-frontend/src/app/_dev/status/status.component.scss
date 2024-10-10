@@ -1,0 +1,73 @@
+.service {
+    display: flex;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    margin: 10px;
+    flex-direction: column;
+    width: fit-content;
+    max-width: 100%;
+
+    &[status="SERVICE NOT AVAILABLE"] {
+        filter: grayscale(1);
+        opacity: 0.6;
+    }
+
+    .service-name {
+        display: flex;
+        margin: 5px;
+    
+        .service-name__label {
+            width: 110px;
+            font-weight: bold;
+        }
+
+        .service-name__value {
+            text-transform: lowercase;
+        }
+    }
+
+    .service-jobs {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+
+        .service-job {
+            display: flex;
+            padding: 5px;
+            margin: 5px;
+            border: 3px solid #999;
+            border-radius: 6px;
+            background: #fafafa;
+
+            &[active="false"] {
+                border-color: #e18000;
+            }
+
+            &[active="true"] {
+                border-color: #00a107;
+            }
+        }
+
+        .processing {
+            width: 10px;
+            height: 10px;
+            background: #999;
+            border-radius: 50%;
+            margin: 4px;
+            margin-right: 6px;
+
+            &[processing="false"] {
+                background: #e18000;
+            }
+
+            &[processing="true"] {
+                background: #00a107;
+            }
+        }
+
+        .job-status {
+            text-transform: lowercase;
+        }
+    }
+}

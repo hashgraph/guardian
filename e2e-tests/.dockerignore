@@ -1,0 +1,12 @@
+node_modules
+npm-debug.log
+.gitignore
+docker-compose.yaml
+Dockerfile
+logs/
+../.vscode/
+.vscode/
+reports/
+cypress/screenshots/*.png
+*.txt
+

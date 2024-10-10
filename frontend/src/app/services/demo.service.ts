@@ -16,14 +16,14 @@ export class DemoService {
     }
 
     public getRandomKey(): Observable<any> {
-        return this.http.get<any>(`${this.url}/randomKey`);
+        return this.http.get<any>(`${this.url}/random-key`);
     }
 
     public pushGetRandomKey(): Observable<{ taskId: string, expectation: number }> {
-        return this.http.get<{ taskId: string, expectation: number }>(`${this.url}/push/randomKey`);
+        return this.http.get<{ taskId: string, expectation: number }>(`${this.url}/push/random-key`);
     }
 
     public getAllUsers(): Observable<ISession[]> {
-        return this.http.get<any>(`${this.url}/registeredUsers`);
+        return this.http.get<any>(`${this.url}/registered-users`);
     }
 }

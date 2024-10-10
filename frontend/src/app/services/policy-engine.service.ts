@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
+import { headersV2 } from '../constants';
 
 /**
  * Services for working from policy and separate blocks.
@@ -19,7 +21,7 @@ export class PolicyEngineService {
 
     public page(pageIndex?: number, pageSize?: number): Observable<HttpResponse<any[]>> {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
-            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response' });
+            return this.http.get<any>(`${this.url}?pageIndex=${pageIndex}&pageSize=${pageSize}`, { observe: 'response', headers: headersV2 });
         }
         return this.http.get<any>(`${this.url}`, { observe: 'response' });
     }
@@ -50,6 +52,10 @@ export class PolicyEngineService {
 
     public dryRun(policyId: string): Observable<any> {
         return this.http.put<any>(`${this.url}/${policyId}/dry-run`, null);
+    }
+
+    public discontinue(policyId: string, details: { date?: Date }): Observable<any> {
+        return this.http.put<any>(`${this.url}/${policyId}/discontinue`, details);
     }
 
     public draft(policyId: string): Observable<any> {
@@ -101,36 +107,60 @@ export class PolicyEngineService {
         });
     }
 
+    public exportToExcel(policyId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${policyId}/export/xlsx`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
     public exportInMessage(policyId: string): Observable<any> {
         return this.http.get(`${this.url}/${policyId}/export/message`);
     }
 
-    public importByMessage(messageId: string, versionOfTopicId?: string): Observable<any[]> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<any[]>(`${this.url}/import/message${query}`, { messageId });
+    public pushImportByMessage(
+        messageId: string,
+        versionOfTopicId?: string,
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
+    ): Observable<{ taskId: string; expectation: number }> {
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/import/message`,
+            { messageId, metadata },
+            { params }
+        );
     }
 
-    public pushImportByMessage(messageId: string, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/message${query}`, { messageId });
-    }
+    public pushImportByFile(
+        policyFile: any,
+        versionOfTopicId?: string,
+        metadata?: PolicyToolMetadata,
+        demo?: boolean
+    ): Observable<{ taskId: string; expectation: number }> {
+        let params = new HttpParams();
+        if (versionOfTopicId) {
+            params = params.set('versionOfTopicId', versionOfTopicId);
+        }
+        if (demo) {
+            params = params.set('demo', demo);
+        }
 
-    public importByFile(policyFile: any, versionOfTopicId?: string): Observable<any[]> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<any[]>(`${this.url}/import/file${query}`, policyFile, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
-    }
-
-    public pushImportByFile(policyFile: any, versionOfTopicId?: string): Observable<{ taskId: string, expectation: number }> {
-        var query = versionOfTopicId ? `?versionOfTopicId=${versionOfTopicId}` : '';
-        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/file${query}`, policyFile, {
-            headers: {
-                'Content-Type': 'binary/octet-stream'
-            }
-        });
+        const formData = new FormData();
+        formData.append('policyFile', new Blob([policyFile], { type: 'application/octet-stream' }));
+        if (metadata) {
+            formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        }
+        return this.http.post<{ taskId: string; expectation: number }>(
+            `${this.url}/push/import/file-metadata`,
+            formData,
+            { params }
+        );
     }
 
     public previewByMessage(messageId: string): Observable<any> {
@@ -149,22 +179,35 @@ export class PolicyEngineService {
         });
     }
 
+    public previewByXlsx(policyFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/xlsx/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public importByXlsx(policyFile: any, policyId: string): Observable<any[]> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<any[]>(`${this.url}/import/xlsx${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByXlsx(policyFile: any, policyId: string): Observable<{ taskId: string, expectation: number }> {
+        var query = policyId ? `?policyId=${policyId}` : '';
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/import/xlsx${query}`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
     public getBlockInformation(): Observable<any> {
         return this.http.get<any>(`${this.url}/blocks/about`);
     }
-
-    private getBaseUrl() {
-        let url = location.origin;
-        if (/^https/.test(url)) {
-            return `${url.replace(/^https/, 'wss')}`;
-        }
-        return `${url.replace(/^http/, 'ws')}`;
-    }
-
-    private getUrl(accessToken: string | null) {
-        return `${this.getBaseUrl()}/ws/?token=${accessToken}`;
-    }
-
 
     public getVirtualUsers(policyId: string): Observable<any[]> {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/users`);
@@ -194,6 +237,37 @@ export class PolicyEngineService {
         return this.http.get<any>(`${this.url}/${policyId}/dry-run/${documentType}`, { observe: 'response' });
     }
 
+    public documents(
+        policyId: string,
+        includeDocument: boolean = false,
+        type: string,
+        pageIndex?: number,
+        pageSize?: number
+    ): Observable<HttpResponse<any[]>> {
+        const params: any = {}
+        if (includeDocument) {
+            params.includeDocument = includeDocument;
+        }
+        if (type) {
+            params.type = type;
+        }
+        if (Number.isInteger(pageIndex)) {
+            params.pageIndex = pageIndex;
+        }
+        if (Number.isInteger(pageSize)) {
+            params.pageSize = pageSize;
+        }
+        return this.http.get<any>(`${this.url}/${policyId}/documents`, { observe: 'response', params });
+    }
+
+    public migrateData(migrationConfig: MigrationConfig) {
+        return this.http.post<{ error: string, id: string }[]>(`${this.url}/migrate-data`, migrationConfig);
+    }
+
+    public migrateDataAsync(migrationConfig: MigrationConfig) {
+        return this.http.post<{ taskId: string, expectation: number }>(`${this.url}/push/migrate-data`, migrationConfig);
+    }
+
     public getGroups(policyId: string): Observable<any[]> {
         return this.http.get<any>(`${this.url}/${policyId}/groups`);
     }
@@ -208,5 +282,87 @@ export class PolicyEngineService {
 
     public setMultiPolicy(policyId: string, data: any): Observable<any> {
         return this.http.post<void>(`${this.url}/${policyId}/multiple`, data);
+    }
+
+    public getPolicyNavigation(policyId: string): Observable<any> {
+        return this.http.get<void>(`${this.url}/${policyId}/navigation`);
+    }
+
+    public getPolicyCategories(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.url}/methodologies/categories`);
+    }
+
+    public getMethodologies(categoryIds?: string[], text?: string): Observable<any[]> {
+        return this.http.post<any[]>(`${this.url}/methodologies/search`, { categoryIds, text });
+    }
+
+    public exportPolicyData(policyId: string) {
+        return this.http.get(`${this.url}/${policyId}/data`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
+    }
+
+    public exportVirtualKeys(policyId: string) {
+        return this.http.get(`${this.url}/${policyId}/virtual-keys`, {
+            responseType: 'blob',
+            observe: 'response',
+        });
+    }
+
+    public getTagBlockMap(policyId: string) {
+        return this.http.get<any>(`${this.url}/${policyId}/tag-block-map`);
+    }
+
+    public importData(data: any) {
+        return this.http.post<string>(`${this.url}/data`, data, {
+            headers: {
+                'Content-Type': 'binary/octet-stream',
+            },
+        });
+    }
+
+    public importVirtualKeys(policyId: string, data: any) {
+        return this.http.post<string>(
+            `${this.url}/${policyId}/virtual-keys`,
+            data,
+            {
+                headers: {
+                    'Content-Type': 'binary/octet-stream',
+                },
+            }
+        );
+    }
+
+    // public addPolicyTest(policyId: string, testFile: any): Observable<any> {
+    //     return this.http.post<any[]>(`${this.url}/${policyId}/test/`, testFile, {
+    //         headers: {
+    //             'Content-Type': 'binary/octet-stream'
+    //         }
+    //     });
+    // }
+
+    public runTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/start`, null);
+    }
+
+    public stopTest(policyId: string, testId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/test/${testId}/stop`, null);
+    }
+
+    public getTestDetails(policyId: string, testId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${policyId}/test/${testId}/details`);
+    }
+
+    public deleteTest(policyId: string, testId: string): Observable<any> {
+        return this.http.delete<any>(`${this.url}/${policyId}/test/${testId}`);
+    }
+
+    public addPolicyTest(policyId: string, files: File[]): Observable<any[]> {
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('tests', file);
+        }
+        return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
     }
 }

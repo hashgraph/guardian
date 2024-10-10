@@ -1,6 +1,6 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { ZipCodec } from './zip-codec';
+import { ZipCodec } from './zip-codec.js';
 
 /**
  * Nats service
@@ -33,6 +33,7 @@ export abstract class NatsService {
 
     constructor() {
         this.codec = ZipCodec();
+        // this.codec = JSONCodec();
     }
 
     /**
@@ -43,7 +44,7 @@ export abstract class NatsService {
             throw new Error('Connection must set first');
         }
         this.connection.subscribe(this.replySubject, {
-            callback: async (error, msg) => {;
+            callback: async (error, msg) => {
                 if (!error) {
                     const messageId = msg.headers.get('messageId');
                     const fn = this.responseCallbacksMap.get(messageId);
@@ -186,10 +187,12 @@ export abstract class NatsService {
             queue: this.messageQueueName,
             callback: async (error, msg) => {
                 try {
-                    const messageId = msg.headers.get('messageId');
+                    const messageId = msg.headers?.get('messageId');
                     // const isRaw = msg.headers.get('rawMessage');
                     const head = headers();
-                    head.append('messageId', messageId);
+                    if (messageId) {
+                        head.append('messageId', messageId);
+                    }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
                         msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});

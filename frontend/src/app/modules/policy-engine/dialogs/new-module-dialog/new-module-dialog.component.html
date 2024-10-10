@@ -1,0 +1,33 @@
+<div class="dialog-body">
+    <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
+        <div class="form-input-container">
+            <label class="p-field-label" for="name">* Name</label>
+            <input class="p-field-input" formControlName="name" id="name" pInputText type="text"/>
+        </div>
+        <div class="form-input-container">
+            <label class="p-field-label" for="description">Description</label>
+            <textarea
+                    class="p-field-input"
+                    cols="30"
+                    formControlName="description"
+                    id="description"
+                    pInputTextarea
+                    rows="3"
+            ></textarea>
+        </div>
+    </form>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button (click)="onNoClick()"
+                    class="button secondary"
+                    label="Cancel"
+                    pButton
+            ></button>
+        </div>
+        <div>
+            <button (click)="onSubmit()" class="button" label="Create" pButton></button>
+        </div>
+    </div>
+</div>

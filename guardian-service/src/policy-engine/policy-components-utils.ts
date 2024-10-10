@@ -1,8 +1,7 @@
-import { PolicyType } from '@guardian/interfaces';
-import { Policy } from '@entity/policy';
-import { DatabaseServer } from '@database-modules';
-import { IPolicyUser } from './policy-user';
-import { ExternalEvent } from './interfaces/external-event';
+import { PolicyHelper, PolicyType } from '@guardian/interfaces';
+import { DatabaseServer, Policy } from '@guardian/common';
+import { IPolicyUser } from './policy-user.js';
+import { ExternalEvent } from './interfaces/external-event.js';
 
 /**
  * Policy component utils
@@ -11,7 +10,7 @@ export class PolicyComponentsUtils {
     /**
      * Block update function
      */
-    public static BlockUpdateFn: (uuid: string, state: any, user: IPolicyUser, tag?: string) => Promise<void>;
+    public static BlockUpdateFn: (uuid: string[], user: IPolicyUser) => Promise<void>;
     /**
      * Block error function
      */
@@ -42,15 +41,18 @@ export class PolicyComponentsUtils {
      * @param did
      */
     public static async GetPolicyInfo(policy: Policy, did: string): Promise<Policy> {
+        if (!policy) {
+            return policy;
+        }
         const result: any = policy;
-        if (policy && did) {
+        const policyId = policy.id.toString();
+        if (did) {
             result.userRoles = [];
             result.userGroups = [];
             result.userRole = null;
             result.userGroup = null;
 
-            const policyId = policy.id.toString();
-            if (policy.status === PolicyType.DRY_RUN) {
+            if (PolicyHelper.isDryRunMode(policy)) {
                 const activeUser = await DatabaseServer.getVirtualUser(policyId);
                 if (activeUser) {
                     did = activeUser.did;
@@ -62,7 +64,7 @@ export class PolicyComponentsUtils {
                 result.userRole = 'Administrator';
             }
 
-            const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
             const db = new DatabaseServer(dryRun);
             const groups = await db.getGroupsByUser(policyId, did, {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active']
@@ -75,8 +77,13 @@ export class PolicyComponentsUtils {
                 }
             }
 
+            if (!result.userRole) {
+                result.userRoles = ['No role'];
+                result.userRole = 'No role';
+            }
+
             result.userGroups = groups;
-            if (policy.status === PolicyType.PUBLISH) {
+            if (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED) {
                 const multiPolicy = await DatabaseServer.getMultiPolicy(policy.instanceTopicId, did);
                 result.multiPolicyStatus = multiPolicy?.type;
             }
@@ -87,10 +94,7 @@ export class PolicyComponentsUtils {
             result.userGroup = null;
         }
 
-        if (!result.userRole) {
-            result.userRoles = ['No role'];
-            result.userRole = 'No role';
-        }
+        result.tests = await DatabaseServer.getPolicyTests(policyId);
 
         return result;
     }

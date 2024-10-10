@@ -1,12 +1,12 @@
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, ValidatorBlock } from '@policy-engine/helpers/decorators';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Document Validator
@@ -36,6 +36,19 @@ import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-eng
     ]
 })
 export class DocumentValidatorBlock {
+    /**
+     * Before init callback
+     */
+    public async beforeInit(): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const documentCacheFields = PolicyComponentsUtils.getDocumentCacheFields(ref.policyId);
+        if (ref.options?.documentType === 'related-vc-document') {
+            documentCacheFields.add('credentialSubject.0.id');
+        }
+        if (ref.options?.documentType === 'related-vp-document') {
+            documentCacheFields.add('verifiableCredential.credentialSubject.0.id');
+        }
+    }
 
     /**
      * Validate Document
@@ -129,7 +142,7 @@ export class DocumentValidatorBlock {
         }
 
         if (ref.options.schema) {
-            const schema = await ref.databaseServer.getSchemaByIRI(ref.options.schema, ref.topicId);
+            const schema = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
                 return `Invalid document schema`;
             }

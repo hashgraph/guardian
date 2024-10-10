@@ -1,40 +1,45 @@
-import {
-    ApplicationState,
-    Logger,
-    MessageBrokerChannel,
-    SettingsContainer,
-    ValidateConfiguration
-} from '@guardian/common';
-import { Worker } from './api/worker';
-import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper';
-import { ApplicationStates } from '@guardian/interfaces';
-import { decode } from 'jsonwebtoken';
+import { ApplicationState, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, Users, ValidateConfiguration } from '@guardian/common';
+import { Worker } from './api/worker.js';
+import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
+import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import * as process from 'process';
+import { Module } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+@Module({
+    providers: [
+        NotificationService,
+    ]
+})
+class AppModule { }
+
+const channelName = (process.env.SERVICE_CHANNEL || `worker.${GenerateUUIDv4().substring(26)}`).toUpperCase();
 
 Promise.all([
-    MessageBrokerChannel.connect('WORKERS_SERVICE')
+    MessageBrokerChannel.connect('WORKERS_SERVICE'),
+    NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+        transport: Transport.NATS,
+        options: {
+            name: channelName,
+            servers: [
+                `nats://${process.env.MQ_ADDRESS}:4222`
+            ]
+        },
+    }),
+    mongoForLoggingInitialization()
 ]).then(async values => {
-    const channelName = (process.env.SERVICE_CHANNEL || `worker.${Date.now()}`).toUpperCase()
-    const [cn] = values;
+    const [cn, app, loggerMongo] = values;
+    app.listen();
     const channel = new MessageBrokerChannel(cn, 'worker');
 
-    const logger = new Logger();
-    logger.setConnection(cn);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
+    await new Users().setConnection(cn).init();
     const state = new ApplicationState();
     await state.setServiceName('WORKER').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
-
-    HederaSDKHelper.setTransactionLogSender(async (data) => {
-        await channel.request(`guardians.transaction-log-event`, data);
-    });
-
-    const settingsContainer = new SettingsContainer();
-    settingsContainer.setConnection(cn);
-    await settingsContainer.init('IPFS_STORAGE_API_KEY');
-
-    await state.updateState(ApplicationStates.INITIALIZING);
-    const w = new Worker();
-    await w.setConnection(cn).init();
+    await new OldSecretManager().setConnection(cn).init();
 
     const validator = new ValidateConfiguration();
 
@@ -43,39 +48,66 @@ Promise.all([
         if (timer) {
             clearInterval(timer);
         }
-        if (process.env.IPFS_PROVIDER === 'web3storage') {
-            if (!settingsContainer.settings.IPFS_STORAGE_API_KEY) {
-                return false;
-            }
 
-            try {
-                const decoded = decode(settingsContainer.settings.IPFS_STORAGE_API_KEY);
-                if (!decoded) {
-                    return false
-                }
-            } catch (e) {
-                return false
+        if (process.env.IPFS_PROVIDER === 'local' && !process.env.IPFS_NODE_ADDRESS) {
+            await logger.error('IPFS_NODE_ADDRESS must be set if IPFS_PROVIDER is `local`', [channelName, 'WORKER']);
+            return false
+        }
+
+        let IPFS_STORAGE_KEY: string;
+        let IPFS_STORAGE_PROOF: string;
+        let IPFS_STORAGE_API_KEY: string;
+
+        const secretManager = SecretManager.New();
+        if (process.env.IPFS_PROVIDER === 'web3storage') {
+            const keyAndProof = await secretManager.getSecrets('apikey/ipfs');
+            if (!keyAndProof?.IPFS_STORAGE_API_KEY) {
+                IPFS_STORAGE_KEY = process.env.IPFS_STORAGE_KEY;
+                IPFS_STORAGE_PROOF = process.env.IPFS_STORAGE_PROOF;
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: `${IPFS_STORAGE_KEY};${IPFS_STORAGE_PROOF}` });
+            } else {
+                const [key, proof] = keyAndProof.IPFS_STORAGE_API_KEY.split(';')
+                IPFS_STORAGE_KEY = key;
+                IPFS_STORAGE_PROOF = proof;
             }
         }
-        if (process.env.IPFS_PROVIDER === 'local') {
-            if (!process.env.IPFS_NODE_ADDRESS) {
-                return false
+
+        if (process.env.IPFS_PROVIDER === 'filebase') {
+            const key = await secretManager.getSecrets('apikey/ipfs');
+            if (!key?.IPFS_STORAGE_API_KEY) {
+                IPFS_STORAGE_API_KEY = process.env.IPFS_STORAGE_API_KEY;
+                await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY });
+            } else {
+                IPFS_STORAGE_API_KEY = key.IPFS_STORAGE_API_KEY;
             }
         }
+
+        HederaSDKHelper.setTransactionLogSender(async (data) => {
+            await channel.publish(`guardians.transaction-log-event`, data);
+        });
+
+        await state.updateState(ApplicationStates.INITIALIZING);
+        const w = new Worker(IPFS_STORAGE_KEY, IPFS_STORAGE_PROOF, IPFS_STORAGE_API_KEY, channelName, logger);
+        await w.setConnection(cn).init();
 
         return true;
     });
 
     validator.setValidAction(async () => {
+        const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+        if (Number.isInteger(maxPayload)) {
+            new LargePayloadContainer().runServer();
+        }
         await state.updateState(ApplicationStates.READY);
-        logger.info('Worker started', [channelName]);
+        logger.info('Worker started', [channelName, 'WORKER']);
     });
 
     validator.setInvalidAction(async () => {
         timer = setInterval(async () => {
             await state.updateState(ApplicationStates.BAD_CONFIGURATION);
-        }, 1000)
-    });
+        }, 1000);
+        logger.error('Worker not configured', [channelName, 'WORKER']);
+    })
 
     await validator.validate();
 }, (reason) => {

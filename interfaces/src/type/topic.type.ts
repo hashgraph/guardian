@@ -9,4 +9,9 @@ export enum TopicType {
     SchemaTopic = 'SCHEMA_TOPIC',
     SynchronizationTopic = 'SYNCHRONIZATION_TOPIC',
     RetireTopic = 'RETIRE_TOPIC',
+    TokenTopic = 'TOKEN_TOPIC',
+    ModuleTopic = 'MODULE_TOPIC',
+    ContractTopic = 'CONTRACT_TOPIC',
+    ToolTopic = 'TOOL_TOPIC',
+    TagsTopic = 'TAGS_TOPIC'
 }

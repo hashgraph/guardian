@@ -1,5 +1,5 @@
-import { Singleton } from '../decorators/singleton';
-import { NatsService } from '../mq';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../mq/index.js';
 import { ApplicationStates, GenerateUUIDv4, MessageAPI } from '@guardian/interfaces';
 
 /**
@@ -33,10 +33,11 @@ export class ApplicationState extends NatsService {
      */
     public async init(): Promise<void> {
         await super.init();
-        await this.subscribe(MessageAPI.GET_STATUS, async () => {
-            this.publish(MessageAPI.SEND_STATUS, {
+        this.subscribe(MessageAPI.GET_STATUS, async () => {
+            await this.publish(MessageAPI.SEND_STATUS, {
                 name: this.serviceName,
-                state: this.state
+                state: this.state,
+                serviceName: process.env.SERVICE_CHANNEL
             })
         });
     }

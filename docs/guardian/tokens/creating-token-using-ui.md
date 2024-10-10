@@ -12,15 +12,4 @@ Step 2: Once button is clicked, we get a pop up box to enter token details such 
 
 Following are the parameters required to complete the token creation process:
 
-| Field Name    | Description                                                             | Exmaple              |
-| ------------- | ----------------------------------------------------------------------- | -------------------- |
-| Token Name    | Name of the token                                                       | iREC Token           |
-| Token Symbol  | Symbol of the token                                                     | I                    |
-| Token Type    | whether the token to be fungible and non fungible                       | F/N                  |
-| Decimals      | Decimals to be allowed to the token                                     | 2                    |
-| Enable Admin  | Enabled to make changes in the token settings even after creating token | Checked or Unchecked |
-| Change Supply | Enabled to change the token supply                                      | Checked or Unchecked |
-| Enable Freeze | Enabling Freezing of the token                                          | Checked or Unchecked |
-| Enable KYC    | Enabling KYC when token is created                                      | Checked or Unchecked |
-| Enable Wipe   | Enabled to wipe the token supply                                        | Checked or Unchecked |
-
+<table><thead><tr><th width="198.66666666666666">Field Name</th><th>Description</th><th>Exmaple</th></tr></thead><tbody><tr><td>Token Name</td><td>Name of the token</td><td>iREC Token</td></tr><tr><td>Token Symbol</td><td>Symbol of the token</td><td>I</td></tr><tr><td>Token Type</td><td>whether the token to be fungible and non fungible</td><td>F/N</td></tr><tr><td>Decimals</td><td>Decimals to be allowed to the token</td><td>2</td></tr><tr><td>Enable Admin</td><td>Enabled to make changes in the token settings even after creating token</td><td>Checked or Unchecked</td></tr><tr><td>Change Supply</td><td>Enabled to change the token supply</td><td>Checked or Unchecked</td></tr><tr><td>Enable Freeze</td><td>Enabling Freezing of the token</td><td>Checked or Unchecked</td></tr><tr><td>Enable KYC</td><td>Enabling KYC when token is created</td><td>Checked or Unchecked</td></tr><tr><td>Enable Wipe</td><td>Enabled to wipe the token supply</td><td>Checked or Unchecked</td></tr></tbody></table>

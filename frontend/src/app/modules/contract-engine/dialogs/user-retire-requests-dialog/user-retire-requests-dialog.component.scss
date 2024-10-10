@@ -1,0 +1,125 @@
+.no-requests {
+    font-size: 25px;
+    color: gray;
+    font-weight: bold;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.request {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) 170px;
+    align-items: center;
+    column-gap: 30px;
+    padding: 20px 20px;
+    box-shadow: 0px 0px 4px 2px rgba(127, 127, 127, 0.13);
+    margin-bottom: 20px;
+    border-radius: 10px;
+
+    &__actions {
+        justify-self: center;
+    }
+}
+
+.status {
+    text-wrap: nowrap;
+    font-size: 20px;
+    font-weight: bold;
+    flex-basis: 117px;
+    &__label--available {
+        color: green;
+    }
+    &__label--not-available {
+        color: gray;
+    }
+}
+.approve {
+    // text-wrap: nowrap;
+    font-size: 20px;
+    font-weight: bold;
+    flex-basis: 117px;
+    &__label--approve {
+        color: green;
+    }
+    &__label--no-approve {
+        color: goldenrod;
+    }
+}
+.tokens {
+    justify-self: center;
+    display: flex;
+    overflow: auto;
+    display: flex;
+    padding: 5px;
+    gap: 25px;
+    .token-card {
+        display: flex;
+        flex-direction: column;
+        // border: 1px solid black;
+        box-shadow: 0px 0px 3px 2px rgb(0 144 255 / 20%);
+        border-radius: 5px;
+        padding: 10px;
+        gap: 5px;
+
+        color: rgb(71, 71, 71);
+
+        mat-icon {
+            color: #3f51b5;
+        }
+
+        &__serials,
+        &__token,
+        &__count {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+
+            mat-icon {
+                font-size: 30px;
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        &__count {
+            mat-icon {
+                transform: translateX(-2px);
+            }
+        }
+
+        &__serials {
+            span {
+                overflow: hidden;
+                max-width: 70px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+        }
+    }
+}
+
+:host ::ng-deep .request-actions {
+    display: flex;
+    align-items: center;
+    mat-icon {
+        font-size: 25px;
+        width: 25px;
+        height: 25px;
+    }
+}
+
+.btn--remove {
+    color: red;
+}
+
+.btn {
+    color: white;
+}
+.btn--approve {
+    background-color: darkgreen;
+}
+.btn--reject {
+    background-color: rgb(179, 3, 3);
+}

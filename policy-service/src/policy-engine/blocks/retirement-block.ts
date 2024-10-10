@@ -1,18 +1,16 @@
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { BlockActionError } from '@policy-engine/errors';
-import { DocumentSignature, GenerateUUIDv4, IRootConfig, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { VcDocument, MessageServer, VCMessage, MessageAction, VPMessage } from '@hedera-modules';
-import { VcHelper } from '@helpers/vc-helper';
-import { Token as TokenCollection } from '@entity/token';
-import { DataTypes, PolicyUtils } from '@policy-engine/helpers/utils';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { MintService } from '@policy-engine/multi-policy-service/mint-service';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { BlockActionError } from '../errors/index.js';
+import { DocumentCategoryType, DocumentSignature, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { Token as TokenCollection, VcHelper, VcDocumentDefinition as VcDocument, MessageServer, VCMessage, MessageAction, VPMessage, HederaDidDocument } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { MintService } from '../mint/mint-service.js';
 
 /**
  * Retirement block
@@ -44,15 +42,20 @@ import { MintService } from '@policy-engine/multi-policy-service/mint-service';
 export class RetirementBlock {
     /**
      * Create wipe VC
-     * @param root
+     * @param didDocument
      * @param token
      * @param data
      * @param ref
      * @private
      */
-    private async createWipeVC(root: IRootConfig, token: any, data: any, ref: AnyBlockType): Promise<VcDocument> {
+    private async createWipeVC(
+        didDocument: HederaDidDocument,
+        token: any,
+        data: any,
+        ref: AnyBlockType
+    ): Promise<VcDocument> {
         const vcHelper = new VcHelper();
-        const policySchema = await ref.databaseServer.getSchemaByType(ref.topicId, SchemaEntity.WIPE_TOKEN);
+        const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.WIPE_TOKEN);
         const amount = data as string;
         const vcSubject = {
             ...SchemaHelper.getContext(policySchema),
@@ -60,7 +63,12 @@ export class RetirementBlock {
             tokenId: token.tokenId,
             amount: amount.toString()
         }
-        const wipeVC = await vcHelper.createVC(root.did, root.hederaAccountKey, vcSubject);
+        const uuid = await ref.components.generateUUID();
+        const wipeVC = await vcHelper.createVerifiableCredential(
+            vcSubject,
+            didDocument,
+            null,
+            { uuid });
         return wipeVC;
     }
 
@@ -71,13 +79,13 @@ export class RetirementBlock {
      * @param vcs
      * @private
      */
-    private async createVP(root: IRootConfig, uuid: string, vcs: VcDocument[]) {
+    private async createVP(didDocument: HederaDidDocument, uuid: string, vcs: VcDocument[]) {
         const vcHelper = new VcHelper();
-        const vp = await vcHelper.createVP(
-            root.did,
-            root.hederaAccountKey,
+        const vp = await vcHelper.createVerifiablePresentation(
             vcs,
-            uuid
+            didDocument,
+            null,
+            { uuid }
         );
         return vp;
     }
@@ -97,31 +105,36 @@ export class RetirementBlock {
         documents: VcDocument[],
         relationships: string[],
         topicId: string,
-        root: IRootConfig,
-        user: IPolicyUser,
+        root: UserCredentials,
+        user: PolicyUser,
         targetAccountId: string
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const uuid = GenerateUUIDv4();
+        const didDocument = await root.loadDidDocument(ref);
+        const hederaCred = await root.loadHederaCredentials(ref);
+        const signOptions = await root.loadSignOptions(ref);
+
+        const uuid: string = await ref.components.generateUUID();
         const amount = PolicyUtils.aggregate(ref.options.rule, documents);
         const [tokenValue, tokenAmount] = PolicyUtils.tokenAmount(token, amount);
-        const wipeVC = await this.createWipeVC(root, token, tokenAmount, ref);
+        const wipeVC = await this.createWipeVC(didDocument, token, tokenAmount, ref);
         const vcs = [].concat(documents, wipeVC);
-        const vp = await this.createVP(root, uuid, vcs);
+        const vp = await this.createVP(didDocument, uuid, vcs);
 
-        const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(hederaCred.hederaAccountId, hederaCred.hederaAccountKey, signOptions, ref.dryRun);
         ref.log(`Topic Id: ${topicId}`);
         const topic = await PolicyUtils.getPolicyTopic(ref, topicId);
         const vcMessage = new VCMessage(MessageAction.CreateVC);
         vcMessage.setDocument(wipeVC);
         vcMessage.setRelationships(relationships);
+        vcMessage.setUser(null);
         const vcMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vcMessage);
 
         const vcDocument = PolicyUtils.createVC(ref, user, wipeVC);
-        vcDocument.type = DataTypes.RETIREMENT;
+        vcDocument.type = DocumentCategoryType.RETIREMENT;
         vcDocument.schema = `#${wipeVC.getSubjectType()}`;
         vcDocument.messageId = vcMessageResult.getId();
         vcDocument.topicId = vcMessageResult.getTopicId();
@@ -133,19 +146,20 @@ export class RetirementBlock {
         const vpMessage = new VPMessage(MessageAction.CreateVP);
         vpMessage.setDocument(vp);
         vpMessage.setRelationships(relationships);
+        vpMessage.setUser(null);
 
         const vpMessageResult = await messageServer
             .setTopicObject(topic)
             .sendMessage(vpMessage);
 
         const vpDocument = PolicyUtils.createVP(ref, user, vp);
-        vpDocument.type = DataTypes.RETIREMENT;
+        vpDocument.type = DocumentCategoryType.RETIREMENT;
         vpDocument.messageId = vpMessageResult.getId();
         vpDocument.topicId = vpMessageResult.getTopicId();
-
+        vpDocument.relationships = relationships;
         await ref.databaseServer.saveVP(vpDocument);
 
-        await MintService.wipe(ref, token, tokenValue, root, targetAccountId, vpMessageResult.getId());
+        await MintService.wipe(ref, token, tokenValue, hederaCred, targetAccountId, vpMessageResult.getId());
 
         return [vpDocument, tokenValue];
     }
@@ -166,7 +180,7 @@ export class RetirementBlock {
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
 
-        const token = await ref.databaseServer.getTokenById(ref.options.tokenId);
+        const token = await ref.databaseServer.getToken(ref.options.tokenId);
         if (!token) {
             throw new BlockActionError('Bad token id', ref.blockType, ref.uuid);
         }
@@ -176,7 +190,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
@@ -220,7 +234,7 @@ export class RetirementBlock {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
-        const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+        const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
         const [vp, tokenValue] = await this.retirementProcessing(
             token,

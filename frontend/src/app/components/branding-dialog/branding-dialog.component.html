@@ -1,0 +1,7 @@
+<h2 class="dialog-title">Reset Confirmation</h2>
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+<mat-dialog-actions class="page-btns">
+    <button mat-raised-button color="primary" id="reset-btn" (click)="onProceed()" [mat-dialog-close]="true">Reset</button>
+    <button mat-raised-button color="primary" id="cancel-btn" [mat-dialog-close]>Cancel</button>
+</mat-dialog-actions>
+  

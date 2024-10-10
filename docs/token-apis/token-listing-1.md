@@ -11,7 +11,7 @@ Creates a new token. Only users with the Standard Registry role are allowed to m
 Object that contains token information
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="201: Created" description="Created" %}
 ```javascript
 {
     content:
@@ -48,6 +48,14 @@ Object that contains token information
 {
     // Response
 }
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+User not registered
 ```
 {% endswagger-response %}
 

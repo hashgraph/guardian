@@ -1,76 +1,48 @@
+import EventEmitter from 'events';
+import fs, { WatchOptions } from 'fs';
 import 'reflect-metadata';
-export { PolicyEvents } from './type/policy-events';
-export { WorkerEvents } from './type/worker-events';
-export { GenerateUUIDv4 } from './helpers/generate-uuid-v4';
-export { BlockErrorActions } from './type/block-error-actions';
-export { AuthEvents } from './type/auth-events';
-export { ApproveStatus } from './type/approve-status.type';
-export { DidDocumentStatus } from './type/did-status.type';
-export { DocumentSignature } from './type/document-signature.type';
-export { DocumentStatus } from './type/document-status.type';
-export { PolicyType } from './type/policy.type';
-export { ModuleStatus } from './type/module-status.type';
-export { RootState } from './type/root-state.type';
-export { PolicyEngineEvents } from './type/policy-engine-events';
-export { SchemaEntity } from './type/schema-entity.type';
-export { UserRole, PolicyRole } from './type/user-role.type';
-export * from './type/message-api.type';
-export { IApprovalDocument } from './interface/approval-document.interface';
-export { ICredentialSubject } from './interface/credential-subject.interface';
-export { IDidObject } from './interface/did-object.interface';
-export { did } from './interface/did.interface';
-export { IRootConfig } from './interface/root-config.interface';
-export { ISchema } from './interface/schema.interface';
-export { IToken, ITokenInfo } from './interface/token.interface';
-export { uuid } from './interface/uuid.interface';
-export { IVCDocument } from './interface/vc-document.interface';
-export { IVC } from './interface/vc.interface';
-export { IVPDocument } from './interface/vp-document.interface';
-export { IVP } from './interface/vp.interface';
-export { IUser, ISession } from './interface/user.interface';
-export { IWalletAccount } from './interface/wallet-account.interface';
-export {
-    IChainItem,
-    IReport,
-    IReportItem,
-    IPolicyReport,
-    ITokenReport,
-    IVCReport,
-    IVPReport,
-    IImpactReport
-} from './interface/chain-item.interface';
-export { Token } from './models/token';
-export { Schema } from './models/schema';
-export { SchemaStatus } from './type/schema-status.type';
-export { ISchemaDocument } from './interface/schema-document.interface';
-export { SchemaField } from './interface/schema-field.interface';
-export { SchemaCondition } from './interface/schema-condition.interface';
-export { ModelHelper } from './helpers/model-helper';
-export { ImportType } from './type/import.type';
-export { SchemaHelper } from './helpers/schema-helper';
-export { WalletEvents } from './type/wallet-events';
-export { SchemaCategory } from './type/schema-category.type';
-export { CommonSettings } from './interface/common-settings.interface';
-export { ILog } from './interface/log.interface';
-export { LogType } from './type/log.type';
-export { IPageParameters } from './interface/page-parameters.interface';
-export { TopicType } from './type/topic.type';
-export { IconType } from './type/icon.type';
-export { UserType } from './type/user.type';
-export { IDidDocument } from './interface/did-document';
-export { IVerificationMethod } from './interface/verification-method';
-export { ApplicationStates } from './type/application-states.type';
-export { FieldTypesDictionary } from './helpers/field-types-dictionary';
-export { UnitSystem } from './type/unit-system.type';
-export * from './interface/messages';
-export { StatusType, IStatus } from './interface/async.interface';
-export { GroupRelationshipType, GroupAccessType } from './type/user-group.type';
-export * from './type/workers.type';
-export { ArtifactType } from './type/artifact.type';
-export { IArtifact } from './interface/artifact.interface';
-export { TokenType } from './type/token.type';
-export { ContractStatus } from './type/contract-status.type';
-export { SignatureType } from './type/signature.type';
-export { GeoJsonType } from './type/geojson.type';
-export { default as GeoJsonSchema } from './helpers/geojson-schema/geo-json';
-export { default as GeoJsonContext } from './helpers/geojson-schema/geo-json-context';
+
+declare class FSWatcher extends EventEmitter implements fs.FSWatcher {
+    options: WatchOptions
+
+    ref(): this; // <-- added
+    unref(): this; // <-- added
+
+    close(): void;
+
+    /**
+     * events.EventEmitter
+     *   1. change
+     *   2. error
+     */
+    addListener(event: string, listener: (...args: any[]) => void): this;
+    addListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    addListener(event: 'error', listener: (error: Error) => void): this;
+    addListener(event: 'close', listener: () => void): this;
+
+    on(event: string, listener: (...args: any[]) => void): this;
+    on(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    on(event: 'error', listener: (error: Error) => void): this;
+    on(event: 'close', listener: () => void): this;
+
+    once(event: string, listener: (...args: any[]) => void): this;
+    once(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    once(event: 'error', listener: (error: Error) => void): this;
+    once(event: 'close', listener: () => void): this;
+
+    prependListener(event: string, listener: (...args: any[]) => void): this;
+    prependListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    prependListener(event: 'error', listener: (error: Error) => void): this;
+    prependListener(event: 'close', listener: () => void): this;
+
+    prependOnceListener(event: string, listener: (...args: any[]) => void): this;
+    prependOnceListener(event: 'change', listener: (eventType: string, filename: string | Buffer) => void): this;
+    prependOnceListener(event: 'error', listener: (error: Error) => void): this;
+    prependOnceListener(event: 'close', listener: () => void): this;
+}
+
+export * from './type/index.js';
+export * from './interface/index.js';
+export * from './helpers/index.js';
+export * from './models/index.js';
+export * from './errors/index.js';

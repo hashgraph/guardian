@@ -1,55 +1,56 @@
-const dotenv = require('dotenv');
-dotenv.config();
+import { spawn } from 'child_process';
+import path from 'path';
 
-const { spawn } = require('child_process');
-const kill = require('tree-kill');
-const path = require('path');
+async function Run() {
 
-const { sleep, GenerateTokens } = require("./helpers");
+    function sleep(time) {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, time);
+        })
+    }
 
-const { Accounts } = require("./test-suits/accounts");
-const { Profiles } = require("./test-suits/profiles");
-const { Trustchains } = require("./test-suits/trustchains");
+    const pathArray = [
+        [path.resolve(path.join('..', 'logger-service')), { GUARDIAN_ENV: 'develop' }],
+        [path.resolve(path.join('..', 'notification-service')), { GUARDIAN_ENV: 'develop' }],
+        [path.resolve(path.join('..', 'worker-service')), {
+            IPFS_STORAGE_KEY: process.env.IPFS_STORAGE_KEY,
+            IPFS_STORAGE_PROOF: process.env.IPFS_STORAGE_PROOF,
+            GUARDIAN_ENV: 'develop'
+        }],
+        [path.resolve(path.join('..', 'auth-service')), {
+            HASHICORP_ADDRESS: `http://${process.env.HASHICORP_HOST}:${process.env.HASHICORP_PORT}`,
+            GUARDIAN_ENV: 'develop',
+            ACCESS_TOKEN_UPDATE_INTERVAL: '30000000'
+        }],
+        [path.resolve(path.join('..', 'policy-service')), {
+            OPERATOR_ID: process.env.OPERATOR_ID,
+            OPERATOR_KEY: process.env.OPERATOR_KEY,
+            GUARDIAN_ENV: 'develop'
+        }],
+        [path.resolve(path.join('..', 'guardian-service')), {
+            OPERATOR_ID: process.env.OPERATOR_ID,
+            OPERATOR_KEY: process.env.OPERATOR_KEY,
+            GUARDIAN_ENV: 'develop'
+        }],
+        [path.resolve(path.join('..', 'api-gateway')), { GUARDIAN_ENV: 'develop' }]
+    ];
+    for (let p of pathArray) {
+        processes.push(
+            spawn('npm start', {
+                cwd: p[0],
+                shell: true,
+                detached: true,
+                env: Object.assign(process.env, p[1])
+            })
+        )
+        console.info(`"${path.parse(p[0]).name}"`, 'was started');
+        await sleep(20000);
+    }
+    await sleep(10000);
+}
 
-
-const processes = [];
-
-describe('Tests', async function () {
-    before(async function () {
-        this.timeout(10000000000);
-        const pathArray = [
-            [path.resolve(path.join('..', 'logger-service')), {}],
-            [path.resolve(path.join('..', 'worker-service')), {IPFS_STORAGE_API_KEY: process.env.IPFS_STORAGE_API_KEY}],
-            [path.resolve(path.join('..', 'auth-service')), {HASHICORP_ADDRESS: `http://${process.env.HASHICORP_HOST}:${process.env.HASHICORP_PORT}`}],
-            [path.resolve(path.join('..', 'policy-service')), {OPERATOR_ID: process.env.OPERATOR_ID, OPERATOR_KEY: process.env.OPERATOR_KEY}],
-            [path.resolve(path.join('..', 'guardian-service')), {OPERATOR_ID: process.env.OPERATOR_ID, OPERATOR_KEY: process.env.OPERATOR_KEY}],
-            [path.resolve(path.join('..', 'api-gateway')), {}]
-        ];
-        for (let p of pathArray) {
-            processes.push(
-                spawn('npm start', {
-                    cwd: p[0],
-                    shell: true,
-                    env: Object.assign(process.env, p[1])
-                })
-            )
-            console.info(`"${path.parse(p[0]).name}"`, 'was started');
-            await sleep(15000);
-        }
-        await sleep(10000);
-    })
-
-    beforeEach(GenerateTokens);
-
-    Accounts();
-    Profiles();
-    // Schemas();
-    Trustchains();
-    // Policies();
-
-    after(async function () {
-        for (let proc of processes) {
-            kill(proc.pid);
-        }
-    })
+Run().then(() => {
+    console.log('services started');
 });

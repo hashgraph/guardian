@@ -1,13 +1,13 @@
-import { Entity, Property, Enum, BeforeCreate, Unique } from '@mikro-orm/core';
-import { IUser, UserRole } from '@guardian/interfaces';
+import { BeforeCreate, Entity, Enum, Property, Unique } from '@mikro-orm/core';
+import { IGroup, IUser, UserRole } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 /**
  * User collection
  */
 @Entity()
-@Unique({ properties: ['username'], options: { partialFilterExpression: { username: { $type: 'string' }}}})
-@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $type: 'string' }}}})
+@Unique({ properties: ['username'], options: { partialFilterExpression: { username: { $type: 'string' } } } })
+@Unique({ properties: ['did'], options: { partialFilterExpression: { did: { $type: 'string' } } } })
 export class User extends BaseEntity implements IUser {
     /**
      * Username
@@ -48,7 +48,7 @@ export class User extends BaseEntity implements IUser {
     /**
      * User role
      */
-    @Enum({ nullable: true})
+    @Enum({ nullable: true })
     role?: UserRole;
 
     /**
@@ -56,6 +56,48 @@ export class User extends BaseEntity implements IUser {
      */
     @Property({ nullable: true })
     policyRoles?: any;
+
+    /**
+     * Provider
+     */
+    @Property({ nullable: true })
+    provider?: string;
+
+    /**
+     * Provider Id
+     */
+    @Property({ nullable: true })
+    providerId?: string;
+
+    /**
+     * Refresh token
+     */
+    @Property({ nullable: true })
+    refreshToken?: string;
+
+    /**
+     * Use fireblocks signing
+     */
+    @Property({ nullable: true })
+    useFireblocksSigning: boolean;
+
+    /**
+     * Group name
+     */
+    @Property({ nullable: true })
+    permissionsGroup?: IGroup[];
+
+    /**
+     * Permissions
+     */
+    @Property({ nullable: true })
+    permissions?: string[];
+
+    /**
+     * Template
+     */
+    @Property({ nullable: true })
+    template?: boolean;
 
     /**
      * Set defaults

@@ -1,67 +1,20 @@
-import { Log } from '@entity/log';
-import { NatsConnection } from 'nats';
-import {
-    MessageResponse,
-    MessageError,
-    DataBaseHelper,
-    Singleton,
-    NatsService
-} from '@guardian/common';
-import {
-    MessageAPI,
-    ILog,
-    IGetLogsMessage,
-    IGetLogsResponse,
-    IGetLogAttributesMessage,
-    GenerateUUIDv4
-} from '@guardian/interfaces';
+import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse, Log } from '@guardian/common';
+import { MessageAPI } from '@guardian/interfaces';
+import { Controller, Module } from '@nestjs/common';
+import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';
+import process from 'process';
 
-/**
- * Guardians service
- */
-@Singleton
-export class LoggerApiService extends NatsService {
-    /**
-     * Message queue name
-     */
-    public messageQueueName = 'guardians-queue';
-
-    /**
-     * Reply subject
-     * @private
-     */
-    public replySubject = 'guardians-queue-reply-' + GenerateUUIDv4();
-
-    /**
-     * Register listener
-     * @param event
-     * @param cb
-     */
-    registerListener(event: string, cb: Function): void {
-        this.getMessages(event, cb);
-    }
-}
-
-/**
- * Logegr API
- * @param channel
- * @param logRepository
- */
-export async function loggerAPI(
-    cn: NatsConnection,
-    logRepository: DataBaseHelper<Log>
-): Promise<void> {
-
-    const channel = new LoggerApiService();
-    await channel.setConnection(cn).init();
-
+@Controller()
+export class LoggerService {
     /**
      * Add log message
      *
-     * @param {Message} [payload] - Log message
-     *
+     * @param data
+     * @param context
      */
-    channel.getMessages<ILog, any>(MessageAPI.WRITE_LOG, async (message) => {
+    @MessagePattern(MessageAPI.WRITE_LOG, Transport.NATS)
+    async writeLog(@Payload() message: any, @Ctx() context: NatsContext) {
+        const logRepository = new DataBaseHelper(Log);
         try {
             if (!message) {
                 throw new Error('Log message is empty');
@@ -77,24 +30,22 @@ export async function loggerAPI(
         catch (error) {
             return new MessageError(error);
         }
-    })
+    }
 
-    /**
-     * Get application logs.
-     *
-     * @param {any} [msg.filters] - logs filter options
-     * @param {IPageParameters} [msg.pageParameters] - Page parameters
-     *
-     * @return {any} - Logs
-     */
-    channel.getMessages<IGetLogsMessage, IGetLogsResponse>(MessageAPI.GET_LOGS, async (msg) => {
+    @MessagePattern(MessageAPI.GET_LOGS, Transport.NATS)
+    async getLogs(@Payload() msg: any, @Ctx() context: NatsContext) {
         try {
+            const logRepository = new DataBaseHelper(Log);
+
             const filters = msg && msg.filters || {};
             if (filters.datetime && filters.datetime.$gte && filters.datetime.$lt) {
                 filters.datetime.$gte = new Date(filters.datetime.$gte);
                 filters.datetime.$lt = new Date(filters.datetime.$lt);
             }
             const pageParameters = msg && msg.pageParameters || {};
+            // if (!pageParameters.limit) {
+            //     pageParameters.limit = 2000;
+            // }
             const logs = await logRepository.find(filters, {
                     orderBy: {
                         datetime: msg.sortDirection && msg.sortDirection.toUpperCase() || 'DESC'
@@ -102,24 +53,21 @@ export async function loggerAPI(
                     ...pageParameters
             });
             const totalCount = await logRepository.count(filters as any);
+            const directLink = new LargePayloadContainer().addObject(Buffer.from(JSON.stringify(logs)));
             return new MessageResponse({
-                logs,
+                directLink,
                 totalCount
             });
         }
         catch (error) {
             return new MessageError(error);
         }
-    })
+    }
 
-    /**
-     * Get attributes.
-     *
-     * @param {any} [payload.name] - Name to filter
-     *
-     * @return {any} - Attributes
-     */
-    channel.getMessages<IGetLogAttributesMessage, any>(MessageAPI.GET_ATTRIBUTES, async (msg) => {
+    @MessagePattern(MessageAPI.GET_ATTRIBUTES, Transport.NATS)
+    async getAttributes(@Payload() msg: any, @Ctx() context: NatsContext) {
+        const logRepository = new DataBaseHelper(Log);
+
         try {
             const nameFilter = `.*${msg.name || ''}.*`;
             const existingAttributes = msg.existingAttributes || [];
@@ -138,5 +86,46 @@ export async function loggerAPI(
         catch (error) {
             return new MessageError<string>(error.toString());
         }
-    })
+    }
 }
+
+// class LogClientSerializer implements Serializer {
+//     serialize(value: any, options?: Record<string, any>): any {
+//         console.log('s', value, options);
+//
+//         value.data = JSON.stringify(value.data)
+//
+//         return value;
+//     }
+// }
+//
+// class LogClientDeserializer implements Deserializer {
+//     deserialize(value: any, options?: Record<string, any>): any {
+//         console.log('d', value, options);
+//         return value;
+//     }
+// }
+
+/**
+ * Logger module
+ */
+@Module({
+    imports: [
+        ClientsModule.register([{
+            name: 'LOGGER',
+            transport: Transport.NATS,
+            options: {
+                servers: [
+                    `nats://${process.env.MQ_ADDRESS}:4222`
+                ],
+                queue: 'logger-service',
+                // serializer: new LogClientSerializer(),
+                // deserializer: new LogClientDeserializer(),
+            }
+        }]),
+    ],
+    controllers: [
+        LoggerService
+    ]
+})
+export class LoggerModule {}

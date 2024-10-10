@@ -1,18 +1,7 @@
-import { User } from '@entity/user';
-import {
-    MessageResponse,
-    MessageError,
-    Logger,
-    DataBaseHelper, NatsService, Singleton,
-} from '@guardian/common';
-import {
-    WalletEvents,
-    IGetKeyMessage,
-    ISetKeyMessage,
-    IGetKeyResponse,
-    IGetGlobalApplicationKey, ISetGlobalApplicationKey, GenerateUUIDv4
-} from '@guardian/interfaces';
-import { IVault } from '../vaults';
+import { User } from '../entity/user.js';
+import { DataBaseHelper, MessageError, MessageResponse, NatsService, PinoLogger, Singleton } from '@guardian/common';
+import { GenerateUUIDv4, IGetGlobalApplicationKey, IGetKeyMessage, IGetKeyResponse, ISetGlobalApplicationKey, ISetKeyMessage, WalletEvents } from '@guardian/interfaces';
+import { IVault } from '../vaults/index.js';
 
 /**
  * Wallet service
@@ -49,7 +38,7 @@ export class WalletService extends NatsService {
     /**
      * Register listeners
      */
-    registerListeners(): void {
+    registerListeners(logger: PinoLogger): void {
         this.getMessages<IGetKeyMessage, IGetKeyResponse>(WalletEvents.GET_KEY, async (msg) => {
             const { token, type, key } = msg;
 
@@ -57,7 +46,7 @@ export class WalletService extends NatsService {
                 const value = await this.vault.getKey(token, type, key);
                 return new MessageResponse({ key: value });
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)
             }
         });
@@ -69,7 +58,7 @@ export class WalletService extends NatsService {
                 await this.vault.setKey(token, type, key, value);
                 return new MessageResponse(null);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -85,7 +74,7 @@ export class WalletService extends NatsService {
                 const value = await this.vault.getKey(user.walletToken, type, key);
                 return new MessageResponse({ key: value });
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error)
             }
         });
@@ -101,7 +90,7 @@ export class WalletService extends NatsService {
                 await this.vault.setKey(user.walletToken, type, key, value);
                 return new MessageResponse(null);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -113,7 +102,7 @@ export class WalletService extends NatsService {
                 const key = await this.vault.getGlobalApplicationKey(type);
                 return new MessageResponse({key});
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -125,7 +114,7 @@ export class WalletService extends NatsService {
                 await this.vault.setGlobalApplicationKey(type, key);
                 return new MessageResponse(null);
             } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
+                await logger.error(error, ['AUTH_SERVICE']);
                 return new MessageError(error);
             }
         });

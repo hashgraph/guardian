@@ -1,6 +1,6 @@
 # Delete Artifact
 
-{% swagger method="delete" path="" baseUrl="/artifact/{artifactId}" summary="Delete artifact." %}
+{% swagger method="delete" path="" baseUrl="/artifacts/{artifactId}" summary="Delete artifact." %}
 {% swagger-description %}
 Delete artifact.
 {% endswagger-description %}
@@ -9,7 +9,7 @@ Delete artifact.
 Artifact identifier
 {% endswagger-parameter %}
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% swagger-response status="204: No Content" description="No Content" %}
 ```javascript
 {
    content:

@@ -1,27 +1,33 @@
-@media (max-width: 810px) {
-    .nav-bar {
-        width: 100% !important;
-        padding: 0px !important;
-    }
+.demo-menu {
+    background: white  !important;
+    max-height: 345px;
+    height: auto;
+    width: 470px;
+    border-radius: 30px;
+    overflow: scroll;
+}
 
-    .user-content-info {
-        align-self: center;
-    }
+.desktop-header {
+    display: block;
+}
 
-    ::ng-deep .nav-bar div.mat-tab-links {
-        justify-content: center;
-    }
+.mobile-header {
+    display: none;
+}
 
-    ::ng-deep .mat-toolbar-single-row {
-        flex-direction: column !important;
-        padding: 0px !important;
-    }
+.mobile-menu {
+    display: none;
+}
 
-    .btn-home {
-        font-size: 35px !important;
-        line-height: 27px !important;
-        transform: translate(0, 5px);
-    }
+.company-branding {
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#company-logo {
+    display: none;
 }
 
 .user-content-info,
@@ -54,6 +60,7 @@
     position: relative;
     height: var(--header-height);
     user-select: none;
+    overflow: hidden;
 }
 
 .content.header .mat-toolbar.mat-primary {
@@ -107,11 +114,34 @@ a[hidden="true"] {
 
 .btn-home {
     cursor: pointer;
+    display: inline-block;
     font-size: 40px;
     line-height: 45px;
     font-weight: bold;
     color: #fff;
     transition: color .3s linear;
+}
+
+.btn-home::before {
+    content: var(--btn-home-before-content);
+    width: var(--btn-home-before-size);
+    height: var(--btn-home-before-size);
+}
+
+.mobile-header .btn-home[isLogin="true"] {
+    display: block;
+    width: auto;
+    justify-content: auto;
+    margin: 22px 0 22px 22px;
+    font-size: 20px;
+}
+
+.mobile-header .btn-home[isLogin="false"] {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    margin: 0;
+    font-size: 26px;
 }
 
 .current-user-name {
@@ -188,6 +218,7 @@ a[hidden="true"] {
     color: #818181;
     border: 2px solid #aeaeae;
     box-shadow: inset 0px 0px 6px 0px #aeaeae;
+    font-size: 16px;
 }
 
 .user-balance[balance-type='error'] {
@@ -267,7 +298,7 @@ a[hidden="true"] {
     padding: 0px 30px 0px 20px;
 }
 
-.nav-menu-item  mat-icon {
+.nav-menu-item mat-icon {
     position: absolute;
     right: 0px;
     top: 0;
@@ -288,7 +319,7 @@ a[hidden="true"] {
 }
 
 ::ng-deep .sub-nav-backdrop {
-    background: linear-gradient(180deg, transparent 125px, rgb(40 40 40) 125px, rgb(40 40 40) 190px, transparent 190px);
+    background: linear-gradient(180deg, transparent 124px, rgb(40 40 40) 124px, rgb(40 40 40) 190px, transparent 190px);
 }
 
 .sub-nav-list {
@@ -301,6 +332,275 @@ a[hidden="true"] {
     background: #282828 !important;
     padding: 7px 220px;
     transition: none;
-    box-shadow: none;
     box-sizing: border-box;
+    box-shadow: 0px 3px 4px 0px #282828a1;
+}
+
+.mobile-menu-button {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.mobile-menu-button .bar {
+    height: 3px;
+    width: 100%;
+    background-color: white;
+    border-radius: 10px;
+}
+
+.menu-backdrop {
+    display: none;
+}
+
+@media (max-width: 810px) {
+    .nav-bar {
+        width: 100% !important;
+        padding: 0px !important;
+    }
+
+    .user-content-info {
+        align-self: center;
+    }
+
+    ::ng-deep .nav-bar div.mat-tab-links {
+        justify-content: center;
+    }
+
+    ::ng-deep .mat-toolbar-single-row {
+        flex-direction: column !important;
+        padding: 0px !important;
+    }
+
+    .btn-home {
+        /*font-size: 35px !important;*/
+        line-height: 27px !important;
+        transform: translate(0, 5px);
+    }
+
+    .desktop-home {
+        display: none !important;
+    }
+
+    .desktop-header {
+        display: none !important;
+    }
+
+    .desktop-user-balance {
+        display: none !important;
+    }
+
+    .desktop-user-name {
+        display: none !important;
+    }
+
+    .mobile-menu {
+        display: block !important;
+    }
+
+    .mobile-header {
+        width: 100%;
+        height: 100%;
+        display: flex !important;
+    }
+
+    .mobile-menu-button {
+        display: flex;
+        margin: 29px 0 23px 32px;
+    }
+
+    .user-content-info {
+        display: flex;
+        margin-left: 22px;
+        margin-right: 22px;
+        flex: auto;
+        gap: 22px;
+    }
+
+    .user-balance {
+        border-radius: 5px;
+        height: 38px;
+        font-size: 15px;
+        line-height: 1.2;
+        text-align: center;
+        white-space: normal;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    /* Hamburguer Menu */
+
+    .nav-list {
+        padding-top: 20px;
+    }
+
+    .nav-items {
+        height: 100%;
+        width: 0px;
+        position: fixed;
+        z-index: 1001;
+        top: 0;
+        left: 0;
+        background-color: white;
+        overflow-x: hidden;
+        transition: 0.2s;
+    }
+
+    .mobile-menu[open="true"] .nav-items {
+        width: 250px;
+    }
+
+    .nav-items .nav-list-item {
+        padding: 8px 8px 8px 32px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #222222;
+        display: block;
+        transition: 0.05s;
+        text-align: left;
+    }
+
+    .nav-items .nav-list-item:hover {
+        color: #818181;
+    }
+
+    .nav-list-item[active="true"] {
+        color: var(--primary-color) !important;
+        transition: 0.05s;
+    }
+
+    .nav-items .material-icons {
+        margin: 23px auto 23px 32px;
+        font-size: 36px;
+        color: #222222;
+    }
+
+    .menu-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 1000;
+        background-color: rgba(0, 0, 0, 0.75);
+    }
+
+    .mobile-menu[open="true"] .menu-backdrop {
+        display: flex;
+    }
+
+    .subnav-list {
+        height: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.2s ease-in-out;
+        margin: 0px auto 0px 35px;
+    }
+
+    .subnav-list .nav-list-item {
+        border-left: 3px #e3e3e3 solid;
+        font-size: 20px;
+        padding: 8px 20px;
+        height: auto;
+    }
+
+    .nav-list-item[active="true"] .subnav-list {
+        overflow: visible;
+    }
+
+    .subnav-list .nav-list-item[active="true"] {
+        margin-left: 0px;
+        border-left: 4px var(--primary-color) solid;
+        padding: 8px 20px 8px 19px;
+    }
+
+    .subnav-list[open="true"] {
+        height: fit-content !important;
+        max-height: 500px !important;
+        margin-bottom: 20px;
+    }
+
+    /* Menu Footer */
+
+    .footer {
+        display: none;
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 0px;
+        color: #fff;
+        z-index: 1001;
+        transition: 0.8s;
+    }
+
+    .mobile-menu[open="true"] .footer {
+        display: block;
+        width: 210px;
+    }
+
+    .logout {
+        margin: 8px 8px 40px 32px;
+        color: #222222;
+        line-height: 23px;
+        font-weight: normal;
+        text-decoration: none;
+        font-size: 20px;
+        display: block;
+        transition: 0.2s;
+        text-align: left;
+    }
+
+    .logout .material-icons {
+        position: relative;
+        bottom: -5px;
+        left: 100px;
+    }
+
+    .user-info {
+        padding: 8px 8px 15px 32px;
+        font-size: 14px;
+        border-top: 2px solid var(--primary-color);
+        width: 100%;
+        transition: max-height 0.2s ease-in-out;
+    }
+
+    .name {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        position: relative;
+        margin-top: -25px;
+    }
+
+    .name .user-name {
+        display: inline-block;
+        color: var(--primary-color);
+        padding: 0 8px;
+        margin-bottom: 10px;
+        margin-left: -8px;
+        background-color: white;
+        font-size: 20px;
+        transition: 0.8s;
+    }
+
+    .profile-item {
+        color: #aaaaaa;
+        display: grid;
+        grid-template-columns: 80px auto;
+        column-gap: 5px;
+    }
+
+    .profile-item .profile-item-name {
+        display: inline;
+    }
+
+    .profile-item .profile-item-value {
+        display: inline;
+    }
 }

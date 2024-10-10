@@ -1,0 +1,86 @@
+.relationships-chart {
+    height: 100%;
+    width: 100%;
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    width: 100%;
+}
+
+.grid-1 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    width: 100%;
+}
+
+.text-area-container {
+    height: 100%;
+    width: 100%;
+    textarea {
+        height: 100%;
+    }
+}
+
+.grid-3 {
+    grid-template-columns: 230px 175px auto 150px 400px;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    column-gap: 30px;
+    display: grid;
+    height: 100px;
+    overflow: visible;
+}
+
+.history {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    &__title {
+        font-size: 12px;
+        color: var(--color-gray-3);
+    }
+
+    &__value {
+        font-size: 14px;
+    }
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+}
+
+.document-view-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.details-document {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    &__json {
+        flex: 1;
+        overflow: hidden;
+    }
+    &__document {
+        flex: 1;
+        overflow: auto;
+    }
+}

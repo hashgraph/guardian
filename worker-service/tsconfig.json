@@ -1,10 +1,9 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
+        "module": "ESNext",
+        "target": "es2022",
         "lib": [
-            "es5",
-            "es6"
+            "esnext"
         ],
         "moduleResolution": "node",
         "sourceMap": true,
@@ -15,12 +14,19 @@
         "skipLibCheck": true,
         "baseUrl": "./src",
         "paths": {
+          "#constants": ["constants/index.js"]
         }
     },
     "include": [
-        "src/**/*", "../interfaces/src/type/TopicType.ts"],
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true
+    "compileOnSave": true,
+    "tsc-alias": {
+        "resolveFullPaths": true,
+        "verbose": false
+    }
 }

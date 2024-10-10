@@ -1,0 +1,33 @@
+.search-result-card {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-grey-3, #E1E7EF);
+  background: var(--color-grey-white, #FFF);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
+
+  h5 {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 20px;
+    color: var(--color-grey-black-1, #181818);
+  }
+
+  p {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+    color: var(--color-grey-black-1, #181818);
+  }
+
+  .card-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+}

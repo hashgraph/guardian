@@ -1,4 +1,4 @@
-import { STATE_KEY } from '@policy-engine/helpers/constants';
+import { STATE_KEY } from '../../helpers/constants.js';
 
 /**
  * State field decorator

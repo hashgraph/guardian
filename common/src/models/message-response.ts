@@ -17,6 +17,20 @@ export interface IMessageResponse<T> {
 }
 
 /**
+ * Items and count
+ */
+export interface ResponseAndCount<T> {
+    /**
+     * Return count
+     */
+    readonly count: number;
+    /**
+     * Items array
+     */
+    readonly items: T[];
+}
+
+/**
  * Message response class
  */
 export class MessageResponse<T> implements IMessageResponse<T> {
@@ -36,6 +50,30 @@ export class MessageResponse<T> implements IMessageResponse<T> {
     constructor(body: T, code: number = 200) {
         this.code = code;
         this.body = body;
+        this.error = null;
+    }
+}
+
+/**
+ * Message response class
+ */
+export class ArrayMessageResponse<T> implements IMessageResponse<ResponseAndCount<T>> {
+    /**
+     * Response code
+     */
+    public readonly code: number;
+    /**
+     * Response body
+     */
+    public readonly body: ResponseAndCount<T>;
+    /**
+     * Response error message
+     */
+    public readonly error: string;
+
+    constructor(items: T[], count: number, code: number = 200) {
+        this.code = code;
+        this.body = { items, count };
         this.error = null;
     }
 }

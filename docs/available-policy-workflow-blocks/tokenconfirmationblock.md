@@ -30,7 +30,7 @@ This block enables the owner of the private key for the account to manually perf
 
 ![Block Properties](<../.gitbook/assets/image (6) (4) (1).png>)
 
-![JSON View of the Block](<../.gitbook/assets/image (9) (3).png>)
+![JSON View of the Block](<../.gitbook/assets/image (9) (3) (2).png>)
 
 ![Configuring tokenConfirmationBlock](<../.gitbook/assets/image (1) (3) (1).png>)
 
@@ -44,7 +44,7 @@ The user need to input the private key for the account to enable Guardian to per
 **Note:** Users can skip the action in UI if they prefer to perform it outside Guardian (directly with Hedera blockchain).
 {% endhint %}
 
-![](<../.gitbook/assets/image (17) (2).png>)
+![](<../.gitbook/assets/image (17) (2) (1).png>)
 
 ### API Parameters
 

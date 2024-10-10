@@ -1,0 +1,37 @@
+.content-container {
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.icon-container {
+    width: 250px;
+    height: 250px;
+}
+
+.image-container {
+    max-width: 300px;
+    max-height: 300px;
+    min-width: 100px;
+    min-height: 100px;
+}
+
+.header {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.header-title {
+    flex-grow: 1;
+    text-align: center;
+    padding-left: 25px;
+}
+
+.close-icon {
+    cursor: pointer;
+}

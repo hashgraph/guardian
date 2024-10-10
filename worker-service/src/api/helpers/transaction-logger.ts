@@ -26,16 +26,19 @@ export class TransactionLogger {
      * Get transaction data
      * @param id
      * @param client
+     * @param network
      * @param transactionName
      */
     public static getTransactionData(
         id: string,
         client: Client,
+        network: string,
         transactionName: string
     ): any {
         return {
             id,
-            operatorAccountId: client.operatorAccountId?.toString(),
+            network,
+            operatorAccountId: client?.operatorAccountId?.toString(),
             transactionName
         }
     }
@@ -51,6 +54,7 @@ export class TransactionLogger {
         if (!transaction) {
             return data;
         }
+        data += `txid: ${transaction.transactionId}; `;
         if (transactionName === 'TokenCreateTransaction') {
             const t = transaction as TokenCreateTransaction;
             data += 'payer sigs: 1; ';

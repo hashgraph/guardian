@@ -1,0 +1,33 @@
+<div class="dialog-body">
+    <div class="document-reader">
+        <ng-container [ngTemplateOutlet]="mockDocument"></ng-container>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <button (click)="downloadDocument()" class="button secondary">
+            <svg fill="none" height="18" viewBox="0 0 12 18" width="12" xmlns="http://www.w3.org/2000/svg">
+                <path class="color-primary" clip-rule="evenodd" d="M6 0C6.47339 0 6.85714 0.402944 6.85714 0.9V11.3272L9.67962 8.3636C10.0144 8.01213 10.5571 8.01213 10.8918 8.3636C11.2265 8.71508 11.2265 9.28492 10.8918 9.6364L6.60609 14.1364C6.27136 14.4879 5.72864 14.4879 5.39391 14.1364L1.10819 9.6364C0.773459 9.28492 0.773459 8.71508 1.10819 8.3636C1.44293 8.01213 1.98564 8.01213 2.32038 8.3636L5.14286 11.3272V0.9C5.14286 0.402944 5.52661 0 6 0ZM0 17.1C0 16.6029 0.383756 16.2 0.857143 16.2H11.1429C11.6162 16.2 12 16.6029 12 17.1C12 17.5971 11.6162 18 11.1429 18H0.857143C0.383756 18 0 17.5971 0 17.1Z"
+                      fill-rule="evenodd"/>
+            </svg>
+            Download
+        </button>
+        <div class="flex">
+            <div class="cancel-button">
+                <button (click)="onNoClick()"
+                        class="button secondary accent"
+                        label="Decline"
+                        pButton
+                ></button>
+            </div>
+            <div>
+                <button (click)="onSubmit()" class="button" label="Accept" pButton></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<ng-template #mockDocument>
+    <div class="text-block terms"><p><b>TERMS AND CONDITIONS</b></p></div>
+    <pre class="license-container">{{ termsAndConditions }}</pre>
+</ng-template>

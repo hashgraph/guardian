@@ -1,0 +1,13 @@
+<div class="content" [hidden]="!isActive">
+    <div *ngIf="activeBlock">
+        <render-block [block]="activeBlock" [policyId]="policyId" [dryRun]="dryRun"></render-block>
+    </div>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

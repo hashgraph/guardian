@@ -1,7 +1,7 @@
-import { SchemaEntity } from '../type/schema-entity.type';
-import { SchemaStatus } from '../type/schema-status.type';
-import { SchemaCategory } from '../type/schema-category.type';
-import { ISchemaDocument } from './schema-document.interface';
+import { SchemaEntity } from '../type/schema-entity.type.js';
+import { SchemaStatus } from '../type/schema-status.type.js';
+import { SchemaCategory } from '../type/schema-category.type.js';
+import { ISchemaDocument } from './schema-document.interface.js';
 
 /**
  * Schema interface
@@ -10,12 +10,11 @@ export interface ISchema {
     /**
      * Id
      */
-    _id: any;
-
+    _id?: any;
     /**
      * Serialized Id
      */
-    id: string;
+    id?: string;
     /**
      * UUID
      */
@@ -56,6 +55,10 @@ export interface ISchema {
      * Version
      */
     version?: string;
+    /**
+     * Source version
+     */
+    sourceVersion?: string;
     /**
      * Creator
      */
@@ -108,9 +111,12 @@ export interface ISchema {
      * Is active schema
      */
     active?: boolean;
-
     /**
      * Code version
      */
     codeVersion?: string;
+    /**
+     * Errors
+     */
+    errors?: any[];
 }

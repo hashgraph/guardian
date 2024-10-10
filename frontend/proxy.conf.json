@@ -1,22 +1,29 @@
 {
-  "/api/v1/*": {
-    "target": "http://localhost:3002/",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "ws": false,
-    "pathRewrite": {
-      "/api/v1": ""
+    "/api/v1/*": {
+        "target": "http://localhost:3002/",
+        "secure": false,
+        "logLevel": "debug",
+        "changeOrigin": true,
+        "ws": false,
+        "pathRewrite": {
+            "/api/v1": ""
+        }
+    },
+    "/ws/*": {
+        "target": "http://localhost:3002/",
+        "secure": false,
+        "ws": true,
+        "logLevel": "debug",
+        "changeOrigin": true,
+        "pathRewrite": {
+            "/ws": ""
+        }
+    },
+    "/openai/*": {
+        "target": "http://localhost:3002/",
+        "secure": false,
+        "ws": true,
+        "logLevel": "debug",
+        "changeOrigin": true
     }
-  },
-  "/ws/*": {
-    "target": "http://localhost:3002/",
-    "secure": false,
-    "ws": true,
-    "logLevel": "debug",
-    "changeOrigin": true,
-    "pathRewrite": {
-      "/ws": ""
-    }
-  }
 }

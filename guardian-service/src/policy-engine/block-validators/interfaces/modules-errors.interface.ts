@@ -1,4 +1,4 @@
-import { IBlockErrors } from './block-errors.interface';
+import { IBlockErrors } from './block-errors.interface.js';
 
 /**
  * Module errors
@@ -18,6 +18,11 @@ export interface IModulesErrors {
      * Blocks
      */
     blocks?: IBlockErrors[];
+
+    /**
+     * Blocks
+     */
+    tools?: IModulesErrors[];
 
     /**
      * Common errors

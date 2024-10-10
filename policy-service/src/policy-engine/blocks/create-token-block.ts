@@ -1,26 +1,15 @@
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, StateField } from '@policy-engine/helpers/decorators';
-import {
-    IPolicyBlock,
-    IPolicyEventState,
-    IPolicyRequestBlock,
-} from '@policy-engine/policy-engine.interface';
-import {
-    IPolicyEvent,
-    PolicyInputEventType,
-    PolicyOutputEventType,
-} from '@policy-engine/interfaces';
-import {
-    ChildrenType,
-    ControlType,
-} from '@policy-engine/interfaces/block-about';
-import { EventBlock } from '@policy-engine/helpers/decorators/event-block';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { MessageAction, MessageServer, TokenMessage } from '@hedera-modules';
-import { ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { PolicyUtils } from '../helpers/utils.js';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, StateField } from '../helpers/decorators/index.js';
+import { IPolicyBlock, IPolicyDocument, IPolicyEventState, IPolicyRequestBlock, } from '../policy-engine.interface.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType, } from '../interfaces/index.js';
+import { ChildrenType, ControlType, } from '../interfaces/block-about.js';
+import { EventBlock } from '../helpers/decorators/event-block.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUser } from '../policy-user.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { MessageAction, MessageServer, TokenMessage } from '@guardian/common';
+import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * Create Token block
@@ -51,25 +40,32 @@ export class CreateTokenBlock {
      * Block state
      */
     @StateField()
-    public readonly state: { [key: string]: any } = { active: true };
+    public readonly state: {
+        [key: string]: {
+            /**
+             * Is active
+             */
+            active: boolean,
+            /**
+             * Event data
+             */
+            data?: IPolicyEventState
+        }
+    } = {};
 
     /**
      * Change active state
      * @param user
      * @param active
      */
-    changeActive(user: IPolicyUser, active: boolean) {
+    private changeActive(user: PolicyUser, active: boolean) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
-        let blockState: any;
-        if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+        if (this.state.hasOwnProperty(user.id)) {
+            this.state[user.id].active = active;
         } else {
-            blockState = this.state[user.id];
+            this.state[user.id] = { active };
         }
-        blockState.active = active;
-
-        ref.updateBlock(blockState, user);
+        ref.updateBlock(this.state[user.id], user);
         ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null);
     }
 
@@ -77,41 +73,37 @@ export class CreateTokenBlock {
      * Get active state
      * @param user
      */
-    getActive(user: IPolicyUser) {
-        let blockState: any;
+    private getActive(user: PolicyUser) {
         if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+            this.state[user.id] = { active: true };
         } else {
-            blockState = this.state[user.id];
+            if (this.state[user.id].active === undefined) {
+                this.state[user.id].active = true;
+            }
         }
-        if (blockState.active === undefined) {
-            blockState.active = true;
-        }
-        return blockState.active;
+        return this.state[user.id].active;
     }
 
     /**
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
-        const policyTokens = ref.policyInstance.policyTokens || [];
-        const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
-        const templateFields = Object.keys(tokenTemplate);
-        for (const fieldName of templateFields) {
-            if (
-                tokenTemplate[fieldName] === '' ||
-                tokenTemplate[fieldName] === null ||
-                tokenTemplate[fieldName] === undefined
-            ) {
-                delete tokenTemplate[fieldName];
+        const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
+        if (tokenTemplate) {
+            const templateFields = Object.keys(tokenTemplate);
+            for (const fieldName of templateFields) {
+                if (
+                    tokenTemplate[fieldName] === '' ||
+                    tokenTemplate[fieldName] === null ||
+                    tokenTemplate[fieldName] === undefined
+                ) {
+                    delete tokenTemplate[fieldName];
+                }
             }
         }
-
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -132,7 +124,7 @@ export class CreateTokenBlock {
             PolicyOutputEventType.RefreshEvent,
         ],
     })
-    async setData(user: IPolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         ref.log(`setData`);
 
@@ -154,8 +146,8 @@ export class CreateTokenBlock {
         }
 
         try {
-            await this.changeActive(user, false);
-            const root = await PolicyUtils.getHederaAccount(ref, ref.policyOwner);
+            this.changeActive(user, false);
+            const policyOwnerCred = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 
             if (
                 !this.state.hasOwnProperty(user.id) ||
@@ -170,8 +162,8 @@ export class CreateTokenBlock {
             }
 
             // #region Create new token
-            const policyTokens = ref.policyInstance.policyTokens || [];
-            const tokenTemplate = policyTokens.find((item) => item.templateTokenTag === ref.options.template);
+
+            const tokenTemplate = PolicyUtils.getTokenTemplate(ref, ref.options.template);
             if (!tokenTemplate) {
                 throw new BlockActionError(
                     'Token template not found',
@@ -193,15 +185,18 @@ export class CreateTokenBlock {
             const createdToken = await PolicyUtils.createTokenByTemplate(
                 ref,
                 Object.assign(data, tokenTemplate),
-                root
+                policyOwnerCred
             );
             // #endregion
 
             // #region Send new token to hedera
+            const hederaCred = await policyOwnerCred.loadHederaCredentials(ref);
+            const signOptions = await policyOwnerCred.loadSignOptions(ref);
             const rootTopic = await PolicyUtils.getInstancePolicyTopic(ref);
             const messageServer = new MessageServer(
-                root.hederaAccountId,
-                root.hederaAccountKey,
+                hederaCred.hederaAccountId,
+                hederaCred.hederaAccountKey,
+                signOptions,
                 ref.dryRun
             ).setTopicObject(rootTopic);
             const tokenMessage = new TokenMessage(MessageAction.CreateToken);
@@ -210,10 +205,8 @@ export class CreateTokenBlock {
             // #endregion
 
             // #region Set token in document
-            let stateData: any = {};
-
-            stateData = this.state[user.id].data;
-            const docs: any = stateData.data;
+            const stateData: IPolicyEventState = this.state[user.id].data;
+            const docs: IPolicyDocument | IPolicyDocument[] = stateData.data;
             if (Array.isArray(docs)) {
                 for (const doc of docs) {
                     if (!doc.tokens) {
@@ -232,7 +225,7 @@ export class CreateTokenBlock {
             await ref.saveState();
             // #endregion
 
-            await this.changeActive(user, true);
+            this.changeActive(user, true);
             ref.triggerEvents(PolicyOutputEventType.RunEvent, user, stateData);
             ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, user, null);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, stateData);
@@ -249,7 +242,7 @@ export class CreateTokenBlock {
             }));
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            await this.changeActive(user, true);
+            this.changeActive(user, true);
             throw new BlockActionError(error, ref.blockType, ref.uuid);
         }
 
@@ -272,14 +265,14 @@ export class CreateTokenBlock {
         const user = event.user;
         const eventData = event.data;
 
-        let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
-            blockState = {};
-            this.state[user.id] = blockState;
+            this.state[user.id] = {
+                active: true,
+                data: eventData
+            };
         } else {
-            blockState = this.state[user.id];
+            this.state[user.id].data = eventData;
         }
-        blockState.data = eventData;
         await ref.saveState();
 
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, user, null));

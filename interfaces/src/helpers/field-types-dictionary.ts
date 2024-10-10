@@ -112,6 +112,14 @@ export class FieldTypesDictionary {
             pattern: undefined,
             isRef: true,
             customType: 'geo'
+        },
+        {
+            name: 'SentinelHUB',
+            type: '#SentinelHUB',
+            format: undefined,
+            pattern: undefined,
+            isRef: true,
+            customType: 'sentinel'
         }
     ];
 

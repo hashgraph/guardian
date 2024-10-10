@@ -35,7 +35,7 @@ export class MessageTranslationService {
         text: string,
         message: string
     } {
-        for (let [re, key] of this.regExpMap.entries()) {
+        for (const [re, key] of this.regExpMap.entries()) {
             if (re.test(message)) {
                 let text = this.messagesMap.get(key);
                 const operatorId = this.getOperatorIdFromMessage(message)

@@ -1,4 +1,4 @@
-import {did} from './did.interface';
+import {did} from './did.interface.js';
 
 /**
  * Credential subject interface
@@ -12,6 +12,22 @@ export interface ICredentialSubject {
      * Type
      */
     type?: string;
+    /**
+     * Geography
+     */
+    geography?: string;
+    /**
+     * Law
+     */
+    law?: string;
+    /**
+     * Tags
+     */
+    tags?: string;
+    /**
+     * ISIC
+     */
+    ISIC?: string;
     /**
      * Subject context
      */

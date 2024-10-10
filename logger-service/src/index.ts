@@ -1,3 +1,3 @@
-import 'module-alias/register';
-import './config';
-import './app';
+// import 'module-alias/register';
+import './config.js';
+import './app.js';

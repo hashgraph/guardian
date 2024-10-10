@@ -1,16 +1,15 @@
-import { Policy } from '@entity/policy';
-import { BlockModel } from './block.model';
-import { ICompareOptions } from '../interfaces/compare-options.interface';
-import { IArtifacts } from '../interfaces/artifacts.interface';
-import { SchemaModel } from './schema.model';
-import { IKeyMap } from '../interfaces/key-map.interface';
-import { PropertyModel } from './property.model';
-import { PropertyType } from '../types/property.type';
-import { TokenModel } from './token.model';
-import { GroupModel } from './group.model';
-import { TopicModel } from './topic.model';
-import { TemplateTokenModel } from './template-token.model';
-import { RoleModel } from './role.model';
+import { BlockModel } from './block.model.js';
+import { SchemaModel } from './schema.model.js';
+import { PropertyModel } from './property.model.js';
+import { PropertyType } from '../types/property.type.js';
+import { TokenModel } from './token.model.js';
+import { GroupModel } from './group.model.js';
+import { TopicModel } from './topic.model.js';
+import { TemplateTokenModel } from './template-token.model.js';
+import { RoleModel } from './role.model.js';
+import { FileModel } from './file.model.js';
+import { CompareUtils } from '../utils/utils.js';
+import { CompareOptions, IKeyMap, IPolicyRawData } from '../interfaces/index.js';
 
 /**
  * Policy Model
@@ -80,7 +79,7 @@ export class PolicyModel {
      * Compare Options
      * @private
      */
-    private readonly options: ICompareOptions;
+    public readonly options: CompareOptions;
 
     /**
      * All Blocks
@@ -92,7 +91,7 @@ export class PolicyModel {
      * All artifacts
      * @private
      */
-    private _artifacts: IArtifacts[];
+    private _artifacts: FileModel[];
 
     /**
      * All schemas
@@ -106,7 +105,13 @@ export class PolicyModel {
      */
     private _tokens: TokenModel[];
 
-    constructor(policy: Policy, options: ICompareOptions) {
+    /**
+     * Type
+     * @private
+     */
+    private _type: string;
+
+    constructor(policy: IPolicyRawData, options: CompareOptions) {
         this.options = options;
 
         this.id = policy.id;
@@ -119,13 +124,15 @@ export class PolicyModel {
             throw new Error('Empty policy model');
         }
 
-        this.tree = this.createBlock(policy.config, 0);
+        this.tree = CompareUtils.createBlockModel(policy.config, 0);
         this._list = this.getAllBlocks(this.tree, []);
 
         this.roles = this.createRoles(policy.policyRoles, this.options);
         this.groups = this.createGroups(policy.policyGroups, this.options);
         this.topics = this.createTopics(policy.policyTopics, this.options);
         this.tokens = this.createTokens(policy.policyTokens, this.options);
+
+        this._type = 'id';
     }
 
     /**
@@ -143,29 +150,12 @@ export class PolicyModel {
     }
 
     /**
-     * Create Block by JSON
-     * @param json
-     * @param index
-     * @private
-     */
-    private createBlock(json: any, index: number): BlockModel {
-        const block = new BlockModel(json, index + 1);
-        if (Array.isArray(json.children)) {
-            for (let i = 0; i < json.children.length; i++) {
-                const child = json.children[i];
-                block.addChildren(this.createBlock(child, i));
-            }
-        }
-        return block;
-    }
-
-    /**
      * Update all weight (all blocks)
      * @param root
      * @param options - comparison options
      * @public
      */
-    private updateAllBlocks(root: BlockModel, options: ICompareOptions): void {
+    private updateAllBlocks(root: BlockModel, options: CompareOptions): void {
         for (const child of root.children) {
             this.updateAllBlocks(child, options);
         }
@@ -178,7 +168,7 @@ export class PolicyModel {
      * @param options - comparison options
      * @private
      */
-    private createRoles(roles: string[], options: ICompareOptions): RoleModel[] {
+    private createRoles(roles: string[], options: CompareOptions): RoleModel[] {
         const result: RoleModel[] = [];
         if (Array.isArray(roles)) {
             for (const json of roles) {
@@ -196,7 +186,7 @@ export class PolicyModel {
      * @param options - comparison options
      * @private
      */
-    private createGroups(groups: any[], options: ICompareOptions): GroupModel[] {
+    private createGroups(groups: any[], options: CompareOptions): GroupModel[] {
         const result: GroupModel[] = [];
         if (Array.isArray(groups)) {
             for (const json of groups) {
@@ -214,7 +204,7 @@ export class PolicyModel {
      * @param options - comparison options
      * @private
      */
-    private createTopics(topics: any[], options: ICompareOptions): TopicModel[] {
+    private createTopics(topics: any[], options: CompareOptions): TopicModel[] {
         const result: TopicModel[] = [];
         if (Array.isArray(topics)) {
             for (const json of topics) {
@@ -232,7 +222,7 @@ export class PolicyModel {
      * @param options - comparison options
      * @private
      */
-    private createTokens(tokens: any[], options: ICompareOptions): TemplateTokenModel[] {
+    private createTokens(tokens: any[], options: CompareOptions): TemplateTokenModel[] {
         const result: TemplateTokenModel[] = [];
         if (Array.isArray(tokens)) {
             for (const json of tokens) {
@@ -249,7 +239,7 @@ export class PolicyModel {
      * @param artifacts
      * @public
      */
-    public setArtifacts(artifacts: IArtifacts[]): PolicyModel {
+    public setArtifacts(artifacts: FileModel[]): PolicyModel {
         this._artifacts = artifacts;
         return this;
     }
@@ -271,6 +261,16 @@ export class PolicyModel {
      */
     public setTokens(tokens: TokenModel[]): PolicyModel {
         this._tokens = tokens;
+        return this;
+    }
+
+    /**
+     * Set source type
+     * @param type
+     * @public
+     */
+    public setType(type: string): PolicyModel {
+        this._type = type;
         return this;
     }
 
@@ -317,7 +317,8 @@ export class PolicyModel {
             name: this.name,
             description: this.description,
             instanceTopicId: this.instanceTopicId,
-            version: this.version
+            version: this.version,
+            type: this._type
         };
     }
 
@@ -332,5 +333,19 @@ export class PolicyModel {
             prop = [...prop, ...block.getPropList(type)];
         }
         return prop;
+    }
+
+    /**
+     * Create model
+     * @param policy
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(policy: IPolicyRawData, options: CompareOptions): PolicyModel {
+        if (!policy) {
+            throw new Error('Unknown policy');
+        }
+        return new PolicyModel(policy, options);
     }
 }

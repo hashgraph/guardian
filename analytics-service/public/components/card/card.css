@@ -1,0 +1,155 @@
+.card-container {
+    position: relative;
+    width: 340px;
+    height: 210px;
+    padding: 5px;
+}
+
+.card-body {
+    background: #ffffff;
+    overflow: hidden;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    box-shadow: 1px 2px 6px 0px rgb(0 0 0 / 15%);
+    display: flex;
+    flex-direction: column;
+    width: 330px;
+    height: 200px;
+    box-sizing: border-box;
+    border-top-color: rgb(46 134 235 / 30%);
+    border-left-color: rgb(46 134 235 / 30%);
+    border-bottom-color: rgb(99 70 235 / 30%);
+    border-right-color: rgb(99 70 235 / 30%);
+    border-bottom-left-radius: 44px;
+    border-top-right-radius: 44px;
+    user-select: none;
+}
+
+.card-header {
+    flex: 38;
+    height: 38px;
+    width: 300px;
+    min-height: 38px;
+    max-height: 38px;
+    padding: 14px 6px 6px 14px;
+    box-sizing: border-box;
+    font-size: 15px;
+    color: #777;
+}
+
+.card-slider {
+    flex: 68;
+    height: 68px;
+    width: 330px;
+    min-height: 68px;
+    max-height: 68px;
+    padding: 18px 10px;
+    box-sizing: border-box;
+    font-size: 12px;
+    color: #444444;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+}
+
+.card-values {
+    width: 330px;
+    flex: 200;
+    min-height: 92px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-height: 130px;
+    color: #717171;
+}
+
+.card-container.selectable .card-values {
+    cursor: pointer;
+    color: #16934b;
+}
+
+.card-container.selectable .card-values:hover {
+    text-decoration: underline;
+}
+
+.card-value {
+    width: 330px;
+    font-size: 38px;
+    font-weight: bold;
+    text-align: center;
+    overflow: hidden;
+}
+
+.card-diff {
+    position: relative;
+    width: 330px;
+    font-size: 14px;
+    font-weight: normal;
+    text-align: center;
+    overflow: visible;
+    height: 9px;
+}
+
+.card-diff[diff-value="0"] {
+    display: none !important;
+}
+
+.card-diff[diff-value="1"] {
+    color: #0ab352;
+}
+
+.card-diff[diff-value="2"] {
+    color: #F44336;
+}
+
+.card-diff.hide {
+    display: none !important;
+}
+
+.card-slider-btn {
+    height: 32px;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    cursor: pointer;
+    background: #fff;
+    pointer-events: all;
+    user-select: none;
+    font-weight: bold;
+    color: #4c5b6d;
+}
+
+.card-slider-btn:hover {
+    background: #f8f8f8 !important;
+}
+
+.card-slider-btn.active {
+    background: #fff;
+    font-weight: bold;
+    background: #f0edfc;
+    color: #462bb5;
+}
+
+.card-slider-btn.active:hover {
+    background: #f0edfc !important;
+}
+
+.card-slider-container {
+    display: flex;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+    pointer-events: none;
+    border-top-color: rgb(46 134 235 / 30%);
+    border-left-color: rgb(46 134 235 / 30%);
+    border-bottom-color: rgb(99 70 235 / 30%);
+    border-right-color: rgb(99 70 235 / 30%);
+}
+
+.card-header.hide {
+    display: none !important;
+}
+
+.card-slider.hide {
+    display: none !important;
+}

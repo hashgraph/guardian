@@ -38,9 +38,23 @@ Object that contains Policy Version
 
 {% swagger-response status="403: Forbidden" description="Forbidden" %}
 ```javascript
-{
-    // Response
-}
+Schema is not system.
+```
+{% endswagger-response %}
+
+{% swagger-response status="404: Not Found" description="Not Found" %}
+
+
+```
+Schema not found.
+```
+{% endswagger-response %}
+
+{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+
+
+```
+Schema is active.
 ```
 {% endswagger-response %}
 

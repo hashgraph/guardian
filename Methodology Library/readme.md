@@ -6,7 +6,16 @@ This folder contains sub folders for each Methodology and their authors (with ma
 
 1. IREC - Envision
 2. Verra Methodology - Verra Redd - Envision
-3. DOVU Template Methodologies (10) - DOVU
+   - VM0007
+   - VM0017
+   - VM0042
+   - VM0044
+   - VerraARR
+   - PWRM0001
+   - PWRM0002
+   - VM0041
+   - VMR0006 (Coming Soon)
+4. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
    - Carbon Space
@@ -17,57 +26,69 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - RothC
    - Microbial-Mineral Carbon Stabilization (MIMICS)
    - Agricultural soils of Western Australia
-4. Tolam Earth - OCI
-5. Improved Cookstove - OCI
-6. Tamuwa VER 
-7. KrypC GCC 
-8. eWaste Policy - KrypC(Coming soon)
-9. TBA-X (Coming soon)
-10. TBA-X (Coming soon)
-11. TBA-D (Coming soon)
-12. Carbontricity (Coming soon)
-13. VN (Coming soon)
-14. Evercity (Coming soon)
-15. Zeru.Earth (Coming soon)
+   - MMCM
+     
+5. CDM Methodologies (18) - Envision
 
+   - ACM0007
+   - AMS-II.G
+   - AMS-III.AR
+   - AMS-III.BB
+   - AMS-III.D
+   - AMS-I.D
+   - AR-ACM0003
+   - AMS-II.J
+   - ACM0002
+   - AMS-III.F
+   - AMS-III.AV
+   - AMS-III.H
+   - AMS-I.F
+   - AMS-I.C
+   - ACM0001
+   - ACM0018
+   - AMS-I.A
+   - AMS-I.E
+
+6. Tolam Earth - OCI
+7. Improved Cookstove - OCI
+8. GCC - KrypC
+9. Gold Standard Afforestation / Reforestation - Envision
+10. Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate - Envision
+    
 ### Emission Policies
 
 1. GHG Methodology - Remote Workflow - Envision
-2. Tymlez - CET & CRU
+2. CET & CRU - Tymlez
 3. GHG Scope II - Atma
-4. GHGP Product Standard - Avery Dennison (Coming soon)
-5. E-Mission (Coming soon)
-6. RDA - Serapis (Coming soon)
-7. GHGP Corporate Standard (Coming soon)
-8. EPA CFR 40 p75 (Coming soon)
-9. GHGP Data Center Guidance (Coming soon)
-10. GHG calcs for NFTGrade (Coming soon)
+4. GHG Scope 3 - Atma
+5. GHGP Corporate Standard - Envision
+6. GHGP Product Standard - Avery Dennison (Coming soon)
+7. E-Mission (Coming soon)
+8. EPA CFR 40 p75 - Serapis (Coming soon)
 
+### Hackathon Policies (Under Testing)
 
-[IREC](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/iREC)
-
-**Description**: 
-
-This policy supports the tokenization of Renewable Energy Certificates (RECs) in accordance with the I-REC Standard, and specifically, the I-REC(E) Product Code. The I-REC Standard is a non-profit organization that provides an attribute tracking standard that can be used around the world. While the I-REC Standard is designed to track attributes for a diversity of products, Product Codes provide additional requitements for specific products and markets. The I-REC(E) Product Code provides requirements for electricity products, and was developed by Evident, who acts as Code Manager and Registry Operator. The schema and workflow of this policy were designed to reflect the MRV requirements, processes, and roles outlined by both I-REC Standard and the I-REC(E) Product Code. For more info, please check : [IREC ReadMe](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/iREC/readme.md)
-
-[Verra](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/Verra%20Redd/VM0007)
-
-**Description**: 
-
-This policy supports the tokenization of carbon offsets, specifically Verified Carbon Units (VCUs) in accordance with Verra’s Verified Carbon Standard (VCS), and specifically, the VM0007 REDD+ Methodology Framework (REDD+ MF). Verra develops and manages standards that are globally applicable and advance action across a wide range of sectors and activities. The VCS Program is the world’s most widely used voluntary GHG program. For more info please check : [Verra ReadMe](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/Verra/Verra%20Redd/VM0007/readme.md)
-
-[Remote Workflow](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy)
-
-**Description**: 
-
-This policy supports the estimation, calculation, and tokenization of GHG emissions resulting from remote work. This policy can be used as a stand-alone methodology, or a methodology to estimate organizational Scope 3 GHG emissions from remote work to be incorporated into organizational GHG inventories in alignment the GHG Protocol Corporate Standard and/or the GHG Protocol Scope 3 Standard. To support integration with the GHG Protocol Policies, both location and market-based emissions are calculated. For more info, please check : [Remote Workflow ReadMe](https://github.com/hashgraph/guardian/blob/main/Methodology%20Library/GHG%20Methodology/Remote%20WorkFlow%20Policy/readme.md)
-
-**For complete flow documentation, please refer to :**
-
-IREC Demo : https://docs.hedera.com/guardian-dev/demo-guide/irec-demo-guide
-
-Verra REDD Demo : https://docs.hedera.com/guardian-dev/demo-guide/verra-redd+-demo-guide
-
-DOVU Guardian Policies: https://github.com/dovuofficial/guardian-policies/
-
-CET & CRU Policies : https://github.com/Tymlez/guardian-policies
+1. UrbanO2asis
+2. Verra VM0048
+3. GF0001
+4. Puro.Earth Biochar
+5. SaniChain
+6. Verra VM0047 with Forward Module
+7. Verra VM0038 ( Electrical vehicle charging systems )
+8. CDM AMS-III.Z - Sustainable Brick Manufacturing Methodology
+9. SmartCookStove
+10. CDM AMS-III.C
+11. CDM AM0124
+12. SDVISTa SDVM001 - Improved Cookstoves (ICS)
+13. CDM ACM0014
+14. Improved-Waste-Collection-Segregation-and-Handling (IWCSH)
+15. GreenTrace
+16. M/CE-R01 Circular Economy Methodology for Encouraging Plastic Recycling (MCER01)
+17. Solar Positive Household Methodology
+18. ZEV Ledger: Tokenization & management of ZEV credits in alignment with the "VM0038 Methodology for Electric Vehicle Charging Systems" and "Two and Three Wheeled Personal Transportation" methodologies
+19. Agrify Regenerative Methodology
+20. Sector-Specific Food Loss & Waste GHG Reduction Policy 1.0 (SSFLWGRP001)
+21. Food Loss & Waste (International) 1.0 Methodology
+22. ESG Verifier
+23. Verra VM0019 Methodology
+24. EcoRegen Alliance

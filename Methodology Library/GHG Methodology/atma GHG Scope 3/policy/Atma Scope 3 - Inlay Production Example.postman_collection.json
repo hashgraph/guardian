@@ -1,0 +1,1041 @@
+{
+	"info": {
+		"_postman_id": "5c1b9232-b5f1-4886-b9b8-d5c54a4e2628",
+		"name": "Atma Scope 3 - Inlay Production 2023-11-28",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Initialize Collection",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Extracts the JWT token from the login response and stores it in `AUTH_TOKEN` variable\r",
+									" */\r",
+									"const jsonData = JSON.parse(responseBody);\r",
+									"const token = jsonData.accessToken\r",
+									"pm.collectionVariables.set(\"AUTH_TOKEN\",`Bearer ${token}`)\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"//clear all transient collection variables such as tag ids, schema ids, context ids\r",
+									"const remove_patterns = [\r",
+									"        /(T|S|(CTX))_\\w+/, \r",
+									"        /POLICY_TOPIC_ID/,\r",
+									"        /PROD_QUANTITY/,\r",
+									"        /\\w+_((EF)|(GWP))/,\r",
+									"        /\\w+_((EF)|(GWP)|(DOC)|(DID)|(ID))/\r",
+									"]\r",
+									"for(const [key, _] of Object.entries(pm.collectionVariables.toObject())){\r",
+									"   if(remove_patterns.some((p) => p.test(key))){\r",
+									"       pm.collectionVariables.unset(key)\r",
+									"   }\r",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"{{POLICY_USER}}\",\r\n  \"password\": \"{{POLICY_PASSWORD}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{BASE_URL}}accounts/login",
+							"host": [
+								"{{BASE_URL}}accounts"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Parse Policy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Publishes as policy blocks by their tag name as postman variable, so that they can be\r",
+									" * re-used in subsequent requests. \r",
+									" */\r",
+									"function addVariable(curBlock){\r",
+									"    const tagName = `T_${curBlock.tag}`\r",
+									"    const blockId = curBlock.id\r",
+									"    pm.collectionVariables.set(tagName,blockId);\r",
+									"}\r",
+									"const policy = JSON.parse(responseBody);\r",
+									"\r",
+									"pm.collectionVariables.set(\"POLICY_TOPIC_ID\",policy.topicId)\r",
+									"utils.walkPolicy(policy.config, addVariable);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}",
+							"host": [
+								"{{POLICY_URL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Parse Schemas",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Parses retrieved schemas and publishes schema ids and schema contexts\r",
+									" * as collection variable for sub-sequent request.\r",
+									" */\r",
+									"const jsonData = JSON.parse(responseBody);\r",
+									"const policyId = pm.collectionVariables.get(\"POLICY_NAME\")\r",
+									"\r",
+									"for(const curSchema of jsonData){\r",
+									"    if(curSchema.status !== \"PUBLISHED\") continue\r",
+									"    \r",
+									"    const id = curSchema.iri.substring(1)\r",
+									"    const contextValue = JSON.stringify([curSchema.contextURL])\r",
+									"    pm.collectionVariables.set(`S_${curSchema.name}`, id);\r",
+									"    pm.collectionVariables.set(`CTX_${curSchema.name}`, contextValue);\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{BASE_URL}}/schemas/{{POLICY_TOPIC_ID}}?pageSize=1000",
+							"host": [
+								"{{BASE_URL}}"
+							],
+							"path": [
+								"schemas",
+								"{{POLICY_TOPIC_ID}}"
+							],
+							"query": [
+								{
+									"key": "pageSize",
+									"value": "1000"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Setup Policy",
+			"item": [
+				{
+					"name": "Create OrgEntity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"nameOfOrganization\": \"Avery Dennison\",\r\n        \"naicsTitle\": [\r\n            \"NAICS Title A\"\r\n        ],\r\n        \"naicsCode\": [\r\n            \"NAICS Code A\"\r\n        ],\r\n        \"sicTitle\": [\r\n            \"SIC Title A\"\r\n        ],\r\n        \"sicCode\": [\r\n            \"SIC Code A\"\r\n        ],\r\n        \"locationOfHQ\": [\r\n            \"HQ\"\r\n        ],\r\n        \"descriptionOfProductsAndServices\": \"For testing\",\r\n        \"numberOfEmployees\": \"9001\",\r\n        \"accoutingApproach\": \"test\",\r\n        \"canProvideCertificates\": false,\r\n        \"scopes\": [\r\n            \"Scope 2\"\r\n        ],\r\n        \"baseYear\": 2022,\r\n        \"justifyBaseYear\": \"Justification Here\",\r\n        \"currentReportingPeriodFrom\": \"2022-01-01\",\r\n        \"currentReportingPeriodTo\": \"2022-12-31\",\r\n        \"mintingIntervals\": \"Monthly\",\r\n        \"recalculationPolicy\": [\r\n            \"Demo Policy\"\r\n        ]\r\n    },\r\n    \"ref\": null\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_CreateOrgProfile}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_CreateOrgProfile}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last OrgEntity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables,\"ORGANIZATION\",responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"setTimeout(function() {}, pm.collectionVariables.get(\"DELAY_MS\"));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_OrganizationGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_OrganizationGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const orgDoc = pm.collectionVariables.get(\"ORG2_DOC\")\r",
+									"console.log(orgDoc)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"document\": {\r\n        \"organizationDid\": \"{{ORG_DID}}\",\r\n        \"name\": \"AD Smartrac\",\r\n        \"entityId\": \"Entity-1\",\r\n        \"ceoOrGeneralManager\": \"TBD\",\r\n        \"includedInInventory\": true,\r\n        \"activities\": \"Activities Value\",\r\n        \"address\": \"Address Value\",\r\n        \"city\": \"City Value\",\r\n        \"state\": \"State Value\",\r\n        \"zipCode\": \"Zip Code Values\",\r\n        \"country\": \"1234\",\r\n        \"employees\": \"9000\",\r\n        \"legalStatus\": \"Ltd.\",\r\n        \"equityOwnership\": [],\r\n        \"listShareholders\": [\r\n\r\n        ],\r\n        \"shareholderEquity\": [\r\n\r\n        ]\r\n    },\r\n    \"ref\": {{ORGANIZATION_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewEntityForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewEntityForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Entity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables,\"ENTITY\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_EntityGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_EntityGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"productName\": \"Product Name\",\r\n        \"productDescription\": \"Description\",\r\n        \"productId\": \"prod-id\",\r\n        \"productCategory\": \"category\",\r\n        \"standardOrProtocols\": [\r\n            \"GHGP Product Standard\",\r\n            \"Pathfinder Framework \"\r\n        ],\r\n        \"lcaScope\": \"Cradle-to-gate\",\r\n        \"cutOffRulesAndExemptions\":[],\r\n        \"intermediateOrFinal\": \"Intermediate\",\r\n        \"unitOfAnalysis\": \"1 Item \",\r\n        \"functionalUnit\": \"1 Item\",\r\n        \"referenceFlow\": \"1 Item\",\r\n        \"functionalUnitWeight\":  0.631,\r\n        \"goalsOfInventory\": [\r\n            \"Carbon Neutral Certification\",\r\n            \"Pathfinder Framework PCF sharing\"\r\n        ],\r\n        \"inputMaterials\": [\r\n                {\r\n                    \"material\": \"Face\",\r\n                    \"materialType\": \"Paper\",\r\n                    \"amount\": 0.1660420858\r\n                }\r\n            ],\r\n        \"recycledMaterialAfterProduction\": [\r\n            {\r\n                \"name\": \"Pure Aluminum\",\r\n                \"amount\": 0.0323432\r\n            }\r\n        ],\r\n        \"productionQuantityDuringTheDataPeriod\": 100000000,\r\n        \"details\": {\r\n            \"productionBasedOnActualOrForcast\": \"Forecast\",\r\n            \"inventoryTimePeriod\": \"Inventory time period\",\r\n            \"dataPeriodStartFrom\": \"2023-01-01\",\r\n            \"dataPeriodEndTo\": \"2023-12-31\",\r\n            \"timePeriodStart\": \"2022-01-01\",\r\n            \"timePeriodEnd\": \"2026-12-31\",\r\n            \"declarationFrequency\": \"12 months\",\r\n            \"mintingIntervals\": \"per Batch\",\r\n            \"netGhgEmmisonsTargets\": \"Carbon Neutral\",\r\n            \"trackingOverTime\": true,\r\n            \"baseInventory\": 2022,\r\n            \"recalculationPolicy\": [\"Methodology changes\", \"Errors\"],\r\n            \"internalAbatementTargets\": [],\r\n            \"internalAbatementStrategies\": [\"SBti\"],\r\n            \"ghgsIncluded\": [\r\n                \"CO2\",\r\n                \"CH4\",\r\n                \"N2O\"\r\n            ]\r\n        }\r\n    },\r\n    \"ref\": {{ENTITY_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewProductForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewProductForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const doc = utils.fetchLastItem(pm.collectionVariables,\"PROD\", responseBody)\r",
+									"const prodQuantity = doc.document.credentialSubject[0].productionQuantityDuringTheDataPeriod\r",
+									"const prodId =  doc.document.credentialSubject[0].productId\r",
+									"const inputMaterials = doc.document.credentialSubject[0].inputMaterials;\r",
+									"const functionalUnitWeight = doc.document.credentialSubject[0].functionalUnitWeight\r",
+									"pm.collectionVariables.set(\"PROD_ID\",prodId);\r",
+									"pm.collectionVariables.set(\"PROD_QUANTITY\", prodQuantity);\r",
+									"pm.collectionVariables.set(\"FUNCTIONAL_UNIT_WEIGHT\", functionalUnitWeight);\r",
+									"pm.collectionVariables.set(\"INPUT_MATERIALS\",JSON.stringify(inputMaterials));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"entityDid\": \"{{ENTITY_DID}}\",\r\n        \"productName\": \"Product Name\",\r\n        \"productDescription\": \"Product Description\",\r\n        \"productId\": \"ProductId\",\r\n        \"productCategory\": \"Product Category\",\r\n        \"standardOProtocols\": [\r\n            \"Standard Protocol\"\r\n        ],\r\n        \"lcaScope\": \"LCA Scope\",\r\n        \"intermediateOrFinal\": \"Intermediate\",\r\n        \"unitOfAnalysis\": \"Unit of Analysis (UoA)\",\r\n        \"functionalUnit\": \"Functional Unit\",\r\n        \"referenceFlow\": \"Reference Flow\",\r\n        \"goalsOfInventory\": [\r\n            \"Goals of Inventory\"\r\n        ],\r\n        \"inputMaterials\": [\r\n            {\r\n                \"material\": \"Material\",\r\n                \"Amount\": 100,\r\n                \"type\": \"{{GHPG.InputMaterial}}\",\r\n                \"@context\": []\r\n            }\r\n        ],\r\n        \"recycledMaterialAfterProduction\": [\r\n            {\r\n                \"field0\": \"Recycled Material\",\r\n                \"field1\": 100,\r\n                \"type\": \"{{GHGP.RecycledMaterial}}\",\r\n                \"@context\": []\r\n            }\r\n        ],\r\n        \"nonAttributableProcesses\": [\r\n            \"Non-attributable processes\"\r\n        ],\r\n        \"assuranceStatement\": {\r\n            \"firstOrThirdParty\": \"first party\",\r\n            \"assurerID\": \"Assurer ID\",\r\n            \"certificationId\": \"Certificate Id\",\r\n            \"certificationStandard\": \"Certificate Standard\",\r\n            \"certificationPeriod\": \"Certificate period\",\r\n            \"levelOfAssurance\": \"limited\",\r\n            \"assuranceProcessSummary\": \"Assurance process summary\",\r\n            \"assurerQualifications\": [\r\n                \"Assurer qualifications\"\r\n            ],\r\n            \"avoidingConflictsOfInterests\": \"Avoiding conflicts of interests (for first party)\",\r\n            \"assuranceOpinion\": \"Assurance opinion\",\r\n            \"type\": \"{{GHGP.AssuranceStatement}}\",\r\n            \"@context\": []\r\n        },\r\n        \"details\": {\r\n            \"productionQuantityDuringDataPeriod\": 12000,\r\n            \"productionBasedOnActualOrForcast\": \"forecast\",\r\n            \"inventoryTimePeriod\": \"Inventory time period\",\r\n            \"dataPeriodStartFrom\": \"2022-01-01\",\r\n            \"dataPeriodEndTo\": \"2022-12-31\",\r\n            \"declarationFrequency\": \"yearly\",\r\n            \"mintingIntervals\": \"monthly\",\r\n            \"netGhgEmmisonsTargets\": \"Net GHG Emissions Targets\",\r\n            \"trackingOverTime\": true,\r\n            \"baseInventory\": 100,\r\n            \"recalculationPolicy\": \"Recalculation policy\",\r\n            \"percentReduction\": 10,\r\n            \"internalAbatementTargets\": [],\r\n            \"internalAbatementStrategies\": [],\r\n            \"ghgsIncluded\": [\r\n                \"CO2\"\r\n            ],\r\n            \"lifecycleStagesIncluded\": [\r\n                \"Lifecycle Stages Included\"\r\n            ],\r\n            \"type\": \"{{S_GHPG.ProductDetails}}\",\r\n            \"@context\": []\r\n        },\r\n        \"@context\": [],\r\n        \"type\": \"{{S_GHPG.Product}}\"\r\n    },\r\n    \"ref\": {{ENTITY_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_ProductGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_ProductGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Lifecycle Stage",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"lifecycleStage\": \"Material Acquisition and Preprocessing\",\r\n        \"processingDescription\": \"...\",\r\n        \"lifeCycleStageId\": \"Inlay 5_Mat acq & pre-process\",\r\n        \"ownershipOrControl\": \"\",\r\n        \"significance\": \"significant\",\r\n        \"allocation\": \"NA\",\r\n        \"allocationUncertainty\": \"NA\",\r\n        \"attributableProcesses\": [\"Round trip product transport supplier to production gate \",\"Acquisition of product inputs (PCF/EEIO)\"],\r\n        \"nonAttributableProcesses\":[\"NA\"],\r\n        \"serviceFlows\": [\r\n            \"Logistics\"\r\n        ],\r\n        \"materialFlows\": [\r\n            \"Paper\",\r\n            \"PSA\",\r\n            \"Aluminum\",\r\n            \"Chips\",\r\n            \"ACP\",\r\n            \"Lead Frames\",\r\n            \"PSA\",\r\n            \"Transfer Tape\"\r\n        ],\r\n        \"energyFlows\": [\r\n            \"Fuel consumption\" \r\n        ],\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"productionQuantityDuringDataPeriod\": {{PROD_QUANTITY}}\r\n\r\n    },\r\n    \"ref\": {{PROD_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewLifeCycleStageForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewLifeCycleStageForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Lifecycle Stage",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const doc = utils.fetchLastItem(pm.collectionVariables, \"LIFECYCLE\", responseBody)",
+									"const stageId =  doc.document.credentialSubject[0].lifeCycleStageId;",
+									"pm.collectionVariables.set(\"LIFECYCLE_STAGE_ID\", stageId);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_LifeCycleStageGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_LifeCycleStageGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create GHG Source (Acquisition of product inputs )",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"lifeCycleStageId\": \"{{LIFECYCLE_STAGE_ID}}\",\r\n        \"ghgSourceName\": \"Acquisition of product inputs\",\r\n        \"ghgSourceId\": \"I5_Mat Aq_ADC_GHG_S3\",\r\n        \"scope\": \"Scope 3\"\r\n    },\r\n    \"ref\": {{LIFECYCLE_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewGHGSourceForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewGHGSourceForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last GHG  Source",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables, \"GHGSOURCE\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_GHGSourceGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_GHGSourceGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Data Source (production output)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"dataSourceName\": \"Palamax production output (Material consumption)\",\r\n        \"dataSourceDescription\": \"Palamax inlay printing machines provide product output data to the atma software system. Material consumption is estimated by multiplying cumulative output by the material flows outlined under the Inlay 5 tab. \",\r\n        \"dataSourceIds\": [\"MXYZ\",\"AXYZ\"],\r\n        \"sourceVerificationIds\": [\"M1_834740-663\",\"A1_834740-666\"],\r\n        \"facilityId\": \"FactoryO1\",\r\n        \"location\": \"Juarez\",\r\n        \"primary\": true,\r\n        \"dataSourceType\": \"activityOutput\"\r\n    },\r\n    \"ref\": {{GHGSOURCE_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewDataSourceForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewDataSourceForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Data Source Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables, \"DATA_SOURCE_OUTPUT\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_DataSourceGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_DataSourceGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create GHG Source (Ground Transportation)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"productId\": \"{{PROD_ID}}\",\r\n        \"lifeCycleStageId\": \"{{LIFECYCLE_STAGE_ID}}\",\r\n        \"ghgSourceName\": \"Ground transportation\",\r\n        \"ghgSourceId\": \"I5_Mat Aq_ADC_GHG_S3\",\r\n        \"scope\": \"Scope 3\"\r\n    },\r\n    \"ref\": {{LIFECYCLE_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewGHGSourceForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewGHGSourceForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last GHG Source",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables, \"GHGSOURCE\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_GHGSourceGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_GHGSourceGrid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Data Source (Ground Transport Paper)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document\": {\r\n        \"dataSourceName\": \"Supplier PCF Data (Supplier ID: Paper_002)\",\r\n        \"dataSourceDescription\": \"PCF data provided by the supplier in alignment with the with the Pathfinder Framework.\",\r\n        \"primary\": true,\r\n        \"dataSourceType\": \"groundTransport\",\r\n        \"materialAcquisitionTransportPcf\": {\r\n            \"dataSourceId\": [],\r\n            \"supplierId\": \"Paper_002\",\r\n            \"serviceId\": \"Ground transportation_002\",\r\n            \"productId\": \"Ground transportation_002\",\r\n            \"materialType\": \"Paper\",\r\n            \"dataPeriodStart\": \"2022-01-01\",\r\n            \"dataPeriodEnd\": \"2024-01-01\",\r\n            \"fuelUsage\": 188,\r\n            \"fuelType\": \"Diesel\",\r\n            \"modeOfTransportation\": \"Truck (rigid, >3.5-7.5t)\",\r\n            \"distanceTraveled\": 2133,\r\n            \"loadSpecifications\": \"TBD\",\r\n            \"massOfCargoLoad\": 10,\r\n            \"massOfProductDelivered\": 9,\r\n            \"pcf\": 112,\r\n            \"dataQuality\": {\r\n                \"dataQuality\": \"good\",\r\n                \"temporalRepresentativeness\": \"good\",\r\n                \"geographyOfTheDataCollected\": \"site-specific\",\r\n                \"geographicalRepresentativeness\": \"good\",\r\n                \"technologicalRepresentativeness\": \"good\",\r\n                \"descriptionOfDataQuality\": \"-\",\r\n                \"effortsTakenToImproveDataQuality\": \"NA\",\r\n                \"type\": \"305b2b0a-2c7f-4f4a-a0dc-43e9548bc356\",\r\n                \"@context\": [\r\n                    \"schema#fa9f0075-dbd0-45af-9414-7562efe98d8b\"\r\n                ]\r\n            }\r\n        }\r\n    },\r\n    \"ref\": {{GHGSOURCE_DOC}}\r\n}"
+						},
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_NewDataSourceForm}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_NewDataSourceForm}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Last Data Sourc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"utils.fetchLastItem(pm.collectionVariables, \"DATA_SOURCE_PAPER\", responseBody)"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AUTH_TOKEN}}",
+								"type": "default"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"url": {
+							"raw": "{{POLICY_URL}}/blocks/{{T_DataSourceGrid}}",
+							"host": [
+								"{{POLICY_URL}}"
+							],
+							"path": [
+								"blocks",
+								"{{T_DataSourceGrid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Send Activity Data (based on policy data)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const paperDataSource = JSON.parse(pm.collectionVariables.get(\"DATA_SOURCE_PAPER_SUBJ\"));",
+							"const groundTransportPcfs = [paperDataSource.materialAcquisitionTransportPcf];",
+							"",
+							"pm.collectionVariables.set(\"PCFS\",JSON.stringify(groundTransportPcfs));",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{AUTH_TOKEN}}",
+						"type": "default"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"document\": {\r\n        \"scope2Co2PerUnitOfAnalysis\": 0.321,\r\n        \"productId\": \"product-id\",\r\n        \"dataPeriodStartFrom\": \"2022-01-01\",\r\n        \"dataPeriodEndTo\": \"2023-01-01\",\r\n        \"itemId\": \"Batch-01\",\r\n        \"functionalUnitWeight\": {{FUNCTIONAL_UNIT_WEIGHT}},\r\n        \"productionQuantityDuringTheDataPeriod\": 4000,\r\n        \"acquisitionOfProductInputs\": {\r\n            \"dataSourceId\": [\r\n          \r\n            ],\r\n            \"cumulativeOutput\": 100,\r\n            \"inputMaterials\": {{INPUT_MATERIALS}}\r\n        },\r\n        \"materialAcquisitionTransport\": {\r\n            \"activityDataUnits\": \"unit\",\r\n            \"cumulativeOutput\": 100,\r\n            \"materialAcquisitionTransportPcf\": {{PCFS}}\r\n        }\r\n    },\r\n    \"ref\": {{LIFECYCLE_DOC}}\r\n}"
+				},
+				"url": {
+					"raw": "{{POLICY_URL}}/blocks/{{T_NewActivityDataInput}}",
+					"host": [
+						"{{POLICY_URL}}"
+					],
+					"path": [
+						"blocks",
+						"{{T_NewActivityDataInput}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"utils = {",
+					"    /**",
+					"     * Fetches the last item from get trequest on a grid",
+					"     * Also publishes common elements such as Id,Did and the document as variable",
+					"     * based on the `name` param",
+					"     */",
+					"    fetchLastItem(vars, name, responseBody){",
+					"        const jsonData = JSON.parse(responseBody);",
+					"        const data = jsonData.data.pop();",
+					"        const credSubject = data.document.credentialSubject[0];",
+					"        const dataId = data.document.id;",
+					"        const dataDid = credSubject.id;",
+					"        vars.set(`${name}_ID`, dataId);",
+					"        vars.set(`${name}_DID`, dataDid);",
+					"        vars.set(`${name}_DOC`, JSON.stringify(data));",
+					"        vars.set(`${name}_SUBJ`,JSON.stringify(credSubject));",
+					"        return data;",
+					"    },",
+					"    /**",
+					"     * Walks the document recursivly and applies the `onVisit` method to each ",
+					"     * block of the policy.",
+					"     */",
+					"    walkPolicy(rootBlock, onVisit){",
+					"        onVisit(rootBlock);",
+					"        for(const curChild of rootBlock.children){",
+					"            utils.walkPolicy(curChild,onVisit);",
+					"        }",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "https://atma-guardian-test.westeurope.azurecontainer.io/api/v1/",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_URL",
+			"value": "{{BASE_URL}}policies/{{POLICY_NAME}}",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_USER",
+			"value": "atma-test-hgh",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_PASSWORD",
+			"value": "WJOH2hE8F442nDW",
+			"type": "default"
+		},
+		{
+			"key": "POLICY_NAME",
+			"value": "655632c99bb6dc43102b83af",
+			"type": "default"
+		},
+		{
+			"key": "AUTH_TOKEN",
+			"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImF0bWEtdGVzdC1oZ2giLCJkaWQiOiJkaWQ6aGVkZXJhOnRlc3RuZXQ6QzdLb2J0ZlJhRXBTblZhQnNYVlJXS0wxN3hiVUxFTndnTUFHVndvdXVUUGRfMC4wLjU4MzU1MTkiLCJyb2xlIjoiVVNFUiIsImlhdCI6MTcwMDEzMTc0NH0.DRymtK096nLXsOL-rdRvK9J8OIHETJxu2Mx80fM-ajQ"
+		},
+		{
+			"key": "T_",
+			"value": "e68dbf4d-26e0-43ef-999b-2990ba3f2088"
+		},
+		{
+			"key": "DATA_SOURCE_ALUMINIUM_SUBJ",
+			"value": "{\"dataSourceName\":\"Supplier PCF Data (Supplier ID: Aluminum_001)\",\"dataSourceDescription\":\"PCF data provided by the supplier in alignment with the with the Pathfinder Framework.\",\"primary\":true,\"dataSourceType\":\"groundTransport\",\"materialAcquisitionTransportPcf\":{\"dataSourceId\":[],\"supplierId\":\"Aluminum_001\",\"serviceId\":\"Ground transportation_001\",\"productId\":\"Aluminum input_001\",\"materialType\":\"Aluminium\",\"dataPeriodStart\":\"2022-01-01\",\"dataPeriodEnd\":\"2024-01-01\",\"fuelUsage\":254.5,\"fuelType\":\"Diesel\",\"modeOfTransportation\":\"Truck (rigid, >3.5-7.5t)\",\"distanceTraveled\":2753,\"loadSpecifications\":\"TBD\",\"massOfCargoLoad\":1,\"massOfProductDelivered\":0.9,\"pcf\":181,\"dataQuality\":{\"dataQuality\":\"good\",\"temporalRepresentativeness\":\"good\",\"geographyOfTheDataCollected\":\"site-specific\",\"geographicalRepresentativeness\":\"good\",\"technologicalRepresentativeness\":\"good\",\"descriptionOfDataQuality\":\"-\",\"effortsTakenToImproveDataQuality\":\"NA\",\"type\":\"c11bc4e7-5135-401b-995c-d1028606f98e&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"type\":\"5b02ee2a-8d27-47a2-a1c5-af5d9ef1aed2&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:ELSumhmut5gGhS7amWiTuL9BaR8ts7KosEaHsjLZsbyr_0.0.5895164\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"],\"id\":\"did:hedera:testnet:2FnAKGPu4JqnuqQ5KEp7Movfgt1PLmqcsfpNo3EFXDV7_0.0.5895164\",\"type\":\"048c67cb-8d3b-4356-927a-0419bbd14868&1.0.0\"}"
+		},
+		{
+			"key": "ORGANIZATION_SUBJ",
+			"value": "{\"nameOfOrganization\":\"Innovative Manufacturing Inc.\",\"naicsTitle\":[\"Advanced Manufacturing Technology\"],\"naicsCode\":[\"334516\"],\"sicTitle\":[\"Manufacturing Machinery, Not Elsewhere Classified\"],\"sicCode\":[\"3599\"],\"locationOfHQ\":[\"Munich, Germany\"],\"descriptionOfProductsAndServices\":\"Innovative Manufacturing Inc. is a leading provider of advanced manufacturing technology solutions. We design and produce state-of-the-art equipment and machinery for use in a variety of industries. Our products are designed to increase efficiency, reduce costs, and improve overall productivity for our customers. With a team of highly skilled engineers and technicians, we are dedicated to pushing the boundaries of what is possible in manufacturing.\",\"numberOfEmployees\":\"200\",\"accoutingApproach\":\"n/a\",\"canProvideCertificates\":false,\"scopes\":[\"Scope 2\"],\"baseYear\":2023,\"justifyBaseYear\":\"n/a\",\"currentReportingPeriodFrom\":\"2023-01-01\",\"currentReportingPeriodTo\":\"2023-12-31\",\"mintingIntervals\":\"Monthly\",\"recalculationPolicy\":[\"n/a\"],\"policyId\":\"6555e8e953526c49ba286030\",\"@context\":[\"ipfs://bafkreibq47574nvmd7irrgufcpuugbsembmuuhe34ae4pzeathmrrxc2ae\"],\"id\":\"did:hedera:testnet:C7KobtfRaEpSnVaBsXVRWKL17xbULENwgMAGVwouuTPd_0.0.5835519\",\"type\":\"13df8526-f238-4c6e-afbd-2eea586df723&1.0.0\"}"
+		},
+		{
+			"key": "ENTITY_SUBJ",
+			"value": "{\"organizationDid\":\"urn:uuid:ad329196-3e60-419b-83c5-c47ac967bd37\",\"name\":\"Innovative Manufacturing Inc. - Germany\",\"entityId\":\"InnovativeManufacturingGermany\",\"ceoOrGeneralManager\":\"Johann Schmidt\",\"includedInInventory\":true,\"activities\":\"Advanced manufacturing solutions\",\"address\":\"Karl-Benz-Straße 15\",\"city\":\"Stuttgart\",\"state\":\"Baden-Württemberg\",\"zipCode\":\"70376\",\"country\":\"Germany\",\"employees\":\"100\",\"legalStatus\":\"GmbH\",\"equityOwnership\":[],\"listShareholders\":[],\"shareholderEquity\":[],\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:C7KobtfRaEpSnVaBsXVRWKL17xbULENwgMAGVwouuTPd_0.0.5835519\",\"@context\":[\"ipfs://bafkreiajleun23ktffetdr4eopdzess6su3klsvu7xfwnre36m2w6pnwxe\"],\"id\":\"did:hedera:testnet:DjhHHSWKQ4bQ2jcdwCEj1Z6jJWTave8hVFKi1QDr7UV_0.0.5895164\",\"type\":\"b4d46ce0-3534-4b2d-bd2d-1ee7b465035c&1.0.0\"}"
+		},
+		{
+			"key": "PROD_SUBJ",
+			"value": "{\"productName\":\"Inlay 5: Al Die Cut\",\"productDescription\":\"Aluminum die cut on paper substrate – strap process\",\"productId\":\"AD-385u8-SFDC40#\",\"productCategory\":\"RFID Inlay\",\"standardOrProtocols\":[\"GHGP Product Standard\",\"CarbonNeutral Protocol \",\"Pathfinder Framework \"],\"lcaScope\":\"Cradle-to-gate\",\"cutOffRulesAndExemptions\":[],\"intermediateOrFinal\":\"Intermediate\",\"unitOfAnalysis\":\"1 Inlay \",\"functionalUnit\":\"1 Inlay\",\"referenceFlow\":\"1 Inlay\",\"functionalUnitWeight\":0.569,\"goalsOfInventory\":[\"Carbon Neutral Certification\",\"Pathfinder Framework PCF sharing\"],\"inputMaterials\":[{\"material\":\"Face paper (g)\",\"materialType\":\"Paper\",\"amount\":0.1660420858,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"PET Strap (g)\",\"materialType\":\"PET\",\"amount\":0.003,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"Paper Strap (Chip) (g)\",\"materialType\":\"Paper\",\"amount\":0.01135907024,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"Aluminium (g)\",\"materialType\":\"Aluminium\",\"amount\":0.0110786897,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"Chip (Use 12\\\" Wafer for all) (g)\",\"materialType\":\"Chip\",\"amount\":0.001,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"Adhesive (g)\",\"materialType\":\"Adhesive\",\"amount\":0.065,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},{\"material\":\"Liner (g)\",\"materialType\":\"Liner\",\"amount\":0.2179968723,\"type\":\"b5d869f0-eb38-4e9a-9aeb-c7721c83792e&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]}],\"recycledMaterialAfterProduction\":[{\"name\":\"Pure Aluminum (no PET base included)\",\"amount\":0.016048201728,\"type\":\"feda25b5-ee7a-49a8-a86d-906ea41a8942&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]}],\"productionQuantityDuringTheDataPeriod\":100000000,\"details\":{\"productionBasedOnActualOrForcast\":\"Forecast\",\"inventoryTimePeriod\":\"Inventory time period\",\"dataPeriodStartFrom\":\"2023-01-01\",\"dataPeriodEndTo\":\"2023-12-31\",\"timePeriodStart\":\"2022-01-01\",\"timePeriodEnd\":\"2026-12-31\",\"declarationFrequency\":\"12 months\",\"mintingIntervals\":\"per Batch\",\"netGhgEmmisonsTargets\":\"Carbon Neutral\",\"trackingOverTime\":true,\"baseInventory\":2022,\"recalculationPolicy\":[\"Methodology changes\",\"Errors\"],\"internalAbatementTargets\":[],\"internalAbatementStrategies\":[\"SBti\"],\"ghgsIncluded\":[\"CO2\",\"CH4\",\"N2O\"],\"type\":\"afe811da-52a8-4c2e-84bc-b7ae4bc9f974&1.0.0\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"]},\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:DjhHHSWKQ4bQ2jcdwCEj1Z6jJWTave8hVFKi1QDr7UV_0.0.5895164\",\"@context\":[\"ipfs://bafkreia4rdgvjicg7h645hqgn4lvxq2i4gij4pwcdonqwkjengfh65o7xq\"],\"id\":\"did:hedera:testnet:8yHxPNpfBnmyNYxysoZSNp3rRn19USCdmzPKbpp3UfR9_0.0.5895164\",\"type\":\"604a72fa-18ec-4c34-896e-422935fb2b4d&1.0.0\"}"
+		},
+		{
+			"key": "LIFECYCLE_SUBJ",
+			"value": "{\"lifecycleStage\":\"Material Acquisition and Preprocessing\",\"processingDescription\":\"...\",\"lifeCycleStageId\":\"Inlay 5_Mat acq & pre-process\",\"ownershipOrControl\":\"\",\"significance\":\"significant\",\"allocation\":\"NA\",\"allocationUncertainty\":\"NA\",\"attributableProcesses\":[\"Round trip product transport supplier to production gate \",\"Acquisition of product inputs (PCF/EEIO)\"],\"nonAttributableProcesses\":[\"NA\"],\"serviceFlows\":[\"Logistics\"],\"materialFlows\":[\"Paper\",\"PSA\",\"Aluminum\",\"Chips\",\"ACP\",\"Lead Frames\",\"PSA\",\"Transfer Tape\"],\"energyFlows\":[\"Fuel consumption\"],\"productId\":\"AD-385u8-SFDC40#\",\"productionQuantityDuringDataPeriod\":100000000,\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:8yHxPNpfBnmyNYxysoZSNp3rRn19USCdmzPKbpp3UfR9_0.0.5895164\",\"@context\":[\"ipfs://bafkreig5jfpzfgfkughg4auf46a53yixlsz465ivyzfiduupx7go4jbqbi\"],\"id\":\"did:hedera:testnet:By6RF58uWPygutgo5MWUfaearJpKeW2646MoLu9WgHz_0.0.5895164\",\"type\":\"3edaad6a-72b8-43e0-9231-54584d846db5&1.0.0\"}"
+		},
+		{
+			"key": "GHGSOURCE_SUBJ",
+			"value": "{\"productId\":\"AD-385u8-SFDC40#\",\"lifeCycleStageId\":\"Inlay 5_Mat acq & pre-process\",\"ghgSourceName\":\"Ground transportation\",\"ghgSourceId\":\"I5_Mat Aq_ADC_GHG_S3\",\"scope\":\"Scope 3\",\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:By6RF58uWPygutgo5MWUfaearJpKeW2646MoLu9WgHz_0.0.5895164\",\"@context\":[\"ipfs://bafkreialvvqglaubeqoqpgyagddrxypucmj5p5wshf5awwmg5k67panovq\"],\"id\":\"did:hedera:testnet:ELSumhmut5gGhS7amWiTuL9BaR8ts7KosEaHsjLZsbyr_0.0.5895164\",\"type\":\"50cdb9d7-2246-433f-a2d1-a0addf33d011&1.0.0\"}"
+		},
+		{
+			"key": "DATA_SOURCE_PAPER_SUBJ",
+			"value": "{\"dataSourceName\":\"Supplier PCF Data (Supplier ID: Paper_002)\",\"dataSourceDescription\":\"PCF data provided by the supplier in alignment with the with the Pathfinder Framework.\",\"primary\":true,\"dataSourceType\":\"groundTransport\",\"materialAcquisitionTransportPcf\":{\"dataSourceId\":[],\"supplierId\":\"Paper_002\",\"serviceId\":\"Ground transportation_002\",\"productId\":\"Ground transportation_002\",\"materialType\":\"Paper\",\"dataPeriodStart\":\"2022-01-01\",\"dataPeriodEnd\":\"2024-01-01\",\"fuelUsage\":188,\"fuelType\":\"Diesel\",\"modeOfTransportation\":\"Truck (rigid, >3.5-7.5t)\",\"distanceTraveled\":2133,\"loadSpecifications\":\"TBD\",\"massOfCargoLoad\":10,\"massOfProductDelivered\":9,\"pcf\":112,\"dataQuality\":{\"dataQuality\":\"good\",\"temporalRepresentativeness\":\"good\",\"geographyOfTheDataCollected\":\"site-specific\",\"geographicalRepresentativeness\":\"good\",\"technologicalRepresentativeness\":\"good\",\"descriptionOfDataQuality\":\"-\",\"effortsTakenToImproveDataQuality\":\"NA\",\"type\":\"c11bc4e7-5135-401b-995c-d1028606f98e&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"type\":\"5b02ee2a-8d27-47a2-a1c5-af5d9ef1aed2&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"policyId\":\"6555e8e953526c49ba286030\",\"ref\":\"did:hedera:testnet:ELSumhmut5gGhS7amWiTuL9BaR8ts7KosEaHsjLZsbyr_0.0.5895164\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"],\"id\":\"did:hedera:testnet:2SqrDDjEdn1MQHwJC98iwEo5a44gYvTWwGcXR463EBcx_0.0.5895164\",\"type\":\"048c67cb-8d3b-4356-927a-0419bbd14868&1.0.0\"}"
+		},
+		{
+			"key": "PCFS",
+			"value": "[{\"dataSourceId\":[],\"supplierId\":\"Aluminum_001\",\"serviceId\":\"Ground transportation_001\",\"productId\":\"Aluminum input_001\",\"materialType\":\"Aluminium\",\"dataPeriodStart\":\"2022-01-01\",\"dataPeriodEnd\":\"2024-01-01\",\"fuelUsage\":254.5,\"fuelType\":\"Diesel\",\"modeOfTransportation\":\"Truck (rigid, >3.5-7.5t)\",\"distanceTraveled\":2753,\"loadSpecifications\":\"TBD\",\"massOfCargoLoad\":1,\"massOfProductDelivered\":0.9,\"pcf\":181,\"dataQuality\":{\"dataQuality\":\"good\",\"temporalRepresentativeness\":\"good\",\"geographyOfTheDataCollected\":\"site-specific\",\"geographicalRepresentativeness\":\"good\",\"technologicalRepresentativeness\":\"good\",\"descriptionOfDataQuality\":\"-\",\"effortsTakenToImproveDataQuality\":\"NA\",\"type\":\"c11bc4e7-5135-401b-995c-d1028606f98e&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"type\":\"5b02ee2a-8d27-47a2-a1c5-af5d9ef1aed2&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},{\"dataSourceId\":[],\"supplierId\":\"Paper_002\",\"serviceId\":\"Ground transportation_002\",\"productId\":\"Ground transportation_002\",\"materialType\":\"Paper\",\"dataPeriodStart\":\"2022-01-01\",\"dataPeriodEnd\":\"2024-01-01\",\"fuelUsage\":188,\"fuelType\":\"Diesel\",\"modeOfTransportation\":\"Truck (rigid, >3.5-7.5t)\",\"distanceTraveled\":2133,\"loadSpecifications\":\"TBD\",\"massOfCargoLoad\":10,\"massOfProductDelivered\":9,\"pcf\":112,\"dataQuality\":{\"dataQuality\":\"good\",\"temporalRepresentativeness\":\"good\",\"geographyOfTheDataCollected\":\"site-specific\",\"geographicalRepresentativeness\":\"good\",\"technologicalRepresentativeness\":\"good\",\"descriptionOfDataQuality\":\"-\",\"effortsTakenToImproveDataQuality\":\"NA\",\"type\":\"c11bc4e7-5135-401b-995c-d1028606f98e&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]},\"type\":\"5b02ee2a-8d27-47a2-a1c5-af5d9ef1aed2&1.0.0\",\"@context\":[\"ipfs://bafkreibdann3t3bidxnpjincmoj3p6uc63zksp35rawiwlzkkcjew2ycna\"]}]"
+		}
+	]
+}

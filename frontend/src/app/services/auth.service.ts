@@ -1,8 +1,9 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISession, IUser } from '@guardian/interfaces';
+import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { map } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
@@ -10,20 +11,34 @@ import { API_BASE_URL } from './api';
 @Injectable()
 export class AuthService {
     private accessTokenSubject: Subject<string | null>;
+    private refreshTokenSubject: Subject<string | null>
     private readonly url: string = `${API_BASE_URL}/accounts`;
 
     constructor(
         private http: HttpClient
     ) {
         this.accessTokenSubject = new Subject();
+        this.refreshTokenSubject = new Subject();
     }
 
     public login(username: string, password: string): Observable<any> {
         return this.http.post<string>(`${this.url}/login`, { username, password });
     }
 
-    public createUser(username: string, password: string, role: string): Observable<any> {
-        return this.http.post<any>(`${this.url}/register`, { username, password, role })
+    public updateAccessToken(): Observable<any> {
+        return this.http.post<any>(`${this.url}/access-token`, { refreshToken: this.getRefreshToken() }).pipe(
+            map(result => {
+                const { accessToken } = result;
+                this.setAccessToken(accessToken);
+                return accessToken
+            })
+        );
+    }
+
+    public createUser(username: string, password: string, confirmPassword: string, role: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/register`, {
+            username, password, password_confirmation: confirmPassword, role
+        })
     }
 
     public sessions(): Observable<ISession | null> {
@@ -40,6 +55,11 @@ export class AuthService {
     public setAccessToken(accessToken: string) {
         localStorage.setItem('accessToken', accessToken);
         this.accessTokenSubject.next(accessToken);
+    }
+
+    public setRefreshToken(refreshToken: string) {
+        localStorage.setItem('refreshToken', refreshToken);
+        this.refreshTokenSubject.next(refreshToken);
     }
 
     public removeAccessToken() {
@@ -63,6 +83,10 @@ export class AuthService {
         return localStorage.getItem('accessToken');
     }
 
+    public getRefreshToken() {
+        return localStorage.getItem('refreshToken');
+    }
+
     public subscribe(
         next?: ((accessToken: string | null) => void),
         error?: ((error: any) => void),
@@ -75,8 +99,24 @@ export class AuthService {
         return this.http.get<any>(`${this.url}/standard-registries`);
     }
 
+    public getAggregatedStandardRegistries(): Observable<IStandardRegistryResponse[]> {
+        return this.http.get<any>(`${this.url}/standard-registries/aggregated`);
+    }
+
     public balance(): Observable<any> {
         return this.http.get<any>(`${this.url}/balance`);
+    }
+
+    public home(role: UserRole | string | undefined): string {
+        if (UserCategory.isStandardRegistry(role as UserRole)) {
+            return '/config';
+        } else if (UserCategory.isAudit(role as UserRole)) {
+            return '/audit';
+        } else if (UserCategory.isUser(role as UserRole)) {
+            return '/user-profile';
+        } else {
+            return '/';
+        }
     }
 }
 

@@ -1,12 +1,12 @@
-const axios = require("axios");
-const { GetURL, GetToken } = require("../helpers");
-const assert = require("assert");
+import axios from 'axios';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Profiles() {
-    it('/profiles/:username/balance', async function () {
+    it('/profiles/balance', async function () {
         this.timeout(60000);
         const result = await axios.get(
-            GetURL('profiles', 'Installer', 'balance'),
+            GetURL('profiles',  'balance'),
             {
                 headers: {
                     'Content-Type': 'application/json',
@@ -17,7 +17,7 @@ function Profiles() {
     })
 
     it('/profiles', async function () {
-        this.timeout(120000);
+        this.timeout(240000);
 
         let result;
 
@@ -27,16 +27,6 @@ function Profiles() {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${GetToken('Installer')}`,
-                }
-            }
-        );
-        const profile = result.data;
-
-        result = await axios.get(
-            GetURL('demo', 'push', 'randomKey'),
-            {
-                headers: {
-                    'Content-Type': 'application/json',
                 }
             }
         );
@@ -61,9 +51,34 @@ function Profiles() {
                 }
             }
         );
+
+    });
+    it('/demo', async function () {
+        this.timeout(240000);
+
+        let result;
+        result = await axios.get(
+            GetURL('demo', 'push', 'random-key'),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+                }
+            }
+        );
+
+        // result = await axios.get(
+        //     GetURL('demo', 'randomKey'),
+        //     {
+        //         headers: {
+        //             'Content-Type': 'application/json',
+        //             'Authorization': `Bearer ${GetToken('StandardRegistry')}`,
+        //         }
+        //     }
+        // );
     })
 }
 
-module.exports = {
-    Profiles
-}
+export {
+    Profiles,
+};
