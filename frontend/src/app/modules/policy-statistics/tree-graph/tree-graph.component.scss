@@ -1,0 +1,215 @@
+:host {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.tree-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.tree-graph {
+    background: #EFF3F7;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* make GPU composite layer */
+    will-change: transform, top, left;
+    /* try optimize */
+
+    &[moving="true"] {
+        cursor: grabbing;
+    }
+
+    .tree-moving-container {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        /* make GPU composite layer */
+        will-change: transform, top, left;
+        /* try optimize */
+    }
+
+    .tree-grid {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        display: grid;
+
+        background-color: #f4f6f9;
+        opacity: 1;
+        background-image:
+            linear-gradient(#e8e8e8 0.8px, transparent 0.8px),
+            linear-gradient(90deg, #e8e8e8 0.8px, transparent 0.8px),
+            linear-gradient(#e8e8e8 0.4px, transparent 0.4px),
+            linear-gradient(90deg, #e8e8e8 0.4px, #f4f6f9 0.4px);
+        background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
+        background-position: -0.8px -0.8px, -0.8px -0.8px, -0.4px -0.4px, -0.4px -0.4px;
+
+        .tree-node-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            position: relative;
+            padding: 25px;
+            flex-direction: column;
+
+            .tree-node {
+                position: relative;
+            }
+
+            .tree-node-lines {
+                width: 100%;
+                height: 100%;
+                position: relative;
+            }
+
+            .tree-node-line {
+                position: absolute;
+                top: 0px;
+                bottom: -50px;
+                min-width: 3px;
+                pointer-events: none;
+
+                & {
+                    &::after,
+                    &::before {
+                        border-color: #848FA9;
+                        border-width: 2px;
+                        border-style: dashed;
+                    }
+
+                    z-index: 2;
+                }
+
+                &.selected-type-selected {
+
+                    &::after,
+                    &::before {
+                        border-color: var(--guardian-primary-color, #4169E2) !important;
+                        border-style: solid !important;
+                        opacity: 1 !important;
+                    }
+
+                    z-index: 2;
+                }
+
+                &.selected-type-sub {
+
+                    &::after,
+                    &::before {
+                        border-color: var(--guardian-primary-color, #4169E2) !important;
+                        opacity: 1 !important;
+                    }
+
+                    z-index: 1;
+                }
+
+                &.selected-type-hidden {
+                    opacity: 0.2;
+                    z-index: 0;
+                }
+
+                &.left-line:not(:first-child) {
+                    &::before {
+                        opacity: 0;
+                    }
+                }
+
+                &.right-line:not(:last-child) {
+                    &::before {
+                        opacity: 0;
+                    }
+                }
+
+                &.left-line {
+                    right: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 25px;
+                        left: 0px;
+                        border-left-width: 0 !important;
+                        border-top-width: 0 !important;
+                    }
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        bottom: 0px;
+                        left: 0px;
+                        width: 2px;
+                        height: 25px;
+                        border-right-width: 0 !important;
+                        border-bottom-width: 0 !important;
+                    }
+                }
+
+                &.middle-line {
+                    left: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 0px;
+                        left: -2px;
+                        border-right-width: 0 !important;
+                        border-bottom-width: 0 !important;
+                        border-top-width: 0 !important;
+                    }
+                }
+
+                &.right-line {
+                    left: 50%;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        bottom: 25px;
+                        left: -2px;
+                        border-right-width: 0 !important;
+                        border-top-width: 0 !important;
+                    }
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        bottom: 0px;
+                        right: 0px;
+                        width: 2px;
+                        height: 25px;
+                        border-left-width: 0 !important;
+                        border-bottom-width: 0 !important;
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,36 @@
+.icon-color {
+    &-primary {
+        fill: var(--guardian-primary-color);
+        color: var(--guardian-primary-color);
+    }
+
+    &-secondary {
+        fill: var(--guardian-secondary-color);
+        color: var(--guardian-secondary-color);
+    }
+
+    &-disabled {
+        fill: var(--guardian-disabled-color);
+        color: var(--guardian-disabled-color);
+    }
+
+    &-delete {
+        fill: var(--guardian-delete-color);
+        color: var(--guardian-delete-color);
+    }
+
+    &-success {
+        fill: var(--guardian-success-color);
+        color: var(--guardian-success-color);
+    }
+
+    &-failure {
+        fill: var(--guardian-failure-color);
+        color: var(--guardian-failure-color);
+    }
+
+    &-close {
+        fill: var(--guardian-close-color);
+        color: var(--guardian-close-color);
+    }
+}

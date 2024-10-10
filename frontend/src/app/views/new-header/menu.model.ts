@@ -143,6 +143,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                     routerLink: '/policy-viewer'
                 });
             }
+            if (user.STATISTICS_STATISTIC_READ)  {
+                childItems.push({
+                    title: 'Statistics',
+                    routerLink: '/policy-statistics'
+                });
+            }
         }
         if (
             user.SCHEMAS_SCHEMA_READ ||

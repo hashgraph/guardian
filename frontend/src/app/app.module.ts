@@ -17,6 +17,7 @@ import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
+import { PolicyStatisticsService } from './services/policy-statistics.service';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { IPFSService } from './services/ipfs.service';
@@ -72,6 +73,7 @@ import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
+import { PolicyStatisticsModule } from './modules/policy-statistics/policy-statistics.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -184,6 +186,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
+        PolicyStatisticsModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -225,6 +228,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         AnalyticsService,
         AuditService,
         PolicyEngineService,
+        PolicyStatisticsService,
         PolicyHelper,
         IPFSService,
         ArtifactService,

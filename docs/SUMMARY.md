@@ -150,6 +150,7 @@
         * [Updating Schema Tag](guardian/standard-registry/schemas/tag-schema/schema-tags-apis/updating-schema-tag.md)
         * [Publishing Schema](guardian/standard-registry/schemas/tag-schema/schema-tags-apis/publishing-schema.md)
         * [Returning list of published schemas](guardian/standard-registry/schemas/tag-schema/schema-tags-apis/returning-list-of-published-schemas.md)
+    * [Schema Predefined Values using UI](guardian/standard-registry/schemas/schema-predefined-values-using-ui.md)
   * [🛠️ Policies](guardian/standard-registry/policies/README.md)
     * [🎓 Policy Glossary](guardian/standard-registry/policies/policy-glossary.md)
     * [📁 Versioning and Deprecation Policy](guardian/standard-registry/policies/versioning-and-deprecation-policy/README.md)

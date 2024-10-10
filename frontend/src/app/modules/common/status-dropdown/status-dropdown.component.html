@@ -1,0 +1,30 @@
+<p-dropdown
+    *ngIf="!disabled"
+    [(ngModel)]="value"
+    [options]="list"
+    [showClear]="false"
+    class="guardian-dropdown guardian-dropdown-status status-{{status}}"
+    appendTo="body"
+    optionLabel="label" 
+    optionValue="value"
+    [placeholder]="label"
+    panelStyleClass="guardian-dropdown-panel guardian-dropdown-status-panel"
+    (onChange)="onChange()"
+>
+    <ng-template pTemplate="selectedItem">
+        {{label}}
+    </ng-template>
+    <ng-template let-option pTemplate="item">
+        <div>
+            <div class="dropdown-item-title status-{{option.value}}" >
+                {{ option.label }}
+            </div>
+            <span class="dropdown-item-description">
+                {{option.description}}
+            </span>
+        </div>
+    </ng-template>
+</p-dropdown>
+<div *ngIf="disabled" class="guardian-disabled-status status-{{status}}">
+    {{label}}
+</div>

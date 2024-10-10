@@ -7,13 +7,75 @@ import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
-    AggregateVC, ApplicationState, ApprovalDocument, Artifact, ArtifactChunk, AssignEntity, BlockCache, BlockState, Branding, COMMON_CONNECTION_CONFIG,
-    Contract, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
-    LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
-    MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
-    PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
-    Settings, SplitDocuments, SuggestionsConfig, Tag, TagCache, Theme, Token, Topic, TopicMemo, TransactionLogger, TransactionLogLvl, Users,
-    ValidateConfiguration, VcDocument, VpDocument, Wallet, WiperRequest, Workers
+    AggregateVC,
+    ApplicationState,
+    ApprovalDocument,
+    Artifact,
+    ArtifactChunk,
+    AssignEntity,
+    BlockCache,
+    BlockState,
+    Branding,
+    COMMON_CONNECTION_CONFIG,
+    Contract,
+    DatabaseServer,
+    DidDocument,
+    DocumentState,
+    DryRun,
+    DryRunFiles,
+    Environment,
+    ExternalDocument,
+    ExternalEventChannel,
+    GenerateTLSOptionsNats,
+    IPFS,
+    LargePayloadContainer,
+    MessageBrokerChannel,
+    MessageServer,
+    Migration,
+    MintRequest,
+    MintTransaction,
+    mongoForLoggingInitialization,
+    MultiDocuments,
+    MultiPolicy,
+    MultiPolicyTransaction,
+    OldSecretManager,
+    PinoLogger,
+    pinoLoggerInitialization,
+    Policy,
+    PolicyCache,
+    PolicyCacheData,
+    PolicyCategory,
+    PolicyInvitations,
+    PolicyModule,
+    PolicyProperty,
+    PolicyRoles,
+    PolicyStatistic,
+    PolicyStatisticDocument,
+    PolicyTest,
+    PolicyTool,
+    Record,
+    RetirePool,
+    RetireRequest,
+    Schema,
+    SecretManager,
+    Settings,
+    SplitDocuments,
+    SuggestionsConfig,
+    Tag,
+    TagCache,
+    Theme,
+    Token,
+    Topic,
+    TopicMemo,
+    TransactionLogger,
+    TransactionLogLvl,
+    Users,
+    ValidateConfiguration,
+    VcDocument,
+    VpDocument,
+    Wallet,
+    WiperRequest,
+    Workers
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -25,6 +87,7 @@ import { PolicyServiceChannelsContainer } from './helpers/policy-service-channel
 import { PolicyEngine } from './policy-engine/policy-engine.js';
 import { modulesAPI } from './api/module.service.js';
 import { toolsAPI } from './api/tool.service.js';
+import { statisticsAPI } from './api/policy-statistics.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
@@ -93,7 +156,9 @@ const necessaryEntity = [
     PolicyCacheData,
     PolicyCache,
     AssignEntity,
-    PolicyTest
+    PolicyTest,
+    PolicyStatistic,
+    PolicyStatisticDocument
 ]
 
 Promise.all([
@@ -118,6 +183,7 @@ Promise.all([
         'v2-20-0',
         'v2-23-1',
         'v2-27-1',
+        'v2-28-0',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -127,7 +193,8 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
@@ -194,6 +261,7 @@ Promise.all([
         await projectsAPI(logger);
         await AssignedEntityAPI(logger)
         await permissionAPI(logger);
+        await statisticsAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -383,7 +451,7 @@ Promise.all([
         'policy-discontinue',
         async () => {
             const date = new Date();
-            const policiesToDiscontunie = await dataBaseServer.find(Policy,{
+            const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });

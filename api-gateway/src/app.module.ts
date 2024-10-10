@@ -27,7 +27,7 @@ import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
 import { SuggestionsApi } from './api/service/suggestions.js';
 import { MatchConstraint } from './helpers/decorators/match.validator.js';
-import { NotificationService } from '@guardian/common';
+import { GenerateTLSOptionsNats, NotificationService } from '@guardian/common';
 import { NotificationsApi } from './api/service/notifications.js';
 import { ApplicationEnvironment } from './environment.js';
 import { AuthGuard } from './auth/auth-guard.js';
@@ -40,6 +40,7 @@ import { cacheProvider } from './helpers/providers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
 import { WorkerTasksController } from './api/service/worker-tasks.js';
+import { PolicyStatisticsApi } from './api/service/policy-statistics.js';
 import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -55,6 +56,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
+                tls: GenerateTLSOptionsNats()
                 // serializer: new LogClientSerializer(),
                 // deserializer: new LogClientDeserializer()
             }
@@ -91,6 +93,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
         RecordApi,
         AISuggestionsAPI,
         PermissionsApi,
+        PolicyStatisticsApi,
         WorkerTasksController
     ],
     providers: [

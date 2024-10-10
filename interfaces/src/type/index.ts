@@ -45,3 +45,4 @@ export * from './assigned-entity.type.js';
 export * from './access.type.js';
 export * from './pino-log.type.js';
 export * from './policy-test-status.type.js';
+export * from './entity-status.type.js';
