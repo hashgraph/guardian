@@ -25,13 +25,17 @@ Applying AR Tool 03 in a CDM project involves several key steps:
 
 ## Steps to Calculate
 
+![image](https://github.com/user-attachments/assets/40013602-cc8a-49ad-a047-4482c74a403d)
+
 1. **Identify N**: Determine the total number of possible sample plots in the project area.
 2. **Find t-value**: Choose the t-value based on the desired confidence level.
-3. **Calculate relative weight** for each stratum: `w𝑖 = Area of stratum 𝑖 / Total project area`.
-4. **Determine standard deviation** for each stratum: Use preliminary data or data from similar areas.
-5. **Set the margin of error (E)**: Typically 10% of the mean biomass stock, unless specified otherwise.
-6. **Apply the formula** to calculate the required number of sample plots (n).
-7. **Allocating Sample Plots to Strata (*n𝑖*)**: *n𝑖* is not automatically calculated. Use the following formula to calculate the "Number of sample plots allocated to each stratum" based on the relative size and variability of each stratum. This formula ensures that each stratum receives an appropriate number of sample plots based on its size (relative weight) and variability (standard deviation):
+   ![image (1)](https://github.com/user-attachments/assets/1ad645b9-88d4-44d7-b4f1-b4c557bfbdbc)
+4. **Calculate relative weight** for each stratum: `w𝑖 = Area of stratum 𝑖 / Total project area`.
+5. **Determine standard deviation** for each stratum: Use preliminary data or data from similar areas.
+6. **Set the margin of error (E)**: Typically 10% of the mean biomass stock, unless specified otherwise.
+7. **Apply the formula** to calculate the required number of sample plots (n).
+8. **Allocating Sample Plots to Strata (*n𝑖*)**: *n𝑖* is not automatically calculated. Use the following formula to calculate the "Number of sample plots allocated to each stratum" based on the relative size and variability of each stratum. This formula ensures that each stratum receives an appropriate number of sample plots based on its size (relative weight) and variability (standard deviation):
+   ![Screenshot 2024-09-10 234617](https://github.com/user-attachments/assets/ada4f244-ad2a-4da9-9e0a-d300e203cfe8)
 
 ## Importance in A/R CDM Projects
 
