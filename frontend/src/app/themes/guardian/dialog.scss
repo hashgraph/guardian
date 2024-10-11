@@ -78,26 +78,15 @@
 
         .action-buttons {
             display: flex;
+            justify-content: flex-end;
         }
 
-        .dialog-button,
-        .cancel-button {
-            margin-left: auto;
+        .dialog-button {
+            margin-left: 15px;
             margin-right: 0px;
 
             button {
-                width: 100px;
-                height: 40px;
-                font-size: var(--guardian-primary-font-size);
-                font-weight: 500;
-            }
-        }
-
-        .ok-button {
-            margin-left: 15px;
-
-            button {
-                width: auto;
+                min-width: 100px;
                 height: 40px;
                 font-size: var(--guardian-primary-font-size);
                 font-weight: 500;

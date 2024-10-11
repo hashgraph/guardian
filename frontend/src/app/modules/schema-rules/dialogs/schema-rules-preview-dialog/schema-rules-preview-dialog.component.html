@@ -1,0 +1,49 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Preview</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+        <div class="preview-container">
+            <div class="fields-header">
+                Input Fields
+            </div>
+            <div *ngIf="preview" class="fields-container">
+                <div *ngFor="let variable of preview" class="field-container">
+                    <div class="field-name">
+                        {{variable.description}}
+                    </div>
+                    <div class="field-input">
+                        <input 
+                            class="guardian-input"
+                            [(ngModel)]="variable.value"
+                            pInputText 
+                            type="text"
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="cancel-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button publish-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Check</button>
+        </div>
+    </div>
+</div>

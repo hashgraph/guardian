@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IStatistic, UserPermissions } from '@guardian/interfaces';
+import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -25,7 +25,7 @@ interface IColumn {
     styleUrls: ['./schema-rules.component.scss'],
 })
 export class SchemaRulesComponent implements OnInit {
-    public readonly title: string = 'Statistics';
+    public readonly title: string = 'Schema Rules';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -62,34 +62,16 @@ export class SchemaRulesComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
-            id: 'topicId',
-            title: 'Topic',
-            type: 'text',
-            size: '135',
-            tooltip: false
-        }, {
             id: 'status',
             title: 'Status',
             type: 'text',
             size: '180',
             tooltip: false
         }, {
-            id: 'documents',
-            title: 'Documents',
-            type: 'text',
-            size: '125',
-            tooltip: false
-        }, {
             id: 'edit',
             title: '',
             type: 'text',
             size: '56',
-            tooltip: false
-        }, {
-            id: 'options',
-            title: '',
-            type: 'text',
-            size: '210',
             tooltip: false
         }, {
             id: 'delete',
@@ -110,7 +92,6 @@ export class SchemaRulesComponent implements OnInit {
                 this.loadProfile();
             })
         );
-        // this.loadProfile();
     }
 
     ngOnDestroy(): void {
@@ -118,7 +99,6 @@ export class SchemaRulesComponent implements OnInit {
     }
 
     private loadProfile() {
-        // const policyId = this.route.snapshot.params['policyId'];
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
@@ -230,7 +210,7 @@ export class SchemaRulesComponent implements OnInit {
     }
 
     public onEdit(item: any) {
-        this.router.navigate(['/schema-rules', item.id]);
+        this.router.navigate(['/schema-rule', item.id]);
     }
 
     public onDelete(item: any) {

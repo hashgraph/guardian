@@ -5,11 +5,11 @@ import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { IFormula, IOption, IScore, IVariable } from '../models/assessment';
-import { TreeSource } from '../tree-graph/tree-source';
-import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
-import { DocumentNode, SchemaData } from '../models/schema-node';
-import { TreeNode } from '../tree-graph/tree-node';
+import { IFormula, IOption, IScore, IVariable } from '../../common/models/assessment';
+import { TreeSource } from '../../common/tree-graph/tree-source';
+import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
+import { DocumentNode, SchemaData } from '../../common/models/schema-node';
+import { TreeNode } from '../../common/tree-graph/tree-node';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({

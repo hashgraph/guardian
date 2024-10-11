@@ -83,8 +83,6 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                     'name',
                     'description',
                     'status',
-                    'topicId',
-                    'messageId',
                     'policyId',
                     'config'
                 ];

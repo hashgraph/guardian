@@ -34,6 +34,7 @@ import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
+import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 
 @NgModule({
     declarations: [
@@ -58,7 +59,8 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         AlertComponent,
         PaginatorComponent,
         StatusDropdown,
-        CustomCustomDialogComponent
+        CustomCustomDialogComponent,
+        TreeGraphComponent,
     ],
     imports: [
         CommonModule,
@@ -100,7 +102,8 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         PaginatorComponent,
         DataInputDialogComponent,
         StatusDropdown,
-        CustomCustomDialogComponent
+        CustomCustomDialogComponent,
+        TreeGraphComponent,
     ]
 })
 export class CommonComponentsModule { }

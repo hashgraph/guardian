@@ -1,4 +1,4 @@
-<div class="guardian-page">
+<div class="guardian-page" [attr.readonly]="readonly">
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
@@ -19,7 +19,7 @@
                         svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Back to Statistics</div>
+                <div class="guardian-button-label">Back to Policies</div>
             </button>
         </div>
     
@@ -31,12 +31,351 @@
             </div>
         </div>
     </div>
-
-    <div class="body-container">
-
-
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Overview</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/tree.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Select Schemas</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/table.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Configure Rules</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="actions-container">
+    <div class="body-container">
+        <div *ngIf="stepper[0]" class="overview-viewer">
+            <form [formGroup]="overviewForm">
+                <div class="guardian-input-container">
+                    <label class="form-label" htmlFor="version">* Name</label>
+                    <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+                </div>
+                <div class="guardian-input-container">
+                    <label class="form-label" htmlFor="version">Description</label>
+                    <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+                </div>
+    
+                <div class="guardian-input-container">
+                    <label class="form-label" htmlFor="version">* Policy</label>
+                    <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+                </div>
+            </form>
+        </div>
 
+        <div *ngIf="stepper[1]" class="schema-viewer">
+            <div class="tree-container">
+                <app-tree-graph 
+                    (init)="initTree($event)"
+                    (render)="createNodes($event)"
+                    (select)="onSelectNode($event)"
+                >
+                    <ng-template 
+                        #nodeTemplate 
+                        let-node="node" 
+                    >
+                        <div 
+                            class="tree-node {{node.type}}-node selected-type-{{node.selected}}"
+                            [attr.search-highlighted]="node.fields.searchHighlighted"
+                        >
+                            <div class="node-header">
+                                {{node.data.name}}
+                            </div>
+                            <div *ngIf="node.fields.selectedCount>0" class="node-fields">
+                                <div *ngFor="let item of node.fields.selectedFields" class="node-field">
+                                    {{item.data.description}}
+                                </div>
+                                <div *ngIf="node.fields.selectedCount>4" class="node-not-fields">
+                                    + {{node.fields.selectedCount-4}} more
+                                </div>
+                            </div>
+                            <div *ngIf="!node.fields.selectedCount" class="node-fields">
+                                <div class="node-not-fields">
+                                    Nothing selected
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </app-tree-graph>
+            </div>
+            <div class="schema-search">
+                <div class="guardian-search">
+                    <input 
+                        id="schemaSearch" 
+                        [(ngModel)]="searchField"
+                        placeholder="Search" 
+                        pInputText 
+                        type="text"
+                        (change)="onSchemaFilter(1)"
+                    />
+                </div>
+            </div>
+            <div class="schema-toolbar">
+                <div class="tree-tabs-nav">
+                    <div class="tree-tabs-nav-left" (click)="onNavNext(-1)"></div>
+                    <div class="tree-tabs-nav-right" (click)="onNavNext(1)"></div>
+                </div>
+                <div #treeTabs class="tree-tabs">
+                    <div 
+                        *ngFor="let root of roots" 
+                        class="tree-tab selected-type-{{root.selected}}" 
+                        (click)="onNavRoot(root)"
+                    >
+                        <span class="tree-tab-name">{{root.data.name}}</span>
+                        <span class="tree-tab-count" *ngIf="root.fields.selectedAllCount">
+                            {{root.fields.selectedAllCount}}
+                        </span>
+                    </div>
+                    <div class="tree-tab-last"></div>
+                </div>
+            </div>
+            <div class="zoom-toolbar" [attr.hidden-schema]="!selectedNode">
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(0)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/center.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/add.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <div class="zoom-label">{{zoom}}%</div>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(-1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/minus.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="schema-fields" [attr.hidden-schema]="!selectedNode">
+                <div *ngIf="nodeLoading" class="guardian-loading">
+                    <div class="guardian-loading-image"></div>
+                </div>
+                <div *ngIf="rootNode" class="fields-container">
+                    <div class="schema-name">
+                        {{rootNode.data.name}}
+                        <div class="schema-close" (click)="onClearNode()">
+                            <svg-icon 
+                                src="/assets/images/icons/close.svg" 
+                                svgClass="icon-color-close"></svg-icon>
+                        </div>
+                    </div>
+                    <div class="schema-config">
+                        <p-tabView class="guardian-tabs" (onChange)="schemaConfigChange($event)">
+                            <p-tabPanel header="Select Fields">
+                                <div class="field-list">
+                                    <div class="field-search">
+                                        <div class="guardian-search">
+                                            <input 
+                                                id="fieldSearch" 
+                                                [(ngModel)]="searchField"
+                                                placeholder="Search" 
+                                                pInputText 
+                                                type="text"
+                                                (change)="onSchemaFilter(2)"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="field-tree-container">
+                                        <div #fieldTree class="field-tree">
+                                            <div 
+                                                *ngFor="let item of rootNode.fields.items" 
+                                                class="field-item"
+                                                [attr.highlighted]="item.highlighted"
+                                                [attr.search-highlighted]="item.searchHighlighted"
+                                            >
+                                                <div class="field-offset" 
+                                                    [style.width.px]="24*item.lvl" 
+                                                    [style.min-width.px]="24*item.lvl"></div>
+                                                <div class="field-collapse">
+                                                    <div 
+                                                        *ngIf="item.expandable" 
+                                                        class="guardian-collapse collapse-24"
+                                                        [attr.collapsed]="item.collapsed"
+                                                        (click)="onCollapseField(item)"
+                                                    >
+                                                    </div>
+                                                </div>
+                                                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                                                    <p-checkbox 
+                                                        class="guardian-checkbox checkbox-24"
+                                                        [ngModel]="item.selected" 
+                                                        [binary]="true"
+                                                        [disabled]="readonly"></p-checkbox>
+                                                </div>
+                                                <div 
+                                                    class="field-name" 
+                                                    [attr.readonly]="readonly"
+                                                    (click)="onSelectField(item)"
+                                                >
+                                                    {{item.data.description}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                            <p-tabPanel header="Select Properties">
+                                <div class="field-list">
+                                    <div class="field-search">
+                                        <div class="guardian-search">
+                                            <input 
+                                                id="fieldSearch" 
+                                                [(ngModel)]="searchField"
+                                                placeholder="Search" 
+                                                pInputText 
+                                                type="text"
+                                                (change)="onSchemaFilter(3)"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div class="field-tree-container">
+                                        <div #fieldTree class="field-tree">
+                                            <div 
+                                                *ngFor="let item of rootNode.fields.items" 
+                                                class="field-item"
+                                                [attr.highlighted]="item.highlighted"
+                                                [attr.search-highlighted]="item.searchHighlighted"
+                                                [attr.property]="!!item.data.property"
+                                                [attr.property-id]="item.data.property"
+                                            >
+                                                <div class="field-offset" 
+                                                    [style.width.px]="24*item.lvl" 
+                                                    [style.min-width.px]="24*item.lvl"></div>
+                                                <div class="field-collapse">
+                                                    <div 
+                                                        *ngIf="item.expandable" 
+                                                        class="guardian-collapse collapse-24"
+                                                        [attr.collapsed]="item.collapsed"
+                                                        (click)="onCollapseField(item)"
+                                                    >
+                                                    </div>
+                                                </div>
+                                                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                                                    <p-checkbox 
+                                                        class="guardian-checkbox checkbox-24"
+                                                        [ngModel]="item.selected" 
+                                                        [binary]="true"
+                                                        [disabled]="readonly"></p-checkbox>
+                                                </div>
+                                                <div 
+                                                    class="field-name"
+                                                    [attr.readonly]="readonly"
+                                                    (click)="onSelectField(item)"
+                                                >
+                                                    {{item.data.propertyName || item.data.description}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                        </p-tabView>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="stepper[2]" class="config-viewer">
+            <div class="variables-container">
+                <div class="variables-header">
+                    Input Fields
+                </div>
+                <div *ngIf="variables.variables.length" class="variables-grid">
+                    <div class="variables-grid-header">
+                        <div class="variables-grid-cell cell-84">ID</div>
+                        <div class="variables-grid-cell cell-300">PATH</div>
+                        <div class="variables-grid-cell cell-300">PROPERTY</div>
+                        <div class="variables-grid-cell">FIELD</div>
+                        <div class="variables-grid-cell cell-200">TYPE</div>
+                    </div>
+                    <div class="variables-grid-body">
+                        <div *ngFor="let variable of variables.variables" class="variables-grid-row">
+                            <div class="variables-grid-cell cell-84">
+                                <input 
+                                    class="guardian-input guardian-input-cell"
+                                    [(ngModel)]="variable.id" 
+                                    id="formula.id" 
+                                    pInputText 
+                                    type="text"
+                                    [readonly]="readonly"/>
+                                <div class="cell-focus"></div>
+                            </div>
+                            <div class="variables-grid-cell cell-300">
+                                {{variable.schemaName}} / {{variable.schemaPath}}
+                            </div>
+                            <div class="variables-grid-cell cell-300">
+                                {{variable.fieldPropertyName}}
+                            </div>
+                            <div class="variables-grid-cell">
+                                {{variable.fieldDescription}}
+                            </div>
+                            <div class="variables-grid-cell cell-200">
+                                <span style="text-transform: capitalize">
+                                    {{variable.displayType}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!variables.variables.length" class="variables-empty-grid">
+                    <div>
+                        <svg-icon
+                            class="icon-btn"
+                            src="/assets/images/icons/list.svg"
+                            svgClass="icon-color-disabled">
+                        </svg-icon>
+                    </div>
+                    <div>There were no fields selected yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="!readonly" class="actions-container">
+        <button *ngIf="stepper[2]" (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
+        <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>

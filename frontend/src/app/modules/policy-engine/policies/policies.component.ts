@@ -1180,9 +1180,10 @@ export class PoliciesComponent implements OnInit {
 
     public createNewPolicy() {
         const dialogRef = this.dialogService.open(NewPolicyDialog, {
+            showHeader: false,
             header: 'New Policy',
             width: '650px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {

@@ -20,12 +20,14 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { SchemaRulesComponent } from './schema-rules/schema-rules.component';
 import { NewSchemaRuleDialog } from './dialogs/new-schema-rule-dialog/new-schema-rule-dialog.component';
 import { SchemaRuleConfigurationComponent } from './schema-rule-configuration/schema-rule-configuration.component';
+import { SchemaRulesPreviewDialog } from './dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
 
 @NgModule({
     declarations: [
         SchemaRulesComponent,
         SchemaRuleConfigurationComponent,
-        NewSchemaRuleDialog
+        NewSchemaRuleDialog,
+        SchemaRulesPreviewDialog
     ],
     imports: [
         CommonModule,
