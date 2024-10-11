@@ -45,6 +45,11 @@ import { UsersManagementComponent } from './views/user-management/user-managemen
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { MapService } from './services/map.service';
+import { StatisticAssessmentViewComponent } from './modules/policy-statistics/statistic-assessment-view/statistic-assessment-view.component';
+import { StatisticAssessmentsComponent } from './modules/policy-statistics/statistic-assessments/statistic-assessments.component';
+import { StatisticAssessmentConfigurationComponent } from './modules/policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
+import { StatisticDefinitionConfigurationComponent } from './modules/policy-statistics/statistic-definition-configuration/statistic-definition-configuration.component';
+import { StatisticDefinitionsComponent } from './modules/policy-statistics/statistic-definitions/statistic-definitions.component';
 
 @Injectable({
     providedIn: 'root'
@@ -488,6 +493,49 @@ const routes: Routes = [
             ]
         }
     },
+
+    {
+        path: 'policy-statistics',
+        component: StatisticDefinitionsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId',
+        component: StatisticDefinitionConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessment',
+        component: StatisticAssessmentConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessments',
+        component: StatisticAssessmentsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessment/:assessmentId',
+        component: StatisticAssessmentViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [UserRole.USER]
+        }
+    },
+
+
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

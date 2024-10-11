@@ -4,7 +4,7 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
+import { GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
@@ -39,7 +39,8 @@ Promise.all([
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                tls: GenerateTLSOptionsNats()
             },
         });
         app.enableVersioning({

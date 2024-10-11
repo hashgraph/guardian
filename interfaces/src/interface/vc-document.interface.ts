@@ -65,4 +65,12 @@ export interface IVCDocument {
      * Option
      */
     option?: any;
+    /**
+     * Schema IRI
+     */
+    schema?: string;
+    /**
+     * Message ID
+     */
+    messageId?: string;
 }

@@ -565,3 +565,71 @@ export interface ContractMessageBody extends MessageBody {
      */
     version: string;
 }
+
+/**
+ * Policy Statistic message body
+ */
+export interface StatisticMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Policy topic ID
+     */
+    policyTopicId: string;
+    /**
+     * Policy instance topic ID
+     */
+    policyInstanceTopicId: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+}
+
+/**
+ * Statistic Assessment message body
+ */
+export interface StatisticAssessmentMessageBody extends MessageBody {
+    /**
+     * Issuer
+     */
+    issuer: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Target
+     */
+    target: string;
+    /**
+     * Definition
+     */
+    definition: string;
+}

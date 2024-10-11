@@ -26,7 +26,7 @@
             </div>
             <div class="dialog-grid-body">
                 <ng-container *ngFor="let item of tests" >   
-                    <div class="dialog-grid-row" (click)="expand(item)" [attr.expand]="getExpand(item)">
+                    <div class="dialog-grid-row row-64" (click)="expand(item)" [attr.expand]="getExpand(item)">
                         <div class="col-44">
                             <svg-icon
                                 *ngIf="item.result || item.error"

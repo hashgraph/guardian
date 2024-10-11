@@ -45,7 +45,7 @@ export class NotificationComponent implements OnInit {
             this.notificationService.progresses(),
         ]).subscribe((value) => {
             this.notifications = value[0];
-            this.progressNotifications = value[1];
+            this.progressNotifications = value[1] || [];
             this.countUnreadNotification();
             this.subscription.add(
                 this.ws.updateNotificationSubscribe(

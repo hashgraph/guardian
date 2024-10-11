@@ -1,23 +1,5 @@
 import '../config.js'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DatabaseServer,
-    entities,
-    Environment,
-    ExternalEventChannel,
-    IPFS,
-    LargePayloadContainer,
-    mongoForLoggingInitialization,
-    PinoLogger,
-    pinoLoggerInitialization,
-    MessageBrokerChannel,
-    MessageServer,
-    NotificationService,
-    OldSecretManager,
-    Users,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DatabaseServer, entities, Environment, ExternalEventChannel, GenerateTLSOptionsNats, IPFS, LargePayloadContainer, MessageBrokerChannel, MessageServer, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Wallet, Workers, } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -64,7 +46,8 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
