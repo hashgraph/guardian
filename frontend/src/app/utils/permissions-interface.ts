@@ -164,7 +164,6 @@ export const categoryNames = new Map<PermissionCategories, string>([
     [PermissionCategories.AUDIT, 'Audit'],
     [PermissionCategories.TOOLS, 'Tools'],
     [PermissionCategories.PERMISSIONS, 'Permissions'],
-    [PermissionCategories.STATISTICS, 'Policy Statistics'],
     [PermissionCategories.ACCESS, 'Access']
 ])
 

@@ -1,9 +1,8 @@
 import assert from 'assert';
-import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
+import { Subscription, NatsConnection, StringCodec, connect, headers } from 'nats';
 import { IMessageResponse, MessageError } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
-import { GenerateTLSOptionsNats } from '../helpers/index.js';
 
 const MQ_TIMEOUT = 300000;
 /**
@@ -307,7 +306,6 @@ export class MessageBrokerChannel {
     public static async connect(connectionName: string) {
         assert(process.env.MQ_ADDRESS, 'Missing MQ_ADDRESS environment variable');
         return connect({
-            tls: GenerateTLSOptionsNats(),
             servers: [process.env.MQ_ADDRESS],
             name: connectionName,
             reconnectDelayHandler: () => 2000,

@@ -88,11 +88,12 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private dialogService: DialogService,
         private cdRef: ChangeDetectorRef
     ) {
+        console.log(this);
         this.profile = null;
         this.balance = null;
         this.vcForm.statusChanges.subscribe((result) => {
             setTimeout(() => {
-                this.validVC = result === 'VALID';
+                this.validVC = result == 'VALID';
             });
         });
     }
@@ -635,7 +636,6 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 title,
                 type: 'VC',
                 viewDocument: true,
-                getByUser: true
             },
         });
         dialogRef.onClose.subscribe(async (result) => {

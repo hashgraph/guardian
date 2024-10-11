@@ -4,11 +4,6 @@ import { Environment, TokenInfo, TokenInstances, TopicInfo } from '@indexer/comm
 export class HederaService {
     private static mirrorNodeUrl: string;
 
-    /**
-     * Rest API max limit
-     */
-    public static readonly REST_API_MAX_LIMIT: number = 100;
-
     public static async init() {
         this.mirrorNodeUrl = Environment.mirrorNode;
     }
@@ -18,7 +13,7 @@ export class HederaService {
             const url = this.mirrorNodeUrl + 'topics/' + topicId + '/messages';
             const option: any = {
                 params: {
-                    limit: HederaService.REST_API_MAX_LIMIT
+                    limit: 100
                 },
                 responseType: 'json',
                 timeout: 2 * 60 * 1000,
@@ -67,7 +62,7 @@ export class HederaService {
         const option: any = {
             params: {
                 order: 'asc',
-                limit: HederaService.REST_API_MAX_LIMIT
+                limit: 100
             },
             responseType: 'json',
             timeout: 2 * 60 * 1000,

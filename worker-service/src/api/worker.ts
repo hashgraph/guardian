@@ -848,8 +848,9 @@ export class Worker extends NatsService {
                         timestamp,
                         contractId,
                         order,
+                        limit
                     } = task.data;
-                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order);
+                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order, limit);
                     break;
                 }
 
@@ -896,8 +897,9 @@ export class Worker extends NatsService {
                         order,
                         filter,
                         limit,
+                        findOne,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
                     result.data = transactions || [];
                     break;
                 }

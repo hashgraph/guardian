@@ -1,11 +1,11 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
+import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
 import { BrandingService } from './services/branding.service';
 import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
-import './modules/policy-statistics/lang-modes/formula-lang.mode';
-import './modules/policy-statistics/lang-modes/single-line';
 import { globalLoaderActive } from './static/global-loader.function';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -16,7 +16,7 @@ import { DomSanitizer } from '@angular/platform-browser';
     templateUrl: './app.component.html',
     styleUrls: [
         './app.component.scss',
-        './themes/guardian/index.scss'
+        './themes/guardian.scss'
     ],
 })
 export class AppComponent implements OnInit {

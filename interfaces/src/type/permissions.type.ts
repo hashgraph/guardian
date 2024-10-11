@@ -23,8 +23,7 @@ export enum PermissionCategories {
     TOOLS = 'TOOLS',
     PERMISSIONS = 'PERMISSIONS',
     ACCESS = 'ACCESS',
-    DELEGATION = 'DELEGATION',
-    STATISTICS = 'STATISTICS',
+    DELEGATION = 'DELEGATION'
 }
 
 /**
@@ -63,8 +62,7 @@ export enum PermissionEntities {
     THEME = 'THEME',
     TOKEN = 'TOKEN',
     TRUST_CHAIN = 'TRUST_CHAIN',
-    ROLE = 'ROLE',
-    STATISTIC = 'STATISTIC'
+    ROLE = 'ROLE'
 }
 
 /**
@@ -217,9 +215,6 @@ export enum Permissions {
     ACCESS_POLICY_ASSIGNED_AND_PUBLISHED = 'ACCESS_POLICY_ASSIGNED_AND_PUBLISHED',
     //DELEGATION
     DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
-    //STATISTICS
-    STATISTICS_STATISTIC_CREATE = 'STATISTICS_STATISTIC_CREATE',
-    STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ'
 }
 
 /**
@@ -1125,21 +1120,6 @@ export const PermissionsArray: {
                 Permissions.PERMISSIONS_ROLE_READ
             ]
         },
-        //STATISTIC
-        {
-            name: Permissions.STATISTICS_STATISTIC_READ,
-            category: PermissionCategories.STATISTICS,
-            entity: PermissionEntities.STATISTIC,
-            action: PermissionActions.READ,
-            disabled: false
-        },
-        {
-            name: Permissions.STATISTICS_STATISTIC_CREATE,
-            category: PermissionCategories.STATISTICS,
-            entity: PermissionEntities.STATISTIC,
-            action: PermissionActions.CREATE,
-            disabled: false
-        },
         //ACCESS
         {
             name: Permissions.ACCESS_POLICY_ALL,
@@ -1301,9 +1281,7 @@ export const DefaultRoles: Permissions[] = [
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
-    Permissions.STATISTICS_STATISTIC_READ,
-    Permissions.STATISTICS_STATISTIC_CREATE
+    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
 ];
 
 export const OldRoles: Permissions[] = [

@@ -5,6 +5,7 @@ import { UserRole } from '@guardian/interfaces';
 import { Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { Match } from '../../../helpers/decorators/match.validator.js';
+import { PolicyDTO } from './policies.dto.js';
 
 export class AccountsResponseDTO {
     @ApiProperty()
@@ -118,6 +119,62 @@ export class CredentialSubjectDTO {
     @ApiProperty()
     type: string;
 }
+
+export class ProofDTO {
+    @ApiProperty()
+    type: string;
+
+    @ApiProperty()
+    created: Date;
+
+    @ApiProperty()
+    verificationMethod: string;
+
+    @ApiProperty()
+    proofPurpose: string;
+
+    @ApiProperty()
+    jws: string;
+}
+
+export class VcDocumentDTO {
+    @ApiProperty()
+    id: string;
+
+    @ApiProperty()
+    type: string[];
+
+    @ApiProperty()
+    issuer: string;
+
+    @ApiProperty()
+    issuanceDate: Date;
+
+    @ApiProperty()
+    '@context': string[]
+
+    @ApiProperty()
+    credentialSubject: CredentialSubjectDTO;
+
+    @ApiProperty()
+    proof: ProofDTO;
+}
+
+export class AggregatedDTOItem {
+    @ApiProperty()
+    did: string;
+
+    @ApiProperty()
+    hederaAccountId: string;
+
+    @ApiProperty()
+    vcDocument: VcDocumentDTO;
+
+    @ApiProperty()
+    policies: PolicyDTO;
+}
+
+export type AggregatedDTO = AggregatedDTOItem[]
 
 class UserDTO {
     @ApiProperty()

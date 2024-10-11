@@ -1,8 +1,11 @@
-import { NotificationAction, NotificationType, NotifyAPI, } from '@guardian/interfaces';
+import {
+    NotificationAction,
+    NotificationType,
+    NotifyAPI,
+} from '@guardian/interfaces';
 import { Injectable } from '@nestjs/common';
 import { CommonVariables } from './common-variables.js';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { GenerateTLSOptionsNats } from './generate-tls-options.js';
 
 /**
  * Notification service
@@ -16,7 +19,6 @@ export class NotificationService {
         transport: Transport.NATS,
         options: {
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-            tls: GenerateTLSOptionsNats()
         },
     })
     client: ClientProxy;

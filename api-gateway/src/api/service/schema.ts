@@ -1,12 +1,12 @@
 import { ISchema, Permissions, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
-import { Auth, AuthUser } from '#auth';
+import { AuthUser, Auth } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
+import { ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, SchemaDTO, SystemSchemaDTO, TaskDTO, VersionSchemaDTO, Examples, pageHeader } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
-import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache } from '#helpers';
+import { Guardians, TaskManager, ServiceError, SchemaUtils, UseCache, ONLY_SR, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import process from 'process';
 
 @Controller('schema')
@@ -548,64 +548,6 @@ export class SchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             schema = await guardians.getSchemaByType(schemaType);
-            if (!schema) {
-                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
-            }
-            if (schema.system && !schema.active && schema.owner !== owner.username && schema.owner !== owner.creator) {
-                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
-            }
-            if (!schema.system && schema.status !== SchemaStatus.PUBLISHED && schema.owner !== owner.owner) {
-                throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
-            }
-            return {
-                uuid: schema.uuid,
-                iri: schema.iri,
-                name: schema.name,
-                version: schema.version,
-                document: schema.document,
-                documentURL: schema.documentURL,
-                context: schema.context,
-                contextURL: schema.contextURL,
-            };
-        } catch (error) {
-            await InternalException(error, this.logger);
-        }
-    }
-
-    /**
-     * Get schema by type
-     */
-    @Get('/type-by-user/:schemaType')
-    @Auth()
-    @ApiOperation({
-        summary: 'Finds the schema using the json document type.',
-        description: 'Finds the schema using the json document type.',
-    })
-    @ApiParam({
-        name: 'schemaType',
-        type: String,
-        description: 'Type',
-        required: true
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: SchemaDTO
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async getSchemaByTypeAndUser(
-        @AuthUser() user: IAuthUser,
-        @Param('schemaType') schemaType: string
-    ): Promise<SchemaDTO> {
-        let schema: ISchema;
-        try {
-            const guardians = new Guardians();
-            const owner = new EntityOwner(user);
-            schema = await guardians.getSchemaByType(schemaType, user.did);
             if (!schema) {
                 throw new HttpException(`Schema not found: ${schemaType}`, HttpStatus.NOT_FOUND);
             }

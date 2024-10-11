@@ -43,5 +43,3 @@ export * from './policy-cache.js';
 export * from './assign-entity.js';
 export * from './policy-test.js';
 export * from './log.js';
-export * from './policy-statistic.js';
-export * from './policy-statistic-document.js';

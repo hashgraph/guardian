@@ -44,8 +44,8 @@ export class SchemaHelper {
             _property = _property.oneOf[0];
         }
         field.name = name;
-        field.title = property.title || _property.title || name;
-        field.description = property.description || _property.description || name;
+        field.title = _property.title || name;
+        field.description = _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
         field.comment = _property.$comment;
         field.examples = Array.isArray(_property.examples) ? _property.examples : null;

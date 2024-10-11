@@ -498,15 +498,6 @@ export class UserPermissions {
         return this.check(Permissions.DELEGATION_ROLE_MANAGE);
     }
 
-    //STATISTICS
-    public get STATISTICS_STATISTIC_CREATE(): boolean {
-        return this.check(Permissions.STATISTICS_STATISTIC_CREATE);
-    }
-
-    public get STATISTICS_STATISTIC_READ(): boolean {
-        return this.check(Permissions.STATISTICS_STATISTIC_READ);
-    }
-
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

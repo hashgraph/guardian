@@ -1,8 +1,18 @@
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, Migration, Utils, } from '@indexer/common';
+import {
+    ClientsModule,
+    MicroserviceOptions,
+    Transport,
+} from '@nestjs/microservices';
+import {
+    COMMON_CONNECTION_CONFIG,
+    Migration,
+    Utils,
+    DataBaseHelper,
+    entities,
+} from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
 import { SearchService } from './api/search.service.js';
@@ -10,9 +20,22 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
-import { SynchronizationAnalytics, SynchronizationContracts, SynchronizationDid, SynchronizationModules, SynchronizationPolicy, SynchronizationProjects, SynchronizationRegistries, SynchronizationRoles, SynchronizationSchemas, SynchronizationTools, SynchronizationTopics, SynchronizationVCs, SynchronizationVPs, } from './helpers/synchronizers/index.js';
+import {
+    SynchronizationSchemas,
+    SynchronizationVCs,
+    SynchronizationVPs,
+    SynchronizationPolicy,
+    SynchronizationTopics,
+    SynchronizationTools,
+    SynchronizationDid,
+    SynchronizationRoles,
+    SynchronizationRegistries,
+    SynchronizationModules,
+    SynchronizationContracts,
+    SynchronizationAnalytics,
+    SynchronizationProjects,
+} from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
-import { GenerateTLSOptionsNats } from '@guardian/common';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -113,7 +136,6 @@ Promise.all([
             name: channelName,
             queue: 'INDEXER_SERVICES',
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
-            tls: GenerateTLSOptionsNats()
         },
     }),
 ]).then(

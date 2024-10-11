@@ -19,6 +19,5 @@ export enum MessageType {
     GuardianRole = 'Guardian-Role-Document',
     Tool = 'Tool',
     Contract = 'Contract',
-    UserPermissions = 'User-Permissions',
-    PolicyStatistic = 'Policy-Statistic'
+    UserPermissions = 'User-Permissions'
 }

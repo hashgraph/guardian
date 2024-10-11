@@ -32,8 +32,6 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
-import { StatusDropdown } from './status-dropdown/status-dropdown.component';
-import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 
 @NgModule({
     declarations: [
@@ -57,8 +55,6 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         CompareViewerComponent,
         AlertComponent,
         PaginatorComponent,
-        StatusDropdown,
-        CustomCustomDialogComponent
     ],
     imports: [
         CommonModule,
@@ -98,9 +94,7 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         CompareBtnComponent,
         CompareViewerComponent,
         PaginatorComponent,
-        DataInputDialogComponent,
-        StatusDropdown,
-        CustomCustomDialogComponent
+        DataInputDialogComponent
     ]
 })
 export class CommonComponentsModule { }

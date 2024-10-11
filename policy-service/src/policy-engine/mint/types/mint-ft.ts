@@ -91,7 +91,7 @@ export class MintFT extends TypedMint {
                             filter: {
                                 memo_base64: btoa(this._mintRequest.memo),
                             },
-                            limit: 1,
+                            findOne: true,
                         },
                     },
                     1,
@@ -125,7 +125,7 @@ export class MintFT extends TypedMint {
                                 filter: {
                                     memo_base64: btoa(this._mintRequest.memo),
                                 },
-                                limit: 1,
+                                findOne: true,
                             },
                         },
                         1,

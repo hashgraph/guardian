@@ -25,7 +25,6 @@ export class VCViewerDialog {
     public toggle: boolean = true;
     public schema: any;
     public dryRun: boolean = false;
-    public getByUser: boolean = false;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -47,9 +46,7 @@ export class VCViewerDialog {
             schemaId,
             topicId,
             category,
-            getByUser
         } = this.dialogConfig.data;
-        this.getByUser = getByUser;
         this.id = id;
         this.dryRun = !!dryRun;
         this.title = title;
@@ -76,7 +73,7 @@ export class VCViewerDialog {
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
 
-        this.getSubSchemes(schemaId, topicId, category);
+        this.getSubSchemes(schemaId, topicId, category)
     }
 
     onClick(): void {

@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -30,8 +30,7 @@ Promise.all([
             name: channelName,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ],
-            tls: GenerateTLSOptionsNats()
+            ]
         },
     }),
     mongoForLoggingInitialization()
