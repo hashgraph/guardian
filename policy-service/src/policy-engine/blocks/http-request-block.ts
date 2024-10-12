@@ -1,12 +1,12 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ActionCallback } from '@policy-engine/helpers/decorators';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { BasicBlock } from '../helpers/decorators/basic-block.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ActionCallback } from '../helpers/decorators/index.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { VcDocumentDefinition as VcDocument, VcHelper, Workers } from '@guardian/common';
 import { WorkerTaskType } from '@guardian/interfaces';
 

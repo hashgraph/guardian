@@ -23,7 +23,7 @@ export const SwaggerConfig = new DocumentBuilder()
         'version 1.0'
     )
     .addSecurity(
-        'bearerAuth',
+        'bearer',
         {
             type: 'http',
             scheme: 'bearer',

@@ -1,23 +1,37 @@
-FROM node:20 as topicViewerbuilder
-WORKDIR /usr/local/topic-viewer
-COPY ./topic-viewer/package.json ./
-COPY ./topic-viewer/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
-RUN yarn install
-ADD ./topic-viewer/src ./src
-RUN yarn run build:prod
+# syntax=docker/dockerfile:1
+# Stage 0: Use node image for base image for all stages
+ARG NODE_VERSION=20.11.1-alpine
+FROM node:${NODE_VERSION} as base
+WORKDIR /usr/local/app
+# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
+ARG YARN_CACHE_FOLDER=/root/.yarn
 
-FROM node:20
-ENV PLATFORM="docker"
-ENV NODE_ENV="production"
-WORKDIR /usr/local/topic-viewer
-COPY ./topic-viewer/package.json ./
-COPY --from=topicViewerbuilder  /usr/local/topic-viewer/yarn.lock ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
-RUN yarn install
-COPY ./topic-viewer/public ./public
-COPY --from=topicViewerbuilder /usr/local/topic-viewer/dist ./dist
+# Stage 1: Installing production dependecies
+FROM base as deps
+COPY --link topic-viewer/package.json topic-viewer/tsconfig*.json yarn.lock ./
+# Here and after. Leverage a cache mount to /root/.yarn to speed up subsequent builds
+RUN --mount=type=cache,target=/root/.yarn,sharing=private \
+    yarn install --prod
 
-CMD yarn start
+# Stage 2: Build service
+FROM base as build
+COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
+COPY --link topic-viewer/src src/
+RUN --mount=type=cache,target=/root/.yarn \
+    yarn install --frozen-lockfile && yarn run build:prod
+
+# Stage 3: Create the final image
+FROM base as image
+ENV NODE_ENV production
+
+COPY --link topic-viewer/public public/
+
+# Copy the production dependencies from the deps stage and the built application from the build stage into the image
+COPY --link --from=deps /usr/local/app/node_modules node_modules/
+COPY --link --from=deps /usr/local/app/package.json ./
+COPY --link --from=build /usr/local/app/dist dist/
+
+# Change the user to node
+USER node
+
+CMD [ "node", "dist/index.js" ]

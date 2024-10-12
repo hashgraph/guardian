@@ -28,6 +28,7 @@ export enum PolicyEvents {
     SET_VIRTUAL_USER = 'policy-event-login-virtual-user',
     GET_POLICY_NAVIGATION = 'policy-event-get-policy-navigation',
     RECORD_UPDATE_BROADCAST = 'policy-event-record-update-broadcast',
+    TEST_UPDATE_BROADCAST = 'policy-event-test-update-broadcast',
     GET_RECORD_STATUS = 'policy-event-get-record-status',
     START_RECORDING = 'policy-event-start-recording',
     STOP_RECORDING = 'policy-event-stop-recording',
@@ -39,4 +40,5 @@ export enum PolicyEvents {
     RECORD_RETRY_STEP = 'policy-event-retry-step',
     RECORD_SKIP_STEP = 'policy-event-skip-step',
     REFRESH_MODEL = 'policy-event-refresh-model',
+    GET_TAG_BLOCK_MAP = 'policy-event-get-tag-block-map'
 }

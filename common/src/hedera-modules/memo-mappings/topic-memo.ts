@@ -1,5 +1,5 @@
 import { TopicType } from '@guardian/interfaces';
-import { MemoMap } from './memo-map';
+import { MemoMap } from './memo-map.js';
 
 /**
  * Topic memo map

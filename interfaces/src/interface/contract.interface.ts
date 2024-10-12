@@ -1,4 +1,4 @@
-import { ContractType } from '../type';
+import { ContractType } from '../type/index.js';
 
 /**
  * Contract

@@ -1,4 +1,4 @@
-import { OrderDirection } from '../type';
+import { OrderDirection } from '../type/index.js';
 
 /**
  * Sort objects array

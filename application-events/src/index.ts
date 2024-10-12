@@ -4,11 +4,13 @@ import * as yaml from 'js-yaml';
 import morgan from 'morgan';
 import path from 'path';
 import swaggerUi from 'swagger-ui-express';
+import eventRoutes from './routes/events.js';
+import webhookRoutes from './routes/webooks.js';
 
-import eventRoutes from './routes/events';
-import webhookRoutes from './routes/webooks';
+import EventListenerService from './services/EventListenerService.js';
 
-import EventListenerService from './services/EventListenerService';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const configPath = path.join(process.cwd(), 'docs', 'swagger.yaml');
 const swaggerDocument = yaml.load(readFileSync(configPath, 'utf8'), {

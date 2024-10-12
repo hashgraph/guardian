@@ -1,0 +1,126 @@
+<form class="form">
+    <ng-container *ngFor="let item of fields">
+        <div *ngIf="!item.hide" class="form-field-container">
+            <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+                <div class="label-field">{{item.description}}</div>
+
+                <div class="form-field-value">
+                    <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+                    <div *ngIf="isInput(item)" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
+                    </div>
+
+                    <div *ngIf="isTime(item)" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input"
+                            pInputText type="date">
+                    </div>
+
+                    <div *ngIf="isDateTime(item)" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText
+                            type="date">
+                    </div>
+
+                    <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
+                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText type="date">
+                    </div>
+
+                    <div *ngIf="isBoolean(item)" class="boolean-form-field">
+                        <span class="boolean-show">{{ isBooleanView(item.value) }}</span>
+                    </div>
+
+                    <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+                </div>
+            </div>
+
+            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
+                    <div class="form-field-group">
+                        @if (item.customType === 'geo') {
+                            <textarea
+                                [value]="this.values[item.name] | json"
+                                [rows]="1"
+                                readonly
+                                pInputTextarea>
+                            </textarea>
+                        } @else {
+                            <app-schema-form-view [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [values]="this.values && this.values[item.name]">
+                            </app-schema-form-view>
+                        }
+                    </div>
+                </div>
+            </div>
+
+
+            <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngIf="item.isInvalidType" class="invalid-type">
+                    <b>The field type does not match the field type in the schema</b>
+                </div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                    [attr.index]="item.list.indexOf(listItem)">
+                    <div class="form-field">
+
+                        <div class="form-field-value">
+                            <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
+                            <div *ngIf="isInput(item)" class="example-full-width">
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText>
+                            </div>
+
+                            <div *ngIf="isTime(item)" class="example-full-width">
+                                <input [readonly]="true" [value]="listItem.value | date: 'mediumTime'"
+                                    class="p-field-input" pInputText type="date">
+                            </div>
+
+                            <div *ngIf="isDateTime(item)" class="example-full-width">
+                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input"
+                                    pInputText type="date">
+                            </div>
+
+                            <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText
+                                    type="date">
+                            </div>
+
+                            <div *ngIf="isBoolean(item)" class="boolean-form-field">
+                                <p-checkbox [(ngModel)]="listItem.value" name="groupname" value="val1"></p-checkbox>
+                            </div>
+
+                            <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+                <div class="label-field">{{item.description}}</div>
+                <div *ngFor="let listItem of item.list" class="form-field-array-item"
+                    [attr.index]="item.list.indexOf(listItem)">
+                    <div class="form-field-group">
+                        @if (item.customType === 'geo') {
+                            <textarea
+                                [value]="listItem | json"
+                                [rows]="1"
+                                readonly
+                                pInputTextarea>
+                            </textarea>
+                        } @else {
+                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
+                                [delimiter-hide]="true" [values]="listItem">
+                            </app-schema-form-view>
+                        }
+                    </div>
+                    <div class="short-delimiter-container">
+                        <div class="delimiter"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div *ngIf="!delimiterHide" class="delimiter"></div>
+
+    </ng-container>
+</form>

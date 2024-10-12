@@ -1,7 +1,7 @@
-import { MessageAction } from './message-action';
-import { RoleMessageBody } from './message-body.interface';
-import { MessageType } from './message-type';
-import { VCMessage } from './vc-message';
+import { MessageAction } from './message-action.js';
+import { RoleMessageBody } from './message-body.interface.js';
+import { MessageType } from './message-type.js';
+import { VCMessage } from './vc-message.js';
 
 /**
  * Role message

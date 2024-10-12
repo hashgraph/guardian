@@ -8,11 +8,15 @@
             <p-button
                     (click)="onNoClick()"
                     label="Cancel"
+                    class="toolbar-btn-outlined"
                     styleClass="p-button-outlined"
             ></p-button>
         </div>
         <div>
-            <p-button (click)="onSubmit()" label="Ok"></p-button>
+            <p-button 
+                class="toolbar-btn-primary"
+                (click)="onSubmit()" 
+                label="Confirm"></p-button>
         </div>
     </div>
 </div>

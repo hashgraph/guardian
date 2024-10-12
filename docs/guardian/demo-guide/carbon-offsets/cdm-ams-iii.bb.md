@@ -32,6 +32,8 @@
 
 [Important Documents & Schemas](cdm-ams-iii.bb.md#toc146642055)
 
+[Tools Referenced](cdm-ams-iii.bb.md#tools-referenced)
+
 [Token (Carbon Emission Reduction)](cdm-ams-iii.bb.md#toc146642056)
 
 [Step by Step](cdm-ams-iii.bb.md#toc146642057)
@@ -91,7 +93,7 @@ AMS-III.BB is applicable under specific conditions, including:
 * Limited to communities lacking access to national or regional grids.
 * A requirement that at least 75% of the end users are households.
 
-#### Important Parameters
+### Important Parameters
 
 Key parameters play a vital role in the implementation and monitoring of AMS-III.BB projects:
 
@@ -101,14 +103,13 @@ Key parameters play a vital role in the implementation and monitoring of AMS-III
 
 ### Need and Use for the AMS-III.BB Policy <a href="#toc146642050" id="toc146642050"></a>
 
-\
 The AMS-III.BB methodology plays a vital role in addressing the growing need for sustainable electrification in communities that lack access to reliable electricity. It provides a structured approach for projects aimed at extending the grid or constructing new mini grids to connect consumers who were previously off the grid. These initiatives aim to displace high-carbon-intensive electricity sources and fuel-based lighting systems, thus reducing greenhouse gas emissions and fostering economic development in underserved regions. To understand the significance of AMS-III.BB, it's essential to compare the merits and considerations of mini grids versus grid electricity.
 
 Mini-grids are localized power generation and distribution systems, often deployed in remote or rural areaswhere connecting to the national or regional grid is cost-prohibitive. They bring electricity to communities that were once reliant on high-carbon-intensive mini-grids or stand-alone power generators. While mini grids offer reliable electricity access and the potential to integrate renewable energy sources, they can be economically challenging to establish and may rely on fossil fuel generators. In contrast, grid electricity operates within large, interconnected networks, benefiting from economies of scale and efficient power transmission. Grids can access a diverse energy mix, including renewables, and are subject to stringent environmental regulations, generally resulting in lower emissions compared to mini grids. The choice between mini-grids and grid electricity depends on the specific needs, geographic location, and economic viability of the targeted community or region.
 
 ### Demo Video <a href="#toc146642051" id="toc146642051"></a>
 
-\[Link]
+[Youtube](https://www.youtube.com/watch?v=CN0IDPGGS44\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG\_\&index=10)
 
 ### Policy Workflow <a href="#toc146642052" id="toc146642052"></a>
 
@@ -128,12 +129,15 @@ Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (U
 
 ### Important Documents & Schemas <a href="#toc146642055" id="toc146642055"></a>
 
-1. Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
-2. Methodological Tool 21 - Demonstration of additionality of smallscale project activities.
-3. Methodological Tool 33 - Default values for common parameters.
-4. Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
-5. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
-6. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+1. Project Description - Project Proponent information, standard project information, methodology information like baseline emissions, project emissions, etc.
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project proponent to calculate annual emission reductions.
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.
+
+### Tools Referenced
+
+* Methodological Tool 07 - Tool to calculate the emission factor for an electricity system.
+* Methodological Tool 21 - Demonstration of additionality of smallscale project activities.
+* Methodological Tool 33 - Default values for common parameters.
 
 ### Token (Carbon Emission Reduction) <a href="#toc146642056" id="toc146642056"></a>
 

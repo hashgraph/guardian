@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ContractType, IUser, SchemaHelper, TagType, Token, } from '@guardian/interfaces';
+import { ContractType, IUser, SchemaHelper, TagType, Token, UserPermissions, } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ContractService } from 'src/app/services/contract.service';
@@ -23,6 +23,7 @@ import { Validators } from '@angular/forms';
     styleUrls: ['./contract-config.component.css'],
 })
 export class ContractConfigComponent implements OnInit, OnDestroy {
+    public user: UserPermissions = new UserPermissions();
     contracts: any[] | null;
     columns: string[] = [];
     role!: any;
@@ -245,6 +246,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 this.role = profile ? profile.role : null;
                 this.owner = profile?.did;
                 this.tagSchemas = SchemaHelper.map(tagSchemas);
+                this.user = new UserPermissions(profile);
 
                 if (this.isConfirmed) {
                     this.loadAllContracts();

@@ -1,6 +1,6 @@
 import { SecretsManagerClient, GetSecretValueCommand, CreateSecretCommand, UpdateSecretCommand } from '@aws-sdk/client-secrets-manager';
-import { SecretManagerBase } from '../secret-manager-base';
-import { IAwsSecretManagerConfigs } from './aws-secret-manager-configs';
+import { SecretManagerBase } from '../secret-manager-base.js';
+import { IAwsSecretManagerConfigs } from './aws-secret-manager-configs.js';
 
 /**
  * This class is responsible for managing secrets in AWS Secret Manager

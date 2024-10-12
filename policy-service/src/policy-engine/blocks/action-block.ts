@@ -1,13 +1,13 @@
-import { EventBlock } from '@policy-engine/helpers/decorators';
+import { EventBlock } from '../helpers/decorators/index.js';
 import { UserType, Schema } from '@guardian/interfaces';
-import { findOptions } from '@policy-engine/helpers/find-options';
-import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '@policy-engine/policy-engine.interface';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { findOptions } from '../helpers/find-options.js';
+import { IPolicyAddonBlock, IPolicyDocument, IPolicyEventState, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { PolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { KeyType } from '@guardian/common';
 
 /**
@@ -39,7 +39,7 @@ export class InterfaceDocumentActionBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const data: any = {
@@ -74,7 +74,7 @@ export class InterfaceDocumentActionBlock {
      * @param user
      * @param document
      */
-    async setData(user: IPolicyUser, document: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, document: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
 
         const state: IPolicyEventState = { data: document };
@@ -85,14 +85,14 @@ export class InterfaceDocumentActionBlock {
             if (option) {
                 const newUser = option.user === UserType.CURRENT
                     ? user
-                    : PolicyUtils.getDocumentOwner(ref, document);
+                    : await PolicyUtils.getDocumentOwner(ref, document);
                 ref.triggerEvents(option.tag, newUser, state);
                 ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
             }
         }
 
         if (ref.options.type === 'dropdown') {
-            const newUser = PolicyUtils.getDocumentOwner(ref, document);
+            const newUser = await PolicyUtils.getDocumentOwner(ref, document);
             ref.triggerEvents(PolicyOutputEventType.DropdownEvent, newUser, state);
             ref.triggerEvents(PolicyOutputEventType.RefreshEvent, newUser, state);
         }

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { getMenuItems, NavbarMenuItem } from './menu.model';
-import { IUser, UserRole } from '@guardian/interfaces';
+import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from '../../services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
 import { DemoService } from '../../services/demo.service';
@@ -9,8 +9,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { ProfileService } from '../../services/profile.service';
 import { WebSocketService } from '../../services/web-socket.service';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { Observable } from 'rxjs';
-import { NotificationService } from '../../services/notify.service';
 import { BrandingService } from '../../services/branding.service';
 
 @Component({
@@ -20,7 +18,7 @@ import { BrandingService } from '../../services/branding.service';
 })
 export class NewHeaderComponent implements OnInit {
     public isLogin: boolean = false;
-    public role: any = null;
+    public user: UserPermissions = new UserPermissions();
     public username: string | null = null;
     public balance: string = '';
     public menuCollapsed: boolean = false;
@@ -135,9 +133,7 @@ export class NewHeaderComponent implements OnInit {
         this.activeLinkRoot = this.router.url.split('?')[0];
         this.auth.sessions().subscribe((user: IUser | null) => {
             const isLogin = !!user;
-            const role = user ? user.role : null;
-            const username = user ? user.username : null;
-            this.setStatus(isLogin, role, username);
+            this.setStatus(isLogin, user);
             this.authState.updateState(isLogin);
             if (!this.balanceInit) {
                 this.getBalance();
@@ -159,16 +155,17 @@ export class NewHeaderComponent implements OnInit {
             })
 
         }, () => {
-            this.setStatus(false, null, null);
+            this.setStatus(false, null);
         });
     }
 
-    private setStatus(isLogin: boolean, role: any, username: any) {
-        if (this.isLogin !== isLogin || this.role !== role) {
+    private setStatus(isLogin: boolean, user: any) {
+        const username = user ? user.username : null;
+        if (this.isLogin !== isLogin || this.username !== username) {
             this.isLogin = isLogin;
-            this.role = role;
             this.username = username;
-            this.menuItems = getMenuItems(role as UserRole);
+            this.user = new UserPermissions(user);
+            this.menuItems = getMenuItems(this.user);
         }
     }
 
@@ -197,15 +194,26 @@ export class NewHeaderComponent implements OnInit {
     }
 
     public goToHomePage() {
-        if (this.role === UserRole.STANDARD_REGISTRY) {
-            this.router.navigate(['/config']);
-        } else if (this.role === UserRole.USER) {
-            this.router.navigate(['/user-profile']);
-        }
+        const home = this.auth.home(this.user.role);
+        this.router.navigate([home]);
     }
 
     public goToBrandingPage(event: MouseEvent) {
         event.stopImmediatePropagation()
         this.router.navigate(['/branding']);
+    }
+
+    public isCurrent(barItem: any, activeLink: string): boolean {
+        return !barItem.childItems && (
+            activeLink.startsWith(barItem.routerLink)
+        );
+    }
+
+    public onRouter(barItem: any) {
+        if(barItem.childItems) {
+            barItem.active = !barItem.active
+        } else {
+            this.router.navigate([barItem.routerLink]);
+        }
     }
 }

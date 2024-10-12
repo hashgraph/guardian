@@ -1,21 +1,21 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Modules", { tags: '@modules' },() => {
+context("Modules", { tags: ['modules', 'thirdPool'] },() => {
     const authorization = Cypress.env("authorization");
-    it("Get modules menu", () => {
+    it("Get modules menu", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + API.ListOfModules,
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            if (resp.body.length != 0) {
-                expect(resp.body.at(-1)).to.have.property("_id");
-                expect(resp.body.at(-1)).to.have.property("uuid");
-                expect(resp.body.at(-1)).to.have.property("status");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            if (response.body.length != 0) {
+                expect(response.body.at(-1)).to.have.property("_id");
+                expect(response.body.at(-1)).to.have.property("uuid");
+                expect(response.body.at(-1)).to.have.property("status");
             }
         });
     });

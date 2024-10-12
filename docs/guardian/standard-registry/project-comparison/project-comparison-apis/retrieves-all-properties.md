@@ -1,20 +1,7 @@
 # Retrieves all Properties
 
-{% swagger method="get" path="" baseUrl="/projects/properties" summary="Get all properties" %}
-{% swagger-description %}
-Get all properties
-{% endswagger-description %}
+## Get all properties
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-{
-  "code": 0,
-  "message": "string"
-}
-```
-{% endswagger-response %}
+{% swagger src="../../../../.gitbook/assets/swagger (2).yaml" path="/projects/properties" method="get" %}
+[swagger (2).yaml](<../../../../.gitbook/assets/swagger (2).yaml>)
 {% endswagger %}

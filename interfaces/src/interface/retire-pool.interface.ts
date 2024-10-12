@@ -1,5 +1,5 @@
-import { TokenType } from '../type';
-import { RetireTokenPool } from './retire-token-pool.interface';
+import { TokenType } from '../type/index.js';
+import { RetireTokenPool } from './retire-token-pool.interface.js';
 
 /**
  * Retire pool

@@ -1,4 +1,4 @@
-import PointCoordinates from './point-coordinates';
+import PointCoordinates from './point-coordinates.js';
 
 export default {
   type: 'array',

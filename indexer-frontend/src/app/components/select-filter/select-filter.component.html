@@ -1,0 +1,44 @@
+<div class="select-filter" [matMenuTriggerFor]="group1">
+    <div class="select-filter__label">
+        {{ label }}
+    </div>
+    <div class="select-filter__icon">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g opacity="0.6">
+                <path d="M12 6.33301L8 10.333L4 6.33301H12Z" fill="white" />
+            </g>
+        </svg>
+    </div>
+</div>
+
+<mat-menu #group1="matMenu" xPosition="before" (close)="onClose($event)">
+    <div class="select-filter-menu" (click)="onBackground($event)">
+        <div class="select-filter-menu__header">
+            {{ 'filter.header' | transloco: { label } }}
+        </div>
+        <div class="select-filter-menu__search">
+            <mat-form-field class="full-width" >
+                <input 
+                    matInput 
+                    [placeholder]="'filter.placeholder' | transloco"
+                    (input)="onSearch($event)">
+            </mat-form-field>
+        </div>
+        <div class="select-filter-menu__clear" (click)="onClear($event)">
+            {{ 'filter.clear' | transloco }}
+        </div>
+        <div class="select-filter-menu__container">
+            @for (item of filtered | slice:0:count; track filtered) {
+            <div class="select-filter-menu__item" (click)="onSelect(item)">
+                <div class="select-filter-menu__item-checkbox">
+                    <mat-checkbox class="example-margin" [checked]="item.selected"></mat-checkbox>
+                </div>
+                <div class="select-filter-menu__item-label">{{item.label}}</div>
+            </div>
+            }
+            <div *ngIf="filtered.length > count" class="select-filter-menu__more" (click)="onMore($event)">
+                {{ 'filter.more' | transloco: { current: count, total: filtered.length } }}
+            </div>
+        </div>
+    </div>
+</mat-menu>

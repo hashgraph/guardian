@@ -1,8 +1,8 @@
-import { BlockValidator, IBlockProp } from '@policy-engine/block-validators';
-import { CalculateMathAddon } from './calculate-math-addon';
-import { CalculateMathVariables } from './calculate-math-variables';
+import { BlockValidator, IBlockProp } from '../../block-validators/index.js';
+import { CalculateMathAddon } from './calculate-math-addon.js';
+import { CalculateMathVariables } from './calculate-math-variables.js';
 import { Schema } from '@guardian/interfaces';
-import { CommonBlock } from './common';
+import { CommonBlock } from './common.js';
 
 /**
  * Calculate block

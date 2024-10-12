@@ -1,31 +1,31 @@
-import { DataBaseHelper, Logger, MessageAction } from '@guardian/common';
+import { DataBaseHelper, MessageAction, PinoLogger } from '@guardian/common';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import JSZip from 'jszip';
 import xl from 'excel4node';
-import { AnalyticsStatus as Status } from '@entity/analytics-status';
-import { AnalyticsUser as User } from '@entity/analytics-user';
-import { AnalyticsPolicy as Policy } from '@entity/analytics-policy';
-import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
-import { AnalyticsTopicCache as TopicCache } from '@entity/analytics-topic-cache';
-import { AnalyticsDocument as Document } from '@entity/analytics-document';
-import { AnalyticsModule as Module } from '@entity/analytics-module';
-import { AnalyticsToken as Token } from '@entity/analytics-token';
-import { AnalyticsTokenCache as TokenCache } from '@entity/analytics-token-cache';
-import { AnalyticsTopic as Topic } from '@entity/analytics-topic';
-import { AnalyticsSchema as Schema } from '@entity/analytics-schema';
-import { AnalyticsTag as Tag } from '@entity/analytics-tag';
-import { AnalyticsDashboard as Dashboard } from '@entity/analytics-dashboard';
-import { ReportSteep } from '@interfaces/report-steep.type';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { UserType } from '@interfaces/user.type';
-import { ReportType } from '@interfaces/report.type';
-import { DocumentType } from '@interfaces/document.type';
-import { AnalyticsUtils } from '@helpers/utils';
-import { Table } from '@helpers/table';
-import { AnalyticsTokenService } from './token.service';
-import { AnalyticsDocumentService } from './document.service';
-import { AnalyticsUserService } from './user.service';
-import { AnalyticsPolicyService } from './policy.service';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsUser as User } from '../entity/analytics-user.js';
+import { AnalyticsPolicy as Policy } from '../entity/analytics-policy.js';
+import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
+import { AnalyticsTopicCache as TopicCache } from '../entity/analytics-topic-cache.js';
+import { AnalyticsDocument as Document } from '../entity/analytics-document.js';
+import { AnalyticsModule as Module } from '../entity/analytics-module.js';
+import { AnalyticsToken as Token } from '../entity/analytics-token.js';
+import { AnalyticsTokenCache as TokenCache } from '../entity/analytics-token-cache.js';
+import { AnalyticsTopic as Topic } from '../entity/analytics-topic.js';
+import { AnalyticsSchema as Schema } from '../entity/analytics-schema.js';
+import { AnalyticsTag as Tag } from '../entity/analytics-tag.js';
+import { AnalyticsDashboard as Dashboard } from '../entity/analytics-dashboard.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { UserType } from '../interfaces/user.type.js';
+import { ReportType } from '../interfaces/report.type.js';
+import { DocumentType } from '../interfaces/document.type.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
+import { Table } from '../helpers/table.js';
+import { AnalyticsTokenService } from './token.service.js';
+import { AnalyticsDocumentService } from './document.service.js';
+import { AnalyticsUserService } from './user.service.js';
+import { AnalyticsPolicyService } from './policy.service.js';
 import moment from 'moment';
 
 /**
@@ -104,12 +104,12 @@ export class ReportService {
         });
 
         if (!report) {
-            new Logger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report does not exist`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
         if (report.status === ReportStatus.PROGRESS) {
-            new Logger().error(`Report already started`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Report already started`, ['ANALYTICS_SERVICE']);
             return report;
         }
 
@@ -117,10 +117,10 @@ export class ReportService {
 
         ReportService.update(report).then((result) => {
             if (result && result.status === ReportStatus.FINISHED) {
-                new Logger().info(`Update completed`, ['ANALYTICS_SERVICE']);
+                new PinoLogger().info(`Update completed`, ['ANALYTICS_SERVICE']);
             }
         }, (error) => {
-            new Logger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
+            new PinoLogger().error(`Update error: ${error?.message}`, ['ANALYTICS_SERVICE']);
         });
 
         return report;

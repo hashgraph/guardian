@@ -1,7 +1,6 @@
 <ng-container *ngIf="isLogin">
     <ng-container [ngTemplateOutlet]="remoteButton"></ng-container>
-    <div (mouseleave)="menuCollapsed = smallMenuMode" (mousemove)="menuCollapsed = false" [class.collapse]="menuCollapsed"
-         id="navbar">
+    <div (mouseleave)="menuCollapsed = smallMenuMode" (mousemove)="menuCollapsed = false" [class.collapse]="menuCollapsed" id="navbar">
         <ng-container [ngTemplateOutlet]="logotype"></ng-container>
         <ng-container *ngIf="menuItems">
             <ng-container [ngTemplateOutlet]="menuBar"></ng-container>
@@ -22,7 +21,7 @@
 
 <ng-template #logotype>
     <div [routerLink]="'/'" id="logotype">
-        <img alt="" id="company-logo">
+        <div alt="" id="company-logo"></div>
         <span [class.hidden-logotype]="menuCollapsed" id="company-name"></span>
     </div>
 </ng-template>
@@ -35,10 +34,9 @@
     <ng-template #menuBarItem let-barItems="barItems">
         <ng-container *ngFor="let barItem of barItems">
             <div class="item-block">
-                <div 
-                    (click)="barItem.childItems ? barItem.active = !barItem.active : null"
-                    [class.current]="!barItem.childItems && activeLink.startsWith(barItem.routerLink)"
-                    [routerLink]="!barItem.childItems ? barItem.routerLink : null"
+                <div
+                    (click)="onRouter(barItem)"
+                    [class.current]="isCurrent(barItem, activeLink)"
                     class="item clickable"
                 >
                     <img *ngIf="barItem.iconUrl" [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
@@ -59,7 +57,7 @@
 
 <ng-template #footerBar>
     <div id="footerBar">
-        <div *ngIf="role !== 'AUDITOR'" [class.hidden-logotype]="menuCollapsed"
+        <div *ngIf="user.AUDITOR" [class.hidden-logotype]="menuCollapsed"
              class="item background-light border-item">
             <img alt="" src="assets/images/icons/money.svg">
             <span>
@@ -71,8 +69,24 @@
             </div>
         </div>
 
-        <div 
-            [class.current]="activeLink.startsWith('/notifications')" 
+        <div
+                [class.current]="activeLink.startsWith('/worker-tasks')"
+                [routerLink]="'/worker-tasks'"
+                class="item cursor-pointer"
+        >
+            <img alt="" src="assets/images/icons/table.svg">
+            <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
+                <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+            </div>
+            <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
+                <span>Worker Tasks</span>
+                <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+            </div>
+        </div>
+
+
+        <div
+                [class.current]="activeLink.startsWith('/notifications')"
             [routerLink]="'/notifications'"
             class="item cursor-pointer"
         >
@@ -88,14 +102,14 @@
 
         <app-compare-viewer
             [collapsed]="menuCollapsed"
-            [active]="activeLink.startsWith('/compare')" 
+            [active]="activeLink.startsWith('/compare')"
         ></app-compare-viewer>
 
         <div class="boundary-box">
-            <div 
+            <div
                 (click)="goToHomePage()"
-                [class.clickable]="role !== 'AUDITOR'" 
-                [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')" 
+                [class.clickable]="!user.AUDITOR"
+                [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
                 class="item"
             >
                 <img alt="" src="assets/images/icons/user.svg">
@@ -103,7 +117,7 @@
                     <span matTooltip="Open Profile" matTooltipPosition="after">{{ username }}</span>
                     <div class="flex-column-gap-10">
                         <i (click)="goToBrandingPage($event)"
-                           *ngIf="role === 'STANDARD_REGISTRY'"
+                           *ngIf="user.BRANDING_CONFIG_UPDATE"
                            class="pi pi-cog icon-color-grey"
                            matTooltip="Branding Settings"
                            matTooltipPosition="after"

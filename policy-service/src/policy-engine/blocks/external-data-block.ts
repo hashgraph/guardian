@@ -1,19 +1,19 @@
-import { ActionCallback, ExternalData } from '@policy-engine/helpers/decorators';
+import { ActionCallback, ExternalData } from '../helpers/decorators/index.js';
 import { DocumentSignature, Schema } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '@policy-engine/policy-engine.interface';
-import { BlockActionError } from '@policy-engine/errors';
-import { IPolicyUser, PolicyUser } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
+import { BlockActionError } from '../errors/index.js';
+import { PolicyUser } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import {
     VcDocument as VcDocumentCollection,
     VcDocumentDefinition as VcDocument,
     VcHelper,
 } from '@guardian/common';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
  * External data block
@@ -77,7 +77,7 @@ export class ExternalDataBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: IPolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<string> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
@@ -158,18 +158,7 @@ export class ExternalDataBlock {
             verify = false;
         }
 
-        let user: PolicyUser = null;
-        if (data.owner) {
-            user = new PolicyUser(data.owner, !!ref.dryRun);
-            if (data.group) {
-                const group = await ref.databaseServer.getUserInGroup(ref.policyId, data.owner, data.group);
-                user.setGroup(group);
-            } else {
-                const group = await ref.databaseServer.getActiveGroupByUser(ref.policyId, data.owner);
-                user.setGroup(group);
-            }
-        }
-
+        const user: PolicyUser = await PolicyUtils.getDocumentOwner(ref, data);
         const docOwner = await PolicyUtils.getUserCredentials(ref, data.owner);
         const documentRef = await this.getRelationships(ref, data.ref);
         const schema = await this.getSchema();

@@ -1,0 +1,36 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
+        "inlineSourceMap": false,
+        "skipLibCheck": true,
+        "lib": [
+            "esnext"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "outDir": "dist/",
+        "paths": {
+            "#dto": [
+                "dto/index"
+            ],
+            "#decorators": [
+                "decorators/index"
+            ]
+        },
+        "target": "es2022"
+    },
+    "exclude": [
+        "node_modules",
+        "public",
+        "dist"
+    ],
+    "include": [
+        "src/**/*"
+    ]
+}

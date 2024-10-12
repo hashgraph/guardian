@@ -1,14 +1,13 @@
-import { FilesManager } from './helpers/files-manager-helper';
+import { FilesManager } from './helpers/files-manager-helper.js';
 import { FaissStore } from 'langchain/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
 import { OpenAI } from 'langchain/llms/openai';
-import { OpenAIConnect } from './helpers/openai-helper';
-import { VectorStorage } from './helpers/vector-storage-helper';
-import { AISuggestionsDB } from './helpers/ai-suggestions-db';
-import { PolicyDescription } from './models/models';
-
+import { OpenAIConnect } from './helpers/openai-helper.js';
+import { VectorStorage } from './helpers/vector-storage-helper.js';
+import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
+import { PolicyDescription } from './models/models.js';
 import * as dotenv from 'dotenv';
-import { Logger, Policy, PolicyCategory } from '@guardian/common';
+import { PinoLogger, Policy, PolicyCategory } from '@guardian/common';
 
 dotenv.config();
 
@@ -21,9 +20,9 @@ export class AIManager {
     chain: RetrievalQAChain | null;
     vector: FaissStore | null;
     model: OpenAI;
-    policyDescriptions: PolicyDescription[]
+    policyDescriptions: PolicyDescription[];
 
-    constructor() {
+    constructor(private readonly logger: PinoLogger) {
         this.docPath = process.env.DOCS_STORAGE_PATH || './data/generated-data';
         this.versionGPT = process.env.GPT_VERSION || 'gpt-3.5-turbo';
         this.vectorPath = process.env.VECTOR_STORAGE_PATH || './faiss-vector';
@@ -57,18 +56,18 @@ export class AIManager {
 
     async rebuildVector() {
         try {
-            new Logger().info('rebuild vector', ['AI_SERVICE']);
+            await this.logger.info('rebuild vector', ['AI_SERVICE']);
 
             this.vector = null;
             this.chain = null;
 
             await this.loadDBData();
-            await FilesManager.generateData(this.docPath, this.policies, this.categories, this.policyDescriptions);
-            await VectorStorage.create(this.docPath, this.vectorPath);
+            await FilesManager.generateData(this.docPath, this.policies, this.categories, this.policyDescriptions, this.logger);
+            await VectorStorage.create(this.docPath, this.vectorPath, this.logger);
 
-            new Logger().info('end rebuild vector', ['AI_SERVICE']);
+            await this.logger.info('end rebuild vector', ['AI_SERVICE']);
         } catch (e) {
-            new Logger().error(e.message, ['AI_SERVICE']);
+            await this.logger.error(e.message, ['AI_SERVICE']);
         }
     }
 
@@ -76,13 +75,13 @@ export class AIManager {
         const dbRequests = new AISuggestionsDB();
 
         this.categories = await dbRequests.getPolicyCategories();
-        new Logger().info('fetched categories', ['AI_SERVICE']);
+        await this.logger.info('fetched categories', ['AI_SERVICE']);
 
         this.policies = await dbRequests.getAllPolicies();
-        new Logger().info('fetched policies', ['AI_SERVICE']);
+        await this.logger.info('fetched policies', ['AI_SERVICE']);
 
         this.policyDescriptions = await dbRequests.getFieldDescriptions(this.policies);
-        new Logger().info('fetched fields descriptions', ['AI_SERVICE']);
+        await this.logger.info('fetched fields descriptions', ['AI_SERVICE']);
 
     }
 }

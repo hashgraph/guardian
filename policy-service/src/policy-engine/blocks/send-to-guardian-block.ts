@@ -1,27 +1,15 @@
-import { BlockActionError } from '@policy-engine/errors';
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
+import { BlockActionError } from '../errors/index.js';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { DocumentStatus } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import {
-    MessageAction,
-    MessageServer,
-    VcDocumentDefinition as VcDocument,
-    VpDocumentDefinition as VpDocument,
-    VCMessage,
-    MessageMemo,
-    VPMessage,
-    DIDMessage,
-    Message,
-    HederaDidDocument
-} from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser } from '@policy-engine/policy-user';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
-import { DocumentType } from '@policy-engine/interfaces/document.type';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocumentDefinition as VcDocument, VCMessage, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { DocumentType } from '../interfaces/document.type.js';
 
 /**
  * Document Operations
@@ -434,8 +422,9 @@ export class SendToGuardianBlock {
             const topic = await PolicyUtils.getOrCreateTopic(ref, ref.options.topic, root, topicOwner, document);
 
             const userHederaCred = await user.loadHederaCredentials(ref);
+            const signOptions = await user.loadSignOptions(ref);
             const messageServer = new MessageServer(
-                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, ref.dryRun
+                userHederaCred.hederaAccountId, userHederaCred.hederaAccountKey, signOptions, ref.dryRun
             );
             const memo = MessageMemo.parseMemo(true, ref.options.memo, document);
             const vcMessageResult = await messageServer
@@ -455,9 +444,8 @@ export class SendToGuardianBlock {
     /**
      * Document sender
      * @param document
-     * @param user
      */
-    private async documentSender(document: IPolicyDocument, user: IPolicyUser): Promise<IPolicyDocument> {
+    private async documentSender(document: IPolicyDocument): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -565,12 +553,12 @@ export class SendToGuardianBlock {
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                const newDoc = await this.documentSender(doc, event.user);
+                const newDoc = await this.documentSender(doc);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            event.data.data = await this.documentSender(docs, event.user);
+            event.data.data = await this.documentSender(docs);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

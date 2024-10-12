@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
+        "module": "ESNext",
+        "target": "es2022",
         "lib": [
             "es5",
             "es6"
@@ -11,7 +11,7 @@
         "outDir": "dist/",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
     },
     "include": [
         "src/**/*"

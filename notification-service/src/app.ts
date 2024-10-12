@@ -1,11 +1,12 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, Logger, MessageBrokerChannel, Migration, } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
+import { DEFAULT_MONGO } from '#constants';
 
 Promise.all([
     Migration({
@@ -19,6 +20,9 @@ Promise.all([
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
             useUnifiedTopology: true,
+            minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
+            maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
+            maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
         },
         ensureIndexes: true,
     }),
@@ -31,14 +35,15 @@ Promise.all([
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
         },
     }),
+    mongoForLoggingInitialization()
 ]).then(
     async (values) => {
-        const [_, db, mqConnection, app] = values;
+        const [_, db, mqConnection, app, loggerMongo] = values;
         DataBaseHelper.orm = db;
 
         app.listen();
 
-        new Logger().setConnection(mqConnection);
+        const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
         const state = new ApplicationState();
         await state
@@ -48,7 +53,7 @@ Promise.all([
         state.updateState(ApplicationStates.STARTED);
         state.updateState(ApplicationStates.INITIALIZING);
         state.updateState(ApplicationStates.READY);
-        await new Logger().info('notification service started', ['NOTIFICATION_SERVICE']);
+        await logger.info('notification service started', ['NOTIFICATION_SERVICE']);
     },
     (reason) => {
         console.log(reason);

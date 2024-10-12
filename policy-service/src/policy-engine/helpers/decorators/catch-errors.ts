@@ -1,7 +1,7 @@
 import { BlockErrorActions } from '@guardian/interfaces';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { Logger } from '@guardian/common';
-import { PolicyOutputEventType } from '@policy-engine/interfaces';
+import { PolicyComponentsUtils } from '../../policy-components-utils.js';
+import { PinoLogger } from '@guardian/common';
+import { PolicyOutputEventType } from '../../interfaces/index.js';
 
 /**
  * Catch errors decorator
@@ -18,7 +18,7 @@ export function CatchErrors() {
                     try {
                         await target.apply(thisArg, argArray);
                     } catch (error) {
-                        await new Logger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
+                        await new PinoLogger().error(error, ['guardian-service', thisArg.uuid, thisArg.blockType, 'block-runtime', thisArg.policyId]);
                         PolicyComponentsUtils.BlockErrorFn(thisArg.blockType, error.message, user);
                         thisArg.triggerEvents(PolicyOutputEventType.ErrorEvent, user, data);
                         switch (thisArg.options.onErrorAction) {

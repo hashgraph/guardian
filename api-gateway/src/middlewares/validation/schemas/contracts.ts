@@ -9,6 +9,13 @@ import {
     TokenType,
 } from '@guardian/interfaces';
 
+export class ContractConfigDTO {
+    @ApiProperty()
+    type: ContractType;
+    @ApiProperty()
+    description: string;
+}
+
 export class ContractDTO implements IContract {
     @ApiProperty({ required: true })
     id: string;

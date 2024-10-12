@@ -1,10 +1,10 @@
 import { PrivateKey, TopicId } from '@hashgraph/sdk';
-import { DocumentContext } from './components/document-context';
-import { HederaDid } from './hedera-did';
-import { CommonDidDocument } from './common-did-document';
-import { HederaEd25519Method } from './components/hedera-ed25519-method';
-import { HederaBBSMethod } from './components/hedera-bbs-method';
-import { IDidDocument } from './types/did-document';
+import { DocumentContext } from './components/document-context.js';
+import { HederaDid } from './hedera-did.js';
+import { CommonDidDocument } from './common-did-document.js';
+import { HederaEd25519Method } from './components/hedera-ed25519-method.js';
+import { HederaBBSMethod } from './components/hedera-bbs-method.js';
+import { IDidDocument } from './types/did-document.js';
 
 /**
  * Hedera DID document

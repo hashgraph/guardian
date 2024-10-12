@@ -86,41 +86,6 @@ export class DidKeyStatusDTO {
     valid: boolean;
 }
 
-export class ProfileDTO {
-    @ApiProperty({ type: 'string', nullable: false, required: true })
-    username: string;
-
-    @ApiProperty({ type: 'string', nullable: false, required: true })
-    role: string;
-
-    @ApiProperty({ type: 'string', nullable: true, required: false })
-    did?: string;
-
-    @ApiProperty({ type: 'string', nullable: true, required: false })
-    parent?: string;
-
-    @ApiProperty({ type: 'string', nullable: true, required: false })
-    hederaAccountId?: string;
-
-    @ApiProperty({ type: 'boolean', nullable: true, required: false })
-    confirmed?: boolean;
-
-    @ApiProperty({ type: 'boolean', nullable: true, required: false })
-    failed?: boolean;
-
-    @ApiProperty({ type: 'string', nullable: true, required: false })
-    topicId?: string;
-
-    @ApiProperty({ type: 'string', nullable: true, required: false })
-    parentTopicId?: string;
-
-    @ApiProperty({ type: 'object', nullable: true, required: false })
-    didDocument?: any;
-
-    @ApiProperty({ type: 'object', nullable: true, required: false })
-    vcDocument?: any;
-}
-
 export class CredentialsDTO {
     @ApiProperty({ type: 'string', nullable: false, required: true })
     entity: string;

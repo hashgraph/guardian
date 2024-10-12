@@ -1,5 +1,5 @@
-import { GenerateID, GenerateUUIDv4, SchemaField, SchemaHelper } from '..';
-import { Schema } from '../models/schema';
+import { GenerateID, GenerateUUIDv4, SchemaField, SchemaHelper } from '../index.js';
+import { Schema } from '../models/schema.js';
 
 interface GenerateOption {
     enableHiddenFields: boolean

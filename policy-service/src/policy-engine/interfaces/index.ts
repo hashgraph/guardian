@@ -3,7 +3,7 @@ export {
     PolicyBlockState,
     PolicyBlockStateCommon,
     PolicyBlockStateData, PolicyTagMap
-} from './block-state';
+} from './block-state.js';
 
 export {
     PolicyBlockAdditionalFields,
@@ -11,28 +11,28 @@ export {
     PolicyBlockDecoratorOptions,
     PolicyBlockFullArgumentList,
     PolicyBlockOptionsPartial
-} from './block-options';
+} from './block-options.js';
 
 export {
     BlockError,
     BlockErrorDTO
-} from './block-error';
+} from './block-error.js';
 
 export {
     PolicyInputEventType,
     PolicyOutputEventType
-} from './policy-event-type';
+} from './policy-event-type.js';
 
 export {
     IPolicyEvent,
     PolicyLink,
     EventCallback
-} from './policy-event';
+} from './policy-event.js';
 
 export {
     EventConfig
-} from './event-config';
+} from './event-config.js';
 
-export { EventActor } from './policy-event-type';
+export { EventActor } from './policy-event-type.js';
 
-export { BlockCacheType } from './block-cache.type';
+export { BlockCacheType } from './block-cache.type.js';

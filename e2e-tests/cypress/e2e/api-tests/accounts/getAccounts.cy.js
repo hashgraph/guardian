@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts",  { tags: '@accounts' },() => {
+context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
     const authorization = Cypress.env("authorization");
 
     it("Get list of users", () => {
@@ -29,7 +29,6 @@ context("Accounts",  { tags: '@accounts' },() => {
         });
     });
 
-
     it("Get list of users with incorrect auth - Negative", () => {
         cy.request({
             method: METHOD.GET,
@@ -42,7 +41,6 @@ context("Accounts",  { tags: '@accounts' },() => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
-
 
     it("Get list of users with empty auth - Negative", () => {
         cy.request({
@@ -57,10 +55,9 @@ context("Accounts",  { tags: '@accounts' },() => {
         });
     });
 
-
     it("Get list of users as User - Negative", () => {
         cy.request({
-            method: "POST",
+            method: METHOD.POST,
             url: API.ApiServer + API.AccountsLogin,
             body: {
                 username: "Registrant",
@@ -68,7 +65,7 @@ context("Accounts",  { tags: '@accounts' },() => {
             }
         }).then((response) => {
             cy.request({
-                method: "POST",
+                method: METHOD.POST,
                 url: API.ApiServer + API.AccessToken,
                 body: {
                     refreshToken: response.body.refreshToken

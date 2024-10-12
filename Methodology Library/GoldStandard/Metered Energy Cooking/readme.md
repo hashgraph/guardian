@@ -4,7 +4,6 @@
 - [Table of content](#table-of-content)
 - [Introduction](#introduction)
 - [Why ME\&ED(Metered and Measured Energy) Methodology?](#why-meedmetered-and-measured-energy-methodology)
-- [Demo Video](#demo-video)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
   - [Available Roles](#available-roles)
@@ -15,7 +14,6 @@
     - [Project Proponent Flow](#project-proponent-flow)
     - [VVB Flow](#vvb-flow)
 - [Futureproofing(Automated credit issuance)](#futureproofingautomated-credit-issuance)
-- [TODO](#todo)
 - [Existing Cookstove Policy Comparison](#existing-cookstove-policy-comparison)
 
 <!-- /TOC -->
@@ -45,10 +43,6 @@ According to a new [research](https://assets.researchsquare.com/files/rs-2606020
 
 This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local communities in the project development and monitoring process. This approach promotes greater transparency and accountability and helps to ensure that the environmental and social benefits of the project are maximized. This Guardian policy, is a reflection of same methodology according to the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle_15042021_Annyta.pdf).
 
-## Demo Video
-
-[Youtube](https://youtu.be/nOQpLmbW0hA)
-
 ## Policy Workflow
   
  <img width="1128" alt="image" src="https://user-images.githubusercontent.com/9518151/229273768-9fdd71c9-8bf6-41e8-b6ee-f494145fe0e5.png">
@@ -57,8 +51,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
 
-Latest Version - 0.0.3
-Hedera Topic - [0.0.3972127](https://explore.lworks.io/testnet/topics/0.0.3972127)
+<img width="717" alt="image" src="https://user-images.githubusercontent.com/9518151/229341068-fb33b357-712e-4f52-ac6e-8eb46fbc2dab.png">
 
 
 ### Available Roles 
@@ -189,18 +182,9 @@ This workflow includes a bonus flow which is a major distinction from other exis
 
 4. After an approval from VVB for the automated monitoring report, VER mint will be initiated in owner account. This will help in faster crediting cycles along with a transparent process for tracking all the intermediate steps. It'll be a huge boost to scaling up the supply of credits in VCM(Voluntary carbon markets).
 
-## TODO
-This policy was created during a hackathon so there may be couple of bugs here and there and it may not be foolproof. Here are some todos to make it production ready. You can reach out to the policy [author/contributor](https://github.com/gautamp8) for reviewing or reporting issues relevant to this specific policy.
-
-[ ] Improve and document list column names for each of the roles, some review IDs are coming as null
-[ ] Improve all the schemas(especially PID, PDD). Add support for dynamically selecting fields on basis of fossil fuel or electric device
-[ ] Automate emissions calculations on basis of incoming parameters of equations from schemas
-[ ] Add Guardian support for list data type in schemas. Helpful for usecases where we're sending device usage data regularly via an API   
-[ ] Thoroughly test and improve the futureproofing IOT device workflow, there are dummy checks and thresholds currently. Schemas need to be updated to accept list of usage parameters.
-
 ## Existing Cookstove Policy Comparison
 
-Latest version of Guardian provides a policy for [improved cookstoves](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/improved-cookstove). This new Guardian policy builds on top of it to make it more robust, aligned and future-proof. [Here's a section in demo video](https://youtu.be/nOQpLmbW0hA?t=1318) on differences using policy compare feature provided by Guardian.
+Latest version of Guardian provides a policy for [improved cookstoves](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/improved-cookstove). This new Guardian policy builds on top of it to make it more robust, aligned and future-proof.
 
 | **Features**                                                                                                                                                       | **ME&ED**                | **Improved Cookstove** |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------|------------------------|

@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { PolicyProperty } from '../entity/policy-property';
+import { PolicyProperty } from '../entity/policy-property.js';
 
 export async function GetPropertiesFromFile(filePath: string): Promise<PolicyProperty[]> {
     try {

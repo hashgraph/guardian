@@ -4,7 +4,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsExplorerDialog } from '../tags-explorer-dialog/tags-explorer-dialog.component';
 import { TagsHistory } from '../models/tags-history';
-import { Schema } from '@guardian/interfaces';
+import { Schema, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 
 /**
@@ -22,11 +22,20 @@ export class TagsExplorer {
     @Input('target') target!: any;
     @Input('service') tagsService!: TagsService;
     @Input('schemas') schemas!: Schema[];
+    @Input('user') user!: UserPermissions;
 
     public loading = false;
     public history!: TagsHistory;
 
     constructor(public dialog: DialogService) {
+    }
+
+    public get compact(): boolean {
+        if (this.user) {
+            return this.user.TAGS_TAG_CREATE && (!this.history || !this.history.top);
+        } else {
+            return (!this.history || !this.history.top);
+        }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -54,6 +63,7 @@ export class TagsExplorer {
             closable: false,
             header: 'Tags',
             data: {
+                user: this.user,
                 service: this.tagsService,
                 history: this.history,
                 schemas: this.schemas

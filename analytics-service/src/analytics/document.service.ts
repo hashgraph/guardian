@@ -9,15 +9,15 @@ import {
     VCMessage,
     VPMessage
 } from '@guardian/common';
-import { AnalyticsDocument as Document } from '@entity/analytics-document';
-import { AnalyticsPolicyInstance as PolicyInstance } from '@entity/analytics-policy-instance';
-import { AnalyticsStatus as Status } from '@entity/analytics-status';
-import { AnalyticsTopic as Topic } from '@entity/analytics-topic';
-import { DocumentType } from '@interfaces/document.type';
-import { ReportStatus } from '@interfaces/report-status.type';
-import { ReportSteep } from '@interfaces/report-steep.type';
-import { Tasks } from '@helpers/tasks';
-import { AnalyticsUtils } from '@helpers/utils';
+import { AnalyticsDocument as Document } from '../entity/analytics-document.js';
+import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
+import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
+import { AnalyticsTopic as Topic } from '../entity/analytics-topic.js';
+import { DocumentType } from '../interfaces/document.type.js';
+import { ReportStatus } from '../interfaces/report-status.type.js';
+import { ReportSteep } from '../interfaces/report-steep.type.js';
+import { Tasks } from '../helpers/tasks.js';
+import { AnalyticsUtils } from '../helpers/utils.js';
 
 /**
  * Search documents in policy topics

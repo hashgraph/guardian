@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas", { tags: '@schemas' },  () => {
+context("Schemas", { tags: ['schema', 'thirdPool'] },  () => {
     const authorization = Cypress.env("authorization");
 
     it("Get all system schemas by username", () => {
@@ -14,9 +14,9 @@ context("Schemas", { tags: '@schemas' },  () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            expect(resp.status).eql(STATUS_CODE.OK);
-            expect(resp.body[0]).to.have.property("uuid");
+        }).then((response) => {
+            expect(response.status).eql(STATUS_CODE.OK);
+            expect(response.body[0]).to.have.property("uuid");
         });
     });
 });

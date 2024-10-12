@@ -1,4 +1,4 @@
-import { AISuggestionService } from './suggestions';
+import { AISuggestionService } from './suggestions.js';
 import { ApplicationState, MessageResponse } from '@guardian/common';
 
 /**

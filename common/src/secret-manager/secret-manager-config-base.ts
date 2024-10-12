@@ -1,7 +1,7 @@
-import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs'
-import { IAzureSecretManagerConfigs } from './azure/azure-secret-manager-configs';
-import { IGcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs';
-import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs'
+import { IAwsSecretManagerConfigs } from './aws/aws-secret-manager-configs.js'
+import { IAzureSecretManagerConfigs } from './azure/azure-secret-manager-configs.js';
+import { IGcpSecretManagerConfigs } from './gcp/gcp-secret-manager-configs.js';
+import { IHcpVaultSecretManagerConfigs } from './hashicorp/hcp-vault-secret-manager-configs.js'
 
 /**
  * Interface for secret manager configs

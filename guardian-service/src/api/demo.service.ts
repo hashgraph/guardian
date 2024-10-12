@@ -1,7 +1,7 @@
-import { ApiResponse } from '@api/helpers/api-response';
-import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
+import { ApiResponse } from '../api/helpers/api-response.js';
+import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync, SecretManager, Settings, Workers } from '@guardian/common';
 import { MessageAPI, WorkerTaskType } from '@guardian/interfaces';
-import { emptyNotifier, initNotifier, INotifier } from '@helpers/notifier';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 
 /**
  * Demo key
@@ -22,8 +22,9 @@ interface DemoKey {
  * @param role
  * @param settingsRepository
  * @param notifier
+ * @param userId
  */
-async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier): Promise<DemoKey> {
+async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Settings>, notifier: INotifier, userId: string): Promise<DemoKey> {
     notifier.start('Resolve settings');
 
     const secretManager = SecretManager.New();
@@ -48,7 +49,7 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
             operatorKey: OPERATOR_KEY,
             initialBalance
         }
-    }, 20);
+    }, 20, userId);
 
     notifier.completed();
     return result;
@@ -58,56 +59,62 @@ async function generateDemoKey(role: any, settingsRepository: DataBaseHelper<Set
  * Demo API
  * @param channel
  * @param settingsRepository
+ * logger pino logger
  */
 export async function demoAPI(
-    settingsRepository: DataBaseHelper<Settings>
+    settingsRepository: DataBaseHelper<Settings>,
+    logger: PinoLogger
 ): Promise<void> {
-    ApiResponse(MessageAPI.GENERATE_DEMO_KEY, async (msg) => {
-        try {
-            const role = msg?.role;
-            const result = await generateDemoKey(role, settingsRepository, emptyNotifier());
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
-
-    ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC, async (msg) => {
-        const { role, task } = msg;
-        const notifier = await initNotifier(task);
-
-        RunFunctionAsync(async () => {
-            const result = await generateDemoKey(role, settingsRepository, notifier);
-            notifier.result(result);
-        }, async (error) => {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            notifier.error(error);
+    ApiResponse(MessageAPI.GENERATE_DEMO_KEY,
+        async (msg: { role: string, userId: string }) => {
+            try {
+                const role = msg?.role;
+                const userId = msg?.userId
+                const result = await generateDemoKey(role, settingsRepository, emptyNotifier(), userId);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
         });
 
-        return new MessageResponse(task);
-    });
+    ApiResponse(MessageAPI.GENERATE_DEMO_KEY_ASYNC,
+        async (msg: { role: string, task: any, userId: string }) => {
+            const {role, task, userId} = msg;
+            const notifier = await initNotifier(task);
 
-    ApiResponse(MessageAPI.GET_USER_ROLES, async (msg) => {
-        try {
-            const did = msg.did;
-            const policies = await new DataBaseHelper(Policy).findAll();
-            const result = [];
-            for (const p of policies) {
-                const roles = await DatabaseServer.getUserRole(p.id.toString(), did);
-                const role = roles.map(g => g.role).join(', ');
-                if (role) {
-                    result.push({
-                        name: p.name,
-                        version: p.version,
-                        role
-                    })
-                }
-            };
-            return new MessageResponse(result);
-        } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    })
+            RunFunctionAsync(async () => {
+                const result = await generateDemoKey(role, settingsRepository, notifier, userId);
+                notifier.result(result);
+            }, async (error) => {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                notifier.error(error);
+            });
+
+            return new MessageResponse(task);
+        });
+
+    ApiResponse(MessageAPI.GET_USER_ROLES,
+        async (msg: { did: string }) => {
+            try {
+                const did = msg.did;
+                const policies = await new DataBaseHelper(Policy).findAll();
+                const result = [];
+                for (const p of policies) {
+                    const roles = await DatabaseServer.getUserRole(p.id.toString(), did);
+                    const role = roles.map(g => g.role).join(', ');
+                    if (role) {
+                        result.push({
+                            name: p.name,
+                            version: p.version,
+                            role
+                        })
+                    }
+                };
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        })
 }

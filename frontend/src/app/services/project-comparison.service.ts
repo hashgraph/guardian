@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { IMethodology, IPolicyCategory } from '../modules/project-comparison/structures';
@@ -31,6 +31,9 @@ export class ProjectComparisonService {
     }
 
     public compareProjects(documentIds?: string[]): Observable<any> {
-        return this.http.post<any>(`${this.url}/projects/compare/documents`, { documentIds });
+        const headers = new HttpHeaders({
+            'Api-Version': '2'
+        });
+        return this.http.post<any>(`${this.url}/projects/compare/documents`, {documentIds}, {headers});
     }
 }

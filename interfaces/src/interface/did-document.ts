@@ -1,4 +1,4 @@
-import { IVerificationMethod } from './verification-method';
+import { IVerificationMethod } from './verification-method.js';
 
 /**
  * DID document interface

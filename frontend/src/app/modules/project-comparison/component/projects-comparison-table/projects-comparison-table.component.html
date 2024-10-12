@@ -1,11 +1,12 @@
 <div class="projects-comparison">
     <p-button (click)="navigateToProjectsOverview()" class="back-button" icon="pi pi-angle-left" iconPos="left"
               label="Back to Projects Overview"></p-button>
-    <div class="header">
-        <h1>Project Comparison</h1>
-    </div>
-    <div *ngIf="!loading else dataInLoad" class="container">
-        <div class="table">
+    <ng-container *ngIf="!loading else dataInLoad" class="container">
+        <div class="header">
+            <h1>Project Comparison</h1>
+        </div>
+        <div class="container">
+            <div class="table">
 
             <table>
                 <thead></thead>
@@ -78,7 +79,31 @@
             </table>
 
         </div>
-    </div>
+        </div>
+
+        <div class="header" style="margin-top: 30px;">
+            <h1>VP Comparison</h1>
+        </div>
+        <div *ngFor="let doc of vpDocuments" class="container">
+            <div class="vp-documents">
+                <app-compare-document
+                        customColumnSize="30"
+                        comparationType="documents"
+                        [childrenLvl]="'2'"
+                        [disableHeader]="true"
+                        [eventsLvl]="'1'"
+                        [idLvl]="'0'"
+                        [propLvl]="'2'"
+                        [type]="'tree'"
+                        [value]="doc"></app-compare-document>
+                <table>
+                    <thead></thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </ng-container>
 </div>
 
 <ng-template #dataInLoad>

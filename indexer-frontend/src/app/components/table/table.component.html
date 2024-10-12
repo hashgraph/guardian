@@ -1,0 +1,100 @@
+<div class="table" [style.minWidth]="minWidth + 30 + 'px'">
+    <div class="table__filters table-filters">
+        <ng-content></ng-content>
+    </div>
+    <div class="table__head table-head">
+        @for (column of columns; track $index) {
+        @switch (column.type) {
+        @case ('text') {
+        @if (column.sort) {
+        <div class="table-head__cell table-cell" [attr.sorting]="column.field === sortColumn"
+            (click)="onSort(column.field)" [style.width]="column.width">
+            {{column.title | transloco}}
+            @if (column.field === sortColumn) {
+            @switch (sortDirection) {
+            @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
+            @case ('desc') { <span class="pi pi-sort-down-fill"></span> } } } @else {
+            <span class="pi pi-sort"></span>
+            }
+        </div>
+        }
+        @else {
+        <div class="table-head__cell table-cell" [style.width]="column.width">
+            {{column.title | transloco}} </div>
+        }
+        }
+        @case ('chip') {
+        @if (column.sort) {
+        <div class="table-head__cell table-cell" [attr.sorting]="column.field === sortColumn"
+            (click)="onSort(column.field)" [style.width]="column.width">
+            {{column.title | transloco}}
+            @if (column.field === sortColumn) {
+            @switch (sortDirection) {
+            @case ('asc') { <span class="pi pi-sort-up-fill"></span> }
+            @case ('desc') { <span class="pi pi-sort-down-fill"></span> } } } @else {
+            <span class="pi pi-sort"></span>
+            }
+        </div>
+        }
+        @else {
+        <div class="table-head__cell table-cell" [style.width]="column.width">
+            {{column.title | transloco}} </div>
+        }
+        }
+        @case ('button') {
+        <div class="table-head__cell table-cell" [style.width]="column.width">
+            {{column.title | transloco}} </div>
+        }
+        }
+        }
+    </div>
+    <div class="table-body-container">
+        <div class="table__body">
+            @if (loading) {
+            <div class="loading">
+                <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+            </div>
+            } @else () {
+            @for (item of data; track $index) {
+            <div class="table-row">
+                @for (column of columns; track $index) {
+                <div [style.width]="column.width" class="table-cell">
+                    @switch (column.type) {
+                    @case ('text') {
+                    @if (column.link) {
+                    <a [routerLink]="[column.link.url, getFieldValue(column.link.field, item)]">{{getFieldValue(column.field,
+                        item)}}</a>
+                    } @else {
+                    <span [title]="getFieldValue(column.field, item)">{{getFieldValue(column.field,
+                        item)}}</span>
+                    }
+                    }
+                    @case ('chip') {
+                    <p-tag [value]="getFieldValue(column.field, item)" severity="secondary" />
+                    }
+                    @case ('button') {
+                    <p-button [label]="column.btn_label | transloco" (onClick)="column.callback(item)" />
+                    }
+                    }
+                </div>
+                }
+            </div>
+            } @empty {
+            <ng-container [ngTemplateOutlet]="empty"></ng-container>
+            }
+            }
+        </div>
+        @if (paginator) {
+        <app-paginator [pageSizeOptions]="pageSizeOptions" [length]="total" (page)="onPageChange($event)"
+            [pageIndex]="pageIndex" [pageSize]="pageSize"></app-paginator>
+        }
+    </div>
+</div>
+
+<ng-template #empty>
+    <div class="empty">
+        <span class="empty__icon pi pi-search"></span>
+        <span class="empty__title">{{ 'grid.empty.title' | transloco }}</span>
+        <span class="empty__description">{{ 'grid.empty.description' | transloco }}</span>
+    </div>
+</ng-template>

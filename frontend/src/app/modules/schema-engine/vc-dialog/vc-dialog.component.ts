@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Schema } from '@guardian/interfaces';
+import { SchemaService } from '../../../services/schema.service';
 
 /**
  * Dialog for display json
@@ -26,7 +28,9 @@ export class VCViewerDialog {
 
     constructor(
         public dialogRef: DynamicDialogRef,
-        public dialogConfig: DynamicDialogConfig) {
+        public dialogConfig: DynamicDialogConfig,
+        private schemaService: SchemaService,
+    ) {
     }
 
     ngOnInit() {
@@ -38,7 +42,10 @@ export class VCViewerDialog {
             viewDocument,
             type,
             toggle,
-            schema
+            schema,
+            schemaId,
+            topicId,
+            category,
         } = this.dialogConfig.data;
         this.id = id;
         this.dryRun = !!dryRun;
@@ -65,9 +72,24 @@ export class VCViewerDialog {
         }
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
+
+        this.getSubSchemes(schemaId, topicId, category)
     }
 
     onClick(): void {
         this.dialogRef.close(null);
+    }
+
+    getSubSchemes(id: string, topicId: string, category: string) {
+        if(id && topicId && category) {
+            this.schemaService.getSchemaWithSubSchemas(category, id, topicId).subscribe((data) => {
+                if(data.schema) {
+                    const document = new Schema(data.schema).document;
+
+                    this.json = document ? JSON.stringify((document), null, 4) : ''
+                    this.document = document
+                }
+            });
+        }
     }
 }

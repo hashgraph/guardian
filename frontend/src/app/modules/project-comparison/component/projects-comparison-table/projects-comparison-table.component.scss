@@ -30,7 +30,7 @@ h1 {
 .projects-comparison {
     padding: 34px 80px;
     box-sizing: border-box;
-    position: absolute;
+    //position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
@@ -151,7 +151,7 @@ th {
     .column-header {
         writing-mode: vertical-rl;
         transform: rotate(180deg);
-        justify-content: end;
+        justify-content: flex-end;
         gap: 20px;
 
         span {
@@ -318,4 +318,8 @@ tr {
 
 .toggle-icon.toggle-icon-collapsed {
     transform: rotate(-90deg);
+}
+
+.vp-documents {
+    width: 100%;
 }

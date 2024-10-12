@@ -2,9 +2,9 @@ import {METHOD, STATUS_CODE} from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
 
-context('Settings', {tags: '@settings'}, () => {
+context('Settings', { tags: ['settings', 'thirdPool'] }, () => {
     const authorization = Cypress.env("authorization");
-    it('Set settings', () => {
+    it('Set settings', { tags: ['smoke'] }, () => {
         cy.request({
             method: 'POST',
             url: API.ApiServer + 'settings',
@@ -18,7 +18,7 @@ context('Settings', {tags: '@settings'}, () => {
             }
         })
             .then((response) => {
-                expect(response.status).to.eq(201)
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS)
             })
     })
 })

@@ -1,5 +1,4 @@
-[
-    {
+[{
         "uuid": "MintNFToken",
         "name": "MintNFToken",
         "entity": "MINT_NFTOKEN",
@@ -11,8 +10,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -25,8 +23,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -87,8 +84,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -101,8 +97,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -243,8 +238,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -257,8 +251,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -372,8 +365,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -386,8 +378,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -452,8 +443,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -466,8 +456,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -525,8 +514,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -539,8 +527,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -767,8 +754,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -781,8 +767,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -799,8 +784,7 @@
                     "readOnly": true
                 },
                 "dataSource": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -813,8 +797,7 @@
                     "readOnly": false
                 },
                 "relationships": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -845,8 +828,7 @@
             "type": "object",
             "properties": {
                 "@context": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -859,8 +841,7 @@
                     "readOnly": true
                 },
                 "type": {
-                    "oneOf": [
-                        {
+                    "oneOf": [{
                             "type": "string"
                         },
                         {
@@ -925,6 +906,192 @@
                 "impactType"
             ],
             "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "Role",
+        "name": "Role",
+        "entity": "ROLE",
+        "document": {
+            "$id": "#Role",
+            "$comment": "{ \"@id\": \"#Role\", \"term\": \"Role\" }",
+            "title": "User Role",
+            "description": "User Role",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "uuid": {
+                    "title": "Role UUID",
+                    "description": "Role UUID",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"uuid\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "name": {
+                    "title": "Role name",
+                    "description": "Role name",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"name\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "description": {
+                    "title": "Description",
+                    "description": "Description",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"description\",\"@id\":\"https://www.schema.org/text\"}"
+                },
+                "permissions": {
+                    "title": "Permissions",
+                    "description": "Permissions",
+                    "readOnly": false,
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "$comment": "{\"term\":\"permissions\",\"@id\":\"https://www.schema.org/text\"}"
+                }
+            },
+            "required": [
+                "uuid",
+                "name",
+                "description",
+                "permissions"
+            ],
+            "additionalProperties": false
+        }
+    },
+    {
+        "uuid": "UserPermissions",
+        "name": "UserPermissions",
+        "entity": "USER_PERMISSIONS",
+        "document": {
+            "$id": "#UserPermissions",
+            "$comment": "{ \"@id\": \"#UserPermissions\", \"term\": \"UserPermissions\" }",
+            "title": "User Role",
+            "description": "User Role",
+            "type": "object",
+            "properties": {
+                "@context": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "type": {
+                    "oneOf": [{
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "readOnly": true
+                },
+                "id": {
+                    "type": "string",
+                    "readOnly": true
+                },
+                "roles": {
+                    "title": "roles",
+                    "description": "roles",
+                    "readOnly": false,
+                    "type": "array",
+                    "items": {
+                        "$ref": "#Role"
+                    },
+                    "$comment": "{\"term\":\"roles\",\"@id\":\"#Role\"}"
+                },
+                "userId": {
+                    "title": "User DID",
+                    "description": "User DID",
+                    "readOnly": false,
+                    "type": "string",
+                    "$comment": "{\"term\":\"userId\",\"@id\":\"https://www.schema.org/text\"}"
+                }
+            },
+            "required": [
+                "roles",
+                "userId"
+            ],
+            "additionalProperties": false,
+            "$defs": {
+                "#Role": {
+                    "$id": "#Role",
+                    "$comment": "{ \"@id\": \"#Role\", \"term\": \"Role\" }",
+                    "title": "Role",
+                    "description": "Role",
+                    "type": "object",
+                    "properties": {
+                        "uuid": {
+                            "$comment": "{\"term\": \"uuid\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "Role UUID",
+                            "description": "Role UUID",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "name": {
+                            "$comment": "{\"term\": \"name\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "Role name",
+                            "description": "Role name",
+                            "type": "string",
+                            "readOnly": false
+                        },
+                        "owner": {
+                            "$comment": "{\"term\": \"owner\", \"@id\": \"https://www.schema.org/text\"}",
+                            "title": "Owner",
+                            "description": "User DID",
+                            "type": "string",
+                            "readOnly": false
+                        }
+                    },
+                    "required": [
+                        "uuid",
+                        "name",
+                        "owner"
+                    ],
+                    "additionalProperties": false
+                }
+            }
         }
     }
 ]

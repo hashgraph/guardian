@@ -1,10 +1,10 @@
 import { GenerateUUIDv4, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer } from '../database-modules';
-import { Logger, RunFunctionAsync, Workers } from '../helpers';
-import { MessageResponse } from '../models';
-import { Singleton } from '../decorators/singleton';
-import { NatsService } from '../mq';
-import { SecretManager } from '../secret-manager';
+import { DatabaseServer } from '../database-modules/index.js';
+import { PinoLogger, RunFunctionAsync, Workers } from '../helpers/index.js';
+import { MessageResponse } from '../models/index.js';
+import { Singleton } from '../decorators/singleton.js';
+import { NatsService } from '../mq/index.js';
+import { SecretManager } from '../secret-manager/index.js';
 
 /**
  * Transaction log level
@@ -173,7 +173,7 @@ export class TransactionLogger extends NatsService {
                             hederaAccountId: OPERATOR_ID,
                             hederaAccountKey: OPERATOR_KEY
                         }
-                    }, 20);
+                    }, 20, null);
                     attr.push(balance);
                 } catch (error) {
                     attr.push(null);
@@ -293,7 +293,7 @@ export class TransactionLogger extends NatsService {
         await super.setConnection(channel).init();
         this.setLogLevel(lvl);
         this.setLogFunction((types: string[], date: string, duration: string, name: string, attr?: string[]) => {
-            const log = new Logger();
+            const log = new PinoLogger();
             const attributes = [
                 ...types,
                 date,

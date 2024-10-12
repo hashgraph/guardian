@@ -62,7 +62,7 @@ AMS-III.F's emphasis on controlled aerobic treatment of organic waste, notably t
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp = 1719334768.460755003
 
 ### Available Roles 
  

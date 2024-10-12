@@ -1,10 +1,10 @@
-import { VcDocument } from './../vcjs/vc-document';
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { VcMessageBody } from './message-body.interface';
-import { Hashing } from '../hashing';
+import { VcDocument } from './../vcjs/vc-document.js';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { VcMessageBody } from './message-body.interface.js';
+import { Hashing } from '../hashing.js';
 import { SignatureType } from '@guardian/interfaces';
 import {
     bytesToUtf8,
@@ -13,8 +13,8 @@ import {
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
 } from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions';
-import { IPFS } from '../../helpers';
+import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * VC message

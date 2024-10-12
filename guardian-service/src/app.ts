@@ -1,78 +1,101 @@
-import { configAPI } from '@api/config.service';
-import { documentsAPI } from '@api/documents.service';
-import { loaderAPI } from '@api/loader.service';
-import { profileAPI } from '@api/profile.service';
-import { schemaAPI } from '@api/schema.service';
-import { tokenAPI } from '@api/token.service';
-import { trustChainAPI } from '@api/trust-chain.service';
-import { PolicyEngineService } from '@policy-engine/policy-engine.service';
+import { configAPI } from './api/config.service.js';
+import { documentsAPI } from './api/documents.service.js';
+import { loaderAPI } from './api/loader.service.js';
+import { profileAPI } from './api/profile.service.js';
+import { schemaAPI } from './api/schema.service.js';
+import { tokenAPI } from './api/token.service.js';
+import { trustChainAPI } from './api/trust-chain.service.js';
+import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
-    ApplicationState,
+    AggregateVC, ApplicationState, ApprovalDocument, Artifact, ArtifactChunk, AssignEntity, BlockCache, BlockState, Branding, COMMON_CONNECTION_CONFIG,
+    Contract, DataBaseHelper, DatabaseServer, DidDocument, DocumentState, DryRun, DryRunFiles, Environment, ExternalDocument, ExternalEventChannel, IPFS,
+    LargePayloadContainer, MessageBrokerChannel, MessageServer, Migration, MintRequest, MintTransaction, mongoForLoggingInitialization, MultiDocuments,
+    MultiPolicy, MultiPolicyTransaction, OldSecretManager, PinoLogger, pinoLoggerInitialization, Policy, PolicyCache, PolicyCacheData, PolicyCategory,
+    PolicyInvitations, PolicyModule, PolicyProperty, PolicyRoles, PolicyTest, PolicyTool, Record, RetirePool, RetireRequest, Schema, SecretManager,
+    Settings, SplitDocuments, SuggestionsConfig, Tag, TagCache, Theme, Token, Topic, TopicMemo, TransactionLogger, TransactionLogLvl, Users,
+    ValidateConfiguration, VcDocument, VpDocument, Wallet, WiperRequest, Workers
+} from '@guardian/common';
+import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
+import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
+import { ipfsAPI } from './api/ipfs.service.js';
+import { artifactAPI } from './api/artifact.service.js';
+import { sendKeysToVault } from './helpers/send-keys-to-vault.js';
+import { contractAPI, syncRetireContracts, syncWipeContracts } from './api/contract.service.js';
+import { PolicyServiceChannelsContainer } from './helpers/policy-service-channels-container.js';
+import { PolicyEngine } from './policy-engine/policy-engine.js';
+import { modulesAPI } from './api/module.service.js';
+import { toolsAPI } from './api/tool.service.js';
+import { GuardiansService } from './helpers/guardians.js';
+import { mapAPI } from './api/map.service.js';
+import { tagsAPI } from './api/tag.service.js';
+import { demoAPI } from './api/demo.service.js';
+import { themeAPI } from './api/theme.service.js';
+import { brandingAPI } from './api/branding.service.js';
+import { wizardAPI } from './api/wizard.service.js';
+import { startMetricsServer } from './utils/metrics.js';
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import process from 'process';
+import { AppModule } from './app.module.js';
+import { analyticsAPI } from './api/analytics.service.js';
+import { GridFSBucket } from 'mongodb';
+import { suggestionsAPI } from './api/suggestions.service.js';
+import { SynchronizationTask } from './helpers/synchronization-task.js';
+import { recordAPI } from './api/record.service.js';
+import { projectsAPI } from './api/projects.service.js';
+import { AISuggestionsService } from './helpers/ai-suggestions.js';
+import { AssignedEntityAPI } from './api/assigned-entity.service.js';
+import { permissionAPI } from './api/permission.service.js';
+import { setDefaultSchema } from './api/helpers/default-schemas.js';
+
+export const obj = {};
+
+const necessaryEntity = [
+    AggregateVC,
+    ApprovalDocument,
+    ArtifactChunk,
+    Artifact,
+    BlockCache,
+    BlockState,
     Branding,
-    COMMON_CONNECTION_CONFIG,
     Contract,
-    DataBaseHelper,
     DidDocument,
-    entities,
-    Environment,
-    ExternalEventChannel,
-    IPFS,
-    LargePayloadContainer,
-    Logger,
-    MessageBrokerChannel,
-    MessageServer,
-    Migration,
-    OldSecretManager,
+    DocumentState,
+    DryRun,
+    ExternalDocument,
+    PolicyModule,
+    MultiDocuments,
+    MultiPolicyTransaction,
+    MultiPolicy,
+    PolicyInvitations,
+    PolicyRoles,
     Policy,
     RetirePool,
     RetireRequest,
     Schema,
-    SecretManager,
     Settings,
+    SplitDocuments,
+    SuggestionsConfig,
+    TagCache,
+    Tag,
+    Theme,
     Token,
+    PolicyTool,
     Topic,
-    TopicMemo,
-    TransactionLogger,
-    TransactionLogLvl,
-    Users,
-    ValidateConfiguration,
     VcDocument,
     VpDocument,
     WiperRequest,
-    Workers
-} from '@guardian/common';
-import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
-import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
-import { ipfsAPI } from '@api/ipfs.service';
-import { artifactAPI } from '@api/artifact.service';
-import { sendKeysToVault } from '@helpers/send-keys-to-vault';
-import { contractAPI, syncRetireContracts, syncWipeContracts } from '@api/contract.service';
-import { PolicyServiceChannelsContainer } from '@helpers/policy-service-channels-container';
-import { PolicyEngine } from '@policy-engine/policy-engine';
-import { modulesAPI } from '@api/module.service';
-import { toolsAPI } from '@api/tool.service';
-import { GuardiansService } from '@helpers/guardians';
-import { mapAPI } from '@api/map.service';
-import { tagsAPI } from '@api/tag.service';
-import { setDefaultSchema } from '@api/helpers/schema-helper';
-import { demoAPI } from '@api/demo.service';
-import { themeAPI } from '@api/theme.service';
-import { brandingAPI } from '@api/branding.service';
-import { wizardAPI } from '@api/wizard.service';
-import { startMetricsServer } from './utils/metrics';
-import { NestFactory } from '@nestjs/core';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
-import { AppModule } from './app.module';
-import { analyticsAPI } from '@api/analytics.service';
-import { GridFSBucket } from 'mongodb';
-import { suggestionsAPI } from '@api/suggestions.service';
-import { SynchronizationTask } from '@helpers/synchronization-task';
-import { recordAPI } from '@api/record.service';
-import { projectsAPI } from '@api/projects.service';
-import { AISuggestionsService } from '@helpers/ai-suggestions';
-
-export const obj = {};
+    Record,
+    PolicyCategory,
+    PolicyProperty,
+    MintRequest,
+    MintTransaction,
+    DryRunFiles,
+    PolicyCacheData,
+    PolicyCache,
+    AssignEntity,
+    PolicyTest
+]
 
 Promise.all([
     Migration({
@@ -85,7 +108,7 @@ Promise.all([
             useUnifiedTopology: true
         },
         ensureIndexes: true,
-        entities
+        entities: necessaryEntity
     }, [
         'v2-4-0',
         'v2-7-0',
@@ -97,6 +120,7 @@ Promise.all([
         'v2-17-0',
         'v2-18-0',
         'v2-20-0',
+        'v2-23-1',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -108,13 +132,15 @@ Promise.all([
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ]
         },
-    })
+    }),
+    mongoForLoggingInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
 
     app.listen();
 
     DataBaseHelper.orm = db;
+
     DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
@@ -124,7 +150,8 @@ Promise.all([
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
-    await new Logger().setConnection(cn);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const secretManager = SecretManager.New();
@@ -158,32 +185,35 @@ Promise.all([
     const brandingRepository = new DataBaseHelper(Branding);
 
     try {
-        await configAPI(settingsRepository, topicRepository);
-        await schemaAPI();
-        await tokenAPI(tokenRepository);
-        await loaderAPI(didDocumentRepository, schemaRepository);
-        await profileAPI();
+        await configAPI(settingsRepository, topicRepository, logger);
+        await schemaAPI(logger);
+        await tokenAPI(tokenRepository, logger);
+        await loaderAPI(didDocumentRepository, schemaRepository, logger);
+        await profileAPI(logger);
         await documentsAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
-        await demoAPI(settingsRepository);
-        await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-        await artifactAPI();
+        await demoAPI(settingsRepository, logger);
+        await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, logger);
+        await artifactAPI(logger);
         await contractAPI(contractRepository,
             wipeRequestRepository,
             retirePoolRepository,
             retireRequestRepository,
-            vcDocumentRepository
+            vcDocumentRepository,
+            logger
         );
-        await modulesAPI();
-        await toolsAPI();
-        await tagsAPI();
-        await analyticsAPI();
-        await mapAPI();
-        await themeAPI();
-        await wizardAPI();
-        await recordAPI();
+        await modulesAPI(logger);
+        await toolsAPI(logger);
+        await tagsAPI(logger);
+        await analyticsAPI(logger);
+        await mapAPI(logger);
+        await themeAPI(logger);
+        await wizardAPI(logger);
+        await recordAPI(logger);
         await brandingAPI(brandingRepository);
         await suggestionsAPI();
-        await projectsAPI();
+        await projectsAPI(logger);
+        await AssignedEntityAPI(logger)
+        await permissionAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -197,7 +227,7 @@ Promise.all([
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
             Environment.setNodes(nodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
                 ['GUARDIAN_SERVICE']
             );
@@ -211,7 +241,7 @@ Promise.all([
             );
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
                 ['GUARDIAN_SERVICE']
@@ -225,6 +255,7 @@ Promise.all([
     new ExternalEventChannel().setChannel(channel);
 
     await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();
     workersHelper.initListeners();
@@ -241,14 +272,14 @@ Promise.all([
             }
             AccountId.fromString(OPERATOR_ID);
         } catch (error) {
-            await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
         try {
             PrivateKey.fromString(OPERATOR_KEY);
         } catch (error) {
-            await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
         }
         try {
@@ -259,7 +290,7 @@ Promise.all([
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
-            await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
@@ -268,7 +299,7 @@ Promise.all([
                 PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
             }
         } catch (error) {
-            await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
@@ -292,11 +323,11 @@ Promise.all([
         state.updateState(ApplicationStates.INITIALIZING);
 
         try {
-            policyEngine = new PolicyEngine();
+            policyEngine = new PolicyEngine(logger);
             await policyEngine.setConnection(cn).init();
-            const policyService = new PolicyEngineService(cn);
+            const policyService = new PolicyEngineService(cn, logger);
             await policyService.init();
-            policyService.registerListeners();
+            policyService.registerListeners(logger);
             await policyEngine.init();
         } catch (error) {
             console.error(error.message);
@@ -311,7 +342,7 @@ Promise.all([
         }
 
         try {
-            await ipfsAPI();
+            await ipfsAPI(logger);
         } catch (error) {
             console.error(error.message);
         }
@@ -321,13 +352,13 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
+        await logger.info('guardian service started', ['GUARDIAN_SERVICE']);
 
         await state.updateState(ApplicationStates.READY);
 
         try {
             if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
-                await sendKeysToVault(db.em);
+                await sendKeysToVault(db.em, logger);
             }
         } catch (error) {
             console.error(error.message);
@@ -353,7 +384,8 @@ Promise.all([
             users
         ),
         process.env.RETIRE_CONTRACT_SYNC_MASK || '* * * * *',
-        channel
+        channel,
+        logger
     );
     retireSync.start();
     const wipeSync = new SynchronizationTask(
@@ -367,7 +399,8 @@ Promise.all([
             users
         ),
         process.env.WIPE_CONTRACT_SYNC_MASK || '* * * * *',
-        channel
+        channel,
+        logger
     );
     wipeSync.start();
     const policyDiscontinueTask = new SynchronizationTask(
@@ -387,9 +420,26 @@ Promise.all([
             ));
         },
         '0 * * * *',
-        channel
+        channel,
+        logger
     );
     policyDiscontinueTask.start(true);
+    const clearPolicyCache = new SynchronizationTask(
+        'clear-policy-cache-sync',
+        async () => {
+            const policyCaches = await DatabaseServer.getPolicyCaches();
+            const now = Date.now();
+            for (const policyCache of policyCaches) {
+                if (policyCache.createDate.addDays(1).getTime() <= now) {
+                    await DatabaseServer.clearPolicyCaches(policyCache.id);
+                }
+            }
+        },
+        process.env.CLEAR_POLICY_CACHE_INTERVAL || '0 * * * *',
+        channel,
+        logger
+    );
+    clearPolicyCache.start(true);
 
     startMetricsServer();
 }, (reason) => {

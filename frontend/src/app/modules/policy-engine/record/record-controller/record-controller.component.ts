@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Subscription } from 'rxjs';
 import { RecordService } from 'src/app/services/record.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { ImportFileDialog } from '../../helpers/import-file-dialog/import-file-dialog.component';
+import { ImportFileDialog } from '../../dialogs/import-file-dialog/import-file-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
 import { Router } from '@angular/router';

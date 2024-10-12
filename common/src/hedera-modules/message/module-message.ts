@@ -1,10 +1,10 @@
-import { Message } from './message';
-import { IURL, UrlType } from './url.interface';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
-import { PolicyModule } from '../../entity';
-import { ModuleMessageBody } from './message-body.interface';
-import { IPFS } from '../../helpers';
+import { Message } from './message.js';
+import { IURL, UrlType } from './url.interface.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
+import { PolicyModule } from '../../entity/index.js';
+import { ModuleMessageBody } from './message-body.interface.js';
+import { IPFS } from '../../helpers/index.js';
 
 /**
  * Module message

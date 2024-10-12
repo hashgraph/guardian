@@ -20,7 +20,12 @@
                     <span>Save</span>
                 </div>
 
-                <div class="top-toolbar-btn all-status" (click)="saveAsPolicy()" title="Save Policy">
+                <div 
+                    *ngIf="user.POLICIES_POLICY_CREATE"
+                    class="top-toolbar-btn all-status" 
+                    [class.readonly-status]="policyTemplate.isDemo"
+                    (click)="saveAsPolicy()" 
+                    title="Save Policy">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
                 </div>
@@ -58,6 +63,11 @@
                     <span class="publish-color">Published</span>
                 </div>
 
+                <div *ngIf="policyTemplate.isDemo" class="top-toolbar-btn top-toolbar-label">
+                    <mat-icon class="demo-color">public</mat-icon>
+                    <span class="demo-color">Demo</span>
+                </div>
+
                 <div class="delimiter"></div>
 
                 <div *ngIf="policyTemplate.isDraft" class="top-toolbar-btn all-status" (click)="validationPolicy()"
@@ -67,7 +77,7 @@
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
 
-                <div *ngIf="policyTemplate.isDryRun || policyTemplate.isPublished" class="top-toolbar-btn all-status"
+                <div *ngIf="policyTemplate.isRun" class="top-toolbar-btn all-status"
                     [routerLink]="['/policy-viewer', policyId]">
                     <mat-icon>double_arrow</mat-icon>
                     <span>Go</span>
@@ -87,14 +97,20 @@
                     <span>Save</span>
                 </div>
 
-                <div class="top-toolbar-btn all-status" (click)="saveAsModule()" title="Save Module">
+                <div 
+                    *ngIf="user.MODULES_MODULE_CREATE"
+                    class="top-toolbar-btn all-status" 
+                    (click)="saveAsModule()" 
+                    title="Save Module">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
                 </div>
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="moduleTemplate.isDraft" class="top-toolbar-group all-status"
+                <div 
+                    *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW" 
+                    class="top-toolbar-group all-status"
                     [matMenuTriggerFor]="publishMenu2">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
@@ -135,14 +151,20 @@
                     <span>Save</span>
                 </div>
 
-                <div class="top-toolbar-btn readonly-status" (click)="saveAsTool()" title="Save Tool">
+                <div 
+                    *ngIf="user.TOOLS_TOOL_CREATE"
+                    class="top-toolbar-btn readonly-status" 
+                    (click)="saveAsTool()" 
+                    title="Save Tool">
                     <mat-icon>save</mat-icon>
                     <span>Save As</span>
                 </div>
 
                 <div class="delimiter"></div>
 
-                <div *ngIf="toolTemplate.isDraft" class="top-toolbar-group all-status"
+                <div 
+                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW" 
+                    class="top-toolbar-group all-status"
                     [matMenuTriggerFor]="publishMenu3">
                     <mat-icon class="edit-color">edit</mat-icon>
                     <span class="edit-color">Draft</span>
@@ -199,6 +221,7 @@
                 </ng-container>
 
                 <ng-container *ngIf="
+                    user.MODULES_MODULE_CREATE &&
                     rootType === 'Policy' &&
                     openType !== 'Sub' &&
                     !currentBlock?.isModule &&
@@ -208,7 +231,10 @@
                         <span>Create New Module</span>
                     </div>
 
-                    <div class="top-toolbar-btn readonly-status" title="Convert to Module"
+                    <div 
+                        *ngIf="user.MODULES_MODULE_CREATE"
+                        class="top-toolbar-btn readonly-status" 
+                        title="Convert to Module"
                         (click)="onConvertToModule()">
                         <mat-icon>move_to_inbox</mat-icon>
                         <span>Convert to Module</span>
@@ -1104,8 +1130,12 @@
 </div>
 
 <mat-menu #publishMenu="matMenu">
-    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy()"
-        title="Release version into public domain.">
+    <div 
+        *ngIf="user.POLICIES_POLICY_REVIEW"
+        class="toolbar-menu all-status publish-color" 
+        (click)="tryPublishPolicy()"
+        title="Release version into public domain."
+    >
         <mat-icon class="publish-color">public</mat-icon>
         <span class="publish-color">Publish</span>
     </div>
@@ -1118,7 +1148,9 @@
 </mat-menu>
 
 <mat-menu #publishMenu2="matMenu">
-    <div class="toolbar-menu all-status publish-color" (click)="tryPublishModule()"
+    <div 
+        class="toolbar-menu all-status publish-color" 
+        (click)="tryPublishModule()"
         title="Release version into public domain.">
         <mat-icon class="publish-color">public</mat-icon>
         <span class="publish-color">Publish</span>
@@ -1126,7 +1158,9 @@
 </mat-menu>
 
 <mat-menu #publishMenu3="matMenu">
-    <div class="toolbar-menu all-status publish-color" (click)="tryPublishTool()"
+    <div 
+        class="toolbar-menu all-status publish-color" 
+        (click)="tryPublishTool()"
         title="Release version into public domain.">
         <mat-icon class="publish-color">public</mat-icon>
         <span class="publish-color">Publish</span>

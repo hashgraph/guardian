@@ -1,21 +1,12 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { ChildrenType, ControlType } from '@policy-engine/interfaces/block-about';
-import { AnyBlockType, IPolicyDocument } from '@policy-engine/policy-engine.interface';
-import { IHederaCredentials, IPolicyUser } from '@policy-engine/policy-user';
-import { BlockActionError } from '@policy-engine/errors';
-import { SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
-import {
-    Tag,
-    MessageAction,
-    MessageServer,
-    MessageType,
-    TagMessage,
-    TopicConfig,
-    VcHelper,
-    DatabaseServer,
-} from '@guardian/common';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { BasicBlock } from '../helpers/decorators/index.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import { BlockActionError } from '../errors/index.js';
+import { ISignOptions, SchemaCategory, SchemaHelper, SchemaStatus, TagType } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageServer, MessageType, Tag, TagMessage, TopicConfig, VcHelper, } from '@guardian/common';
+import { PolicyUtils } from '../helpers/utils.js';
 
 /**
  * Tag Manager
@@ -41,11 +32,11 @@ export class TagsManagerBlock {
     /**
      * Join GET Data
      * @param {IPolicyDocument | IPolicyDocument[]} documents
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      * @param {AnyBlockType} parent
      */
     public async joinData<T extends IPolicyDocument | IPolicyDocument[]>(
-        documents: T, user: IPolicyUser, parent: AnyBlockType
+        documents: T, user: PolicyUser, parent: AnyBlockType
     ): Promise<T> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const getData = await this.getData(user);
@@ -70,9 +61,9 @@ export class TagsManagerBlock {
     /**
      * Get Document Tags
      * @param {IPolicyDocument} document
-     * @param {IPolicyUser} user
+     * @param {PolicyUser} user
      */
-    private async getDocumentTags(documentId: string, user: IPolicyUser) {
+    private async getDocumentTags(documentId: string, user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const filter: any = {
             localTarget: documentId,
@@ -93,7 +84,7 @@ export class TagsManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const schema = await DatabaseServer.getSchemas({
             system: false,
@@ -124,7 +115,7 @@ export class TagsManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: IPolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         if (!blockData) {
             throw new BlockActionError(`Operation is unknown`, ref.blockType, ref.uuid);
@@ -192,7 +183,8 @@ export class TagsManagerBlock {
                     tag.target = target.target;
                     tag.status = 'Published';
                     const hederaCred = await userCred.loadHederaCredentials(ref);
-                    await this.publishTag(tag, target.topicId, hederaCred);
+                    const signOptions = await userCred.loadSignOptions(ref);
+                    await this.publishTag(tag, target.topicId, hederaCred, signOptions);
                 } else {
                     tag.target = null;
                     tag.localTarget = target.id;
@@ -293,11 +285,14 @@ export class TagsManagerBlock {
 
     /**
      * Publish tag
-     * @param tag
+     * @param item
+     * @param topicId
+     * @param owner
+     * @param signOptions
      */
-    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials): Promise<Tag> {
+    private async publishTag(item: Tag, topicId: string, owner: IHederaCredentials, signOptions: ISignOptions): Promise<Tag> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, ref.dryRun);
+        const messageServer = new MessageServer(owner.hederaAccountId, owner.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
 
@@ -323,7 +318,8 @@ export class TagsManagerBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
         const user = await PolicyUtils.getUserCredentials(ref, owner);
         const userCred = await user.loadHederaCredentials(ref);
-        const messageServer = new MessageServer(userCred.hederaAccountId, userCred.hederaAccountKey, ref.dryRun);
+        const signOptions = await user.loadSignOptions(ref);
+        const messageServer = new MessageServer(userCred.hederaAccountId, userCred.hederaAccountKey, signOptions, ref.dryRun);
         const topic = await ref.databaseServer.getTopicById(topicId);
         const topicConfig = await TopicConfig.fromObject(topic, !ref.dryRun);
 
@@ -352,7 +348,7 @@ export class TagsManagerBlock {
     ): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
 
-        const messageServer = new MessageServer(null, null, ref.dryRun);
+        const messageServer = new MessageServer(null, null, null, ref.dryRun);
         const messages = await messageServer.getMessages<TagMessage>(topicId, MessageType.Tag);
         const map = new Map<string, any>();
         for (const message of messages) {

@@ -1,4 +1,4 @@
-import { SecretManagerConfigsBase } from '../secret-manager-config-base';
+import { SecretManagerConfigsBase } from '../secret-manager-config-base.js';
 
 /**
  * Interface for GCP Secret Manager configs

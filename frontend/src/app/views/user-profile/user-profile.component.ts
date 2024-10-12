@@ -1,27 +1,22 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AbstractControl, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { FormControl, FormGroup, Validators, } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { forkJoin, Subscription } from 'rxjs';
-import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, SchemaHelper, TagType, Token, } from '@guardian/interfaces';
+import { forkJoin } from 'rxjs';
+import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 //services
 import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
-import { TokenService } from '../../services/token.service';
 import { DemoService } from '../../services/demo.service';
 import { SchemaService } from '../../services/schema.service';
 import { HeaderPropsService } from '../../services/header-props.service';
 import { InformService } from '../../services/inform.service';
 import { TasksService } from '../../services/tasks.service';
-import { WebSocketService } from '../../services/web-socket.service';
-import { TagsService } from '../../services/tag.service';
-import { ContractService } from '../../services/contract.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DialogService } from 'primeng/dynamicdialog';
-import { UserRetirePoolsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-pools-dialog/user-retire-pools-dialog.component';
-import { UserRetireRequestsDialogComponent } from 'src/app/modules/contract-engine/dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
+import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 
 enum OperationMode {
     None,
@@ -128,7 +123,16 @@ export class UserProfileComponent implements OnInit {
         this.standardRegistryForm = new FormControl('', [Validators.required]);
         this.hederaCredentialsForm = new FormGroup({
             id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            key: new FormControl('', [Validators.required, noWhitespaceValidator()])
+            key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
+            useFireblocksSigning: new FormControl(false),
+            fireBlocksVaultId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksAssetId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksApiKey: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksPrivateiKey: new FormControl('', [
+                ValidateIfFieldEqual('useFireblocksSigning', true,
+                    [
+                        Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
+                    ])])
         });
         this.didDocumentType = new FormControl(false, [Validators.required]);
         this.didDocumentForm = new FormControl('', [Validators.required]);
@@ -328,7 +332,7 @@ export class UserProfileComponent implements OnInit {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
                         const { id, key } = task.result;
-                        this.hederaCredentialsForm.setValue({ id, key });
+                        this.hederaCredentialsForm.patchValue({id, key});
                         this.loading = false;
                     });
                     break;
@@ -664,6 +668,13 @@ export class UserProfileComponent implements OnInit {
         profile.parent = data.standardRegistry;
         profile.hederaAccountId = data.hederaCredentials.id?.trim();
         profile.hederaAccountKey = data.hederaCredentials.key?.trim();
+        profile.useFireblocksSigning = data.hederaCredentials.useFireblocksSigning;
+        profile.fireblocksConfig = {
+            fireBlocksVaultId: data.hederaCredentials.fireBlocksVaultId,
+            fireBlocksAssetId: data.hederaCredentials.fireBlocksAssetId,
+            fireBlocksApiKey: data.hederaCredentials.fireBlocksApiKey,
+            fireBlocksPrivateiKey: data.hederaCredentials.fireBlocksPrivateiKey
+        }
         if (data.didDocumentType) {
             profile.didDocument = data.didDocument;
             profile.didKeys = [];

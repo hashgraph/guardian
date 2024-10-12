@@ -3,7 +3,7 @@
  */
 import { ISchema, SchemaCategory } from '@guardian/interfaces';
 import { DatabaseServer, Schema } from '@guardian/common';
-import { IBlockErrors } from './interfaces/block-errors.interface';
+import { IBlockErrors } from './interfaces/block-errors.interface.js';
 
 /**
  * Schema Validator

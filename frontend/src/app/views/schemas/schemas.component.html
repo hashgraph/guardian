@@ -19,7 +19,7 @@
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
-                        [options]="policies"
+                        [options]="allPolicies"
                         [showClear]="false"
                         class="policy-dropdown"
                         optionLabel="name"
@@ -197,12 +197,14 @@
                         </td>
                         <td style="min-width: 185px;">
                             <tags-explorer
-                                [data]="schema._tags"
-                                [entity]="tagEntity"
-                                [owner]="owner"
-                                [schemas]="tagSchemas"
-                                [service]="tagsService"
-                                [target]="schema.id"></tags-explorer>
+                                    *ngIf="user.TAGS_TAG_READ"
+                                    [user]="user"
+                                    [data]="schema._tags"
+                                    [entity]="tagEntity"
+                                    [owner]="owner"
+                                    [schemas]="tagSchemas"
+                                    [service]="tagsService"
+                                    [target]="schema.id"></tags-explorer>
                         </td>
                         <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
@@ -217,6 +219,9 @@
                                 </div>
                                 <div *ngSwitchCase="'ERROR'">
                                     <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
+                                <div *ngSwitchCase="'DEMO'">
+                                    <span class="schema-status status-DEMO">Demo</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -283,7 +288,7 @@
                     <ng-container *ngIf="type === 'tool'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
                             <a [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
-                                [routerLink]="'/policy-configuration'">
+                                [routerLink]="'/tool-configuration'">
                                 {{ toolNameByTopic[schema.topicId] }}
                             </a>
                         </td>
@@ -513,7 +518,7 @@
             <span>Copy</span>
         </button>
 
-        <button mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
+        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
             <mat-icon>settings</mat-icon>
             <span>Configuration</span>
         </button>

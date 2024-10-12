@@ -1,2 +1,2 @@
-export { Hashicorp } from './hashicorp';
-export { Database } from './database';
+export { Hashicorp } from './hashicorp.js';
+export { Database } from './database.js';

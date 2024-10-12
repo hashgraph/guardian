@@ -9,7 +9,7 @@ import {
     HederaBBSMethod,
     Environment,
     VerificationMethod,
-} from '../hedera-modules';
+} from '../hedera-modules/index.js';
 import {
     DraftSchemaContextLoader,
     LocalVcSchemaDocumentLoader,
@@ -20,7 +20,7 @@ import {
     RemoteDidLoader,
     DraftVcSchemaDocumentLoader,
     DraftSchemaDocumentLoader,
-} from '../document-loader';
+} from '../document-loader/index.js';
 import {
     Schema,
     ICredentialSubject,
@@ -33,15 +33,15 @@ import {
     Bls12381G2KeyPair,
     deriveProof,
 } from '@mattrglobal/jsonld-signatures-bbs';
-import { Singleton } from '../decorators/singleton';
-import { DataBaseHelper } from './db-helper';
+import { Singleton } from '../decorators/singleton.js';
+import { DataBaseHelper } from './db-helper.js';
 import {
     Schema as SchemaCollection,
     DidDocument as DidDocumentCollection
-} from '../entity';
-import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs';
-import { KeyType, Users, Wallet } from '../helpers';
-import { IAuthUser } from '../interfaces';
+} from '../entity/index.js';
+import { IDocumentOptions, ISuiteOptions } from '../hedera-modules/vcjs/vcjs.js';
+import { KeyType, Users, Wallet } from '../helpers/index.js';
+import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
 import bs58 from 'bs58';
@@ -206,6 +206,7 @@ export class VcHelper extends VCJS {
             verificationMethods[type] = id;
             await wallet.setKey(walletToken, KeyType.DID_KEYS, id, key);
         }
+
         const didDoc = await new DataBaseHelper(DidDocumentCollection).save({
             did: document.getDid(),
             document: document.getDocument(),

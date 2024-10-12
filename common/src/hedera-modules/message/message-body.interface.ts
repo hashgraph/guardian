@@ -1,7 +1,7 @@
 import { ContractType } from '@guardian/interfaces';
-import { MessageStatus } from './message';
-import { MessageAction } from './message-action';
-import { MessageType } from './message-type';
+import { MessageStatus } from './message.js';
+import { MessageAction } from './message-action.js';
+import { MessageType } from './message-type.js';
 
 /**
  * Message body
@@ -464,6 +464,34 @@ export interface RoleMessageBody extends VcMessageBody {
      * Group
      */
     group?: string;
+}
+
+/**
+ * Role message body
+ */
+export interface GuardianRoleMessageBody extends VcMessageBody {
+    /**
+     * UUID
+     */
+    uuid?: string;
+    /**
+     * Name
+     */
+    name?: string;
+    /**
+     * Description
+     */
+    description?: string;
+}
+
+/**
+ * Role message body
+ */
+export interface UserPermissionsMessageBody extends VcMessageBody {
+    /**
+     * User DID
+     */
+    user?: string;
 }
 
 /**

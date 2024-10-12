@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { TagsHistory } from '../models/tags-history';
@@ -8,6 +7,7 @@ import { TagItem } from '../models/tag-item';
 import * as moment from 'moment';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { UserPermissions } from '@guardian/interfaces';
 
 /**
  * Dialog for creating tokens.
@@ -32,16 +32,25 @@ export class TagsExplorerDialog {
     public schemas: any[] = [];
     public hasChanges: boolean = false;
     public selectedTags: TagMapItem[] = [];
+    public user: UserPermissions;
+
+    public get canCreate():boolean {
+        if(this.user) {
+            return this.user.TAGS_TAG_CREATE;
+        } else {
+            return true;
+        }
+    }
 
     constructor(
         public dialogRef: DynamicDialogRef,
         public dialog: DialogService,
-        private fb: FormBuilder,
         public dialogData: DynamicDialogConfig
     ) {
         this.schemas = dialogData.data?.schemas;
-        this.tagsService = dialogData.data.service;
-        this.history = dialogData.data.history;
+        this.tagsService = dialogData.data?.service;
+        this.history = dialogData.data?.history;
+        this.user = dialogData.data?.user;
         this.selectedTags = this.history.items;
 
         this.owner = this.history.owner;
@@ -188,7 +197,7 @@ export class TagsExplorerDialog {
 
     public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '570px',
+            width: '850px',
             header: title,
             data: {
                 id: item.id,

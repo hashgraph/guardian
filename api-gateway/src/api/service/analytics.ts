@@ -1,43 +1,85 @@
-import { Guardians } from '@helpers/guardians';
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Req } from '@nestjs/common';
-import {
-    ApiInternalServerErrorResponse,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
-    ApiBody,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags
-} from '@nestjs/swagger';
-import { checkPermission } from '@auth/authorization-helper';
-import { UserRole } from '@guardian/interfaces';
-import {
-    FilterDocumentsDTO,
-    FilterModulesDTO,
-    FilterPoliciesDTO,
-    FilterSchemasDTO,
-    FilterSearchPoliciesDTO,
-    InternalServerErrorDTO,
-    CompareDocumentsDTO,
-    CompareModulesDTO,
-    ComparePoliciesDTO,
-    CompareSchemasDTO,
-    SearchPoliciesDTO,
-    FilterToolsDTO,
-    CompareToolsDTO
-} from '@middlewares/validation/schemas';
+import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
+import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { EntityOwner, Permissions } from '@guardian/interfaces';
+import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
+import { AuthUser, Auth } from '#auth';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { Guardians, ONLY_SR, InternalException } from '#helpers';
 
-const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.'
+function getPolicyId(filters: FilterPoliciesDTO): {
+    type: 'id' | 'file' | 'message',
+    value: string | {
+        id: string,
+        name: string,
+        value: string
+    }
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.policies) && filters.policies.length > 1) {
+        return filters.policies;
+    } else if (Array.isArray(filters.policyIds) && filters.policyIds.length > 1) {
+        return filters.policyIds.map((id) => {
+            return {
+                type: 'id',
+                value: id
+            }
+        })
+    } else if (filters.policyId1 && filters.policyId2) {
+        return [{
+            type: 'id',
+            value: filters.policyId1
+        }, {
+            type: 'id',
+            value: filters.policyId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
+
+function getSchemaId(filters: FilterSchemasDTO): {
+    type: 'id' | 'policy-message' | 'policy-file',
+    value: string,
+    policy?: string | {
+        id: string,
+        name: string,
+        value: string
+    }
+}[] {
+    if (!filters) {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+    if (Array.isArray(filters.schemas) && filters.schemas.length > 1) {
+        return filters.schemas;
+    } else if (filters.schemaId1 && filters.schemaId2) {
+        return [{
+            type: 'id',
+            value: filters.schemaId1
+        }, {
+            type: 'id',
+            value: filters.schemaId2
+        }];
+    } else {
+        throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+}
 
 @Controller('analytics')
 @ApiTags('analytics')
 export class AnalyticsApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Search policies
      */
     @Post('/search/policies')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Search policies.',
         description: 'Search policies.' + ONLY_SR,
@@ -49,7 +91,7 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    policyId: '000000000000000000000000'
+                    policyId: Examples.DB_ID
                 }
             }
         }
@@ -58,35 +100,22 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: SearchPoliciesDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSearchPoliciesDTO, SearchPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async searchPolicies(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const policyId = body ? body.policyId : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-        if (!policyId) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    async searchPolicies(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterSearchPoliciesDTO
+    ): Promise<SearchPoliciesDTO> {
         try {
-            return await guardians.searchPolicies(
-                user,
-                policyId,
-            );
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.searchPolicies(owner, filters);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -94,7 +123,10 @@ export class AnalyticsApi {
      * Compare policies
      */
     @Post('/compare/policies')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare policies.',
         description: 'Compare policies.' + ONLY_SR,
@@ -106,8 +138,8 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    policyId1: '000000000000000000000001',
-                    policyId2: '000000000000000000000002',
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -116,7 +148,29 @@ export class AnalyticsApi {
             },
             Filter2: {
                 value: {
-                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    policyIds: [Examples.DB_ID, Examples.DB_ID],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -129,54 +183,31 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: ComparePoliciesDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterPoliciesDTO, ComparePoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async comparePolicies(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const policyId1 = body ? body.policyId1 : null;
-        const policyId2 = body ? body.policyId2 : null;
-        const policyIds = body ? body.policyIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    async comparePolicies(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterPoliciesDTO
+    ): Promise<ComparePoliciesDTO> {
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
+            const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 null,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -184,7 +215,10 @@ export class AnalyticsApi {
      * Compare modules
      */
     @Post('/compare/modules')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare modules.',
         description: 'Compare modules.' + ONLY_SR,
@@ -196,8 +230,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    moduleId1: '000000000000000000000001',
-                    moduleId2: '000000000000000000000002',
+                    moduleId1: Examples.DB_ID,
+                    moduleId2: Examples.DB_ID,
                     propLvl: '0',
                     childrenLvl: '0',
                     idLvl: '0'
@@ -209,34 +243,27 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: CompareModulesDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterModulesDTO, CompareModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareModules(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const moduleId1 = body ? body.moduleId1 : null;
-        const moduleId2 = body ? body.moduleId2 : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+    async compareModules(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterModulesDTO
+    ): Promise<CompareModulesDTO> {
+        const moduleId1 = filters ? filters.moduleId1 : null;
+        const moduleId2 = filters ? filters.moduleId2 : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
         if (!moduleId1 || !moduleId2) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareModules(
                 user,
                 null,
@@ -248,7 +275,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -256,7 +283,10 @@ export class AnalyticsApi {
      * Compare schemas
      */
     @Post('/compare/schemas')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare schemas.',
         description: 'Compare schemas.' + ONLY_SR,
@@ -268,8 +298,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    schemaId1: '000000000000000000000001',
-                    schemaId2: '000000000000000000000002',
+                    schemaId1: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID,
                     idLvl: '0'
                 }
             }
@@ -279,34 +309,24 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: CompareSchemasDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSchemasDTO, CompareSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareSchemas(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const schemaId1 = body ? body.schemaId1 : null;
-        const schemaId2 = body ? body.schemaId2 : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    async compareSchemas(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterSchemasDTO
+    ): Promise<CompareSchemasDTO> {
+        const idLvl = filters ? filters.idLvl : null;
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
-            return await guardians.compareSchemas(user, null, schemaId1, schemaId2, idLvl);
+            const guardians = new Guardians();
+            return await guardians.compareSchemas(owner, null, schemas, idLvl);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -314,7 +334,10 @@ export class AnalyticsApi {
      * Compare documents
      */
     @Post('/compare/documents')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_DOCUMENT_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare documents.',
         description: 'Compare documents.' + ONLY_SR,
@@ -326,13 +349,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -341,32 +364,25 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: CompareDocumentsDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, CompareDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareDocuments(@Body() body, @Req() req): Promise<any> {
-        const guardians = new Guardians();
-        const documentId1 = body ? body.documentId1 : null;
-        const documentId2 = body ? body.documentId2 : null;
-        const documentIds = body ? body.documentIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
+    async compareDocuments(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterDocumentsDTO
+    ): Promise<CompareDocumentsDTO> {
+        const documentId1 = filters ? filters.documentId1 : null;
+        const documentId2 = filters ? filters.documentId2 : null;
+        const documentIds = filters ? filters.documentIds : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
         const keyLvl = 0;
         const refLvl = 0;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
 
         let ids: string[];
         if (documentId1 && documentId2) {
@@ -378,6 +394,7 @@ export class AnalyticsApi {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareDocuments(
                 user,
                 null,
@@ -390,7 +407,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -398,7 +415,10 @@ export class AnalyticsApi {
      * Compare tools
      */
     @Post('/compare/tools')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_TOOL_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare tools.',
         description: 'Compare tools.' + ONLY_SR,
@@ -410,13 +430,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    toolId1: '000000000000000000000001',
-                    toolId2: '000000000000000000000002'
+                    toolId1: Examples.DB_ID,
+                    toolId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    toolIds: ['000000000000000000000001', '000000000000000000000002'],
+                    toolIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -425,30 +445,23 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: CompareToolsDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterToolsDTO, CompareToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareTools(@Body() body, @Req() req): Promise<any> {
-        const guardians = new Guardians();
-        const toolId1 = body ? body.toolId1 : null;
-        const toolId2 = body ? body.toolId2 : null;
-        const toolIds = body ? body.toolIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+    async compareTools(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterToolsDTO
+    ): Promise<CompareToolsDTO> {
+        const toolId1 = filters ? filters.toolId1 : null;
+        const toolId2 = filters ? filters.toolId2 : null;
+        const toolIds = filters ? filters.toolIds : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
 
         let ids: string[];
         if (toolId1 && toolId2) {
@@ -460,6 +473,7 @@ export class AnalyticsApi {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareTools(
                 user,
                 null,
@@ -470,7 +484,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -478,10 +492,20 @@ export class AnalyticsApi {
      * Compare policies (CSV)
      */
     @Post('/compare/policies/export')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare policies.',
         description: 'Compare policies.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'File type',
+        required: true,
+        example: 'csv'
     })
     @ApiBody({
         description: 'Filters.',
@@ -490,8 +514,8 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    policyId1: '000000000000000000000001',
-                    policyId2: '000000000000000000000002',
+                    policyId1: Examples.DB_ID,
+                    policyId2: Examples.DB_ID,
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -500,7 +524,29 @@ export class AnalyticsApi {
             },
             Filter2: {
                 value: {
-                    policyIds: ['000000000000000000000001', '000000000000000000000002'],
+                    policyIds: [Examples.DB_ID, Examples.DB_ID],
+                    eventsLvl: '0',
+                    propLvl: '0',
+                    childrenLvl: '0',
+                    idLvl: '0'
+                }
+            },
+            Filter3: {
+                value: {
+                    policies: [{
+                        type: 'id',
+                        value: Examples.DB_ID
+                    }, {
+                        type: 'message',
+                        value: Examples.MESSAGE_ID
+                    }, {
+                        type: 'file',
+                        value: {
+                            id: Examples.UUID,
+                            name: 'File Name',
+                            value: 'base64...'
+                        }
+                    }],
                     eventsLvl: '0',
                     propLvl: '0',
                     childrenLvl: '0',
@@ -513,53 +559,32 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterPoliciesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async comparePoliciesExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const type = req.query ? req.query.type : null;
-        const policyId1 = body ? body.policyId1 : null;
-        const policyId2 = body ? body.policyId2 : null;
-        const policyIds = body ? body.policyIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-        let ids: string[];
-        if (policyId1 && policyId2) {
-            ids = [policyId1, policyId2];
-        } else if (Array.isArray(policyIds) && policyIds.length > 1) {
-            ids = policyIds;
-        }
-        if (!ids) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    async comparePoliciesExport(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterPoliciesDTO,
+        @Query('type') type: string
+    ): Promise<string> {
+        const policies = getPolicyId(filters);
+        const owner = new EntityOwner(user);
         try {
+            const guardians = new Guardians();
             return await guardians.comparePolicies(
-                user,
+                owner,
                 type,
-                ids,
-                eventsLvl,
-                propLvl,
-                childrenLvl,
-                idLvl
+                policies,
+                filters.eventsLvl,
+                filters.propLvl,
+                filters.childrenLvl,
+                filters.idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -567,10 +592,20 @@ export class AnalyticsApi {
      * Compare modules (CSV)
      */
     @Post('/compare/modules/export')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_MODULE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare modules.',
         description: 'Compare modules.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'File type',
+        required: true,
+        example: 'csv'
     })
     @ApiBody({
         description: 'Filters.',
@@ -579,8 +614,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    moduleId1: '000000000000000000000001',
-                    moduleId2: '000000000000000000000002',
+                    moduleId1: Examples.DB_ID,
+                    moduleId2: Examples.DB_ID,
                     propLvl: '0',
                     childrenLvl: '0',
                     idLvl: '0'
@@ -592,35 +627,28 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterModulesDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareModulesExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const type = req.query ? req.query.type : null;
-        const moduleId1 = body ? body.moduleId1 : null;
-        const moduleId2 = body ? body.moduleId2 : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+    async compareModulesExport(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterModulesDTO,
+        @Query('type') type: string
+    ): Promise<string> {
+        const moduleId1 = filters ? filters.moduleId1 : null;
+        const moduleId2 = filters ? filters.moduleId2 : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
         if (!moduleId1 || !moduleId2) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareModules(
                 user,
                 type,
@@ -632,7 +660,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -640,10 +668,20 @@ export class AnalyticsApi {
      * Compare schemas (CSV)
      */
     @Post('/compare/schemas/export')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_SCHEMA_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare schemas.',
         description: 'Compare schemas.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'File type',
+        required: true,
+        example: 'csv'
     })
     @ApiBody({
         description: 'Filters.',
@@ -652,8 +690,8 @@ export class AnalyticsApi {
         examples: {
             Filter: {
                 value: {
-                    schemaId1: '000000000000000000000001',
-                    schemaId2: '000000000000000000000002',
+                    schemaId1: Examples.DB_ID,
+                    schemaId2: Examples.DB_ID,
                     idLvl: '0'
                 }
             }
@@ -663,35 +701,25 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSchemasDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareSchemasExport(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const guardians = new Guardians();
-        const type = req.query ? req.query.type : null;
-        const schemaId1 = body ? body.schemaId1 : null;
-        const schemaId2 = body ? body.schemaId2 : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
-        if (!schemaId1 || !schemaId2) {
-            throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
-        }
+    async compareSchemasExport(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterSchemasDTO,
+        @Query('type') type: string
+    ): Promise<string> {
+        const idLvl = filters ? filters.idLvl : null;
+        const schemas = getSchemaId(filters);
+        const owner = new EntityOwner(user);
         try {
-            return await guardians.compareSchemas(user, type, schemaId1, schemaId2, idLvl);
+            const guardians = new Guardians();
+            return await guardians.compareSchemas(owner, type, schemas, idLvl);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -699,10 +727,20 @@ export class AnalyticsApi {
      * Compare documents (CSV)
      */
     @Post('/compare/documents/export')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_DOCUMENT_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare documents.',
         description: 'Compare documents.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'File type',
+        required: true,
+        example: 'csv'
     })
     @ApiBody({
         description: 'Filters.',
@@ -711,13 +749,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    documentId1: '000000000000000000000001',
-                    documentId2: '000000000000000000000002'
+                    documentId1: Examples.DB_ID,
+                    documentId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    documentIds: ['000000000000000000000001', '000000000000000000000002'],
+                    documentIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -726,33 +764,26 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterDocumentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareDocumentsExport(@Body() body, @Req() req): Promise<any> {
-        const guardians = new Guardians();
-        const type = req.query ? req.query.type : null;
-        const documentId1 = body ? body.documentId1 : null;
-        const documentId2 = body ? body.documentId2 : null;
-        const documentIds = body ? body.documentIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
+    async compareDocumentsExport(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterDocumentsDTO,
+        @Query('type') type: string
+    ): Promise<string> {
+        const documentId1 = filters ? filters.documentId1 : null;
+        const documentId2 = filters ? filters.documentId2 : null;
+        const documentIds = filters ? filters.documentIds : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
         const keyLvl = 0;
         const refLvl = 0;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
         let ids: string[];
         if (documentId1 && documentId2) {
             ids = [documentId1, documentId2];
@@ -763,6 +794,7 @@ export class AnalyticsApi {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareDocuments(
                 user,
                 type,
@@ -775,7 +807,7 @@ export class AnalyticsApi {
                 refLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -783,10 +815,20 @@ export class AnalyticsApi {
      * Compare tools (CSV)
      */
     @Post('/compare/tools/export')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_TOOL_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Compare tools.',
         description: 'Compare tools.' + ONLY_SR,
+    })
+    @ApiQuery({
+        name: 'type',
+        type: String,
+        description: 'File type',
+        required: true,
+        example: 'csv'
     })
     @ApiBody({
         description: 'Filters.',
@@ -795,13 +837,13 @@ export class AnalyticsApi {
         examples: {
             Filter1: {
                 value: {
-                    toolId1: '000000000000000000000001',
-                    toolId2: '000000000000000000000002'
+                    toolId1: Examples.DB_ID,
+                    toolId2: Examples.DB_ID
                 }
             },
             Filter2: {
                 value: {
-                    toolIds: ['000000000000000000000001', '000000000000000000000002'],
+                    toolIds: [Examples.DB_ID, Examples.DB_ID],
                 }
             }
         }
@@ -810,31 +852,24 @@ export class AnalyticsApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterToolsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async compareToolsExport(@Body() body, @Req() req): Promise<any> {
-        const guardians = new Guardians();
-        const type = req.query ? req.query.type : null;
-        const toolId1 = body ? body.toolId1 : null;
-        const toolId2 = body ? body.toolId2 : null;
-        const toolIds = body ? body.toolIds : null;
-        const eventsLvl = body ? body.eventsLvl : null;
-        const propLvl = body ? body.propLvl : null;
-        const childrenLvl = body ? body.childrenLvl : null;
-        const idLvl = body ? body.idLvl : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+    async compareToolsExport(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterToolsDTO,
+        @Query('type') type: string
+    ): Promise<string> {
+        const toolId1 = filters ? filters.toolId1 : null;
+        const toolId2 = filters ? filters.toolId2 : null;
+        const toolIds = filters ? filters.toolIds : null;
+        const eventsLvl = filters ? filters.eventsLvl : null;
+        const propLvl = filters ? filters.propLvl : null;
+        const childrenLvl = filters ? filters.childrenLvl : null;
+        const idLvl = filters ? filters.idLvl : null;
         let ids: string[];
         if (toolId1 && toolId2) {
             ids = [toolId1, toolId2];
@@ -845,6 +880,7 @@ export class AnalyticsApi {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
+            const guardians = new Guardians();
             return await guardians.compareTools(
                 user,
                 type,
@@ -855,7 +891,7 @@ export class AnalyticsApi {
                 idLvl
             );
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -863,7 +899,10 @@ export class AnalyticsApi {
      * Search same blocks
      */
     @Post('/search/blocks')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Search same blocks.',
         description: 'Search same blocks.' + ONLY_SR,
@@ -871,7 +910,7 @@ export class AnalyticsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: FilterSearchPoliciesDTO,
+        type: FilterSearchBlocksDTO,
         examples: {
             Filter: {
                 value: {
@@ -883,35 +922,29 @@ export class AnalyticsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SearchPoliciesDTO,
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: SearchBlocksDTO,
+        isArray: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(FilterSearchBlocksDTO, SearchBlocksDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async searchBlocks(@Body() body, @Req() req): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async searchBlocks(
+        @AuthUser() user: IAuthUser,
+        @Body() filters: FilterSearchBlocksDTO
+    ): Promise<SearchBlocksDTO[]> {
         const guardians = new Guardians();
-        const id = body ? body.id : null;
-        const config = body ? body.config : null;
-        const user = req.user;
-        if (!user) {
-            throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
-        }
+        const id = filters ? filters.id : null;
+        const config = filters ? filters.config : null;
         if (!id || !config) {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
         try {
             return await guardians.searchBlocks(config, id, user);
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 }

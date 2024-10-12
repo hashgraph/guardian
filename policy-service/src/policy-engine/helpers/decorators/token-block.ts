@@ -1,6 +1,6 @@
-import { BasicBlock } from '@policy-engine/helpers/decorators/basic-block';
-import { PolicyBlockDecoratorOptions } from '@policy-engine/interfaces/block-options';
-import { IPolicyTokenAddon } from '@policy-engine/policy-engine.interface';
+import { BasicBlock } from '../../helpers/decorators/basic-block.js';
+import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
+import { IPolicyTokenAddon } from '../../policy-engine.interface.js';
 
 /**
  * Token block decorator

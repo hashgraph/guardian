@@ -2,9 +2,24 @@ import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-dro
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PolicyCategoryType, Schema, SchemaHelper, Token } from '@guardian/interfaces';
+import { PolicyCategoryType, Schema, SchemaHelper, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
 import { forkJoin, Observable } from 'rxjs';
+import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
+import { SaveBeforeDialogComponent } from '../../dialogs/save-before-dialog/save-before-dialog.component';
+import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
+import { RegisteredService } from '../../services/registered.service';
+import { IPolicyCategory, ModuleTemplate, Options, PolicyBlock, PolicyModule, PolicyStorage, PolicyTemplate, Theme, ThemeRule, ToolMenu, ToolTemplate } from '../../structures';
+import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
+import { ThemeService } from '../../../../services/theme.service';
+import { SuggestionsService } from '../../../../services/suggestions.service';
+import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
+import { StopResizingEvent } from '../../directives/resizing.directive';
+import { OrderOption } from '../../structures/interfaces/order-option.interface';
+import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
+import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
@@ -12,23 +27,10 @@ import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TokenService } from 'src/app/services/token.service';
-import { NewModuleDialog } from '../../helpers/new-module-dialog/new-module-dialog.component';
-import { SaveBeforeDialogComponent } from '../../helpers/save-before-dialog/save-before-dialog.component';
-import { PolicyAction, SavePolicyDialog } from '../../helpers/save-policy-dialog/save-policy-dialog.component';
-import { RegisteredService } from '../../services/registered.service';
-import { IPolicyCategory, ModuleTemplate, Options, PolicyBlock, PolicyModule, PolicyStorage, PolicyTemplate, Theme, ThemeRule, ToolMenu, ToolTemplate } from '../../structures';
-import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import { ThemeService } from '../../../../services/theme.service';
-import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { SuggestionsService } from '../../../../services/suggestions.service';
-import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
+import { ProfileService } from 'src/app/services/profile.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { DialogService } from 'primeng/dynamicdialog';
-import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
 import { AnalyticsService } from 'src/app/services/analytics.service';
-import { StopResizingEvent } from '../../directives/resizing.directive';
-import { OrderOption } from '../../structures/interfaces/order-option.interface';
-import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
+import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 
 /**
  * The page for editing the policy and blocks.
@@ -45,6 +47,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public options: Options;
     public readonly!: boolean;
 
+    public user: UserPermissions = new UserPermissions();
     public rootType: 'Policy' | 'Module' | 'Tool' = 'Policy';
     public policyId!: string;
     public moduleId!: string;
@@ -209,6 +212,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private modulesService: ModulesService,
         private toolsService: ToolsService,
         private analyticsService: AnalyticsService,
+        private profileService: ProfileService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
@@ -282,7 +286,12 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private loadPolicy(): void {
         this.rootId = this.policyId;
-        this.policyEngineService.policy(this.policyId).subscribe((policy: any) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.policyEngineService.policy(this.policyId)
+        ]).subscribe(([user, policy]) => {
+            this.user = new UserPermissions(user);
+
             if (!policy) {
                 this.policyTemplate = new PolicyTemplate();
                 this.onOpenRoot(this.policyTemplate);
@@ -298,7 +307,7 @@ export class PolicyConfigurationComponent implements OnInit {
             }
 
             forkJoin([
-                this.tokenService.getTokens(),
+                this.tokenService.menuList(),
                 this.policyEngineService.getBlockInformation(),
                 this.schemaService.getSchemas(this.policyTemplate.topicId),
                 this.modulesService.menuList(),
@@ -366,7 +375,12 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private loadModule(): void {
         this.rootId = this.moduleId;
-        this.modulesService.getById(this.moduleId).subscribe((module: any) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.modulesService.getById(this.moduleId)
+        ]).subscribe(([user, module]) => {
+            this.user = new UserPermissions(user);
+
             if (!module) {
                 this.moduleTemplate = new ModuleTemplate();
                 this.onOpenRoot(this.moduleTemplate);
@@ -412,7 +426,12 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private loadTool(): void {
         this.rootId = this.toolId;
-        this.toolsService.getById(this.toolId).subscribe((tool: any) => {
+        forkJoin([
+            this.profileService.getProfile(),
+            this.toolsService.getById(this.toolId)
+        ]).subscribe(([user, tool]) => {
+            this.user = new UserPermissions(user);
+
             if (!tool) {
                 this.toolTemplate = new ToolTemplate();
                 this.onOpenRoot(this.toolTemplate);
@@ -429,7 +448,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
             forkJoin([
                 this.policyEngineService.getBlockInformation(),
-                this.tokenService.getTokens(),
+                this.tokenService.menuList(),
                 this.schemaService.getSchemas(this.toolTemplate.topicId),
                 this.modulesService.menuList(),
                 this.toolsService.menuList()
@@ -1314,12 +1333,16 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public setVersion() {
-        const dialogRef = this.dialog.open(SetVersionDialog, {
-            width: '350px',
-            disableClose: true,
-            data: {}
+        const dialogRef = this.dialogService.open(PublishPolicyDialog, {
+            showHeader: false,
+            header: 'Publish Policy',
+            width: '600px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy: this.policyTemplate
+            }
         });
-        dialogRef.afterClosed().subscribe((version) => {
+        dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publishPolicy(version);
             }
@@ -1502,7 +1525,9 @@ export class PolicyConfigurationComponent implements OnInit {
             module.description = result.description;
             this.loading = true;
             this.modulesService.create(module).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], { queryParams: { moduleId: result.uuid } });
+                this.router.navigate(['/module-configuration'], { 
+                    queryParams: { moduleId: result.uuid } 
+                });
             }, (e) => {
                 this.loading = false;
             });
@@ -1609,7 +1634,7 @@ export class PolicyConfigurationComponent implements OnInit {
             tool.description = result.description;
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
-                this.router.navigate(['/policy-configuration'], {
+                this.router.navigate(['/tool-configuration'], {
                     queryParams: { toolId: result.id }
                 });
             }, (e) => {

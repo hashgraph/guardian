@@ -38,6 +38,7 @@ export class WebSocketService {
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
     private recordUpdateSubject: Subject<any>;
+    private testUpdateSubject: Subject<any>;
     private blockUpdateSubject: Subject<any>;
     private userInfoUpdateSubject: Subject<any>;
     private taskStatusSubject: Subject<any>;
@@ -61,6 +62,7 @@ export class WebSocketService {
 
     constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
         this.recordUpdateSubject = new Subject();
+        this.testUpdateSubject = new Subject();
         this.blockUpdateSubject = new Subject();
         this.userInfoUpdateSubject = new Subject();
         this.servicesReady = new Subject();
@@ -97,7 +99,6 @@ export class WebSocketService {
             this.send(MessageAPI.SET_ACCESS_TOKEN, this.auth.getAccessToken());
         })
         this.connect();
-
     }
 
     static initialize() {
@@ -215,6 +216,9 @@ export class WebSocketService {
             const { type, data } = event;
 
             switch (type || event.event) {
+                case 'UPDATE_PERMISSIONS':
+                    window.location.reload();
+                    break;
                 case MessageAPI.PROFILE_BALANCE:
                     this.profileSubject.next(event);
                     break;
@@ -241,6 +245,10 @@ export class WebSocketService {
                     break;
                 case MessageAPI.UPDATE_RECORD: {
                     this.recordUpdateSubject.next(data);
+                    break;
+                }
+                case MessageAPI.UPDATE_TEST_EVENT: {
+                    this.testUpdateSubject.next(data);
                     break;
                 }
                 case MessageAPI.UPDATE_EVENT: {
@@ -338,6 +346,14 @@ export class WebSocketService {
         complete?: (() => void)
     ): Subscription {
         return this.recordUpdateSubject.subscribe(next, error, complete);
+    }
+
+    public testSubscribe(
+        next?: ((id: any) => void),
+        error?: ((error: any) => void),
+        complete?: (() => void)
+    ): Subscription {
+        return this.testUpdateSubject.subscribe(next, error, complete);
     }
 
     public subscribeUserInfo(
@@ -510,5 +526,23 @@ export class WebSocketService {
 
     public getServicesStatesArray(): any[] {
         return this.serviesStates;
+    }
+
+    public getServiceStateObservable(serviceName: string): Observable<boolean> {
+        return new Observable<boolean>((observer) => {
+            const checkState = () => {
+                const currentService = this.serviesStates.find((s: { serviceName: string; states: string[]; }) => s.serviceName === serviceName && s.states.includes('READY'));
+                if (currentService) {
+                    observer.next(true);
+                    observer.complete();
+                }
+            };
+
+            const subscription = this.servicesReady.subscribe(() => checkState());
+
+            checkState();
+
+            return () => subscription.unsubscribe();
+        });
     }
 }

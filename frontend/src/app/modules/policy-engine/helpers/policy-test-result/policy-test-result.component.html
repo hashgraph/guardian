@@ -1,0 +1,63 @@
+<div *ngIf="last" class="container">
+    <div *ngIf="!(last.status === 'New' || last.status === 'Stopped')" class="status-buttons">
+        <button 
+            (click)="onDetails(last)" 
+            class="guardian-button status-button {{last.status}}-status">
+            <div class="guardian-button-icon status-label {{last.status}}-status"></div>
+            <div class="guardian-button-label">{{getDate(last.date, last.status)}}</div>
+        </button>
+
+        <button 
+            class="guardian-icon-button re-run-btn" 
+            (click)="onRun(last)"
+            [disabled]="!isRun(policy) || isRunning"    
+            pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
+            [tooltipOptions]="{showDelay: 300}"
+            [tooltipDisabled]="isRun(policy)"
+            tooltipPosition="top">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/re-run.svg"
+                [svgClass]="!isRun(policy) ? 'icon-color-disabled' : 'icon-color-primary'">
+            </svg-icon>
+        </button>
+    </div>
+    <div *ngIf="last.status === 'New' || last.status === 'Stopped'" class="run-button">
+        <button 
+            (click)="onRun(last)"
+            class="guardian-button guardian-button-primary run-btn"
+            [disabled]="!isRun(policy) || isRunning"
+            pTooltip="Test data can only be used in ‘Dry-Run’ or ‘Demo’ modes"
+            [tooltipOptions]="{showDelay: 300}"
+            [tooltipDisabled]="isRun(policy)"
+            tooltipPosition="top">
+            <div class="guardian-button-icon">
+                <svg-icon
+                    class="icon-btn svg-icon-16"
+                    src="/assets/images/icons/16/run-test.svg"
+                    [svgClass]="!isRun(policy) ? 'icon-color-disabled' : 'icon-color-secondary'">
+                </svg-icon>
+            </div>
+            <div class="guardian-button-label">Run Test</div>
+        </button>
+    </div>
+</div>
+<div *ngIf="!last" class="container">
+    <button 
+        (click)="onAdd()" 
+        class="guardian-button guardian-button-secondary run-btn"
+        [disabled]="isPublished(policy)"
+        pTooltip="Not possible to add test data to a published policy"
+        [tooltipOptions]="{showDelay: 300}"
+        [tooltipDisabled]="!isPublished(policy)"
+        tooltipPosition="top">
+        <div class="guardian-button-icon">
+            <svg-icon
+                class="icon-btn svg-icon-16"
+                src="/assets/images/icons/16/add-test.svg"
+                [svgClass]="isPublished(policy) ? 'icon-color-disabled' : 'icon-color-primary'">
+            </svg-icon>
+        </div>
+        <div class="guardian-button-label">Add Test</div>
+    </button>
+</div>

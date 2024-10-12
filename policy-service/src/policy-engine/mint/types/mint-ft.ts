@@ -1,12 +1,9 @@
 import { MintRequest, NotificationHelper, Workers } from '@guardian/common';
-import {
-    WorkerTaskType,
-    MintTransactionStatus,
-} from '@guardian/interfaces';
-import { TypedMint } from './typed-mint';
-import { IHederaCredentials } from '@policy-engine/policy-user';
-import { TokenConfig } from '../configs/token-config';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
+import { MintTransactionStatus, TokenType, WorkerTaskType, } from '@guardian/interfaces';
+import { TypedMint } from './typed-mint.js';
+import { IHederaCredentials } from '../../policy-user.js';
+import { TokenConfig } from '../configs/token-config.js';
+import { PolicyUtils } from '../../helpers/utils.js';
 
 /**
  * Mint FT
@@ -19,6 +16,7 @@ export class MintFT extends TypedMint {
      * @param token Token
      * @param ref Block ref
      * @param notifier Notifier
+     * @param userId
      * @returns Instance
      */
     static async init(
@@ -26,7 +24,8 @@ export class MintFT extends TypedMint {
         root: IHederaCredentials,
         token: TokenConfig,
         ref?: any,
-        notifier?: NotificationHelper
+        notifier?: NotificationHelper,
+        userId?: string
     ) {
         return new MintFT(
             ...(await super.initRequest(
@@ -34,7 +33,8 @@ export class MintFT extends TypedMint {
                 root,
                 token,
                 ref,
-                notifier
+                notifier,
+                userId
             ))
         );
     }
@@ -55,6 +55,8 @@ export class MintFT extends TypedMint {
             vpMessageId: string;
             memo: string;
             tokenId: string;
+            tokenType: TokenType;
+            decimals: number;
             secondaryVpIds?: string[];
         },
         root: IHederaCredentials,
@@ -142,7 +144,7 @@ export class MintFT extends TypedMint {
     /**
      * Mint tokens
      */
-    override async mintTokens(): Promise<void> {
+    override async mintTokens(userId?: string): Promise<void> {
         const workers = new Workers();
 
         let transaction = await this._db.getMintTransaction({
@@ -167,30 +169,39 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            const startTransactions = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        limit: 1,
-                        order: 'desc',
-                        transactiontype: 'TOKENMINT',
+            try {
+                workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: this._token.treasuryId,
+                            limit: 1,
+                            order: 'desc',
+                            transactiontype: 'TOKENMINT',
+                        },
                     },
-                },
-                1,
-                10
-            );
-
-            this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
-            await this._db.saveMintRequest(this._mintRequest);
+                    1,
+                    10,
+                    userId
+                ).then(async startTransactions => {
+                    try {
+                        this._mintRequest.startTransaction =
+                        startTransactions[0]?.consensus_timestamp;
+                        await this._db.saveMintRequest(this._mintRequest);
+                    } catch (error) {
+                        this.error(error);
+                    }
+                }).catch(error => this.error(error));
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         transaction.mintStatus = MintTransactionStatus.PENDING;
         await this._db.saveMintTransaction(transaction);
 
         try {
-            await workers.addNonRetryableTask(
+            await workers.addRetryableTask(
                 {
                     type: WorkerTaskType.MINT_FT,
                     data: {
@@ -203,7 +214,7 @@ export class MintFT extends TypedMint {
                         transactionMemo: this._mintRequest.memo,
                     },
                 },
-                10
+                10, 0, userId
             );
             transaction.mintStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {
@@ -220,7 +231,7 @@ export class MintFT extends TypedMint {
     /**
      * Transfer tokens
      */
-    override async transferTokens(): Promise<void> {
+    override async transferTokens(userId?: string): Promise<void> {
         const workers = new Workers();
 
         const transaction = await this._db.getMintTransaction({
@@ -235,23 +246,32 @@ export class MintFT extends TypedMint {
         }
 
         if (!this._ref?.dryRun) {
-            const startTransactions = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: this._token.treasuryId,
-                        limit: 1,
-                        order: 'desc',
-                        transactiontype: 'CRYPTOTRANSFER',
+            try {
+                workers.addRetryableTask(
+                    {
+                        type: WorkerTaskType.GET_TRANSACTIONS,
+                        data: {
+                            accountId: this._token.treasuryId,
+                            limit: 1,
+                            order: 'desc',
+                            transactiontype: 'CRYPTOTRANSFER',
+                        },
                     },
-                },
-                1,
-                10
-            );
-
-            this._mintRequest.startTransaction =
-                startTransactions[0]?.consensus_timestamp;
-            await this._db.saveMintRequest(this._mintRequest);
+                    1,
+                    10,
+                    userId
+                ).then(async startTransactions => {
+                    try {
+                        this._mintRequest.startTransaction =
+                        startTransactions[0]?.consensus_timestamp;
+                        await this._db.saveMintRequest(this._mintRequest);
+                    } catch (error) {
+                        this.error(error);
+                    }
+                }).catch(error => this.error(error));
+            } catch (error) {
+                this.error(error);
+            }
         }
 
         transaction.transferStatus = MintTransactionStatus.PENDING;
@@ -273,7 +293,7 @@ export class MintFT extends TypedMint {
                         transactionMemo: this._mintRequest.memo,
                     },
                 },
-                10
+                10, 0, userId
             );
             transaction.transferStatus = MintTransactionStatus.SUCCESS;
         } catch (error) {

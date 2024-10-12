@@ -1,0 +1,86 @@
+.table {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 80px);
+    overflow: hidden;
+    padding: 14px;
+    box-sizing: border-box;
+
+    .table-filters {
+        width: 100%;
+        height: 70px;
+        overflow: hidden;
+        display: flex;
+
+        .filter {
+            width: 230px;
+            height: 60px;
+            overflow: hidden;
+            margin-right: 20px;
+
+            mat-form-field {
+                width: 100%;
+            }
+        }
+    }
+    .table-body {
+        position: relative;
+        width: 100%;
+        height: calc(100vh - 230px);
+        overflow: auto;
+
+        .mat-column-topicId {
+            width: 170px;
+            min-width: 170px;
+            max-width: 170px;
+        }
+        .mat-column-consensusTimestamp {
+            width: 200px;
+            min-width: 200px;
+            max-width: 200px;
+        }
+        .mat-column-type {
+            width: 190px;
+            min-width: 190px;
+            max-width: 190px;
+        }
+        .mat-column-action {
+            width: 230px;
+            min-width: 230px;
+            max-width: 230px;
+        }
+        .mat-column-status {
+            width: 140px;
+            min-width: 140px;
+            max-width: 140px;
+        }
+        .mat-column-links {
+            width: 220px;
+            min-width: 220px;
+            max-width: 220px;
+        }
+        .mat-column-options {
+            width: calc((100vw - 1200px) / 2);
+            min-width: calc((100vw - 1200px) / 2);
+            max-width: calc((100vw - 1200px) / 2);
+            // word-wrap: break-word;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .mat-column-files {
+            width: calc((100vw - 1200px) / 2);
+            min-width: calc((100vw - 1200px) / 2);
+            max-width: calc((100vw - 1200px) / 2);
+            // word-wrap: break-word;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    }
+    .table-paginator {
+        position: relative;
+        width: 100%;
+        height: 60px;
+        padding-top: 4px;
+        box-sizing: border-box;
+    }
+}

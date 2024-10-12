@@ -1,7 +1,7 @@
 import { TopicType } from '@guardian/interfaces';
-import { MessageType } from '../message/message-type';
-import { MessageAction } from '../message/message-action';
-import { MemoMap } from './memo-map';
+import { MessageType } from '../message/message-type.js';
+import { MessageAction } from '../message/message-action.js';
+import { MemoMap } from './memo-map.js';
 
 /**
  * Memo message map

@@ -13,6 +13,7 @@ import { ProjectsOverviewComponent } from './component/projects-overview/project
 import { ProjectsComparisonTableComponent } from './component/projects-comparison-table/projects-comparison-table.component';
 import { CommonModule } from '@angular/common';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { CompareModule } from '../analytics/analytics.module';
 
 @NgModule({
     declarations: [
@@ -32,7 +33,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         MultiSelectModule,
         ReactiveFormsModule,
         HttpClientModule,
-        AngularSvgIconModule.forRoot()
+        AngularSvgIconModule.forRoot(),
+        CompareModule
     ],
     exports: [
         AnnotationBlockComponent,

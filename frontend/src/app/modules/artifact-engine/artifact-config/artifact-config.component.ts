@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType } from '@guardian/interfaces';
+import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { HttpResponse } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-dialog.component';
 
@@ -19,12 +18,13 @@ import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-
     styleUrls: ['./artifact-config.component.css']
 })
 export class ArtifactConfigComponent implements OnInit {
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    artifacts: any[] = [];
-    artifactsCount: any;
-    columns: string[] = [];
-    policyArtifactColumns: string[] = [
+    public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
+    public isConfirmed: boolean = false;
+    public artifacts: any[] = [];
+    public artifactsCount: any;
+    public columns: string[] = [];
+    public policyArtifactColumns: string[] = [
         'uuid',
         'policy',
         'name',
@@ -32,13 +32,14 @@ export class ArtifactConfigComponent implements OnInit {
         'extention',
         'delete'
     ];
-    policies: any[] | null;
-    currentPolicy: any = '';
-    pageIndex: number;
-    pageSize: number;
-    policyNameById: any = {};
+    public currentPolicy: any | null = null;
+    public pageIndex: number;
+    public pageSize: number;
+    public policyNameById: any = {};
+    public deleteArtifactVisible: boolean = false;
+    public filterOptions: any[] = [];
+    public policies: any[] = [];
     private currentArtifact: any;
-    deleteArtifactVisible: boolean = false;
 
     constructor(
         private profileService: ProfileService,
@@ -47,15 +48,14 @@ export class ArtifactConfigComponent implements OnInit {
         private router: Router,
         public dialog: MatDialog,
         private artifact: ArtifactService) {
-        this.policies = null;
+        this.policies = [];
+        this.filterOptions = [];
         this.pageIndex = 0;
         this.pageSize = 10;
     }
 
     ngOnInit() {
-        const policyId = this.route.snapshot.queryParams['policyId'];
-        this.currentPolicy = policyId && policyId != 'all' ? policyId : '';
-        this.loadProfile()
+        this.loadProfile();
     }
 
     loadProfile() {
@@ -70,13 +70,27 @@ export class ArtifactConfigComponent implements OnInit {
             const policies: any[] = value[1] || [];
 
             this.isConfirmed = !!(profile && profile.confirmed);
+            this.user = new UserPermissions(profile);
+
+            this.filterOptions = [{
+                name: 'All',
+                id: 'all'
+            }];
             this.policies = [];
             for (let i = 0; i < policies.length; i++) {
                 const policy = policies[i];
                 this.policyNameById[policy.id] = policy.name;
                 this.policies.push(policy);
+                this.filterOptions.push(policy);
             }
 
+            const policyId = this.route.snapshot.queryParams['policyId'];
+            if (policyId) {
+                this.currentPolicy = this.filterOptions.find((p) => p.id === policyId);
+            }
+            if (!this.currentPolicy) {
+                this.currentPolicy = this.filterOptions[0];
+            }
             this.pageIndex = 0;
             this.pageSize = 10;
             this.loadArtifacts();
@@ -88,12 +102,16 @@ export class ArtifactConfigComponent implements OnInit {
 
     loadArtifacts() {
         this.loading = true;
-        const request =
-            this.artifact.getArtifacts(this.currentPolicy.id, this.pageIndex, this.pageSize);
         this.columns = this.policyArtifactColumns;
-        request.subscribe((artifactResponse: HttpResponse<any[]>) => {
+
+        const policyId = this.currentPolicy && this.currentPolicy.id !== 'all' ? this.currentPolicy.id : null;
+        this.artifact.getArtifacts(
+            policyId,
+            this.pageIndex,
+            this.pageSize
+        ).subscribe((artifactResponse: HttpResponse<any[]>) => {
             this.artifacts = artifactResponse.body?.map(item => {
-                const policy = this.policies?.find(policy => policy.id === item.policyId)
+                const policy = this.filterOptions?.find(policy => policy.id === item.policyId)
                 return Object.assign(item, {
                     editable: !policy || policy.status === PolicyType.DRAFT
                 })
@@ -110,11 +128,15 @@ export class ArtifactConfigComponent implements OnInit {
 
     onFilter() {
         this.pageIndex = 0;
-        this.router.navigate(['/artifacts'], {
-            queryParams: {
-                policyId: this.currentPolicy.id ? this.currentPolicy.id : 'all'
-            }
-        });
+        if (this.currentPolicy && this.currentPolicy.id !== 'all') {
+            this.router.navigate(['/artifacts'], {
+                queryParams: {
+                    policyId: this.currentPolicy.id
+                }
+            });
+        } else {
+            this.router.navigate(['/artifacts']);
+        }
         this.loadArtifacts();
     }
 
@@ -132,7 +154,7 @@ export class ArtifactConfigComponent implements OnInit {
     importArtifacts() {
         const dialogRef = this.dialog.open(ArtifactImportDialog, {
             data: {
-                policyId: this.currentPolicy.id,
+                policyId: this.currentPolicy?.id,
                 policies: this.policies
             },
             disableClose: true,

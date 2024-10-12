@@ -21,6 +21,7 @@
 }
 
 .action-buttons {
+    margin-top: 5px;
     display: flex;
     justify-content: space-between;
 }
@@ -57,12 +58,32 @@
     font-weight: 500;
 }
 
+.source-policy-selector {
+    display: flex;
+    align-items: center;
+
+    &__dropdown {
+        width: 100%;
+        padding-right: 5px;
+    }
+}
+
+.policy-migration-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.p-field-checkbox {
+    display: flex;
+    gap: 10px;
+}
+
 .dialog-body {
     height: 50vh;
     overflow-y: auto;
     padding-top: 5px;
-    width: 600px;
-    min-width: 600px;
+    width: 700px;
+    min-width: 700px;
 }
 
 ::ng-deep {

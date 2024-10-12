@@ -12,7 +12,7 @@
 
 [Available Roles](cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md#available-roles)
 
-[Important Documents & Schemas](cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md#important-documents-and-schemas)
+[Tools Referenced](cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md#tools-referenced)
 
 [Step By Step](cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity.md#step-by-step)
 
@@ -52,7 +52,7 @@ This policy is published to Hedera network and can either be imported via Github
 * Verification and Validation Body (VVB) - The VVB plays a critical role in independently verifying and validating the project data submitted by the project proponent. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration.&#x20;
 * Registry (UNFCCC) - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens. &#x20;
 
-### Important Documents & Schemas&#x20;
+### Tools Referenced&#x20;
 
 * Methodological Tool 03- Tool to calculate project or leakage CO2 emissions from fossil fuel combustion. &#x20;
 * Methodological Tool 04- Emissions from solid waste disposal sites. &#x20;
@@ -67,3 +67,5 @@ This policy is published to Hedera network and can either be imported via Github
 * Methodological Tool 22- Leakage in biomass small-scale project activities.  &#x20;
 
 ### Step By Step&#x20;
+
+Coming Soon

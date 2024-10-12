@@ -9,6 +9,7 @@
 * [Policy Guide](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#policy-guide)
 * [Available Roles](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#available-roles)
 * [Important Documents & Schemas](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#important-documents-and-schemas)
+* [Tools Referenced](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#tools-referenced)
 * [Token (Carbon Credit)](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#token-carbon-credit)
 * [Step By Step](carbon-development-mechanism-cdm-ams-iii.ar-policy.md#step-by-step)
 
@@ -34,12 +35,11 @@ In conclusion, LED/CFL bulbs outshine fuel-based lighting on multiple fronts. Th
 
 ## **Policy Workflow**
 
-<figure><img src="https://usc-powerpoint.officeapps.live.com/pods/GetClipboardImage.ashx?Id=d097a5b7-513c-4f1c-9e37-aee05683fae7&#x26;DC=PUS10&#x26;pkey=fb24e882-60bb-4380-8316-eb3e01b9535d&#x26;wdwaccluster=PUS10" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (592).png" alt=""><figcaption></figcaption></figure>
 
 ## **Policy Guide**
 
-\
-This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp. IPFS timestamp: 1698756576.572245003
+This policy is published to the Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.&#x20;
 
 ## **Available Roles**
 
@@ -51,17 +51,19 @@ This policy is published to the Hedera network and can either be imported via Gi
 
 ## **Important Documents & Schemas**
 
-1. Methodological Tool 07- Tool to calculate the emission factor for an electricity system  &#x20;
-2. Methodological Tool 19- Demonstration of additionality of microscale project activities&#x20;
-3. Methodological Tool 21- Demonstration of additionality of small-scale project activities &#x20;
-4. Methodological Tool 33- Default values for common parameters  &#x20;
-5. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. &#x20;
-6. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. &#x20;
-7. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+1. Project Description - Project Participant information, standard project information, methodology information like baseline emissions, project emissions, etc. &#x20;
+2. Emissions Reduction – Schema included within the project information form; this is filled out by the project participant to calculate annual emission reductions. &#x20;
+3. Monitoring Report – The monitoring report is to be filled out based on the monitoring plan mentioned within the methodology.   
+
+### Tools Referenced
+
+* Methodological Tool 07- Tool to calculate the emission factor for an electricity system  &#x20;
+* Methodological Tool 19- Demonstration of additionality of microscale project activities&#x20;
+* Methodological Tool 21- Demonstration of additionality of small-scale project activities &#x20;
+* Methodological Tool 33- Default values for common parameters  &#x20;
 
 ## **Token (Carbon Credit)**
 
-\
 Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 ## **Step By Step**

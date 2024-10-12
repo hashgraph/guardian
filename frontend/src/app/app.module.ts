@@ -5,9 +5,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
-import { AppRoutingModule, AuditorGuard, StandardRegistryGuard, UserGuard } from './app-routing.module';
+import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
+import { CheckboxModule } from 'primeng/checkbox';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
 import { ProfileService } from './services/profile.service';
@@ -32,13 +33,14 @@ import { TagsService } from './services/tag.service';
 import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
 import { NotificationService } from './services/notify.service';
+import { PermissionsService } from './services/permissions.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
-import { RootConfigComponent } from './views/root-config/root-config.component';
+import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -50,6 +52,9 @@ import { ServiceStatusComponent } from './views/admin/service-status/service-sta
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
+import { RolesViewComponent } from './views/roles/roles-view.component';
+import { UsersManagementComponent } from './views/user-management/user-management.component';
+import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 //Components
 import { InfoComponent } from './components/info/info/info.component';
 import { BrandingComponent } from './views/branding/branding.component';
@@ -117,6 +122,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
+import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { WorkerTasksService } from './services/worker-tasks.service';
 
 @NgModule({
     declarations: [
@@ -126,7 +133,7 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         HomeComponent,
         HeaderComponent,
         RegisterComponent,
-        RootConfigComponent,
+        RootProfileComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -159,6 +166,10 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         OnlyForDemoDirective,
         TokenDialogComponent,
         UseWithServiceDirective,
+        RolesViewComponent,
+        UsersManagementComponent,
+        UsersManagementDetailComponent,
+        WorkerTasksComponent
     ],
     imports: [
         BrowserModule,
@@ -199,14 +210,12 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         ContractEngineModule,
         ProjectComparisonModule,
         DndModule,
+        CheckboxModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [],
     providers: [
         WebSocketService,
-        UserGuard,
-        StandardRegistryGuard,
-        AuditorGuard,
         AuthService,
         ProfileService,
         TokenService,
@@ -231,10 +240,13 @@ import { UseWithServiceDirective } from './directives/use-with-service.directive
         WizardService,
         SuggestionsService,
         NotificationService,
+        WorkerTasksService,
         AISearchService,
         RecordService,
         CompareStorage,
         ProjectComparisonService,
+        PermissionsService,
+        PermissionsGuard,
         {
             provide: GET_SCHEMA_NAME,
             useValue: SchemaHelper.getSchemaName

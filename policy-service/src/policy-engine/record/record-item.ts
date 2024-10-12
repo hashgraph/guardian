@@ -1,5 +1,5 @@
-import { RecordAction } from './action.type';
-import { RecordMethod } from './method.type';
+import { RecordAction } from './action.type.js';
+import { RecordMethod } from './method.type.js';
 
 /**
  * Record item

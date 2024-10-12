@@ -1,6 +1,6 @@
-import IConnection from '../connections/db/interfaces/IConnection'
-import { Webhook } from '../entities/Webhook';
-import WebhookStore from '../singletons/WebhookStore';
+import IConnection from '../connections/db/interfaces/IConnection.js'
+import { Webhook } from '../entities/Webhook.js';
+import WebhookStore from '../singletons/WebhookStore.js';
 
 export default class WebhookService {
   private webhookStore: WebhookStore;

@@ -4,6 +4,7 @@ import { SchemaConfigurationComponent } from '../schema-configuration/schema-con
 import { Schema } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { SchemaService } from '../../../services/schema.service';
 
 enum SchemaType {
     System = 'system',

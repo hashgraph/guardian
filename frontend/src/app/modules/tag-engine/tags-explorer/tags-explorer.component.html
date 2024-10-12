@@ -3,8 +3,8 @@
 </div>
 <div *ngIf="history" class="container" [attr.readonly]="loading">
     <div
-        (click)="onOpen()"
         *ngIf="history.top"
+        (click)="onOpen()"
         [attr.count]="history.count"
         class="main-tags"
     >
@@ -23,7 +23,10 @@
         </div>
         <mat-icon class="edit-tags">more_horiz</mat-icon>
     </div>
-    <div (click)="onAdd()" *ngIf="!history.top">
+    <div 
+        *ngIf="compact"
+        (click)="onAdd()" 
+    >
         <button class="p-button-outlined">
             <svg-icon class="svg-icon-16" 
                 src="/assets/images/icons/16/add.svg" 

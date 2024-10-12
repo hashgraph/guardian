@@ -1,0 +1,29 @@
+:root {
+    --font-family-inter: 'Inter', sans-serif;
+    --font-family-archivo-black: 'Archivo Black';
+    --font-family-bebas-neue: 'Bebas Neue';
+
+    --font-size-header-3: 48px;
+    --font-size-header-2: 32px;
+    --font-size-header-1: 20px;
+    --font-size-normal: 14px;
+    --font-size-small-1: 12px;
+
+    --header-height: 84px;
+
+    --color-primary: #6000c4;
+    --color-primary-negative: #23252e;
+    --color-primary-background: #fff;
+    --color-primary-border: #6a458d;
+
+    --color-black: #23252e;
+    --color-green-1: #19BE47;
+    --color-gray-2: #e2e8f0;
+    --color-gray-3: #a6b3bf;
+    --color-gray-4: #687786;
+    --color-gray-5: #525f6b;
+    --color-gray-6: #848fa9;
+}
+
+@media (max-width: 810px) {
+}

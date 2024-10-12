@@ -1,7 +1,7 @@
 import JSZip from 'jszip';
-import { PolicyModule, Schema, Tag } from '../entity';
-import { DataBaseHelper } from '../helpers';
-import { DatabaseServer } from '../database-modules';
+import { PolicyModule, Schema, Tag } from '../entity/index.js';
+import { DataBaseHelper } from '../helpers/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * Module components

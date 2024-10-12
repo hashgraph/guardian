@@ -1,11 +1,5 @@
-import moduleAlias from 'module-alias';
 import dotenv from 'dotenv';
 import fs from 'fs';
-
-moduleAlias.addAliases({
-    '@api': __dirname + '/api',
-    '@entity': __dirname + '/entity',
-});
 
 dotenv.config();
 
@@ -30,4 +24,3 @@ if (!process.env.OVERRIDE || process.env.OVERRIDE === 'false') {
         }
     }
 }
-console.log('Charged Environment', process.env, '\r\n___ . ___');

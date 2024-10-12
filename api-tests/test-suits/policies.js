@@ -1,6 +1,7 @@
-const axios = require("axios");
-const {GetURL, GetToken} = require("../helpers");
-const assert = require("assert");
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Policies() {
     let policyId, policyTag, policyOwner;
@@ -337,6 +338,6 @@ function Policies() {
     })
 }
 
-module.exports = {
-    Policies
-}
+export {
+    Policies,
+};

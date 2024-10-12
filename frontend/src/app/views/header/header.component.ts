@@ -219,10 +219,14 @@ export class HeaderComponent implements OnInit {
                     this.activeLinkRoot === '/suggestions' ||
                     this.activeLinkRoot === '/policy-viewer' ||
                     this.activeLinkRoot === '/policy-configuration' ||
+                    this.activeLinkRoot === '/module-configuration' ||
+                    this.activeLinkRoot === '/tool-configuration' ||
                     this.activeLinkRoot === '/compare' ||
                     this.activeLinkRoot === '/search' ||
                     /^\/policy-configuration\/\w+/.test(this.activeLinkRoot) ||
-                    this.activeLinkRoot === 'policy-configuration'
+                    this.activeLinkRoot === 'policy-configuration' ||
+                    this.activeLinkRoot === 'module-configuration' ||
+                    this.activeLinkRoot === 'tool-configuration'
                 );
             case 'SR_ADMIN':
                 return (
@@ -251,7 +255,11 @@ export class HeaderComponent implements OnInit {
             case 'SR_VIEWER':
                 return /^\/policy-viewer\/\w+/.test(this.activeLinkRoot);
             case 'SR_EDITOR':
-                return this.activeLinkRoot === '/policy-configuration';
+                return (
+                    this.activeLinkRoot === '/policy-configuration' ||
+                    this.activeLinkRoot === '/module-configuration' ||
+                    this.activeLinkRoot === '/tool-configuration'
+                );
             case 'SR_COMPARE':
                 return this.activeLinkRoot === '/compare';
             case 'SR_SEARCH':

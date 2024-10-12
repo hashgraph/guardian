@@ -58,11 +58,11 @@ Tags can be created by clicking on "Create Tag" button.
 
 Tag can be created with label and the description as shown below:
 
-![Label and Description](<../../../../.gitbook/assets/1 (1) (1) (1).png>)
+![Label and Description](<../../../../.gitbook/assets/1 (1) (1) (1) (1).png>)
 
 An additional document can be added/linked with the tag using _**Add Document** button and then selecting a suitable document schema_
 
-![Adding Document](<../../../../.gitbook/assets/2 (1) (1) (1) (1).png>)
+![Adding Document](<../../../../.gitbook/assets/2 (1) (1) (1) (1) (1).png>)
 
 #### **2.2 Remove**
 
@@ -74,11 +74,11 @@ Users (DIDs) who created a tag are able to remove it later.
 
 For documents displayed in the grid only the first (alphabetically) tag is shown.
 
-![Documents display](<../../../../.gitbook/assets/4 (1) (1) (1) (1).png>)
+![Documents display](<../../../../.gitbook/assets/4 (1) (1) (1) (1) (1).png>)
 
 Users can click on the tag icon to show the detailed information about all tag assigned to the document.
 
-![All the tags assigned to the document](<../../../../.gitbook/assets/5 (1) (1) (1) (1).png>)
+![All the tags assigned to the document](<../../../../.gitbook/assets/5 (1) (1) (1) (1) (1).png>)
 
 Tags are grounded by labels. When a label is selected then a detailed information about all tags with this label is displayed below.
 

@@ -1,6 +1,6 @@
-import { DataBaseHelper } from '../helpers';
-import { DidDocument } from '../entity';
-import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules';
+import { DataBaseHelper } from '../helpers/index.js';
+import { DidDocument } from '../entity/index.js';
+import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
 
 /**
  * DID Documents Loader

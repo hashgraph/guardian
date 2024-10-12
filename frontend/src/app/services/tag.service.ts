@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ISchema } from '@guardian/interfaces';
 import { Observable, Subject } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { headersV2 } from '../constants';
 
 /**
  * Services for working from tags.
@@ -37,7 +38,7 @@ export class TagsService {
         if (Number.isInteger(pageIndex) && Number.isInteger(pageSize)) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`;
         }
-        return this.http.get<any>(url, { observe: 'response' });
+        return this.http.get<any>(url, { observe: 'response', headers: headersV2 });
     }
 
     public createSchema(schema: ISchema): Observable<ISchema> {

@@ -23,7 +23,7 @@ const PoliciesPageLocators = {
     submitBtn: 'button[type="submit"]',
     createBtn: 'div.g-dialog-actions-btn',
     addBtn: "*[class^='btn-approve btn-option ng-star-inserted']",
-    createPolicyBtn: "Create New",
+    createPolicyBtn: 'p-button[ng-reflect-text="Create a Policy"]',
     inputName: "*[formcontrolname^='name']",
     draftBtn: 'ng-reflect-menu="[object Object]"',
     approveBtn: 'div.btn-approve',
@@ -77,7 +77,7 @@ export class PoliciesPage {
     }
 
     createPolicyButton() {
-        cy.contains(PoliciesPageLocators.createPolicyBtn).click();
+        cy.get(PoliciesPageLocators.createPolicyBtn).click();
     }
 
     approveUser() {

@@ -1,10 +1,10 @@
 {
-  "policyId": "65df28db829a91097b281427",
-  "policyUuid": "1a66e696-3b08-4117-85b3-6c9d027c6175",
-  "createDate": "2024-02-28T12:36:43.946Z",
-  "creator": "did:hedera:testnet:5UxN18VaQbyionNb6xNgd1fj4wvtRRiNwwVnc8UE8TtG_0.0.3627061",
-  "description": "Remote_Work_GHG_Policy",
-  "name": "Remote Work GHG Policy",
-  "owner": "did:hedera:testnet:5UxN18VaQbyionNb6xNgd1fj4wvtRRiNwwVnc8UE8TtG_0.0.3627061",
-  "policyTag": "Tag_1709123728673"
+  "policyId": "66630c6d3a68a496240fbbb9",
+  "policyUuid": "23772bf2-41d4-4e10-92e6-d648ad223378",
+  "createDate": "2024-06-07T13:34:37.020Z",
+  "creator": "did:hedera:testnet:5CF6z1GWe2Pb2sm7DuwWk9WBMCmPw5JM8cDGsRABtHtD_0.0.4424972",
+  "description": "iRec Description",
+  "name": "iRec_4",
+  "owner": "did:hedera:testnet:5CF6z1GWe2Pb2sm7DuwWk9WBMCmPw5JM8cDGsRABtHtD_0.0.4424972",
+  "policyTag": "Tag_1717767222193"
 }

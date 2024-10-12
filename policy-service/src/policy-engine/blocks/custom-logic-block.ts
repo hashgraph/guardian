@@ -1,26 +1,23 @@
 import { Worker } from 'node:worker_threads';
 import path from 'path'
-import { ActionCallback, BasicBlock } from '@policy-engine/helpers/decorators';
-import { CatchErrors } from '@policy-engine/helpers/decorators/catch-errors';
-import { PolicyComponentsUtils } from '@policy-engine/policy-components-utils';
-import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '@policy-engine/policy-engine.interface';
-import {
-    VcHelper,
-    DIDMessage,
-    MessageAction,
-    MessageServer,
-    HederaDidDocument
-} from '@guardian/common';
+import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
+import { DIDMessage, HederaDidDocument, MessageAction, MessageServer, VcHelper } from '@guardian/common';
 import { ArtifactType, SchemaHelper } from '@guardian/interfaces';
-import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '@policy-engine/interfaces';
-import { ChildrenType, ControlType, PropertyType } from '@policy-engine/interfaces/block-about';
-import { IPolicyUser, UserCredentials } from '@policy-engine/policy-user';
-import { PolicyUtils } from '@policy-engine/helpers/utils';
-import { BlockActionError } from '@policy-engine/errors';
-import { ExternalDocuments, ExternalEvent, ExternalEventType } from '@policy-engine/interfaces/external-event';
+import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUtils } from '../helpers/utils.js';
+import { BlockActionError } from '../errors/index.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { fileURLToPath } from 'url';
+
+const filename = fileURLToPath(import.meta.url);
 
 interface IMetadata {
-    owner: IPolicyUser;
+    owner: PolicyUser;
     id: string;
     reference: string;
     accounts: any;
@@ -51,12 +48,20 @@ interface IMetadata {
             PolicyOutputEventType.ErrorEvent
         ],
         defaultEvent: true,
-        properties: [{
-            name: 'unsigned',
-            label: 'Unsigned VC',
-            title: 'Unsigned document',
-            type: PropertyType.Checkbox
-        }]
+        properties: [
+            {
+                name: 'unsigned',
+                label: 'Unsigned VC',
+                title: 'Unsigned document',
+                type: PropertyType.Checkbox
+            },
+            {
+                name: 'passOriginal',
+                label: 'Pass original',
+                title: 'Pass original document',
+                type: PropertyType.Checkbox
+            }
+        ]
     },
     variables: [
         { path: 'options.outputSchema', alias: 'schema', type: 'Schema' }
@@ -87,16 +92,42 @@ export class CustomLogicBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
         try {
-            event.data.data = await this.execute(event.data, event.user);
-            ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
-            ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
-            ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
-            PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
-                documents: ExternalDocuments(event?.data?.data)
-            }));
+            const triggerEvents = (documents: IPolicyDocument | IPolicyDocument[]) => {
+                if (!documents) {
+                    return;
+                }
+                event.data.data = documents;
+                ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);
+                ref.triggerEvents(PolicyOutputEventType.ReleaseEvent, event.user, null);
+                ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data);
+                PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Run, ref, event?.user, {
+                    documents: ExternalDocuments(event?.data?.data)
+                }));
+            }
+            await this.execute(event.data, event.user, triggerEvents);
         } catch (error) {
             ref.error(PolicyUtils.getErrorMessage(error));
         }
+    }
+
+    /**
+     * Get sources
+     * @param user
+     * @param globalFilters
+     * @protected
+     */
+    protected async getSources(user: PolicyUser): Promise<any[]> {
+        const data = [];
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+        for (const child of ref.children) {
+            if (child.blockClassName === 'SourceAddon') {
+                const childData = await (child as IPolicyAddonBlock).getFromSource(user, null);
+                for (const item of childData) {
+                    data.push(item);
+                }
+            }
+        }
+        return data;
     }
 
     /**
@@ -104,7 +135,7 @@ export class CustomLogicBlock {
      * @param state
      * @param user
      */
-    execute(state: IPolicyEventState, user: IPolicyUser): Promise<IPolicyDocument | IPolicyDocument[]> {
+    execute(state: IPolicyEventState, user: PolicyUser, triggerEvents: (documents: IPolicyDocument | IPolicyDocument[]) => void): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
@@ -122,8 +153,18 @@ export class CustomLogicBlock {
                     metadata = await this.aggregateMetadata(documents, user, ref);
                 }
 
-                const done = async (result: any | any[]) => {
+                const done = async (result: any | any[], final: boolean) => {
+                    if (!result) {
+                        triggerEvents(null);
+                        if (final) {
+                            resolve(null);
+                        }
+                        return;
+                    }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
+                        if (ref.options.passOriginal) {
+                            return json;
+                        }
                         if (ref.options.unsigned) {
                             return await this.createUnsignedDocument(json, ref);
                         } else {
@@ -135,10 +176,16 @@ export class CustomLogicBlock {
                         for (const r of result) {
                             items.push(await processing(r))
                         }
-                        resolve(items);
+                        triggerEvents(items);
+                        if (final) {
+                            resolve(items);
+                        }
                         return;
                     } else {
-                        resolve(await processing(result));
+                        triggerEvents(await processing(result));
+                        if (final) {
+                            resolve(await processing(result));
+                        }
                         return;
                     }
                 }
@@ -158,23 +205,26 @@ export class CustomLogicBlock {
                     artifacts.push(JSON.parse(artifactFile));
                 }
 
-                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs] = arguments;\r\n`;
+                const sources: IPolicyDocument[] = await this.getSources(user);
+
+                const importCode = `const [done, user, documents, mathjs, artifacts, formulajs, sources] = arguments;\r\n`;
                 const expression = ref.options.expression || '';
-                const worker = new Worker(path.join(path.dirname(__filename), '..', 'helpers', 'custom-logic-worker.js'), {
+                const worker = new Worker(path.join(path.dirname(filename), '..', 'helpers', 'custom-logic-worker.js'), {
                     workerData: {
                         execFunc: `${importCode}${execCode}${expression}`,
                         user,
                         documents,
-                        artifacts
+                        artifacts,
+                        sources
                     },
                 });
 
                 worker.on('error', (error) => {
                     reject(error);
                 });
-                worker.on('message', async (result) => {
+                worker.on('message', async (data) => {
                     try {
-                        await done(result);
+                        await done(data.result, data.final);
                     } catch (error) {
                         reject(error);
                     }
@@ -193,12 +243,12 @@ export class CustomLogicBlock {
      */
     private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
-        user: IPolicyUser,
+        user: PolicyUser,
         ref: IPolicyCalculateBlock
     ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -347,7 +397,7 @@ export class CustomLogicBlock {
      */
     private async generateId(
         idType: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         userCred: UserCredentials
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -364,9 +414,11 @@ export class CustomLogicBlock {
                 message.setDocument(didObject);
 
                 const hederaCred = await userCred.loadHederaCredentials(ref);
+                const signOptions = await userCred.loadSignOptions(ref);
                 const client = new MessageServer(
                     hederaCred.hederaAccountId,
                     hederaCred.hederaAccountKey,
+                    signOptions,
                     ref.dryRun
                 );
                 const messageResult = await client

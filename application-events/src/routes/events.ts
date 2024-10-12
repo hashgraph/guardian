@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
-import { externalMessageEvents } from '../services/ApplicationMetricService';
-import NatsPubSubAdapter from '../connections/pub-subs/NatsPubSubAdapter';
+import { externalMessageEvents } from '../services/ApplicationMetricService.js';
+import NatsPubSubAdapter from '../connections/pub-subs/NatsPubSubAdapter.js';
 
 const eventRoutes = Router();
 

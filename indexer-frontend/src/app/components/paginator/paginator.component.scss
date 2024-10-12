@@ -1,0 +1,43 @@
+.table-paginator {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    column-gap: 24px;
+    padding: 0 16px 0 0;
+
+    color: var(--color-black);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+
+    height: 55px !important;
+
+    border-top: 1px var(--color-gray-2) solid;
+
+    &__move, &__pages {
+        color: var(--color-gray-3);
+    }
+
+    ::ng-deep {
+        .p-inputtext {
+            color: var(--color-black);
+        }
+    }
+}
+
+.svg-btn {
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 18px;
+    width: 18px;
+
+    &:hover {
+        box-shadow: 0px 0px 0px 1px #2196F3;
+    }
+}
+
+.svg-color {
+    color: var(--color-gray-3);
+}

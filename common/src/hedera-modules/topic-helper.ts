@@ -1,7 +1,7 @@
-import { TopicType, WorkerTaskType } from '@guardian/interfaces';
-import { TopicConfig, MessageAction, MessageServer, TopicMessage } from '.';
-import { TopicMemo } from './memo-mappings/topic-memo';
-import { Workers } from '../helpers';
+import { ISignOptions, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { MessageAction, MessageServer, TopicConfig, TopicMessage } from './index.js';
+import { TopicMemo } from './memo-mappings/topic-memo.js';
+import { Workers } from '../helpers/index.js';
 
 /**
  * Topic Helper
@@ -18,6 +18,8 @@ export class TopicHelper {
      */
     private hederaAccountKey: string;
 
+    private readonly signOptions: ISignOptions;
+
     /**
      * Dry-run
      * @private
@@ -27,11 +29,13 @@ export class TopicHelper {
     constructor(
         operatorId: string,
         operatorKey: string,
+        signOptions: ISignOptions,
         dryRun: string = null
     ) {
         this.dryRun = dryRun || null;
         this.hederaAccountId = operatorId;
         this.hederaAccountKey = operatorKey;
+        this.signOptions = signOptions;
     }
 
     /**
@@ -145,10 +149,11 @@ export class TopicHelper {
      * @param topic
      * @param parent
      * @param rationale
+     * @param userId
      */
     // tslint:disable-next-line:completed-docs
-    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
+    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId: string = null) {
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -163,7 +168,7 @@ export class TopicHelper {
 
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1);
+            .sendMessage(message1, true, null, userId);
     }
 
     /**
@@ -171,9 +176,10 @@ export class TopicHelper {
      * @param topic
      * @param parent
      * @param rationale
+     * @param userId
      */
-    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string) {
-        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.dryRun);
+    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId?: string) {
+        const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -187,7 +193,7 @@ export class TopicHelper {
         });
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message1);
+            .sendMessage(message1, true, null, userId);
 
         if (parent) {
             const message2 = new TopicMessage(MessageAction.CreateTopic);

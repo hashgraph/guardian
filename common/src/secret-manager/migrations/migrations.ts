@@ -1,12 +1,12 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
-import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers';
-import { WalletAccount } from './vault-account';
+import { DataBaseHelper, DataBaseNamingStrategy } from '../../helpers/index.js';
+import { WalletAccount } from './vault-account.js';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import { SecretManager } from '../secret-manager';
-import { Wallet } from '../../wallet';
-import { SecretManagerType } from '../secret-manager-config';
+import { SecretManager } from '../secret-manager.js';
+import { Wallet } from '../../wallet/index.js';
+import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'process';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')
@@ -15,8 +15,13 @@ const guardianEnvPath = path.join(process.cwd(), '../guardian-service/.env')
 const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 
 // const authCertsPath = path.join('../auth-service/tls/vault/client')
-const guardianCertsPath = path.join('../guardian-service/tls/vault/client')
-const workerCertsPath = path.join('../worker-service/tls/vault/client')
+const guardianCertsPath = path.join('../guardian-service/tls/vault/client.js')
+const workerCertsPath = path.join('../worker-service/tls/vault/client.js')
+
+const DEFAULT_MIN_POOL_SIZE = '1';
+const DEFAULT_MAX_POOL_SIZE = '5';
+const DEFAULT_MAX_IDLE_TIME_MS = '30000';
+const RADIX = 10;
 
 /**
  * Set common configs for Vault
@@ -119,18 +124,21 @@ async function writeWallet(token, type, key, value) {
  * migrate
  */
 async function migrate() {
-  const db = await MikroORM.init<MongoDriver>({
-    type: 'mongo',
+  const db = await MikroORM.init({
+    driver: MongoDriver,
     namingStrategy: DataBaseNamingStrategy,
     dbName: 'auth_db',
     clientUrl:`mongodb://localhost:27017`,
     entities: [
       'dist/secret-manager/migrations/vault-account.js'
     ],
-    driverOptions: {
-      useUnifiedTopology: true
-    },
-    ensureIndexes: true
+      driverOptions: {
+        useUnifiedTopology: true,
+          minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MIN_POOL_SIZE, RADIX),
+          maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MAX_POOL_SIZE, RADIX),
+          maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MAX_IDLE_TIME_MS, RADIX),
+      },
+      ensureIndexes: true,
   })
 
   DataBaseHelper.orm = db;

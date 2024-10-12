@@ -1,15 +1,25 @@
 import { DataBaseHelper, Token } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { INotifier } from '@helpers/notifier';
+import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
+import { INotifier } from '../../helpers/notifier.js';
+
+/**
+ * Import token mapping
+ */
+export interface ImportTokenMap {
+    oldID: string;
+    oldTokenID: string;
+    newID: string;
+    newTokenID: string;
+}
 
 /**
  * Import Result
  */
-interface ImportResult {
+export interface ImportTokenResult {
     /**
      * New token uuid
      */
-    tokenMap: any[];
+    tokenMap: ImportTokenMap[];
     /**
      * Errors
      */
@@ -23,12 +33,12 @@ interface ImportResult {
  * @param notifier
  */
 export async function importTokensByFiles(
-    owner: string,
+    user: IOwner,
     tokens: any[] = [],
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportTokenResult> {
     const errors: any[] = [];
-    const tokenMap: any[] = [];
+    const tokenMap: ImportTokenMap[] = [];
     notifier.start('Import tokens');
 
     const tokenRepository = new DataBaseHelper(Token);
@@ -46,7 +56,8 @@ export async function importTokensByFiles(
             enableFreeze: !!(token.enableFreeze || token.freezeKey),
             enableKYC: !!(token.enableKYC || token.kycKey),
             enableWipe: !!(token.enableWipe || token.wipeKey),
-            owner,
+            owner: user.owner,
+            creator: user.creator,
             policyId: null,
             draftToken: true
         });

@@ -24,24 +24,24 @@
         </span>
         <div class="module-actions-buttons-container">
             <p-button
+                    *ngIf="user.MODULES_MODULE_CREATE"
                     (click)="newModules()"
-                    class="toolbar-btn"
-            >
+                    class="toolbar-btn">
                 <mat-icon class="toolbar-icons">add</mat-icon>
                 <span>Create a Module</span>
             </p-button>
             <p-button
+                    *ngIf="user.MODULES_MODULE_CREATE"
                     (click)="importModules()"
-                    class="toolbar-btn"
-            >
+                    class="toolbar-btn">
                 <mat-icon class="toolbar-icons">file_open</mat-icon>
                 <span>Import</span>
             </p-button>
             <p-button
+                    *ngIf="user.ANALYTIC_MODULE_READ"
                     (click)="compareModules()"
                     class="toolbar-btn compare-button"
-                    styleClass="p-button-outlined"
-            >
+                    styleClass="p-button-outlined">
                 <mat-icon class="toolbar-icons">compare</mat-icon>
                 <span>Compare</span>
             </p-button>
@@ -66,9 +66,15 @@
                         <td>{{ module.name }}</td>
                         <td>{{ module.description }}</td>
                         <td>
-                            <tags-explorer [data]="module._tags" [entity]="tagEntity" [owner]="owner"
-                                           [schemas]="tagSchemas" [service]="tagsService"
-                                           [target]="module.id"></tags-explorer>
+                            <tags-explorer 
+                                    *ngIf="user.TAGS_TAG_READ"
+                                    [user]="user"
+                                    [data]="module._tags" 
+                                    [entity]="tagEntity" 
+                                    [owner]="owner"
+                                    [schemas]="tagSchemas" 
+                                    [service]="tagsService"
+                                    [target]="module.id"></tags-explorer>
                         </td>
                         <td>
                             <div *ngIf="module.status === 'DRAFT'" class="p-tag p-tag-grey">Draft</div>
@@ -76,21 +82,28 @@
                         </td>
                         <td>
                             <div class="flex flex-sb-c">
-                                <button (click)="publishModule(module)" [disabled]="module.status === 'PUBLISHED'" class="button height-28"
-                                        pButton>Publish
-                                </button>
+                                <button 
+                                        *ngIf="user.MODULES_MODULE_REVIEW"
+                                        (click)="publishModule(module)" 
+                                        [disabled]="module.status === 'PUBLISHED'" 
+                                        class="button height-28"
+                                        pButton>Publish</button>
                                 <div class="flex flex-column-gap-20">
                                     <svg-icon 
+                                        *ngIf="user.MODULES_MODULE_READ"
                                         (click)="exportModules(module)"
                                         src="/assets/images/icons/export.svg" 
                                         svgClass="primary-color"></svg-icon>
-                                    <div [queryParams]="{ moduleId: module.uuid }"
-                                         [routerLink]="['/policy-configuration']">
+                                    <div 
+                                        *ngIf="user.MODULES_MODULE_UPDATE"
+                                        [queryParams]="{ moduleId: module.uuid }"
+                                        [routerLink]="['/module-configuration']">
                                         <svg-icon class="opacity-icon"
                                             src="/assets/images/icons/edit.svg" 
                                             svgClass="primary-color"></svg-icon>
                                     </div>
                                     <svg-icon 
+                                        *ngIf="user.MODULES_MODULE_DELETE"
                                         (click)="module.status === 'DRAFT' ? openDeleteModuleDialog(module) : null"
                                         class="opacity-icon"
                                         src="/assets/images/icons/delete.svg" 

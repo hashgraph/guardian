@@ -1,0 +1,13 @@
+<div class="grid-2">
+    @for (field of fields; track $index) {
+    <div class="field">
+        <span class="field__title">{{ field.label | transloco }}</span>
+        <span class="field__value"> @if (field.link) {
+            <a [routerLink]="field.direct ? [field.link]: [field.link, getFieldValue(target, field.path)]" [queryParams]="field.queryParams">{{getFieldValue(target,
+                field.path)}}</a>
+            } @else {
+            {{getFieldValue(target, field.path)}}
+            }</span>
+    </div>
+    }
+</div>

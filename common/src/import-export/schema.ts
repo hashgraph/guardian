@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Tag } from '../entity';
+import { Tag } from '../entity/index.js';
 import { ISchema } from '@guardian/interfaces';
 
 /**

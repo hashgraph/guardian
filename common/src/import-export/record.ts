@@ -1,6 +1,6 @@
 import JSZip from 'jszip';
-import { Record } from '../entity';
-import { DatabaseServer } from '../database-modules';
+import { Record } from '../entity/index.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * Record result
@@ -36,6 +36,10 @@ export interface IRecordComponents {
      * Current time
      */
     time: number;
+    /**
+     * Duration
+     */
+    duration: number;
 }
 
 /**
@@ -144,6 +148,10 @@ export class RecordImportExport {
         }
     }
 
+    private static duration(first: string | number | Date, last: string | number | Date): number {
+        return (Number(last) - Number(first));
+    }
+
     /**
      * Load record results
      * @param uuid record
@@ -214,9 +222,10 @@ export class RecordImportExport {
         const time: any = first ? first.time : null;
         if (first && last) {
             const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
-            return { records, time, results };
+            const duration = RecordImportExport.duration(first.time, last.time);
+            return { records, time, duration, results };
         } else {
-            return { records, time, results: [] };
+            return { records, time, duration: 0, results: [] };
         }
     }
 
@@ -335,10 +344,13 @@ export class RecordImportExport {
                 }
             }
         }
-
+        const first = records[0];
+        const last = records[records.length - 1];
+        const duration = RecordImportExport.duration(first?.time, last?.time);
         return {
             records,
             results,
+            duration,
             time: now
         };
     }

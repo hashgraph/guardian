@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RecordService } from 'src/app/services/record.service';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating theme.
@@ -25,6 +26,7 @@ export class RecordResultDialog {
     constructor(
         public dialog: MatDialog,
         public dialogRef: MatDialogRef<RecordResultDialog>,
+        private dialogService: DialogService,
         private recordService: RecordService,
         @Inject(MAT_DIALOG_DATA) public data: any) {
 
@@ -68,10 +70,11 @@ export class RecordResultDialog {
     openDocument(item: any): void {
         const document = item.document;
         const title = `${item.type.toUpperCase()} Document`;
-        const dialogRef = this.dialog.open(VCViewerDialog, {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
             width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            closable: true,
+            header: 'Document',
+            styleClass: 'custom-dialog',
             data: {
                 id: document.id,
                 dryRun: true,
@@ -81,7 +84,7 @@ export class RecordResultDialog {
             }
         });
 
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
@@ -18,6 +18,7 @@ import { AnalyticsService } from 'src/app/services/analytics.service';
 })
 export class SearchPoliciesComponent implements OnInit {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public type: any;
     public policyId: any;
     public policy: any;
@@ -91,6 +92,7 @@ export class SearchPoliciesComponent implements OnInit {
             const tagSchemas: any[] = value[1] || [];
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
             this.loadPolicy();
         }, (e) => {
             this.loading = false;
@@ -131,7 +133,7 @@ export class SearchPoliciesComponent implements OnInit {
             return;
         }
         const ids = this.policies.map(e => e.id);
-        if(this.policy) {
+        if (this.policy) {
             ids.unshift(this.policy.id);
         }
         this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
@@ -140,7 +142,7 @@ export class SearchPoliciesComponent implements OnInit {
                     policy._tags = data[policy.id];
                 }
             }
-            if(this.policy) {
+            if (this.policy) {
                 this.policy._tags = data[this.policy.id];
             }
             setTimeout(() => {
@@ -277,22 +279,21 @@ export class SearchPoliciesComponent implements OnInit {
             .map(p => p.id);
         policyIds.unshift(this.policyId);
         if (policyIds.length > 1) {
-            if (policyIds.length === 2) {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'policy',
-                        policyId1: policyIds[0],
-                        policyId2: policyIds[1]
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: policyIds.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
                     }
-                });
-            } else {
-                this.router.navigate(['/compare'], {
-                    queryParams: {
-                        type: 'multi-policy',
-                        policyIds: policyIds,
-                    }
-                });
-            }
+                })
+            }));
+            this.router.navigate(['/compare'], {
+                queryParams: {
+                    type: 'policy',
+                    items
+                }
+            });
         }
     }
 }

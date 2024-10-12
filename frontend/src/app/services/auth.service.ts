@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { ISession, IStandardRegistryResponse, IUser } from '@guardian/interfaces';
+import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } from '@guardian/interfaces';
 import { Observable, of, Subject, Subscription } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { map } from 'rxjs/operators';
@@ -26,9 +26,9 @@ export class AuthService {
     }
 
     public updateAccessToken(): Observable<any> {
-        return this.http.post<any>(`${this.url}/access-token`, {refreshToken: this.getRefreshToken()}).pipe(
+        return this.http.post<any>(`${this.url}/access-token`, { refreshToken: this.getRefreshToken() }).pipe(
             map(result => {
-                const {accessToken} = result;
+                const { accessToken } = result;
                 this.setAccessToken(accessToken);
                 return accessToken
             })
@@ -105,6 +105,18 @@ export class AuthService {
 
     public balance(): Observable<any> {
         return this.http.get<any>(`${this.url}/balance`);
+    }
+
+    public home(role: UserRole | string | undefined): string {
+        if (UserCategory.isStandardRegistry(role as UserRole)) {
+            return '/config';
+        } else if (UserCategory.isAudit(role as UserRole)) {
+            return '/audit';
+        } else if (UserCategory.isUser(role as UserRole)) {
+            return '/user-profile';
+        } else {
+            return '/';
+        }
     }
 }
 

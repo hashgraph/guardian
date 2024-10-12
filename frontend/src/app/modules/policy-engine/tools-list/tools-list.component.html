@@ -17,6 +17,7 @@
         <div class="actions-container">
             <div style="margin-left: auto; display: flex; gap: 8px;">
                 <p-button
+                        *ngIf="user.TOOLS_TOOL_CREATE"
                         (click)="newTool()"
                         [pTooltip]="'Create New'"
                         class="toolbar-btn-primary"
@@ -37,6 +38,7 @@
                     </svg>
                 </p-button>
                 <p-button
+                        *ngIf="user.TOOLS_TOOL_CREATE"
                         (click)="importTool()"
                         [pTooltip]="'Import'"
                         class="toolbar-btn-primary"
@@ -59,6 +61,7 @@
                     </svg>
                 </p-button>
                 <p-button
+                        *ngIf="user.ANALYTIC_TOOL_READ"
                         (click)="compareTools()"
                         [pTooltip]="'Compare'"
                         class="toolbar-btn-secondary"
@@ -223,6 +226,8 @@
                                 style="min-width: 165px;"
                             >
                                 <tags-explorer
+                                    *ngIf="user.TAGS_TAG_READ"
+                                    [user]="user"
                                     [data]="tool._tags"
                                     [entity]="tagEntity"
                                     [owner]="owner"
@@ -230,21 +235,14 @@
                                     [service]="tagsService"
                                     [target]="tool.id"></tags-explorer>
                             </td>
-                            <td
-                                *ngIf="canPublishAnyTool"
-                                class="last-policy-grid-cell"
-                            >
-                                <div *ngIf="tool.status === 'DRAFT'"
-                                     class="commands-line"
-                                >
+                            <td *ngIf="canPublishAnyTool" class="last-policy-grid-cell">
+                                <div *ngIf="tool.status === 'DRAFT' && user.TOOLS_TOOL_REVIEW" class="commands-line">
                                     <button
                                         (click)="publishTool(tool)"
                                         class="button height-28"
                                         pButton
                                         type="button"
-                                    >
-                                        Publish
-                                    </button>
+                                    >Publish</button>
                                 </div>
                             </td>
                             <td
@@ -253,8 +251,9 @@
                             >
                                 <div class="commands-line">
                                     <div
+                                        *ngIf="user.TOOLS_TOOL_UPDATE"
                                         [queryParams]="{toolId: tool.id}"
-                                        [routerLink]="['/policy-configuration']"
+                                        [routerLink]="['/tool-configuration']"
                                         class="btn-icon-edit"
                                         matTooltip="Edit"
                                         matTooltipClass="guardian-tooltip"
@@ -267,6 +266,7 @@
                                             svgClass="primary-color"></svg-icon>
                                     </div>
                                     <div
+                                        *ngIf="user.TOOLS_TOOL_READ"
                                         (click)="exportTool(tool)"
                                         class="operations-icon-container"
                                         matTooltip="Export"
@@ -281,6 +281,7 @@
                                             svgClass="primary-color"></svg-icon>
                                     </div>
                                     <div
+                                        *ngIf="user.TOOLS_TOOL_DELETE"
                                         (click)="tool.status ==='DRAFT' ? deleteTool(tool) : null"
                                         class="operations-icon-container"
                                         matTooltip="Delete"

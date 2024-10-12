@@ -20,6 +20,14 @@ services:
     depends_on:
       - mongo
 
+  cache:
+    image: registry.redict.io/redict
+    restart: always
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+
   ipfs-node:
     image: ipfs/kubo:v0.22.0
     ports:
@@ -141,6 +149,7 @@ services:
       - 6555
     depends_on:
       - mongo
+      - cache
       - message-broker
       - guardian-service
       - auth-service

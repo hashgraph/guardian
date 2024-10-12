@@ -1,7 +1,7 @@
 import { PrivateKey, PublicKey, TopicId } from '@hashgraph/sdk';
-import { Hashing } from '../../hashing';
-import { CommonDid } from './common-did';
-import { HederaDidComponents } from './types/did-components';
+import { Hashing } from '../../hashing.js';
+import { CommonDid } from './common-did.js';
+import { HederaDidComponents } from './types/did-components.js';
 
 /**
  * Hedera DID

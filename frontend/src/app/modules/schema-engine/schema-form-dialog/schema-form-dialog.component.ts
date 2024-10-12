@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { SchemaService } from '../../../services/schema.service';
 
 /**
  * Dialog for creating and editing schemas.
@@ -19,27 +20,23 @@ export class SchemaFormDialog {
     public hideFields: any;
     public example: boolean = false;
 
+    public category: string;
+
     constructor(
         public dialogRef: MatDialogRef<SchemaFormDialog>,
         private fb: FormBuilder,
+        private schemaService: SchemaService,
         @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.schema = data.schema || null;
         this.example = data.example || false;
         this.dataForm = fb.group({});
         this.hideFields = {};
-        if (this.example) {
-            const presetDocument = DocumentGenerator.generateDocument(this.schema);
-            this.presetDocument = presetDocument;
-        } else {
-            this.presetDocument = null;
-        }
+        this.category = data.category
     }
 
     ngOnInit(): void {
-        setTimeout(() => {
-            this.started = true;
-        });
+        this.getSubSchemes()
     }
 
     onClose() {
@@ -48,5 +45,23 @@ export class SchemaFormDialog {
 
     onSave() {
         this.dialogRef.close(this.dataForm?.value);
+    }
+
+    getSubSchemes() {
+        const { topicId, id} = this.schema ?? {};
+
+        this.schemaService.getSchemaWithSubSchemas(this.category, id, topicId).subscribe((data) => {
+            if(this.schema && data.schema) {
+                this.schema = new Schema(data.schema)
+            }
+
+            if (this.example) {
+                this.presetDocument = DocumentGenerator.generateDocument(this.schema);
+            } else {
+                this.presetDocument = null
+            }
+
+            this.started = true
+        });
     }
 }

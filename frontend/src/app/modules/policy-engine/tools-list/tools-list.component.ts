@@ -1,18 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { GenerateUUIDv4, IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
 import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
 
@@ -35,6 +35,7 @@ enum OperationMode {
 })
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public tools: any[] | null;
     public toolsCount: any;
@@ -96,6 +97,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
 
             if (this.isConfirmed) {
                 this.loadAllTools();
@@ -115,8 +117,15 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             this.tools = policiesResponse.body || [];
             this.toolsCount = policiesResponse.headers.get('X-Total-Count') || this.tools.length;
             this.canPublishAnyTool = this.tools.some(tool => tool.status === 'DRAFT');
+            this.loadTagsData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 
-            const ids = this.tools.map(e => e.id);
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const ids = this.tools?.map(e => e.id) || [];
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.tools) {
                     for (const policy of this.tools) {
@@ -130,9 +139,11 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 console.error(e.error);
                 this.loading = false;
             });
-        }, (e) => {
-            this.loading = false;
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onPage(event: any) {
@@ -154,13 +165,16 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             styleClass: 'custom-dialog',
             data: {
                 tool: tool,
+                isFile: type === 'file'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
                     this.loading = true;
-                    this.toolsService.importByMessage(data).subscribe(
+                    this.toolsService.importByMessage(data, {
+                        tools: result.tools
+                    }).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {
@@ -168,7 +182,9 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         });
                 } else if (type === 'file') {
                     this.loading = true;
-                    this.toolsService.importByFile(data).subscribe(
+                    this.toolsService.importByFile(data, {
+                        tools: result.tools
+                    }).subscribe(
                         (result) => {
                             this.loadAllTools();
                         }, (e) => {
@@ -209,12 +225,23 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.itemId1 && result.itemId2) {
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: [
+                        result.itemId1,
+                        result.itemId2
+                    ].map((id) => {
+                        return {
+                            type: 'id',
+                            value: id
+                        }
+                    })
+                }));
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'tool',
-                        toolId1: result.itemId1,
-                        toolId2: result.itemId2
+                        items
                     }
                 });
             }
@@ -227,13 +254,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             .subscribe(tool => {
                 this.loading = false;
                 this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Tool',
                     width: '700px',
-                    header: 'Export',
-                    styleClass: 'custom-dialog',
+                    styleClass: 'guardian-dialog',
                     data: {
                         tool
                     },
-                    closable: true
                 })
             });
     }

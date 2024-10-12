@@ -1,6 +1,7 @@
-const axios = require('axios');
-const assert = require('assert')
-const {GetURL, sleep, SaveToken, GetToken} = require('../helpers');
+import axios from 'axios';
+import assert from 'assert';
+
+import { GetURL, GetToken } from '../helpers';
 
 function Accounts() {
     it('/accounts/login', async function() {
@@ -180,6 +181,6 @@ function Accounts() {
     });
 }
 
-module.exports = {
-    Accounts
-}
+export {
+    Accounts,
+};

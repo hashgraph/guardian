@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Inject, Input, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, } from '@angular/core';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
@@ -25,10 +25,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
     taskNotFound: boolean = false;
     userRole?: UserRole;
     last?: any;
+    redir?: any;
 
     @Input('taskId') inputTaskId?: string;
     @Output() completed = new EventEmitter<string>();
     @Output() error = new EventEmitter<any>();
+
+    @ViewChild('status') statusRef: ElementRef;
 
     private subscription = new Subscription();
 
@@ -43,7 +46,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>
     ) {
-        this.last = this.route?.snapshot?.queryParams?.last;
+        const queryParams = this.route?.snapshot?.queryParams;
+        this.last = queryParams?.last;
+        this.redir = !(queryParams?.redir === 'false' || queryParams?.redir === false);
+
         try {
             if (this.last) {
                 this.last = atob(this.last);
@@ -159,9 +165,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
                 this.wsService.updateProfile();
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 return;
@@ -182,7 +187,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 });
                 break;
             case TaskAction.CREATE_TOOL:
-                this.router.navigate(['policy-configuration'], {
+                this.router.navigate(['tool-configuration'], {
                     queryParams: {
                         toolId: result,
                     },
@@ -191,12 +196,18 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
-                this.router.navigate(['policy-configuration'], {
-                    queryParams: {
-                        policyId: result.policyId,
-                    },
-                    replaceUrl: true,
-                });
+                if (this.redir) {
+                    this.router.navigate(['policy-configuration'], {
+                        queryParams: {
+                            policyId: result.policyId,
+                        },
+                        replaceUrl: true,
+                    });
+                } else {
+                    this.router.navigate(['policy-viewer'], {
+                        replaceUrl: true,
+                    });
+                }
                 break;
             case TaskAction.WIZARD_CREATE_POLICY:
                 const { policyId, saveState } = result;
@@ -276,7 +287,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                         );
                         this._configurationErrors.set(tool?.id, errors);
                     }
-                    this.router.navigate(['policy-configuration'], {
+                    this.router.navigate(['tool-configuration'], {
                         queryParams: {
                             toolId: tool?.id
                         },
@@ -328,9 +339,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         switch (this.action) {
             case TaskAction.RESTORE_USER_PROFILE:
             case TaskAction.CONNECT_USER:
-                this.router.navigate([
-                    this.userRole === UserRole.USER ? 'user-profile' : 'config',
-                ], {
+                const home = this.auth.home(this.userRole);
+                this.router.navigate([home], {
                     replaceUrl: true,
                 });
                 break;
@@ -422,5 +432,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             this.statusesCount > this.expected
                 ? 100
                 : Math.floor((this.statusesCount / this.expected) * 100);
+        setTimeout(() => {
+            if (this.statusRef?.nativeElement) {
+                this.statusRef.nativeElement.scrollTop = 99999;
+            }
+        }, 50);
     }
 }

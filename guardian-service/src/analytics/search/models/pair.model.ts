@@ -14,9 +14,9 @@ import {
     PropertiesRate,
     RateKeyMap,
     RateMap
-} from '../../compare';
-import { SearchUtils } from '../utils/utils';
-import { BlockSearchJson, BlockSearchModel } from './block.model';
+} from '../../compare/index.js';
+import { SearchUtils } from '../utils/utils.js';
+import { BlockSearchJson, BlockSearchModel } from './block.model.js';
 
 export interface PairSearchJson {
     /**

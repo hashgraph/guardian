@@ -1,7 +1,7 @@
 import { Policy, PolicyTool, PolicyModule } from '@guardian/common';
 import { BlockType } from '@guardian/interfaces';
-import { BlockSearchModel } from './block.model';
-import { ChainSearchModel } from './chain.model';
+import { BlockSearchModel } from './block.model.js';
+import { ChainSearchModel } from './chain.model.js';
 
 /**
  * Root model

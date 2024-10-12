@@ -1,13 +1,13 @@
-import { Dictionary, FieldTypes } from './models/dictionary';
-import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters';
-import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook';
-import { Table } from './models/table';
+import { Dictionary, FieldTypes } from './models/dictionary.js';
+import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula } from './models/value-converters.js';
+import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
+import { Table } from './models/table.js';
 import { ISchema, Schema, SchemaCondition, SchemaField } from '@guardian/interfaces';
-import { PolicyTool } from '../entity';
-import { IRowField } from './interfaces/row-field.interface';
-import { SheetName } from './models/sheet-name';
-import { XlsxEnum } from './models/xlsx-enum';
-import { EnumTable } from './models/enum-table';
+import { PolicyTool } from '../entity/index.js';
+import { IRowField } from './interfaces/row-field.interface.js';
+import { SheetName } from './models/sheet-name.js';
+import { XlsxEnum } from './models/xlsx-enum.js';
+import { EnumTable } from './models/enum-table.js';
 
 export class JsonToXlsx {
     public static async generate(
@@ -278,7 +278,7 @@ export class JsonToXlsx {
                     .getCell(table.getCol(Dictionary.ANSWER), row)
                     .setList2(_enum.getData());
             } else {
-                throw new Error(`Enum (field.path) not found.`);
+                throw new Error(`Enum ('${worksheet.name}', ${field.name}, '${field.description}', ${field.path}) not found.`);
             }
         }
         if (type && !field.isRef) {

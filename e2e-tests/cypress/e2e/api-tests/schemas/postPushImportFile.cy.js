@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Schemas",{ tags: '@schemas' },  () => {
+context("Schemas",{ tags: ['schema', 'thirdPool'] },  () => {
     const authorization = Cypress.env("authorization");
 
     before(() => {
@@ -26,7 +26,7 @@ context("Schemas",{ tags: '@schemas' },  () => {
                     authorization,
                 },
             }).then((response) => {
-                expect(response.status).to.eq(200);
+                expect(response.status).to.eq(STATUS_CODE.OK);
                 expect(response.body).to.not.be.oneOf([null, ""]);
                 let schema = Cypress.Blob.arrayBufferToBinaryString(
                     response.body
@@ -47,8 +47,8 @@ context("Schemas",{ tags: '@schemas' },  () => {
             headers: {
                 authorization,
             },
-        }).then((resp) => {
-            const topicUid = resp.body[0].topicId;
+        }).then((response) => {
+            const topicUid = response.body[0].topicId;
 
             cy.fixture("exportedSchema.schema", "binary")
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))

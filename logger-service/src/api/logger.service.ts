@@ -1,5 +1,4 @@
-import { Log } from '@entity/log';
-import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse } from '@guardian/common';
+import { DataBaseHelper, LargePayloadContainer, MessageError, MessageResponse, Log } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Ctx, MessagePattern, NatsContext, Payload, Transport } from '@nestjs/microservices';

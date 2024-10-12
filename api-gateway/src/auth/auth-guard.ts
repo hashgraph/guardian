@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { UsersService } from '@helpers/users';
+import { UsersService } from '../helpers/users.js';
 import { IAuthUser } from '@guardian/common';
 import { Request } from 'express';
 

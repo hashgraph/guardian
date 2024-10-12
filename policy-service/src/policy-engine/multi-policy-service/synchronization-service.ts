@@ -1,24 +1,7 @@
-import {
-    IRootConfig,
-    PolicyType,
-    WorkerTaskType
-} from '@guardian/interfaces';
+import { IRootConfig, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { CronJob } from 'cron';
-import { MintService } from '../mint/mint-service';
-import {
-    Logger,
-    Token,
-    DatabaseServer,
-    MultiPolicyTransaction,
-    Policy,
-    Users,
-    MessageAction,
-    MessageServer,
-    SynchronizationMessage,
-    TopicConfig,
-    Workers,
-    NotificationHelper,
-} from '@guardian/common';
+import { MintService } from '../mint/mint-service.js';
+import { DatabaseServer, MessageAction, MessageServer, MultiPolicyTransaction, NotificationHelper, PinoLogger, Policy, SynchronizationMessage, Token, TopicConfig, Users, Workers } from '@guardian/common';
 
 /**
  * Synchronization Service
@@ -50,7 +33,7 @@ export class SynchronizationService {
      */
     private readonly policy: Policy;
 
-    constructor(policy: Policy) {
+    constructor(policy: Policy, private readonly logger: PinoLogger) {
         this.policy = policy;
     }
 
@@ -73,7 +56,7 @@ export class SynchronizationService {
             this.task().then();
         }, null, false, 'UTC');
         this.job.start();
-        new Logger().info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+        this.logger.info(`Start synchronization: ${cronMask}`, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         return true;
     }
 
@@ -97,17 +80,17 @@ export class SynchronizationService {
             if (this.taskStatus) {
                 return;
             }
-            new Logger().info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Start synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
 
             this.taskStatus = true;
             await this.taskByPolicy(this.policy);
             this.taskStatus = false;
 
-            new Logger().info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.info('Complete synchronization task', ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         } catch (error) {
             this.taskStatus = false;
             console.error(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
@@ -126,7 +109,7 @@ export class SynchronizationService {
             }
 
             const topic = new TopicConfig({ topicId: policy.synchronizationTopicId }, null, null);
-            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey).setTopicObject(topic);
+            const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions).setTopicObject(topic);
 
             const workers = new Workers();
             const messages = await workers.addRetryableTask({
@@ -184,7 +167,7 @@ export class SynchronizationService {
             }
         } catch (error) {
             console.error(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
         }
     }
 
@@ -251,7 +234,7 @@ export class SynchronizationService {
                         transaction.vpMessageId,
                         notifier,
                     ).catch(error => {
-                        new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+                        this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
                     });
                 }
             }
@@ -314,7 +297,7 @@ export class SynchronizationService {
         } catch (error) {
             transaction.status = 'Failed';
             console.error(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
+            await this.logger.error(error, ['GUARDIAN_SERVICE', 'SYNCHRONIZATION_SERVICE']);
             await DatabaseServer.updateMultiPolicyTransactions(transaction);
             return null;
         }

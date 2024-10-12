@@ -4,7 +4,8 @@
     right: 0;
     bottom: 0;
     top: 0;
-    display: block;
+    display: flex;
+    flex-direction: column;
 }
 
 .loading {
@@ -85,6 +86,7 @@ a.go-back-link mat-icon {
     }
 }
 
+.policy-header[policy-status="DEMO"],
 .policy-header[policy-status="DRY-RUN"] {
     top: 170px;
 }
@@ -94,10 +96,11 @@ a.go-back-link mat-icon {
     display: flex;
     //flex-direction: column;
     gap: 24px;
-    padding: 20px 48px;
+    padding: 18px 20px 78px 48px;
     background: #f9fafc;
 }
 
+.policy-container[policy-status="DEMO"],
 .policy-container[policy-status="DRY-RUN"] {
     left: 25px;
     top: 170px;
@@ -123,6 +126,7 @@ a.go-back-link mat-icon {
     background: #f9fafc;
 }
 
+.second-policy-container[policy-status="DEMO"],
 .second-policy-container[policy-status="DRY-RUN"] {
     left: 25px;
     top: 170px;
@@ -203,31 +207,34 @@ a.go-back-link mat-icon {
     position: relative;
 }
 
-.content[status="DRY-RUN"] {
-}
-
+.content[status="DEMO"] .policy-header,
 .content[status="DRY-RUN"] .policy-header {
+    min-height: 136px;
     height: 136px;
     background: #23252e;
     color: #fff;
 }
 
 .content[status="DISCONTINUED"] .policy-header {
+    min-height: 136px;
     height: 136px;
     background: #ff3e3e;
     color: #fff;
 }
 
 .content[status="PUBLISH"] .policy-header[expired="true"] {
+    min-height: 136px;
     height: 136px;
     background: #FF8460;
     color: #fff;
 }
 
+.content[status="DEMO"] .go-back-link,
 .content[status="DRY-RUN"] .go-back-link {
     color: #fff;
 }
 
+.content[status="DEMO"] .go-back-link mat-icon,
 .content[status="DRY-RUN"] .go-back-link mat-icon {
     color: #fff;
 }
@@ -237,6 +244,7 @@ a.go-back-link mat-icon {
     left: 0px;
     right: 0px;
     height: 50px;
+    min-height: 50px;
     display: flex;
     box-sizing: border-box;
     z-index: 150;
@@ -422,9 +430,6 @@ a.go-back-link mat-icon {
             text-transform: uppercase;
         }
 
-        .mat-header-cell:first-of-type {
-        }
-
         .mat-cell {
             border-bottom: none;
             color: var(--color-grey-black-1);
@@ -577,6 +582,7 @@ a.go-back-link mat-icon {
         border: none;
     }
 
+    .policy-header[policy-status="DEMO"],
     .policy-header[policy-status="DRY-RUN"] {
         top: 45px;
     }

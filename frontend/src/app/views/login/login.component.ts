@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { UserRole } from '@guardian/interfaces';
+import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
@@ -108,13 +108,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     async redirect() {
         this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
-                if (user.role === UserRole.STANDARD_REGISTRY) {
-                    this.router.navigate(['/config']);
-                } else if (user.role === UserRole.AUDITOR) {
-                    this.router.navigate(['/audit']);
-                } else {
-                    this.router.navigate(['/user-profile']);
-                }
+                const home = this.auth.home(user.role);
+                this.router.navigate([home]);
             }
         });
     }
@@ -149,11 +144,8 @@ export class LoginComponent implements OnInit, OnDestroy {
                 this.auth.setUsername(login);
                 this.auth.updateAccessToken().subscribe(_result => {
                     this.authState.updateState(true);
-                    if (result.role == UserRole.STANDARD_REGISTRY) {
-                        this.router.navigate(['/config']);
-                    } else {
-                        this.router.navigate(['/']);
-                    }
+                    const home = this.auth.home(result.role);
+                    this.router.navigate([home]);
                 });
             },
             ({ message }) => {
@@ -236,11 +228,8 @@ export class LoginComponent implements OnInit, OnDestroy {
             this.auth.setAccessToken(event.accessToken);
             this.auth.setUsername(event.username);
             this.authState.updateState(true);
-            if (event.role == UserRole.STANDARD_REGISTRY) {
-                this.router.navigate(['/config']);
-            } else {
-                this.router.navigate(['/']);
-            }
+            const home = this.auth.home(event.role);
+            this.router.navigate([home]);
         });
     }
 
@@ -297,18 +286,6 @@ export class LoginComponent implements OnInit, OnDestroy {
                     return;
                 }
                 this.login(userData.username, userData.password);
-                // this.auth.login(userData.username, userData.password).subscribe((result) => {
-                //     this.auth.setAccessToken(result.accessToken);
-                //     this.auth.setUsername(userData.username);
-                //     this.authState.updateState(true);
-                //     if (result.role === UserRole.STANDARD_REGISTRY) {
-                //         this.router.navigate(['/config']);
-                //     } else {
-                //         this.router.navigate(['/']);
-                //     }
-                // }, () => {
-                //     this.loading = false;
-                // })
             }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;

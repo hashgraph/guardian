@@ -60,9 +60,15 @@
                                 <div class="policies-info">{{ getPoliciesInfo(token.policies) }}</div>
                             </td>
                             <td>
-                                <tags-explorer [data]="token._tags" [entity]="tagEntity" [owner]="owner"
-                                               [schemas]="tagSchemas" [service]="tagsService"
-                                               [target]="token.id"></tags-explorer>
+                                <tags-explorer 
+                                        *ngIf="user.TAGS_TAG_READ"
+                                        [user]="user"
+                                        [data]="token._tags" 
+                                        [entity]="tagEntity" 
+                                        [owner]="owner"
+                                        [schemas]="tagSchemas" 
+                                        [service]="tagsService"
+                                        [target]="token.id"></tags-explorer>
                             </td>
                         </tr>
                     </ng-container>

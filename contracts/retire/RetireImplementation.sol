@@ -127,6 +127,8 @@ abstract contract RetireImplementation is RetireCommon {
                     usr,
                     tokens[i].serials
                 );
+            } else {
+                revert('UNSUPPORTED_TOKEN_TYPE');
             }
         }
         emit Retire(usr, tokens);
@@ -141,8 +143,6 @@ abstract contract RetireImplementation is RetireCommon {
         require(RetireCommon(this).retireCheck(tokens), "RETIRE_CHECK");
         address[] memory tokenAddresses = new address[](tokens.length);
         for (uint256 i = 0; i < tokens.length; i++) {
-            // Validate for max int64
-            require(tokens[i].serials.length < 9223372036854775807);
             tokenAddresses[i] = tokens[i].token;
         }
         (, bool immediately) = RetireCommon(this).getPool(tokenAddresses);
@@ -170,12 +170,15 @@ abstract contract RetireImplementation is RetireCommon {
         internal
         returns (int64)
     {
-        int64 count = 0;
         int32 tokenType = safeGetTokenType(opt.token);
+        int64 count;
         if (tokenType == 0) {
             count = opt.count;
-        } else if (tokenType == 1) {
+        } else if (tokenType == 1){
             count = int64(int256(opt.serials.length));
+            require(count <= 10, 'NFTS_LIMIT');
+        } else {
+            revert('UNSUPPORTED_TOKEN_TYPE');
         }
         return count;
     }

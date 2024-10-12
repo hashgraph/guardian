@@ -52,7 +52,11 @@ Tools that have not been published can only be edited.
 
 <figure><img src="../../../../.gitbook/assets/image (319).png" alt=""><figcaption></figcaption></figure>
 
+### 1.6 Changing Tools
 
+While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
+
+<figure><img src="../../../../.gitbook/assets/image (588).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Schemas
 

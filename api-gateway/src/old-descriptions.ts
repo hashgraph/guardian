@@ -8,7 +8,7 @@ export const SwaggerPaths = {
             'description': 'Returns all schemas.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all schemas.',
@@ -91,7 +91,7 @@ export const SwaggerPaths = {
             'description': 'Returns schema by schema ID.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns schema by schema ID.',
@@ -161,7 +161,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Create new schema.',
@@ -205,7 +205,7 @@ export const SwaggerPaths = {
             'description': 'Returns all schemas by topicId.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all schemas by topicId.',
@@ -303,7 +303,7 @@ export const SwaggerPaths = {
             'description': 'Creates new schema. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Create new schema.',
@@ -384,7 +384,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Publishes the schema.',
@@ -445,7 +445,7 @@ export const SwaggerPaths = {
             'description': 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.',
@@ -525,7 +525,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Updates the schema.',
@@ -590,7 +590,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Deletes the schema.',
@@ -652,7 +652,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new schema from a zip file.',
@@ -709,7 +709,7 @@ export const SwaggerPaths = {
             'description': 'Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new schema from a zip file.',
@@ -797,7 +797,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new schema from IPFS.',
@@ -858,7 +858,7 @@ export const SwaggerPaths = {
             'description': 'Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new schema from IPFS.',
@@ -933,7 +933,7 @@ export const SwaggerPaths = {
             'description': 'Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Schema preview from IPFS.',
@@ -994,7 +994,7 @@ export const SwaggerPaths = {
             'description': 'Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Schema preview from IPFS.',
@@ -1052,7 +1052,7 @@ export const SwaggerPaths = {
             'description': 'Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Schema preview from a zip file.',
@@ -1109,7 +1109,7 @@ export const SwaggerPaths = {
             'description': 'Returns Hedera message IDs of the published schemas, these messages contain IPFS CIDs of these schema files. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'List Hedera message IDs of published schemas.',
@@ -1162,7 +1162,7 @@ export const SwaggerPaths = {
             'description': 'Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return zip file with schemas.',
@@ -1219,7 +1219,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns schema by type.',
@@ -1272,7 +1272,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates new system schema.',
@@ -1316,7 +1316,7 @@ export const SwaggerPaths = {
             'description': 'Returns all system schemas by username. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all system schemas by username.',
@@ -1419,7 +1419,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Updates the schema.',
@@ -1484,7 +1484,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Deletes the schema.',
@@ -1540,7 +1540,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Publishes the schema.',
@@ -1620,7 +1620,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns schema by schema type.',
@@ -1662,7 +1662,7 @@ export const SwaggerPaths = {
             'description': 'Returns all tokens. For the Standard Registry role it returns only the list of tokens, for other users it also returns token balances as well as the KYC, Freeze, and Association statuses. Not allowed for the Auditor role.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of tokens.',
@@ -1720,7 +1720,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new token. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new token.',
@@ -1801,7 +1801,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new token. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new token.',
@@ -1854,7 +1854,7 @@ export const SwaggerPaths = {
             'description': 'Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'parameters': [
@@ -1936,7 +1936,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Associates the user with the provided Hedera token.',
@@ -1971,7 +1971,7 @@ export const SwaggerPaths = {
             'description': 'Associates the user with the provided Hedera token. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Associates the user with the provided Hedera token.',
@@ -2035,7 +2035,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Associate the user with the provided Hedera token.',
@@ -2070,7 +2070,7 @@ export const SwaggerPaths = {
             'description': 'Disassociates the user with the provided Hedera token. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Disassociates the user with the provided Hedera token.',
@@ -2143,7 +2143,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Sets the KYC flag for the user.',
@@ -2195,7 +2195,7 @@ export const SwaggerPaths = {
             'description': 'Sets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Sets the KYC flag for the user.',
@@ -2277,7 +2277,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Unsets the KYC flag for the user.',
@@ -2329,7 +2329,7 @@ export const SwaggerPaths = {
             'description': 'Unsets the KYC flag for the user. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Unsets the KYC flag for the user.',
@@ -2411,7 +2411,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Freeze transfers of the specified token for the user.',
@@ -2463,7 +2463,7 @@ export const SwaggerPaths = {
             'description': 'Freezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Freeze transfers of the specified token for the user.',
@@ -2545,7 +2545,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Unfreezes transfers of the specified token for the user.',
@@ -2597,7 +2597,7 @@ export const SwaggerPaths = {
             'description': 'Unfreezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Unfreezes transfers of the specified token for the user.',
@@ -2659,7 +2659,7 @@ export const SwaggerPaths = {
             'description': 'Requests all VP documents. Only users with the Auditor role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns a list of all VP documents.',
@@ -2769,7 +2769,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns a trustchain for a VP document.',
@@ -2811,7 +2811,7 @@ export const SwaggerPaths = {
             'description': 'Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of all policies.',
@@ -2907,7 +2907,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new policy.',
@@ -2953,7 +2953,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new policy. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new policy.',
@@ -3018,7 +3018,7 @@ export const SwaggerPaths = {
             'summary': 'Retrieves policy configuration.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3095,7 +3095,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3164,7 +3164,7 @@ export const SwaggerPaths = {
             'summary': 'Publishes the policy onto IPFS.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3205,7 +3205,7 @@ export const SwaggerPaths = {
             'description': 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic.',
@@ -3274,7 +3274,7 @@ export const SwaggerPaths = {
             'description': 'Validates selected policy. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Validates policy.',
@@ -3339,7 +3339,7 @@ export const SwaggerPaths = {
             'summary': 'Returns a list of groups the user is a member of.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3429,7 +3429,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3475,7 +3475,7 @@ export const SwaggerPaths = {
             'summary': 'Retrieves data for the policy root block.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3537,7 +3537,7 @@ export const SwaggerPaths = {
             'summary': 'Requests block data.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3608,7 +3608,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3663,7 +3663,7 @@ export const SwaggerPaths = {
             'summary': 'Requests block ID from a policy by tag.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -3720,7 +3720,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return Heder message ID for the specified published policy.',
@@ -3773,7 +3773,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return policy and its artifacts in a zip file format for the specified policy.',
@@ -3831,7 +3831,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new policy from IPFS.',
@@ -3892,7 +3892,7 @@ export const SwaggerPaths = {
             'description': 'Imports new policy and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new policy and all associated artifacts from IPFS into the local DB.',
@@ -3966,7 +3966,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new policy from a zip file.',
@@ -4023,7 +4023,7 @@ export const SwaggerPaths = {
             'description': 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.',
@@ -4078,7 +4078,7 @@ export const SwaggerPaths = {
             'summary': 'Policy preview from IPFS.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -4135,7 +4135,7 @@ export const SwaggerPaths = {
             'description': 'Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Previews the policy from IPFS without loading it into the local DB.',
@@ -4194,7 +4194,7 @@ export const SwaggerPaths = {
             'summary': 'Policy preview from a zip file.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -4247,7 +4247,7 @@ export const SwaggerPaths = {
             'description': 'Run policy without making any persistent changes or executing transaction. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Dry Run policy.',
@@ -4300,7 +4300,7 @@ export const SwaggerPaths = {
             'description': 'Return policy to editing. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return policy to editing.',
@@ -4353,7 +4353,7 @@ export const SwaggerPaths = {
             'description': 'Returns all virtual users. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all virtual users.',
@@ -4417,7 +4417,7 @@ export const SwaggerPaths = {
             'description': 'Create a new virtual account. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Create a new virtual account.',
@@ -4481,7 +4481,7 @@ export const SwaggerPaths = {
             'description': 'Logs virtual user into the system. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Logs virtual user into the system.',
@@ -4561,7 +4561,7 @@ export const SwaggerPaths = {
             'description': 'Restarts the execution of the policy. Clear data in database. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Restarts the execution of the policy.',
@@ -4607,7 +4607,7 @@ export const SwaggerPaths = {
             'description': 'Returns lists of virtual transactions. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns lists of virtual transactions.',
@@ -4674,7 +4674,7 @@ export const SwaggerPaths = {
             'description': 'Returns lists of virtual artifacts. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns lists of virtual artifacts.',
@@ -4741,7 +4741,7 @@ export const SwaggerPaths = {
             'description': 'Returns lists of virtual artifacts. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns lists of virtual artifacts.',
@@ -4808,7 +4808,7 @@ export const SwaggerPaths = {
             'description': 'Sends data to the specified block.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Sends data to the specified block.',
@@ -4879,7 +4879,7 @@ export const SwaggerPaths = {
             'description': 'Requests block data by tag. Only users with a role that described in block are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Requests block data.',
@@ -4941,7 +4941,7 @@ export const SwaggerPaths = {
             'description': 'Creates a link between the current policy and the main policy. Or creates a group making the current policy the main one.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates Multi policy config.',
@@ -5015,7 +5015,7 @@ export const SwaggerPaths = {
             'description': 'Requests Multi policy config.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Requests Multi policy config.',
@@ -5103,7 +5103,7 @@ export const SwaggerPaths = {
             'description': 'Generates a new Hedera account with a random private key.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -5144,7 +5144,7 @@ export const SwaggerPaths = {
             'description': 'Generates a new Hedera account with a random private key.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Generates a new Hedera account with a random private key.',
@@ -5198,7 +5198,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -5250,7 +5250,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -5289,7 +5289,7 @@ export const SwaggerPaths = {
             'description': 'Returns current settings. For users with the Standard Registry role only.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns current settings.',
@@ -5329,7 +5329,7 @@ export const SwaggerPaths = {
             'description': 'Set settings. For users with the Standard Registry role only.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Set settings.',
@@ -5364,7 +5364,7 @@ export const SwaggerPaths = {
             'description': 'Returns current environment name.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns current environment name.',
@@ -5401,7 +5401,7 @@ export const SwaggerPaths = {
             'description': 'Returns logs. For users with the Standard Registry role only.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -5482,7 +5482,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns logs attributes.',
@@ -5527,7 +5527,7 @@ export const SwaggerPaths = {
             'description': 'Returns task statuses by Id.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns task statuses.',
@@ -5580,7 +5580,7 @@ export const SwaggerPaths = {
             'description': 'Returns all artifacts.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all artifacts.',
@@ -5671,7 +5671,7 @@ export const SwaggerPaths = {
             'description': 'Upload artifact. For users with the Standard Registry role only.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -5745,7 +5745,7 @@ export const SwaggerPaths = {
             'description': 'Delete artifact.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Delete artifact.',
@@ -5799,7 +5799,7 @@ export const SwaggerPaths = {
             'description': 'Returns all artifacts.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all artifacts.',
@@ -5891,7 +5891,7 @@ export const SwaggerPaths = {
             'description': 'Upload artifact. For users with the Standard Registry role only.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -5966,7 +5966,7 @@ export const SwaggerPaths = {
             'description': 'Delete artifact.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Delete artifact.',
@@ -6019,7 +6019,7 @@ export const SwaggerPaths = {
             'description': 'Returns all modules. Only users with the Standard Registry and Installer role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of all modules.',
@@ -6097,7 +6097,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new module. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new module.',
@@ -6143,7 +6143,7 @@ export const SwaggerPaths = {
             'description': 'Returns modules menu. Only users with the Standard Registry and Installer role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of modules.',
@@ -6200,7 +6200,7 @@ export const SwaggerPaths = {
             'summary': 'Retrieves module configuration.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -6262,7 +6262,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -6312,7 +6312,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Deletes the module.',
@@ -6366,7 +6366,7 @@ export const SwaggerPaths = {
             'summary': 'Publishes the module onto IPFS.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -6418,7 +6418,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return Heder message ID for the specified published module.',
@@ -6471,7 +6471,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return module and its artifacts in a zip file format for the specified module.',
@@ -6506,7 +6506,7 @@ export const SwaggerPaths = {
             'description': 'Imports new module and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new module from IPFS.',
@@ -6564,7 +6564,7 @@ export const SwaggerPaths = {
             'description': 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new module from a zip file.',
@@ -6619,7 +6619,7 @@ export const SwaggerPaths = {
             'summary': 'Module preview from IPFS.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -6677,7 +6677,7 @@ export const SwaggerPaths = {
             'summary': 'Module preview from a zip file.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -6730,7 +6730,7 @@ export const SwaggerPaths = {
             'description': 'Validates selected module. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Validates module.',
@@ -6783,7 +6783,7 @@ export const SwaggerPaths = {
             'description': 'Returns map api key.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns map api key.',
@@ -6822,7 +6822,7 @@ export const SwaggerPaths = {
             'description': 'Creates new tag.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates new tag.',
@@ -6885,7 +6885,7 @@ export const SwaggerPaths = {
             'description': 'Search tags.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -7013,7 +7013,7 @@ export const SwaggerPaths = {
             'description': 'Delete tag.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Delete tag.',
@@ -7067,7 +7067,7 @@ export const SwaggerPaths = {
             'description': 'synchronization.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'requestBody': {
@@ -7142,7 +7142,7 @@ export const SwaggerPaths = {
             'description': 'Returns all schema.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns all schemas.',
@@ -7223,7 +7223,7 @@ export const SwaggerPaths = {
             'description': 'Creates new schema. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates new schema.',
@@ -7276,7 +7276,7 @@ export const SwaggerPaths = {
             'description': 'Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Delete the schema.',
@@ -7338,7 +7338,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Updates the schema.',
@@ -7405,7 +7405,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Publishes the schema.',
@@ -7450,7 +7450,7 @@ export const SwaggerPaths = {
             'description': 'Return a list of all published schemas.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of all published schemas.',
@@ -7495,7 +7495,7 @@ export const SwaggerPaths = {
             'description': 'Returns all themes.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Return a list of all themes.',
@@ -7538,7 +7538,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new theme.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new theme.',
@@ -7607,7 +7607,7 @@ export const SwaggerPaths = {
             },
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'responses': {
@@ -7657,7 +7657,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Deletes the theme.',
@@ -7710,7 +7710,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Returns a zip file containing the theme.',
@@ -7745,7 +7745,7 @@ export const SwaggerPaths = {
             'description': 'Imports new theme from the provided zip file into the local DB.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Imports new theme from a zip file.',
@@ -7799,7 +7799,7 @@ export const SwaggerPaths = {
             'description': 'Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.',
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Creates a new policy.',
@@ -7871,7 +7871,7 @@ export const SwaggerPaths = {
             ],
             'security': [
                 {
-                    'bearerAuth': []
+                    'bearer': []
                 }
             ],
             'summary': 'Get policy config.',

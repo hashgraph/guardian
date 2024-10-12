@@ -1,5 +1,5 @@
-import { IPolicy } from './policy.interface';
-import { IVCDocument } from './vc-document.interface';
+import { IPolicy } from './policy.interface.js';
+import { IVCDocument } from './vc-document.interface.js';
 
 /**
  * StandardRegistryAccountResponse - Related to response

@@ -22,6 +22,22 @@ services:
     depends_on:
       - mongo
 
+  cache:
+    image: registry.redict.io/redict
+    restart: always
+    expose:
+      - 6379
+
+#  seq:
+#    image: datalust/seq
+#    restart: unless-stopped
+#    environment:
+#      ACCEPT_EULA: "Y"
+#    ports:
+#      - "5341:80"
+#    volumes:
+#      - seq_data:/data
+
   ipfs-node:
     image: ipfs/kubo:v0.26.0
     ports:
@@ -38,7 +54,9 @@ services:
       - 4222
     ports:
       - '8222:8222'
-    command: '--http_port 8222'
+    command: '-c /etc/nats/nats.conf --http_port 8222'
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
 
   vault:
     image: hashicorp/vault:1.12.11
@@ -61,6 +79,7 @@ services:
     build:
       context: .
       dockerfile: ./notification-service/Dockerfile
+    init: true
     depends_on:
       - message-broker
     environment:
@@ -74,6 +93,7 @@ services:
     build:
       context: .
       dockerfile: ./logger-service/Dockerfile
+    init: true
     depends_on:
       - message-broker
     environment:
@@ -83,13 +103,32 @@ services:
     volumes:
       - ./logger-service/configs:/usr/local/logger-service/configs:ro
 
+  queue-service:
+    env_file:
+      - ./configs/.env.${GUARDIAN_ENV}.guardian.system
+    build:
+      context: .
+      dockerfile: ./queue-service/Dockerfile
+    init: true
+    depends_on:
+      - mongo
+      - message-broker
+      - logger-service
+    environment:
+      - GUARDIAN_ENV=${GUARDIAN_ENV}
+    expose:
+      - 6555
+
   worker-service:
     env_file:
       - ./configs/.env.${GUARDIAN_ENV}.guardian.system
     build:
       context: .
       dockerfile: ./worker-service/Dockerfile
+    init: true
     depends_on:
+      queue-service:
+        condition: service_started
       ipfs-node:
         condition: service_healthy
       auth-service:
@@ -110,6 +149,7 @@ services:
     build:
       context: .
       dockerfile: ./auth-service/Dockerfile.demo
+    init: true
     ports:
       - '5005:5005'
     volumes:
@@ -132,11 +172,14 @@ services:
     build:
       context: .
       dockerfile: ./api-gateway/Dockerfile.demo
+    init: true
     expose:
       - 3002
       - 6555
     depends_on:
       - mongo
+      - cache
+#      - seq
       - message-broker
       - guardian-service
       - auth-service
@@ -152,6 +195,7 @@ services:
     build:
       context: .
       dockerfile: ./ai-service/Dockerfile
+    init: true
     expose:
       - 3013
     depends_on:
@@ -171,6 +215,7 @@ services:
     build:
       context: .
       dockerfile: ./policy-service/Dockerfile
+    init: true
     ports:
       - "5006:5006"
     depends_on:
@@ -193,6 +238,7 @@ services:
     build:
       context: .
       dockerfile: ./guardian-service/Dockerfile
+    init: true
     ports:
       - "5007:5007"
     volumes:
@@ -215,8 +261,7 @@ services:
     build:
       context: .
       dockerfile: application-events/Dockerfile
-    expose:
-      - 3012
+    init: true
     ports:
       - "3012:3012"
     depends_on:
@@ -225,21 +270,25 @@ services:
       - guardian-service
       - auth-service
       - logger-service
+    expose:
+    - 3012
 
   mrv-sender:
     build:
       context: .
       dockerfile: ./mrv-sender/Dockerfile
-    expose:
-      - 3003
-      - 5008
+    init: true
     ports:
       - "5008:5008"
+    expose:
+      - 3005
+      - 5008
 
   topic-viewer:
     build:
       context: .
       dockerfile: ./topic-viewer/Dockerfile
+    init: true
     expose:
       - 3006
       - 5009
@@ -249,7 +298,16 @@ services:
   web-proxy:
     build:
       context: .
-      dockerfile: ./web-proxy/Dockerfile
+      dockerfile: ./web-proxy/Dockerfile.demo
+    init: true
+    environment:
+      GATEWAY_CLIENT_MAX_BODY_SIZE: 1024m
+      GATEWAY_HOST: api-gateway
+      GATEWAY_PORT: 3002
+      MRV_SENDER_HOST: mrv-sender
+      MRV_SENDER_PORT: 3005
+      TOPIC_VIEWER_HOST: topic-viewer
+      TOPIC_VIEWER_PORT: 3006
     ports:
       - "3000:80"
     depends_on:
@@ -298,6 +356,7 @@ volumes:
   grafana_data:
   ipfs_data:
   ipfs_export:
+#  seq_data:
 
 networks:
   monitoring:

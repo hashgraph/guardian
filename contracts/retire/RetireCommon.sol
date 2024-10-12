@@ -3,7 +3,6 @@ pragma solidity ^0.8.11;
 pragma experimental ABIEncoderV2;
 
 import "../wipe/Wipe.sol";
-import "../safe-hts-precompile/SafeViewHTS.sol";
 import "../hts-precompile/IHederaTokenService.sol";
 import "./access/RetireAccess.sol";
 import "./storage/RetirePoolStorage.sol";
@@ -12,7 +11,6 @@ import "./storage/RetireRequestStorage.sol";
 abstract contract RetireCommon is
     RetirePoolStorage,
     RetireRequestStorage,
-    SafeViewHTS,
     RetireAccess
 {
     event Retire(address, RetireTokenRequest[]);
