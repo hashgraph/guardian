@@ -51,7 +51,7 @@
                 <p-dropdown [formControlName]="'type'" [options]="types">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="country-item country-item-value">
-                            <span class="grey-6">Message Type {{ item.label }}</span>
+                            <span class="grey-6">Message Type {{ item?.label }}</span>
                         </div>
                     </ng-template>
                     <ng-template let-item pTemplate="item">

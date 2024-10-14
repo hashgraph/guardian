@@ -9,13 +9,13 @@
                     (click)="onNoClick()"
                     label="Cancel"
                     class="toolbar-btn-outlined"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
             ></p-button>
         </div>
         <div>
-            <p-button 
+            <p-button
                 class="toolbar-btn-primary"
-                (click)="onSubmit()" 
+                (click)="onSubmit()"
                 label="Confirm"></p-button>
         </div>
     </div>

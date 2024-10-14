@@ -68,7 +68,7 @@
                     (click)="onCompare()"
                     [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
@@ -171,8 +171,8 @@
 
                     <ng-container *ngIf="type === 'policy'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
-                            <a 
-                                [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }" 
+                            <a
+                                [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
                                 [routerLink]="['/policy-configuration']"
                             >
                                 {{policyNameByTopic[schema.topicId]}}
@@ -470,10 +470,10 @@
             [disabled]="!ifCanExport(element)"
             label="Export schema"
             class="schema-menu-p-btn"
-            styleClass="p-button-outlined"
+            [outlined]=true
             [pTooltip]="'Export schema'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" 
+            <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
@@ -487,7 +487,7 @@
             styleClass="p-button-outlined"
             [pTooltip]="'Export schema to Excel'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" 
+            <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button> -->
         <!-- <p-button
@@ -500,7 +500,7 @@
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
         </p-button> -->
-        
+
         <!-- <p-button
             (click)="downloadExcelExample()"
             label="Download Excel example"
@@ -551,6 +551,7 @@
             label="Delete schema"
             class="schema-menu-p-btn"
             styleClass="p-button-outlined accent-color-red"
+            [outlined]="true"
             [pTooltip]="'Delete schema'"
             tooltipPosition="bottom">
             <svg-icon

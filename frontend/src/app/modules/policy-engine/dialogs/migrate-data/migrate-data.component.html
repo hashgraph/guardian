@@ -81,7 +81,7 @@
                                 <td [title]="document.id">{{document.id}}</td>
                                 <td [title]="document.owner">{{document.owner}}</td>
                                 <td style="text-overflow: unset;"><p-button label="View document"
-                                        styleClass="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
+                                        class="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
@@ -122,9 +122,9 @@
                                 <td [title]="document.schema" [title]="getSchemaName(srcSchemas, document.schema)">
                                     {{getSchemaName(srcSchemas, document.schema)}}</td>
                                 <td style="text-overflow: unset;"><p-button label="View document"
-                                        styleClass="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
+                                        class="p-button-link" (onClick)="viewDocument(document)"></p-button></td>
                                 <td style="text-overflow: unset;"><p-button label="Edit document"
-                                        styleClass="p-button-link" (onClick)="editDocument(document)"></p-button></td>
+                                        class="p-button-link" (onClick)="editDocument(document)"></p-button></td>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="summary">
@@ -244,7 +244,7 @@
     <div [ngSwitch]="items[activeIndex].id">
         <div *ngSwitchCase="'policies'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
@@ -254,7 +254,7 @@
         </div>
         <div *ngSwitchCase="'vps'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
@@ -263,19 +263,19 @@
         </div>
         <div *ngSwitchCase="'vcs'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex" [disabled]="!migrationConfig.vcsValidity"
                     (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex" [disabled]="!migrationConfig.vcsValidity"
-                    (onClick)="onSubmit()" styleClass="p-button-success"></p-button>
+                    (onClick)="onSubmit()" class="p-button-success"></p-button>
             </div>
         </div>
         <div *ngSwitchCase="'schemas'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
@@ -283,51 +283,51 @@
                     [disabled]="!migrationConfig.schemasValidity" (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex"
                     [disabled]="!migrationConfig.schemasValidity" (onClick)="onSubmit()"
-                    styleClass="p-button-success"></p-button>
+                    class="p-button-success"></p-button>
             </div>
         </div>
         <div *ngSwitchCase="'roles'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="p-button-success"></p-button>
+                    class="p-button-success"></p-button>
             </div>
         </div>
         <div *ngSwitchCase="'groups'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="p-button-success"></p-button>
+                    class="p-button-success"></p-button>
             </div>
         </div>
         <div *ngSwitchCase="'blocks'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="p-button-success"></p-button>
+                    class="p-button-success"></p-button>
             </div>
         </div>
         <div *ngSwitchCase="'tokens'" class="action-buttons">
             <div>
-                <p-button label="Prev" *ngIf="activeIndex !== 0" styleClass="p-button-secondary"
+                <p-button label="Prev" *ngIf="activeIndex !== 0" class="p-button-secondary"
                     (onClick)="prevStep()"></p-button>
             </div>
             <div>
                 <p-button label="Next" *ngIf="items.length - 1 > activeIndex" (onClick)="nextStep()"></p-button>
                 <p-button label="OK" *ngIf="items.length - 1 === activeIndex" (onClick)="onSubmit()"
-                    styleClass="p-button-success"></p-button>
+                    class="p-button-success"></p-button>
             </div>
         </div>
     </div>
