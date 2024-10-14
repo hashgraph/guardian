@@ -99,6 +99,7 @@
                                     pTooltip="{{row[column.id]}}"
                                     [tooltipDisabled]="!column.tooltip"
                                     tooltipPosition="top"
+                                    [showDelay]="1000"
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'edit'">

@@ -330,6 +330,8 @@
                         <div class="variables-grid-cell cell-300">PROPERTY</div>
                         <div class="variables-grid-cell">FIELD</div>
                         <div class="variables-grid-cell cell-200">TYPE</div>
+                        <div class="variables-grid-cell cell-150">RULES</div>
+                        <div class="variables-grid-cell cell-56"></div>
                     </div>
                     <div class="variables-grid-body">
                         <div *ngFor="let variable of variables.variables" class="variables-grid-row">
@@ -356,6 +358,23 @@
                                 <span style="text-transform: capitalize">
                                     {{variable.displayType}}
                                 </span>
+                            </div>
+                            <div class="variables-grid-cell cell-150 variables-grid-cell-transparent">
+                                <div *ngIf="variable.type">
+                                    {{variable.type}}
+                                </div>
+                            </div>
+                            <div class="variables-grid-cell cell-56">
+                                <button 
+                                    class="guardian-icon-button big" 
+                                    (click)="onEditRule(variable)"
+                                    [disabled]="readonly">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/edit.svg"
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-primary'">
+                                    </svg-icon>
+                                </button>
                             </div>
                         </div>
                     </div>

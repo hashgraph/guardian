@@ -242,7 +242,7 @@ $sizes: (
         box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
         z-index: 2;
     }
-    
+
     .p-datatable-thead {
         background: transparent !important;
         background-color: transparent !important;
@@ -267,6 +267,10 @@ $sizes: (
 
             &:first-child {
                 padding-left: 24px;
+
+                .text-truncate {
+                    left: 24px;
+                }
             }
 
             &:last-child {
@@ -296,6 +300,10 @@ $sizes: (
 
             &:first-child {
                 padding-left: 24px;
+
+                .text-truncate {
+                    left: 24px;
+                }
             }
 
             &:last-child {

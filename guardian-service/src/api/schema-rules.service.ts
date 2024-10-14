@@ -1,6 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { validateRuleConfig } from './helpers/schema-rules-helpers.js';
 
 /**
  * Connect to the message broker methods of working with schema rules.
@@ -39,8 +40,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 rule.owner = owner.owner;
                 rule.policyTopicId = policy.topicId;
                 rule.policyInstanceTopicId = policy.instanceTopicId;
-                // rule.status = EntityStatus.DRAFT;
-                // rule.config = validateConfig(definition.config);
+                rule.status = EntityStatus.DRAFT;
+                rule.config = validateRuleConfig(rule.config);
                 const row = await DatabaseServer.createSchemaRule(rule);
                 return new MessageResponse(row);
             } catch (error) {
@@ -195,7 +196,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
 
                 item.name = rule.name;
                 item.description = rule.description;
-                // item.config = validateConfig(definition.config);
+                item.config = validateRuleConfig(rule.config);
                 const result = await DatabaseServer.updateSchemaRule(item);
                 return new MessageResponse(result);
             } catch (error) {

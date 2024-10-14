@@ -21,13 +21,15 @@ import { SchemaRulesComponent } from './schema-rules/schema-rules.component';
 import { NewSchemaRuleDialog } from './dialogs/new-schema-rule-dialog/new-schema-rule-dialog.component';
 import { SchemaRuleConfigurationComponent } from './schema-rule-configuration/schema-rule-configuration.component';
 import { SchemaRulesPreviewDialog } from './dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
+import { SchemaRuleConfigDialog } from './dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 
 @NgModule({
     declarations: [
         SchemaRulesComponent,
         SchemaRuleConfigurationComponent,
         NewSchemaRuleDialog,
-        SchemaRulesPreviewDialog
+        SchemaRulesPreviewDialog,
+        SchemaRuleConfigDialog
     ],
     imports: [
         CommonModule,

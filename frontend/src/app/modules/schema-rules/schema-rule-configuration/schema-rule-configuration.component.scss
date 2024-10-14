@@ -602,6 +602,12 @@
                         max-width: 84px;
                     }
 
+                    .cell-150 {
+                        min-width: 150px;
+                        width: 150px;
+                        max-width: 150px;
+                    }
+
                     .cell-200 {
                         min-width: 200px;
                         width: 200px;
@@ -685,6 +691,10 @@
                         .guardian-input:focus+.cell-focus {
                             display: block;
                         }
+                    }
+
+                    .variables-grid-cell-transparent {
+                        border-right: 1px solid transparent !important;
                     }
 
                     .variables-grid-row {

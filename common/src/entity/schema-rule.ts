@@ -1,12 +1,12 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { EntityStatus, GenerateUUIDv4, IStatisticConfig } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, ISchemaRules, ISchemaRulesConfig } from '@guardian/interfaces';
 
 /**
  * SchemaRule collection
  */
 @Entity()
-export class SchemaRule extends BaseEntity {
+export class SchemaRule extends BaseEntity implements ISchemaRules {
     /**
      * ID
      */
@@ -77,7 +77,7 @@ export class SchemaRule extends BaseEntity {
      * Config
      */
     @Property({ nullable: true, type: 'unknown' })
-    config?: IStatisticConfig;
+    config?: ISchemaRulesConfig;
 
     /**
      * Set defaults

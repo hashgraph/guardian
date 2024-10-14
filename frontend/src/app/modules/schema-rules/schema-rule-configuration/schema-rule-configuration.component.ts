@@ -1,13 +1,12 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, Schema, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
 import { TreeNode } from '../../common/tree-graph/tree-node';
 import { TreeListItem } from '../../common/tree-graph/tree-list';
 import { SchemaData, SchemaNode } from '../../common/models/schema-node';
-import { SchemaVariables } from "../../common/models/schema-variables";
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TreeSource } from '../../common/tree-graph/tree-source';
@@ -15,6 +14,8 @@ import { createAutocomplete } from '../../common/models/lang-modes/autocomplete'
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
+import { FieldRule, FieldRules } from '../../common/models/field-rule';
+import { SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 
 @Component({
     selector: 'app-schema-rule-configuration',
@@ -56,7 +57,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     private _selectTimeout2: any;
     private _selectTimeout3: any;
 
-    public variables: SchemaVariables = new SchemaVariables();
+    public variables: FieldRules = new FieldRules();
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -199,7 +200,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         }
     }
 
-    private updateForm(item: any) {
+    private updateForm(item: ISchemaRules) {
         this.overviewForm.setValue({
             name: item.name || '',
             description: item.description || '',
@@ -207,7 +208,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         });
 
         const config = item.config;
-        this.variables.fromData(config?.variables);
+        this.variables.fromData(config?.fields);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -298,7 +299,11 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
-        if (this.readonly || field.expandable) {
+        if (field.expandable) {
+            this.onCollapseField(field);
+            return;
+        }
+        if (this.readonly) {
             return;
         }
         field.selected = !field.selected;
@@ -451,8 +456,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     public onSave() {
         this.loading = true;
         const value = this.overviewForm.value;
-        const config = {
-            variables: this.variables.getJson()
+        const config: ISchemaRulesConfig = {
+            fields: this.variables.getJson()
         };
         const item = {
             ...this.item,
@@ -475,8 +480,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
 
     public onPreview() {
         const value = this.overviewForm.value;
-        const config = {
-            variables: this.variables.getJson(),
+        const config: ISchemaRulesConfig = {
+            fields: this.variables.getJson(),
         };
         const item = {
             ...this.item,
@@ -494,5 +499,22 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public onEditRule(variable: FieldRule) {
+        const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
+            showHeader: false,
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                item: variable.clone()
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                variable.addRule(result.rule);
+            }
+        });
     }
 }

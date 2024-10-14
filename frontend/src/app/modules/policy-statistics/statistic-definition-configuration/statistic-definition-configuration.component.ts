@@ -353,7 +353,11 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
-        if (this.readonly || field.expandable) {
+        if (field.expandable) {
+            this.onCollapseField(field);
+            return;
+        }
+        if (this.readonly) {
             return;
         }
         field.selected = !field.selected;
