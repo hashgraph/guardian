@@ -2,19 +2,39 @@ import { DatabaseServer, PolicyStatistic, SchemaConverterUtils, TopicConfig, Top
 import { GenerateUUIDv4, IFormulaData, IOwner, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, PolicyType, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
 
-export async function addRelationship(
-    messageId: string,
-    relationships: Set<string>
-) {
+export async function addPrevRelationships(doc: VcDocument, relationships: Set<string>) {
+    if (doc && doc.relationships) {
+        for (const id of doc.relationships) {
+            await addPrevRelationship(id, relationships);
+        }
+    }
+}
+
+export async function addPrevRelationship(messageId: string, relationships: Set<string>) {
     if (!messageId || relationships.has(messageId)) {
         return;
     }
     relationships.add(messageId);
-    const doc = await DatabaseServer.getStatisticDocument({ messageId });
-    if (doc && doc.relationships) {
-        for (const id of doc.relationships) {
-            await addRelationship(id, relationships);
+    const doc = await DatabaseServer.getStatisticDocument({ messageId }, {
+        fields: ['id', 'messageId', 'relationships']
+    });
+    await addPrevRelationships(doc, relationships);
+}
+
+export async function addNextRelationships(relationships: Set<string>) {
+    const docs = await DatabaseServer.getStatisticDocuments({
+        relationships: { $in: Array.from(relationships) }
+    }, {
+        fields: ['id', 'messageId', 'relationships']
+    });
+    const count = relationships.size;
+    for (const doc of docs) {
+        if (doc.messageId) {
+            relationships.add(doc.messageId);
         }
+    }
+    if (relationships.size > count) {
+        await addNextRelationships(relationships);
     }
 }
 
@@ -22,14 +42,20 @@ export async function findRelationships(
     target: VcDocument,
     subDocs: VcDocument[],
 ): Promise<VcDocument[]> {
-    const relationships = new Set<string>();
-    relationships.add(target.messageId);
-    if (target && target.relationships) {
-        for (const id of target.relationships) {
-            await addRelationship(id, relationships);
-        }
+    if (!target) {
+        return [];
     }
-    return subDocs.filter((doc) => relationships.has(doc.messageId));
+
+    const prevRelationships = new Set<string>();
+    prevRelationships.add(target.messageId);
+
+    const nextRelationships = new Set<string>();
+    nextRelationships.add(target.messageId);
+
+    await addPrevRelationships(target, prevRelationships);
+    await addNextRelationships(nextRelationships);
+
+    return subDocs.filter((doc) => prevRelationships.has(doc.messageId) || nextRelationships.has(doc.messageId));
 }
 
 export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
