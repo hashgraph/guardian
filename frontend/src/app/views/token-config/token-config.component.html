@@ -10,8 +10,9 @@
                 <div *ngIf="policies" class="dropdown-block">
                     <p-dropdown (onChange)="onFilter()" [(ngModel)]="policyDropdownItem" [options]="policies!">
                         <ng-template pTemplate="selectedItem">
-                            <div *ngIf="policyDropdownItem"><span class="dropdown-label">Policy</span> <span
-                                    class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
+                            <div *ngIf="policyDropdownItem">
+                                <span class="dropdown-label">Policy</span>
+                                <span class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
                         </ng-template>
                         <ng-template let-policy pTemplate="item">
                             <div class="dropdown-item">
