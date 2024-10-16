@@ -14,7 +14,7 @@ import { createAutocomplete } from '../../common/models/lang-modes/autocomplete'
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
-import { FieldRule, FieldRules } from '../../common/models/field-rule';
+import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../common/models/field-rule';
 import { SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 
 @Component({
@@ -508,12 +508,14 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             width: '800px',
             styleClass: 'guardian-dialog',
             data: {
+                variables: this.variables.getOptions(),
                 item: variable.clone()
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                variable.addRule(result.rule);
+                const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
+                variable.addRule(rule);
             }
         });
     }

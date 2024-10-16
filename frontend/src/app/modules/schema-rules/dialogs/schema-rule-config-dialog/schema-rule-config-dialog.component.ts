@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ConditionIf, ConditionRule, FieldRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/field-rule';
+import { createAutocomplete } from 'src/app/modules/common/models/lang-modes/autocomplete';
 
 @Component({
     selector: 'schema-rule-config-dialog',
@@ -54,33 +55,71 @@ export class SchemaRuleConfigDialog {
         value: 'text'
     }];
 
-    public variables: string[] = ['A1', 'A2', 'A3'];
+    public variables: any[] = [];
+    public enums: string[] = ['test 1', 'test 2', 'test 3'];
+
+    public codeMirrorOptions: any = {
+        theme: 'default',
+        mode: 'formula-lang',
+        styleActiveLine: false,
+        lineNumbers: false,
+        lineWrapping: false,
+        foldGutter: true,
+        gutters: [
+            'CodeMirror-lint-markers'
+        ],
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        lint: true,
+        readOnly: false,
+        viewportMargin: Infinity,
+        variables: [],
+        extraKeys: { "Ctrl-Space": "autocomplete" },
+        scrollbarStyle: null,
+        singleLine: true,
+        placeholder: 'A1 > 0 and A1 < 10'
+    };
 
     constructor(
         public ref: DynamicDialogRef,
-        public config: DynamicDialogConfig,
+        public config: DynamicDialogConfig<{
+            variables: any[],
+            item: FieldRule
+        }>,
         private dialogService: DialogService,
     ) {
         this.item = this.config.data?.item || new FieldRule();
         this.rule = this.item.rule;
+        this.variables = this.config.data?.variables || [];
+
         this.template = this.rule?.type || '';
         if (this.template === 'formula') {
             this.formula = this.rule as FormulaRule;
             this.condition = new ConditionRule(this.item);
             this.range = new RangeRule(this.item);
         } else if (this.template === 'range') {
-            this.formula = new FormulaRule(this.item);
-            this.condition = this.rule as ConditionRule;
-            this.range = new RangeRule(this.item);
-        } else if (this.template === 'condition') {
+            this.range = this.rule as RangeRule;
             this.formula = new FormulaRule(this.item);
             this.condition = new ConditionRule(this.item);
-            this.range = this.rule as RangeRule;
+        } else if (this.template === 'condition') {
+            this.condition = this.rule as ConditionRule;
+            this.formula = new FormulaRule(this.item);
+            this.range = new RangeRule(this.item);
         } else {
             this.formula = new FormulaRule(this.item);
             this.condition = new ConditionRule(this.item);
             this.range = new RangeRule(this.item);
         }
+
+        const all = this.variables.map((o) => o.value);
+        this.codeMirrorOptions = {
+            ...this.codeMirrorOptions,
+            variables: all,
+            hintOptions: {
+                hint: createAutocomplete(all)
+            }
+        }
+        debugger
     }
 
     ngOnInit() {
@@ -99,7 +138,16 @@ export class SchemaRuleConfigDialog {
     }
 
     public onSubmit() {
-        this.ref.close({});
+        if (this.template === 'formula') {
+            this.ref.close({ rule: this.formula });
+        } else if (this.template === 'range') {
+            this.ref.close({ rule: this.range });
+        } else if (this.template === 'condition') {
+            this.ref.close({ rule: this.condition });
+        } else {
+            this.ref.close(null);
+        }
+
     }
 
     // public onChangeConditionType(condition: any, value: any) {

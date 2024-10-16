@@ -33,10 +33,29 @@
             font-size: 14px;
             font-weight: 400;
             padding: 0px 16px;
-            display: flex;
             color: #000;
-            align-items: center;
+            // display: flex;
+            // justify-content: center;
+            margin: auto 0;
         }
+    }
+
+    &.full-size {
+        width: 100%;
+        height: 100%;
+
+        .p-dropdown { 
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    &.vertical-align {
+        display: block;
+        position: relative;
+        top: 1px;
+        line-height: normal;
+        @include vertical-align(middle);
     }
 
     .guardian-dropdown-selected {

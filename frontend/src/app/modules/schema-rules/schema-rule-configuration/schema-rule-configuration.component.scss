@@ -744,6 +744,23 @@
                                 border-bottom: none;
                             }
                         }
+
+                        .rule-type-name {
+                            background: #E1E7EF;
+                            height: 28px;
+                            padding: 4px 10px 4px 10px;
+                            border-radius: 6px;
+                            font-family: Inter;
+                            font-size: 14px;
+                            font-weight: 500;
+                            line-height: 16px;
+                            text-align: left;
+                            color: #848FA9;
+                            text-transform: capitalize;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                        }
                     }
                 }
 

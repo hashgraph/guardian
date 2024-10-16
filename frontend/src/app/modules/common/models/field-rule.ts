@@ -43,9 +43,13 @@ export class ConditionValue {
         parent: ConditionIf | ConditionElse
     ) {
         this._parentType = parentType;
+        this._parent = parent;
         this.type = 'formula';
-        this._parent = parent;
-        this._parent = parent;
+        this.max = 0;
+        this.min = 0;
+        this.text = '';
+        this.enum = [];
+        this.formula = '';
     }
 
     public getJson(): (IConditionFormula | IConditionRange | IConditionText | IConditionEnum) {
@@ -222,6 +226,10 @@ export class ConditionRule {
         return this._parent?.id;
     }
 
+    public setParent(parent: FieldRule) {
+        this._parent = parent;
+    }
+
     public getJson(): IConditionRuleData {
         return {
             type: this.type,
@@ -269,6 +277,10 @@ export class FormulaRule {
         return this._parent?.id;
     }
 
+    public setParent(parent: FieldRule) {
+        this._parent = parent;
+    }
+
     public getJson(): IFormulaRuleData {
         return {
             type: this.type,
@@ -298,6 +310,10 @@ export class RangeRule {
 
     public get variable(): string {
         return this._parent?.id;
+    }
+
+    public setParent(parent: FieldRule) {
+        this._parent = parent;
     }
 
     public getJson(): IRangeRuleData {
@@ -416,6 +432,7 @@ export class FieldRule {
 
     public addRule(rule?: FormulaRule | ConditionRule | RangeRule) {
         this.rule = rule;
+        this.rule?.setParent(this);
     }
 
     public updateType(schemas: Map<string | undefined, Schema>) {
@@ -469,6 +486,17 @@ export class FieldRules {
             names.add(variable.id);
         }
         return Array.from(names);
+    }
+
+    public getOptions(): any[] {
+        const options = [];
+        for (const variable of this.variables) {
+            options.push({
+                label: variable.fieldDescription,
+                value: variable.id,
+            })
+        }
+        return options;
     }
 
     public fromData(data: ISchemaRuleData[] | undefined) {

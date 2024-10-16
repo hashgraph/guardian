@@ -30,17 +30,23 @@
         <ng-container *ngIf="template === 'formula'">
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">Formula</label>
-                <input pInputText [(ngModel)]="formula.formula" type="text"/>
+                <!-- <input pInputText [(ngModel)]="formula.formula" type="text"/> -->
+                 <div class="guardian-formula-codemirror">
+                    <ngx-codemirror 
+                        [(ngModel)]="formula.formula" 
+                        [options]="codeMirrorOptions"
+                    ></ngx-codemirror>
+                 </div>
             </div>
         </ng-container>
         <ng-container *ngIf="template === 'range'">
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">Minimum</label>
-                <input pInputText [(ngModel)]="range.min" type="text"/>
+                <input pInputText [(ngModel)]="range.min" class="guardian-formula-number" type="number"/>
             </div>
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">Maximum</label>
-                <input pInputText [(ngModel)]="range.max" type="text"/>
+                <input pInputText [(ngModel)]="range.max" class="guardian-formula-number" type="number"/>
             </div>
         </ng-container>
         <ng-container *ngIf="template === 'condition'">
@@ -162,12 +168,18 @@
             </p-dropdown>
         </div>
         <div *ngIf="value.type === 'formula'" class="condition-value">
-            <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/>
+            <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->
+            <div class="guardian-formula-codemirror">
+                <ngx-codemirror 
+                    [(ngModel)]="value.formula" 
+                    [options]="codeMirrorOptions"
+                ></ngx-codemirror>
+             </div>
         </div>
 
         <div *ngIf="value.type === 'range'" class="condition-value condition-range">
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.min" type="text"/>
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.min" type="number"/>
             </div>
             <div class="variable-container">
                 <span class="variable-symbol">
@@ -176,15 +188,23 @@
                         svgClass="icon-color-primary">
                     </svg-icon>
                 </span>
-                <span class="variable-name">
+                <span class="variable-name variable-name-dropdown">
                     <p-dropdown
                         [(ngModel)]="value.variable"
                         [options]="variables"
                         [showClear]="false"
-                        class="guardian-dropdown"
+                        class="guardian-dropdown full-size"
                         appendTo="body"
                         placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
                         panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
                     </p-dropdown>
                 </span>
                 <span class="variable-symbol">
@@ -195,40 +215,56 @@
                 </span>
             </div>
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.max" type="text"/>
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.max" type="number"/>
             </div>
         </div>
 
         <div *ngIf="value.type === 'text'" class="condition-value condition-text">
             <div class="variable-container">
-                <span class="variable-name">
+                <span class="variable-name variable-name-dropdown">
                     <p-dropdown
                         [(ngModel)]="value.variable"
                         [options]="variables"
                         [showClear]="false"
-                        class="guardian-dropdown"
+                        class="guardian-dropdown full-size"
                         appendTo="body"
                         placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
                         panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
                     </p-dropdown>
                 </span>
                 <span class="variable-symbol">=</span>
             </div>
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.text" type="text"/>
+                <input class="guardian-input guardian-formula-text" pInputText [(ngModel)]="value.text" type="text"/>
             </div>
         </div>
         <div *ngIf="value.type === 'enum'" class="condition-value condition-text">
             <div class="variable-container">
-                <span class="variable-name">
+                <span class="variable-name variable-name-dropdown">
                     <p-dropdown
                         [(ngModel)]="value.variable"
                         [options]="variables"
                         [showClear]="false"
-                        class="guardian-dropdown"
+                        class="guardian-dropdown full-size"
                         appendTo="body"
                         placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
                         panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
                     </p-dropdown>
                 </span>
                 <span class="variable-symbol">=</span>
@@ -236,8 +272,8 @@
             <div class="condition-value-input">
                 <p-multiSelect
                     [(ngModel)]="value.enum"
-                    [options]="variables"
-                    class="guardian-multiselect"
+                    [options]="enums"
+                    class="guardian-multiselect full-size"
                     appendTo="body"
                     placeholder="Not selected"
                     panelStyleClass="guardian-multiselect-panel">
@@ -263,12 +299,18 @@
             </p-dropdown>
         </div>
         <div *ngIf="value.type === 'formula'" class="condition-value">
-            <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/>
+            <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->
+            <div class="guardian-formula-codemirror">
+                <ngx-codemirror 
+                    [(ngModel)]="value.formula" 
+                    [options]="codeMirrorOptions"
+                ></ngx-codemirror>
+             </div>
         </div>
 
         <div *ngIf="value.type === 'range'" class="condition-value condition-range">
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.min" type="text"/>
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.min" type="number"/>
             </div>
             <div class="variable-container">
                 <span class="variable-symbol">
@@ -286,26 +328,19 @@
                 </span>
             </div>
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.max" type="text"/>
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.max" type="number"/>
             </div>
         </div>
 
         <div *ngIf="value.type === 'text'" class="condition-value condition-text">
             <div class="variable-container">
-                <span class="variable-name">{{value.variable}}</span>
+                <span class="variable-name">
+                    <div style="width: 85px">{{value.variable}}</div>
+                </span>
                 <span class="variable-symbol">=</span>
             </div>
             <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.text" type="text"/>
-            </div>
-        </div>
-        <div *ngIf="value.type === 'enum'" class="condition-value condition-text">
-            <div class="variable-container">
-                <span class="variable-name">{{value.variable}}</span>
-                <span class="variable-symbol">=</span>
-            </div>
-            <div class="condition-value-input">
-                <input class="guardian-input" pInputText [(ngModel)]="value.enum" type="text"/>
+                <input class="guardian-input guardian-formula-text" pInputText [(ngModel)]="value.text" type="text"/>
             </div>
         </div>
     </div>

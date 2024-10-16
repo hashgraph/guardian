@@ -137,8 +137,19 @@
                         justify-content: center;
                         align-items: center;
                         min-width: 50px;
+                        width: 135px;
+
+                        &.variable-name-dropdown {
+                            width: 135px;
+
+                            &::ng-deep .p-dropdown-label {
+                                color: #4169E2 !important;
+                                font-size: 14px;
+                                font-weight: 700;
+                            }
+                        }
                     }
-    
+
                     .variable-symbol {
                         min-width: 20px;
                         width: 20px;
