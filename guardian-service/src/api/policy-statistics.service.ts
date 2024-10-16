@@ -157,15 +157,23 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
+
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy || !policy.topicId || policy.status !== PolicyType.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
+
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const systemSchemas = await DatabaseServer.getSchemas({
+                    topicId: policy.topicId,
+                    entity: { $in: [SchemaEntity.MINT_TOKEN, SchemaEntity.MINT_NFTOKEN] }
+                });
+
                 const all = []
-                    .concat(schemas, toolSchemas)
+                    .concat(schemas, toolSchemas, systemSchemas)
                     .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
+
                 if (item.status === EntityStatus.PUBLISHED) {
                     const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
                     return new MessageResponse({

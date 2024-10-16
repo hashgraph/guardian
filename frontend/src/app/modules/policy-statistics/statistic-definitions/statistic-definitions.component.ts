@@ -261,14 +261,23 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     public onCreateInstance(item: any): void {
+        if (item.status !== 'PUBLISHED') {
+            return;
+        }
         this.router.navigate(['/policy-statistics', item.id, 'assessment']);
     }
 
     public onOpenInstances(item: any): void {
+        if (item.status !== 'PUBLISHED') {
+            return;
+        }
         this.router.navigate(['/policy-statistics', item.id, 'assessments']);
     }
 
     public onDelete(item: any) {
+        if (item.status === 'PUBLISHED') {
+            return;
+        }
         const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',

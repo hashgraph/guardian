@@ -44,7 +44,7 @@ export class SchemaNode extends TreeNode<SchemaData> {
 
     public static from(schema: Schema, properties: Map<string, string>): SchemaNode {
         const id = schema.iri;
-        const type = schema.entity === 'VC' ? 'root' : 'sub';
+        const type = (schema.entity === 'VC' || schema.category === 'SYSTEM') ? 'root' : 'sub';
         const data = {
             iri: schema.iri || '',
             name: schema.name || '',
