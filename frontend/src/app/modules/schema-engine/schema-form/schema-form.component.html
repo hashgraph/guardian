@@ -128,7 +128,7 @@
                 </div>
                 <div class="suggestion">
                     <button
-                        *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value)"
+                        *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)"
                         [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
                         label="Fill the field with suggestion"
                         pButton
@@ -294,7 +294,7 @@
                 </div>
                 <div class="suggestion">
                     <button
-                        *ngIf="item.suggest && isEmptyRef(item.control.value)"
+                        *ngIf="item.suggest && isEmptyRef(item.control.value, item)"
                         [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
                         label="Fill the field with suggestion"
                         pButton

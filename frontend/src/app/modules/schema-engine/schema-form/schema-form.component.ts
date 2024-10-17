@@ -831,24 +831,27 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public isEmpty(value: any): boolean {
-        if (value === undefined || value === null || value === '') {
-            return true;
-        }
         if (Array.isArray(value)) {
             return !value.some(item => !this.isEmpty(item));
         }
         return [undefined, null, ''].includes(value);
     }
 
-    public isEmptyRef(value: any): boolean {
+    public isEmptyRef(value: any, field: { customType: string; fields: any[] }): boolean {
         if (value === undefined || value === null) {
             return true;
         }
         if (Array.isArray(value)) {
-            return !value.some(item => !this.isEmptyRef(item));
+            return !value.some(item => !this.isEmptyRef(item, field));
         }
-        for (const val of Object.values(value)) {
-            if (!this.isEmpty(val)) {
+        if (field.customType === 'geo') {
+            return Object.keys(value).length === 0;
+        }
+        for (const _field of field.fields) {
+            if (_field.isRef && !this.isEmptyRef(value[_field.name], _field)) {
+                return false;
+            }
+            if (!_field.isRef && !this.isEmpty(value[_field.name])) {
                 return false;
             }
         }
