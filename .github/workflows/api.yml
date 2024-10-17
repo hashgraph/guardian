@@ -48,6 +48,8 @@ jobs:
 
             - name: Build packages
               run: |
+                  apt-get update
+                  apt-get install -y xvfb x11-xserver-utils
                   pushd interfaces
                   yarn run build
                   popd
