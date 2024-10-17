@@ -247,7 +247,7 @@ export class SchemaRulesApi {
     }
 
     /**
-     * Publish schema rule
+     * Activate schema rule
      */
     @Put('/:ruleId/activate')
     @Auth(Permissions.SCHEMAS_RULE_CREATE)
@@ -292,6 +292,53 @@ export class SchemaRulesApi {
         }
     }
 
+
+    /**
+     * Inactivate schema rule
+     */
+    @Put('/:ruleId/inactivate')
+    @Auth(Permissions.SCHEMAS_RULE_CREATE)
+    @ApiOperation({
+        summary: 'Inactivates schema rule.',
+        description: 'Inactivates schema rule for the specified rule ID.',
+    })
+    @ApiParam({
+        name: 'ruleId',
+        type: 'string',
+        required: true,
+        description: 'Schema Rule Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaRuleDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async inactivateSchemaRule(
+        @AuthUser() user: IAuthUser,
+        @Param('ruleId') ruleId: string
+    ): Promise<SchemaRuleDTO> {
+        try {
+            if (!ruleId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getSchemaRuleById(ruleId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.inactivateSchemaRule(ruleId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
     /**
      * Get relationships by id
      */
@@ -329,6 +376,46 @@ export class SchemaRulesApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
             return await guardian.getSchemaRuleRelationships(ruleId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get rules and data
+     */
+    @Post('/data')
+    @Auth(Permissions.SCHEMAS_RULE_CREATE)
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiBody({
+        description: 'Configuration.',
+        type: SchemaRuleDTO,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaRuleDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async getSchemaRuleData(
+        @AuthUser() user: IAuthUser,
+        @Body() options: any
+    ): Promise<SchemaRuleDTO> {
+        try {
+            if (!options) {
+                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getSchemaRuleData(options, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

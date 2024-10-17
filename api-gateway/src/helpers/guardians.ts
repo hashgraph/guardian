@@ -3133,4 +3133,28 @@ export class Guardians extends NatsService {
     public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
         return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
     }
+
+    /**
+     * Activate schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+      * Get Schema Rule Data
+      *
+      * @param options
+      * @param owner
+      *
+      * @returns Operation Success
+      */
+    public async getSchemaRuleData(options: any, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { options, owner });
+    }
 }

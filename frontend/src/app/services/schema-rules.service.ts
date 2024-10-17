@@ -57,19 +57,32 @@ export class SchemaRulesService {
         return this.http.get<any>(`${this.url}/${ruleId}`);
     }
 
-    public deleteRule(item: any): Observable<any> {
-        return this.http.delete<boolean>(`${this.url}/${item.id}`);
+    public deleteRule(ruleId: any): Observable<any> {
+        return this.http.delete<boolean>(`${this.url}/${ruleId}`);
     }
 
     public updateRule(item: any): Observable<any> {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 
-    public activateRule(item: any): Observable<any> {
-        return this.http.put<boolean>(`${this.url}/${item.id}/activate`, item);
+    public activateRule(item: any, activate: boolean): Observable<any> {
+        if (activate) {
+            return this.http.put<boolean>(`${this.url}/${item.id}/activate`, item);
+        } else {
+            return this.http.put<boolean>(`${this.url}/${item.id}/inactivate`, item);
+        }
     }
 
     public getRelationships(ruleId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${ruleId}/relationships`);
+    }
+
+    public getSchemaRuleData(options: {
+        policyId: string,
+        schemaId: string,
+        documentId?: string,
+        parentId?: string,
+    }): Observable<any> {
+        return this.http.post<any>(`${this.url}/data`, options);
     }
 }

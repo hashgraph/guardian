@@ -154,7 +154,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
-            this.readonly = this.item?.status === EntityStatus.PUBLISHED;
+            this.readonly = this.item?.status === EntityStatus.ACTIVE;
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
@@ -509,7 +509,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             styleClass: 'guardian-dialog',
             data: {
                 variables: this.variables.getOptions(),
-                item: variable.clone()
+                item: variable.clone(),
+                readonly: this.readonly
             }
         });
         dialogRef.onClose.subscribe(async (result) => {

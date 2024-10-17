@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IFormula, IVariable } from '../../../common/models/assessment';
-import { Formula } from 'src/app/utils';
+import { ISchemaRuleData } from '@guardian/interfaces';
+import { FieldRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+
 
 @Component({
     selector: 'schema-rules-preview-dialog',
@@ -12,7 +13,8 @@ export class SchemaRulesPreviewDialog {
     public loading = true;
     public item: any;
     public preview: any[];
-    
+    public rules: FieldRuleValidators;
+
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -21,9 +23,10 @@ export class SchemaRulesPreviewDialog {
         this.item = this.config.data?.item || {};
 
         const configuration = this.item.config || {};
-        const variables = configuration.variables || [];
+
+        const variables: ISchemaRuleData[] = configuration.fields || [];
+
         this.preview = [];
-        
         for (const variable of variables) {
             this.preview.push({
                 id: variable.id,
@@ -31,6 +34,8 @@ export class SchemaRulesPreviewDialog {
                 value: null
             });
         }
+
+        this.rules = new FieldRuleValidators(variables);
     }
 
     ngOnInit() {
@@ -49,13 +54,11 @@ export class SchemaRulesPreviewDialog {
         for (const field of this.preview) {
             document[field.id] = field.value;
         }
-    }
 
-    private calcFormula(item: IFormula, scope: any): any {
-        try {
-            return Formula.evaluate(item.formula, scope);
-        } catch (error) {
-            return NaN;
+        const result = this.rules.checkValue(document);
+
+        for (const field of this.preview) {
+            field.status = result[field.id];
         }
     }
 }

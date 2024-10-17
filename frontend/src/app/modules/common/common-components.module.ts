@@ -35,6 +35,7 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
 import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
+import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
 
 @NgModule({
     declarations: [
@@ -61,6 +62,7 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
         StatusDropdown,
         CustomCustomDialogComponent,
         TreeGraphComponent,
+        GuardianSwitchButton
     ],
     imports: [
         CommonModule,
@@ -104,6 +106,7 @@ import { TreeGraphComponent } from './tree-graph/tree-graph.component';
         StatusDropdown,
         CustomCustomDialogComponent,
         TreeGraphComponent,
+        GuardianSwitchButton
     ]
 })
 export class CommonComponentsModule { }

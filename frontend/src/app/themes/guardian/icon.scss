@@ -29,6 +29,11 @@
         color: var(--guardian-failure-color);
     }
 
+    &-warning {
+        fill: var(--guardian-warning-color);
+        color: var(--guardian-warning-color);
+    }
+
     &-close {
         fill: var(--guardian-close-color);
         color: var(--guardian-close-color);

@@ -135,7 +135,7 @@
                                             [status]="row.status"
                                             [value]="row.status"
                                             [options]="statuses"
-                                            (change)="onChangeStatus($event, row)"></status-dropdown>
+                                            (onChange)="onChangeStatus($event, row)"></status-dropdown>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -214,6 +214,9 @@ export class SchemaRulesComponent implements OnInit {
     }
 
     public onDelete(item: any) {
+        if (item.status === EntityStatus.ACTIVE) {
+            return;
+        }
         const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -234,7 +237,7 @@ export class SchemaRulesComponent implements OnInit {
             if (result === 'Delete') {
                 this.loading = true;
                 this.schemaRulesService
-                    .deleteRule(item)
+                    .deleteRule(item.id)
                     .subscribe((result) => {
                         this.loadData();
                     }, (e) => {
@@ -242,5 +245,17 @@ export class SchemaRulesComponent implements OnInit {
                     });
             }
         });
+    }
+
+    public onActive($event: any, row: any) {
+        const active = $event === EntityStatus.ACTIVE;
+        this.loading = true;
+        this.schemaRulesService
+            .activateRule(row, active)
+            .subscribe((result) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
+            });
     }
 }

@@ -3945,6 +3945,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get Schema Rule
+     * @param filters
+     * @param options
+     */
+    public static async getSchemaRules(
+        filters?: FilterObject<SchemaRule>,
+        options?: unknown
+    ): Promise<SchemaRule[]> {
+        return await new DataBaseHelper(SchemaRule).find(filters, options);
+    }
+
+    /**
      * Get Schema Rule By ID
      * @param id
      */

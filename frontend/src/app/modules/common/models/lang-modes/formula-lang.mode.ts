@@ -7,7 +7,19 @@ import 'codemirror/addon/display/placeholder';
 import CodeMirror, { Mode, StringStream } from 'codemirror';
 
 CodeMirror.defineMode('formula-lang', function (config, parserConfig) {
-    const operations = ['and', 'or'].map((v) => `(${v})`).join('|');
+    const operations = [
+        'and', 
+        'or', 
+        'not', 
+        'xor', 
+        '\\=', 
+        '<', 
+        '>', 
+        '\\+', 
+        '\\-', 
+        '\\*', 
+        '\\/'
+    ].map((v) => `(${v})`).join('|');
     const isOperations = new RegExp(operations);
 
     const policySyntaxOverlay: Mode<any> = {

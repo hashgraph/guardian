@@ -13,6 +13,9 @@ for (const [name, f] of Object.entries(formulajs)) {
     }
 }
 mathjs.import(customFunctions);
+mathjs.import({
+    equal: function (a: any, b: any) { return a == b }
+}, { override: true })
 
 export abstract class Formula {
     /**

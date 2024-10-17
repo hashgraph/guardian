@@ -118,6 +118,35 @@ form {
             width: 100%;
             min-height: 42px;
         }
+
+        .field-input {
+            position: relative;
+            padding-right: 36px;
+
+            .field-status {
+                position: absolute;
+                top: 8px;
+                right: 0;
+            }
+        }
+
+        &.field-status-Error {
+            input {
+                border-color: var(--guardian-failure-color, #FF432A) !important;
+            }
+        }
+
+        &.field-status-Failure {
+            input {
+                border-color: var(--guardian-warning-color, #DA9B22) !important;
+            }
+        }
+
+        &.field-status-Success {
+            input {
+                border-color: var(--guardian-success-color, #19BE47) !important;
+            }
+        }
     }
 
     .option-container {

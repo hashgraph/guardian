@@ -3,6 +3,25 @@ import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImport
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 import { validateRuleConfig } from './helpers/schema-rules-helpers.js';
 
+
+async function getSchemaRuleData(
+    item: SchemaRule,
+    option: {
+        policyId: string,
+        schemaId: string,
+        documentId: string,
+        parentId: string
+    },
+    owner: IOwner
+) {
+    const { policyId, schemaId, documentId, parentId } = option;
+    return {
+        rules: item,
+        document: null,
+        relationships: []
+    }
+}
+
 /**
  * Connect to the message broker methods of working with schema rules.
  */
@@ -88,10 +107,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                     'config'
                 ];
                 const query: any = {
-                    $or: [
-                        { status: EntityStatus.PUBLISHED },
-                        { creator: owner.creator }
-                    ]
+                    owner: owner.owner
                 };
                 if (policyInstanceTopicId) {
                     query.policyInstanceTopicId = policyInstanceTopicId;
@@ -119,7 +135,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { ruleId, owner } = msg;
                 const item = await DatabaseServer.getSchemaRuleById(ruleId);
-                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
                 return new MessageResponse(item);
@@ -144,7 +160,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { ruleId, owner } = msg;
                 const item = await DatabaseServer.getSchemaRuleById(ruleId);
-                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
                 const policyId = item.policyId;
@@ -187,11 +203,11 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const { ruleId, rule, owner } = msg;
 
                 const item = await DatabaseServer.getSchemaRuleById(ruleId);
-                if (!item || item.creator !== owner.creator) {
+                if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.PUBLISHED) {
-                    return new MessageError('Item published.');
+                if (item.status === EntityStatus.ACTIVE) {
+                    return new MessageError('Item is active.');
                 }
 
                 item.name = rule.name;
@@ -220,11 +236,11 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { ruleId, owner } = msg;
                 const item = await DatabaseServer.getSchemaRuleById(ruleId);
-                if (!item || item.creator !== owner.creator) {
+                if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.PUBLISHED) {
-                    return new MessageError('Item published.');
+                if (item.status === EntityStatus.ACTIVE) {
+                    return new MessageError('Item is active.');
                 }
                 await DatabaseServer.removeSchemaRule(item);
                 return new MessageResponse(true);
@@ -250,19 +266,95 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 const { ruleId, owner } = msg;
 
                 const item = await DatabaseServer.getSchemaRuleById(ruleId);
-                if (!item || item.creator !== owner.creator) {
+                if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.PUBLISHED) {
-                    return new MessageError(`Item already published.`);
+                if (item.status === EntityStatus.ACTIVE) {
+                    return new MessageError(`Item is already active.`);
                 }
 
-                item.status = EntityStatus.PUBLISHED;
-
+                item.status = EntityStatus.ACTIVE;
 
                 const result = await DatabaseServer.updateSchemaRule(item);
                 return new MessageResponse(result);
 
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Inactivate schema rule
+     *
+     * @param {any} msg - schema rule id
+     *
+     * @returns {any} - schema rule
+     */
+    ApiResponse(MessageAPI.INACTIVATE_SCHEMA_RULE,
+        async (msg: { ruleId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { ruleId, owner } = msg;
+
+                const item = await DatabaseServer.getSchemaRuleById(ruleId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.ACTIVE) {
+                    return new MessageError(`Item is already inactive.`);
+                }
+
+                item.status = EntityStatus.DRAFT;
+
+                const result = await DatabaseServer.updateSchemaRule(item);
+                return new MessageResponse(result);
+
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+      * Inactivate schema rule
+      *
+      * @param {any} msg - schema rule id
+      *
+      * @returns {any} - schema rule
+      */
+    ApiResponse(MessageAPI.GET_SCHEMA_RULE_DATA,
+        async (msg: {
+            options: {
+                policyId: string,
+                schemaId: string,
+                documentId: string,
+                parentId: string,
+            }
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { options, owner } = msg;
+                const { policyId } = options;
+
+                const items = await DatabaseServer.getSchemaRules({
+                    policyId,
+                    status: EntityStatus.ACTIVE
+                });
+
+                const result = [];
+                for (const item of items) {
+                    const data = await getSchemaRuleData(item, options, owner);
+                    if (data) {
+                        result.push(data);
+                    }
+                }
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

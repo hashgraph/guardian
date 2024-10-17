@@ -57,6 +57,7 @@ export class SchemaRuleConfigDialog {
 
     public variables: any[] = [];
     public enums: string[] = ['test 1', 'test 2', 'test 3'];
+    public readonly: boolean = false;
 
     public codeMirrorOptions: any = {
         theme: 'default',
@@ -84,13 +85,15 @@ export class SchemaRuleConfigDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig<{
             variables: any[],
-            item: FieldRule
+            item: FieldRule,
+            readonly?: boolean
         }>,
         private dialogService: DialogService,
     ) {
         this.item = this.config.data?.item || new FieldRule();
         this.rule = this.item.rule;
         this.variables = this.config.data?.variables || [];
+        this.readonly = !!this.config.data?.readonly;
 
         this.template = this.rule?.type || '';
         if (this.template === 'formula') {
@@ -119,7 +122,6 @@ export class SchemaRuleConfigDialog {
                 hint: createAutocomplete(all)
             }
         }
-        debugger
     }
 
     ngOnInit() {

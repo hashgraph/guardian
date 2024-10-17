@@ -114,18 +114,24 @@
                                         </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'status'">
-
-
+                                        <guardian-switch-button
+                                            [(value)]="row.status"
+                                            onValue="ACTIVE" 
+                                            offValue="DRAFT"
+                                            onLabel="Active" 
+                                            offLabel="Inactive"
+                                            (onChange)="onActive($event, row)"
+                                        ></guardian-switch-button>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 
-                                            [attr.disabled]="row.status === 'PUBLISHED'"
+                                            [attr.disabled]="row.status === 'ACTIVE'"
                                             class="guardian-icon-button big" 
                                             (click)="onDelete(row)">
                                             <svg-icon 
                                                 class="icon-btn"
                                                 src="/assets/images/icons/delete.svg"
-                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
+                                                [svgClass]="row.status === 'ACTIVE' ? 'icon-color-disabled' : 'icon-color-delete'">
                                             </svg-icon>
                                         </div>
                                     </ng-container>
