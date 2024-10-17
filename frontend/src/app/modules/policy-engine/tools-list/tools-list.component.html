@@ -66,7 +66,7 @@
                         [pTooltip]="'Compare'"
                         class="toolbar-btn-secondary"
                         label="Compare"
-                        styleClass="p-button-outlined"
+                        [outlined]=true
                         tooltipPosition="bottom"
                 >
                     <svg
@@ -262,7 +262,7 @@
                                         matTooltipShowDelay="500"
                                     >
                                         <svg-icon class="opacity-icon"
-                                            src="/assets/images/icons/edit.svg" 
+                                            src="/assets/images/icons/edit.svg"
                                             svgClass="primary-color"></svg-icon>
                                     </div>
                                     <div
@@ -275,9 +275,9 @@
                                         matTooltipPosition="above"
                                         matTooltipShowDelay="500"
                                     >
-                                        <svg-icon 
+                                        <svg-icon
                                             class="opacity-icon"
-                                            src="/assets/images/icons/export.svg" 
+                                            src="/assets/images/icons/export.svg"
                                             svgClass="primary-color"></svg-icon>
                                     </div>
                                     <div
@@ -291,7 +291,7 @@
                                         matTooltipShowDelay="500"
                                     >
                                         <svg-icon class="opacity-icon"
-                                            src="/assets/images/icons/delete.svg" 
+                                            src="/assets/images/icons/delete.svg"
                                             [svgClass]="tool.status === 'DRAFT' ? 'accent-color-red' : 'disabled-color'"></svg-icon>
                                     </div>
                                 </div>
@@ -301,9 +301,9 @@
                 </p-table>
             </div>
 
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
                 [length]="toolsCount"
                 (page)="onPage($event)"
             ></app-paginator>

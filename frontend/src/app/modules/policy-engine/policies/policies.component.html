@@ -69,7 +69,7 @@
                     (click)="searchPolicy()"
                     [pTooltip]="'Search policies'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/search.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
@@ -78,7 +78,7 @@
                     (click)="comparePolicy()"
                     [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
@@ -87,7 +87,7 @@
                     (click)="migrateData()"
                     [pTooltip]="'Migrate data'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/move-down.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
@@ -111,62 +111,62 @@
             <ng-container *ngIf="policiesList && policiesList.length > 0; else noData">
 
                 <div class="grid-table-container">
-                    <p-table 
-                        [value]="policiesList" 
+                    <p-table
+                        [value]="policiesList"
                         class="grid-table"
-                        [scrollable]="true" 
+                        [scrollable]="true"
                     >
                         <ng-template pTemplate="header">
                             <tr class="grid-table-header">
-                                <th 
-                                    *ngIf="canDisplayColumn('name')" 
-                                    class="header-cell-text cell-150" 
+                                <th
+                                    *ngIf="canDisplayColumn('name')"
+                                    class="header-cell-text cell-150"
                                     pFrozenColumn>Name</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('instance')" 
+                                <th
+                                    *ngIf="canDisplayColumn('instance')"
                                     class="header-cell-text cell-150"
                                     [class.cell-last]="!canDisplayColumn('operations')"
                                     pFrozenColumn>Instance</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('operations')" 
+                                <th
+                                    *ngIf="canDisplayColumn('operations')"
                                     class="header-cell-text cell-120 cell-last"
                                     pFrozenColumn>Operations</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('description')" 
+                                <th
+                                    *ngIf="canDisplayColumn('description')"
                                     class="header-cell-text"
                                     style="min-width: 170px">Description</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('status')" 
+                                <th
+                                    *ngIf="canDisplayColumn('status')"
                                     class="header-cell-text cell-150">Status</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('roles')" 
+                                <th
+                                    *ngIf="canDisplayColumn('roles')"
                                     class="header-cell-text cell-140">Roles</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('topic')" 
+                                <th
+                                    *ngIf="canDisplayColumn('topic')"
                                     class="header-cell-text cell-140">Topic</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('version')" 
+                                <th
+                                    *ngIf="canDisplayColumn('version')"
                                     class="header-cell-text cell-140">Version</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('tests')" 
+                                <th
+                                    *ngIf="canDisplayColumn('tests')"
                                     class="header-cell-text cell-190">Tests</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('tags')" 
+                                <th
+                                    *ngIf="canDisplayColumn('tags')"
                                     class="header-cell-text cell-190">Tags</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('tokens')" 
+                                <th
+                                    *ngIf="canDisplayColumn('tokens')"
                                     class="header-cell-text cell-140">Tokens</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('schemas')" 
+                                <th
+                                    *ngIf="canDisplayColumn('schemas')"
                                     class="header-cell-text cell-170">Schemas</th>
-                                <th 
-                                    *ngIf="canDisplayColumn('instance') && !user.POLICIES_POLICY_MANAGE" 
+                                <th
+                                    *ngIf="canDisplayColumn('instance') && !user.POLICIES_POLICY_MANAGE"
                                     class="header-cell-text cell-150">Multi Policy</th>
                             </tr>
                         </ng-template>
                         <ng-template let-policy pTemplate="body">
                             <tr class="grid-table-row">
-                                <td 
+                                <td
                                     *ngIf="canDisplayColumn('name')"
                                     class="text-truncate cell-150"
                                     pFrozenColumn
@@ -174,8 +174,8 @@
                                     tooltipPosition="top"
                                 ><span class="text-truncate">{{ policy.name }}</span></td>
 
-                                <td 
-                                    *ngIf="canDisplayColumn('instance')" 
+                                <td
+                                    *ngIf="canDisplayColumn('instance')"
                                     class="cell-150"
                                     [class.cell-last]="!canDisplayColumn('operations')"
                                     pFrozenColumn
@@ -183,7 +183,7 @@
                                     <div *ngIf="user.POLICIES_POLICY_EXECUTE" class="commands-line">
                                         <button
                                             *ngIf="showInstance(policy)"
-                                            [routerLink]="['/policy-viewer', policy.id]" 
+                                            [routerLink]="['/policy-viewer', policy.id]"
                                             class="button instance-btn"
                                             label="{{instanceLabel(policy)}}"
                                             pButton
@@ -210,7 +210,7 @@
                                     </div>
                                 </td>
 
-                                <td 
+                                <td
                                     *ngIf="canDisplayColumn('operations')"
                                     class="text-truncate cell-120 cell-last"
                                     pFrozenColumn
@@ -242,19 +242,19 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td 
+                                <td
                                     *ngIf="canDisplayColumn('description')"
                                     class="text-truncate"
                                     pTooltip="{{ policy.description }}"
                                     tooltipPosition="top"
                                     style="min-width: 170px"
                                 >{{ policy.description }}</td>
-                                <td 
-                                    *ngIf="canDisplayColumn('status')" 
+                                <td
+                                    *ngIf="canDisplayColumn('status')"
                                     class="cell-150"
                                 >
                                     <div *ngIf="!user.POLICIES_POLICY_REVIEW"
-                                        [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" 
+                                        [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
                                         tooltipPosition="bottom"
                                         [tooltipDisabled]="!policy.discontinuedDate"
                                         class="chip chip-color-{{getColor(policy.status, !!policy.discontinuedDate)}}"
@@ -266,7 +266,7 @@
                                                 class="status-actions-dropdown {{policy.status}}-dropdown"
                                                 appendTo="body"
                                                 tooltipPosition="bottom"
-                                                [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)" 
+                                                [pTooltip]="getDiscontinuedTooltip(policy.discontinuedDate)"
                                                 [tooltipDisabled]="!policy.discontinuedDate"
                                                 [attr.published]="policy.status == 'PUBLISH'"
                                                 [attr.expired]="!!policy.discontinuedDate"
@@ -274,9 +274,6 @@
                                                 [options]="getStatusOptions(policy)"
                                                 [placeholder]="getStatusName(policy)"
                                                 (onChange)="onChangeStatus($event, policy)">
-                                                <ng-template pTemplate="selectedItem">
-                                                    {{getStatusName(policy)}}
-                                                </ng-template>
                                                 <ng-template let-option pTemplate="item">
                                                     <div>
                                                         <div class="dropdown-item-title" [ngStyle]="{ color: option.color }">
@@ -299,34 +296,34 @@
                                         </ng-container>
                                     </div>
                                 </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('roles')" 
+                                <td
+                                    *ngIf="canDisplayColumn('roles')"
                                     class="cell-140"
                                 >{{ policy.userRoles?.join(", ") }}</td>
-                                <td 
-                                    *ngIf="canDisplayColumn('topic')" 
+                                <td
+                                    *ngIf="canDisplayColumn('topic')"
                                     class="cell-140 text-truncate"
                                 >
                                     <span class="text-truncate">
                                         <hedera-explorer [params]="policy.topicId" type="topics">{{ policy.topicId }}</hedera-explorer>
                                     </span>
                                 </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('version')" 
+                                <td
+                                    *ngIf="canDisplayColumn('version')"
                                     class="cell-140"
                                 >{{ policy.version }}</td>
-                                <td 
-                                    *ngIf="canDisplayColumn('tests')" 
+                                <td
+                                    *ngIf="canDisplayColumn('tests')"
                                     class="cell-190"
                                 >
-                                    <policy-test-result 
-                                        [policy]="policy" 
+                                    <policy-test-result
+                                        [policy]="policy"
                                         [tests]="policy.tests"
                                         (run-test)="onRunTest($event)"
                                         (add-test)="onAddTest($event)"></policy-test-result>
                                 </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('tags')" 
+                                <td
+                                    *ngIf="canDisplayColumn('tags')"
                                     class="cell-190"
                                 >
                                     <tags-explorer
@@ -339,8 +336,8 @@
                                         [service]="tagsService"
                                         [target]="policy.id"></tags-explorer>
                                 </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('tokens')" 
+                                <td
+                                    *ngIf="canDisplayColumn('tokens')"
                                     class="cell-140"
                                 >
                                     <a class="grid-link-block"
@@ -349,11 +346,11 @@
                                         <button class="button secondary" label="Open Tokens" pButton></button>
                                     </a>
                                 </td>
-                                <td 
+                                <td
                                     *ngIf="canDisplayColumn('schemas')"
-                                    class="cell-170" 
+                                    class="cell-170"
                                 >
-                                    <a 
+                                    <a
                                         [queryParams]="{ type: 'policy', topic: policy.topicId }"
                                         [routerLink]="['/schemas']"
                                         class="grid-link-block"
@@ -361,8 +358,8 @@
                                         <button class="button secondary" label="Open Schemas" pButton></button>
                                     </a>
                                 </td>
-                                <td 
-                                    *ngIf="canDisplayColumn('instance') && !user.POLICIES_POLICY_MANAGE" 
+                                <td
+                                    *ngIf="canDisplayColumn('instance') && !user.POLICIES_POLICY_MANAGE"
                                     class="cell-150"
                                 >
                                     <div *ngIf="user.POLICIES_POLICY_EXECUTE" class="commands-line">
@@ -394,13 +391,13 @@
 </div>
 
 <mat-menu #policyMenu="matMenu">
-    <ng-template 
+    <ng-template
         let-groups="groups"
         matMenuContent
     >
         <ng-container *ngFor="let group of groups; let last = last">
             <ng-container *ngIf="group.visible">
-                <ng-container *ngIf="group.group">  
+                <ng-container *ngIf="group.group">
                     <div
                         class="policy-menu-btn sub-menu-button"
                         mat-menu-item
@@ -420,10 +417,11 @@
                             [disabled]="button.disabled"
                             label="{{button.tooltip}}"
                             class="policy-menu-btn"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                             [pTooltip]="button.tooltip"
-                            tooltipPosition="bottom">
-                            <svg-icon src="/assets/images/icons/{{button.icon}}.svg" 
+                            tooltipPosition="bottom"
+                            appendTo="body">
+                            <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
                                 [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
                         </p-button>
                     </ng-container>
@@ -435,7 +433,7 @@
 </mat-menu>
 
 <mat-menu #policySubMenu="matMenu">
-    <ng-template 
+    <ng-template
         let-buttons="buttons"
         matMenuContent
     >
@@ -446,10 +444,10 @@
                 [disabled]="button.disabled"
                 label="{{button.tooltip}}"
                 class="policy-menu-btn"
-                styleClass="p-button-outlined"
+                [outlined]=true
                 [pTooltip]="button.tooltip"
                 tooltipPosition="bottom">
-                <svg-icon src="/assets/images/icons/{{button.icon}}.svg" 
+                <svg-icon src="/assets/images/icons/{{button.icon}}.svg"
                     [svgClass]="button.disabled ? 'disabled-color' : 'primary-color'"></svg-icon>
             </p-button>
         </ng-container>

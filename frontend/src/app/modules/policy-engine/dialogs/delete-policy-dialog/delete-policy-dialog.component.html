@@ -12,14 +12,14 @@
             <p-button
                     (click)="onClose()"
                     label="Cancel"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
             ></p-button>
         </div>
-        <div>
+        <div class="delete-button-container">
             <p-button
                     (click)="handleDeleteSchema()"
                     label="Delete"
-                    styleClass="p-button-danger"
+                    class="p-button-danger"
             ></p-button>
         </div>
     </div>

@@ -154,7 +154,7 @@
                                             (click)="clearFilters()"
                                             [disabled]="!filtersForm.dirty"
                                             class="clear-filters-button"
-                                            styleClass="p-button-outlined"
+                                            [outlined]=true
                                         >Clear filters</p-button>
                                     </div>
                                 </form>
@@ -279,7 +279,7 @@
                                         (click)="randomKey()"
                                         class="generate-btn"
                                         label="Generate"
-                                        styleClass="p-button-outlined"
+                                        [outlined]=true
                                     >
                                     </p-button>
                                 </form>
@@ -375,7 +375,7 @@
                         <p-button
                             (click)="onPrev()"
                             label="Previous"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                         ></p-button>
                     </div>
 
