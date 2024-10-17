@@ -3,7 +3,6 @@
     "cli": {
         "analytics": "68a952b6-061b-4e33-a09f-12cc9a4d3085"
     },
-    "defaultProject": "guardian",
     "newProjectRoot": "projects",
     "projects": {
         "guardian": {
@@ -84,7 +83,15 @@
                             "ajv",
                             "ajv-formats/dist/formats",
                             "file-saver",
-                            "moment"
+                            "moment",
+                            "bessel",
+                            "jstat",
+                            "typed-function",
+                            "seedrandom",
+                            "javascript-natural-sort",
+                            "escape-latex",
+                            "codemirror/addon/hint/css-hint",
+                            "codemirror/addon/hint/show-hint"
                         ],
                         "assets": [
                             "src/favicon.ico",

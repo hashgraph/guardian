@@ -109,12 +109,9 @@ export class TokenConfigComponent implements OnInit {
         if (this.user.POLICIES_POLICY_READ) {
             this.loading = true;
             this.policyEngineService.all().subscribe((value) => {
-                const policies = value || [];
-                this.policies = policies;
-                this.policies.unshift({ id: -1, name: 'All policies' });
-                if (this.currentPolicy) {
-                    this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
-                }
+                const initialPolicy = { id: -1, name: 'All policies' }
+                this.policies = [initialPolicy].concat(value);
+                this.policyDropdownItem = initialPolicy;
                 this.loadContracts();
             }, ({ message }) => {
                 this.loading = false;

@@ -435,3 +435,7 @@ body {
 ::ng-deep body .CodeMirror-hint.CodeMirror-hint-active {
     background: #4169E2 !important;
 }
+
+::ng-deep .p-tooltip {
+    z-index: 9999 !important;
+}
