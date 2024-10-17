@@ -1,12 +1,13 @@
 name: Guardian CI API Tests
 on:
-    schedule:
-        - cron: '0 1 * * *'
+    push:
+        branches-ignore:
+            - 'dependabot/**'
 
 jobs:
     buildAndTest:
         name: Build and Test
-        runs-on: ubuntu-latest
+        runs-on: guardian-linux-medium
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
