@@ -10,8 +10,8 @@
                 <div class="policy-item">
                     <div class="policy-name">{{first.name}}</div>
                     <div *ngIf="!fixed" class="policy-delete" (click)="onDelete(first, true)">
-                        <svg-icon class="svg-icon" 
-                            src="/assets/images/icons/delete.svg" 
+                        <svg-icon class="svg-icon"
+                            src="/assets/images/icons/delete.svg"
                             svgClass="close-icon-color"></svg-icon>
                     </div>
                 </div>
@@ -22,8 +22,8 @@
             <div class="policy-item" *ngFor="let item of items">
                 <div class="policy-name">{{item.name}}</div>
                 <div class="policy-delete" (click)="onDelete(item, false)">
-                    <svg-icon class="svg-icon" 
-                        src="/assets/images/icons/delete.svg" 
+                    <svg-icon class="svg-icon"
+                        src="/assets/images/icons/delete.svg"
                         svgClass="close-icon-color"></svg-icon>
                 </div>
             </div>
@@ -32,17 +32,17 @@
             <div class="right-header">Select Policy</div>
             <div class="right-body">
                 <div class="type-selector">
-                    <div 
-                        class="selector-item" 
-                        [attr.selected]="type==='file'" 
+                    <div
+                        class="selector-item"
+                        [attr.selected]="type==='file'"
                         (click)="onChangeType('file')">Uploaded file</div>
-                    <div 
-                        class="selector-item" 
-                        [attr.selected]="type==='message'" 
+                    <div
+                        class="selector-item"
+                        [attr.selected]="type==='message'"
                         (click)="onChangeType('message')">Message ID</div>
-                    <div 
-                        class="selector-item" 
-                        [attr.selected]="type==='id'" 
+                    <div
+                        class="selector-item"
+                        [attr.selected]="type==='id'"
                         (click)="onChangeType('id')">Local Policies</div>
                 </div>
                 <div *ngIf="type==='file'" class="file-container">
@@ -58,18 +58,18 @@
                             <input
                                 class="search-policy-input"
                                 formControlName="messageId"
-                                pInputMask
                                 placeholder="Enter Message ID to add it"
-                                mask="9999999999.999999999"
+                                (input)="enforceMask($event)"
+                                maxlength="20"
                                 type="text" />
                             <i class="pi pi-search search-icon"></i>
                             <small *ngIf="messageIdError" class="message-id-error">Nothing found, please check the ID and try again</small>
                         </span>
-                        <button 
+                        <button
                             (click)="addMessage()"
                             [disabled]="messageForm.invalid"
-                            class="button add-item" 
-                            label="Check & Add" 
+                            class="button add-item"
+                            label="Check & Add"
                             pButton></button>
                     </form>
                 </div>
@@ -78,18 +78,18 @@
                         <span class="p-input-icon-right message-input">
                             <input
                                 class="search-policy-input"
-                                [(ngModel)]="policyName" 
+                                [(ngModel)]="policyName"
                                 pInputText
                                 placeholder="Search by Policy name"
-                                type="text" 
+                                type="text"
                                 (change)="onFilterPolicy()"/>
                             <i class="pi pi-search search-icon"></i>
                         </span>
-                        <button 
+                        <button
                             (click)="addLocal()"
                             [disabled]="!localIds.length"
-                            class="button add-item" 
-                            label="Add" 
+                            class="button add-item"
+                            label="Add"
                             pButton></button>
                     </div>
                     <div class="policy-list">
@@ -112,10 +112,10 @@
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button (click)="onCompare()" 
-                [disabled]="count < 2" 
-                class="button" 
-                label="Compare ({{count}})" 
+            <button (click)="onCompare()"
+                [disabled]="count < 2"
+                class="button"
+                label="Compare ({{count}})"
                 pButton>
                 <svg-icon
                     class="icon2-btn"

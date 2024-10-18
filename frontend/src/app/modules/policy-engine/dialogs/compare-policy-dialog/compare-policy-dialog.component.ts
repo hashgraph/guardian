@@ -250,4 +250,26 @@ export class ComparePolicyDialog {
         }
         this.ref.close(items);
     }
+
+    enforceMask(event: any): void {
+        const input = event.target as HTMLInputElement;
+        let value = input.value;
+
+        value = value.replace(/[^0-9.]/g, '');
+
+        if (value.length > 10 && !value.includes('.')) {
+            value = `${value.substring(0, 10)}.${value.substring(10)}`;
+        }
+
+        const parts = value.split('.');
+
+        if (parts[0].length > 10) {
+            parts[0] = parts[0].substring(0, 10);
+        }
+        if (parts[1] && parts[1].length > 9) {
+            parts[1] = parts[1].substring(0, 9);
+        }
+
+        input.value = parts.join('.');
+    }
 }

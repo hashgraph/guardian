@@ -53,9 +53,12 @@ export class TagCreateDialog {
     onAddArtifact(selector: any) {
         this.canAddDocument = true;
 
+        if(this.schemas.length) {
+            this.schema = this.schemas[0];
+        }
+
         if (this.schemas.length === 1) {
             this.schemaForm = this.fb.group({});
-            this.schema = this.schemas[0];
             this.changeDetector.detectChanges();
         } else {
             selector?.open();
