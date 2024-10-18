@@ -94,3 +94,34 @@
         }
     }
 }
+
+@media (max-width: 810px) {
+    .guardian-dialog {
+        width: 100vw !important;
+        height: 100vh !important;
+        min-width: 100vw !important;
+        min-height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-top-left-radius: 0px !important;
+        border-top-right-radius: 0px !important;
+        border-bottom-left-radius: 0px !important;
+        border-bottom-right-radius: 0px !important;
+        overflow: hidden;
+
+        .p-dialog-content {
+            border-top-left-radius: 0px !important;
+            border-top-right-radius: 0px !important;
+            border-bottom-left-radius: 0px !important;
+            border-bottom-right-radius: 0px !important;
+            padding: 0 24px 24px 24px !important;
+            overflow: hidden;
+        }
+
+        .dialog-body {
+            min-height: calc(100vh - 175px) !important;
+            height: calc(100vh - 175px) !important;
+            max-height: calc(100vh - 175px) !important;
+        }
+    }
+}

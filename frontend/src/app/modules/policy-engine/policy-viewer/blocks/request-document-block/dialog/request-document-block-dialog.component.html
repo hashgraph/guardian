@@ -1,0 +1,78 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{dialogContent}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+    <div class="dialog-body-container">
+        <div *ngIf="restoreData" class="restore-data">
+            <mat-icon>info</mat-icon>
+            <b>There is some data to restore. You can restore latest values:</b>
+            <button
+                (click)="onRestoreClick()"
+                aria-label="Restore Values"
+                mat-raised-button
+                type="button"
+            >Restore Values<mat-icon>restore</mat-icon>
+            </button>
+        </div>
+        <div *ngIf="dryRun" class="restore-data">
+            <mat-icon>info</mat-icon>
+            <b>There is dry run mode. You can fill document with test data:</b>
+            <button
+                (click)="onDryRun()"
+                aria-label="Fill Values"
+                mat-raised-button
+                type="button"
+            >Test<mat-icon>restore</mat-icon>
+            </button>
+        </div>
+        <div *ngIf="schema" class="body-dialog-template">
+            <ng-template #preloader>
+                <div class="preloader-image"></div>
+            </ng-template>
+            <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
+                <div class="form-{{ type }}" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
+                    <app-schema-form
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
+                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
+                        [comesFromDialog]="true"
+                        [showButtons]="false"
+                        [formGroup]="dataForm"
+                        [preset]="presetDocument"
+                        [private-fields]="hideFields"
+                        [readonly-fields]="presetReadonlyFields"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId"
+                        [schema]="schema"
+                        [rules]="rules"
+                        cancelText = "Cancel"
+                        submitText = "Create"
+                        (buttons)="onChangeButtons($event)"
+                    >
+                    </app-schema-form>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div 
+            *ngFor="let config of buttons"
+            [attr.visible]="config.visible()"
+            [attr.id]="config.id"
+            class="dialog-button">
+            <button 
+                (click)="config.fn()"
+                [disabled]="ifDisabledBtn(config)"
+                class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
+        </div>
+    </div>
+</div>

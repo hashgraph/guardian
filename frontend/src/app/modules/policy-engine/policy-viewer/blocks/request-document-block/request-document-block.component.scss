@@ -11,11 +11,6 @@
         0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
 }
 
-.content-dialog {
-    display: block;
-    background: var(--color-grey-1);
-}
-
 .loading {
     position: fixed;
     /* background: #ffffff32; */
@@ -36,33 +31,8 @@
     height: 80%;
 }
 
-.loading-dialog {
-    background: #fff;
-    position: absolute;
-    z-index: 99;
-    top: 0;
-    left: 0;
-    bottom: 62px;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-items: center;
-    justify-content: center;
-    align-content: center;
-}
 
-.form-page {
-    width: 80%;
-    margin: 40px auto;
-    padding: 10px;
-    border: 1px solid #c3c3c3;
-    border-radius: 4px;
-}
 
-.dialog-template {
-    max-height: calc(81vh - 65px) !important;
-    overflow: hidden;
-}
 
 
 .form-dialog {

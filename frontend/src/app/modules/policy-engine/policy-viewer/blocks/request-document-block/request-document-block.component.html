@@ -8,7 +8,7 @@
     </ng-container>
     <ng-container *ngIf="type == 'page'">
         <form
-            (ngSubmit)="onSubmit('page')"
+            (ngSubmit)="onSubmit()"
             *ngIf="schema"
             [formGroup]="dataForm"
             class="form-{{ type }}"
@@ -36,15 +36,14 @@
                     aria-label="Fill Values"
                     mat-raised-button
                     type="button"
-                >
-                    Test<mat-icon>restore</mat-icon>
+                >Test<mat-icon>restore</mat-icon>
                 </button>
             </div>
 
             <div class="schema-form">
                 <app-schema-form
                     (cancelBtnEvent)="onCancelPage($event)"
-                    (submitBtnEvent)="onSubmit('page')"
+                    (submitBtnEvent)="onSubmit()"
                     [formGroup]="dataForm"
                     [preset]="presetDocument"
                     [private-fields]="hideFields"
@@ -53,6 +52,7 @@
                     [dryRun]="dryRun"
                     [policyId]="policyId"
                     submitText="Create"
+                    [rules]="rules"
                 >
                 </app-schema-form>
             </div>
@@ -60,7 +60,7 @@
     </ng-container>
 </div>
 
-<ng-template #dialogTemplate let-data>
+<!-- <ng-template #dialogTemplate let-data>
     <div class="dialog-template">
         <h1 class="title" mat-dialog-title>{{ dialogContent }}</h1>
         <div *ngIf="restoreData" class="restore-data">
@@ -87,7 +87,6 @@
                 Test<mat-icon>restore</mat-icon>
             </button>
         </div>
-
         <div *ngIf="schema" class="body-dialog-template" mat-dialog-content>
             <ng-template #preloader>
                 <div class="preloader-image"></div>
@@ -109,6 +108,7 @@
                         [dryRun]="dryRun"
                         [policyId]="policyId"
                         [schema]="schema"
+                        [rules]="rules"
                     >
                     </app-schema-form>
                 </div>
@@ -143,7 +143,7 @@
             </button>
         </div>
     </div>
-</ng-template>
+</ng-template> -->
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

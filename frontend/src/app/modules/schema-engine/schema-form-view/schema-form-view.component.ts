@@ -15,7 +15,7 @@ import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
     styleUrls: ['./schema-form-view.component.css'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
+        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -26,6 +26,7 @@ export class SchemaFormViewComponent implements OnInit {
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
     @Input() dryRun?: boolean = false;
+    @Input() rules?: any;
 
     fields: any[] | undefined = [];
     pageSize: number = 20;

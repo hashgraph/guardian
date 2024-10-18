@@ -1,8 +1,8 @@
 <form>
-    <div *ngIf="loading > 0" class="loading">
+    <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <div *ngIf="loading < 1 && this.document">
+    <div *ngIf="!loading && this.document">
         <div class="form-input-container">
             <label class="p-field-label">Id</label>
             <input [readOnly]="true" [value]="this.document.id || ''" class="p-field-input" pInputText type="text"/>
@@ -68,13 +68,22 @@
                 <div *ngFor="let credentialSubject of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
                      [attr.index]="this.subjects.indexOf(credentialSubject)">
                     <div class="form-field-group">
-                        <app-schema-form-view [private-fields]="hideFields" [schema]="schemaMap[credentialSubject.type]"
-                                              [delimiter-hide]="true" [dryRun]="dryRun" [values]="credentialSubject">
+                        <app-schema-form-view 
+                            [private-fields]="hideFields" 
+                            [schema]="schemaMap[credentialSubject.type]"
+                            [delimiter-hide]="true" 
+                            [dryRun]="dryRun" 
+                            [values]="credentialSubject"
+                            [rules]="rules">
                         </app-schema-form-view>
                     </div>
                 </div>
-                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
-                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
+                <mat-paginator 
+                    *ngIf="pageSize < this.subjects.length" 
+                    [length]="this.subjects.length"
+                    (page)="pageEvent = $event" 
+                    [pageSizeOptions]="[5, 10, 20]" 
+                    [pageSize]="pageSize">
                 </mat-paginator>
                 <hr>
             </ng-template>
@@ -84,13 +93,21 @@
                 <div *ngFor="let vcDocument of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
                      [attr.index]="this.subjects.indexOf(vcDocument)">
                     <div class="form-field-group">
-                        <app-document-view [document]="vcDocument" [dryRun]="dryRun" [hide-fields]="this.hideFields"
-                                           type="VC">
+                        <app-document-view 
+                            [document]="vcDocument" 
+                            [dryRun]="dryRun" 
+                            [hide-fields]="this.hideFields"
+                            type="VC"
+                            [rules]="rules">
                         </app-document-view>
                     </div>
                 </div>
-                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
-                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
+                <mat-paginator 
+                    *ngIf="pageSize < this.subjects.length" 
+                    [length]="this.subjects.length"
+                    (page)="pageEvent = $event" 
+                    [pageSizeOptions]="[5, 10, 20]" 
+                    [pageSize]="pageSize">
                 </mat-paginator>
                 <hr>
             </ng-template>

@@ -56,9 +56,13 @@
                             <app-geojson-type *ngSwitchCase="'geo'"
                                 [preset]="this.values && this.values[item.name]" [disabled]="true">
                             </app-geojson-type>
-                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
-                                                  [delimiter-hide]="true"
-                                                  [dryRun]="dryRun" [values]="this.values && this.values[item.name]">
+                            <app-schema-form-view 
+                                *ngSwitchDefault 
+                                [fields]="item.fields" 
+                                [private-fields]="hide"
+                                [delimiter-hide]="true"
+                                [dryRun]="dryRun" 
+                                [values]="this.values && this.values[item.name]">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
@@ -136,8 +140,13 @@
                         <ng-container [ngSwitch]="item.customType">
                             <app-geojson-type *ngSwitchCase="'geo'" [preset]="listItem" [disabled]="true">
                             </app-geojson-type>
-                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
-                                                  [delimiter-hide]="true" [dryRun]="dryRun" [values]="listItem">
+                            <app-schema-form-view 
+                                *ngSwitchDefault 
+                                [fields]="item.fields" 
+                                [private-fields]="hide"
+                                [delimiter-hide]="true" 
+                                [dryRun]="dryRun" 
+                                [values]="listItem">
                             </app-schema-form-view>
                         </ng-container>
                     </div>

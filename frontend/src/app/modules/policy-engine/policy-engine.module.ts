@@ -148,6 +148,7 @@ import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
 import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-editor-dialog.component';
 import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
+import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 
 @NgModule({
     declarations: [
@@ -255,6 +256,7 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         DropdownBlockAddonComponent,
         RequestAddonConfigComponent,
         RequestDocumentBlockAddonComponent,
+        RequestDocumentBlockDialog
     ],
     imports: [
         CommonModule,

@@ -21,10 +21,17 @@
             </ng-template>
             <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
                 <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
-                    <app-schema-form (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
-                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)" [comesFromDialog]="true"
-                        [formGroup]="dataForm" [preset]="presetDocument" [readonly-fields]="presetReadonlyFields"
-                        [dryRun]="dryRun" [policyId]="policyId" [schema]="schema">
+                    <app-schema-form 
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
+                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)" 
+                        [comesFromDialog]="true"
+                        [formGroup]="dataForm" 
+                        [preset]="presetDocument" 
+                        [readonly-fields]="presetReadonlyFields"
+                        [dryRun]="dryRun" 
+                        [policyId]="policyId" 
+                        [schema]="schema"
+                        [rules]="rules">
                     </app-schema-form>
                 </div>
                 <div class="dialog-actions-container">
