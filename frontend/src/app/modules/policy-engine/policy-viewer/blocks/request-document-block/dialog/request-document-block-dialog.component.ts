@@ -83,7 +83,7 @@ export class RequestDocumentBlockDialog {
     }
 
     public handleCancelBtnEvent(value: any, data: any) {
-        data.onCancel();
+        data.onClose();
     }
 
     public handleSubmitBtnEvent(value: any, data: any) {

@@ -131,21 +131,17 @@
     gap: 10px;
     color: var(--primary-color);
     margin-top: 10px;
-    margin-left: 25px;
-    margin-right: 50px;
+    margin-left: 0px;
+    margin-right: 30px;
     padding-bottom: 15px;
     padding-left: 15px;
     border-bottom: 1px solid #c8c8c8;
     margin-bottom: 10px;
-}
 
-.restore-data button.mat-raised-button {
-    padding: 0 12px;
-    height: 36px;
-}
-
-.restore-data button mat-icon {
-    margin-left: 3px;
+    button {
+        height: 30px;
+        padding: 0px 30px 0px 12px;
+    }
 }
 
 .registrant-application-create-btn {
@@ -153,10 +149,10 @@
 }
 
 .form-page {
-    //width: 60%;
-    //border: none;
-    //margin: 0;
-    //padding: 0;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 8px 0px #00000014;
+    padding: 24px;
+    border-radius: 8px;
 
     &::ng-deep {
         h1 {
@@ -175,7 +171,7 @@
 
         .label-field .page-number {
             display: block;
-            font-size: 18px;
+            font-size: 16px;
             padding: 4px 10px;
             margin-right: 8px;
             display: inline-block;
@@ -188,7 +184,7 @@
             display: flex;
             align-items: center;
             width: 100%;
-            margin: 20px 0 40px 0;
+            margin: 6px 0 24px 0;
         }
 
         .label-field .delimiter-to-next-page {
@@ -202,7 +198,7 @@
 
         .label-field .next-page-number {
             display: block;
-            font-size: 18px;
+            font-size: 16px;
             padding: 4px 10px;
             display: inline-block;
             background: #2c78f6;
@@ -283,10 +279,6 @@
 
         .page-btns-last-page #previous-btn {
             width: calc(100% - 5px);
-        }
-
-        .form-field-group {
-            padding-left: 0 !important;
         }
 
         .schema-form-field-array-group>.form-field-array-item,

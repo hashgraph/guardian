@@ -71,6 +71,7 @@ interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | Untype
 }
 
 interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
+    id: string;
     name: string;
     preset: any,
     index: string;
@@ -379,7 +380,7 @@ export class SchemaFormComponent implements OnInit {
         if (!field.isArray && !field.isRef) {
             item.fileUploading = false;
             const validators = this.getValidators(item);
-            item.control = new UntypedFormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
+            item.control = new UntypedFormControl(item.preset === null || item.preset === undefined ? undefined : item.preset, validators);
             if (field.remoteLink) {
                 item.fileUploading = true;
                 this.ipfs
@@ -493,6 +494,7 @@ export class SchemaFormComponent implements OnInit {
 
     private createListControl(item: IFieldControl<any>, preset?: any): IFieldIndexControl<any> {
         const listItem: IFieldIndexControl<any> = {
+            id: GenerateUUIDv4(),
             name: item.name,
             preset: preset,
             index: String(item.list?.length),
@@ -514,9 +516,10 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public removeGroup(item: IFieldControl<any>) {
+        item.control = null;
+        this.changeDetectorRef.detectChanges();
         this.options?.removeControl(item.name);
         this.options?.updateValueAndValidity();
-        item.control = null;
         this.change.emit();
     }
 
@@ -999,7 +1002,7 @@ export class SchemaFormComponent implements OnInit {
         return item.isArray && item.isRef;
     }
 
-    public ifInvalidField(item: IFieldControl<any>): boolean {
+    public ifInvalidField(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
         return (item.control && !item.control.valid && !item.control.disabled);
     }
 

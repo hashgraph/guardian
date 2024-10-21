@@ -18,25 +18,32 @@
             <div *ngIf="restoreData" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is some data to restore. You can restore latest values:</b>
-                <button
+                <button 
                     (click)="onRestoreClick()"
-                    aria-label="Restore Values"
-                    mat-raised-button
-                    type="button"
-                >
-                    Restore Values<mat-icon>restore</mat-icon>
+                    class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/16/refresh.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Restore Values</div>
                 </button>
-            </div>
+                </div>
 
             <div *ngIf="dryRun" class="restore-data">
                 <mat-icon>info</mat-icon>
                 <b>There is dry run mode. You can fill document with test data:</b>
-                <button
+                <button 
                     (click)="onDryRun()"
-                    aria-label="Fill Values"
-                    mat-raised-button
-                    type="button"
-                >Test<mat-icon>restore</mat-icon>
+                    class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/16/refresh.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Test</div>
                 </button>
             </div>
 

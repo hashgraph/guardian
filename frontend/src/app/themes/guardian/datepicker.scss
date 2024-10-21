@@ -1,0 +1,27 @@
+.guardian-datepicker {
+
+    .p-calendar {
+        width: 100%;
+    }
+
+    .p-datepicker-trigger {
+        background: #fff;
+        color: #727374;
+        border-color: var(--guardian-grey-color-2, #E1E7EF);
+        border-left: none;
+        border-radius: 6px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+
+        &:hover {
+            background: #fff;
+            color: #727374;
+            border-color: var(--guardian-primary-color, #4169E2);
+            box-shadow: -1px 0px 0px 0px var(--guardian-primary-color, #4169E2);
+        }
+    }
+
+    .p-inputtext:enabled:focus+.p-datepicker-trigger {
+        border-color: var(--guardian-primary-color, #4169E2);
+    }
+}

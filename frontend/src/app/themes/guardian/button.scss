@@ -51,14 +51,17 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        pointer-events: none;
     }
 
     .guardian-button-icon+.guardian-button-label {
         padding-left: 8px;
+        pointer-events: none;
     }
 
     .guardian-button-label+.guardian-button-icon {
         margin-right: 8px;
+        pointer-events: none;
     }
 }
 
