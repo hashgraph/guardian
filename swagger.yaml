@@ -12728,6 +12728,39 @@ paths:
       tags: *ref_28
       security:
         - bearer: []
+  /schema-rules/{ruleId}/inactivate:
+    put:
+      operationId: SchemaRulesApi_inactivateSchemaRule
+      summary: Inactivates schema rule.
+      description: Inactivates schema rule for the specified rule ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: []
   /schema-rules/{ruleId}/relationships:
     get:
       operationId: SchemaRulesApi_getSchemaRuleRelationships
@@ -12748,6 +12781,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SchemaRuleRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: []
+  /schema-rules/data:
+    post:
+      operationId: SchemaRulesApi_getSchemaRuleData
+      summary: ''
+      description: ''
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRuleDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
         '401':
           description: Unauthorized.
         '403':
