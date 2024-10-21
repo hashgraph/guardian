@@ -32,8 +32,8 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="example-full-width">
-                        <input [readonly]="true" [value]="item.value" class="p-field-input"
-                            pInputText type="datetime-local">
+                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input"
+                            pInputText>
                     </div>
 
                     <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
@@ -107,8 +107,8 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="example-full-width">
-                                <input [readonly]="true" [value]="listItem.value" class="p-field-input"
-                                    pInputText type="datetime-local">
+                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input"
+                                    pInputText>
                             </div>
 
                             <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
