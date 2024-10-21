@@ -9,6 +9,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 
 interface IRequestDocumentData {
     schema: ISchema;
@@ -50,7 +51,7 @@ export class RequestDocumentBlockComponent
 
     public isExist = false;
     public disabled = false;
-    public schema: any;
+    public schema: Schema | null;
     public dataForm: UntypedFormGroup;
     public hideFields: any;
     public type!: string;
@@ -75,6 +76,7 @@ export class RequestDocumentBlockComponent
         wsService: WebSocketService,
         profile: ProfileService,
         policyHelper: PolicyHelper,
+        private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
         private dialogService: DialogService,
         private router: Router,
@@ -93,6 +95,21 @@ export class RequestDocumentBlockComponent
 
     ngOnDestroy(): void {
         this.destroy();
+    }
+
+    protected override _onSuccess(data: any) {
+        this.setData(data);
+        if(this.type === 'dialog') {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        } else if(this.type === 'page') {
+            this.loadRules();
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        } 
     }
 
     override setData(data: IRequestDocumentData) {
@@ -145,6 +162,23 @@ export class RequestDocumentBlockComponent
             this.disabled = false;
             this.isExist = false;
         }
+    }
+
+    private loadRules() {
+        this.schemaRulesService
+            .getSchemaRuleData({
+                policyId: this.policyId,
+                schemaId: this.schema?.iri,
+                parentId: this.ref?.id
+            })
+            .subscribe((response) => {
+                debugger;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     private getJson(data: any, presetFields: any[]) {
@@ -271,8 +305,10 @@ export class RequestDocumentBlockComponent
     }
 
     public onDryRun() {
-        const presetDocument = DocumentGenerator.generateDocument(this.schema);
-        this.preset(presetDocument);
+        if (this.schema) {
+            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            this.preset(presetDocument);
+        }
     }
 
     public onCancelPage(value: boolean) {

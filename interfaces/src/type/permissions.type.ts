@@ -223,7 +223,8 @@ export enum Permissions {
     STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ',
     //SCHEMA RULES
     SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
-    SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ'
+    SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ',
+    SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE'
 }
 
 /**
@@ -1159,6 +1160,13 @@ export const PermissionsArray: {
             action: PermissionActions.CREATE,
             disabled: false
         },
+        {
+            name: Permissions.SCHEMAS_RULE_EXECUTE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.EXECUTE,
+            disabled: false
+        },
         //ACCESS
         {
             name: Permissions.ACCESS_POLICY_ALL,
@@ -1299,7 +1307,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_ROLE_MANAGE,
     Permissions.ACCESS_POLICY_ALL,
     Permissions.SCHEMAS_RULE_CREATE,
-    Permissions.SCHEMAS_RULE_READ
+    Permissions.SCHEMAS_RULE_READ,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [
@@ -1324,7 +1333,8 @@ export const DefaultRoles: Permissions[] = [
     Permissions.TAGS_TAG_CREATE,
     Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
     Permissions.STATISTICS_STATISTIC_READ,
-    Permissions.STATISTICS_STATISTIC_CREATE
+    Permissions.STATISTICS_STATISTIC_CREATE,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 
 export const OldRoles: Permissions[] = [
@@ -1342,4 +1352,5 @@ export const OldRoles: Permissions[] = [
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
     Permissions.ACCESS_POLICY_PUBLISHED,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];

@@ -3155,6 +3155,6 @@ export class Guardians extends NatsService {
       * @returns Operation Success
       */
     public async getSchemaRuleData(options: any, owner: IOwner): Promise<StatisticDefinitionDTO> {
-        return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { options, owner });
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
     }
 }

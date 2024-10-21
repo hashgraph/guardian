@@ -111,7 +111,7 @@ export class SchemaRulesApi {
     }
 
     /**
-     * Get statistic by id
+     * Get schema rule by id
      */
     @Get('/:ruleId')
     @Auth(Permissions.SCHEMAS_RULE_READ)
@@ -385,7 +385,7 @@ export class SchemaRulesApi {
      * Get rules and data
      */
     @Post('/data')
-    @Auth(Permissions.SCHEMAS_RULE_CREATE)
+    @Auth(Permissions.SCHEMAS_RULE_EXECUTE)
     @ApiOperation({
         summary: '',
         description: '',

@@ -3,6 +3,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -34,15 +35,34 @@ export class RequestDocumentBlockDialog {
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
+        private schemaRulesService: SchemaRulesService,
     ) {
         this.parent = this.config.data;
     }
 
     ngOnInit() {
-        this.loading = false;
+        this.loading = true;
+        this.loadRules();
     }
 
     ngOnDestroy(): void {
+    }
+
+    private loadRules() {
+        this.schemaRulesService
+            .getSchemaRuleData({
+                policyId: this.policyId,
+                schemaId: this.schema?.iri,
+                parentId: this.docRef?.id
+            })
+            .subscribe((response) => {
+                debugger;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     public onClose(): void {

@@ -17,6 +17,7 @@ import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 
 interface IRequestDocumentAddonData {
     schema: ISchema;
@@ -49,7 +50,7 @@ export class RequestDocumentBlockAddonComponent
 
     public isExist = false;
     public disabled = false;
-    public schema: any;
+    public schema: Schema | null;
     public dataForm: UntypedFormGroup;
     public ref: any;
     public title: any;
@@ -72,6 +73,7 @@ export class RequestDocumentBlockAddonComponent
         wsService: WebSocketService,
         profile: ProfileService,
         policyHelper: PolicyHelper,
+        private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
         private dialog: MatDialog,
         private dialogService: DialogService,
@@ -92,7 +94,6 @@ export class RequestDocumentBlockAddonComponent
     ngOnDestroy(): void {
         this.destroy();
     }
-
 
     override setData(data: IRequestDocumentAddonData) {
         if (data) {
@@ -124,7 +125,7 @@ export class RequestDocumentBlockAddonComponent
         }
     }
 
-    getJson(data: any, presetFields: any[]) {
+    private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
                 const json: any = {};
@@ -156,7 +157,7 @@ export class RequestDocumentBlockAddonComponent
         return null;
     }
 
-    onSubmit() {
+    public onSubmit() {
         if (this.disabled) {
             return;
         }
@@ -184,7 +185,7 @@ export class RequestDocumentBlockAddonComponent
         }
     }
 
-    prepareDataFrom(data: any) {
+    public prepareDataFrom(data: any) {
         if (Array.isArray(data)) {
             for (let j = 0; j < data.length; j++) {
                 let dataArrayElem = data[j];
@@ -218,19 +219,19 @@ export class RequestDocumentBlockAddonComponent
         }
     }
 
-    preset(document: any) {
+    public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
     }
 
-    onCancel(): void {
+    public onCancel(): void {
         if (this.dialogRef) {
             this.dialogRef.close();
             this.dialogRef = null;
         }
     }
 
-    onDialog() {
+    public onDialog() {
         this.dataForm.reset();
         if (this.needPreset && this.rowDocument) {
             this.preset(this.rowDocument);
@@ -247,26 +248,18 @@ export class RequestDocumentBlockAddonComponent
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    onDryRun() {
-        const presetDocument = DocumentGenerator.generateDocument(this.schema);
-        this.preset(presetDocument);
-    }
-
-    onRestoreClick() {
-        return;
-    }
-
-    handleCancelBtnEvent(value: any, data: any) {
-        data.onCancel();
-    }
-
-    handleSubmitBtnEvent(value: any, data: any) {
-        if (data.dataForm.valid || !this.loading) {
-            data.onSubmit();
+    public onDryRun() {
+        if (this.schema) {
+            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            this.preset(presetDocument);
         }
     }
 
-    onCancelPage(value: boolean) {
+    public onRestoreClick() {
+        return;
+    }
+
+    public onCancelPage(value: boolean) {
         this.router.navigate(['/policy-viewer']);
     }
 }

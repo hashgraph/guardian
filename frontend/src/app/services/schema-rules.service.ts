@@ -78,8 +78,8 @@ export class SchemaRulesService {
     }
 
     public getSchemaRuleData(options: {
-        policyId: string,
-        schemaId: string,
+        policyId?: string,
+        schemaId?: string,
         documentId?: string,
         parentId?: string,
     }): Observable<any> {

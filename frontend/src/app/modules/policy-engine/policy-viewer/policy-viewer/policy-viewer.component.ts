@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -11,6 +11,7 @@ import { IStep } from '../../structures';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
+import { audit } from 'rxjs/operators';
 
 /**
  * Component for choosing a policy and
@@ -171,10 +172,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
-                this.policyProgressService.data$.subscribe((data: any) => {
+                this.policyProgressService.data$.pipe(audit(ev => interval(1000))).subscribe(() => {
                     this.policyEngineService.getPolicyNavigation(policyId).subscribe((data: any) => {
                         this.updatePolicyProgress(data);
-
                         if (data && data.length > 0) {
                             this.policyProgressService.setHasNavigation(true);
                         } else {
