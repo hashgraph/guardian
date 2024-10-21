@@ -98,13 +98,26 @@ export class InterfaceDocumentActionBlock {
         }
 
         if (ref.options.type === 'download') {
-            const sensorDid = document.document.credentialSubject[0].id;
-            const userDID = document.owner;
+            const sensor = await ref.databaseServer.getVcDocument({
+                id: document.id,
+                owner: user.did,
+            });
+            if (!sensor) {
+                throw new Error(`There is no document with id: ${document.id}`);
+            }
+            const sensorDid = sensor.document.credentialSubject[0].id;
+            const userDID = user.did;
+            if (userDID !== sensorDid) {
+                const sensorUser = await PolicyUtils.getUser(ref, sensorDid);
+                if (sensorUser) {
+                    throw new Error('Sensor DID match with other user DID.');
+                }
+            }
             const userCred = await PolicyUtils.getUserCredentials(ref, userDID);
             const hederaCred = await userCred.loadHederaCredentials(ref);
             const schemaObject = await PolicyUtils.loadSchemaByID(ref, ref.options.schema);
             const schema = new Schema(schemaObject);
-            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid);
+            const didDocument = await userCred.loadSubDidDocument(ref, sensorDid, true);
             const sensorKey = await PolicyUtils.getAccountKey(ref, userDID, KeyType.KEY, sensorDid);
             result = {
                 fileName: ref.options.filename || `${sensorDid}.config.json`,

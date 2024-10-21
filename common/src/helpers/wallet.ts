@@ -108,16 +108,17 @@ export class Wallet extends NatsService {
     public async getUserKey(
         did: string,
         keyType: KeyType,
-        entityId: string
+        entityId: string,
+        force: boolean = false,
     ): Promise<any> {
-        const hasPermissions = await this.sendMessage(
+        const hasPermissions = force || (await this.sendMessage(
             MessageAPI.CHECK_KEY_PERMISSIONS,
             {
                 did,
                 keyType,
                 entityId,
             }
-        );
+        ));
 
         const user = new Users();
         const { walletToken } = await user.getUserById(did);
