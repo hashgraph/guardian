@@ -393,49 +393,48 @@
                 
                 <div *ngIf="ifInvalidField(item)" class="invalid-field-label">Please make sure all fields in schemas contain a valid value</div>
 
-                <div *ngFor="let listItem of item.list" class="form-field-array-item" 
+                <div *ngFor="let listItem of item.list" class="form-field-array-item-container" 
                     [attr.index]="listItem.index"
                     [attr.required]="item.required"
                 >
-                    <div class="form-field-group">
-                        <ng-container [ngSwitch]="item.customType">
-                            <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
-                                [disabled]="item.control?.disabled" [preset]="listItem.preset">
-                            </app-geojson-type>
-                            <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
-                                                   [formGroup]="listItem.control" [preset]="listItem.preset">
-                            </app-sentinel-hub-type>
-                            <app-schema-form 
-                                *ngSwitchDefault 
-                                [formGroup]="listItem.control" 
-                                [fields]="item.fields" 
-                                [private-fields]="hide"
-                                [conditions]="item.conditions" 
-                                [delimiter-hide]="true"
-                                [dryRun]="dryRun" 
-                                [isChildSchema]="true"
-                                [policyId]="policyId" 
-                                [preset]="listItem.preset"
-                                [rules]="rules"
-                            >
-                            </app-schema-form>
-                        </ng-container>
-
-                        <button 
-                            *ngIf="!item.control.disabled"
-                            (click)="removeItem(item, listItem)"
-                            class="guardian-button guardian-button-delete remove-btn">
-                            <div class="guardian-button-icon">
-                                <svg-icon class="icon-btn svg-icon"
-                                    src="/assets/images/icons/delete.svg"
-                                    svgClass="icon-color-delete">
-                                </svg-icon>
-                            </div>
-                            <div class="guardian-button-label">Remove Entity</div>
-                        </button>
-                    </div>
-                    <div class="short-delimiter-container">
-                        <div class="delimiter"></div>
+                    <div class="form-field-array-item">
+                        <div class="form-field-group">
+                            <ng-container [ngSwitch]="item.customType">
+                                <app-geojson-type *ngSwitchCase="'geo'" [formGroup]="listItem.control"
+                                    [disabled]="item.control?.disabled" [preset]="listItem.preset">
+                                </app-geojson-type>
+                                <app-sentinel-hub-type *ngSwitchCase="'sentinel'" [disabled]="item.control?.disabled"
+                                                       [formGroup]="listItem.control" [preset]="listItem.preset">
+                                </app-sentinel-hub-type>
+                                <app-schema-form 
+                                    *ngSwitchDefault 
+                                    [formGroup]="listItem.control" 
+                                    [fields]="item.fields" 
+                                    [private-fields]="hide"
+                                    [conditions]="item.conditions" 
+                                    [delimiter-hide]="true"
+                                    [dryRun]="dryRun" 
+                                    [isChildSchema]="true"
+                                    [policyId]="policyId" 
+                                    [preset]="listItem.preset"
+                                    [rules]="rules"
+                                >
+                                </app-schema-form>
+                            </ng-container>
+    
+                            <button 
+                                *ngIf="!item.control.disabled"
+                                (click)="removeItem(item, listItem)"
+                                class="guardian-button guardian-button-delete remove-btn">
+                                <div class="guardian-button-icon">
+                                    <svg-icon class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
+                                    </svg-icon>
+                                </div>
+                                <div class="guardian-button-label">Remove Entity</div>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

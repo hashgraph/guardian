@@ -63,7 +63,7 @@ export class RequestDocumentBlockComponent
     public presetDocument: any;
     public presetFields: any;
     public presetReadonlyFields: any;
-    public dialogContent: any;
+    public dialogTitle: any;
     public dialogClass: any;
     public dialogRef: any;
     public buttonClass: any;
@@ -118,7 +118,7 @@ export class RequestDocumentBlockComponent
             if (this.type == 'dialog') {
                 this.content = uiMetaData.content;
                 this.buttonClass = uiMetaData.buttonClass;
-                this.dialogContent = uiMetaData.dialogContent;
+                this.dialogTitle = uiMetaData.dialogContent;
                 this.dialogClass = uiMetaData.dialogClass;
                 this.description = uiMetaData.description;
             }
@@ -256,29 +256,6 @@ export class RequestDocumentBlockComponent
             data: this
         });
         dialogRef.onClose.subscribe(async (result) => { });
-
-
-        // if (window.innerWidth <= 810) {
-        //     this.dialogRef = this.dialog.open(this.dialogTemplate, {
-        //         width: `100vw`,
-        //         maxWidth: '100vw',
-        //         position: {
-        //             bottom: '0',
-        //         },
-        //         panelClass: 'g-dialog',
-        //         hasBackdrop: true, // Shadows beyond the dialog
-        //         closeOnNavigation: true,
-        //         disableClose: true,
-        //         autoFocus: false,
-        //         data: this,
-        //     });
-        // } else {
-        //     this.dialogRef = this.dialog.open(this.dialogTemplate, {
-        //         width: '850px',
-        //         disableClose: true,
-        //         data: this,
-        //     });
-        // }
     }
 
     public onRestoreClick() {

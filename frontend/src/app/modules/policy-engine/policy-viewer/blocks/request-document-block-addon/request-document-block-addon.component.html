@@ -4,60 +4,6 @@
     </p-button>
 </div>
 
-<ng-template #dialogTemplate let-data>
-    <div class="dialog-template">
-        <h1 class="title" mat-dialog-title>{{ dialogTitle }}</h1>
-        <div *ngIf="dryRun" class="restore-data">
-            <mat-icon>info</mat-icon>
-            <b>There is dry run mode. You can fill document with test data:</b>
-            <button (click)="onDryRun()" aria-label="Fill Values" mat-raised-button type="button">
-                Test<mat-icon>restore</mat-icon>
-            </button>
-        </div>
-
-        <div *ngIf="schema" class="body-dialog-template" mat-dialog-content>
-            <ng-template #preloader>
-                <div class="preloader-image"></div>
-            </ng-template>
-            <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
-                <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
-                    <app-schema-form 
-                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
-                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)" 
-                        [comesFromDialog]="true"
-                        [formGroup]="dataForm" 
-                        [preset]="presetDocument" 
-                        [readonly-fields]="presetReadonlyFields"
-                        [dryRun]="dryRun" 
-                        [policyId]="policyId" 
-                        [schema]="schema"
-                        [rules]="rules">
-                    </app-schema-form>
-                </div>
-                <div class="dialog-actions-container">
-                    <div mat-dialog-actions style="display: flex;">
-                        <div style="margin-left: auto;">
-                            <p-button (click)="onCancel()" id="cancel-btn" label="Cancel" styleClass="p-button-outlined"
-                                type="button">
-                            </p-button>
-                        </div>
-                        <div style="margin-left: 12px; margin-right: 30px;">
-                            <p-button [disabled]="!dataForm.valid || loading || dialogLoading" id="ok-btn"
-                                label="Create" type="submit">
-                            </p-button>
-                        </div>
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div *ngIf="!schema" mat-dialog-actions>
-            <button (click)="onCancel()" mat-button type="button">
-                Cancel
-            </button>
-        </div>
-    </div>
-</ng-template>
-
 <ng-template #preloader>
     <div class="preloader-image"></div>
 </ng-template>

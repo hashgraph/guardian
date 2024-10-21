@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -10,14 +11,13 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 })
 export class RequestDocumentBlockDialog {
     public loading: boolean = true;
-    public parent: RequestDocumentBlockComponent;
+    public parent: RequestDocumentBlockComponent | RequestDocumentBlockAddonComponent;
 
     public get id() { return this.parent?.id; }
-    public get type() { return this.parent?.type; }
     public get dryRun() { return this.parent?.dryRun; }
     public get dataForm() { return this.parent?.dataForm; }
     public get restoreData() { return this.parent?.restoreData; }
-    public get dialogContent() { return this.parent?.dialogContent; }
+    public get dialogTitle() { return this.parent?.dialogTitle; }
     public get schema() { return this.parent?.schema; }
     public get hideFields() { return this.parent?.hideFields; }
     public get presetDocument() { return this.parent?.presetDocument; }

@@ -16,6 +16,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
+import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 
 interface IRequestDocumentAddonData {
     schema: ISchema;
@@ -46,8 +47,6 @@ export class RequestDocumentBlockAddonComponent
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
 
-    @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
-
     public isExist = false;
     public disabled = false;
     public schema: any;
@@ -66,6 +65,7 @@ export class RequestDocumentBlockAddonComponent
     public buttonName: any;
     public restoreData: any;
     public rules: any;
+    public hideFields: any;
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -238,32 +238,22 @@ export class RequestDocumentBlockAddonComponent
             this.presetDocument = null;
         }
 
-        if (window.innerWidth <= 810) {
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: `100vw`,
-                maxWidth: '100vw',
-                position: {
-                    bottom: '0',
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                disableClose: true,
-                autoFocus: false,
-                data: this,
-            });
-        } else {
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: '850px',
-                disableClose: true,
-                data: this,
-            });
-        }
+        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: this
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     onDryRun() {
         const presetDocument = DocumentGenerator.generateDocument(this.schema);
         this.preset(presetDocument);
+    }
+
+    onRestoreClick() {
+        return;
     }
 
     handleCancelBtnEvent(value: any, data: any) {
