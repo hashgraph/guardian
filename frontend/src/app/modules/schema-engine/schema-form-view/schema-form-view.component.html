@@ -27,15 +27,18 @@
                     </div>
 
                     <div *ngIf="isTime(item)" class="example-full-width">
-                        <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText>
+                        <input [readonly]="true" [value]="item.value" class="p-field-input"
+                            pInputText type="time">
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="example-full-width">
-                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText>
+                        <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input"
+                            pInputText>
                     </div>
 
                     <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
-                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
+                        <input [readonly]="true" [value]="item.value" class="p-field-input"
+                            pInputText type="date">
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="boolean-form-field">
@@ -99,18 +102,18 @@
                             </div>
 
                             <div *ngIf="isTime(item)" class="example-full-width">
-                                <input [readonly]="true" [value]="listItem.value | date: 'mediumTime'" class="p-field-input" pInputText
-                                       type="date">
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input"
+                                    pInputText type="time">
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="example-full-width">
-                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input" pInputText
-                                       type="date">
+                                <input [readonly]="true" [value]="listItem.value | date: 'medium'" class="p-field-input"
+                                    pInputText>
                             </div>
 
                             <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
-                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText
-                                       type="date">
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input"
+                                    pInputText type="date">
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="boolean-form-field">
