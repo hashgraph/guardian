@@ -137,7 +137,7 @@ jobs:
                   popd
 
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
+              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml
