@@ -107,7 +107,7 @@
                         [delimiter-hide]="true" 
                         [dryRun]="dryRun" 
                         [values]="item"
-                        [rules]="rules">
+                        [rules]="rulesResults">
                     </app-schema-form-view>
                 </div>
             </div>
@@ -132,11 +132,10 @@
                 <div class="form-field-array-item-index">Verifiable Credential #{{subjects.indexOf(item)+1}}</div>
                 <div class="form-field-group">
                     <app-document-view 
-                        [document]="item" 
+                        [document]="item"
                         [dryRun]="dryRun" 
                         [hide-fields]="hideFields"
-                        type="VC"
-                        [rules]="rules">
+                        type="VC">
                     </app-document-view>
                 </div>
             </div>

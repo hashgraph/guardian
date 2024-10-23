@@ -861,10 +861,6 @@ export class PoliciesComponent implements OnInit {
         const distinctPolicies = this.getDistinctPolicy();
         let dialogRef;
         if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
             dialogRef = this.dialogService.open(PreviewPolicyDialog, {
                 header: 'Preview',
                 width: `${window.innerWidth.toString()}px`,

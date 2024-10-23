@@ -287,18 +287,18 @@ export class PolicyTestDialog {
         const document = item.document;
         const title = `${item.type.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
             width: '850px',
-            closable: true,
-            header: 'Document',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
-                id: document.id,
-                dryRun: true,
-                document: document,
                 title: title,
+                id: document.id,
+                row: item,
+                document: document,
+                dryRun: true,
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 }

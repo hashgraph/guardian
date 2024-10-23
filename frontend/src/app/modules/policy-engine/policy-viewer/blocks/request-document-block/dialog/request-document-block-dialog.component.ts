@@ -8,6 +8,7 @@ import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-v
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -100,7 +101,7 @@ export class RequestDocumentBlockDialog {
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
             this.loading = true;
-            this.parent.prepareDataFrom(data);
+            prepareVcData(data);
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,

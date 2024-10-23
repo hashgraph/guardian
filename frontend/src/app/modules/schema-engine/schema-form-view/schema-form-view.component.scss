@@ -24,6 +24,17 @@ form {
             }
         }
 
+        .invalid-type {
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 14px;
+            text-align: left;
+            color: red;
+            margin-top: 8px;
+            padding-left: 2px;
+        }
+
         .form-field {
             display: block;
             width: 100%;
@@ -83,7 +94,7 @@ form {
             display: flex;
             width: 100%;
             flex-direction: row;
-           
+
 
             .form-field-prefix {
                 padding: 0px 14px 0px 2px;
@@ -96,6 +107,47 @@ form {
             .form-field-input {
                 height: 40px;
                 position: relative;
+            }
+
+            .form-field-ipfs {
+                height: auto;
+                position: relative;
+
+                .form-field-url {
+                    position: relative;
+                    height: 40px;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: row;
+                    margin-bottom: 8px;
+
+                    input {
+                        width: 100%;
+                    }
+
+                    .form-field-url-buttons {
+                        min-width: 255px;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: flex-end;
+
+                        button {
+                            min-width: 110px;
+                            height: 40px;
+                            margin-left: 16px;
+                        }
+                    }
+                }
+
+                .form-field-img {
+                    position: relative;
+                    min-height: 200px;
+
+                    img {
+                        width: 100%;
+                        border: 1px solid #E1E7EF;
+                    }
+                }
             }
 
             .form-field-boolean {

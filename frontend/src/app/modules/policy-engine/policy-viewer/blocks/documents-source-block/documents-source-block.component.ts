@@ -233,20 +233,21 @@ export class DocumentsSourceBlockComponent implements OnInit {
             dialogRef.afterClosed().subscribe(async (result) => { });
         } else {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                header: field.dialogContent,
+                showHeader: false,
                 width: '850px',
-                styleClass: 'custom-dialog',
+                styleClass: 'guardian-dialog',
                 data: {
                     id: row.id,
-                    dryRun: !!row.dryRunId,
+                    row: row,
                     document: document,
+                    dryRun: !!row.dryRunId,
                     title: field.dialogContent,
                     type: 'VC',
                     viewDocument: true
-                },
+                }
             });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
+            dialogRef.onClose.subscribe(async (result) => {});
+
         }
     }
 
@@ -377,13 +378,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const text = this.getText(row, field);
+
+
         const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
             width: '850px',
-            closable: true,
-            header: 'Text',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
+                row: row,
                 dryRun: !!row.dryRunId,
                 document: text,
                 title: field.title,
@@ -391,8 +394,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 viewDocument: false
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     onSerials(event: MouseEvent, row: any, field: any) {

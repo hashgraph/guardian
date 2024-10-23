@@ -5,6 +5,7 @@ import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
+import { SchemaRuleValidateResult, SchemaRuleValidators } from '../../common/models/field-rule-validator';
 
 /**
  * View document
@@ -21,8 +22,11 @@ export class DocumentViewComponent implements OnInit {
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
+
     @Input() dryRun?: boolean = false;
-    @Input() rules?: any;
+    @Input() policyId?: string;
+    @Input() documentId?: string;
+    @Input() schemaId?: string;
 
     public loading: boolean = false;
     public isIssuerObject: boolean = false;
@@ -33,11 +37,8 @@ export class DocumentViewComponent implements OnInit {
     public pageEvent?: PageEvent;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
-
-    public policyId!: string;
-    public documentId!: string;
-    public schemaId!: string;
-
+    public rules: SchemaRuleValidators;
+    public rulesResults: SchemaRuleValidateResult;
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
@@ -52,10 +53,6 @@ export class DocumentViewComponent implements OnInit {
         if (!this.document) {
             return;
         }
-
-        this.policyId = this.document.policyId;
-        this.documentId = this.document.id;
-        this.schemaId = this.document.schema;
 
         this.issuerOptions = [];
         this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
@@ -121,8 +118,6 @@ export class DocumentViewComponent implements OnInit {
             }
         }
 
-        debugger;
-
         requests.push(
             this.schemaRulesService
                 .getSchemaRuleData({
@@ -136,6 +131,7 @@ export class DocumentViewComponent implements OnInit {
         this.loading = true;
         forkJoin(requests).subscribe((results: any[]) => {
             const rules = results.pop();
+            this.rules = new SchemaRuleValidators(rules);
             for (const result of results) {
                 if (result) {
                     try {
@@ -149,6 +145,7 @@ export class DocumentViewComponent implements OnInit {
                     }
                 }
             }
+            this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
             setTimeout(() => {
                 this.loading = false;
                 this.ref.detectChanges();

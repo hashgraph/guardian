@@ -14,6 +14,7 @@ import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
 import { ChangePasswordComponent } from '../login/change-password/change-password.component';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 enum OperationMode {
     None,
@@ -159,40 +160,6 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 console.error(message);
             }
         );
-    }
-
-    private prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
-        }
     }
 
     private setErrors(form: UntypedFormControl | UntypedFormGroup, type?: string): void {
@@ -546,7 +513,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                     key: didKey.keyValueControl.value
                 })
             }
-            this.prepareDataFrom(vcDocument);
+            prepareVcData(vcDocument);
             const data: any = {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
@@ -625,39 +592,38 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'VC',
                 viewDocument: true,
                 getByUser: true
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'DID',
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: null,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'JSON',
-            },
+            }
         });
-
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     public changePassword(profile: any) {

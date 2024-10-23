@@ -71,21 +71,19 @@ export class RecordResultDialog {
         const document = item.document;
         const title = `${item.type.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
             width: '850px',
-            closable: true,
-            header: 'Document',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: item,
                 dryRun: true,
                 document: document,
                 title: title,
                 type: 'JSON',
             }
         });
-
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     onDetails(): void {

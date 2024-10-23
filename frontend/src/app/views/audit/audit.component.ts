@@ -141,21 +141,20 @@ export class AuditComponent implements OnInit {
 
     openVP(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
             width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
                 id: element.id,
+                row: element,
                 dryRun: !!element.dryRunId,
                 document: element.document,
-                title: 'VP',
+                title: 'VP Document',
                 type: 'VP',
                 viewDocument: true
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     setFilter(type: string, value: string) {

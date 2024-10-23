@@ -11,7 +11,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
-import { SchemaRuleValidators } from '../../common/models/field-rule-validator';
+import { SchemaRuleValidateResult, SchemaRuleValidators } from '../../common/models/field-rule-validator';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -82,17 +82,6 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     fileUploading?: boolean;
 }
 
-interface IRule {
-    [path: string]: {
-        status: string;
-        tooltip: string;
-        rules: {
-            name: string;
-            status: string;
-        }[]
-    }
-}
-
 /**
  * Form built by schema
  */
@@ -124,7 +113,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
-    @Input() rules?: IRule;
+    @Input() rules?: SchemaRuleValidateResult;
 
     @Input() isFormForFinishSetup: boolean = false;
 

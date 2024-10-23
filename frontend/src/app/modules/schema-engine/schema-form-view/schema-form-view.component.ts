@@ -5,6 +5,25 @@ import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
+import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
+
+interface IFieldControl extends SchemaField {
+    hide: boolean;
+    isInvalidType: boolean;
+    value: any;
+    loading: boolean;
+    imgSrc: string;
+    list: IFieldIndexControl[];
+    count: number;
+    pageIndex: number;
+    pageSize: number;
+}
+
+interface IFieldIndexControl {
+    value: any;
+    loading: boolean;
+    imgSrc: string;
+}
 
 /**
  * Form view by schema
@@ -22,43 +41,19 @@ import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 export class SchemaFormViewComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('schema') schema: Schema | null | undefined;
-    @Input('fields') schemaFields!: SchemaField[];
+    @Input('fields') schemaFields!: SchemaField[] | undefined;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
     @Input() dryRun?: boolean = false;
-    @Input() rules?: any;
+    @Input() rules?: SchemaRuleValidateResult;
 
-    fields: any[] | undefined = [];
-    pageSize: number = 20;
+    public fields: IFieldControl[] | undefined = [];
+    private pageSize: number = 25;
 
     constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
 
     ngOnInit(): void {
-        if (this.fields !== undefined) {
-            for (const item of this.fields) {
-                if (item.conditions) {
-                    for (const condition of item.conditions) {
-                        const values = this.values ? this.values[item.name] : {};
-                        const ifField = item.fields.find((f: any) => f.name === condition.ifCondition.field.name);
-                        const currentConditionValue = values && values[ifField.name];
-                        if (!currentConditionValue) {
-                            continue;
-                        }
-                        if (currentConditionValue !== condition.ifCondition.fieldValue) {
-                            for (const field of condition.thenFields) {
-                                const thenField = item.fields.find((f: any) => f.name === field.name);
-                                thenField.notCorrespondCondition = true;
-                            }
-                        } else {
-                            for (const field of condition.thenFields) {
-                                const thenField = item.fields.find((f: any) => f.name === field.name);
-                                thenField.notCorrespondCondition = false;
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        this.init();
     }
 
     isBooleanView(item: boolean | any): string {
@@ -77,7 +72,41 @@ export class SchemaFormViewComponent implements OnInit {
         this.update();
     }
 
-    update(schemaFields?: SchemaField[]) {
+    private init() {
+        if (!this.fields) {
+            return;
+        }
+
+        for (const item of this.fields) {
+            if (item.conditions) {
+                for (const condition of item.conditions) {
+                    const values = this.values ? this.values[item.name] : {};
+                    const ifField = item.fields?.find((f: any) => f.name === condition.ifCondition.field.name);
+                    const currentConditionValue = (ifField && values) ? values[ifField.name] : undefined;
+                    if (!currentConditionValue) {
+                        continue;
+                    }
+                    if (currentConditionValue !== condition.ifCondition.fieldValue) {
+                        for (const field of condition.thenFields) {
+                            const thenField = item.fields?.find((f: any) => f.name === field.name);
+                            if (thenField) {
+                                (thenField as any).notCorrespondCondition = true;
+                            }
+                        }
+                    } else {
+                        for (const field of condition.thenFields) {
+                            const thenField = item.fields?.find((f: any) => f.name === field.name);
+                            if (thenField) {
+                                (thenField as any).notCorrespondCondition = false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private update(schemaFields?: SchemaField[]) {
         if (!schemaFields) {
             return;
         }
@@ -88,10 +117,17 @@ export class SchemaFormViewComponent implements OnInit {
             if (this.hide[field.name]) {
                 continue
             }
-            const item: any = {
+            const item: IFieldControl = {
                 ...field,
                 hide: false,
-                isInvalidType: false
+                isInvalidType: false,
+                value: undefined,
+                loading: false,
+                list: [],
+                pageIndex: 0,
+                pageSize: 0,
+                count: 0,
+                imgSrc: ''
             }
             if (!field.isArray && !field.isRef) {
                 item.value = !this.values
@@ -100,29 +136,7 @@ export class SchemaFormViewComponent implements OnInit {
                     ? ""
                     : this.values[item.name];
                 if (this.isIPFS(field)) {
-                    item.loading = true;
-                    if (this.dryRun) {
-                        this.ipfs
-                            .getImageFromDryRunStorage(item.value)
-                            .then((res) => {
-                                item.imgSrc = res;
-                            })
-                            .finally(() => {
-                                item.loading = false;
-                                this.changeDetector.detectChanges();
-                            });
-                    } else {
-                        this.ipfs
-                            .getImageByLink(item.value)
-                            .then((res) => {
-                                item.imgSrc = res;
-                            })
-                            .finally(() => {
-                                item.loading = false;
-                                this.changeDetector.detectChanges();
-                            });
-                    }
-
+                    this.loadImg(item)
                 }
             }
             if (!field.isArray && field.isRef) {
@@ -130,7 +144,7 @@ export class SchemaFormViewComponent implements OnInit {
             }
 
             if (field.isArray && !field.isRef) {
-                let value: any = [];
+                let value: IFieldIndexControl[] = [];
                 if (this.values
                     && this.values[item.name] !== null
                     && this.values[item.name] !== undefined
@@ -140,98 +154,117 @@ export class SchemaFormViewComponent implements OnInit {
                         value = fieldValue.map((fieldItem) => {
                             return {
                                 value: fieldItem,
+                                imgSrc: '',
+                                loading: false
                             };
                         });
                     }
                     else {
                         value = [{
-                            value: fieldValue
+                            value: fieldValue,
+                            imgSrc: '',
+                            loading: false
                         }]
                         item.isInvalidType = true;
                     }
                     if (this.isIPFS(field)) {
-                        Promise.all(
-                            value.map((fieldItem: any) => {
-                                fieldItem.loading = true;
-
-                                if (this.dryRun) {
-                                    return this.ipfs
-                                        .getImageFromDryRunStorage(fieldItem.value)
-                                        .then((res) => {
-                                            fieldItem.imgSrc = res;
-                                        })
-                                        .finally(() => (fieldItem.loading = false));
-                                } else {
-                                    return this.ipfs
-                                        .getImageByLink(fieldItem.value)
-                                        .then((res) => {
-                                            fieldItem.imgSrc = res;
-                                        })
-                                        .finally(() => (fieldItem.loading = false));
-                                }
-                            })
-                        ).finally(() => this.changeDetector.detectChanges());
+                        this.loadImgs(value);
                     }
                 }
 
                 item.list = value;
+                item.count = item.list?.length;
+                item.pageIndex = 0;
+                item.pageSize = this.pageSize;
             }
 
             if (field.isArray && field.isRef) {
                 item.fields = field.fields;
-                let value = [];
+                let value: IFieldIndexControl[];
                 if (this.values && this.values[item.name]) {
                     value = this.values[item.name];
+                } else {
+                    value = [];
                 }
 
                 item.list = value;
+                item.count = item.list?.length;
+                item.pageIndex = 0;
+                item.pageSize = this.pageSize;
             }
             fields.push(item);
         }
         this.fields = fields;
     }
 
-    getCID(link: string): string {
+    private async loadImg(item: IFieldControl | IFieldIndexControl) {
+        item.loading = true;
+        if (this.dryRun) {
+            return this.ipfs
+                .getImageFromDryRunStorage(item.value)
+                .then((res) => {
+                    item.imgSrc = res;
+                })
+                .finally(() => {
+                    item.loading = false;
+                    this.changeDetector.detectChanges();
+                });
+        } else {
+            return this.ipfs
+                .getImageByLink(item.value)
+                .then((res) => {
+                    item.imgSrc = res;
+                })
+                .finally(() => {
+                    item.loading = false;
+                    this.changeDetector.detectChanges();
+                });
+        }
+    }
+    private loadImgs(items: IFieldIndexControl[]) {
+        Promise.all(
+            items.map(async (fieldItem: IFieldIndexControl) => {
+                return this.loadImg(fieldItem);
+            })
+        ).finally(() => this.changeDetector.detectChanges());
+    }
+
+    public getCID(link: string): string {
         let matches = link?.match(
             /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/
         );
         return matches ? matches[0] : '';
     }
 
-    getItemsPage(item: any, pageEvent?: PageEvent) {
+    public getItemsPage(item: IFieldControl) {
+        const pageIndex = item.pageIndex || 0;
+        const pageSize = item.pageSize || this.pageSize;
         const result = [];
-        if (!pageEvent) {
-            for (let i = 0; i < this.pageSize && i < item.list.length; i++) {
-                result.push(item.list[i]);
-            }
-            return result;
-        }
-
-        const startIndex = pageEvent.pageIndex * pageEvent.pageSize;
-        const endIndex = startIndex + pageEvent.pageSize;
+        const startIndex = pageIndex * pageSize;
+        const endIndex = startIndex + pageSize;
         for (let i = startIndex; i < endIndex && i < item.list.length; i++) {
             result.push(item.list[i]);
         }
         return result;
     }
 
-    isTime(item: SchemaField): boolean {
+    public isTime(item: IFieldControl): boolean {
         return item.type === 'string' && item.format === 'time';
     }
 
-    isDate(item: SchemaField): boolean {
+    public isDate(item: IFieldControl): boolean {
         return item.type === 'string' && item.format === 'date';
     }
 
-    isDateTime(item: SchemaField): boolean {
+    public isDateTime(item: IFieldControl): boolean {
         return item.type === 'string' && item.format === 'date-time';
     }
 
-    isBoolean(item: SchemaField): boolean {
+    public isBoolean(item: IFieldControl): boolean {
         return item.type === 'boolean';
     }
 
-    isIPFS(item: SchemaField): boolean {
+    public isIPFS(item: SchemaField): boolean {
         if (item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+') {
         }
@@ -239,7 +272,7 @@ export class SchemaFormViewComponent implements OnInit {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    isInput(item: SchemaField): boolean {
+    public isInput(item: IFieldControl): boolean {
         return (
             (
                 item.type === 'string' ||
@@ -253,31 +286,36 @@ export class SchemaFormViewComponent implements OnInit {
         );
     }
 
-    isPrefix(item: SchemaField): boolean {
+    public isPrefix(item: IFieldControl): boolean {
         return item.unitSystem === UnitSystem.Prefix;
     }
 
-    isPostfix(item: SchemaField): boolean {
+    public isPostfix(item: IFieldControl): boolean {
         return item.unitSystem === UnitSystem.Postfix;
     }
 
-    public ifFieldVisible(item: any): boolean {
+    public onPage(item: IFieldControl, event: any): void {
+        item.pageIndex = event.pageIndex;
+        item.pageSize = event.pageSize;
+    }
+
+    public ifFieldVisible(item: IFieldControl): boolean {
         return !item.hide && !item.hidden;
     }
 
-    public ifSimpleField(item: any): boolean {
+    public ifSimpleField(item: IFieldControl): boolean {
         return !item.isArray && !item.isRef;
     }
 
-    public ifSubSchema(item: any): boolean {
+    public ifSubSchema(item: IFieldControl): boolean {
         return !item.isArray && item.isRef;
     }
 
-    public ifSimpleArray(item: any): boolean {
+    public ifSimpleArray(item: IFieldControl): boolean {
         return item.isArray && !item.isRef;
     }
 
-    public ifSubSchemaArray(item: any): boolean {
+    public ifSubSchemaArray(item: IFieldControl): boolean {
         return item.isArray && item.isRef;
     }
 

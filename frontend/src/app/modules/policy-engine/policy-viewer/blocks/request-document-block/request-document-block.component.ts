@@ -13,6 +13,7 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 interface IRequestDocumentData {
     schema: ISchema;
@@ -240,7 +241,7 @@ export class RequestDocumentBlockComponent
         if (form.valid) {
             const data = form.getRawValue();
             this.loading = true;
-            this.prepareDataFrom(data);
+            prepareVcData(data);
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
@@ -254,40 +255,6 @@ export class RequestDocumentBlockComponent
                     console.error(e.error);
                     this.loading = false;
                 });
-        }
-    }
-
-    public prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
         }
     }
 

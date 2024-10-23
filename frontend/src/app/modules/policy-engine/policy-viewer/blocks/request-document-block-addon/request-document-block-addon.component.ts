@@ -18,6 +18,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 interface IRequestDocumentAddonData {
     schema: ISchema;
@@ -166,7 +167,7 @@ export class RequestDocumentBlockAddonComponent
         }
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
-            this.prepareDataFrom(data);
+            prepareVcData(data);
             this.dialogRef.close();
             this.dialogRef = null;
             this.loading = true;
@@ -182,40 +183,6 @@ export class RequestDocumentBlockAddonComponent
                         this.loading = false;
                     }
                 );
-        }
-    }
-
-    public prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
         }
     }
 

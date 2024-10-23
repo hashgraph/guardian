@@ -308,19 +308,20 @@ export class StatisticAssessmentViewComponent implements OnInit {
 
     public openVCDocument(document: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: false,
                 document: document.document,
-                title: document.schemaName || 'VC',
+                title: document.schemaName || 'VC Document',
                 type: 'VC',
                 viewDocument: true,
                 schema: this.schema
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 }

@@ -2,6 +2,11 @@
 
     .p-calendar {
         width: 100%;
+
+        .p-datepicker {
+            width: auto;
+            min-width: auto;
+        }
     }
 
     .p-datepicker-trigger {

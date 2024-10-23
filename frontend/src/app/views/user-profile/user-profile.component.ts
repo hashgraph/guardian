@@ -349,33 +349,35 @@ export class UserProfileComponent implements OnInit {
 
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
                 viewDocument: true,
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'DID',
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'JSON',
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => { });
     }

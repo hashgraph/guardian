@@ -304,33 +304,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    openDocument(element: any) {
-        let dialogRef;
-
-        if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: `${window.innerWidth.toString()}px`,
-                header: 'Document',
-                styleClass: 'custom-dialog',
-                data: this,
-            });
-        } else {
-            dialogRef = this.dialogService.open(VCViewerDialog, {
-                header: 'Document',
-                width: '900px',
-                styleClass: 'custom-dialog',
-                data: {
-                    document: element,
-                    title: 'Document',
-                    type: 'JSON',
-                },
-            });
-        }
-        dialogRef.onClose.subscribe(async (result) => { });
+    public openDocument(element: any) {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '850px',
+            styleClass: 'guardian-dialog',
+            data: {
+                document: element,
+                title: 'Document',
+                type: 'JSON',
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
-
 
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {

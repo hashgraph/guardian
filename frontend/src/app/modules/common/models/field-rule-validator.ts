@@ -8,6 +8,7 @@ import {
     IFormulaRuleData,
     IRangeRuleData,
     ISchemaRuleData,
+    IVC,
     IVCDocument
 } from '@guardian/interfaces';
 
@@ -19,9 +20,10 @@ enum FieldRuleResult {
 }
 
 
-interface SchemaRuleValidateResult {
+export interface SchemaRuleValidateResult {
     [path: string]: {
         status: FieldRuleResult;
+        tooltip: string;
         rules: {
             name: string;
             description: string;
@@ -238,13 +240,12 @@ export class FieldRuleValidators {
     }
 }
 
-
 export class SchemaRuleValidator {
     public readonly name: string;
     public readonly description: string;
     public readonly schemas: Set<string>;
     public readonly validators: FieldRuleValidators;
-    public readonly relationships: Map<string, any>;
+    public readonly relationships: Map<string, IVCDocument>;
 
     constructor(data: any) {
         const item = data.rules || {};
@@ -252,10 +253,10 @@ export class SchemaRuleValidator {
         const relationships = data.relationships || [];
 
 
-        this.relationships = new Map<string, any>()
+        this.relationships = new Map<string, IVCDocument>()
         for (const document of relationships) {
             SchemaRuleValidator.convertDocument(
-                SchemaRuleValidator.getCredentialSubject(document),
+                SchemaRuleValidator.getCredentialSubject(document?.document),
                 document?.schema + '/',
                 this.relationships
             );
@@ -287,8 +288,8 @@ export class SchemaRuleValidator {
         return this.validators.validateWithFullPath(score);
     }
 
-    public static getCredentialSubject(document: IVCDocument): any {
-        let credentialSubject: any = document?.document?.credentialSubject;
+    public static getCredentialSubject(document?: IVC): any {
+        let credentialSubject: any = document?.credentialSubject;
         if (Array.isArray(credentialSubject)) {
             return credentialSubject[0];
         } else {
@@ -341,7 +342,22 @@ export class SchemaRuleValidators {
         }
     }
 
+    public validateVC(iri: string | undefined, vc: any): any {
+        if (this.validators.length === 0) {
+            return null;
+        }
+        if (!iri || !this.schemas.has(iri)) {
+            return null;
+        }
+        const data = SchemaRuleValidator.getCredentialSubject(vc);
+        const list = SchemaRuleValidator.convertDocument(data, iri + '/', new Map<string, any>());
+        return this.validate(iri, list);
+    }
+
     public validateForm(iri: string | undefined, data: any): any {
+        if (this.validators.length === 0) {
+            return null;
+        }
         if (!iri || !this.schemas.has(iri)) {
             return null;
         }
@@ -374,6 +390,7 @@ export class SchemaRuleValidators {
                         } else {
                             statuses[path] = {
                                 status: status,
+                                tooltip: '',
                                 rules: [{
                                     name: validator.name,
                                     description: validator.description,
