@@ -15986,6 +15986,7 @@ components:
             - STATISTICS_STATISTIC_CREATE
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
+            - SCHEMAS_RULE_EXECUTE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
