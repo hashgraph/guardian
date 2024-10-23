@@ -125,7 +125,6 @@
 
                     <div *ngIf="isPostfix(item)" class="form-field-postfix">{{item.unit}}</div>
 
-
                     <div 
                         *ngIf="isRules(item) as rule"
                         class="form-field-rule"
@@ -141,7 +140,6 @@
                             src="/assets/images/icons/check.svg" 
                             svgClass="icon-color-success"></svg-icon>
                     </div>
-
                 </div>
 
                 <div *ngIf="ifInvalidField(item)" class="invalid-field-label">

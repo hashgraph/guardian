@@ -1,13 +1,13 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
 
 interface IFieldControl extends SchemaField {
+    fullPath: string;
     hide: boolean;
     isInvalidType: boolean;
     value: any;
@@ -60,16 +60,36 @@ export class SchemaFormViewComponent implements OnInit {
         return (typeof item === 'boolean') ? String(item) : 'Unset';
     }
 
-    ngOnChanges() {
-        this.hide = this.hide || {};
-        if (this.schemaFields) {
-            this.update(this.schemaFields);
-            return;
-        } else if (this.schema) {
-            this.update(this.schema.fields);
-            return;
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.rules && this.rules) {
+            for (const value of Object.values(this.rules)) {
+                if (value.status === 'Failure' || value.status === 'Error') {
+                    value.tooltip = 'Failure: ' + value.rules
+                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
+                        .map((r) => r.name)
+                        .join(', ');
+                } else {
+                    value.tooltip = 'Success: ' + value.rules
+                        .filter((r) => r.status === 'Success')
+                        .map((r) => r.name)
+                        .join(', ');
+                }
+            }
         }
-        this.update();
+        if (
+            changes.schema ||
+            changes.schemaFields ||
+            changes.hide
+        ) {
+            this.hide = this.hide || {};
+            if (this.schemaFields) {
+                this.update(this.schemaFields);
+            } else if (this.schema) {
+                this.update(this.schema.fields);
+            } else {
+                this.update();
+            }
+        }
     }
 
     private init() {
@@ -119,6 +139,7 @@ export class SchemaFormViewComponent implements OnInit {
             }
             const item: IFieldControl = {
                 ...field,
+                fullPath: field.fullPath || '',
                 hide: false,
                 isInvalidType: false,
                 value: undefined,
@@ -319,4 +340,7 @@ export class SchemaFormViewComponent implements OnInit {
         return item.isArray && item.isRef;
     }
 
+    public isRules(item: IFieldControl) {
+        return this.rules && this.rules[item.fullPath];
+    }
 }

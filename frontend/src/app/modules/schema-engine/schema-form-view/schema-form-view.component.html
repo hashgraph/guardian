@@ -65,6 +65,22 @@
                     </div>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
+
+                    <div 
+                        *ngIf="isRules(item) as rule"
+                        class="form-field-rule"
+                        [pTooltip]="rule.tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="1000">
+                        <svg-icon 
+                            *ngIf="rule.status === 'Failure' || rule.status === 'Error'" 
+                            src="/assets/images/icons/warning-2.svg" 
+                            svgClass="icon-color-warning"></svg-icon>
+                        <svg-icon 
+                            *ngIf="rule.status === 'Success'" 
+                            src="/assets/images/icons/check.svg" 
+                            svgClass="icon-color-success"></svg-icon>
+                    </div>
                 </div>
             </div>
 

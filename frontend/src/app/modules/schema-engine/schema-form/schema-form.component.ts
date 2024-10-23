@@ -220,22 +220,20 @@ export class SchemaFormComponent implements OnInit {
         ) {
             this.buildFields();
         }
-        if (changes.rules) {
-            if (this.rules) {
-                for (const value of Object.values(this.rules)) {
-                    if (value.status === 'Failure' || value.status === 'Error') {
-                        value.tooltip = 'Failure: ' + value.rules
-                            .filter((r) => r.status === 'Failure' || r.status === 'Error')
-                            .map((r) => r.name)
-                            .join(', ');
-                    } else {
-                        value.tooltip = 'Success: ' + value.rules
-                            .filter((r) => r.status === 'Success')
-                            .map((r) => r.name)
-                            .join(', ');
-                    }
-
+        if (changes.rules && this.rules) {
+            for (const value of Object.values(this.rules)) {
+                if (value.status === 'Failure' || value.status === 'Error') {
+                    value.tooltip = 'Failure: ' + value.rules
+                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
+                        .map((r) => r.name)
+                        .join(', ');
+                } else {
+                    value.tooltip = 'Success: ' + value.rules
+                        .filter((r) => r.status === 'Success')
+                        .map((r) => r.name)
+                        .join(', ');
                 }
+
             }
         }
     }
