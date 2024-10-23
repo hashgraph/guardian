@@ -55,7 +55,7 @@ export class SchemaRulesPreviewDialog {
             document[field.id] = field.value;
         }
 
-        const result = this.rules.checkValue(document);
+        const result = this.rules.validate(document);
 
         for (const field of this.preview) {
             field.status = result[field.id];

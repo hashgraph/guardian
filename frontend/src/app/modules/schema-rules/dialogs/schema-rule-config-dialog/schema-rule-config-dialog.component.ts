@@ -152,10 +152,6 @@ export class SchemaRuleConfigDialog {
 
     }
 
-    // public onChangeConditionType(condition: any, value: any) {
-    //     debugger;
-    // }
-
     public addCondition(condition: ConditionRule) {
         condition.addCondition();
     }

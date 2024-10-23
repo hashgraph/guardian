@@ -4,6 +4,10 @@ import { RequestDocumentBlockComponent } from '../request-document-block.compone
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
+import { audit, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
 
 @Component({
     selector: 'request-document-block-dialog',
@@ -16,7 +20,6 @@ export class RequestDocumentBlockDialog {
 
     public get id() { return this.parent?.id; }
     public get dryRun() { return this.parent?.dryRun; }
-    public get dataForm() { return this.parent?.dataForm; }
     public get restoreData() { return this.parent?.restoreData; }
     public get dialogTitle() { return this.parent?.dialogTitle; }
     public get schema() { return this.parent?.schema; }
@@ -24,11 +27,14 @@ export class RequestDocumentBlockDialog {
     public get presetDocument() { return this.parent?.presetDocument; }
     public get presetReadonlyFields() { return this.parent?.presetReadonlyFields; }
     public get policyId() { return this.parent?.policyId; }
-    public get rules() { return this.parent?.rules; }
     public get disabled() { return this.parent?.disabled; }
     public get docRef() { return this.parent?.ref; }
 
     public buttons: any = [];
+    public rules: SchemaRuleValidators;
+    public dataForm: UntypedFormGroup;
+    public destroy$: Subject<boolean> = new Subject<boolean>();
+    public rulesResults: any;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -36,16 +42,26 @@ export class RequestDocumentBlockDialog {
         private dialogService: DialogService,
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
+        private fb: UntypedFormBuilder,
     ) {
         this.parent = this.config.data;
+        this.dataForm = this.fb.group({});
     }
 
     ngOnInit() {
         this.loading = true;
         this.loadRules();
+        this.dataForm.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .pipe(audit(ev => interval(1000)))
+            .subscribe(val => {
+                this.validate();
+            });
     }
 
     ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
     }
 
     private loadRules() {
@@ -55,14 +71,22 @@ export class RequestDocumentBlockDialog {
                 schemaId: this.schema?.iri,
                 parentId: this.docRef?.id
             })
-            .subscribe((response) => {
-                debugger;
+            .subscribe((rules: any[]) => {
+                this.rules = new SchemaRuleValidators(rules);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    private validate() {
+        if (!this.rules) {
+            return;
+        }
+        const data = this.dataForm.getRawValue();
+        this.rulesResults = this.rules.validateForm(this.schema?.iri, data);
     }
 
     public onClose(): void {
@@ -102,11 +126,11 @@ export class RequestDocumentBlockDialog {
         this.parent.onRestoreClick();
     }
 
-    public handleCancelBtnEvent(value: any, data: any) {
+    public handleCancelBtnEvent(value: any, data: RequestDocumentBlockDialog) {
         data.onClose();
     }
 
-    public handleSubmitBtnEvent(value: any, data: any) {
+    public handleSubmitBtnEvent(value: any, data: RequestDocumentBlockDialog) {
         if (data.dataForm.valid || !this.loading) {
             data.onSubmit();
         }

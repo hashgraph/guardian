@@ -1,14 +1,29 @@
 <form>
     <ng-container *ngFor="let item of fields">
-        <div *ngIf="!item.hide && !item.notCorrespondCondition" class="form-field-container">
-            <div *ngIf="!item.isArray && !item.isRef" class="form-field">
+
+
+
+        <div *ngIf="ifFieldVisible(item)" class="form-field-container">
+
+
+            <!-- simple field -->
+            <div *ngIf="ifSimpleField(item)" class="form-field">
                 <div class="label-field">{{item.description}}</div>
 
                 <div class="form-field-value">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
-                    <div *ngIf="isInput(item)" class="example-full-width">
-                        <input [ngClass]="{'hidden-item': isIPFS(item) }" [readonly]="true" [value]="item.value" class="p-field-input"
-                               pInputText>
+
+                    <div 
+                        *ngIf="isInput(item)"
+                        class="form-field-input guardian-input-container"
+                        [ngClass]="{'ipfs-url' : isIPFS(item)}"
+                    >
+                        <input 
+                            pInputText
+                            [ngClass]="{'hidden-item': isIPFS(item) }" 
+                            [value]="item.value"
+                            [readonly]="true"
+                            type="text"/>
                         <div *ngIf="isIPFS(item)">
                             <div class="image-action-buttons">
                                 <button [cdkCopyToClipboard]="item.value" class="button" pButton type="button">
@@ -26,29 +41,32 @@
                         </div>
                     </div>
 
-                    <div *ngIf="isTime(item)" class="example-full-width">
+                    <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
                         <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText>
                     </div>
 
-                    <div *ngIf="isDateTime(item)" class="example-full-width">
+                    <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
                         <input [readonly]="true" [value]="item.value | date: 'medium'" class="p-field-input" pInputText>
                     </div>
 
-                    <div *ngIf="isDate(item)" appearance="outline" class="example-full-width">
+                    <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
                         <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="boolean-form-field">
                         <span class="boolean-show">{{ isBooleanView(item.value) }}</span>
-                        <!--                        <p-checkbox *ngIf="!isUnset(item.value)" [(ngModel)]="item.value" [name]="item.name" [binary]="true"></p-checkbox>-->
-                        <!--                        <span *ngIf="isUnset(item.value)">Unset</span>-->
                     </div>
 
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
                 </div>
             </div>
 
-            <div *ngIf="!item.isArray && item.isRef" class="form-field-group">
+
+
+
+
+
+            <div *ngIf="ifSubSchema(item)" class="form-field-group">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                     <div class="form-field-group">
@@ -70,7 +88,7 @@
             </div>
 
 
-            <div *ngIf="item.isArray && !item.isRef" class="form-field-array">
+            <div *ngIf="ifSimpleArray(item)" class="form-field-array">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngIf="item.isInvalidType" class="invalid-type">
                     <b>The field type does not match the field type in the schema</b>
@@ -132,7 +150,7 @@
             </div>
 
 
-            <div *ngIf="item.isArray && item.isRef" class="form-field-group schema-form-field-array-group">
+            <div *ngIf="ifSubSchemaArray(item)" class="form-field-group schema-form-field-array-group">
                 <div class="label-field">{{item.description}}</div>
                 <div *ngFor="let listItem of getItemsPage(item, item.pageEvent)" class="form-field-array-item"
                     [attr.index]="item.list.indexOf(listItem)">

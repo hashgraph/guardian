@@ -65,7 +65,8 @@ export interface ISchemaRuleData {
 }
 
 export interface ISchemaRulesConfig {
-    fields?: ISchemaRuleData[]
+    fields?: ISchemaRuleData[];
+    schemas?: string[];
 }
 
 export interface ISchemaRules {

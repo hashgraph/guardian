@@ -10,6 +10,9 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { audit, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
 
 interface IRequestDocumentData {
     schema: ISchema;
@@ -69,7 +72,9 @@ export class RequestDocumentBlockComponent
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
-    public rules: any;
+    public rules: SchemaRuleValidators;
+    public rulesResults: any;
+    public destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         policyEngineService: PolicyEngineService,
@@ -91,25 +96,41 @@ export class RequestDocumentBlockComponent
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
+        this.dataForm.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .pipe(audit(ev => interval(1000)))
+            .subscribe(val => {
+                this.validate();
+            });
     }
 
     ngOnDestroy(): void {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
         this.destroy();
+    }
+
+    private validate() {
+        if (!this.rules) {
+            return;
+        }
+        const data = this.dataForm.getRawValue();
+        this.rulesResults = this.rules.validateForm(this.schema?.iri, data);
     }
 
     protected override _onSuccess(data: any) {
         this.setData(data);
-        if(this.type === 'dialog') {
+        if (this.type === 'dialog') {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        } else if(this.type === 'page') {
+        } else if (this.type === 'page') {
             this.loadRules();
         } else {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        } 
+        }
     }
 
     override setData(data: IRequestDocumentData) {
@@ -171,8 +192,8 @@ export class RequestDocumentBlockComponent
                 schemaId: this.schema?.iri,
                 parentId: this.ref?.id
             })
-            .subscribe((response) => {
-                debugger;
+            .subscribe((rules) => {
+                this.rules = new SchemaRuleValidators(rules);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -212,12 +233,12 @@ export class RequestDocumentBlockComponent
         return null;
     }
 
-    public onSubmit() {
+    public onSubmit(form: UntypedFormGroup) {
         if (this.disabled || this.loading) {
             return;
         }
-        if (this.dataForm.valid) {
-            const data = this.dataForm.getRawValue();
+        if (form.valid) {
+            const data = form.getRawValue();
             this.loading = true;
             this.prepareDataFrom(data);
             this.policyEngineService
@@ -276,7 +297,6 @@ export class RequestDocumentBlockComponent
     }
 
     public onDialog() {
-        this.dataForm.reset();
         if (this.needPreset && this.rowDocument) {
             this.preset(this.rowDocument);
         } else {

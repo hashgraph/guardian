@@ -2640,7 +2640,10 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param filters
      * @param options
      */
-    public static async getVC(filters?: FilterQuery<VcDocumentCollection>, options?: FindOptions<unknown>): Promise<VcDocumentCollection | null> {
+    public static async getVC(
+        filters?: FilterQuery<VcDocumentCollection>, 
+        options?: FindOptions<VcDocumentCollection>
+    ): Promise<VcDocumentCollection | null> {
         return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
     }
 

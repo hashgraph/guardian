@@ -3,6 +3,7 @@ import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator
 import { Schema } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 
 /**
@@ -33,10 +34,15 @@ export class DocumentViewComponent implements OnInit {
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
 
+    public policyId!: string;
+    public documentId!: string;
+    public schemaId!: string;
+
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private schemaService: SchemaService,
+        private schemaRulesService: SchemaRulesService,
         private ref: ChangeDetectorRef
     ) {
 
@@ -47,7 +53,9 @@ export class DocumentViewComponent implements OnInit {
             return;
         }
 
-        debugger
+        this.policyId = this.document.policyId;
+        this.documentId = this.document.id;
+        this.schemaId = this.document.schema;
 
         this.issuerOptions = [];
         this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
@@ -112,12 +120,30 @@ export class DocumentViewComponent implements OnInit {
                 }
             }
         }
+
+        debugger;
+
+        requests.push(
+            this.schemaRulesService
+                .getSchemaRuleData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId
+                })
+                .pipe(takeUntil(this.destroy$))
+        )
+
         this.loading = true;
         forkJoin(requests).subscribe((results: any[]) => {
+            const rules = results.pop();
             for (const result of results) {
                 if (result) {
                     try {
-                        this.schemaMap[result.iri] = new Schema(result);
+                        let type = (result.iri || '');
+                        if (type.startsWith('#')) {
+                            type = type.substr(1);
+                        }
+                        this.schemaMap[type] = new Schema(result);
                     } catch (error) {
                         console.error(error);
                     }

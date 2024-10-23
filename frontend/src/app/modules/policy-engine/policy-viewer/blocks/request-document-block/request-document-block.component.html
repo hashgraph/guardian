@@ -8,7 +8,7 @@
     </ng-container>
     <ng-container *ngIf="type == 'page'">
         <form
-            (ngSubmit)="onSubmit()"
+            (ngSubmit)="onSubmit(dataForm)"
             *ngIf="schema"
             [formGroup]="dataForm"
             class="form-{{ type }}"
@@ -50,7 +50,7 @@
             <div class="schema-form">
                 <app-schema-form
                     (cancelBtnEvent)="onCancelPage($event)"
-                    (submitBtnEvent)="onSubmit()"
+                    (submitBtnEvent)="onSubmit(dataForm)"
                     [formGroup]="dataForm"
                     [preset]="presetDocument"
                     [private-fields]="hideFields"
@@ -59,7 +59,7 @@
                     [dryRun]="dryRun"
                     [policyId]="policyId"
                     submitText="Create"
-                    [rules]="rules"
+                    [rules]="rulesResults"
                 >
                 </app-schema-form>
             </div>

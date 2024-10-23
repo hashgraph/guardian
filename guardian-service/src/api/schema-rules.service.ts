@@ -1,26 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { validateRuleConfig } from './helpers/schema-rules-helpers.js';
-
-
-async function getSchemaRuleData(
-    item: SchemaRule,
-    option: {
-        policyId: string,
-        schemaId: string,
-        documentId: string,
-        parentId: string
-    },
-    owner: IOwner
-) {
-    const { policyId, schemaId, documentId, parentId } = option;
-    return {
-        rules: item,
-        document: null,
-        relationships: []
-    }
-}
+import { getSchemaRuleData, publishRuleConfig, validateRuleConfig } from './helpers/schema-rules-helpers.js';
 
 /**
  * Connect to the message broker methods of working with schema rules.
@@ -274,6 +255,8 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 item.status = EntityStatus.ACTIVE;
+                item.config = validateRuleConfig(item.config);
+                item.config = publishRuleConfig(item.config);
 
                 const result = await DatabaseServer.updateSchemaRule(item);
                 return new MessageResponse(result);

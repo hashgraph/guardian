@@ -1,11 +1,33 @@
 import { Formula } from 'src/app/utils';
-import { IConditionEnum, IConditionFormula, IConditionRange, IConditionRuleData, IConditionText, IFormulaRuleData, IRangeRuleData, ISchemaRuleData } from '@guardian/interfaces';
+import {
+    IConditionEnum,
+    IConditionFormula,
+    IConditionRange,
+    IConditionRuleData,
+    IConditionText,
+    IFormulaRuleData,
+    IRangeRuleData,
+    ISchemaRuleData,
+    IVCDocument
+} from '@guardian/interfaces';
 
 enum FieldRuleResult {
     None = 'None',
     Error = 'Error',
     Failure = 'Failure',
     Success = 'Success',
+}
+
+
+interface SchemaRuleValidateResult {
+    [path: string]: {
+        status: FieldRuleResult;
+        rules: {
+            name: string;
+            description: string;
+            status: string;
+        }[]
+    }
 }
 
 abstract class AbstractFieldRule {
@@ -97,7 +119,7 @@ abstract class AbstractFieldRule {
         }
     }
 
-    public checkValue(scope: any): FieldRuleResult {
+    public validate(scope: any): FieldRuleResult {
         if (this.type === 'none') {
             return FieldRuleResult.None;
         }
@@ -153,28 +175,216 @@ export class FieldRuleValidator extends AbstractFieldRule {
     }
 }
 
+export class FieldVariable {
+    public readonly id: string;
+    public readonly schemaId: string;
+    public readonly path: string;
+    public readonly fullPah: string;
+    public readonly fieldRef: boolean;
+    public readonly fieldArray: boolean;
+    public readonly fieldDescription: string;
+    public readonly schemaName: string;
+
+    constructor(variable: ISchemaRuleData) {
+        this.id = variable.id;
+        this.schemaId = variable.schemaId;
+        this.path = variable.path;
+        this.fullPah = variable.schemaId + '/' + variable.path;
+        this.fieldRef = variable.fieldRef;
+        this.fieldArray = variable.fieldArray;
+        this.fieldDescription = variable.fieldDescription;
+        this.schemaName = variable.schemaName;
+    }
+}
 
 export class FieldRuleValidators {
-    private rules: FieldRuleValidator[];
-    private variables: ISchemaRuleData[];
+    public readonly rules: FieldRuleValidator[];
+    public readonly variables: FieldVariable[];
+    public readonly idToPath: Map<string, string>;
+    public readonly pathToId: Map<string, string>;
 
-    constructor(rules: ISchemaRuleData[]) {
-        this.variables = rules || [];
+    constructor(rules?: ISchemaRuleData[]) {
+        const variables = rules || [];
+
         this.rules = [];
-        for (const variable of this.variables) {
+        this.variables = [];
+        for (const variable of variables) {
             this.rules.push(new FieldRuleValidator(variable));
+            this.variables.push(new FieldVariable(variable));
+        }
+        this.idToPath = new Map<string, string>();
+        this.pathToId = new Map<string, string>();
+        for (const variable of this.variables) {
+            this.idToPath.set(variable.id, variable.fullPah);
+            this.pathToId.set(variable.fullPah, variable.id);
         }
     }
 
-    public checkValue(scope: any): { [x: string]: FieldRuleResult } {
+    public validate(scope: any): { [x: string]: FieldRuleResult } {
         const result: { [x: string]: FieldRuleResult } = {};
         for (const rule of this.rules) {
-            result[rule.id] = rule.checkValue(scope);
+            result[rule.id] = rule.validate(scope);
         }
         return result;
     }
 
-    public checkScope(document: any): any {
+    public validateWithFullPath(scope: any): { [x: string]: FieldRuleResult } {
+        const result: { [x: string]: FieldRuleResult } = {};
+        for (const rule of this.rules) {
+            const path = this.idToPath.get(rule.id) || rule.id;
+            result[path] = rule.validate(scope);
+        }
+        return result;
+    }
+}
 
+
+export class SchemaRuleValidator {
+    public readonly name: string;
+    public readonly description: string;
+    public readonly schemas: Set<string>;
+    public readonly validators: FieldRuleValidators;
+    public readonly relationships: Map<string, any>;
+
+    constructor(data: any) {
+        const item = data.rules || {};
+        const configuration = item.config || {};
+        const relationships = data.relationships || [];
+
+
+        this.relationships = new Map<string, any>()
+        for (const document of relationships) {
+            SchemaRuleValidator.convertDocument(
+                SchemaRuleValidator.getCredentialSubject(document),
+                document?.schema + '/',
+                this.relationships
+            );
+        }
+
+        this.name = item.name;
+        this.description = item.description;
+        this.validators = new FieldRuleValidators(configuration.fields);
+        this.schemas = new Set<string>();
+        for (const variable of this.validators.variables) {
+            this.schemas.add(variable.schemaId);
+        }
+    }
+
+    public validate(iri: string | undefined, list: Map<string, any>) {
+        if (!iri || !this.schemas.has(iri)) {
+            return null;
+        }
+        const score: { [id: string]: any } = {};
+        for (const variable of this.validators.variables) {
+            if (list.has(variable.fullPah)) {
+                score[variable.id] = list.get(variable.fullPah);
+            } else if (this.relationships.has(variable.fullPah)) {
+                score[variable.id] = this.relationships.get(variable.fullPah);
+            } else {
+                score[variable.id] = null;
+            }
+        }
+        return this.validators.validateWithFullPath(score);
+    }
+
+    public static getCredentialSubject(document: IVCDocument): any {
+        let credentialSubject: any = document?.document?.credentialSubject;
+        if (Array.isArray(credentialSubject)) {
+            return credentialSubject[0];
+        } else {
+            credentialSubject;
+        }
+    }
+
+    public static convertDocument(
+        document: any,
+        path: string,
+        list: Map<string, any>
+    ): Map<string, any> {
+        if (!document) {
+            return list;
+        }
+        for (const [key, value] of Object.entries(document)) {
+            const currentPath = path + key;
+            switch (typeof value) {
+                case 'function': {
+                    break;
+                }
+                case 'object': {
+                    list.set(currentPath, value);
+                    if (!Array.isArray(value)) {
+                        SchemaRuleValidator.convertDocument(value, currentPath + '.', list);
+                    }
+                    break;
+                }
+                default: {
+                    list.set(currentPath, value);
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+}
+
+export class SchemaRuleValidators {
+    public schemas: Set<string | undefined>;
+    public validators: SchemaRuleValidator[];
+
+    constructor(data: any[]) {
+        this.validators = data.map((v) => new SchemaRuleValidator(v));
+        this.schemas = new Set<string>();
+        for (const validator of this.validators) {
+            for (const iri of validator.schemas) {
+                this.schemas.add(iri);
+            }
+        }
+    }
+
+    public validateForm(iri: string | undefined, data: any): any {
+        if (!iri || !this.schemas.has(iri)) {
+            return null;
+        }
+        const list = SchemaRuleValidator.convertDocument(data, iri + '/', new Map<string, any>());
+        return this.validate(iri, list);
+    }
+
+    private validate(iri: string | undefined, list: Map<string, any>): any {
+        const results = [];
+        for (const validator of this.validators) {
+            results.push(validator.validate(iri, list));
+        }
+
+        const statuses: SchemaRuleValidateResult = {};
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            const validator = this.validators[i];
+            if (result) {
+                for (const [path, status] of Object.entries(result)) {
+                    if (status !== FieldRuleResult.None) {
+                        if (statuses[path]) {
+                            if (status === FieldRuleResult.Error || status === FieldRuleResult.Failure) {
+                                statuses[path].status = status;
+                            }
+                            statuses[path].rules.push({
+                                name: validator.name,
+                                description: validator.description,
+                                status: status,
+                            })
+                        } else {
+                            statuses[path] = {
+                                status: status,
+                                rules: [{
+                                    name: validator.name,
+                                    description: validator.description,
+                                    status: status,
+                                }]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return statuses;
     }
 }

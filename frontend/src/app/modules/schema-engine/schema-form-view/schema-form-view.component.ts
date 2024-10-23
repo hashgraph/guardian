@@ -12,7 +12,7 @@ import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 @Component({
     selector: 'app-schema-form-view',
     templateUrl: './schema-form-view.component.html',
-    styleUrls: ['./schema-form-view.component.css'],
+    styleUrls: ['./schema-form-view.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
         { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
@@ -260,4 +260,25 @@ export class SchemaFormViewComponent implements OnInit {
     isPostfix(item: SchemaField): boolean {
         return item.unitSystem === UnitSystem.Postfix;
     }
+
+    public ifFieldVisible(item: any): boolean {
+        return !item.hide && !item.hidden;
+    }
+
+    public ifSimpleField(item: any): boolean {
+        return !item.isArray && !item.isRef;
+    }
+
+    public ifSubSchema(item: any): boolean {
+        return !item.isArray && item.isRef;
+    }
+
+    public ifSimpleArray(item: any): boolean {
+        return item.isArray && !item.isRef;
+    }
+
+    public ifSubSchemaArray(item: any): boolean {
+        return item.isArray && item.isRef;
+    }
+
 }

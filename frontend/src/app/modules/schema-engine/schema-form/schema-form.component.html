@@ -9,22 +9,6 @@
 >
     <ng-container *ngFor="let item of fields; let i = index">
         <div *ngIf="ifFieldVisible(item)" [attr.showMobileField]="showPage(item, i)" class="form-field-container">
-
-            <!-- finish setup -->
-            <div *ngIf="ifFinishSetup(item)" class="form-field">
-                <div class="form-field-value">
-                    <div class="input-field-container">
-                        <label class="form-label">{{ item.description }}</label>
-                        <input
-                            [formControlName]="item.name"
-                            [placeholder]="getPlaceholderByFieldType(item)"
-                            pInputText
-                            type="text"
-                        />
-                    </div>
-                </div>
-            </div>
-
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
 
@@ -140,6 +124,24 @@
                     </div>
 
                     <div *ngIf="isPostfix(item)" class="form-field-postfix">{{item.unit}}</div>
+
+
+                    <div 
+                        *ngIf="isRules(item) as rule"
+                        class="form-field-rule"
+                        [pTooltip]="rule.tooltip"
+                        tooltipPosition="top"
+                        [showDelay]="1000">
+                        <svg-icon 
+                            *ngIf="rule.status === 'Failure' || rule.status === 'Error'" 
+                            src="/assets/images/icons/warning-2.svg" 
+                            svgClass="icon-color-warning"></svg-icon>
+                        <svg-icon 
+                            *ngIf="rule.status === 'Success'" 
+                            src="/assets/images/icons/check.svg" 
+                            svgClass="icon-color-success"></svg-icon>
+                    </div>
+
                 </div>
 
                 <div *ngIf="ifInvalidField(item)" class="invalid-field-label">
