@@ -56,8 +56,9 @@ export class SchemaRuleConfigDialog {
     }];
 
     public variables: any[] = [];
-    public enums: string[] = ['test 1', 'test 2', 'test 3'];
+    public enums: { [x: string]: string[] } = {};
     public readonly: boolean = false;
+    public defaultEnum: string[] = [];
 
     public codeMirrorOptions: any = {
         theme: 'default',
@@ -85,6 +86,7 @@ export class SchemaRuleConfigDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig<{
             variables: any[],
+            enums: { [x: string]: string[] }
             item: FieldRule,
             readonly?: boolean
         }>,
@@ -93,6 +95,7 @@ export class SchemaRuleConfigDialog {
         this.item = this.config.data?.item || new FieldRule();
         this.rule = this.item.rule;
         this.variables = this.config.data?.variables || [];
+        this.enums = this.config.data?.enums || {};
         this.readonly = !!this.config.data?.readonly;
 
         this.template = this.rule?.type || '';
@@ -121,6 +124,10 @@ export class SchemaRuleConfigDialog {
             hintOptions: {
                 hint: createAutocomplete(all)
             }
+        }
+
+        for (const variable of this.variables) {
+            this.enums[variable.value] = this.enums[variable.value] || [];
         }
     }
 
@@ -158,5 +165,14 @@ export class SchemaRuleConfigDialog {
 
     public deleteCondition(condition: ConditionRule, item: ConditionIf) {
         condition.deleteCondition(item)
+    }
+
+    public getEnums(variable: string): string[] {
+        if (variable) {
+            return this.enums[variable];
+        } else {
+            return this.defaultEnum;
+        }
+
     }
 }

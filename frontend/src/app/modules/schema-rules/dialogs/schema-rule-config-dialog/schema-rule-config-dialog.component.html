@@ -272,7 +272,7 @@
             <div class="condition-value-input">
                 <p-multiSelect
                     [(ngModel)]="value.enum"
-                    [options]="enums"
+                    [options]="getEnums(value.variable)"
                     class="guardian-multiselect full-size"
                     appendTo="body"
                     placeholder="Not selected"

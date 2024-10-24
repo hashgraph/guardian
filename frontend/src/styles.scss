@@ -635,3 +635,8 @@ svg-icon.svg-icon-32 {
         white-space: pre;
     }
 }
+
+.p-dialog .p-dialog-content:last-of-type {
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+}

@@ -326,12 +326,12 @@
                 <div *ngIf="variables.variables.length" class="variables-grid">
                     <div class="variables-grid-header">
                         <div class="variables-grid-cell cell-84">ID</div>
-                        <div class="variables-grid-cell cell-300">PATH</div>
-                        <div class="variables-grid-cell cell-300">PROPERTY</div>
+                        <div class="variables-grid-cell cell-200">PATH</div>
+                        <div class="variables-grid-cell cell-200">PROPERTY</div>
                         <div class="variables-grid-cell">FIELD</div>
                         <div class="variables-grid-cell cell-200">TYPE</div>
                         <div class="variables-grid-cell cell-150">RULES</div>
-                        <div class="variables-grid-cell cell-56"></div>
+                        <div class="variables-grid-cell cell-125"></div>
                     </div>
                     <div class="variables-grid-body">
                         <div *ngFor="let variable of variables.variables" class="variables-grid-row">
@@ -345,10 +345,10 @@
                                     [readonly]="readonly"/>
                                 <div class="cell-focus"></div>
                             </div>
-                            <div class="variables-grid-cell cell-300">
+                            <div class="variables-grid-cell cell-200">
                                 {{variable.schemaName}} / {{variable.schemaPath}}
                             </div>
-                            <div class="variables-grid-cell cell-300">
+                            <div class="variables-grid-cell cell-200">
                                 {{variable.fieldPropertyName}}
                             </div>
                             <div class="variables-grid-cell">
@@ -364,7 +364,7 @@
                                     {{variable.type}}
                                 </div>
                             </div>
-                            <div class="variables-grid-cell cell-56">
+                            <div class="variables-grid-cell cell-125 cell-btn">
                                 <button 
                                     class="guardian-icon-button big" 
                                     (click)="onEditRule(variable)">
@@ -372,6 +372,15 @@
                                         class="icon-btn svg-icon"
                                         src="/assets/images/icons/edit.svg"
                                         svgClass="icon-color-primary">
+                                    </svg-icon>
+                                </button>
+                                <button 
+                                    class="guardian-icon-button big" 
+                                    (click)="onDeleteVariable(variable)">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        svgClass="icon-color-delete">
                                     </svg-icon>
                                 </button>
                             </div>

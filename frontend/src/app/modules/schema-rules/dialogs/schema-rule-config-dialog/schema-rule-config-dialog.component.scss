@@ -109,12 +109,14 @@
                 height: 40px;
                 display: flex;
                 flex-direction: row;
+                overflow: hidden;
 
                 .condition-value-input {
                     width: 100%;
                     height: 40px;
                     display: flex;
                     flex-direction: row;
+                    overflow: hidden;
 
                     &::ng-deep .p-multiselect {
                         width: 100%;

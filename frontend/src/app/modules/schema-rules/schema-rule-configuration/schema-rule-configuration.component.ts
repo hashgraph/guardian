@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
@@ -16,6 +16,7 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
 import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../common/models/field-rule';
 import { SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
+import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
     selector: 'app-schema-rule-configuration',
@@ -34,6 +35,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     public item: any | undefined;
     public policy: any;
     public schemas: Schema[];
+    public fieldMap: Map<string, Map<string, SchemaField>>;
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
@@ -197,6 +199,26 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         this.source = new TreeSource(this.nodes);
         if (this.tree) {
             this.tree.setData(this.source);
+        }
+
+        this.updateFieldMap();
+    }
+
+    private updateFieldMap() {
+        this.fieldMap = new Map<string, Map<string, SchemaField>>();
+        for (const schema of this.schemas) {
+            const map = new Map<string, SchemaField>();
+            this.fieldMap.set(schema.iri || '', map);
+            this.getFieldList(schema.fields, map);
+        }
+    }
+
+    private getFieldList(fields: SchemaField[], map: Map<string, SchemaField>) {
+        for (const field of fields) {
+            map.set(field.path || '', field);
+            if (Array.isArray(field.fields)) {
+                this.getFieldList(field.fields, map);
+            }
         }
     }
 
@@ -453,6 +475,29 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         }
     }
 
+    private getField(variable: FieldRule): SchemaField | undefined {
+        const map = this.fieldMap.get(variable.schemaId);
+        if (map) {
+            return map.get(variable.path);
+        }
+        return undefined;
+    }
+
+    private getEnums(): { [x: string]: string[] } {
+        const enums: { [x: string]: string[] } = {};
+        for (const variable of this.variables.variables) {
+            const field = this.getField(variable);
+            if (field) {
+                if (field.enum) {
+                    enums[variable.id] = field.enum;
+                }
+            } else {
+                enums[variable.id] = [];
+            }
+        }
+        return enums;
+    }
+
     public onSave() {
         this.loading = true;
         const value = this.overviewForm.value;
@@ -510,13 +555,39 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             data: {
                 variables: this.variables.getOptions(),
                 item: variable.clone(),
-                readonly: this.readonly
+                readonly: this.readonly,
+                enums: this.getEnums()
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
                 variable.addRule(rule);
+            }
+        });
+    }
+
+    public onDeleteVariable(variable: FieldRule) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete score',
+                text: 'Are you sure want to delete field?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.variables.delete(variable);
+                this.updateCodeMirror();
             }
         });
     }

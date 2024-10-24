@@ -499,6 +499,10 @@ export class FieldRules {
         return options;
     }
 
+    public delete(variable: FieldRule) {
+        this.variables = this.variables.filter((v) => v !== variable);
+    }
+
     public fromData(data: ISchemaRuleData[] | undefined) {
         const map = new Map<string, FieldRule>();
         if (data) {
