@@ -887,7 +887,7 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
-    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
+    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false

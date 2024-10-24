@@ -304,7 +304,7 @@
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 2}}</div>
                 </div>
-                <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
+                <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
                     <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
                     <button 
                         (click)="patchSuggestValue(item)" 
@@ -384,7 +384,7 @@
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
                 </div>
 
-                <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
+                <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
                     <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{item.suggest}}</div>
                     <button 
                         (click)="patchSuggestValue(item)" 

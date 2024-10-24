@@ -1,6 +1,6 @@
 <div class="table-paginator">
     <span>Items per page:</span>
-    <p-dropdown (onChange)="newOnSize()" [(ngModel)]="pageSize" [options]="options"></p-dropdown>
+    <p-dropdown (onChange)="newOnSize()" [(ngModel)]="pageSize" [options]="options" [autoDisplayFirst]="false"></p-dropdown>
     <span class="color-grey-6">
         {{ pageNumberMin }} – {{ pageNumberMax }} of {{ length }}
     </span>
