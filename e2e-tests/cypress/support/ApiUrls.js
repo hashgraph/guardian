@@ -89,13 +89,14 @@ const API = {
 
     //Policies
     Policies: "policies/",
+    Draft: "draft/",
     PolicisImportMsg: "policies/import/message/",
     PolicisImportMsgPush: "policies/push/import/message/",
     PolicisImportFile: "policies/import/file/",
     PolicisImportMsgPreview: "policies/import/message/preview",
     PolicisImportMsgPreviewPush: "policies/push/import/message/preview",
     PolicyGroups: "groups/",
-    DryRun: "groups/",
+    DryRun: "dry-run/",
     ChooseRegistrantRole: "tag/choose_role/blocks/",
     CreateApplication: "tag/create_application/blocks",
     WaitForApproveApplication: "tag/wait_for_approve",
@@ -129,6 +130,10 @@ const API = {
     Cancel: "cancel/",
     Requests: "requests/",
     Disable: "disable/",
-    Enable: "enable/"
+    Enable: "enable/",
+    Preview: "preview/",
+    Validate: "validate/",
+    Users: "users/",
+    Assign: "assign/"
 };
 export default API;
