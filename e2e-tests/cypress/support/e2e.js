@@ -18,7 +18,7 @@ import "./commands";
 import "./api/api-helper";
 import "cypress-mochawesome-reporter/register";
 import { METHOD } from "../support/api/api-const";
-import * as Checks from "../support/checkingMethods";
+import * as Authorization from "../support/checkingMethods";
 
 import API from "./ApiUrls";
 
@@ -106,7 +106,7 @@ before(() => {
 
 //If SR doesn't have hedera credentials, creating them
 before(() => {
-    Checks.getAccessToken(SRUsername).then((authorization) => {
+    Authorization.getAccessToken(SRUsername).then((authorization) => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + "profiles/" + SRUsername,
@@ -164,7 +164,7 @@ before(() => {
 
 //If SR2 doesn't have hedera credentials, creating them
 before(() => {
-    Checks.getAccessToken(SR2Username).then((authorization) => {
+    Authorization.getAccessToken(SR2Username).then((authorization) => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + "profiles/" + SR2Username,
@@ -222,7 +222,7 @@ before(() => {
 
 //If User doesn't have hedera credentials, creating them
 before(() => {
-    Checks.getAccessToken(userUsername).then((authorization) => {
+    Authorization.getAccessToken(userUsername).then((authorization) => {
         cy.request({
             method: METHOD.GET,
             url: API.ApiServer + "profiles/" + userUsername,

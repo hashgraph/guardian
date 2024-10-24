@@ -89,6 +89,7 @@ const API = {
 
     //Policies
     Policies: "policies/",
+    Draft: "draft/",
     PolicisImportMsg: "policies/import/message/",
     PolicisImportMsgPush: "policies/push/import/message/",
     PolicisImportFile: "policies/import/file/",
