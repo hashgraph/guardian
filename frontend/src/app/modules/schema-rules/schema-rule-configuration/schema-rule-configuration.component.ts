@@ -15,8 +15,9 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
 import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../common/models/field-rule';
-import { SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
+import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
 
 @Component({
     selector: 'app-schema-rule-configuration',
@@ -35,7 +36,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     public item: any | undefined;
     public policy: any;
     public schemas: Schema[];
-    public fieldMap: Map<string, Map<string, SchemaField>>;
+    public enumMap: Map<string, Map<string, EnumValue>>;
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
@@ -107,6 +108,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private schemaRulesService: SchemaRulesService,
+        private ipfs: IPFSService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -205,17 +207,19 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     private updateFieldMap() {
-        this.fieldMap = new Map<string, Map<string, SchemaField>>();
+        this.enumMap = new Map<string, Map<string, EnumValue>>();
         for (const schema of this.schemas) {
-            const map = new Map<string, SchemaField>();
-            this.fieldMap.set(schema.iri || '', map);
+            const map = new Map<string, EnumValue>();
+            this.enumMap.set(schema.iri || '', map);
             this.getFieldList(schema.fields, map);
         }
     }
 
-    private getFieldList(fields: SchemaField[], map: Map<string, SchemaField>) {
+    private getFieldList(fields: SchemaField[], map: Map<string, EnumValue>) {
         for (const field of fields) {
-            map.set(field.path || '', field);
+            if (field.enum || field.remoteLink) {
+                map.set(field.path || '', new EnumValue(this.ipfs, field));
+            }
             if (Array.isArray(field.fields)) {
                 this.getFieldList(field.fields, map);
             }
@@ -475,24 +479,22 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         }
     }
 
-    private getField(variable: FieldRule): SchemaField | undefined {
-        const map = this.fieldMap.get(variable.schemaId);
+    private getEnum(variable: FieldRule): EnumValue | undefined {
+        const map = this.enumMap.get(variable.schemaId);
         if (map) {
             return map.get(variable.path);
         }
         return undefined;
     }
 
-    private getEnums(): { [x: string]: string[] } {
-        const enums: { [x: string]: string[] } = {};
+    private getEnums(): { [x: string]: EnumValue } {
+        const enums: { [x: string]: EnumValue } = {};
         for (const variable of this.variables.variables) {
-            const field = this.getField(variable);
-            if (field) {
-                if (field.enum) {
-                    enums[variable.id] = field.enum;
-                }
+            const item = this.getEnum(variable);
+            if (item) {
+                enums[variable.id] = item;
             } else {
-                enums[variable.id] = [];
+                enums[variable.id] = new EnumValue(this.ipfs);
             }
         }
         return enums;

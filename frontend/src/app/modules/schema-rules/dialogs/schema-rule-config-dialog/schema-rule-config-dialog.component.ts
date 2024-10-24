@@ -1,7 +1,50 @@
 import { Component } from '@angular/core';
+import { SchemaField } from '@guardian/interfaces';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ConditionIf, ConditionRule, FieldRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/field-rule';
 import { createAutocomplete } from 'src/app/modules/common/models/lang-modes/autocomplete';
+import { IPFSService } from 'src/app/services/ipfs.service';
+
+export class EnumValue {
+    public loaded: boolean = false;
+    public values: string[];
+    public link: string;
+    public default: boolean = true;
+
+    private ipfs?: IPFSService;
+
+    constructor(ipfs?: IPFSService, field?: SchemaField) {
+        if (field) {
+            this.ipfs = ipfs;
+            if (field.remoteLink) {
+                this.default = false;
+                this.loaded = false;
+                this.values = [];
+                this.link = field.remoteLink;
+                this.loadValues();
+            } else if (field.enum) {
+                this.default = false;
+                this.loaded = true;
+                this.values = field.enum;
+            }
+        } else {
+            this.loaded = true;
+            this.values = [];
+        }
+    }
+
+    private loadValues() {
+        if (this.ipfs && this.link) {
+            this.ipfs
+                .getJsonFileByLink(this.link)
+                .then((res: any) => {
+                    this.values = res.enum;
+                })
+                .finally(() => this.loaded = true);
+        }
+    }
+}
+
 
 @Component({
     selector: 'schema-rule-config-dialog',
@@ -56,9 +99,9 @@ export class SchemaRuleConfigDialog {
     }];
 
     public variables: any[] = [];
-    public enums: { [x: string]: string[] } = {};
+    public enums: { [x: string]: EnumValue } = {};
     public readonly: boolean = false;
-    public defaultEnum: string[] = [];
+    public defaultEnum: EnumValue = new EnumValue();
 
     public codeMirrorOptions: any = {
         theme: 'default',
@@ -86,7 +129,7 @@ export class SchemaRuleConfigDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig<{
             variables: any[],
-            enums: { [x: string]: string[] }
+            enums: { [x: string]: EnumValue }
             item: FieldRule,
             readonly?: boolean
         }>,
@@ -127,8 +170,10 @@ export class SchemaRuleConfigDialog {
         }
 
         for (const variable of this.variables) {
-            this.enums[variable.value] = this.enums[variable.value] || [];
+            variable.disabled = (!this.enums[variable.value] || this.enums[variable.value].default);
         }
+
+
     }
 
     ngOnInit() {
@@ -167,12 +212,10 @@ export class SchemaRuleConfigDialog {
         condition.deleteCondition(item)
     }
 
-    public getEnums(variable: string): string[] {
-        if (variable) {
+    public getEnums(variable: string): EnumValue {
+        if (variable && this.enums[variable]) {
             return this.enums[variable];
-        } else {
-            return this.defaultEnum;
         }
-
+        return this.defaultEnum;
     }
 }

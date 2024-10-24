@@ -269,14 +269,19 @@
                 </span>
                 <span class="variable-symbol">=</span>
             </div>
-            <div class="condition-value-input">
+            <div *ngIf="getEnums(value.variable) as enumValues" class="condition-value-input">
                 <p-multiSelect
                     [(ngModel)]="value.enum"
-                    [options]="getEnums(value.variable)"
+                    [options]="enumValues.values"
                     class="guardian-multiselect full-size"
                     appendTo="body"
                     placeholder="Not selected"
                     panelStyleClass="guardian-multiselect-panel">
+                    <ng-template pTemplate="footer">
+                        <div *ngIf="!enumValues.loaded" class="guardian-loading">
+                            <div class="guardian-loading-image"></div>
+                        </div>
+                    </ng-template>
                 </p-multiSelect>
             </div>
         </div>
