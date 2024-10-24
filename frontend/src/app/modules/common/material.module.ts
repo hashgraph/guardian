@@ -1,8 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
+// import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
 import { MatStepperModule } from '@angular/material/stepper';
-import { MatExpansionModule } from '@angular/material/expansion';
+// import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
@@ -18,7 +18,7 @@ import { MatLegacyProgressBarModule as MatProgressBarModule } from '@angular/mat
 import { MatLegacySelectModule as MatSelectModule } from '@angular/material/legacy-select';
 import { MatLegacyCheckboxModule as MatCheckboxModule } from '@angular/material/legacy-checkbox';
 import { MatTreeModule } from '@angular/material/tree';
-import { MatDatepickerModule } from "@angular/material/datepicker";
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatLegacyRadioModule as MatRadioModule } from '@angular/material/legacy-radio';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
@@ -33,14 +33,22 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkTableModule } from '@angular/cdk/table';
 import { MatLegacySliderModule as MatSliderModule } from '@angular/material/legacy-slider';
 import { MatBadgeModule } from '@angular/material/badge';
+import { TabViewModule } from 'primeng/tabview';
+import { AccordionModule } from 'primeng/accordion';
+
 
 @NgModule({
     declarations: [],
     imports: [
         CommonModule,
-        MatTabsModule,
+        // MatTabsModule,
+        TabViewModule,
+
         MatStepperModule,
-        MatExpansionModule,
+
+        // MatExpansionModule,
+        AccordionModule,
+
         MatIconModule,
         ReactiveFormsModule,
         MatInputModule,
@@ -69,9 +77,14 @@ import { MatBadgeModule } from '@angular/material/badge';
         MatBadgeModule
     ],
     exports: [
-        MatTabsModule,
+        // MatTabsModule,
+        TabViewModule,
+
         MatStepperModule,
-        MatExpansionModule,
+
+        // MatExpansionModule,
+        AccordionModule,
+
         MatIconModule,
         ReactiveFormsModule,
         MatInputModule,
