@@ -426,3 +426,16 @@ body {
         border-bottom-right-radius: 16px;
     }
 }
+
+::ng-deep body .CodeMirror-hint {
+    padding: 4px 8px;
+    min-width: 60px;
+}
+
+::ng-deep body .CodeMirror-hint.CodeMirror-hint-active {
+    background: #4169E2 !important;
+}
+
+::ng-deep .p-tooltip {
+    z-index: 9999 !important;
+}

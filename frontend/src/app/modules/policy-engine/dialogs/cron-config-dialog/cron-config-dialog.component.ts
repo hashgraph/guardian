@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, Validators } from '@angular/forms';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import cronstrue from 'cronstrue';
 
@@ -51,7 +51,7 @@ export class CronConfigDialog {
 
     constructor(
         public dialogRef: MatDialogRef<CronConfigDialog>,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         this.period = 'week';
         this.startDate = data.startDate || (new Date).toISOString();

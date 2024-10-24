@@ -583,10 +583,12 @@ export async function syncWipeContract(
                             user,
                             contractId,
                         });
+
                         await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                         });
+
                         if (!sendNotifications) {
                             break;
                         }
@@ -608,11 +610,13 @@ export async function syncWipeContract(
                             contractId,
                             token
                         } as Partial<WiperRequest>);
+
                         await dataBaseServer.save(WiperRequest, {
                             user,
                             contractId,
                             token
                         });
+
                         if (!sendNotifications) {
                             break;
                         }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CompareStorage } from 'src/app/services/compare-storage.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -23,10 +23,10 @@ export class ComparePolicyDialog {
     public localItemsFiltered: any[] = [];
     public fixed: boolean = false;
     public type: string = 'id';
-    public messageForm = new FormGroup({
-        messageId: new FormControl('', Validators.required)
+    public messageForm = new UntypedFormGroup({
+        messageId: new UntypedFormControl('', Validators.required)
     }, (fg) => {
-        for (const key in (fg as FormGroup).controls) {
+        for (const key in (fg as UntypedFormGroup).controls) {
             if (!fg.get(key)) {
                 continue;
             }
@@ -249,5 +249,27 @@ export class ComparePolicyDialog {
             })
         }
         this.ref.close(items);
+    }
+
+    enforceMask(event: any): void {
+        const input = event.target as HTMLInputElement;
+        let value = input.value;
+
+        value = value.replace(/[^0-9.]/g, '');
+
+        if (value.length > 10 && !value.includes('.')) {
+            value = `${value.substring(0, 10)}.${value.substring(10)}`;
+        }
+
+        const parts = value.split('.');
+
+        if (parts[0].length > 10) {
+            parts[0] = parts[0].substring(0, 10);
+        }
+        if (parts[1] && parts[1].length > 9) {
+            parts[1] = parts[1].substring(0, 9);
+        }
+
+        input.value = parts.join('.');
     }
 }

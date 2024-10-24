@@ -14,8 +14,10 @@ The following steps need to be executed in order to start Guardian using docker:
 2. Configure project level .env file
 3. Update BC access variables
 4. Setup IPFS
-5. Build and launch with Docker
-6. Browse to [http://localhost:3000](http://localhost:3000)
+5. Setting up ChatGPT Key (if required)
+6. Build and launch with Docker
+7. Browse to [http://localhost:3000](http://localhost:3000)
+8. For increased security remove credentials from `.env` file
 
 Here the steps description follows:
 
@@ -26,7 +28,7 @@ Here the steps description follows:
     ```
 2. Configure project level .env file.
 
-The main configuration file that needs to be provided to the Guardian system is the `.env` file. Cut and paste the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
+The main configuration file that needs to be provided to the Guardian system is the `.env` file. Note that these files contain sensitive configuration such as keys and access credentials which are only used at the initial start of Guardian. For increased security it is recommended to disable inbound network access until after the first run of Guardian, when the credentials configuration has been removed from `.env` file (see p8 below).
 
 For this example purpose let's name the Guardian platform as "develop"
 
@@ -126,6 +128,10 @@ This configuration allows you to leave untouched all the data referring to Mainn
 **Note** for any other GUARDIAN\_ENV name of your choice just copy and paste the file `/configs/.env.template.guardian.system` and rename as `/configs/.env.<choosen name>.guardian.system`
 {% endhint %}
 
+#### 3.2 Setting up JWT keys in /`.env` file
+
+To start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+
 4\. Now, we have two options to setup IPFS node : 1. Local node 2. IPFS Web3Storage node.
 
 #### 4.1 Setting up IPFS Local node:
@@ -213,10 +219,13 @@ About docker-compose: from the end of June 2023 Compose V1 won’t be supported 
 {% endhint %}
 
 7. Browse to [http://localhost:3000](http://localhost:3000) and complete the setup. To get more info, please check: [Launching Guardian](../launching-guardian.md)
+8. For increased security remove credentials from `.env` file and enable network access
+
+On first state the credentials from `.env` file are copied into the secure  storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
 
 ### Process on How to Configure SSL Encryption:
 
-1. &#x20;Install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
+1. Install [https://github.com/FiloSottile/mkcert](https://github.com/FiloSottile/mkcert) utility
 2. Navigate to `certs` folder and execute
 
 ```

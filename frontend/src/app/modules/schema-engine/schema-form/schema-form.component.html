@@ -1,8 +1,8 @@
 <form
-        *ngIf="options"
-        [attr.childSchema]="isChildSchema"
-        [attr.dialogForm]="comesFromDialog"
-        [formGroup]="options"
+    *ngIf="options"
+    [attr.childSchema]="isChildSchema"
+    [attr.dialogForm]="comesFromDialog"
+    [formGroup]="options"
     [attr.showButtons]="showButtons"
     [attr.pageButtons]="fields && showButtons && !isChildSchema"
     [attr.example]="example"
@@ -19,8 +19,19 @@
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
                 </div>
+                <div class="suggestion">
+                    <button
+                        *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)"
+                        [pTooltip]="item.suggest" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="!isFormForFinishSetup && item.required" class="required-field">* Required</div>
-                <div *ngIf="!isFormForFinishSetup && !isHelpText(item)" class="label-field">{{ item.description }}</div>
+                <div *ngIf="!isFormForFinishSetup && !isHelpText(item)" class="label-field"
+                    [attr.default]="item.default && !item.isPreset && !item.control.dirty">{{ item.description }}</div>
                 <div *ngIf="!isFormForFinishSetup && isHelpText(item)" class="label-field help-text"
                     [ngStyle]="{ 'color': item.textColor, 'font-size': item.textSize}">
                     <b *ngIf="item.textBold; else plainDescription">{{item.description}}</b>
@@ -93,6 +104,7 @@
 
                     <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
                         <mat-select [formControlName]="item.name">
+                            <mat-option *ngIf="!item.fileUploading"></mat-option>
                             <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
                                 {{enumValue}}
                             </mat-option>
@@ -114,10 +126,20 @@
                         <b>Please make sure all fields in schema contain a valid value</b>
                     </span>
                 </div>
+                <div class="suggestion">
+                    <button
+                        *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)"
+                        [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required && item.displayRequired" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i + 1}}/{{fields.length}}</div>
-                    <span class="detail-section-title">{{ item.description }}</span>
+                    <span class="detail-section-title" [attr.default]="item.default && !item.isPreset && !item.control.dirty">{{item.description }}</span>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 2}}</div>
                 </div>
@@ -161,10 +183,20 @@
                         <b>{{getInvalidMessageByFieldType(item)}}</b>
                     </span>
                 </div>
+                <div class="suggestion">
+                    <button
+                        *ngIf="item.suggest && isEmpty(item.control.value)"
+                        [pTooltip]="item.suggest" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
-                    <span>{{item.description}}</span>
+                    <div [attr.default]="item.default && !item.isPreset && !item.control.dirty">{{item.description}}</div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
                 </div>
@@ -228,6 +260,7 @@
 
                             <mat-form-field *ngIf="isEnum(item)" class="required-form-field" appearance="outline">
                                 <mat-select [formControl]="listItem.control">
+                                    <mat-option *ngIf="!item.fileUploading && !item.required"></mat-option>
                                     <mat-option *ngFor="let enumValue of item.enumValues" [value]="enumValue" [title]="enumValue">
                                         {{enumValue}}
                                     </mat-option>
@@ -259,10 +292,20 @@
                         <b>Please make sure all fields in schemas contain a valid value</b>
                     </span>
                 </div>
+                <div class="suggestion">
+                    <button
+                        *ngIf="item.suggest && isEmptyRef(item.control.value, item)"
+                        [pTooltip]="getJSON(item.suggest)" tooltipStyleClass="pre"
+                        label="Fill the field with suggestion"
+                        pButton
+                        class="suggestion__btn button secondary"
+                        (click)="patchSuggestValue(item)">
+                    </button>
+                </div>
                 <div *ngIf="item.required" class="required-field">* Required</div>
                 <div class="label-field" id="detail-section">
                     <div *ngIf="!isChildSchema && fields" class="page-number">{{i}}/{{fields.length - 1}}</div>
-                    <span>{{item.description}}</span>
+                    <span [attr.default]="item.default && !item.isPreset && !item.control.dirty">{{item.description}}</span>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="delimiter-to-next-page"></div>
                     <div *ngIf="!isChildSchema && fields && i !== fields.length - 1" class="next-page-number">{{i + 1}}</div>
                 </div>

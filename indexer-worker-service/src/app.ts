@@ -5,7 +5,8 @@ import { ClientsModule, MicroserviceOptions, Transport } from '@nestjs/microserv
 import { ChannelService, Worker } from './api/channel.service.js';
 import { IPFSService } from './loaders/ipfs-service.js';
 import { HederaService } from './loaders/hedera-service.js';
-import { COMMON_CONNECTION_CONFIG, Migration, Utils, DataBaseHelper, Environment, entities } from '@indexer/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, Environment, Migration, Utils } from '@indexer/common';
+import { GenerateTLSOptionsNats } from '@guardian/common';
 
 const channelName = (process.env.SERVICE_CHANNEL || `indexer-worker.${Utils.GenerateUUIDv4(26)}`).toUpperCase();
 
@@ -45,7 +46,8 @@ Promise.all([
             queue: 'INDEXER_WORKERS',
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
 ]).then(async values => {

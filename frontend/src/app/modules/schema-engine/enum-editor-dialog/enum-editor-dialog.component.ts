@@ -1,5 +1,5 @@
 import { AfterContentInit, Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -24,8 +24,8 @@ export class EnumEditorDialog implements AfterContentInit {
     loadToIpfs: boolean = false;
     loadToIpfsValue: boolean = true;
 
-    code: FormControl = new FormControl();
-    urlControl = new FormControl('', [
+    code: UntypedFormControl = new UntypedFormControl();
+    urlControl = new UntypedFormControl('', [
         Validators.pattern(
             /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
         ),

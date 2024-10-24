@@ -1,4 +1,4 @@
-import { FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { SchemaField } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -11,38 +11,42 @@ export const SYSTEM_FIELDS = [
 export class FieldControl {
     public readonly name: string;
 
-    public controlKey: FormControl;
-    public controlTitle: FormControl;
-    public hidden: FormControl;
-    public controlDescription: FormControl;
-    public controlType: FormControl;
-    public property: FormControl;
-    public controlRequired: FormControl;
-    public controlArray: FormControl;
-    public controlUnit: FormControl;
-    public controlRemoteLink: FormControl;
-    public controlEnum: FormArray;
-    public controlColor: FormControl;
-    public controlSize: FormControl;
-    public controlBold: FormControl;
-    public controlPrivate: FormControl;
-    public controlPattern: FormControl;
+    public controlKey: UntypedFormControl;
+    public controlTitle: UntypedFormControl;
+    public hidden: UntypedFormControl;
+    public controlDescription: UntypedFormControl;
+    public controlType: UntypedFormControl;
+    public property: UntypedFormControl;
+    public controlRequired: UntypedFormControl;
+    public controlArray: UntypedFormControl;
+    public controlUnit: UntypedFormControl;
+    public controlRemoteLink: UntypedFormControl;
+    public controlEnum: UntypedFormArray;
+    public controlColor: UntypedFormControl;
+    public controlSize: UntypedFormControl;
+    public controlBold: UntypedFormControl;
+    public controlPrivate: UntypedFormControl;
+    public controlPattern: UntypedFormControl;
+    public controlDefault: UntypedFormControl;
+    public controlSuggest: UntypedFormControl;
+    public controlExample: UntypedFormControl;
+
     private readonly _defaultFieldMap!: any;
-    private _entityType: FormControl | undefined;
+    private _entityType: UntypedFormControl | undefined;
 
     constructor(
         field: SchemaField | null,
         type: string,
         destroyEvent: Subject<any>,
         defaultFieldMap: any,
-        entityType?: FormControl,
+        entityType?: UntypedFormControl,
         name?: string
     ) {
         this._defaultFieldMap = defaultFieldMap;
         this._entityType = entityType;
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
         if (field) {
-            this.controlKey = new FormControl(field.name, [
+            this.controlKey = new UntypedFormControl(field.name, [
                 Validators.required,
                 this.keyValidator(),
                 this.fieldSystemKeyValidator()
@@ -50,26 +54,30 @@ export class FieldControl {
             this.controlKey.valueChanges
                 .pipe(takeUntil(destroyEvent))
                 .subscribe(this.trimFormControlValue.bind(this));
-            this.controlTitle = new FormControl(field.title, Validators.required);
-            this.controlDescription = new FormControl(field.description, Validators.required);
-            this.controlType = new FormControl(type, Validators.required);
-            this.controlRequired = new FormControl(field.required);
-            this.controlArray = new FormControl(field.isArray);
-            this.controlUnit = new FormControl(field.unit);
-            this.controlRemoteLink = new FormControl(field.remoteLink);
-            this.controlPrivate = new FormControl(field.isPrivate || false);
-            this.controlEnum = new FormArray([]);
-            this.hidden = new FormControl(!!field.hidden);
-            this.property = new FormControl(field.property || '');
+            this.controlTitle = new UntypedFormControl(field.title, Validators.required);
+            this.controlDescription = new UntypedFormControl(field.description, Validators.required);
+            this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlRequired = new UntypedFormControl(field.required);
+            this.controlArray = new UntypedFormControl(field.isArray);
+            this.controlUnit = new UntypedFormControl(field.unit);
+            this.controlRemoteLink = new UntypedFormControl(field.remoteLink);
+            this.controlPrivate = new UntypedFormControl(field.isPrivate || false);
+            this.controlEnum = new UntypedFormArray([]);
+            this.hidden = new UntypedFormControl(!!field.hidden);
+            this.property = new UntypedFormControl(field.property || '');
             field.enum?.forEach(item => {
-                this.controlEnum.push(new FormControl(item))
+                this.controlEnum.push(new UntypedFormControl(item))
             });
-            this.controlColor = new FormControl(field.textColor || '#000000');
-            this.controlSize = new FormControl(field.textSize && +field.textSize.replace('px', '') || 18);
-            this.controlBold = new FormControl(field.textBold || false);
-            this.controlPattern = new FormControl(field.pattern);
+
+            this.controlColor = new UntypedFormControl(field.textColor || '#000000');
+            this.controlSize = new UntypedFormControl(field.textSize && +field.textSize.replace('px', '') || 18);
+            this.controlBold = new UntypedFormControl(field.textBold || false);
+            this.controlPattern = new UntypedFormControl(field.pattern);
+            this.controlDefault = new UntypedFormControl(field.default);
+            this.controlSuggest = new UntypedFormControl(field.suggest);
+            this.controlExample = new UntypedFormControl(field.examples?.[0]);
         } else {
-            this.controlKey = new FormControl(name || this.name, [
+            this.controlKey = new UntypedFormControl(name || this.name, [
                 Validators.required,
                 this.keyValidator(),
                 this.fieldSystemKeyValidator()
@@ -77,21 +85,24 @@ export class FieldControl {
             this.controlKey.valueChanges
                 .pipe(takeUntil(destroyEvent))
                 .subscribe(this.trimFormControlValue.bind(this));
-            this.controlTitle = new FormControl(name || this.name, Validators.required);
-            this.controlDescription = new FormControl('', Validators.required);
-            this.controlType = new FormControl(type, Validators.required);
-            this.controlRequired = new FormControl(false);
-            this.controlArray = new FormControl(false);
-            this.controlUnit = new FormControl('');
-            this.controlRemoteLink = new FormControl('');
-            this.controlEnum = new FormArray([]);
-            this.controlColor = new FormControl('#000000');
-            this.controlSize = new FormControl(18);
-            this.controlBold = new FormControl(false);
-            this.controlPrivate = new FormControl(false);
-            this.controlPattern = new FormControl('');
-            this.hidden = new FormControl(false);
-            this.property = new FormControl('');
+            this.controlTitle = new UntypedFormControl(name || this.name, Validators.required);
+            this.controlDescription = new UntypedFormControl('', Validators.required);
+            this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlRequired = new UntypedFormControl(false);
+            this.controlArray = new UntypedFormControl(false);
+            this.controlUnit = new UntypedFormControl('');
+            this.controlRemoteLink = new UntypedFormControl('');
+            this.controlEnum = new UntypedFormArray([]);
+            this.controlColor = new UntypedFormControl('#000000');
+            this.controlSize = new UntypedFormControl(18);
+            this.controlBold = new UntypedFormControl(false);
+            this.controlPrivate = new UntypedFormControl(false);
+            this.controlPattern = new UntypedFormControl('');
+            this.controlDefault = new UntypedFormControl();
+            this.controlSuggest = new UntypedFormControl();
+            this.controlExample = new UntypedFormControl();
+            this.hidden = new UntypedFormControl(false);
+            this.property = new UntypedFormControl('');
         }
         if (this._entityType) {
             this._entityType.valueChanges
@@ -159,8 +170,20 @@ export class FieldControl {
         return this.controlPrivate.value;
     }
 
-    public createGroup(): FormGroup {
-        return new FormGroup({
+    public get default(): any {
+        return this.controlDefault.value;
+    }
+
+    public get suggest(): any {
+        return this.controlSuggest.value;
+    }
+
+    public get example(): any {
+        return this.controlExample.value;
+    }
+
+    public createGroup(): UntypedFormGroup {
+        return new UntypedFormGroup({
             controlKey: this.controlKey,
             controlTitle: this.controlTitle,
             controlDescription: this.controlDescription,
@@ -177,6 +200,9 @@ export class FieldControl {
             controlPattern: this.controlPattern,
             hidden: this.hidden,
             property: this.property,
+            default: this.controlDefault,
+            suggest: this.controlSuggest,
+            example: this.controlExample,
         });
     }
 
@@ -201,6 +227,8 @@ export class FieldControl {
             const pattern = group.controlPattern;
             const hidden = group.hidden;
             const property = group.property;
+            const suggest = group.suggest;
+            const example = group.example;
             return {
                 key,
                 title,
@@ -217,18 +245,21 @@ export class FieldControl {
                 isPrivate,
                 pattern,
                 hidden,
-                property
+                property,
+                default: group.default,
+                suggest,
+                example,
             };
         } else {
             return null;
         }
     }
 
-    public append(parentControl: FormGroup) {
+    public append(parentControl: UntypedFormGroup) {
         parentControl.addControl(this.name, this.createGroup());
     }
 
-    public remove(parentControl: FormGroup) {
+    public remove(parentControl: UntypedFormGroup) {
         parentControl.removeControl(this.name);
     }
 

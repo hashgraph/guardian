@@ -10,7 +10,7 @@ import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormGroup } from '@angular/forms';
+import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
 
@@ -109,12 +109,9 @@ export class TokenConfigComponent implements OnInit {
         if (this.user.POLICIES_POLICY_READ) {
             this.loading = true;
             this.policyEngineService.all().subscribe((value) => {
-                const policies = value || [];
-                this.policies = policies;
-                this.policies.unshift({ id: -1, name: 'All policies' });
-                if (this.currentPolicy) {
-                    this.policyDropdownItem = policies.find(p => p.id === this.currentPolicy);
-                }
+                const initialPolicy = { id: -1, name: 'All policies' }
+                this.policies = [initialPolicy].concat(value);
+                this.policyDropdownItem = initialPolicy;
                 this.loadContracts();
             }, ({ message }) => {
                 this.loading = false;
@@ -236,7 +233,7 @@ export class TokenConfigComponent implements OnInit {
                 readonly: this.readonlyForm,
                 currentTokenId: this.currentTokenId,
             }
-        }).onClose.subscribe((dataForm: FormGroup) => {
+        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }
@@ -379,7 +376,7 @@ export class TokenConfigComponent implements OnInit {
         this.deleteTokenVisible = true;
     }
 
-    public saveToken(dataForm: FormGroup) {
+    public saveToken(dataForm: UntypedFormGroup) {
         if (dataForm.valid) {
             this.loading = true;
             const dataValue = dataForm.value;
@@ -433,7 +430,7 @@ export class TokenConfigComponent implements OnInit {
                 currentTokenId: this.currentTokenId,
                 policyId: this.currentPolicy
             }
-        }).onClose.subscribe((dataForm: FormGroup) => {
+        }).onClose.subscribe((dataForm: UntypedFormGroup) => {
             if (!dataForm) {
                 return;
             }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
+import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
 import { Schema } from '@guardian/interfaces';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -15,6 +15,7 @@ import { SchemaService } from 'src/app/services/schema.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
@@ -47,10 +48,10 @@ export class DocumentViewComponent implements OnInit {
         this.issuerOptions = [];
         this.proofJson = this.document.proof
             ? JSON.stringify(this.document.proof, null, 4)
-            : "";
+            : '';
         this.evidenceJson = this.document.evidence
             ? JSON.stringify(this.document.evidence, null, 4)
-            : "";
+            : '';
         this.isIssuerObject = typeof this.document.issuer === 'object';
         if (this.isIssuerObject) {
             for (const key in this.document.issuer) {
@@ -92,25 +93,47 @@ export class DocumentViewComponent implements OnInit {
             this.ref.detectChanges();
         }
         if (type) {
-            this.schemaService.getSchemasByType(type)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((result) => {
-                    if (result) {
-                        try {
-                            this.schemaMap[type] = new Schema(result);
-                        } catch (error) {
+            if (this.getByUser) {
+                this.schemaService.getSchemasByTypeAndUser(type)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe((result) => {
+                        if (result) {
+                            try {
+                                this.schemaMap[type] = new Schema(result);
+                            } catch (error) {
+                                this.schemaMap[type] = null;
+                            }
+                        } else {
                             this.schemaMap[type] = null;
                         }
-                    } else {
+                        this.loading--;
+                        this.ref.detectChanges();
+                    }, (error) => {
                         this.schemaMap[type] = null;
-                    }
-                    this.loading--;
-                    this.ref.detectChanges();
-                }, (error) => {
-                    this.schemaMap[type] = null;
-                    this.loading--;
-                    this.ref.detectChanges();
-                });
+                        this.loading--;
+                        this.ref.detectChanges();
+                    });
+            } else {
+                this.schemaService.getSchemasByType(type)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe((result) => {
+                        if (result) {
+                            try {
+                                this.schemaMap[type] = new Schema(result);
+                            } catch (error) {
+                                this.schemaMap[type] = null;
+                            }
+                        } else {
+                            this.schemaMap[type] = null;
+                        }
+                        this.loading--;
+                        this.ref.detectChanges();
+                    }, (error) => {
+                        this.schemaMap[type] = null;
+                        this.loading--;
+                        this.ref.detectChanges();
+                    });
+            }
         } else {
             this.schemaMap[type] = null;
             this.loading--;

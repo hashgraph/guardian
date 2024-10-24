@@ -150,4 +150,14 @@ export interface SchemaField {
      * Formulae
      */
     formulae?: string;
+
+    /**
+     * Default value
+     */
+    default?: any;
+
+    /**
+     * Suggest value
+     */
+    suggest?: any;
 }

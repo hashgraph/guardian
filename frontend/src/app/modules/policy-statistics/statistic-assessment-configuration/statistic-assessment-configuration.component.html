@@ -1,0 +1,370 @@
+<div class="guardian-page">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+    </div>
+
+    <div class="header-container">
+        <div class="guardian-user-back-button">
+            <button 
+                (click)="onBack()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Statistics</div>
+            </button>
+        </div>
+    
+        <div class="guardian-user-page-header">
+            <span>{{item?.name}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="body-container">
+        <div class="nav-container">
+
+            <div class="guardian-step-container">
+                <div class="guardian-stepper vertical-stepper">
+                    <div class="guardian-step" [attr.action]="stepper[0]" [attr.highlighted]="stepper[0]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Target</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+                    <div class="guardian-step" [attr.action]="stepper[1]" [attr.highlighted]="stepper[1]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Preview</div>
+                    </div>
+                    <div class="guardian-step-separator"></div>
+
+                    <ng-container *ngIf="scores?.length">
+                        <div class="guardian-step" [attr.action]="stepper[2]" [attr.highlighted]="stepper[2]">
+                            <div class="guardian-step-marker">
+                                <svg-icon
+                                    class="icon-btn svg-icon-16"
+                                    src="/assets/images/icons/16/right-arrow.svg">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-step-name">Scores</div>
+                        </div>
+                        <div class="guardian-step-separator"></div>
+                    </ng-container>
+
+                    <div class="guardian-step" [attr.action]="stepper[3]" [attr.highlighted]="stepper[3]">
+                        <div class="guardian-step-marker">
+                            <svg-icon
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">Statistics</div>
+                    </div>
+                </div>
+            </div>
+        
+        </div>
+
+        <div *ngIf="stepper[0]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Target</div>
+
+                <div class="grid-container">
+                    <ng-container *ngIf="documents && documents.length > 0; else noData">
+                        <div class="guardian-grid-container grid-scroll">
+                            <div class="grid-config">
+                                <div 
+                                    class="guardian-icon-button big" 
+                                    (click)="colMenu.toggle($event)"
+                                >
+                                    <svg-icon 
+                                        class="icon-btn"
+                                        src="/assets/images/icons/list.svg"
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <p-overlayPanel #colMenu styleClass="guardian-menu">
+                                    <div class="col-menu">
+                                        <div *ngFor="let col of userColumns" class="col-item" (click)="changeCol(col)">
+                                            <div class="col-item-checkbox">
+                                                <p-checkbox 
+                                                    class="guardian-checkbox checkbox-24"
+                                                    [ngModel]="col.selected" 
+                                                    [binary]="true"></p-checkbox>
+                                            </div>
+                                            <div class="col-item-name">{{col.title}}</div>
+                                        </div>
+                                    </div>
+                                </p-overlayPanel>
+                            </div>
+                            <p-table 
+                                class="guardian-grid-table"
+                                [value]="documents" 
+                                [scrollable]="true" 
+                            >
+                                <ng-template pTemplate="header">
+                                    <tr class="guardian-grid-header">
+                                        <ng-container *ngFor="let column of defaultColumns">
+                                            <th 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="header-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}"
+                                                [showDelay]="1000"
+                                                pTooltip="{{column.title}}"
+                                                tooltipPosition="top"
+                                                pFrozenColumn
+                                            >
+                                                <span class="text-truncate">{{column.title}}</span>
+                                            </th>
+                                        </ng-container>
+                                        <ng-container *ngFor="let column of columns">
+                                            <th 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="header-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}"
+                                                [showDelay]="1000"
+                                                pTooltip="{{column.title}}"
+                                                tooltipPosition="top"
+                                            >
+                                                <span class="text-truncate">{{column.title}}</span>
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                                <ng-template let-row pTemplate="body">
+                                    <tr class="guardian-grid-row select-row" (click)="onSelectDocument(row)">
+                                        <ng-container *ngFor="let column of defaultColumns">
+                                            <td 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="row-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}" 
+                                                [ngSwitch]="column.id"
+                                                pFrozenColumn
+                                            >
+                                                <ng-container *ngSwitchCase="'checkbox'">
+                                                    <p-radioButton 
+                                                        class="guardian-radio-button radio-button-24"
+                                                        [value]="row.__id" 
+                                                        [ngModel]="document?.__id"></p-radioButton>
+                                                </ng-container>
+                                                <ng-container *ngSwitchCase="'schema'">
+                                                    <span class="text-truncate"
+                                                        [showDelay]="1000" 
+                                                        pTooltip="{{row.__schemaName}}"
+                                                        [tooltipDisabled]="!row.__schemaName"
+                                                        tooltipPosition="top">
+                                                        {{row.__schemaName}}
+                                                    </span>
+                                                </ng-container>
+                                                <ng-container *ngSwitchCase="'id'">
+                                                    <span class="text-truncate">{{row.__id}}</span>
+                                                </ng-container>
+                                                <ng-container *ngSwitchDefault>
+                                                    <span class="text-truncate"
+                                                        [showDelay]="1000" 
+                                                        pTooltip="{{getCellValue(row, column)}}"
+                                                        [tooltipDisabled]="!getCellValue(row, column)"
+                                                        tooltipPosition="top">
+                                                        {{getCellValue(row, column)}}
+                                                    </span>
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
+                                        <ng-container *ngFor="let column of columns">
+                                            <td 
+                                                *ngIf="!column.canDisplay || column.canDisplay()"
+                                                class="row-cell-{{column.type}} col-{{column.size}} col-min-{{column.minSize}}" 
+                                                [ngSwitch]="column.id"
+                                            >
+                                                <span class="text-truncate"
+                                                    [showDelay]="1000" 
+                                                    pTooltip="{{getCellValue(row, column)}}"
+                                                    [tooltipDisabled]="!getCellValue(row, column)"
+                                                    tooltipPosition="top">
+                                                    {{getCellValue(row, column)}}
+                                                </span>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                            <div class="guardian-grid-paginator">
+                                <app-paginator
+                                    class="guardian-grid-paginator"
+                                    [pageIndex]="pageIndex"
+                                    [pageSize]="pageSize"
+                                    [length]="documentsCount"
+                                    (page)="onPage($event)"
+                                ></app-paginator>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-template #noData>
+                        <div class="guardian-user-not-data">
+                            <svg-icon 
+                                class="svg-icon" 
+                                src="/assets/images/icons/list.svg" 
+                                svgClass="icon-color-disabled"></svg-icon>
+                            <span class="guardian-user-not-data__text">No Documents</span>
+                        </div>
+                    </ng-template>
+                </div>
+
+            </div>
+        </div>
+        <div *ngIf="stepper[1]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Preview</div>
+                <div *ngIf="preview" class="fields-container">
+                    <div *ngFor="let variable of preview" class="field-container">
+                        <div class="field-name">
+                            {{variable.description}}
+                        </div>
+                        <ng-container *ngIf="variable.isArray">
+                            <div class="field-value-array">
+                                <div *ngFor="let v of variable.value" class="field-value">
+                                    {{getVariableValue(v)}}
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!variable.isArray">
+                            <div class="field-value">
+                                {{getVariableValue(variable.value)}}
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="stepper[2]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Scores</div>
+                <div *ngIf="scores" class="scores-container">
+                    <div *ngFor="let score of scores" class="score-container">
+                        <div *ngIf="score.relationships" class="fields-container">
+                            <div *ngFor="let variable of score.relationships" class="field-container">
+                                <div class="field-name">
+                                    {{variable.description}}
+                                </div>
+                                <ng-container *ngIf="variable.isArray">
+                                    <div class="field-value-array">
+                                        <div *ngFor="let v of variable.value" class="field-value">
+                                            {{getVariableValue(v)}}
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="!variable.isArray">
+                                    <div class="field-value">
+                                        {{getVariableValue(variable.value)}}
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
+                        <div class="score-name">
+                            {{score.description}}
+                        </div>
+                        <div *ngIf="score.options" class="options-container">
+                            <div *ngFor="let option of score.options" class="option-container">
+                                <div class="option-checkbox">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [name]="score.id" 
+                                        [value]="option.value" 
+                                        [(ngModel)]="score.value"
+                                        [inputId]="option.id"
+                                        (ngModelChange)="updateScore()"></p-radioButton>
+                                </div>
+                                <label class="option-name" [for]="option.id">
+                                    {{option.description}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div *ngIf="stepper[3]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="step-body-header">Statistics</div>
+
+                <div *ngIf="preview" class="fields-container">
+                    <div *ngFor="let variable of preview" class="field-container">
+                        <div class="field-name">
+                            {{variable.description}}
+                        </div>
+                        <ng-container *ngIf="variable.isArray">
+                            <div class="field-value-array">
+                                <div *ngFor="let v of variable.value" class="field-value">
+                                    {{getVariableValue(v)}}
+                                </div>
+                            </div>
+                        </ng-container>
+                        <ng-container *ngIf="!variable.isArray">
+                            <div class="field-value">
+                                {{getVariableValue(variable.value)}}
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let score of scores" class="field-container">
+                        <div class="field-name">
+                            {{score.description}}
+                        </div>
+                        <div *ngIf="score.options" class="options-container">
+                            <div *ngFor="let option of score.options" class="option-container" disabled="true">
+                                <div class="option-checkbox">
+                                    <p-radioButton 
+                                        class="guardian-radio-button radio-button-24"
+                                        [name]="score.id" 
+                                        [value]="option.value" 
+                                        [ngModel]="score.value"
+                                        [disabled]="true"
+                                    ></p-radioButton>
+                                </div>
+                                <label class="option-name">
+                                    {{option.description}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="formulas" class="fields-container">
+                    <div *ngFor="let formula of formulas" class="field-container">
+                        <div class="field-name">
+                            {{formula.description}}
+                        </div>
+                        <div class="field-value">
+                            {{formula.value}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="actions-container">
+        <button *ngIf="!stepper[0]" (click)="onPrev()" class="guardian-button guardian-button-secondary">Previous</button>
+        <button *ngIf="stepper[0]" [disabled]="!document" (click)="onNextPreview()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[1]" (click)="onNextScores()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[2]" [disabled]="!scoresValid" (click)="onNextFinish()" class="guardian-button guardian-button-primary">Next</button>
+        <button *ngIf="stepper[3]" (click)="onCreate()" class="guardian-button guardian-button-primary">Create</button>
+    </div>
+</div>

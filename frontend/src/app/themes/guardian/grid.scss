@@ -1,0 +1,389 @@
+$sizes: (
+    44: 44px,
+    56: 56px,
+    64: 64px,
+    80: 80px,
+    90: 90px,
+    100: 100px,
+    110: 110px,
+    120: 120px,
+    125: 125px,
+    130: 130px,
+    135: 135px,
+    140: 140px,
+    150: 150px,
+    160: 160px,
+    170: 170px,
+    180: 180px,
+    190: 190px,
+    200: 200px,
+    210: 210px,
+    220: 220px,
+    250: 250px
+);
+
+.dialog-grid-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: auto;
+
+    .col-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .col-button {
+        padding: 0px 6px !important;
+    }
+
+    .col-auto {
+        width: 100%;
+    }
+
+    @each $name, $size in $sizes {
+        .col-#{$name} {
+            width: $size;
+            min-width: $size;
+            max-width: $size;
+        }
+    }
+
+    .dialog-grid-header {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 46px;
+        min-height: 46px;
+        max-height: 46px;
+        padding: 0px 12px;
+        color: var(--guardian-grid-color);
+
+        &>div {
+            font-size: var(--guardian-small-font-size);
+            text-transform: uppercase;
+            padding: 12px 8px;
+        }
+    }
+
+    .dialog-grid-body {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        border: 1px solid var(--guardian-border-color);
+        border-radius: 6px;
+
+        &.vertical-border {
+            .dialog-grid-row {
+                &>div {
+                    border-right: 1px solid var(--guardian-border-color);
+
+                    &:last-child {
+                        border-right: none;
+                    }
+                }
+            }
+        }
+
+        .dialog-grid-row {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            border-bottom: 1px solid var(--guardian-border-color);
+            cursor: default;
+            padding: 0px 12px;
+            font-size: var(--guardian-primary-font-size);
+            color: var(--guardian-font-color);
+
+            &.row-52 {
+                height: 52px;
+                min-height: 52px;
+                max-height: 52px;
+            }
+
+
+            &.row-64 {
+                height: 64px;
+                min-height: 64px;
+                max-height: 64px;
+            }
+
+            &>div {
+                padding: 0px 10px;
+                display: flex;
+                align-items: center;
+                position: relative;
+
+                .cell-focus {
+                    display: none;
+                    position: absolute;
+                    top: 0px;
+                    left: 0px;
+                    right: 0px;
+                    bottom: 0px;
+                    border: 1px solid var(--guardian-primary-color, #4169E2);
+                }
+
+                .p-inputwrapper-focus+.cell-focus,
+                .guardian-input:focus+.cell-focus {
+                    display: block;
+                }
+
+                &:first-child {
+                    .cell-focus {
+                        left: -12px;
+                    }
+                }
+            }
+
+            &:first-child>div:first-child .cell-focus {
+                border-top-left-radius: 6px;
+            }
+
+            &:last-child>div:first-child .cell-focus {
+                border-bottom-left-radius: 6px;
+            }
+
+            &[expand="true"] {
+                border-bottom-color: transparent;
+
+                .expand-icon {
+                    transform: rotate(90deg);
+                }
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+
+        .dialog-grid-expand-row {
+            width: 100%;
+            border-bottom: 1px solid var(--guardian-border-color);
+            padding: 0px 12px;
+            display: none;
+
+            &[expand="true"] {
+                display: flex;
+            }
+        }
+    }
+
+    .dialog-grid-empty {
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        color: #848FA9;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+}
+
+.guardian-grid-paginator {
+    .table-paginator {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        column-gap: 24px;
+        padding: 0 16px 0 0;
+        color: var(--color-grey-black-2, #23252e);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 16px;
+        height: 64px !important;
+        border-radius: 0px !important;
+        border-bottom-left-radius: 8px !important;
+        border-bottom-right-radius: 8px !important;
+        background: #fff;
+        box-shadow: none !important;
+        position: relative;
+
+        .p-dropdown {
+            border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+            border-radius: 8px;
+            outline: 0 none;
+        }
+
+        .p-dropdown:not(.p-disabled):hover {
+            border-color: var(--guardian-primary-color, #4169E2);
+        }
+
+        .p-dropdown:not(.p-disabled).p-focus {
+            box-shadow: none;
+            border-color: var(--guardian-primary-color, #4169E2);
+        }
+
+        .svg-btn:hover {
+            box-shadow: 0px 0px 0px 1px var(--guardian-primary-color, #4169E2);
+        }
+    }
+}
+
+.guardian-grid-container {
+    position: relative;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        left: -1px;
+        right: -1px;
+        top: 47px;
+        bottom: -1px;
+        pointer-events: none;
+        border: 1px solid var(--guardian-shadow, #00000014);
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+        z-index: 2;
+    }
+    
+    .p-datatable-thead {
+        background: transparent !important;
+        background-color: transparent !important;
+    }
+
+    .guardian-grid-header {
+        height: 46px;
+
+        th {
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 15px;
+            text-align: left;
+            color: var(--guardian-grid-color, #848FA9);
+            text-transform: uppercase;
+            padding: 16px;
+            border: none;
+            background: transparent;
+            background-color: transparent;
+            position: relative;
+
+            &:first-child {
+                padding-left: 24px;
+            }
+
+            &:last-child {
+                padding-left: 24px;
+            }
+        }
+
+        .text-truncate {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            right: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -50%);
+        }
+    }
+
+    .guardian-grid-row {
+        height: 64px;
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+
+            &:first-child {
+                padding-left: 24px;
+            }
+
+            &:last-child {
+                padding-right: 24px;
+            }
+        }
+
+        &:first-child {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .text-truncate {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            right: 16px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            transform: translate(0px, -50%);
+        }
+    }
+
+    // .p-datatable-tbody {
+    //     border: 1px solid #e9ecef;
+    //     border-radius: 6px;
+    // }
+
+    @each $name, $size in $sizes {
+        .col-#{$name} {
+            width: $size;
+            min-width: $size;
+            max-width: $size;
+        }
+    }
+
+    @each $name, $size in $sizes {
+        .col-min-#{$name} {
+            min-width: $size;
+        }
+    }
+
+    .col-auto {
+        width: auto;
+    }
+
+    &.grid-scroll {
+        &::before {
+            z-index: 1;
+            border-top: none;
+            border-top-right-radius: 0px;
+        }
+
+        &::after {
+            content: "";
+            display: block;
+            position: absolute;
+            left: -1px;
+            right: 9px;
+            top: 45px;
+            bottom: 0px;
+            pointer-events: none;
+            border-top: 1px solid #ebebeb;
+            border-radius: 8px;
+            z-index: 1;
+            border-bottom-left-radius: 0px;
+            border-bottom-right-radius: 0px;
+            border-top-right-radius: 0px;
+        }
+
+        .p-datatable-tbody {
+            border-radius: 8px;
+        }
+
+        .p-datatable-wrapper {
+            padding-right: 2px;
+        }
+
+        .p-datatable-thead {
+            background: #fff !important;
+            background-color: #fff !important;
+        }
+    }
+
+    .p-frozen-column {
+        position: sticky !important;
+        background: #fff !important;
+        background-color: #fff !important;
+    }
+}

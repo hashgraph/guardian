@@ -3,6 +3,7 @@ import { ErrorCode, JSONCodec, NatsError } from 'nats';
 // import { gzip, unzip } from 'zlib';
 import { LargePayloadContainer } from './large-payload-container.js';
 import axios from 'axios';
+import https from 'https';
 
 /**
  * Zip Codec
@@ -42,6 +43,14 @@ export function ZipCodec() {
                 // const parsed = JSON.parse(decompressed.toString());
                 if (parsed?.hasOwnProperty('directLink')) {
                     const directLink = parsed.directLink;
+                    if (process.env.TLS_CERT && process.env.TLS_KEY) {
+                        const httpsAgent = new https.Agent({
+                            cert: process.env.TLS_CERT,
+                            key: process.env.TLS_KEY,
+                            ca: process.env.TLS_CA
+                        });
+                        axios.defaults.httpsAgent = httpsAgent;
+                    }
                     const response = await axios.get(directLink, {
                         responseType: 'arraybuffer'
                     });

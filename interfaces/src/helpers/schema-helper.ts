@@ -35,7 +35,8 @@ export class SchemaHelper {
             customType: null,
             comment: null,
             isPrivate: null,
-            examples: null
+            examples: null,
+            default: null,
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -43,11 +44,12 @@ export class SchemaHelper {
             _property = _property.oneOf[0];
         }
         field.name = name;
-        field.title = _property.title || name;
-        field.description = _property.description || name;
+        field.title = property.title || _property.title || name;
+        field.description = property.description || _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
         field.comment = _property.$comment;
         field.examples = Array.isArray(_property.examples) ? _property.examples : null;
+        field.default = _property.default;
         if (field.isArray) {
             _property = _property.items;
         }
@@ -86,7 +88,9 @@ export class SchemaHelper {
             orderPosition,
             isPrivate,
             hidden,
+            suggest,
         } = SchemaHelper.parseFieldComment(field.comment);
+        field.suggest = suggest;
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
             field.context = {
@@ -142,6 +146,13 @@ export class SchemaHelper {
         property.description = field.description || name;
         property.readOnly = !!field.readOnly;
 
+        if (field.examples) {
+            property.examples = field.examples;
+        }
+        if (field.default) {
+            property.default = field.default;
+        }
+
         if (field.isArray) {
             property.type = SchemaDataTypes.array;
             property.items = {};
@@ -165,9 +176,6 @@ export class SchemaHelper {
             }
             if (field.pattern) {
                 item.pattern = field.pattern;
-            }
-            if (field.examples) {
-                item.examples = field.examples;
             }
         }
 
@@ -533,6 +541,9 @@ export class SchemaHelper {
         }
         if (field.hidden) {
             comment.hidden = !!field.hidden;
+        }
+        if (field.suggest) {
+            comment.suggest = field.suggest;
         }
         return JSON.stringify(comment);
     }

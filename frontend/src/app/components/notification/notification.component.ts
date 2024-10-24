@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { forkJoin, Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notify.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatMenu, MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenu as MatMenu, MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 
 @Component({
     selector: 'app-notification',
@@ -45,7 +45,7 @@ export class NotificationComponent implements OnInit {
             this.notificationService.progresses(),
         ]).subscribe((value) => {
             this.notifications = value[0];
-            this.progressNotifications = value[1];
+            this.progressNotifications = value[1] || [];
             this.countUnreadNotification();
             this.subscription.add(
                 this.ws.updateNotificationSubscribe(

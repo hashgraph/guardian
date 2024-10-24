@@ -229,6 +229,12 @@ export class JsonToXlsx {
         worksheet
             .getCell(table.getCol(Dictionary.ANSWER), row)
             .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.DEFAULT), row)
+            .setValue(anyToXlsx(undefined));
+        worksheet
+            .getCell(table.getCol(Dictionary.SUGGEST), row)
+            .setValue(anyToXlsx(undefined));
 
         const type = FieldTypes.findByValue(field);
         if (type) {
@@ -274,18 +280,32 @@ export class JsonToXlsx {
                     .getCell(table.getCol(Dictionary.PARAMETER), row)
                     .setLink(_enum.sheetName, new Hyperlink(_enum.sheetName, 'A3'))
                     .setStyle(table.linkStyle);
-                worksheet
-                    .getCell(table.getCol(Dictionary.ANSWER), row)
-                    .setList2(_enum.getData());
+                if (!field.isArray) {
+                    worksheet
+                        .getCell(table.getCol(Dictionary.ANSWER), row)
+                        .setList2(_enum.getData());
+                    worksheet
+                        .getCell(table.getCol(Dictionary.DEFAULT), row)
+                        .setList2(_enum.getData());
+                    worksheet
+                        .getCell(table.getCol(Dictionary.SUGGEST), row)
+                        .setList2(_enum.getData());
+                }
             } else {
                 throw new Error(`Enum ('${worksheet.name}', ${field.name}, '${field.description}', ${field.path}) not found.`);
             }
         }
-        if (type && !field.isRef) {
-            worksheet
-                .getCell(table.getCol(Dictionary.ANSWER), row)
-                .setValue(type.pars(examplesToXlsx(field)));
-        }
+
+        worksheet
+            .getCell(table.getCol(Dictionary.ANSWER), row)
+            .setValue(examplesToXlsx(field));
+        worksheet
+            .getCell(table.getCol(Dictionary.DEFAULT), row)
+            .setValue(anyToXlsx(field.default));
+        worksheet
+            .getCell(table.getCol(Dictionary.SUGGEST), row)
+            .setValue(anyToXlsx(field.suggest));
+
         if (field.hidden) {
             worksheet
                 .getCell(table.getCol(Dictionary.VISIBILITY), row)

@@ -1,0 +1,26 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{ header }}</div>
+    </div>
+    <div class="header-icon" (click)="onClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+
+<div class="dialog-body">
+    <div *ngIf="loading" class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+
+    <div class="confirmation-text">{{ text }}</div>
+</div>
+
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div *ngFor="let button of buttons" class="{{button.class}}-button">
+            <button 
+                (click)="onClick(button)" 
+                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+        </div>
+    </div>
+</div>

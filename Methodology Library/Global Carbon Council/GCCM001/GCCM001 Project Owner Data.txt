@@ -1,0 +1,18 @@
+var _pp = {
+    "field0": "ECO Solutions LLC",
+    "field1": "123 Main Street, Tashkent, Uzbekistan 100000",
+    "field2": "Limited Liability Company (LLC)",
+    "field5": "https://www.ecosolutions.com",
+    "field6": "contact@ecosolutions.com",
+    "field7": "12345678-AB",
+    "field8": [
+      "\"ID Number / Passport Number: A123456789 Full Name: Alex Johnson Nationality: Uzkekistani Date of Birth: March 15, 1990 Address: 123 Green Street, Tashkent, Uzbekistan\""
+    ],
+    "field9": [
+      "\"ID Number / Passport Number: B987654321 Full Name: John Doe Nationality: Uzbekistani Date of Birth: July 22, 1985 Address: 456 Blue Avenue, Samarkand, Uzbekistan\""
+    ],
+    "field10": [
+      "ipfs://66e2f71b622a64ecb87f4815"
+    ]
+  }
+Object.values(__request).forEach(r=>r.preset(_pp)); 

@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { AbstractControl, FormControl, FormGroup, ValidationErrors, Validators, } from '@angular/forms';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
 import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { environment } from 'src/environments/environment';
@@ -34,12 +34,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     loading: boolean = false;
     errorMessage: string = '';
     passFieldType: 'password' | 'text' = 'password';
-    loginForm = new FormGroup({
-        login: new FormControl('', [
+    loginForm = new UntypedFormGroup({
+        login: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),
-        password: new FormControl('', [
+        password: new UntypedFormControl('', [
             Validators.required,
             noWhitespaceValidator(),
         ]),

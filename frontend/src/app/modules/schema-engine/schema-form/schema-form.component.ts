@@ -1,7 +1,7 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
@@ -64,7 +64,7 @@ export class SchemaFormComponent implements OnInit {
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
     @Input('fields') schemaFields!: SchemaField[];
-    @Input('formGroup') group!: FormGroup;
+    @Input('formGroup') group!: UntypedFormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
     @Input('preset') presetDocument: any = null;
@@ -87,7 +87,7 @@ export class SchemaFormComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<boolean>();
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
-    public options: FormGroup | undefined;
+    public options: UntypedFormGroup | undefined;
     public fields: any[] | undefined = [];
     public conditionFields: SchemaField[] = [];
     public isShown: boolean[] = [true];
@@ -138,7 +138,7 @@ export class SchemaFormComponent implements OnInit {
                             this.presetDocument[elseField?.name];
                     }
                 }
-                const conditionForm = new FormGroup({});
+                const conditionForm = new UntypedFormGroup({});
                 this.subscribeCondition(conditionForm);
                 this.conditionFields.push(...cond.thenFields);
                 this.conditionFields.push(...cond.elseFields);
@@ -168,7 +168,7 @@ export class SchemaFormComponent implements OnInit {
             if (this.hide[field.name] || this.conditionFields.find(elem => elem.name === field.name)) {
                 continue
             }
-            const item = this.createFieldControl(field);
+            const item = this.createFieldControl(field, this.presetDocument);
             fields.push(item);
             if (item.control) {
                 group[field.name] = item.control;
@@ -200,7 +200,7 @@ export class SchemaFormComponent implements OnInit {
 
     public addGroup(item: any) {
         item.control =
-            item.customType === ('geo' || 'sentinel') ? new FormControl({}) : new FormGroup({});
+            item.customType === ('geo' || 'sentinel') ? new UntypedFormControl({}) : new UntypedFormGroup({});
         this.options?.addControl(item.name, item.control);
         this.change.emit();
         this.changeDetectorRef.detectChanges();
@@ -259,23 +259,24 @@ export class SchemaFormComponent implements OnInit {
         input.click();
     }
 
-    private createFieldControl(field: SchemaField): any {
+    private createFieldControl(field: SchemaField, preset?: any): any {
         const item: any = {
             ...field,
             hide: false,
-            id: GenerateUUIDv4()
+            id: GenerateUUIDv4(),
+            field,
         }
 
-        if (this.presetDocument) {
-            item.preset = this.presetDocument[field.name];
-        } else {
-            item.preset = null;
+        item.preset = field.default;
+        if (preset) {
+            item.isPreset = true;
+            item.preset = preset[field.name];
         }
 
         if (!field.isArray && !field.isRef) {
             item.fileUploading = false;
             const validators = this.getValidators(item);
-            item.control = new FormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
+            item.control = new UntypedFormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
             if (field.remoteLink) {
                 item.fileUploading = true;
                 this.ipfs
@@ -297,13 +298,13 @@ export class SchemaFormComponent implements OnInit {
             if (field.required || item.preset) {
                 item.control =
                     item.customType === ('geo' || 'sentinel')
-                        ? new FormControl({})
-                        : new FormGroup({});
+                        ? new UntypedFormControl({})
+                        : new UntypedFormGroup({});
             }
         }
 
         if (field.isArray && !field.isRef) {
-            item.control = new FormArray([]);
+            item.control = new UntypedFormArray([]);
             item.list = [];
             if (field.remoteLink) {
                 item.fileUploading = true;
@@ -337,7 +338,7 @@ export class SchemaFormComponent implements OnInit {
         }
 
         if (field.isArray && field.isRef) {
-            item.control = new FormArray([]);
+            item.control = new UntypedFormArray([]);
             item.list = [];
             item.fields = field.fields;
             if (item.preset && item.preset.length) {
@@ -392,12 +393,12 @@ export class SchemaFormComponent implements OnInit {
         if (item.isRef) {
             listItem.control =
                 item.customType === ('geo' || 'sentinel')
-                    ? new FormControl({})
-                    : new FormGroup({});
+                    ? new UntypedFormControl({})
+                    : new UntypedFormGroup({});
         } else {
             listItem.fileUploading = false;
             const validators = this.getValidators(item);
-            listItem.control = new FormControl(preset === null || preset === undefined ? "" : preset, validators);
+            listItem.control = new UntypedFormControl(preset === null || preset === undefined ? "" : preset, validators);
             this.postFormat(item, listItem.control);
         }
 
@@ -549,14 +550,14 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public removeConditionFields(fields: SchemaField[], condition: any) {
-        condition.conditionForm = new FormGroup({});
+        condition.conditionForm = new UntypedFormGroup({});
         this.subscribeCondition(condition.conditionForm);
         fields.forEach(item => {
             setTimeout(() => this.options?.removeControl(item.name, { emitEvent: false }));
         });
     }
 
-    private subscribeCondition(controlCondition: FormGroup) {
+    private subscribeCondition(controlCondition: UntypedFormGroup) {
         let oldValue: string[] = [];
         controlCondition.valueChanges
             .pipe(takeUntil(this.destroy$))
@@ -606,7 +607,7 @@ export class SchemaFormComponent implements OnInit {
             || item.pattern === '^ipfs:\/\/.+';
     }
 
-    private postFormat(item: any, control: FormControl): any {
+    private postFormat(item: any, control: UntypedFormControl): any {
         const format = item.format;
         const type = item.type;
         const pattern = item.pattern;
@@ -793,5 +794,71 @@ export class SchemaFormComponent implements OnInit {
 
     public onSubmitBtnClick(fields: any) {
         this.submitBtnEvent.emit(fields);
+    }
+
+    public patchSuggestValue(item: {
+        isRef?: boolean;
+        isArray?: boolean;
+        control: any;
+        list: any[];
+        suggest: any;
+        field?: any;
+    }) {
+        const suggest = item.suggest;
+        if (item.isRef) {
+            const newItem = this.createFieldControl(item.field, {
+                [item.field.name]: suggest,
+            });
+            this.options?.removeControl(item.field.name);
+            this.options?.addControl(item.field.name, newItem.control);
+            this.fields = this.fields?.map(field => field === item ? newItem : field);
+            newItem.control.markAsDirty();
+            this.changeDetectorRef.detectChanges();
+            return;
+        }
+        if (item.isArray) {
+            item.control.clear();
+            item.list = [];
+            let count = suggest.length;
+            while(count-- > 0) {
+                const control = this.createListControl(item);
+                item.list.push(control);
+                item.control.push(control.control);
+            }
+        }
+        item.control.patchValue(suggest);
+        item.control.markAsDirty();
+    }
+
+    public isEmpty(value: any): boolean {
+        if (Array.isArray(value)) {
+            return !value.some(item => !this.isEmpty(item));
+        }
+        return [undefined, null, ''].includes(value);
+    }
+
+    public isEmptyRef(value: any, field: { customType: string; fields: any[] }): boolean {
+        if (value === undefined || value === null) {
+            return true;
+        }
+        if (Array.isArray(value)) {
+            return !value.some(item => !this.isEmptyRef(item, field));
+        }
+        if (field.customType === 'geo') {
+            return Object.keys(value).length === 0;
+        }
+        for (const _field of field.fields) {
+            if (_field.isRef && !this.isEmptyRef(value[_field.name], _field)) {
+                return false;
+            }
+            if (!_field.isRef && !this.isEmpty(value[_field.name])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public getJSON(value: any) {
+        return JSON.stringify(value, null, 4);
     }
 }

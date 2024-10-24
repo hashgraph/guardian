@@ -235,6 +235,8 @@ export async function importToolByMessage(
     notifier.completedAndStart('Import tool schemas');
 
     if (Array.isArray(components.schemas)) {
+        const schemaObjects = []
+
         for (const schema of components.schemas) {
             const schemaObject = DatabaseServer.createSchema(schema);
             components.tool.creator = message.owner;
@@ -242,8 +244,11 @@ export async function importToolByMessage(
             components.tool.topicId = message.topicId.toString();
             schemaObject.status = SchemaStatus.PUBLISHED;
             schemaObject.category = SchemaCategory.TOOL;
-            await DatabaseServer.saveSchema(schemaObject);
+
+            schemaObjects.push(schemaObject);
         }
+
+        await DatabaseServer.saveSchemas(schemaObjects);
     }
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];

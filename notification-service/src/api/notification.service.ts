@@ -294,11 +294,11 @@ export class NotificationService {
             const notification = await new DatabaseServer().update(
                 Notification,
                 {
-                    read: true,
+                    id: notificationId,
                 },
                 {
-                    id: notificationId,
-                }
+                    read: true,
+                },
             );
             if (notification) {
                 await this.updateNotificationWS(notification);
@@ -323,10 +323,10 @@ export class NotificationService {
             await new DatabaseServer().update(
                 Notification,
                 {
-                    read: true,
+                    userId,
                 },
                 {
-                    userId,
+                    read: true,
                 }
             );
             return await this.getNotifications(userId);

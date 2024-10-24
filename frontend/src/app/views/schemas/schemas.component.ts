@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType, UserPermissions } from '@guardian/interfaces';
@@ -1081,7 +1081,8 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: element
+                scheme: element,
+                category: this.getCategory(),
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {

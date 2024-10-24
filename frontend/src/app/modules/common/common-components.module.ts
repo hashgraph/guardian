@@ -19,7 +19,7 @@ import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
 import { SeparateStepperComponent } from './separate-stepper/separate-stepper.component';
-import { NgxMaskModule } from 'ngx-mask';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { NewVersionsComponent } from './new-versions/new-versions.component';
 import { DataInputDialogComponent } from './data-input-dialog/data-input-dialog.component';
 import { CompareBtnComponent } from './compare-btn/compare-btn.component';
@@ -32,6 +32,8 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { StatusDropdown } from './status-dropdown/status-dropdown.component';
+import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 
 @NgModule({
     declarations: [
@@ -55,6 +57,8 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         CompareViewerComponent,
         AlertComponent,
         PaginatorComponent,
+        StatusDropdown,
+        CustomCustomDialogComponent
     ],
     imports: [
         CommonModule,
@@ -63,13 +67,16 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
-        NgxMaskModule.forRoot(),
+        NgxMaskDirective,
         DialogModule,
         InputTextModule,
         DropdownModule,
         ProgressBarModule,
         ButtonModule,
         AngularSvgIconModule.forRoot()
+    ],
+    providers: [
+        provideNgxMask(),
     ],
     exports: [
         DatetimePicker,
@@ -86,12 +93,14 @@ import { AngularSvgIconModule } from 'angular-svg-icon';
         NgxColorsModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
-        NgxMaskModule,
+        NgxMaskDirective,
         NewVersionsComponent,
         CompareBtnComponent,
         CompareViewerComponent,
         PaginatorComponent,
-        DataInputDialogComponent
+        DataInputDialogComponent,
+        StatusDropdown,
+        CustomCustomDialogComponent
     ]
 })
 export class CommonComponentsModule { }

@@ -11,7 +11,7 @@
                     (click)="onCreate()"
                     [attr.disabled]="!this.dataForm.valid"
                     label="Create Policy"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
             >
             </p-button>
         </div>
@@ -21,7 +21,7 @@
                     *ngIf="matTree?.hasPrevStep"
                     class="prev-button"
                     label="Prev"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
             ></p-button>
             <p-button
                     (click)="handleNextClick()"
@@ -204,7 +204,7 @@
                 (click)="onAddRole(control, nameInput.value)"
                 class="add-role-button"
                 icon="pi pi-plus"
-                styleClass="p-button-outlined"
+                [outlined]=true
         >
         </p-button>
     </div>
@@ -557,7 +557,7 @@
                             <div class="column-title">{{ column.title }}</div>
                             <div class="cursor-pointer">
                                 <svg-icon (click)="onRemoveColumn(column.title, gridColumns)"
-                                    src="/assets/images/icons/delete.svg" 
+                                    src="/assets/images/icons/delete.svg"
                                     svgClass="accent-color-red"></svg-icon>
                             </div>
                         </div>
@@ -623,7 +623,7 @@
                 <p-button (click)="onAddColumn(titleInput.value, fieldSelect.value, gridColumns)"
                     class="add-role-button"
                     icon="pi pi-plus"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                 >
                 </p-button>
                 <!--                <button-->
