@@ -1,4 +1,4 @@
-name: Guardian CI
+name: Guardian CI API Tests(Manual)
 on:
   workflow_dispatch:
     description: 'Manual run'
