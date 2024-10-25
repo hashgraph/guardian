@@ -118,3 +118,17 @@
         position: relative;
     }
 }
+
+.guardian-user-back-button {
+    height: 40px;
+    min-width: 170px;
+    width: min-content;
+
+    button {
+        height: 40px;
+        width: 100%;
+        padding-right: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

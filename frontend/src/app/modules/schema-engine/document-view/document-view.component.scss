@@ -18,39 +18,36 @@ form {
     }
 
     .schema-form-field-array-group {
-        .form-field-array-item-index {
-            display: none;
+       .form-field-array-item {
+            display: block;
+            width: 100%;
+            position: relative;
+            border: 1px solid #E1E7EF;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+
+            .form-field-array-item-index {
+                font-family: Poppins;
+                font-size: 16px;
+                font-weight: 600;
+                line-height: 20px;
+                text-align: left;
+                margin-bottom: 24px;
+                padding-left: 2px;
+                display: block;
+            }
         }
 
         &[multiple=true] {
-            .group-multiple-header {
-                display: block;
-            }
-            .form-field-array-item {
-                display: block;
-                width: 100%;
-                position: relative;
-                border: 1px solid #E1E7EF;
-                padding: 16px;
-                border-radius: 8px;
-                margin-bottom: 24px;
-
-                .form-field-array-item-index {
-                    font-family: Poppins;
-                    font-size: 16px;
-                    font-weight: 600;
-                    line-height: 20px;
-                    text-align: left;
-                    margin-bottom: 24px;
-                    padding-left: 2px;
-                    display: block;
-                }
+            .item-index {
+                display: inline-block;
             }
         }
 
         &[multiple=false] {
-            .group-header {
-                display: block;
+            .item-index {
+                display: none;
             }
         }
     }

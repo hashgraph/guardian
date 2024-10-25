@@ -91,15 +91,15 @@
 
 
         <div *ngIf="type === 'VC' && subjects.length > 0" class="schema-form-field-array-group" [attr.multiple]="subjects.length > 1">
-            <div class="group-header">Credential Subject</div>
-            <div class="group-multiple-header">Credential Subjects</div>
+            <!-- <div class="group-header">Credential Subject</div>
+            <div class="group-multiple-header">Credential Subjects</div> -->
 
             <div 
                 *ngFor="let item of getItemsPage(subjects, pageEvent)" 
                 class="form-field-array-item"
                 [attr.index]="subjects.indexOf(item)"
             >
-                <div class="form-field-array-item-index">Credential Subject #{{subjects.indexOf(item)+1}}</div>
+                <div class="form-field-array-item-index">Credential Subject<span> #{{subjects.indexOf(item)+1}}</span></div>
                 <div class="form-field-group">
                     <app-schema-form-view 
                         [private-fields]="hideFields" 
@@ -121,15 +121,15 @@
         </div>
 
         <div *ngIf="type === 'VP' && subjects.length > 0" class="schema-form-field-array-group" [attr.multiple]="subjects.length > 1">
-            <div class="group-header">Verifiable Credential</div>
-            <div class="group-multiple-header">Verifiable Credentials</div>
+            <!-- <div class="group-header">Verifiable Credential</div>
+            <div class="group-multiple-header">Verifiable Credentials</div> -->
 
             <div 
                 *ngFor="let item of getItemsPage(subjects, pageEvent)" 
                 class="form-field-array-item"
                 [attr.index]="subjects.indexOf(item)"
             >
-                <div class="form-field-array-item-index">Verifiable Credential #{{subjects.indexOf(item)+1}}</div>
+                <div class="form-field-array-item-index">Verifiable Credential<span> #{{subjects.indexOf(item)+1}}</span></div>
                 <div class="form-field-group">
                     <app-document-view 
                         [document]="item"

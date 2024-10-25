@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType } from '@guardian/interfaces';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
@@ -76,6 +76,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private dialogService: DialogService,
         private policyProgressService: PolicyProgressService,
         private changeDetector: ChangeDetectorRef,
+        private router: Router
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -462,5 +463,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public runRecord() {
         this.recordingActive = true;
         this._recordController?.runRecord();
+    }
+
+    public onBack() {
+        this.router.navigate(['/policy-viewer']);
     }
 }
