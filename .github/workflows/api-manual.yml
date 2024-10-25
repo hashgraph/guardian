@@ -1,10 +1,12 @@
 name: Guardian CI API Tests(Manual)
 on:
   workflow_dispatch:
-    description: 'Manual run'
-  push:
-    branches-ignore:
-      - 'dependabot/**'
+    inputs:
+      tags:
+        type: string
+        description: Tags for run(smoke, accounts, firstPool and etc.)
+        default: 'all'
+      description: 'Manual run'
 jobs:
   buildAndTest:
     name: Build and Test (Manual)
