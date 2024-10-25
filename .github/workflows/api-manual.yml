@@ -1,147 +1,146 @@
-name: Guardian CI API Tests(Manual)
+name: Guardian CI
 on:
-    workflow_dispatch:
-        inputs:
-            tags:
-                type: string
-                description: Tags for run(smoke, accounts, firstPool and etc.)
-                default: 'all'
-        description: 'Manual run'
+  workflow_dispatch:
+    description: 'Manual run'
+  push:
+    branches-ignore:
+      - 'dependabot/**'
 jobs:
-    buildAndTest:
-        name: Build and Test (Manual)
-        runs-on: ubuntu-latest
-        services:
-            ipfs-node:
-                image: ipfs/kubo:latest
-                ports:
-                    - 8080:8080
-                    - 5001:5001
-            cache:
-                image: registry.redict.io/redict
-                ports:
-                    - 6379:6379
-        strategy:
-            matrix:
-                node-version: [ 20.x ]
-                mongodb-version: [ 7.0.5 ]
-        steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
-              with:
-                  egress-policy: audit
+  buildAndTest:
+    name: Build and Test (Manual)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [ 20.10.0 ]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          egress-policy: audit
 
-            - name: Checkout Code
-              uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-            - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 #v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: ${{ matrix.node-version }}
 
-            - name: Setup Yarn
-              uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
-              with:
-                  cmd: install
+      - name: Setup Yarn
+        uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+        with:
+          cmd: install
 
-            - name: Install dependencies
-              run: yarn install
+      - name: Install dependencies
+        run: yarn install
 
-            - name: Build packages
-              run: |
-                yarn
-                pushd interfaces
-                yarn run build
-                popd
-                pushd common
-                yarn run build
-                popd
-                pushd logger-service
-                yarn run build
-                popd
-                pushd notification-service
-                yarn run build
-                popd
-                pushd frontend
-                npm install
-                npm run build
-                npm run build:prod
-                npm run build:demo
-                popd
-                pushd auth-service
-                yarn run build
-                popd
-                pushd policy-service
-                yarn run build
-                popd
-                pushd guardian-service
-                yarn run build
-                popd
-                pushd worker-service
-                yarn run build
-                popd
-                pushd api-gateway
-                yarn run build
-                popd
+      - name: Build
+        run: |
+          yarn
+          pushd interfaces
+          yarn run build
+          popd
+          pushd common
+          yarn run build
+          popd
+          pushd logger-service
+          yarn run build
+          popd
+          pushd notification-service
+          yarn run build
+          popd
+          pushd frontend
+          npm install
+          npm run build
+          npm run build:prod
+          npm run build:demo
+          popd
+          pushd auth-service
+          yarn run build
+          popd
+          pushd policy-service
+          yarn run build
+          popd
+          pushd guardian-service
+          yarn run build
+          popd
+          pushd worker-service
+          yarn run build
+          popd
+          pushd api-gateway
+          yarn run build
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
 
-            - name: Start NatsMQ
-              uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
-              with:
-                  port: '4222'
+      - name: Detect secrets
+        run: |
+          yarn run detect-secrets
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
 
-            - name: Start MongoDB
-              uses: supercharge/mongodb-github-action@5a87bd81f88e2a8b195f8b7b656f5cda1350815a # v1.11.0
-              with:
-                  mongodb-version: ${{ matrix.mongodb-version }}
+      - name: Lint
+        run: |
+          pushd interfaces
+          npm run lint
+          popd
+          pushd common
+          npm run lint
+          popd
+          pushd logger-service
+          npm run lint
+          popd
+          pushd notification-service
+          npm run lint
+          popd
+          pushd auth-service
+          npm run lint
+          popd
+          pushd policy-service
+          npm run lint
+          popd
+          pushd guardian-service
+          npm run lint
+          popd
+          pushd worker-service
+          npm run lint
+          popd
+          pushd api-gateway
+          npm run lint
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
 
-            - name: Run Guardian
-              run: |
-                  pushd notification-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd logger-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd auth-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd guardian-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd policy-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd worker-service
-                  npm start &
-                  sleep 20
-                  popd
-                  pushd api-gateway
-                  npm start &
-                  sleep 20
-                  popd
-                  sleep 60
-              env:
-                  CI: true
-                  OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
-                  OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
-                  IPFS_NODE_ADDRESS: http://localhost:5001
-                  IPFS_PROVIDER: local
-                  IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
+      - name: Test
+        run: |
+          pushd common
+          npm run test
+          popd
+          pushd policy-service
+          npm run test
+          popd
+          pushd guardian-service
+          npm run test
+          popd
+        env:
+          CI: true
+          NODE_OPTIONS: --openssl-legacy-provider
+          OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
+          OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
 
-            - name: Run tests with Cypress
-              run: |
-                  pushd e2e-tests
-                  npm install --force
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
-                  popd
+      - name: Run tests with Cypress
+        run: |
+            pushd e2e-tests
+            npm install --force
+            npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
+            popd
 
-            - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@30eadd5010312f995f0d3b3cff7fe2984f69409e # v2.16.1
-              if: always()
-              with:
-                  files: e2e-tests/cypress/test_results/**/*.xml
+
+      - name: Publish API Test Results
+        uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
+        if: always()
+        with:
+            files: e2e-tests/cypress/test_results/**/*.xml
