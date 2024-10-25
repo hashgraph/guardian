@@ -12502,6 +12502,110 @@ paths:
       tags: *ref_27
       security:
         - bearer: []
+  /policy-statistics/{policyId}/import/file:
+    post:
+      operationId: PolicyStatisticsApi_importStatisticDefinition
+      summary: Imports new statistic definition from a zip file.
+      description: >-
+        Imports new statistic definition from the provided zip file into the
+        local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing statistic definition to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /policy-statistics/{definitionId}/export/file:
+    get:
+      operationId: PolicyStatisticsApi_exportStatisticDefinition
+      summary: Returns a zip file containing statistic definition.
+      description: Returns a zip file containing statistic definition.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
+  /policy-statistics/import/file/preview:
+    post:
+      operationId: PolicyStatisticsApi_previewStatisticDefinition
+      summary: Imports a zip file containing statistic definition.
+      description: Imports a zip file containing statistic definition.
+      parameters: []
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Statistic definition preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: []
   /schema-rules:
     post:
       operationId: SchemaRulesApi_createSchemaRule
@@ -12810,6 +12914,108 @@ paths:
       responses:
         '200':
           description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: []
+  /schema-rules/{policyId}/import/file:
+    post:
+      operationId: SchemaRulesApi_importSchemaRule
+      summary: Imports new rules from a zip file.
+      description: Imports new rules from the provided zip file into the local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing rules to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: []
+  /schema-rules/{ruleId}/export/file:
+    get:
+      operationId: SchemaRulesApi_exportSchemaRule
+      summary: Returns a zip file containing rules.
+      description: Returns a zip file containing rules.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: []
+  /schema-rules/import/file/preview:
+    post:
+      operationId: SchemaRulesApi_previewSchemaRule
+      summary: Imports a zip file containing rules.
+      description: Imports a zip file containing rules.
+      parameters: []
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Schema rule preview.
           content:
             application/json:
               schema:
