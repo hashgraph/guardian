@@ -36,7 +36,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
 
 
     it("Associate and disassociate the user with the provided Hedera token", { tags: ['smoke'] }, () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: 'GET',
                 url: API.ApiServer + 'tokens',

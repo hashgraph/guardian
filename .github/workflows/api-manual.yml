@@ -49,36 +49,40 @@ jobs:
 
             - name: Build packages
               run: |
-                  pushd interfaces
-                  yarn run build
-                  popd
-                  pushd common
-                  yarn run build
-                  popd
-                  pushd notification-service
-                  yarn run build
-                  popd
-                  pushd logger-service
-                  yarn run build
-                  popd
-                  pushd auth-service
-                  yarn run build
-                  popd
-                  pushd queue-service
-                  yarn run build
-                  popd
-                  pushd guardian-service
-                  yarn run build
-                  popd
-                  pushd policy-service
-                  yarn run build
-                  popd
-                  pushd worker-service
-                  yarn run build
-                  popd
-                  pushd api-gateway
-                  yarn run build
-                  popd
+                yarn
+                pushd interfaces
+                yarn run build
+                popd
+                pushd common
+                yarn run build
+                popd
+                pushd logger-service
+                yarn run build
+                popd
+                pushd notification-service
+                yarn run build
+                popd
+                pushd frontend
+                npm install
+                npm run build
+                npm run build:prod
+                npm run build:demo
+                popd
+                pushd auth-service
+                yarn run build
+                popd
+                pushd policy-service
+                yarn run build
+                popd
+                pushd guardian-service
+                yarn run build
+                popd
+                pushd worker-service
+                yarn run build
+                popd
+                pushd api-gateway
+                yarn run build
+                popd
 
             - name: Start NatsMQ
               uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
