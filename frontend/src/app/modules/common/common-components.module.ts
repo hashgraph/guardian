@@ -36,6 +36,9 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
+import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { TabViewModule } from 'primeng/tabview';
 
 @NgModule({
     declarations: [
@@ -62,7 +65,8 @@ import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-b
         StatusDropdown,
         CustomCustomDialogComponent,
         TreeGraphComponent,
-        GuardianSwitchButton
+        GuardianSwitchButton,
+        ImportEntityDialog
     ],
     imports: [
         CommonModule,
@@ -77,10 +81,13 @@ import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-b
         DropdownModule,
         ProgressBarModule,
         ButtonModule,
+        TabViewModule,
+        DynamicDialogModule,
         AngularSvgIconModule.forRoot()
     ],
     providers: [
         provideNgxMask(),
+        DialogService
     ],
     exports: [
         DatetimePicker,
@@ -106,7 +113,8 @@ import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-b
         StatusDropdown,
         CustomCustomDialogComponent,
         TreeGraphComponent,
-        GuardianSwitchButton
+        GuardianSwitchButton,
+        ImportEntityDialog
     ]
 })
 export class CommonComponentsModule { }

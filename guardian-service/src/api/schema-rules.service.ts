@@ -1,7 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, SchemaRule, SchemaRuleImportExport } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { getSchemaRuleData, publishRuleConfig, validateRuleConfig } from './helpers/schema-rules-helpers.js';
+import { getSchemaRuleData, publishRuleConfig } from './helpers/schema-rules-helpers.js';
 
 /**
  * Connect to the message broker methods of working with schema rules.
@@ -41,7 +41,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 rule.policyTopicId = policy.topicId;
                 rule.policyInstanceTopicId = policy.instanceTopicId;
                 rule.status = EntityStatus.DRAFT;
-                rule.config = validateRuleConfig(rule.config);
+                rule.config = SchemaRuleImportExport.validateRuleConfig(rule.config);
                 const row = await DatabaseServer.createSchemaRule(rule);
                 return new MessageResponse(row);
             } catch (error) {
@@ -193,7 +193,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
 
                 item.name = rule.name;
                 item.description = rule.description;
-                item.config = validateRuleConfig(rule.config);
+                item.config = SchemaRuleImportExport.validateRuleConfig(rule.config);
                 const result = await DatabaseServer.updateSchemaRule(item);
                 return new MessageResponse(result);
             } catch (error) {
@@ -255,7 +255,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 item.status = EntityStatus.ACTIVE;
-                item.config = validateRuleConfig(item.config);
+                item.config = SchemaRuleImportExport.validateRuleConfig(item.config);
                 item.config = publishRuleConfig(item.config);
 
                 const result = await DatabaseServer.updateSchemaRule(item);
@@ -338,6 +338,107 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                     }
                 }
                 return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Export schema rule
+     *
+     * @param {any} msg - Export schema rule parameters
+     *
+     * @returns {any} - zip file
+     */
+    ApiResponse(MessageAPI.EXPORT_SCHEMA_RULE_FILE,
+        async (msg: { ruleId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid export theme parameters');
+                }
+                const { ruleId, owner } = msg;
+
+                const item = await DatabaseServer.getSchemaRuleById(ruleId);
+                if (!(item && item.owner === owner.owner)) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const zip = await SchemaRuleImportExport.generate(item);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
+
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Import schema rule
+     *
+     * @param {any} msg - Import schema rule parameters
+     *
+     * @returns {any} - new schema rule
+     */
+    ApiResponse(MessageAPI.IMPORT_SCHEMA_RULE_FILE,
+        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+            try {
+                const { zip, policyId, owner } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const preview = await SchemaRuleImportExport.parseZipFile(Buffer.from(zip.data));
+                const { rule } = preview;
+
+                delete rule._id;
+                delete rule.id;
+                delete rule.status;
+                delete rule.owner;
+                rule.creator = owner.creator;
+                rule.owner = owner.owner;
+                rule.policyTopicId = policy.topicId;
+                rule.policyInstanceTopicId = policy.instanceTopicId;
+                rule.status = EntityStatus.DRAFT;
+                rule.config = SchemaRuleImportExport.validateRuleConfig(rule.config);
+                const row = await DatabaseServer.createSchemaRule(rule);
+
+                return new MessageResponse(row);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Preview schema rule
+     *
+     * @param {any} msg - zip file
+     *
+     * @returns {any} Preview
+     */
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA_RULE_FILE,
+        async (msg: { zip: any, owner: IOwner }) => {
+            try {
+                const { zip } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await SchemaRuleImportExport.parseZipFile(Buffer.from(zip.data));
+                const { rule } = preview;
+                return new MessageResponse(rule);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

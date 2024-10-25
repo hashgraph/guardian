@@ -605,4 +605,125 @@ export class PolicyStatisticsApi {
             await InternalException(error, this.logger);
         }
     }
+
+    /**
+     * Import statistic definition
+     */
+    @Post('/:policyId/import/file')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Imports new statistic definition from a zip file.',
+        description: 'Imports new statistic definition from the provided zip file into the local DB.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'A zip file containing statistic definition to be imported.',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: StatisticDefinitionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async importStatisticDefinition(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() zip: any
+    ): Promise<StatisticDefinitionDTO> {
+        const guardian = new Guardians();
+        try {
+            const owner = new EntityOwner(user);
+            return await guardian.importStatisticDefinition(zip, policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Export statistic definition
+     */
+    @Get('/:definitionId/export/file')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Returns a zip file containing statistic definition.',
+        description: 'Returns a zip file containing statistic definition.',
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: String,
+        description: 'Statistic Definition Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async exportStatisticDefinition(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string,
+        @Response() res: any
+    ): Promise<any> {
+        const guardian = new Guardians();
+        try {
+            const owner = new EntityOwner(user);
+            const file: any = await guardian.exportStatisticDefinition(definitionId, owner);
+            res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Preview statistic definition
+     */
+    @Post('/import/file/preview')
+    @Auth(Permissions.STATISTICS_STATISTIC_CREATE)
+    @ApiOperation({
+        summary: 'Imports a zip file containing statistic definition.',
+        description: 'Imports a zip file containing statistic definition.',
+    })
+    @ApiBody({
+        description: 'File.',
+    })
+    @ApiOkResponse({
+        description: 'Statistic definition preview.',
+        type: StatisticDefinitionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(StatisticDefinitionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async previewStatisticDefinition(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.previewStatisticDefinition(body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
 }

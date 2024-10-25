@@ -3030,22 +3030,33 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS, { definitionId, assessmentId, owner });
     }
 
+    /**
+     * Load statistic definition file for import
+     * @param zip
+     * @param owner
+     */
+    public async importStatisticDefinition(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_STATISTIC_DEFINITION_FILE, { zip, policyId, owner });
+    }
 
+    /**
+     * Get statistic definition export file
+     * @param definitionId
+     * @param owner
+     */
+    public async exportStatisticDefinition(definitionId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_STATISTIC_DEFINITION_FILE, { definitionId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Get statistic definition info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewStatisticDefinition(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_STATISTIC_DEFINITION_FILE, { zip, owner });
+    }
 
     /**
      * Create schema rule
@@ -3156,5 +3167,33 @@ export class Guardians extends NatsService {
       */
     public async getSchemaRuleData(options: any, owner: IOwner): Promise<StatisticDefinitionDTO> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
+    }
+
+    /**
+     * Load Schema Rule file for import
+     * @param zip
+     * @param owner
+     */
+    public async importSchemaRule(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMA_RULE_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get Schema Rule export file
+     * @param ruleId
+     * @param owner
+     */
+    public async exportSchemaRule(ruleId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_SCHEMA_RULE_FILE, { ruleId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get Schema Rule info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewSchemaRule(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
 }

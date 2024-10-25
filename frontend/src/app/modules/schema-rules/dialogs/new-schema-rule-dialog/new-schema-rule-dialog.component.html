@@ -1,7 +1,6 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">Create New</div>
-        <div *ngIf="policy" class="header-item">{{policy.name}}</div>
+        <div class="header-text">{{title}}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
@@ -38,10 +37,6 @@
                             <span class="guardian-dropdown-label">Policy</span> 
                             <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
                         </div>
-                        <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
-                            <span class="guardian-dropdown-label"></span> 
-                            <span class="guardian-dropdown-item"></span>
-                        </div>
                     </ng-template>
                     <ng-template let-policy pTemplate="item">
                         <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
@@ -69,7 +64,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="dataForm.invalid">Create</button>
+                [disabled]="dataForm.invalid">{{action}}</button>
         </div>
     </div>
 </div>

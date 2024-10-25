@@ -2,11 +2,12 @@ import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@
 import { Subscription } from 'rxjs';
 import { RecordService } from 'src/app/services/record.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { ImportFileDialog } from '../../dialogs/import-file-dialog/import-file-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
 import { Router } from '@angular/router';
 import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-record-controller',
@@ -38,9 +39,11 @@ export class RecordControllerComponent implements OnInit {
 
     constructor(
         private wsService: WebSocketService,
+        private dialogService: DialogService,
         private recordService: RecordService,
         private router: Router,
         private dialog: MatDialog
+
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
         this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
@@ -139,21 +142,20 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public runRecord() {
-        const dialogRef = this.dialog.open(ImportFileDialog, {
-            width: '500px',
-            autoFocus: false,
-            disableClose: true,
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
             data: {
-                fileExtension: 'record',
-                label: 'Import record .record file'
+                type: ImportEntityType.Record
             }
         });
-        dialogRef.afterClosed().subscribe(async (arrayBuffer) => {
-            if (arrayBuffer) {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
                 this.loading = true;
                 this.recordItems = [];
                 this.overlay = null;
-                this.recordService.runRecord(this.policyId, arrayBuffer).subscribe((result) => {
+                this.recordService.runRecord(this.policyId, result.data).subscribe((result) => {
                     this.running = !!result;
                     this.updateActive();
                     this.loading = false;

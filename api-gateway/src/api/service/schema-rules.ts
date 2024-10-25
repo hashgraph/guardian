@@ -420,4 +420,125 @@ export class SchemaRulesApi {
             await InternalException(error, this.logger);
         }
     }
+
+    /**
+     * Import rules
+     */
+    @Post('/:policyId/import/file')
+    @Auth(Permissions.SCHEMAS_RULE_CREATE)
+    @ApiOperation({
+        summary: 'Imports new rules from a zip file.',
+        description: 'Imports new rules from the provided zip file into the local DB.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'A zip file containing rules to be imported.',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: SchemaRuleDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async importSchemaRule(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() zip: any
+    ): Promise<SchemaRuleDTO> {
+        const guardian = new Guardians();
+        try {
+            const owner = new EntityOwner(user);
+            return await guardian.importSchemaRule(zip, policyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Export rules
+     */
+    @Get('/:ruleId/export/file')
+    @Auth(Permissions.SCHEMAS_RULE_READ)
+    @ApiOperation({
+        summary: 'Returns a zip file containing rules.',
+        description: 'Returns a zip file containing rules.',
+    })
+    @ApiParam({
+        name: 'ruleId',
+        type: String,
+        description: 'Schema Rule Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation. Response zip file.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async exportSchemaRule(
+        @AuthUser() user: IAuthUser,
+        @Param('ruleId') ruleId: string,
+        @Response() res: any
+    ): Promise<any> {
+        const guardian = new Guardians();
+        try {
+            const owner = new EntityOwner(user);
+            const file: any = await guardian.exportSchemaRule(ruleId, owner);
+            res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Preview schema rule
+     */
+    @Post('/import/file/preview')
+    @Auth(Permissions.SCHEMAS_RULE_READ)
+    @ApiOperation({
+        summary: 'Imports a zip file containing rules.',
+        description: 'Imports a zip file containing rules.',
+    })
+    @ApiBody({
+        description: 'File.',
+    })
+    @ApiOkResponse({
+        description: 'Schema rule preview.',
+        type: SchemaRuleDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(SchemaRuleDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaRule(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.previewSchemaRule(body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
 }

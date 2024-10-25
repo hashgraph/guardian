@@ -59,6 +59,7 @@
         </div>
         <div class="guardian-user-page-buttons">
             <button 
+                *ngIf="user.SCHEMAS_RULE_CREATE"
                 (click)="onCreate()" 
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -68,6 +69,19 @@
                     </svg-icon>
                 </div>
                 <div class="guardian-button-label">Create New</div>
+            </button>
+
+            <button 
+                *ngIf="user.SCHEMAS_RULE_CREATE"
+                (click)="onImport()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/import.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Import</div>
             </button>
         </div>
     </div>
@@ -102,6 +116,16 @@
                                     [showDelay]="1000"
                                     [ngSwitch]="column.id"
                                 >
+                                    <ng-container *ngSwitchCase="'status'">
+                                        <guardian-switch-button
+                                            [(value)]="row.status"
+                                            onValue="ACTIVE" 
+                                            offValue="DRAFT"
+                                            onLabel="Active" 
+                                            offLabel="Inactive"
+                                            (onChange)="onActive($event, row)"
+                                        ></guardian-switch-button>
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'edit'">
                                         <div 
                                             class="guardian-icon-button big" 
@@ -113,15 +137,16 @@
                                             </svg-icon>
                                         </div>
                                     </ng-container>
-                                    <ng-container *ngSwitchCase="'status'">
-                                        <guardian-switch-button
-                                            [(value)]="row.status"
-                                            onValue="ACTIVE" 
-                                            offValue="DRAFT"
-                                            onLabel="Active" 
-                                            offLabel="Inactive"
-                                            (onChange)="onActive($event, row)"
-                                        ></guardian-switch-button>
+                                    <ng-container *ngSwitchCase="'export'">
+                                        <div 
+                                            class="guardian-icon-button big" 
+                                            (click)="onExport(row)">
+                                            <svg-icon 
+                                                class="icon-btn"
+                                                src="/assets/images/icons/export.svg"
+                                                [svgClass]="'icon-color-primary'">
+                                            </svg-icon>
+                                        </div>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 

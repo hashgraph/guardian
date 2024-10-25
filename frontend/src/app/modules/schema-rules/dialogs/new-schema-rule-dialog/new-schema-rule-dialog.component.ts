@@ -16,21 +16,34 @@ export class NewSchemaRuleDialog {
         description: new FormControl<string>(''),
         policy: new FormControl<any>(null, Validators.required)
     });
+    public title: string;
+    public action: string;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
     ) {
+        this.title = this.config.data?.title || '';
+        this.action = this.config.data?.action || '';
         this.policies = this.config.data?.policies || [];
         this.policies = this.policies.filter((p) => p.instanceTopicId);
+        const rule = this.config.data?.rule;
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
-        this.dataForm.setValue({
-            name: '',
-            description: '',
-            policy: this.policy
-        })
+        if(rule) {
+            this.dataForm.setValue({
+                name: rule.name || '',
+                description: rule.description || '',
+                policy: this.policy
+            })
+        } else {
+            this.dataForm.setValue({
+                name: '',
+                description: '',
+                policy: this.policy
+            })
+        }
     }
 
     public get currentPolicy(): any {

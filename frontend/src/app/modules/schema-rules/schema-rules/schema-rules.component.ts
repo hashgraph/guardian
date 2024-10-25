@@ -8,6 +8,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { NewSchemaRuleDialog } from '../dialogs/new-schema-rule-dialog/new-schema-rule-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 interface IColumn {
     id: string;
@@ -74,6 +75,12 @@ export class SchemaRulesComponent implements OnInit {
             size: '56',
             tooltip: false
         }, {
+            id: 'export',
+            title: '',
+            type: 'text',
+            size: '56',
+            tooltip: false
+        }, {
             id: 'delete',
             title: '',
             type: 'text',
@@ -109,7 +116,7 @@ export class SchemaRulesComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
-            this.allPolicies = this.allPolicies.filter((p)=> p.status === PolicyType.PUBLISH);
+            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
                 instanceTopicId: null
@@ -188,12 +195,13 @@ export class SchemaRulesComponent implements OnInit {
     public onCreate() {
         const dialogRef = this.dialogService.open(NewSchemaRuleDialog, {
             showHeader: false,
-            header: 'Create New',
-            width: '640px',
+            width: '720px',
             styleClass: 'guardian-dialog',
             data: {
+                title: 'Create New',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
+                action: 'Create'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -212,6 +220,72 @@ export class SchemaRulesComponent implements OnInit {
 
     public onEdit(item: any) {
         this.router.navigate(['/schema-rule', item.id]);
+    }
+
+    public onImport() {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.SchemaRule,
+            }
+        });
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
+                this.importDetails(result);
+            }
+        });
+    }
+
+    private importDetails(result: IImportEntityResult) {
+        const { type, data, rule } = result;
+        const dialogRef = this.dialogService.open(NewSchemaRuleDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Preview',
+                action: 'Import',
+                policies: this.allPolicies,
+                policy: this.currentPolicy,
+                rule
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result && result.policyId) {
+                this.loading = true;
+                this.schemaRulesService
+                    .import(result.policyId, data)
+                    .subscribe((newItem) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onExport(item: any) {
+        this.loading = true;
+        this.schemaRulesService.export(item.id)
+            .subscribe((fileBuffer) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-rules'
+                    })
+                );
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.rules`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (error) => {
+                this.loading = false;
+            });
     }
 
     public onDelete(item: any) {
