@@ -12910,14 +12910,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SchemaRuleDTO'
+              $ref: '#/components/schemas/SchemaRuleDataDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaRuleDTO'
+                $ref: '#/components/schemas/SchemaRuleDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -16436,11 +16436,11 @@ components:
       type: object
       properties:
         target:
-          $ref: '#/components/schemas/VpDocumentDTO'
+          $ref: '#/components/schemas/VcDocumentDTO'
         relationships:
           type: array
           items:
-            $ref: '#/components/schemas/VpDocumentDTO'
+            $ref: '#/components/schemas/VcDocumentDTO'
     SchemaRuleDTO:
       type: object
       properties:
@@ -16488,7 +16488,24 @@ components:
         - name
     SchemaRuleRelationshipsDTO:
       type: object
-      properties: {}
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    SchemaRuleDataDTO:
+      type: object
+      properties:
+        rules:
+          $ref: '#/components/schemas/SchemaRuleDTO'
+        document:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
     WorkersTasksDTO:
       type: object
       properties:
