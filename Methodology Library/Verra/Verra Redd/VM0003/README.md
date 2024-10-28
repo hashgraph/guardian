@@ -24,6 +24,10 @@ Verra VM0003 is a carbon offset methodology titled "Improved Forest Management (
 8. **Continuous Monitoring**: Continuously monitor the project's impact according to the established methodology and guidelines, updating the project documentation and reporting to Verra as required.
 9. **Ongoing Validation and Verification**: Engage with a VVB for periodic validation and verification as per Verra’s requirements and the project's monitoring plan to ensure ongoing compliance and to validate the emission reductions achieved over time.
 
+## Demo Video
+
+[Demonstration Video (YouTube Link)](https://youtu.be/-BjsMIABkVs)
+
 ## Policy Guide
 
 This policy can be imported via Github (.policy file) or IPFS timestamp.
