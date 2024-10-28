@@ -71,6 +71,7 @@ interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | Untype
     displayRequired?: boolean;
     readonly?: boolean;
     list?: IFieldIndexControl<any>[];
+    open: boolean;
 }
 
 interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
@@ -78,8 +79,10 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     name: string;
     preset: any,
     index: string;
+    index2: string;
     control: T;
     fileUploading?: boolean;
+    open: boolean
 }
 
 /**
@@ -114,7 +117,7 @@ export class SchemaFormComponent implements OnInit {
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
     @Input() rules?: SchemaRuleValidateResult;
-
+    @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
@@ -422,7 +425,8 @@ export class SchemaFormComponent implements OnInit {
             field,
             path: field.path || '',
             fullPath: field.fullPath || '',
-            control: null
+            control: null,
+            open: true
         }
 
         item.preset = field.default;
@@ -533,6 +537,11 @@ export class SchemaFormComponent implements OnInit {
         const listItem = this.createListControl(item);
         if (item.list) {
             item.list.push(listItem);
+            for (let index = 0; index < item.list.length; index++) {
+                const element = item.list[index];
+                element.index = String(index);
+                element.index2 = String(index + 1);
+            }
         }
         setTimeout(() => {
             if (item.control) {
@@ -544,12 +553,15 @@ export class SchemaFormComponent implements OnInit {
     }
 
     private createListControl(item: IFieldControl<any>, preset?: any): IFieldIndexControl<any> {
+        const count = item.list?.length || 0;
         const listItem: IFieldIndexControl<any> = {
             id: GenerateUUIDv4(),
             name: item.name,
             preset: preset,
-            index: String(item.list?.length),
-            control: null
+            index: String(count),
+            index2: String(count + 1),
+            control: null,
+            open: true
         }
         if (item.isRef) {
             listItem.control = this.createSubSchemaControl(item);
@@ -562,7 +574,10 @@ export class SchemaFormComponent implements OnInit {
         return listItem;
     }
 
-    public removeGroup(item: IFieldControl<any>) {
+    public removeGroup(item: IFieldControl<any>, event: any) {
+        if (event?.stopPropagation) {
+            event.stopPropagation();
+        }
         item.control = null;
         this.changeDetectorRef.detectChanges();
         this.options?.removeControl(item.name);
@@ -570,13 +585,17 @@ export class SchemaFormComponent implements OnInit {
         this.change.emit();
     }
 
-    public removeItem(item: any, listItem: any) {
+    public removeItem(item: any, listItem: any, event: any) {
+        if (event?.stopPropagation) {
+            event.stopPropagation();
+        }
         const index = item.list.indexOf(listItem);
         item.control.removeAt(index);
         item.list.splice(index, 1);
         for (let index = 0; index < item.list.length; index++) {
             const element = item.list[index];
             element.index = String(index);
+            element.index2 = String(index + 1);
         }
         this.options?.updateValueAndValidity();
         this.change.emit();

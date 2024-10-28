@@ -85,15 +85,25 @@ form {
 .restore-data {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
     color: var(--primary-color);
-    margin-top: 10px;
-    margin-left: 0px;
-    margin-right: 30px;
-    padding-bottom: 15px;
-    padding-left: 15px;
-    border-bottom: 1px solid #c8c8c8;
-    margin-bottom: 10px;
+    background: #F9FAFC;
+    border: 1px solid #C4D0E1;
+    height: 65px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+
+    svg-icon {
+        height: 30px;
+        padding: 2px;
+        width: 36px;
+    }
+
+    b {
+        height: 30px;
+        line-height: 30px;
+        padding-right: 16px;
+    }
 
     button {
         height: 30px;

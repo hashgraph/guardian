@@ -12,15 +12,18 @@
     </div>
     <div class="dialog-body-container">
         <div *ngIf="restoreData" class="restore-data">
-            <mat-icon>info</mat-icon>
+            <svg-icon class="svg-icon"
+                src="/assets/images/icons/info.svg"
+                svgClass="icon-color-primary">
+            </svg-icon>
             <b>There is some data to restore. You can restore latest values:</b>
             <button 
                 (click)="onRestoreClick()"
-                class="guardian-button guardian-button-secondary">
+                class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
                     <svg-icon class="icon-btn svg-icon"
                         src="/assets/images/icons/16/refresh.svg"
-                        svgClass="icon-color-primary">
+                        svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
                 <div class="guardian-button-label">Restore Values</div>
@@ -28,15 +31,18 @@
         </div>
 
         <div *ngIf="dryRun" class="restore-data">
-            <mat-icon>info</mat-icon>
+            <svg-icon class="svg-icon"
+                src="/assets/images/icons/info.svg"
+                svgClass="icon-color-primary">
+            </svg-icon>
             <b>There is dry run mode. You can fill document with test data:</b>
             <button 
                 (click)="onDryRun()"
-                class="guardian-button guardian-button-secondary">
+                class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
                     <svg-icon class="icon-btn svg-icon"
                         src="/assets/images/icons/16/refresh.svg"
-                        svgClass="icon-color-primary">
+                        svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
                 <div class="guardian-button-label">Test</div>

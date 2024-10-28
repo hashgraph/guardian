@@ -272,7 +272,7 @@ export class RequestDocumentBlockComponent
 
         const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: this
         });
