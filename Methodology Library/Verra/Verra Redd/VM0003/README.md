@@ -13,10 +13,6 @@ Verra VM0003 is a carbon offset methodology titled "Improved Forest Management (
 
 ![Workflow Diagram](https://github.com/user-attachments/assets/f3bd6e89-1381-476e-881a-9f908522bbe3)
 
-## Demo Video
-
-[Demonstration Video (YouTube Link)](https://youtu.be/-BjsMIABkVs)
-
 1. **Project Proponent Submission**: The project proponent begins by submitting the Project Design (PD) to Verra. This document includes ex-ante estimates of monitoring parameters and detailed project information demonstrating compliance with VCS program requirements specific to VM0003.
 2. **Verra's Initial Review**: Verra reviews the submitted Project Design and adds the project to the Project Pipeline.
 3. **Validation by VVB**: A Validation and Verification Body (VVB) assesses the PD, focusing on the alignment with VCS requirements, and provides a Validation Report.
@@ -26,6 +22,10 @@ Verra VM0003 is a carbon offset methodology titled "Improved Forest Management (
 7. **Issuance Request Review and VCUs Issuance**: Verra reviews the issuance request. Upon approval, Verified Carbon Units (VCUs) are issued to the Project Proponent's account in the registry.
 8. **Continuous Monitoring**: Continuously monitor the project's impact according to the established methodology and guidelines, updating the project documentation and reporting to Verra as required.
 9. **Ongoing Validation and Verification**: Engage with a VVB for periodic validation and verification as per Verra’s requirements and the project's monitoring plan to ensure ongoing compliance and to validate the emission reductions achieved over time.
+
+## Demo Video
+
+[Demonstration Video (YouTube Link)](https://youtu.be/-BjsMIABkVs)
 
 ## Policy Guide
 
