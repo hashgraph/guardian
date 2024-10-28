@@ -308,7 +308,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public openDocument(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 document: element,

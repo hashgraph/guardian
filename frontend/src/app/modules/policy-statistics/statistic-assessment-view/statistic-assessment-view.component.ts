@@ -309,7 +309,7 @@ export class StatisticAssessmentViewComponent implements OnInit {
     public openVCDocument(document: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,

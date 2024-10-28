@@ -783,7 +783,7 @@ export class MessagesReportBlockComponent implements OnInit {
         if (message.type === 'DID-Document') {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
                 showHeader: false,
-                width: '850px',
+                width: '1000px',
                 styleClass: 'guardian-dialog',
                 data: {
                     row: null,
@@ -798,7 +798,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
             const dialogRef = this.dialogService.open(VCViewerDialog, {
                 showHeader: false,
-                width: '850px',
+                width: '1000px',
                 styleClass: 'guardian-dialog',
                 data: {
                     row: null,

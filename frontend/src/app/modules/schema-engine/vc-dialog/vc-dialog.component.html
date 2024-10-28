@@ -9,14 +9,31 @@
 <div class="dialog-body">
     <div class="context">
         <div class="view-dialog-bar">
-            <app-compare-btn *ngIf="!dryRun && id" [id]="id" type="document"  class="compare-container"></app-compare-btn>
-            <div *ngIf="(isVcDocument || isVpDocument) && toggle" class="toggle-container">
-                <label class="switch">
-                    <input [(ngModel)]="viewDocument" type="checkbox">
-                    <span class="slider round"></span>
-                </label>
-                <span class="slider-text">View as Form</span>
-            </div>
+            <p-selectButton 
+                *ngIf="(isVcDocument || isVpDocument) && toggle"
+                class="guardian-select-button"
+                [options]="viewDocumentOptions" 
+                [(ngModel)]="viewDocument" 
+                optionLabel="label"
+                optionValue="value"
+                [unselectable]="true"
+            >
+                <ng-template let-item pTemplate>
+                    <div class="guardian-select-button-item">
+                        <svg-icon 
+                            class="svg-icon-16"
+                            src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
+                        <span>{{item.label}}</span>
+                    </div>
+                </ng-template>
+            </p-selectButton>
+
+            <app-compare-btn 
+                *ngIf="!dryRun && id" 
+                [id]="id" 
+                type="document" 
+                class="compare-container"
+                buttonStyle="guardian"></app-compare-btn>
         </div>
         <div class="view-dialog-content">
             <ng-container *ngIf="viewDocument">

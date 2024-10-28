@@ -145,7 +145,7 @@ export class TrustChainComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
@@ -164,7 +164,7 @@ export class TrustChainComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
@@ -183,7 +183,7 @@ export class TrustChainComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.id,

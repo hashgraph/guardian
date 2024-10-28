@@ -2,8 +2,16 @@ form {
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: 400px;
+    // min-height: 400px;
     position: relative;
+
+    .guardian-accordion-container {
+        margin-bottom: 16px;
+
+        &:last-child {
+            margin-bottom: 0px;
+        }
+    }
 
     .group-header,
     .group-multiple-header {
@@ -12,13 +20,13 @@ form {
         font-weight: 600;
         line-height: 20px;
         text-align: left;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
         padding-left: 2px;
-        display: none;
+        color: #848FA9;
     }
 
     .schema-form-field-array-group {
-       .form-field-array-item {
+        .form-field-array-item {
             display: block;
             width: 100%;
             position: relative;
@@ -36,18 +44,6 @@ form {
                 margin-bottom: 24px;
                 padding-left: 2px;
                 display: block;
-            }
-        }
-
-        &[multiple=true] {
-            .item-index {
-                display: inline-block;
-            }
-        }
-
-        &[multiple=false] {
-            .item-index {
-                display: none;
             }
         }
     }
@@ -179,4 +175,8 @@ form {
             width: 100%;
         }
     }
+}
+
+.guardian-accordion-container::ng-deep .guardian-accordion-container {
+    background: #F9FAFC;
 }

@@ -234,7 +234,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         } else {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
                 showHeader: false,
-                width: '850px',
+                width: '1000px',
                 styleClass: 'guardian-dialog',
                 data: {
                     id: row.id,
@@ -382,7 +382,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: row.id,

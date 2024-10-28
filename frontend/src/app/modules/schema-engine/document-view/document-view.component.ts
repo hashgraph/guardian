@@ -34,7 +34,7 @@ export class DocumentViewComponent implements OnInit {
     public subjects: any[] = [];
     public proofJson!: string;
     public evidenceJson!: string;
-    public pageEvent?: PageEvent;
+    public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
     public rules: SchemaRuleValidators;
@@ -156,20 +156,34 @@ export class DocumentViewComponent implements OnInit {
         });
     }
 
-    getItemsPage(items: any[], pageEvent?: PageEvent) {
+    getItemsPage(items: any[]) {
         const result = [];
-        if (!pageEvent) {
-            for (let i = 0; i < this.pageSize && i < items.length; i++) {
-                result.push(items[i]);
-            }
-            return result;
-        }
-
-        const startIndex = pageEvent.pageIndex * pageEvent.pageSize;
-        const endIndex = startIndex + pageEvent.pageSize;
+        const startIndex = this.pageIndex * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
         for (let i = startIndex; i < endIndex && i < items.length; i++) {
             result.push(items[i]);
         }
         return result;
+    }
+
+    public getCredentialSubject(item: any): string {
+        if (this.subjects.length > 1) {
+            return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
+        } else {
+            return 'Credential Subject';
+        }
+    }
+
+    public getVerifiableCredential(item: any): string {
+        if (this.subjects.length > 1) {
+            return `Verifiable Credential #${this.subjects.indexOf(item) + 1}`;
+        } else {
+            return 'Verifiable Credential';
+        }
+    }
+
+    public onPage(event: any): void {
+        this.pageIndex = event.pageIndex;
+        this.pageSize = event.pageSize;
     }
 }

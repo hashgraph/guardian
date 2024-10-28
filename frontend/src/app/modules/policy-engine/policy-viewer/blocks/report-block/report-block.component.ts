@@ -237,7 +237,7 @@ export class ReportBlockComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
@@ -256,7 +256,7 @@ export class ReportBlockComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
@@ -275,7 +275,7 @@ export class ReportBlockComponent implements OnInit {
         const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 row: item,

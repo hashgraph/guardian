@@ -26,6 +26,10 @@ export class VCViewerDialog {
     public schema: any;
     public dryRun: boolean = false;
     public getByUser: boolean = false;
+    public viewDocumentOptions = [
+        { label: 'Form View', value: true, icon: 'file' },
+        { label: 'Code View', value: false, icon: 'number' }
+    ];
 
     public policyId?: string;
     public documentId?: string;

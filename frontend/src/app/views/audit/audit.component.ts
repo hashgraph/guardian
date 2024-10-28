@@ -142,7 +142,7 @@ export class AuditComponent implements OnInit {
     openVP(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: element.id,

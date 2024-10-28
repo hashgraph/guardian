@@ -40,6 +40,8 @@ import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
 import { TooltipModule } from 'primeng/tooltip';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
     declarations: [
@@ -85,6 +87,8 @@ import { TooltipModule } from 'primeng/tooltip';
         CalendarModule,
         TooltipModule,
         RadioButtonModule,
+        SelectButtonModule,
+        AccordionModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [

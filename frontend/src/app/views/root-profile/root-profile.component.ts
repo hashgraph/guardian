@@ -593,7 +593,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
@@ -612,7 +612,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
-            width: '850px',
+            width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
                 id: document.id,

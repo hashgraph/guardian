@@ -26,7 +26,7 @@
     }
 
     .view-dialog-content {
-        max-height: calc(80vh - 24px - 104px - 64px);
+        max-height: calc(90vh - 280px);
         overflow-y: auto;
         padding-right: 8px;
 
@@ -41,7 +41,7 @@
             border: 1px solid #eee;
             border-radius: 4px;
             padding: 10px;
-            max-height: calc(80vh - 24px - 104px - 64px);
+            max-height: calc(90vh - 280px);
             box-sizing: border-box;
         }
     }
@@ -61,4 +61,14 @@
 .close-icon-color {
     fill: #848FA9;
     color: #848FA9;
+}
+
+@media (max-width: 810px) {
+    .view-dialog-content {
+        max-height: calc(100vh - 255px);
+
+        .json {
+            max-height: calc(100vh - 265px);
+        }
+    }
 }
