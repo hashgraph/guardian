@@ -13,6 +13,9 @@ Verra VM0003 is a carbon offset methodology titled "Improved Forest Management (
 
 ![Workflow Diagram](https://github.com/user-attachments/assets/f3bd6e89-1381-476e-881a-9f908522bbe3)
 
+## Demo Video
+
+[Demonstration Video (YouTube Link)](https://youtu.be/-BjsMIABkVs)
 
 1. **Project Proponent Submission**: The project proponent begins by submitting the Project Design (PD) to Verra. This document includes ex-ante estimates of monitoring parameters and detailed project information demonstrating compliance with VCS program requirements specific to VM0003.
 2. **Verra's Initial Review**: Verra reviews the submitted Project Design and adds the project to the Project Pipeline.
