@@ -40,7 +40,8 @@ import {
     StatisticAssessmentRelationshipsDTO,
     StatisticDefinitionRelationshipsDTO,
     SchemaRuleDTO,
-    SchemaRuleRelationshipsDTO
+    SchemaRuleRelationshipsDTO,
+    SchemaRuleDataDTO
 } from '#middlewares';
 
 /**
@@ -3141,7 +3142,7 @@ export class Guardians extends NatsService {
      *
      * @returns Operation Success
      */
-    public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+    public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
     }
 
@@ -3153,19 +3154,19 @@ export class Guardians extends NatsService {
      *
      * @returns Operation Success
      */
-    public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+    public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { ruleId, owner });
     }
 
     /**
-      * Get Schema Rule Data
-      *
-      * @param options
-      * @param owner
-      *
-      * @returns Operation Success
-      */
-    public async getSchemaRuleData(options: any, owner: IOwner): Promise<StatisticDefinitionDTO> {
+     * Get Schema Rule Data
+     *
+     * @param options
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getSchemaRuleData(options: any, owner: IOwner): Promise<SchemaRuleDataDTO> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
     }
 

@@ -79,7 +79,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Config
-     * 
+     *
      * @param data config
      */
     public static validateConfig(data?: IStatisticConfig): IStatisticConfig {
@@ -94,7 +94,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Variables
-     * 
+     *
      * @param data Variables
      */
     private static validateVariables(data?: IVariableData[]): IVariableData[] {
@@ -109,7 +109,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Variable
-     * 
+     *
      * @param data Variable
      */
     private static validateVariable(data?: IVariableData): IVariableData {
@@ -131,7 +131,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Scores
-     * 
+     *
      * @param data Scores
      */
     private static validateScores(data?: IScoreData[]): IScoreData[] {
@@ -146,7 +146,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Score
-     * 
+     *
      * @param data Score
      */
     private static validateScore(data?: IScoreData): IScoreData {
@@ -162,7 +162,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Formulas
-     * 
+     *
      * @param data Formulas
      */
     private static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
@@ -177,7 +177,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Formula
-     * 
+     *
      * @param data Formula
      */
     private static validateFormula(data?: IFormulaData): IFormulaData {
@@ -192,7 +192,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Rules
-     * 
+     *
      * @param data Rules
      */
     private static validateRules(data?: IRuleData[]): IRuleData[] {
@@ -207,7 +207,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Rule
-     * 
+     *
      * @param data Rule
      */
     private static validateRule(data?: IRuleData): IRuleData {
@@ -221,7 +221,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate ScoreOptions
-     * 
+     *
      * @param data ScoreOptions
      */
     private static validateScoreOptions(data: IScoreOption[]): IScoreOption[] {
@@ -236,7 +236,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate ScoreOption
-     * 
+     *
      * @param data ScoreOption
      */
     private static validateScoreOption(data: IScoreOption): IScoreOption {
@@ -249,7 +249,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Boolean
-     * 
+     *
      * @param data Boolean
      */
     private static validateBoolean(data: string | boolean): boolean {
@@ -258,7 +258,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate Strings
-     * 
+     *
      * @param data Strings
      */
     private static validateStrings(data?: string[]): string[] {
@@ -273,7 +273,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate String
-     * 
+     *
      * @param data String
      */
     private static validateString(data: string): string {
@@ -286,7 +286,7 @@ export class PolicyStatisticImportExport {
 
     /**
      * Validate StringOrNumber
-     * 
+     *
      * @param data StringOrNumber
      */
     private static validateStringOrNumber(data: string | number): string | number {

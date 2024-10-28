@@ -91,7 +91,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate Config
-     * 
+     *
      * @param data config
      */
     public static validateRuleConfig(data?: ISchemaRulesConfig): ISchemaRulesConfig {
@@ -103,7 +103,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate config variables
-     * 
+     *
      * @param data variables
      */
     private static validateVariables(data?: ISchemaRuleData[]): ISchemaRuleData[] {
@@ -118,7 +118,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate config variable
-     * 
+     *
      * @param data variable
      */
     private static validateVariable(data?: ISchemaRuleData): ISchemaRuleData {
@@ -141,7 +141,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate config rule
-     * 
+     *
      * @param data variable
      */
     private static validateRule(
@@ -161,7 +161,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate range
-     * 
+     *
      * @param data range
      */
     private static validateRangeRule(data: IRangeRuleData): IRangeRuleData {
@@ -175,7 +175,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate formula
-     * 
+     *
      * @param data formula
      */
     private static validateFormulaRule(data: IFormulaRuleData): IFormulaRuleData {
@@ -188,7 +188,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate conditions
-     * 
+     *
      * @param data condition
      */
     private static validateConditionRule(data: IConditionRuleData): IConditionRuleData {
@@ -201,7 +201,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate condition
-     * 
+     *
      * @param data condition
      */
     private static validateCondition(
@@ -222,7 +222,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate IfCondition
-     * 
+     *
      * @param data IfCondition
      */
     private static validateIfCondition(data: IConditionIfData): IConditionIfData {
@@ -236,7 +236,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate ElseCondition
-     * 
+     *
      * @param data ElseCondition
      */
     private static validateElseCondition(data: IConditionElseData): IConditionElseData {
@@ -249,7 +249,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate IfConditionValue
-     * 
+     *
      * @param data IfConditionValue
      */
     private static validateIfConditionValue(
@@ -290,7 +290,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate String
-     * 
+     *
      * @param data String
      */
     private static validateString(data: string): string {
@@ -303,7 +303,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate Boolean
-     * 
+     *
      * @param data Boolean
      */
     private static validateBoolean(data: string | boolean): boolean {
@@ -312,7 +312,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate StringOrNumber
-     * 
+     *
      * @param data StringOrNumber
      */
     private static validateStringOrNumber(data: string | number): string | number {
@@ -327,7 +327,7 @@ export class SchemaRuleImportExport {
 
     /**
      * Validate Strings
-     * 
+     *
      * @param data strings
      */
     private static validateStrings(data?: string[]): string[] {

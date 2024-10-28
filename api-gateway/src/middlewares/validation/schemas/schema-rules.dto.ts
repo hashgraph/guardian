@@ -2,6 +2,9 @@ import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
 import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
+import { PolicyDTO } from './policies.dto.js';
+import { SchemaDTO } from './schemas.dto.js';
+import { VcDocumentDTO } from './document.dto.js';
 
 export class SchemaRuleDTO {
     @ApiProperty({
@@ -102,6 +105,50 @@ export class SchemaRuleDTO {
     config?: any;
 }
 
+@ApiExtraModels(PolicyDTO, SchemaDTO)
 export class SchemaRuleRelationshipsDTO {
+    @ApiProperty({
+        type: () => PolicyDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    policy?: PolicyDTO;
 
+    @ApiProperty({
+        type: () => SchemaDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: SchemaDTO[];
+}
+
+@ApiExtraModels(SchemaRuleDTO, VcDocumentDTO)
+export class SchemaRuleDataDTO {
+    @ApiProperty({
+        type: () => SchemaRuleDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    rules?: SchemaRuleDTO;
+
+    @ApiProperty({
+        type: () => VcDocumentDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    document?: VcDocumentDTO;
+
+    @ApiProperty({
+        type: () => VcDocumentDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsObject()
+    relationships?: VcDocumentDTO;
 }

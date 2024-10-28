@@ -19,7 +19,6 @@ enum FieldRuleResult {
     Success = 'Success',
 }
 
-
 export interface SchemaRuleValidateResult {
     [path: string]: {
         status: FieldRuleResult;
