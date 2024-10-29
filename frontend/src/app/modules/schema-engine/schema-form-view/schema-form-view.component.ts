@@ -341,6 +341,10 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public isRules(item: IFieldControl) {
-        return this.rules && this.rules[item.fullPath];
+        return this.rules ? this.rules[item.fullPath] : undefined;
+    }
+
+    public isRulesStatus(item: IFieldControl) {
+        return this.rules?.[item.fullPath]?.status;
     }
 }

@@ -99,6 +99,7 @@ export class SchemaRuleConfigDialog {
     }];
 
     public variables: any[] = [];
+    public enumVariables: any[] = [];
     public enums: { [x: string]: EnumValue } = {};
     public readonly: boolean = false;
     public defaultEnum: EnumValue = new EnumValue();
@@ -169,11 +170,13 @@ export class SchemaRuleConfigDialog {
             }
         }
 
+        this.enumVariables = [];
         for (const variable of this.variables) {
-            variable.disabled = (!this.enums[variable.value] || this.enums[variable.value].default);
+            this.enumVariables.push({ 
+                ... variable,
+                disabled: (!this.enums[variable.value] || this.enums[variable.value].default)
+            });
         }
-
-
     }
 
     ngOnInit() {

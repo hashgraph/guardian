@@ -151,9 +151,13 @@
         }
 
         .schema-form {
-            max-height: calc(100vh - 400px);
+            max-height: calc(100vh - 355px);
             padding: 20px 20px 0px 0;
             margin-bottom: 0;
+
+            &[dryRun="true"] {
+                max-height: calc(100vh - 400px);
+            }
         }
 
         .delimiter {

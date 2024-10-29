@@ -33,7 +33,11 @@
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
                 
-                <div class="form-field-value" [attr.invalid-required-field]="ifRequiredField(item) && !item.control.valid">
+                <div 
+                    class="form-field-value" 
+                    [attr.invalid-required-field]="ifRequiredField(item) && !item.control.valid"
+                    [attr.rules-status]="isRulesStatus(item)"
+                >
                     <div *ngIf="isPrefix(item)" class="form-field-prefix">{{ item.unit }}</div>
 
                     <div 

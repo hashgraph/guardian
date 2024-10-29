@@ -171,6 +171,41 @@ form {
                     cursor: pointer;
                 }
             }
+
+            &[rules-status="Error"],
+            &[rules-status="Failure"] {
+                input {
+                    border-color: var(--guardian-warning-color, #DA9B22);
+                }
+                p-calendar::ng-deep {
+                    button,
+                    input {
+                        border-color: var(--guardian-warning-color, #DA9B22);
+                    }
+                }
+                p-dropdown::ng-deep {
+                    .p-dropdown {
+                        border-color: var(--guardian-warning-color, #DA9B22);
+                    }
+                }
+            }
+
+            &[rules-status="Success"] {
+                input {
+                    border-color: var(--guardian-success-color, #19BE47);
+                }
+                p-calendar::ng-deep {
+                    button,
+                    input {
+                        border-color: var(--guardian-success-color, #19BE47);
+                    }
+                }
+                p-dropdown::ng-deep {
+                    .p-dropdown {
+                        border-color: var(--guardian-warning-color, #19BE47);
+                    }
+                }
+            }
         }
 
         .form-field-array-item-container {

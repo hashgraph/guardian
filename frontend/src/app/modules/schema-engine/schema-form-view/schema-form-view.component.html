@@ -11,7 +11,7 @@
                     <b>The field type does not match the field type in the schema</b>
                 </div>
 
-                <div *ngIf="!item.isInvalidType" class="form-field-value">
+                <div *ngIf="!item.isInvalidType" class="form-field-value" [attr.rules-status]="isRulesStatus(item)">
                     <div class="form-field-prefix" *ngIf="isPrefix(item)">{{item.unit}}</div>
 
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
@@ -182,7 +182,8 @@
                                 [private-fields]="hide"
                                 [delimiter-hide]="true"
                                 [dryRun]="dryRun" 
-                                [values]="this.values && this.values[item.name]">
+                                [values]="this.values && this.values[item.name]"
+                                [rules]="rules">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
@@ -203,7 +204,8 @@
                                 [private-fields]="hide"
                                 [delimiter-hide]="true" 
                                 [dryRun]="dryRun" 
-                                [values]="listItem">
+                                [values]="listItem"
+                                [rules]="rules">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
