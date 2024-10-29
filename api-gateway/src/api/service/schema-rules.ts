@@ -510,7 +510,7 @@ export class SchemaRulesApi {
      * Preview schema rule
      */
     @Post('/import/file/preview')
-    @Auth(Permissions.SCHEMAS_RULE_READ)
+    @Auth(Permissions.SCHEMAS_RULE_CREATE)
     @ApiOperation({
         summary: 'Imports a zip file containing rules.',
         description: 'Imports a zip file containing rules.',

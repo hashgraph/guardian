@@ -10,6 +10,7 @@ export class EnumValue {
     public values: string[];
     public link: string;
     public default: boolean = true;
+    public items: any[];
 
     private ipfs?: IPFSService;
 
@@ -19,17 +20,17 @@ export class EnumValue {
             if (field.remoteLink) {
                 this.default = false;
                 this.loaded = false;
-                this.values = [];
                 this.link = field.remoteLink;
+                this.setValue([]);
                 this.loadValues();
             } else if (field.enum) {
                 this.default = false;
                 this.loaded = true;
-                this.values = field.enum;
+                this.setValue(field.enum);
             }
         } else {
             this.loaded = true;
-            this.values = [];
+            this.setValue([]);
         }
     }
 
@@ -38,9 +39,17 @@ export class EnumValue {
             this.ipfs
                 .getJsonFileByLink(this.link)
                 .then((res: any) => {
-                    this.values = res.enum;
+                    this.setValue(res.enum);
                 })
                 .finally(() => this.loaded = true);
+        }
+    }
+
+    private setValue(value: string[]) {
+        this.values = value || [];
+        this.items = [];
+        for (const item of this.values) {
+            this.items.push({ label: item, value: item })
         }
     }
 }
@@ -172,8 +181,8 @@ export class SchemaRuleConfigDialog {
 
         this.enumVariables = [];
         for (const variable of this.variables) {
-            this.enumVariables.push({ 
-                ... variable,
+            this.enumVariables.push({
+                ...variable,
                 disabled: (!this.enums[variable.value] || this.enums[variable.value].default)
             });
         }

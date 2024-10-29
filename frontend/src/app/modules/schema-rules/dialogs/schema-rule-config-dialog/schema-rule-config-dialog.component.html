@@ -272,10 +272,13 @@
             <div *ngIf="getEnums(value.variable) as enumValues" class="condition-value-input">
                 <p-multiSelect
                     [(ngModel)]="value.enum"
-                    [options]="enumValues.values"
+                    [options]="enumValues.items"
                     class="guardian-multiselect full-size"
                     appendTo="body"
                     placeholder="Not selected"
+                    optionLabel="label" 
+                    optionValue="value"
+                    filterBy="value"
                     panelStyleClass="guardian-multiselect-panel">
                     <ng-template pTemplate="footer">
                         <div *ngIf="!enumValues.loaded" class="guardian-loading">

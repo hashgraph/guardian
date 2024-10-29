@@ -579,6 +579,7 @@
 
                 .variables-grid {
                     overflow: auto;
+                    display: grid;
 
                     .cell-48 {
                         min-width: 48px;
