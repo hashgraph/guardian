@@ -36,6 +36,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { TabViewModule } from 'primeng/tabview';
 import { AccordionModule } from 'primeng/accordion';
 import {TableModule} from 'primeng/table';
+import {ButtonModule} from 'primeng/button';
 
 
 @NgModule({
@@ -51,7 +52,9 @@ import {TableModule} from 'primeng/table';
         AccordionModule,
         TableModule,
 
-        MatIconModule,
+        // MatIconModule,
+        ButtonModule,
+
         ReactiveFormsModule,
         MatInputModule,
         MatButtonModule,
@@ -88,7 +91,9 @@ import {TableModule} from 'primeng/table';
         AccordionModule,
         TableModule,
 
-        MatIconModule,
+        // MatIconModule,
+        ButtonModule,
+
         ReactiveFormsModule,
         MatInputModule,
         MatButtonModule,

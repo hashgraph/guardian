@@ -1,8 +1,11 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
+            [attr.collapse]="propHidden.options">
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
+
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell"></td>
@@ -23,7 +26,7 @@
             <td class="propRowCell cellName">Empty Data</td>
             <td class="propRowCell">
                 <input class="prop-input" type="checkbox" [(ngModel)]="properties.emptyData" [readonly]="readonly"
-                    (blur)="onSave()">
+                       (blur)="onSave()">
             </td>
         </tr>
     </ng-container>
@@ -32,12 +35,16 @@
         <tr class="propHeader">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'expressionsGroup')"
                 [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
+
+                <i class="pi pi-chevron-down"></i>
             </td>
             <td class="propHeaderCell cellName">Expressions</td>
             <td class="propHeaderCell">
                 <div class="propAdd" (click)="addExpression()">
-                    <mat-icon>add</mat-icon>
+                    <!--                    <mat-icon>add</mat-icon>-->
+
+                    <i class="pi pi-plus"></i>
                     <span>Add Expression</span>
                 </div>
             </td>
@@ -46,13 +53,17 @@
             <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
                 <td class="propRowCol cellCollapse" (click)="onHide(propHidden.expressions, i)"
                     [attr.collapse]="propHidden.expressions[i]">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                    <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
+
+                    <i class="pi pi-chevron-down"></i>
                 </td>
-                <td class="propRowCell cellName">Expression {{i}}</td>
+                <td class="propRowCell cellName">Expression {{ i }}</td>
                 <td class="propRowCell">
-                    <span>{{expression.name}} = {{expression.value}}</span>
+                    <span>{{ expression.name }} = {{ expression.value }}</span>
                     <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveExpression(i)">
-                        <mat-icon>delete</mat-icon>
+<!--                        <mat-icon>delete</mat-icon>-->
+
+                         <i class="pi pi-trash"></i>
                     </span>
                 </td>
             </tr>

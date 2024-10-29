@@ -2,7 +2,9 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
+
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -19,18 +21,22 @@
         <td class="propRowCell cellName">Enable common sorting</td>
         <td class="propRowCell">
             <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
             [attr.collapse]="propHidden.fieldsGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
+
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Fields</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addField()">
-                <mat-icon>add</mat-icon>
+                <!--                <mat-icon>add</mat-icon>-->
+
+                <i class="pi pi-plus"></i>
                 <span>Add Field</span>
             </div>
         </td>
@@ -39,13 +45,17 @@
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
                 [attr.collapse]="propHidden.fields[i]">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
+
+                <i class="pi pi-chevron-down"></i>
             </td>
-            <td class="propRowCell cellName">{{getFieldName(field, i)}}</td>
+            <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
             <td class="propRowCell not-editable-text">
-                <span>{{field.name}}</span>
+                <span>{{ field.name }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
-                    <mat-icon>delete</mat-icon>
+<!--                    <mat-icon>delete</mat-icon>-->
+
+                    <i class="pi pi-trash"></i>
                 </span>
             </td>
         </tr>
@@ -109,20 +119,24 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
-                <mat-icon class="icon-link">add_link</mat-icon> Bind Group
+                <!--                <mat-icon class="icon-link">add_link</mat-icon> Bind Group-->
+
+                <i class="pi pi-link icon-link"></i> Bind Group
             </td>
             <td class="propRowCell">
                 <select-block [root]="module" [(value)]="field.bindGroup" [readonly]="readonly"
-                    [blocks]="allBlocks"></select-block>
+                              [blocks]="allBlocks"></select-block>
             </td>
         </tr>
         <ng-container *ngIf="field.type=='button'">
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <mat-icon class="icon-event">
-                        flash_on
-                    </mat-icon>
+                    <!--                    <mat-icon class="icon-event">-->
+                    <!--                        flash_on-->
+                    <!--                    </mat-icon>-->
+
+                    <i class="pi pi-bolt icon-event"></i>
                     Action
                 </td>
                 <td class="propRowCell">
@@ -137,14 +151,16 @@
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">
-                        <mat-icon class="icon-link">
-                            add_link
-                        </mat-icon>
+                        <!--                        <mat-icon class="icon-link">-->
+                        <!--                            add_link-->
+                        <!--                        </mat-icon>-->
+
+                        <i class="pi pi-link icon-link"></i>
                         Bind Block
                     </td>
                     <td class="propRowCell">
                         <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                            [blocks]="allBlocks"></select-block>
+                                      [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -154,7 +170,7 @@
                     <td class="propRowCell cellName">Dialog Type</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="field.dialogType" [readonly]="readonly"
-                            (blur)="onSave()">
+                               (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -162,7 +178,7 @@
                     <td class="propRowCell cellName">Dialog Content</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="field.dialogContent" [readonly]="readonly"
-                            (blur)="onSave()">
+                               (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
@@ -170,20 +186,22 @@
                     <td class="propRowCell cellName">Dialog Class</td>
                     <td class="propRowCell">
                         <input class="prop-input" [(ngModel)]="field.dialogClass" [readonly]="readonly"
-                            (blur)="onSave()">
+                               (blur)="onSave()">
                     </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">
-                        <mat-icon class="icon-link">
-                            add_link
-                        </mat-icon>
+                        <!--                        <mat-icon class="icon-link">-->
+                        <!--                            add_link-->
+                        <!--                        </mat-icon>-->
+
+                        <i class="pi pi-link icon-link"></i>
                         Bind Block
                     </td>
                     <td class="propRowCell">
                         <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                            [blocks]="allBlocks"></select-block>
+                                      [blocks]="allBlocks"></select-block>
                     </td>
                 </tr>
             </ng-container>
@@ -192,14 +210,16 @@
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <mat-icon class="icon-link">
-                        add_link
-                    </mat-icon>
+                    <!--                    <mat-icon class="icon-link">-->
+                    <!--                        add_link-->
+                    <!--                    </mat-icon>-->
+
+                    <i class="pi pi-link icon-link"></i>
                     Bind Block
                 </td>
                 <td class="propRowCell">
                     <select-block [root]="module" [(value)]="field.bindBlock" [readonly]="readonly"
-                        [blocks]="allBlocks"></select-block>
+                                  [blocks]="allBlocks"></select-block>
                 </td>
             </tr>
         </ng-container>
@@ -207,14 +227,16 @@
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <mat-icon class="icon-link">
-                        add_link
-                    </mat-icon>
+                    <!--                    <mat-icon class="icon-link">-->
+                    <!--                        add_link-->
+                    <!--                    </mat-icon>-->
+
+                    <i class="pi pi-link icon-link"></i>
                     Bind Blocks
                 </td>
                 <td class="propRowCell">
                     <select-block [root]="module" [(value)]="field.bindBlocks" [readonly]="readonly" [multiple]="true"
-                        [blocks]="allBlocks"></select-block>
+                                  [blocks]="allBlocks"></select-block>
                 </td>
             </tr>
         </ng-container>

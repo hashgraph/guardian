@@ -319,9 +319,14 @@
         <div class="prop-table" [attr.system]="_systemProp">
             <div class="prop-table-header">
                 Documents:
+<!--                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">-->
+<!--                    <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>-->
+<!--                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>-->
+<!--                </div>-->
+
                 <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
-                    <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>
-                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>
+                    <i *ngIf="!_systemProp" class="pi pi-angle-down"></i>
+                    <i *ngIf="_systemProp" class="pi pi-angle-up"></i>
                 </div>
             </div>
             <div class="prop-table-body">
