@@ -562,7 +562,8 @@
     position: absolute;
     left: 21px;
     top: 19px;
-    padding-right: 4px;
+    padding-left: 2px;
+    padding-top: 1px;
     box-sizing: border-box;
     color: #898989;
     overflow: hidden;
@@ -656,4 +657,50 @@
 
 .scroll div {
     height: 1px;
+}
+
+.middle-tree {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 100%;
+    position: relative;
+    background-color: white;
+}
+
+.compare-btn {
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 14px;
+}
+
+.icon {
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.custom-icon {
+    font-family: 'Material Icons', sans-serif;
+    font-size: 16px;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    line-height: 16px;
+    vertical-align: middle;
+    user-select: none;
+}
+
+.report-collapse .icon {
+    font-size: 19px;
+    line-height: 12px;
 }

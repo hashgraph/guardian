@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 // import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
 import { MatStepperModule } from '@angular/material/stepper';
-// import { MatExpansionModule } from '@angular/material/expansion';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
@@ -35,6 +35,7 @@ import { MatLegacySliderModule as MatSliderModule } from '@angular/material/lega
 import { MatBadgeModule } from '@angular/material/badge';
 import { TabViewModule } from 'primeng/tabview';
 import { AccordionModule } from 'primeng/accordion';
+import {TableModule} from 'primeng/table';
 
 
 @NgModule({
@@ -48,6 +49,7 @@ import { AccordionModule } from 'primeng/accordion';
 
         // MatExpansionModule,
         AccordionModule,
+        TableModule,
 
         MatIconModule,
         ReactiveFormsModule,
@@ -84,6 +86,7 @@ import { AccordionModule } from 'primeng/accordion';
 
         // MatExpansionModule,
         AccordionModule,
+        TableModule,
 
         MatIconModule,
         ReactiveFormsModule,

@@ -38,19 +38,28 @@
 
         <div class="delimiter"></div>
 
-        <mat-accordion>
-            <mat-expansion-panel>
-                <mat-expansion-panel-header>
-                    <mat-panel-title>
-                        Cron Mask (advanced)
-                    </mat-panel-title>
-                </mat-expansion-panel-header>
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
-                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">
-                </mat-form-field>
-            </mat-expansion-panel>
-        </mat-accordion>
+<!--        <mat-accordion>-->
+<!--            <mat-expansion-panel>-->
+<!--                <mat-expansion-panel-header>-->
+<!--                    <mat-panel-title>-->
+<!--                        Cron Mask (advanced)-->
+<!--                    </mat-panel-title>-->
+<!--                </mat-expansion-panel-header>-->
+<!--                <mat-form-field class="example-full-width" appearance="outline">-->
+<!--                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>-->
+<!--                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">-->
+<!--                </mat-form-field>-->
+<!--            </mat-expansion-panel>-->
+<!--        </mat-accordion>-->
+
+        <p-accordion [multiple]="true">
+            <p-accordionTab header="Cron Mask (advanced)">
+                <div class="form-group">
+                    <label>* Mask: minute hour day(month) month day(week)</label>
+                    <input pInputText type="text" placeholder="* * * * *" formControlName="mask" class="example-full-width" />
+                </div>
+            </p-accordionTab>
+        </p-accordion>
 
         <div mat-dialog-actions>
             <button mat-raised-button color="primary" type="submit" [attr.started]="started"
