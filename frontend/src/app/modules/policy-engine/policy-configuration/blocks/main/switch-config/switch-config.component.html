@@ -1,8 +1,11 @@
 <!-- UI Prop -->
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')" [attr.collapse]="propHidden.options">
-            <mat-icon>arrow_drop_down</mat-icon>
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
+            [attr.collapse]="propHidden.options">
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
+
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell"></td>
@@ -20,12 +23,16 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
             [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
+
+            <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propHeaderCell cellName">Conditions</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addCondition()">
-                <mat-icon>add</mat-icon>
+                <!--                <mat-icon>add</mat-icon>-->
+
+                <i class="pi pi-plus"></i>
                 <span>Add Condition</span>
             </div>
         </td>
@@ -34,15 +41,19 @@
         <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
+
+                <i class="pi pi-chevron-down"></i>
             </td>
-            <td class="propRowCell cellName">Condition {{i}}</td>
+            <td class="propRowCell cellName">Condition {{ i }}</td>
             <td class="propRowCell">
-                <span *ngIf="condition.type=='equal'">If ({{condition.value}})</span>
-                <span *ngIf="condition.type=='not_equal'">If Not({{condition.value}})</span>
+                <span *ngIf="condition.type=='equal'">If ({{ condition.value }})</span>
+                <span *ngIf="condition.type=='not_equal'">If Not({{ condition.value }})</span>
                 <span *ngIf="condition.type=='unconditional'">Unconditional</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveCondition(i)">
-                    <mat-icon>delete</mat-icon>
+<!--                    <mat-icon>delete</mat-icon>-->
+
+                    <i class="pi pi-trash"></i>
                 </span>
             </td>
         </tr>
