@@ -966,10 +966,11 @@ export class SchemaConfigComponent implements OnInit {
 
     public onOpenDocument(element: Schema): void {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            header: 'Schema',
-            width: '850px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
+                row: element,
                 document: element?.document,
                 title: 'Schema',
                 type: 'JSON',

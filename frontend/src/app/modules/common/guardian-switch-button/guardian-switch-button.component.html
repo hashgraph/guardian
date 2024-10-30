@@ -1,0 +1,8 @@
+<label class="guardian-switch-button" [attr.disabled]="disabled">
+    <input type="checkbox" [name]="mode" [id]="mode" [(ngModel)]="_value" (change)="onChange()">
+    <label [for]="mode"></label>
+    <div *ngIf="offLabel || onLabel">
+        <p class="l-off">{{offLabel}}</p>
+        <p class="l-on">{{onLabel}}</p>
+    </div>
+</label>

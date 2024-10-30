@@ -45,8 +45,11 @@
                                 pInputTextarea>
                             </textarea>
                         } @else {
-                            <app-schema-form-view [fields]="item.fields" [private-fields]="hide"
-                                [delimiter-hide]="true" [values]="this.values && this.values[item.name]">
+                            <app-schema-form-view 
+                                [fields]="item.fields" 
+                                [private-fields]="hide"
+                                [delimiter-hide]="true" 
+                                [values]="this.values && this.values[item.name]">
                             </app-schema-form-view>
                         }
                     </div>
@@ -108,8 +111,12 @@
                                 pInputTextarea>
                             </textarea>
                         } @else {
-                            <app-schema-form-view *ngSwitchDefault [fields]="item.fields" [private-fields]="hide"
-                                [delimiter-hide]="true" [values]="listItem">
+                            <app-schema-form-view 
+                                *ngSwitchDefault 
+                                [fields]="item.fields" 
+                                [private-fields]="hide"
+                                [delimiter-hide]="true" 
+                                [values]="listItem">
                             </app-schema-form-view>
                         }
                     </div>

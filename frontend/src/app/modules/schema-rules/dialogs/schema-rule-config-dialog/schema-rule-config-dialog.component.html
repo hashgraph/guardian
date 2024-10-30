@@ -1,0 +1,355 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Rule</div>
+        <div *ngIf="item" class="header-item">{{item.id}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+
+
+        <div class="guardian-input-container">
+            <label class="form-label" htmlFor="version">Template</label>
+            <p-dropdown
+                (onChange)="onSelectTemplate()"
+                [(ngModel)]="template"
+                [options]="templates"
+                [showClear]="false"
+                class="guardian-dropdown"
+                appendTo="body"
+                placeholder="Not selected"
+                panelStyleClass="guardian-dropdown-panel"
+                optionLabel="label"
+                optionValue="value">
+            </p-dropdown>
+        </div>
+
+        <ng-container *ngIf="template === 'formula'">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">Formula</label>
+                <!-- <input pInputText [(ngModel)]="formula.formula" type="text"/> -->
+                 <div class="guardian-formula-codemirror">
+                    <ngx-codemirror 
+                        [(ngModel)]="formula.formula" 
+                        [options]="codeMirrorOptions"
+                    ></ngx-codemirror>
+                 </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="template === 'range'">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">Minimum</label>
+                <input pInputText [(ngModel)]="range.min" class="guardian-formula-number" type="number"/>
+            </div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">Maximum</label>
+                <input pInputText [(ngModel)]="range.max" class="guardian-formula-number" type="number"/>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="template === 'condition'">
+
+
+
+            <ng-container 
+                *ngFor="let item of condition.if"
+                [ngTemplateOutlet]="ruleTemplate"
+                [ngTemplateOutletContext]="{ 
+                    count: condition.if.length,
+                    type: 'if',
+                    condition: item,
+                    item: condition
+                }">
+            </ng-container>
+
+            <div class="condition-add">
+                <button 
+                    (click)="addCondition(condition)" 
+                    class="guardian-button guardian-button-secondary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/add.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Add IF/THEN Condition</div>
+                </button>
+            </div>
+
+            <ng-container
+                [ngTemplateOutlet]="ruleTemplate"
+                [ngTemplateOutletContext]="{ 
+                    count: 0,
+                    type: 'else',
+                    condition: condition.else,
+                    item: condition
+                }">
+            </ng-container>
+
+
+        </ng-container>
+
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Save</button>
+        </div>
+    </div>
+</div>
+
+<ng-template #ruleTemplate 
+    let-count="count" 
+    let-type="type" 
+    let-condition="condition"
+    let-item="item"
+>
+    <div class="condition-container">
+        <div class="condition-body">
+
+            <ng-container *ngIf="type === 'if'">
+                <div class="condition-type">IF</div>
+                <ng-container 
+                    [ngTemplateOutlet]="conditionTemplate"
+                    [ngTemplateOutletContext]="{ value: condition.condition }"></ng-container>
+                <div class="condition-type">THEN</div>
+                <ng-container 
+                    [ngTemplateOutlet]="conditionValueTemplate"
+                    [ngTemplateOutletContext]="{ value: condition.formula }"></ng-container>    
+            </ng-container>
+            <ng-container *ngIf="type === 'else'">
+                <div class="condition-type">ELSE</div>
+                <ng-container 
+                    [ngTemplateOutlet]="conditionValueTemplate"
+                    [ngTemplateOutletContext]="{ value: condition.formula }"></ng-container>    
+            </ng-container>
+        </div>
+        <div *ngIf="count>0" class="condition-delete">
+            <button 
+                (click)="deleteCondition(item, condition)" 
+                class="guardian-button guardian-button-delete"
+                [disabled]="count === 1">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/delete.svg"
+                        svgClass="icon-color-delete">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Remove Condition</div>
+            </button>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #conditionTemplate let-value="value">
+    <div class="condition-value-container">
+        <div class="condition-value-type">
+            <p-dropdown
+                [(ngModel)]="value.type"
+                [options]="conditionTypes"
+                [showClear]="false"
+                class="guardian-dropdown"
+                appendTo="body"
+                placeholder="Not selected"
+                panelStyleClass="guardian-dropdown-panel"
+                optionLabel="label"
+                optionValue="value">
+            </p-dropdown>
+        </div>
+        <div *ngIf="value.type === 'formula'" class="condition-value">
+            <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->
+            <div class="guardian-formula-codemirror">
+                <ngx-codemirror 
+                    [(ngModel)]="value.formula" 
+                    [options]="codeMirrorOptions"
+                ></ngx-codemirror>
+             </div>
+        </div>
+
+        <div *ngIf="value.type === 'range'" class="condition-value condition-range">
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.min" type="number"/>
+            </div>
+            <div class="variable-container">
+                <span class="variable-symbol">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </span>
+                <span class="variable-name variable-name-dropdown">
+                    <p-dropdown
+                        [(ngModel)]="value.variable"
+                        [options]="variables"
+                        [showClear]="false"
+                        class="guardian-dropdown full-size"
+                        appendTo="body"
+                        placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
+                    </p-dropdown>
+                </span>
+                <span class="variable-symbol">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </span>
+            </div>
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.max" type="number"/>
+            </div>
+        </div>
+
+        <div *ngIf="value.type === 'text'" class="condition-value condition-text">
+            <div class="variable-container">
+                <span class="variable-name variable-name-dropdown">
+                    <p-dropdown
+                        [(ngModel)]="value.variable"
+                        [options]="variables"
+                        [showClear]="false"
+                        class="guardian-dropdown full-size"
+                        appendTo="body"
+                        placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
+                    </p-dropdown>
+                </span>
+                <span class="variable-symbol">=</span>
+            </div>
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-text" pInputText [(ngModel)]="value.text" type="text"/>
+            </div>
+        </div>
+        <div *ngIf="value.type === 'enum'" class="condition-value condition-text">
+            <div class="variable-container">
+                <span class="variable-name variable-name-dropdown">
+                    <p-dropdown
+                        [(ngModel)]="value.variable"
+                        [options]="enumVariables"
+                        [showClear]="false"
+                        class="guardian-dropdown full-size"
+                        appendTo="body"
+                        placeholder="Not selected"
+                        optionLabel="label" 
+                        optionValue="value"
+                        panelStyleClass="guardian-dropdown-panel">
+                        <ng-template pTemplate="selectedItem">
+                            {{value.variable}}
+                        </ng-template>
+                        <ng-template let-item pTemplate="item">
+                            {{item.value}} - {{item.label}}
+                        </ng-template>
+                    </p-dropdown>
+                </span>
+                <span class="variable-symbol">=</span>
+            </div>
+            <div *ngIf="getEnums(value.variable) as enumValues" class="condition-value-input">
+                <p-multiSelect
+                    [(ngModel)]="value.enum"
+                    [options]="enumValues.items"
+                    class="guardian-multiselect full-size"
+                    appendTo="body"
+                    placeholder="Not selected"
+                    optionLabel="label" 
+                    optionValue="value"
+                    filterBy="value"
+                    panelStyleClass="guardian-multiselect-panel">
+                    <ng-template pTemplate="footer">
+                        <div *ngIf="!enumValues.loaded" class="guardian-loading">
+                            <div class="guardian-loading-image"></div>
+                        </div>
+                    </ng-template>
+                </p-multiSelect>
+            </div>
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #conditionValueTemplate let-value="value">
+    <div class="condition-value-container">
+        <div class="condition-value-type">
+            <p-dropdown
+                [(ngModel)]="value.type"
+                [options]="valueTypes"
+                [showClear]="false"
+                class="guardian-dropdown"
+                appendTo="body"
+                placeholder="Not selected"
+                panelStyleClass="guardian-dropdown-panel"
+                optionLabel="label"
+                optionValue="value">
+            </p-dropdown>
+        </div>
+        <div *ngIf="value.type === 'formula'" class="condition-value">
+            <!-- <input class="guardian-input" pInputText [(ngModel)]="value.formula" type="text"/> -->
+            <div class="guardian-formula-codemirror">
+                <ngx-codemirror 
+                    [(ngModel)]="value.formula" 
+                    [options]="codeMirrorOptions"
+                ></ngx-codemirror>
+             </div>
+        </div>
+
+        <div *ngIf="value.type === 'range'" class="condition-value condition-range">
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.min" type="number"/>
+            </div>
+            <div class="variable-container">
+                <span class="variable-symbol">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </span>
+                <span class="variable-name">{{value.variable}}</span>
+                <span class="variable-symbol">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-primary">
+                    </svg-icon>
+                </span>
+            </div>
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-number" pInputText [(ngModel)]="value.max" type="number"/>
+            </div>
+        </div>
+
+        <div *ngIf="value.type === 'text'" class="condition-value condition-text">
+            <div class="variable-container">
+                <span class="variable-name">
+                    <div style="width: 85px">{{value.variable}}</div>
+                </span>
+                <span class="variable-symbol">=</span>
+            </div>
+            <div class="condition-value-input">
+                <input class="guardian-input guardian-formula-text" pInputText [(ngModel)]="value.text" type="text"/>
+            </div>
+        </div>
+    </div>
+</ng-template>

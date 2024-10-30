@@ -234,57 +234,57 @@ export class ReportBlockComponent implements OnInit {
         item: any,
         document?: any
     ) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VC',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
+                row: item,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: document || item.document.document,
-                title: item.type,
+                title: title,
                 type: 'VC',
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     openVPDocument(item: any) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
+                row: item,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: item.document.document,
-                title: item.type,
+                title: title,
                 type: 'VP',
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     openJsonDocument(item: ITokenReport) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'Json',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
+                row: item,
                 document: item.document.document,
-                title: item.type,
+                title: title,
                 type: 'JSON',
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     mapData(data: any[]) {
