@@ -18,6 +18,7 @@ export class NewSchemaRuleDialog {
     });
     public title: string;
     public action: string;
+    public readonly: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -31,13 +32,15 @@ export class NewSchemaRuleDialog {
         const rule = this.config.data?.rule;
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
-        if(rule) {
+        if (rule) {
+            this.readonly = true;
             this.dataForm.setValue({
-                name: rule.name || '',
-                description: rule.description || '',
+                name: rule.name || 'N\\A',
+                description: rule.description || 'N\\A',
                 policy: this.policy
             })
         } else {
+            this.readonly = false;
             this.dataForm.setValue({
                 name: '',
                 description: '',

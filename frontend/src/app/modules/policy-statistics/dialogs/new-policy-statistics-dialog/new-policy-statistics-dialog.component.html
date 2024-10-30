@@ -16,11 +16,11 @@
         <form [formGroup]="dataForm">
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">* Name</label>
-                <input formControlName="name" id="name" pInputText type="text"/>
+                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
             </div>
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">Description</label>
-                <input formControlName="description" id="description" pInputText type="text"/>
+                <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
             </div>
 
             <div class="guardian-input-container">

@@ -18,6 +18,7 @@ export class NewPolicyStatisticsDialog {
     });
     public title: string;
     public action: string;
+    public readonly: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -32,12 +33,14 @@ export class NewPolicyStatisticsDialog {
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
         if (statistic) {
+            this.readonly = true;
             this.dataForm.setValue({
-                name: statistic.name || '',
-                description: statistic.description || '',
+                name: statistic.name || 'N\\A',
+                description: statistic.description || 'N\\A',
                 policy: this.policy
             })
         } else {
+            this.readonly = false;
             this.dataForm.setValue({
                 name: '',
                 description: '',

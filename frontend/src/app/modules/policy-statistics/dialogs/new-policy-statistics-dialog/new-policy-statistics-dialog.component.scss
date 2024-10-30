@@ -24,6 +24,13 @@
 
 form {
     width: 100%;
+
+    .guardian-input-container {
+        input[readonly] {
+            border: none;
+            padding-left: 0;
+        }
+    }
 }
 
 .guardian-input-container {
