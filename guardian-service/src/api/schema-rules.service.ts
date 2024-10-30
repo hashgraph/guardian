@@ -409,6 +409,7 @@ export async function schemaRulesAPI(logger: PinoLogger): Promise<void> {
                 delete rule.owner;
                 rule.creator = owner.creator;
                 rule.owner = owner.owner;
+                rule.policyId = policyId;
                 rule.policyTopicId = policy.topicId;
                 rule.policyInstanceTopicId = policy.instanceTopicId;
                 rule.status = EntityStatus.DRAFT;
