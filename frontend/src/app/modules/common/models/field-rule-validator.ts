@@ -98,7 +98,7 @@ abstract class AbstractFieldRule {
         } else if (condition.type === 'range') {
             return `${condition.min} <= ${condition.variable} <= ${condition.max}`;
         } else if (condition.type === 'text') {
-            return `${condition.variable} == ${condition.value}`;
+            return `${condition.variable} == '${condition.value}'`;
         } else if (condition.type === 'enum') {
             const items = [];
             if (Array.isArray(condition.value)) {
