@@ -211,7 +211,7 @@ export class SchemaRuleConfigDialog {
         } else if (this.template === 'condition') {
             this.ref.close({ rule: this.condition });
         } else {
-            this.ref.close(null);
+            this.ref.close({ rule: null });
         }
 
     }
