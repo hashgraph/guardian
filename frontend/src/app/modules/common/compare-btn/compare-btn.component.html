@@ -1,9 +1,44 @@
-<div *ngIf="id" class="context">
-    <div class="compare-btn" (click)="onAdd()">
+<div *ngIf="id" 
+    [ngClass]="{
+        'context': true, 
+        'add-item': !status, 
+        'added-item': status
+    }"
+>
+    <div *ngIf="!buttonStyle" class="compare-btn" (click)="onAdd()">
         <input 
             class="compare-checkbox" 
             type="checkbox" 
             [checked]="status">
         Compare
     </div>
+
+    <ng-container *ngIf="buttonStyle === 'guardian'">
+        <button
+            *ngIf="!status"
+            (click)="onAdd()"
+            class="guardian-button guardian-compare-button add-item guardian-button-secondary"
+        >
+            <div class="guardian-button-icon">
+                <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/compare.svg"
+                    svgClass="icon-color-primary">
+                </svg-icon>
+            </div>
+            <div class="guardian-button-label">Add to Compare List</div>
+        </button>
+        <button
+            *ngIf="status"
+            (click)="onAdd()"
+            class="guardian-button guardian-compare-button added-item guardian-button-primary"
+        >
+            <div class="guardian-button-icon">
+                <svg-icon class="icon-btn svg-icon"
+                    src="/assets/images/icons/check.svg"
+                    svgClass="icon-color-secondary">
+                </svg-icon>
+            </div>
+            <div *ngIf="status" class="guardian-button-label">Added to Compare List</div>
+        </button>
+    </ng-container>
 </div>

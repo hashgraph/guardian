@@ -8,14 +8,29 @@ import {
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { DocumentGenerator, IUser, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, IUser, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
+import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+
+interface IRequestDocumentAddonData {
+    schema: ISchema;
+    active: boolean;
+    data: any;
+    buttonName: string;
+    uiClass: string;
+    dialogTitle: string;
+    preset: boolean;
+    presetFields: any[];
+    restoreData: any;
+}
 
 /**
  * Component for display block of 'requestVcDocumentBlockAddon' types.
@@ -25,106 +40,93 @@ import { HttpErrorResponse } from '@angular/common/http';
     templateUrl: './request-document-block-addon.component.html',
     styleUrls: ['./request-document-block-addon.component.scss'],
 })
-export class RequestDocumentBlockAddonComponent implements OnInit {
+export class RequestDocumentBlockAddonComponent
+    extends AbstractUIBlockComponent<IRequestDocumentAddonData>
+    implements OnInit {
+
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
-    @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
     public disabled = false;
-    public loading: boolean = true;
-    public socket: any;
-    public dialogLoading: boolean = false;
+    public schema: Schema | null;
     public dataForm: UntypedFormGroup;
-    public schema: any;
-    public buttonName: any;
-    public uiClass: any;
-    public dialogTitle: any;
-    public dialogRef: any;
     public ref: any;
     public title: any;
-    public presetDocument: any;
     public rowDocument: any;
     public needPreset: any;
+    public presetDocument: any;
     public presetFields: any;
     public presetReadonlyFields: any;
-    public user!: IUser;
+    public dialogLoading: boolean = false;
+    public dialogTitle: any;
+    public dialogRef: any;
+    public uiClass: any;
+    public buttonName: any;
     public restoreData: any;
+    public rules: any;
+    public hideFields: any;
 
     constructor(
-        private policyEngineService: PolicyEngineService,
-        private wsService: WebSocketService,
-        private profile: ProfileService,
-        private policyHelper: PolicyHelper,
+        policyEngineService: PolicyEngineService,
+        wsService: WebSocketService,
+        profile: ProfileService,
+        policyHelper: PolicyHelper,
+        private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
         private dialog: MatDialog,
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef
     ) {
-        this.dataForm = fb.group({});
+        super(policyEngineService, profile, wsService);
+        this.dataForm = this.fb.group({});
     }
 
     ngOnInit(): void {
-        if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(
-                this.onUpdate.bind(this)
-            );
-        }
-        this.profile.getProfile().subscribe((user: IUser) => {
-            this.user = user;
-            this.loadData();
-        });
+        this.init();
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
     }
 
     ngOnDestroy(): void {
-        if (this.socket) {
-            this.socket.unsubscribe();
-        }
+        this.destroy();
     }
 
-    onUpdate(blocks: string[]): void {
-        if (Array.isArray(blocks) && blocks.includes(this.id)) {
-            this.loadData();
-        }
-    }
-
-    loadData() {
-        this.loading = true;
-        if (this.static) {
-            this.setData(this.static);
-            setTimeout(() => {
-                this.loading = false;
-            }, 500);
+    override setData(data: IRequestDocumentAddonData) {
+        if (data) {
+            const row = data.data;
+            const schema = data.schema;
+            const active = data.active;
+            this.ref = row;
+            this.schema = new Schema(schema);
+            this.buttonName = data.buttonName;
+            this.uiClass = data.uiClass;
+            this.dialogTitle = data.dialogTitle;
+            this.disabled = active === false;
+            this.isExist = true;
+            this.needPreset = data.preset;
+            this.presetFields = data.presetFields || [];
+            this.restoreData = data.restoreData;
+            this.presetReadonlyFields = this.presetFields.filter(
+                (item: any) => item.readonly && item.value
+            );
+            if (this.needPreset && row) {
+                this.rowDocument = this.getJson(row, this.presetFields);
+                this.preset(this.rowDocument);
+            }
         } else {
-            this.policyEngineService
-                .getBlockData(this.id, this.policyId)
-                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+            this.ref = null;
+            this.schema = null;
+            this.disabled = false;
+            this.isExist = false;
         }
     }
 
-    private _onSuccess(data: any) {
-        this.setData(data);
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    private _onError(e: HttpErrorResponse) {
-        console.error(e.error);
-        if (e.status === 503) {
-            this._onSuccess(null);
-        } else {
-            this.loading = false;
-        }
-    }
-
-    getJson(data: any, presetFields: any[]) {
+    private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
                 const json: any = {};
@@ -156,37 +158,7 @@ export class RequestDocumentBlockAddonComponent implements OnInit {
         return null;
     }
 
-    setData(data: any) {
-        if (data) {
-            const row = data.data;
-            const schema = data.schema;
-            const active = data.active;
-            this.ref = row;
-            this.schema = new Schema(schema);
-            this.buttonName = data.buttonName;
-            this.uiClass = data.uiClass;
-            this.dialogTitle = data.dialogTitle;
-            this.disabled = active === false;
-            this.isExist = true;
-            this.needPreset = data.preset;
-            this.presetFields = data.presetFields || [];
-            this.restoreData = data.restoreData;
-            this.presetReadonlyFields = this.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            if (this.needPreset && row) {
-                this.rowDocument = this.getJson(row, this.presetFields);
-                this.preset(this.rowDocument);
-            }
-        } else {
-            this.ref = null;
-            this.schema = null;
-            this.disabled = false;
-            this.isExist = false;
-        }
-    }
-
-    onSubmit() {
+    public onSubmit() {
         if (this.disabled) {
             return;
         }
@@ -195,7 +167,7 @@ export class RequestDocumentBlockAddonComponent implements OnInit {
         }
         if (this.dataForm.valid) {
             const data = this.dataForm.getRawValue();
-            this.prepareDataFrom(data);
+            prepareVcData(data);
             this.dialogRef.close();
             this.dialogRef = null;
             this.loading = true;
@@ -206,7 +178,7 @@ export class RequestDocumentBlockAddonComponent implements OnInit {
                 })
                 .subscribe(
                     // tslint:disable-next-line:no-empty
-                    () => {},
+                    () => { },
                     (e) => {
                         this.loading = false;
                     }
@@ -214,53 +186,19 @@ export class RequestDocumentBlockAddonComponent implements OnInit {
         }
     }
 
-    prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
-        }
-    }
-
-    preset(document: any) {
+    public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
     }
 
-    onCancel(): void {
+    public onCancel(): void {
         if (this.dialogRef) {
             this.dialogRef.close();
             this.dialogRef = null;
         }
     }
 
-    onDialog() {
+    public onDialog() {
         this.dataForm.reset();
         if (this.needPreset && this.rowDocument) {
             this.preset(this.rowDocument);
@@ -268,45 +206,27 @@ export class RequestDocumentBlockAddonComponent implements OnInit {
             this.presetDocument = null;
         }
 
-        if (window.innerWidth <= 810) {
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: `100vw`,
-                maxWidth: '100vw',
-                position: {
-                    bottom: '0',
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                disableClose: true,
-                autoFocus: false,
-                data: this,
-            });
-        } else {
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: '850px',
-                disableClose: true,
-                data: this,
-            });
+        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: this
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public onDryRun() {
+        if (this.schema) {
+            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            this.preset(presetDocument);
         }
     }
 
-    onDryRun() {
-        const presetDocument = DocumentGenerator.generateDocument(this.schema);
-        this.preset(presetDocument);
+    public onRestoreClick() {
+        return;
     }
 
-    handleCancelBtnEvent(value: boolean, data: any) {
-        data.onCancel();
-    }
-
-    handleSubmitBtnEvent(value: boolean, data: any) {
-        if (data.dataForm.valid || !this.loading) {
-            data.onSubmit();
-        }
-    }
-
-    onCancelPage(value: boolean) {
+    public onCancelPage(value: boolean) {
         this.router.navigate(['/policy-viewer']);
     }
 }

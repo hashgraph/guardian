@@ -1,14 +1,38 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { DocumentGenerator, IUser, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, ISchema, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { audit, takeUntil } from 'rxjs/operators';
+import { interval, Subject } from 'rxjs';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+
+interface IRequestDocumentData {
+    schema: ISchema;
+    active: boolean;
+    presetSchema: any;
+    presetFields: any[];
+    restoreData: any;
+    data: any;
+    uiMetaData: {
+        type: string;
+        title: string;
+        description: string;
+        content: string;
+        privateFields: string[];
+        buttonClass: string;
+        dialogContent: string;
+        dialogClass: string;
+    }
+}
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -18,110 +42,168 @@ import { HttpErrorResponse } from '@angular/common/http';
     templateUrl: './request-document-block.component.html',
     styleUrls: ['./request-document-block.component.scss']
 })
-export class RequestDocumentBlockComponent implements OnInit {
+export class RequestDocumentBlockComponent
+    extends AbstractUIBlockComponent<IRequestDocumentData>
+    implements OnInit {
+
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
     @Input('dryRun') dryRun!: any;
+
     @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
 
     public isExist = false;
     public disabled = false;
-    public loading: boolean = true;
-    public socket: any;
-    public dialogLoading: boolean = false;
+    public schema: Schema | null;
     public dataForm: UntypedFormGroup;
-    public schema: any;
     public hideFields: any;
     public type!: string;
     public content: any;
-    public dialogContent: any;
-    public dialogClass: any;
-    public dialogRef: any;
     public ref: any;
     public title: any;
     public description: any;
-    public presetDocument: any;
     public rowDocument: any;
     public needPreset: any;
+    public presetDocument: any;
     public presetFields: any;
     public presetReadonlyFields: any;
+    public dialogTitle: any;
+    public dialogClass: any;
+    public dialogRef: any;
     public buttonClass: any;
-    public user!: IUser;
     public restoreData: any;
+    public rules: SchemaRuleValidators;
+    public rulesResults: any;
+    public destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
-        private policyEngineService: PolicyEngineService,
-        private wsService: WebSocketService,
-        private profile: ProfileService,
-        private policyHelper: PolicyHelper,
+        policyEngineService: PolicyEngineService,
+        wsService: WebSocketService,
+        profile: ProfileService,
+        policyHelper: PolicyHelper,
+        private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
-        private dialog: MatDialog,
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef
     ) {
-        this.dataForm = fb.group({});
+        super(policyEngineService, profile, wsService);
+        this.dataForm = this.fb.group({});
     }
 
     ngOnInit(): void {
-        if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(
-                this.onUpdate.bind(this)
-            );
-        }
-        this.profile.getProfile().subscribe((user: IUser) => {
-            this.user = user;
-            this.loadData();
-        });
+        this.init();
         (window as any).__requestLast = this;
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
+        this.dataForm.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .pipe(audit(ev => interval(1000)))
+            .subscribe(val => {
+                this.validate();
+            });
     }
 
     ngOnDestroy(): void {
-        if (this.socket) {
-            this.socket.unsubscribe();
-        }
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+        this.destroy();
     }
 
-    onUpdate(blocks: string[]): void {
-        if (Array.isArray(blocks) && blocks.includes(this.id)) {
-            this.loadData();
+    private validate() {
+        if (!this.rules) {
+            return;
         }
+        const data = this.dataForm.getRawValue();
+        this.rulesResults = this.rules.validateForm(this.schema?.iri, data);
     }
 
-    loadData() {
-        this.loading = true;
-        if (this.static) {
-            this.setData(this.static);
+    protected override _onSuccess(data: any) {
+        this.setData(data);
+        if (this.type === 'dialog') {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
+        } else if (this.type === 'page') {
+            this.loadRules();
         } else {
-            this.policyEngineService
-                .getBlockData(this.id, this.policyId)
-                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
         }
     }
 
-    private _onSuccess(data: any) {
-        this.setData(data);
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    private _onError(e: HttpErrorResponse) {
-        console.error(e.error);
-        if (e.status === 503) {
-            this._onSuccess(null);
+    override setData(data: IRequestDocumentData) {
+        if (data) {
+            const uiMetaData = data.uiMetaData;
+            const row = data.data;
+            const schema = data.schema;
+            const active = data.active;
+            this.ref = row;
+            this.type = uiMetaData.type;
+            this.schema = new Schema(schema);
+            this.hideFields = {};
+            if (uiMetaData.privateFields) {
+                for (
+                    let index = 0;
+                    index < uiMetaData.privateFields.length;
+                    index++
+                ) {
+                    const field = uiMetaData.privateFields[index];
+                    this.hideFields[field] = true;
+                }
+            }
+            if (this.type == 'dialog') {
+                this.content = uiMetaData.content;
+                this.buttonClass = uiMetaData.buttonClass;
+                this.dialogTitle = uiMetaData.dialogContent;
+                this.dialogClass = uiMetaData.dialogClass;
+                this.description = uiMetaData.description;
+            }
+            if (this.type == 'page') {
+                this.title = uiMetaData.title;
+                this.description = uiMetaData.description;
+            }
+            this.disabled = active === false;
+            this.isExist = true;
+            this.needPreset = !!data.presetSchema;
+            this.presetFields = data.presetFields || [];
+            this.restoreData = data.restoreData;
+            this.presetReadonlyFields = this.presetFields.filter(
+                (item: any) => item.readonly && item.value
+            );
+            if (this.needPreset && row) {
+                this.rowDocument = this.getJson(row, this.presetFields);
+                this.preset(this.rowDocument);
+            }
         } else {
-            this.loading = false;
+            this.ref = null;
+            this.schema = null;
+            this.hideFields = null;
+            this.disabled = false;
+            this.isExist = false;
         }
     }
 
-    getJson(data: any, presetFields: any[]) {
+    private loadRules() {
+        this.schemaRulesService
+            .getSchemaRuleData({
+                policyId: this.policyId,
+                schemaId: this.schema?.iri,
+                parentId: this.ref?.id
+            })
+            .subscribe((rules) => {
+                this.rules = new SchemaRuleValidators(rules);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    private getJson(data: any, presetFields: any[]) {
         try {
             if (data) {
                 const json: any = {};
@@ -152,180 +234,52 @@ export class RequestDocumentBlockComponent implements OnInit {
         return null;
     }
 
-    setData(data: any) {
-        if (data) {
-            const uiMetaData = data.uiMetaData;
-            const row = data.data;
-            const schema = data.schema;
-            const active = data.active;
-            this.ref = row;
-            this.type = uiMetaData.type;
-            this.schema = new Schema(schema);
-            this.hideFields = {};
-            if (uiMetaData.privateFields) {
-                for (
-                    let index = 0;
-                    index < uiMetaData.privateFields.length;
-                    index++
-                ) {
-                    const field = uiMetaData.privateFields[index];
-                    this.hideFields[field] = true;
-                }
-            }
-            if (this.type == 'dialog') {
-                this.content = uiMetaData.content;
-                this.buttonClass = uiMetaData.buttonClass;
-                this.dialogContent = uiMetaData.dialogContent;
-                this.dialogClass = uiMetaData.dialogClass;
-                this.description = uiMetaData.description;
-            }
-            if (this.type == 'page') {
-                this.title = uiMetaData.title;
-                this.description = uiMetaData.description;
-            }
-            this.disabled = active === false;
-            this.isExist = true;
-            this.needPreset = !!data.presetSchema;
-            this.presetFields = data.presetFields || [];
-            this.restoreData = data.restoreData;
-            this.presetReadonlyFields = this.presetFields.filter(
-                (item: any) => item.readonly && item.value
-            );
-            if (this.needPreset && row) {
-                this.rowDocument = this.getJson(row, this.presetFields);
-                this.preset(this.rowDocument);
-            }
-        } else {
-            this.ref = null;
-            this.schema = null;
-            this.hideFields = null;
-            this.disabled = false;
-            this.isExist = false;
-        }
-    }
-
-    onSubmit(type?: string) {
-        if (this.disabled) {
+    public onSubmit(form: UntypedFormGroup) {
+        if (this.disabled || this.loading) {
             return;
         }
-        if (type === 'page' && this.loading) {
-            return;
-        }
-        if (type === 'dialog' && this.dialogLoading) {
-            return;
-        }
-        if (this.dataForm.valid) {
-            const data = this.dataForm.getRawValue();
-            this.prepareDataFrom(data);
-            this.dialogLoading = true;
+        if (form.valid) {
+            const data = form.getRawValue();
             this.loading = true;
+            prepareVcData(data);
             this.policyEngineService
                 .setBlockData(this.id, this.policyId, {
                     document: data,
                     ref: this.ref,
                 })
-                .subscribe(
-                    () => {
-                        setTimeout(() => {
-                            if (this.dialogRef) {
-                                this.dialogRef.close();
-                                this.dialogRef = null;
-                            }
-                            this.dialogLoading = false;
-                        }, 1000);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.dialogLoading = false;
+                .subscribe(() => {
+                    setTimeout(() => {
                         this.loading = false;
-                    }
-                );
+                    }, 1000);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
         }
     }
 
-    prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
-        }
-    }
-
-    preset(document: any) {
+    public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
     }
 
-    onCancel(): void {
-        if (this.dialogRef) {
-            this.dialogRef.close();
-            this.dialogRef = null;
-        }
-    }
-
-    onDialog() {
-        this.dataForm.reset();
+    public onDialog() {
         if (this.needPreset && this.rowDocument) {
             this.preset(this.rowDocument);
         } else {
             this.presetDocument = null;
         }
 
-        if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: `100vw`,
-                maxWidth: '100vw',
-
-                position: {
-                    bottom: '0',
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                disableClose: true,
-                autoFocus: false,
-                data: this,
-            });
-        } else {
-            this.dialogRef = this.dialog.open(this.dialogTemplate, {
-                width: '850px',
-                disableClose: true,
-                data: this,
-            });
-        }
+        const dialogRef = this.dialogService.open(RequestDocumentBlockDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: this
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
-    onRestoreClick() {
+    public onRestoreClick() {
         const presetDocument = Array.isArray(
             this.restoreData.document?.credentialSubject
         )
@@ -337,22 +291,14 @@ export class RequestDocumentBlockComponent implements OnInit {
         this.restoreData = null;
     }
 
-    onDryRun() {
-        const presetDocument = DocumentGenerator.generateDocument(this.schema);
-        this.preset(presetDocument);
-    }
-
-    handleCancelBtnEvent(value: boolean, data: any) {
-        data.onCancel();
-    }
-
-    handleSubmitBtnEvent(value: boolean, data: any) {
-        if (data.dataForm.valid || !this.loading || !this.dialogLoading) {
-            data.onSubmit();
+    public onDryRun() {
+        if (this.schema) {
+            const presetDocument = DocumentGenerator.generateDocument(this.schema);
+            this.preset(presetDocument);
         }
     }
 
-    onCancelPage(value: boolean) {
+    public onCancelPage(value: boolean) {
         this.router.navigate(['/policy-viewer']);
     }
 }

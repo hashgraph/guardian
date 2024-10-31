@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IFormula, IVariable } from '../../models/assessment';
+import { IFormula, IVariable } from '../../../common/models/assessment';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Formula } from 'src/app/utils';
 

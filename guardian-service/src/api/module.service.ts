@@ -527,9 +527,9 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 delete module.messageId;
                 delete module.createDate;
                 module.uuid = GenerateUUIDv4();
-                module.creator = owner;
-                module.owner = owner;
-                module.status = 'DRAFT';
+                module.creator = owner.creator;
+                module.owner = owner.owner;
+                module.status = ModuleStatus.DRAFT;
                 module.type = 'CUSTOM';
                 if (await DatabaseServer.getModule({ name: module.name })) {
                     module.name = module.name + '_' + Date.now();

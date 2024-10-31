@@ -10,8 +10,8 @@
     }
 
     &-disabled {
-        fill: var(--guardian-disabled-color);
-        color: var(--guardian-disabled-color);
+        fill: var(--guardian-disabled-icon);
+        color: var(--guardian-disabled-icon);
     }
 
     &-delete {
@@ -27,6 +27,11 @@
     &-failure {
         fill: var(--guardian-failure-color);
         color: var(--guardian-failure-color);
+    }
+
+    &-warning {
+        fill: var(--guardian-warning-color);
+        color: var(--guardian-warning-color);
     }
 
     &-close {

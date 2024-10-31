@@ -12,7 +12,6 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { NewPolicyStatisticsDialog } from './dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
@@ -31,7 +30,6 @@ import { StatisticPreviewDialog } from './dialogs/statistic-preview-dialog/stati
     declarations: [
         NewPolicyStatisticsDialog,
         ScoreDialog,
-        TreeGraphComponent,
         StatisticPreviewDialog,
         StatisticAssessmentConfigurationComponent,
         StatisticAssessmentViewComponent,

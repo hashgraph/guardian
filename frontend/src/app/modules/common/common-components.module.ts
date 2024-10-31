@@ -34,6 +34,11 @@ import { PaginatorComponent } from './paginator/paginator.component';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
+import { TreeGraphComponent } from './tree-graph/tree-graph.component';
+import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
+import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
+import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { TabViewModule } from 'primeng/tabview';
 
 @NgModule({
     declarations: [
@@ -58,7 +63,10 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         AlertComponent,
         PaginatorComponent,
         StatusDropdown,
-        CustomCustomDialogComponent
+        CustomCustomDialogComponent,
+        TreeGraphComponent,
+        GuardianSwitchButton,
+        ImportEntityDialog
     ],
     imports: [
         CommonModule,
@@ -73,10 +81,13 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         DropdownModule,
         ProgressBarModule,
         ButtonModule,
+        TabViewModule,
+        DynamicDialogModule,
         AngularSvgIconModule.forRoot()
     ],
     providers: [
         provideNgxMask(),
+        DialogService
     ],
     exports: [
         DatetimePicker,
@@ -100,7 +111,10 @@ import { CustomCustomDialogComponent } from './custom-confirm-dialog/custom-conf
         PaginatorComponent,
         DataInputDialogComponent,
         StatusDropdown,
-        CustomCustomDialogComponent
+        CustomCustomDialogComponent,
+        TreeGraphComponent,
+        GuardianSwitchButton,
+        ImportEntityDialog
     ]
 })
 export class CommonComponentsModule { }

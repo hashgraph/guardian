@@ -152,21 +152,21 @@ export class UserContractConfigComponent implements OnInit {
     }
 
     viewRetireRequest(document: any) {
-        this.dialogService.open(
-            VCViewerDialog,
-            {
-                width: '850px',
-                closable: true,
-                header: 'VC',
-                styleClass: 'custom-dialog',
-                data: {
-                    id: document.id,
-                    dryRun: !!document.dryRunId,
-                    viewDocument: true,
-                    document: document.document,
-                    type: 'VC',
-                },
+        const title = `VC Document`;
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: title,
+                row: document,
+                id: document.id,
+                dryRun: !!document.dryRunId,
+                viewDocument: true,
+                document: document.document,
+                type: 'VC',
             }
-        );
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 }

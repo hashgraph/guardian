@@ -34,8 +34,8 @@ export class TagsExplorerDialog {
     public selectedTags: TagMapItem[] = [];
     public user: UserPermissions;
 
-    public get canCreate():boolean {
-        if(this.user) {
+    public get canCreate(): boolean {
+        if (this.user) {
             return this.user.TAGS_TAG_CREATE;
         } else {
             return true;
@@ -197,20 +197,20 @@ export class TagsExplorerDialog {
 
     public openVCDocument(item: any, title: string) {
         const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            header: title,
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
+                row: item,
                 dryRun: !!item.dryRunId,
                 document: item.document,
                 title: title,
                 type: 'Document',
                 viewDocument: false,
                 toggle: false
-            },
-            closable: true,
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 }

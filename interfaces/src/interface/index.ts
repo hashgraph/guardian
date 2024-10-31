@@ -42,3 +42,4 @@ export * from './policy-tool-metadata.interface.js';
 export * from './sign-options.interface.js'
 export * from './owner.interface.js'
 export * from './statistic.interface.js'
+export * from './schema-rules.interface.js'

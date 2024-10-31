@@ -92,4 +92,23 @@
             }
         }
     }
+
+    &.radio-button-32 {
+        .p-radiobutton {
+            width: 32px;
+            height: 32px;
+            line-height: 32px;
+            padding: 4px;
+
+            .p-radiobutton-box {
+                width: 16px;
+                height: 16px;
+
+                .p-radiobutton-icon {
+                    width: 8px;
+                    height: 8px;
+                }
+            }
+        }
+    }
 }

@@ -782,35 +782,34 @@ export class MessagesReportBlockComponent implements OnInit {
     public onOpenDocument(message: any) {
         if (message.type === 'DID-Document') {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'DID',
-                styleClass: 'custom-dialog',
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
                 data: {
+                    row: null,
                     document: message.document,
-                    title: 'Document',
+                    title: 'DID Document',
                     type: 'JSON',
                     viewDocument: false
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
+            dialogRef.onClose.subscribe(async (result) => { });
         } else {
+
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'VC',
-                styleClass: 'custom-dialog',
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
                 data: {
+                    row: null,
                     document: message.document,
-                    title: 'Document',
+                    title: 'VC Document',
                     type: 'VC',
                     viewDocument: true,
                     schema: message.__schema,
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
+            dialogRef.onClose.subscribe(async (result) => { });
         }
     }
 
