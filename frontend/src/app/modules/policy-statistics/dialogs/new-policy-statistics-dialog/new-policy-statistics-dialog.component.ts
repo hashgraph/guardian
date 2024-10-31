@@ -16,21 +16,37 @@ export class NewPolicyStatisticsDialog {
         description: new FormControl<string>(''),
         policy: new FormControl<any>(null, Validators.required)
     });
+    public title: string;
+    public action: string;
+    public readonly: boolean;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private dialogService: DialogService,
     ) {
+        this.title = this.config.data?.title || '';
+        this.action = this.config.data?.action || '';
         this.policies = this.config.data?.policies || [];
         this.policies = this.policies.filter((p) => p.instanceTopicId);
+        const statistic = this.config.data?.statistic;
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
-        this.dataForm.setValue({
-            name: '',
-            description: '',
-            policy: this.policy
-        })
+        if (statistic) {
+            this.readonly = true;
+            this.dataForm.setValue({
+                name: statistic.name || 'N\\A',
+                description: statistic.description || 'N\\A',
+                policy: this.policy
+            })
+        } else {
+            this.readonly = false;
+            this.dataForm.setValue({
+                name: '',
+                description: '',
+                policy: this.policy
+            })
+        }
     }
 
     public get currentPolicy(): any {

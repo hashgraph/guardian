@@ -130,7 +130,8 @@
         </div>
 
         <div (click)="onAdd($event)" class="add-btn">
-            <mat-icon>add</mat-icon>
+<!--            <mat-icon>add</mat-icon>-->
+            <i class="pi pi-plus toolbar-icons"></i>
             Add Field
         </div>
 
@@ -296,7 +297,8 @@
                             (click)="onConditionFieldAdd(condition, 'then')"
                             class="add-btn"
                         >
-                            <mat-icon>add</mat-icon>
+<!--                            <mat-icon>add</mat-icon>-->
+                            <i class="pi pi-plus toolbar-icons"></i>
                             Add THEN Field
                         </div>
 
@@ -333,20 +335,23 @@
                         </div>
 
                         <div (click)="onConditionFieldAdd(condition, 'else')" class="add-btn">
-                            <mat-icon>add</mat-icon>
+<!--                            <mat-icon>add</mat-icon>-->
+                            <i class="pi pi-plus toolbar-icons"></i>
                             Add ELSE Field
                         </div>
                     </div>
 
                     <div (click)="onConditionRemove(condition)" class="rmv-btn">
-                        <mat-icon>remove</mat-icon>
+<!--                        <mat-icon>remove</mat-icon>-->
+                        <i class="pi pi-trash"></i>
                         Remove Condition
                     </div>
                 </div>
             </div>
 
             <div (click)="onConditionAdd()" class="add-btn">
-                <mat-icon>add</mat-icon>
+<!--                <mat-icon>add</mat-icon>-->
+                <i class="pi pi-plus toolbar-icons"></i>
                 Add Condition
             </div>
         </ng-template>

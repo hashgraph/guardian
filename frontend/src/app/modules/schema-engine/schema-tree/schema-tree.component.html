@@ -1,9 +1,15 @@
 <div #main>
     <div mat-dialog-title class="dialog-header">
-        <h1>{{schema.name}}</h1>
+        <h1>{{ schema.name }}</h1>
         <div class="dialog-actions">
-            <button mat-icon-button class="download" (click)="download()"><mat-icon>download</mat-icon></button>
-            <button mat-icon-button class="close" mat-dialog-close><mat-icon>close</mat-icon></button>
+            <button mat-icon-button class="download" (click)="download()">
+                <!--                <mat-icon>download</mat-icon>-->
+                <i class="pi pi-download"></i>
+            </button>
+            <button mat-icon-button class="close" mat-dialog-close>
+                <!--                <mat-icon>close</mat-icon>-->
+                <i class="pi pi-times"></i>
+            </button>
         </div>
     </div>
 

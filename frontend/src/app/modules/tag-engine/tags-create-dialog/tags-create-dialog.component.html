@@ -29,7 +29,9 @@
                 {{ schema.name }}
             </div>
             <div (click)="onDeleteArtifact()" class="delete-artifact">
-                <mat-icon>delete</mat-icon>
+                <!--                <mat-icon>delete</mat-icon>-->
+
+                <i class="pi pi-trash"></i>
             </div>
             <form [formGroup]="schemaForm">
                 <app-schema-form [formGroup]="schemaForm" [schema]="schema" [showButtons]="false"></app-schema-form>
@@ -48,11 +50,13 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <mat-icon>close</mat-icon>
+                <!--                <mat-icon>close</mat-icon>-->
+
+                <i class="pi pi-times"></i>
             </div>
         </div>
         <div class="g-dialog-title">
-            {{title}}
+            {{ title }}
         </div>
         <div class="g-dialog-actions">
             <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="disabled">
@@ -76,7 +80,9 @@
 
             <div *ngIf="schemas && schemas.length" class="artifact-container">
                 <div *ngIf="!schema" class="add-artifact" (click)="onAddArtifact(selector)">
-                    <mat-icon class="add-icon">add</mat-icon>
+                    <!--                    <mat-icon class="add-icon">add</mat-icon>-->
+
+                    <i class="pi pi-plus add-icon"></i>
                     <div class="btn-name">
                         Add Document
                     </div>
@@ -84,7 +90,7 @@
 
                 <mat-select #selector class="artifact-selector" [(value)]="schema" (selectionChange)="onSelectSchema()">
                     <mat-option *ngFor="let schema of schemas" [value]="schema">
-                        <span>{{schema.name}}</span>
+                        <span>{{ schema.name }}</span>
                     </mat-option>
                 </mat-select>
 
@@ -100,13 +106,16 @@
 
                 <div *ngIf="schema" class="artifact-form">
                     <div class="artifact-form-label">
-                        {{schema.name}}
+                        {{ schema.name }}
                     </div>
                     <div class="delete-artifact" (click)="onDeleteArtifact()">
-                        <mat-icon>delete</mat-icon>
+                        <!--                        <mat-icon>delete</mat-icon>-->
+
+                        <i class="pi pi-times"></i>
                     </div>
                     <form [formGroup]="schemaForm">
-                        <app-schema-form [formGroup]="schemaForm" [schema]="schema" [showButtons]="false"></app-schema-form>
+                        <app-schema-form [formGroup]="schemaForm" [schema]="schema"
+                                         [showButtons]="false"></app-schema-form>
                     </form>
                 </div>
             </div>

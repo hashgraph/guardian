@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
@@ -8,6 +8,7 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
 import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 
 interface IColumn {
@@ -105,6 +106,12 @@ export class StatisticDefinitionsComponent implements OnInit {
             size: '56',
             tooltip: false
         }, {
+            id: 'export',
+            title: '',
+            type: 'text',
+            size: '56',
+            tooltip: false
+        }, {
             id: 'options',
             title: '',
             type: 'text',
@@ -148,6 +155,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
+            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
                 instanceTopicId: null
@@ -226,12 +234,13 @@ export class StatisticDefinitionsComponent implements OnInit {
     public onCreate() {
         const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
             showHeader: false,
-            header: 'Create New',
-            width: '640px',
+            width: '720px',
             styleClass: 'guardian-dialog',
             data: {
+                title: 'Create New',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
+                action: 'Create'
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -248,6 +257,72 @@ export class StatisticDefinitionsComponent implements OnInit {
             .subscribe((newItem) => {
                 this.loadData();
             }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    public onImport() {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.Statistic,
+            }
+        });
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
+                this.importDetails(result);
+            }
+        });
+    }
+
+    private importDetails(result: IImportEntityResult) {
+        const { type, data, statistic } = result;
+        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: 'Preview',
+                action: 'Import',
+                policies: this.allPolicies,
+                policy: this.currentPolicy,
+                statistic
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                this.loading = true;
+                this.policyStatisticsService
+                    .import(result.policyId, data)
+                    .subscribe((newItem) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+    }
+
+    public onExport(item: any) {
+        this.loading = true;
+        this.policyStatisticsService.export(item.id)
+            .subscribe((fileBuffer) => {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-statistic'
+                    })
+                );
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.statistic`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                downloadLink.remove();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, (error) => {
                 this.loading = false;
             });
     }

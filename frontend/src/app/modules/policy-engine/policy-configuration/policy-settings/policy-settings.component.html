@@ -4,7 +4,9 @@
     </div>
     <div class="settings-header">
         <div class="settings-header-icon">
-            <mat-icon>settings</mat-icon>
+            <!--            <mat-icon>settings</mat-icon>-->
+
+            <i class="pi pi-cog"></i>
         </div>
         <div class="settings-header-path">
             <span>Settings</span>
@@ -21,7 +23,9 @@
     <div class="settings-body">
         <div class="settings-menu">
             <div class="settings-menu-item" [attr.active]="settingsTab===0" (click)="onSettingsTab(0)">
-                <mat-icon>palette</mat-icon>
+                <!--                <mat-icon>palette</mat-icon>-->
+
+                <i class="pi pi-palette"></i>
                 <span>Themes</span>
             </div>
         </div>
@@ -33,36 +37,48 @@
                         <mat-label>Theme</mat-label>
                         <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()" disableOptionCentering="true">
                             <mat-option *ngFor="let t of themes" [value]="t">
-                                <span>{{t.name}}</span>
+                                <span>{{ t.name }}</span>
                             </mat-option>
                         </mat-select>
                     </mat-form-field>
                 </div>
                 <ng-container *ngIf="theme">
                     <div class="settings-sub-button" (click)="newTheme()">
-                        <mat-icon>add</mat-icon>
+                        <!--                        <mat-icon>add</mat-icon>-->
+
+                        <i class="pi pi-plus toolbar-icons"></i>
                         <span>New</span>
                     </div>
                     <div class="settings-sub-button" (click)="newTheme(theme)">
-                        <mat-icon>content_copy</mat-icon>
+                        <!--                        <mat-icon>content_copy</mat-icon>-->
+
+                        <i class="pi pi-copy"></i>
                         <span>Copy</span>
                     </div>
                     <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="editTheme(theme)">
-                        <mat-icon>edit</mat-icon>
+                        <!--                        <mat-icon>edit</mat-icon>-->
+
+                        <i class="pi pi-pencil"></i>
                         <span>Edit</span>
                     </div>
                     <div class="settings-button-delimiter"></div>
                     <div class="settings-sub-button" (click)="importTheme()">
-                        <mat-icon>file_open</mat-icon>
+                        <!--                        <mat-icon>file_open</mat-icon>-->
+
+                        <i class="pi pi-file-o"></i>
                         <span>Import</span>
                     </div>
                     <div *ngIf="!theme.readonly" class="settings-sub-button" (click)="exportTheme(theme)">
-                        <mat-icon>import_export</mat-icon>
+                        <!--                        <mat-icon>import_export</mat-icon>-->
+
+                        <i class="pi pi-sort-alt"></i>
                         <span>Export</span>
                     </div>
                     <div *ngIf="!theme.readonly" class="settings-button-delimiter"></div>
                     <div *ngIf="!theme.readonly" class="settings-sub-button del" (click)="deleteTheme(theme)">
-                        <mat-icon>delete</mat-icon>
+                        <!--                        <mat-icon>delete</mat-icon>-->
+
+                        <i class="pi pi-trash"></i>
                         <span>Delete</span>
                     </div>
                 </ng-container>
@@ -71,18 +87,23 @@
             <div class="rules-container" [attr.readonly]="theme.readonly">
                 <div class="rules-header">
                     <div class="switch-btn">
-                        <switch-button [on-label]="'Syntax'" [off-label]="'Blocks'" [(value)]="isSyntax"></switch-button>
+                        <switch-button [on-label]="'Syntax'" [off-label]="'Blocks'"
+                                       [(value)]="isSyntax"></switch-button>
                     </div>
                 </div>
                 <ng-container *ngIf="!isSyntax">
                     <div class="rule-color" *ngFor="let rule of theme.rules; let i=index">
                         <div class="rule-color-number">
                             <div class="rule-up" (click)="ruleUp(rule)">
-                                <mat-icon>arrow_drop_up</mat-icon>
+                                <!--                                <mat-icon>arrow_drop_up</mat-icon>-->
+
+                                <i class="pi pi-chevron-up"></i>
                             </div>
-                            <div>#{{i+1}}</div>
+                            <div>#{{ i + 1 }}</div>
                             <div class="rule-down" (click)="ruleDown(rule)">
-                                <mat-icon>arrow_drop_down</mat-icon>
+                                <!--                                <mat-icon>arrow_drop_down</mat-icon>-->
+
+                                <i class="pi pi-chevron-down"></i>
                             </div>
                         </div>
 
@@ -100,14 +121,14 @@
                                 </div>
 
                                 <div *ngIf="rule.type === 'type' || rule.type === 'api' || rule.type === 'role'"
-                                    class="rule-condition-label">
+                                     class="rule-condition-label">
                                     Equal
                                 </div>
 
                                 <div *ngIf="rule.type === 'type'" class="rule-condition-select">
                                     <mat-select placeholder="Blocks" [(ngModel)]="rule.multipleValue" multiple>
                                         <mat-option *ngFor="let block of allBlocks" [value]="block.type">
-                                            {{block.name}}
+                                            {{ block.name }}
                                         </mat-option>
                                     </mat-select>
                                 </div>
@@ -126,7 +147,7 @@
                                         <mat-option value="NO_ROLE">No Role</mat-option>
                                         <mat-option value="ANY_ROLE">Any Role</mat-option>
                                         <mat-option *ngFor="let role of roles" [value]="role">
-                                            Role {{role}}
+                                            Role {{ role }}
                                         </mat-option>
                                     </mat-select>
                                 </div>
@@ -146,21 +167,21 @@
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
+                                                    [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Text</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
+                                                    [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Background</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
+                                                    [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Border</div>
                                 </div>
@@ -221,7 +242,9 @@
                         </div>
                         <div class="rule-color-delete">
                             <div class="delete-btn" (click)="onDeleteRule(rule)">
-                                <mat-icon>delete</mat-icon>
+                                <!--                                <mat-icon>delete</mat-icon>-->
+
+                                <i class="pi pi-trash"></i>
                             </div>
                         </div>
                     </div>
@@ -242,21 +265,24 @@
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="theme.default.text"></ngx-colors>
+                                                    [palette]="colorPalette"
+                                                    [(ngModel)]="theme.default.text"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Text</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="theme.default.background"></ngx-colors>
+                                                    [palette]="colorPalette"
+                                                    [(ngModel)]="theme.default.background"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Background</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-value">
                                         <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="theme.default.border"></ngx-colors>
+                                                    [palette]="colorPalette"
+                                                    [(ngModel)]="theme.default.border"></ngx-colors>
                                     </div>
                                     <div class="rule-color-prop-name">Border</div>
                                 </div>
@@ -321,7 +347,9 @@
 
                     <div>
                         <div class="new-rule" (click)="onAddRule()">
-                            <mat-icon class="new-icon">add</mat-icon>
+                            <!--                            <mat-icon class="new-icon">add</mat-icon>-->
+
+                            <i class="pi pi-plus"></i>
                             <div class="new-rule-name">
                                 Create Rule
                             </div>
@@ -334,20 +362,20 @@
                         <div class="rule-color-number">
                         </div>
                         <div class="rule-color-syntax">
-                                <div class="rule-color-syntax-label">
-                                    Group Name
+                            <div class="rule-color-syntax-label">
+                                Group Name
+                            </div>
+                            <div [ngStyle]="{ 'color': syntaxGroup.color }"> {{ syntaxGroup.name }}</div>
+                            <div class="rule-color-syntax-label">
+                                Color
+                            </div>
+                            <div class="rule-color-prop">
+                                <div class="rule-color-prop-value">
+                                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
+                                                [palette]="colorPalette" [(ngModel)]="syntaxGroup.color"></ngx-colors>
                                 </div>
-                                <div [ngStyle]="{ 'color': syntaxGroup.color }"> {{syntaxGroup.name}}</div>
-                                <div class="rule-color-syntax-label">
-                                    Color
-                                </div>
-                                <div class="rule-color-prop">
-                                    <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                            [palette]="colorPalette" [(ngModel)]="syntaxGroup.color"></ngx-colors>
-                                    </div>
-                                    <div class="rule-color-prop-name">Text Color</div>
-                                </div>
+                                <div class="rule-color-prop-name">Text Color</div>
+                            </div>
                         </div>
                     </div>
                 </ng-container>

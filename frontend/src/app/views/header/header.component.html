@@ -2,7 +2,7 @@
     <mat-toolbar color="primary">
         <span class="btn-home desktop-home" #btnHome (click)="onHome()">
             <div class="company-branding">
-                <img width="45px" height="45px" class="company-logo" />
+                <img width="45px" height="45px" class="company-logo"/>
                 <span class="company-name">Guardian</span>
             </div>
         </span>
@@ -15,34 +15,37 @@
                 <div class="nav-list-item" [matMenuTriggerFor]="subMenu2" [attr.active]="isActiveLink('SR_POLICIES')">
                     <span class="nav-menu-item">
                         Policies
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+                        <i class="pi pi-chevron-down"></i>
                     </span>
                 </div>
                 <div class="nav-list-item" [matMenuTriggerFor]="subMenu1" [attr.active]="isActiveLink('SR_TOKENS')">
                     <span class="nav-menu-item">
                         Tokens
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+                        <i class="pi pi-chevron-down"></i>
                     </span>
                 </div>
                 <div class="nav-list-item" [matMenuTriggerFor]="subMenu3" [attr.active]="isActiveLink('SR_ADMIN')">
                     <span class="nav-menu-item">
                         Administration
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+                        <i class="pi pi-chevron-down"></i>
                     </span>
                 </div>
             </div>
             <mat-menu #subMenu1="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
-                        (click)="routActive('SR_TOKENS_LIST')">
+                         (click)="routActive('SR_TOKENS_LIST')">
                         Tokens
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
-                        (click)="routActive('SR_CONTRACTS')">
+                         (click)="routActive('SR_CONTRACTS')">
                         Retirement
                     </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
-                        (click)="routActive('SR_CONTRACTS_PAIRS')">
+                         (click)="routActive('SR_CONTRACTS_PAIRS')">
                         Token Pairs
                     </div>
                 </div>
@@ -50,43 +53,43 @@
             <mat-menu #subMenu2="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
-                        (click)="routActive('SR_SCHEMAS')">
+                         (click)="routActive('SR_SCHEMAS')">
                         Schemas
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_ARTIFACTS')"
-                        (click)="routActive('SR_ARTIFACTS')">
+                         (click)="routActive('SR_ARTIFACTS')">
                         Artifacts
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
-                        (click)="routActive('SR_MODULES')">
+                         (click)="routActive('SR_MODULES')">
                         Modules
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOOLS')"
-                        (click)="routActive('SR_TOOLS')">
+                         (click)="routActive('SR_TOOLS')">
                         Tools
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
-                        (click)="routActive('SR_POLICIES_LIST')">
+                         (click)="routActive('SR_POLICIES_LIST')">
                         Policies
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_SUGGESTIONS')"
-                        (click)="routActive('SR_SUGGESTIONS')">
+                         (click)="routActive('SR_SUGGESTIONS')">
                         Suggestions
                     </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
-                        (click)="routActive('SR_EDITOR')">
+                         (click)="routActive('SR_EDITOR')">
                         Policy Editor
                     </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_VIEWER')"
-                        (click)="routActive('SR_VIEWER')">
+                         (click)="routActive('SR_VIEWER')">
                         Policy Viewer
                     </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
-                        (click)="routActive('SR_COMPARE')">
+                         (click)="routActive('SR_COMPARE')">
                         Compare
                     </div>
                     <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_SEARCH')"
-                        (click)="routActive('SR_SEARCH')">
+                         (click)="routActive('SR_SEARCH')">
                         Search
                     </div>
                 </div>
@@ -94,14 +97,14 @@
             <mat-menu #subMenu3="matMenu" class="sub-nav-menu" backdropClass="sub-nav-backdrop">
                 <div class="sub-nav-list">
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
-                        (click)="routActive('SR_SETTINGS')">
+                         (click)="routActive('SR_SETTINGS')">
                         Settings
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_LOGS')" (click)="routActive('SR_LOGS')">
                         Logs
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')"
-                        (click)="routActive('SR_STATUS')">
+                         (click)="routActive('SR_STATUS')">
                         Status
                     </div>
                     <div (click)="routActive('SR_ABOUT')" [attr.active]="isActiveLink('SR_ABOUT')"
@@ -116,13 +119,15 @@
                     User Profile
                 </div>
                 <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
-                    (click)="routActive('USER_POLICIES')">
+                     (click)="routActive('USER_POLICIES')">
                     Policies
                 </div>
-                <div [attr.active]="isActiveLink('USER_TOKENS') || isActiveLink('USER_RETIRE')" [matMenuTriggerFor]="subMenuUserTokens"
+                <div [attr.active]="isActiveLink('USER_TOKENS') || isActiveLink('USER_RETIRE')"
+                     [matMenuTriggerFor]="subMenuUserTokens"
                      class="nav-list-item">
                     Tokens
-                    <mat-icon>arrow_drop_down</mat-icon>
+                    <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
+                    <i class="pi pi-chevron-down"></i>
                 </div>
             </div>
 
@@ -141,11 +146,11 @@
 
             <div *ngIf="isLogin && role==='AUDITOR'" class="nav-list" [attr.disabled]="commonLinksDisabled">
                 <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')"
-                    (click)="routActive('AUDITOR_UP')">
+                     (click)="routActive('AUDITOR_UP')">
                     Audit
                 </div>
                 <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
-                    (click)="routActive('AUDITOR_TRUST_CHAIN')">
+                     (click)="routActive('AUDITOR_TRUST_CHAIN')">
                     Trust Chain
                 </div>
             </div>
@@ -165,13 +170,15 @@
                 </div>
             </span>
 
-            <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts" [ngStyle]="{ 'margin': isLogin ? '0 22px' : 0 }">
+            <div class="user-content-info" *ngIf="isLogin || displayDemoAccounts"
+                 [ngStyle]="{ 'margin': isLogin ? '0 22px' : 0 }">
                 <div *ngIf="username" class="user-balance" [attr.balance-type]="balanceType">
-                    {{balance}}
+                    {{ balance }}
                 </div>
                 <div class="user-content-button" [matMenuTriggerFor]="menu">
                     <button *ngIf="isLogin" mat-icon-button class="user-info-icon">
-                        <mat-icon>{{menuIcon}}</mat-icon>
+                        <!--                        <mat-icon>{{menuIcon}}</mat-icon>-->
+                        <i [ngClass]="'pi pi-' + menuIcon"></i>
                     </button>
                 </div>
             </div>
@@ -183,88 +190,89 @@
                 <div class="menu-backdrop" (click)="closeNav()"></div>
                 <div class="nav-items">
                     <span class='material-icons' (click)="closeNav()">close</span>
-                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')" (click)="mobileRoutActive('SR_UP')">
+                    <div class="nav-list-item" [attr.active]="isActiveLink('SR_UP')"
+                         (click)="mobileRoutActive('SR_UP')">
                         User Profile
                     </div>
                     <div id="policies-nav" class="nav-list-item" (click)="openSubMenu('2')"
-                        [attr.active]="isActiveLink('SR_POLICIES')">
+                         [attr.active]="isActiveLink('SR_POLICIES')">
                         Policies
                     </div>
                     <div class="subnav-list" [attr.open]="subMenuOpen['2']">
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_SCHEMAS')"
-                            (click)="mobileRoutActive('SR_SCHEMAS')">
+                             (click)="mobileRoutActive('SR_SCHEMAS')">
                             Schemas
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_ARTIFACTS')"
-                            (click)="mobileRoutActive('SR_ARTIFACTS')">
+                             (click)="mobileRoutActive('SR_ARTIFACTS')">
                             Artifacts
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_MODULES')"
-                            (click)="mobileRoutActive('SR_MODULES')">
+                             (click)="mobileRoutActive('SR_MODULES')">
                             Modules
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOOLS')"
-                            (click)="mobileRoutActive('SR_TOOLS')">
+                             (click)="mobileRoutActive('SR_TOOLS')">
                             Tools
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_POLICIES_LIST')"
-                            (click)="mobileRoutActive('SR_POLICIES_LIST')">
+                             (click)="mobileRoutActive('SR_POLICIES_LIST')">
                             Policies
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_SUGGESTIONS')"
-                            (click)="mobileRoutActive('SR_SUGGESTIONS')">
+                             (click)="mobileRoutActive('SR_SUGGESTIONS')">
                             Suggestions
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_EDITOR')"
-                            (click)="mobileRoutActive('SR_EDITOR')">
+                             (click)="mobileRoutActive('SR_EDITOR')">
                             Policy Editor
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_VIEWER')"
-                            (click)="mobileRoutActive('SR_VIEWER')">
+                             (click)="mobileRoutActive('SR_VIEWER')">
                             Policy Viewer
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_COMPARE')"
-                            (click)="mobileRoutActive('SR_COMPARE')">
+                             (click)="mobileRoutActive('SR_COMPARE')">
                             Compare
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_SEARCH')"
-                            (click)="mobileRoutActive('SR_SEARCH')">
+                             (click)="mobileRoutActive('SR_SEARCH')">
                             Search
                         </div>
                     </div>
                     <div id="tokens-nav" class="nav-list-item" (click)="openSubMenu('1')"
-                        [attr.active]="isActiveLink('SR_TOKENS')">
+                         [attr.active]="isActiveLink('SR_TOKENS')">
                         Tokens
                     </div>
                     <div class="subnav-list" [attr.open]="subMenuOpen['1']">
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_TOKENS_LIST')"
-                            (click)="mobileRoutActive('SR_TOKENS_LIST')">
+                             (click)="mobileRoutActive('SR_TOKENS_LIST')">
                             Tokens
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_CONTRACTS')"
-                            (click)="mobileRoutActive('SR_CONTRACTS')">
+                             (click)="mobileRoutActive('SR_CONTRACTS')">
                             Retirement
                         </div>
                         <div class="nav-list-item only-active" [attr.active]="isActiveLink('SR_CONTRACTS_PAIRS')"
-                            (click)="mobileRoutActive('SR_CONTRACTS_PAIRS')">
+                             (click)="mobileRoutActive('SR_CONTRACTS_PAIRS')">
                             Token Pairs
                         </div>
                     </div>
                     <div id="admin-nav" class="nav-list-item" (click)="openSubMenu('3')"
-                        [attr.active]="isActiveLink('SR_ADMIN')">
+                         [attr.active]="isActiveLink('SR_ADMIN')">
                         Admin Panel
                     </div>
                     <div class="subnav-list" [attr.open]="subMenuOpen['3']">
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_SETTINGS')"
-                            (click)="mobileRoutActive('SR_SETTINGS')">
+                             (click)="mobileRoutActive('SR_SETTINGS')">
                             Settings
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_LOGS')"
-                            (click)="mobileRoutActive('SR_LOGS')">
+                             (click)="mobileRoutActive('SR_LOGS')">
                             Logs
                         </div>
                         <div class="nav-list-item" [attr.active]="isActiveLink('SR_STATUS')"
-                            (click)="mobileRoutActive('SR_STATUS')">
+                             (click)="mobileRoutActive('SR_STATUS')">
                             Status
                         </div>
                     </div>
@@ -276,15 +284,16 @@
                 <div class="menu-backdrop" (click)="closeNav()"></div>
                 <div class="nav-items">
                     <span class='material-icons' (click)="closeNav()">close</span>
-                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')" (click)="mobileRoutActive('USER_UP')">
+                    <div class="nav-list-item" [attr.active]="isActiveLink('USER_UP')"
+                         (click)="mobileRoutActive('USER_UP')">
                         User Profile
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_POLICIES')"
-                        (click)="mobileRoutActive('USER_POLICIES')">
+                         (click)="mobileRoutActive('USER_POLICIES')">
                         Policies
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('USER_TOKENS')"
-                        (click)="mobileRoutActive('USER_TOKENS')">
+                         (click)="mobileRoutActive('USER_TOKENS')">
                         Tokens
                     </div>
                 </div>
@@ -296,11 +305,11 @@
                 <div class="nav-items">
                     <span class='material-icons' (click)="closeNav()">close</span>
                     <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_UP')"
-                        (click)="mobileRoutActive('AUDITOR_UP')">
+                         (click)="mobileRoutActive('AUDITOR_UP')">
                         Audit
                     </div>
                     <div class="nav-list-item" [attr.active]="isActiveLink('AUDITOR_TRUST_CHAIN')"
-                        (click)="mobileRoutActive('AUDITOR_TRUST_CHAIN')">
+                         (click)="mobileRoutActive('AUDITOR_TRUST_CHAIN')">
                         Trust Chain
                     </div>
                 </div>
@@ -315,16 +324,16 @@
                 <div *ngIf="balanceType && userInfoVisible" id="user-info" class="user-info">
                     <div class="name">
                         <p class="user-name">
-                            {{username}}
+                            {{ username }}
                         </p>
                     </div>
                     <div class="profile-item">
                         <div class="profile-item-name">HEDERA ID:</div>
-                        <div class="profile-item-value">{{hederaAccountID}}</div>
+                        <div class="profile-item-value">{{ hederaAccountID }}</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-item-name"> BALANCE:</div>
-                        <div class="profile-item-value"> {{balance}}</div>
+                        <div class="profile-item-value"> {{ balance }}</div>
                     </div>
                 </div>
             </div>
@@ -335,12 +344,12 @@
             <app-compare-viewer *ngIf="username"></app-compare-viewer>
             <app-notification *ngIf="username"></app-notification>
             <div *ngIf="username" class="user-balance desktop-user-balance" [attr.balance-type]="balanceType">
-                {{balance}}
+                {{ balance }}
             </div>
             <div class="user-content-button" [matMenuTriggerFor]="menu">
                 <ng-container *ngIf="username; else notLogged">
                     <div class="desktop-user-name">
-                        <span>{{username}}</span>
+                        <span>{{ username }}</span>
                     </div>
                 </ng-container>
                 <ng-template #notLogged>
@@ -349,37 +358,41 @@
                     </div>
                 </ng-template>
                 <button mat-icon-button class="user-info-icon">
-                    <mat-icon>{{menuIcon}}</mat-icon>
+                    <!--                    <mat-icon>{{menuIcon}}</mat-icon>-->
+                    <i [ngClass]="'pi pi-' + menuIcon"></i>
                 </button>
             </div>
         </div>
 
         <mat-menu #menu="matMenu" xPosition="before">
-            <button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding</button>
+            <button *ngIf="isLogin && role === 'STANDARD_REGISTRY'" mat-menu-item (click)="doBranding()">Branding
+            </button>
             <button *ngIf="isLogin" mat-menu-item (click)="logOut()">Log out</button>
 
             <div *ngIf="!isLogin" mat-menu-item class="demo-menu">
                 <div class="debug-user">
-                    <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
+                    <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry
+                    </button>
                     <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>
                     <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>
                     <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>
                     <button mat-raised-button (click)="authState.doLogin('Registrant','test')">Registrant</button>
                     <button mat-raised-button (click)="authState.doLogin('VVB','test')">VVB</button>
-                    <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>
+                    <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent
+                    </button>
                     <button mat-raised-button (click)="authState.doLogin('Verra','test')">Verra</button>
                 </div>
                 <div class="debug-user">
                     <div class="current-user"
-                        *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
-                        (click)="authState.doLogin(user.username, 'test')"
-                        [ngClass]="{ 'current-user-first' : isFirst, 'current-user-last': i === users.length - 1 }">
-                        <div class="current-user-name"><span>{{user.username}}</span> <span
-                                class="current-user-role">({{user.role}})</span></div>
+                         *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
+                         (click)="authState.doLogin(user.username, 'test')"
+                         [ngClass]="{ 'current-user-first' : isFirst, 'current-user-last': i === users.length - 1 }">
+                        <div class="current-user-name"><span>{{ user.username }}</span> <span
+                            class="current-user-role">({{ user.role }})</span></div>
                         <div class="current-user-policy-roles" *ngIf="user.policyRoles && user.policyRoles.length"
-                            [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
-                            matTooltipClass="policy-roles-tooltip">
-                            <b>User participates in {{user.policyRoles.length}} policies</b>
+                             [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+                             matTooltipClass="policy-roles-tooltip">
+                            <b>User participates in {{ user.policyRoles.length }} policies</b>
                         </div>
                     </div>
                 </div>

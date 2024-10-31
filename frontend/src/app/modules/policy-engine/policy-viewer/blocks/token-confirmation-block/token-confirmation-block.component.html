@@ -3,14 +3,19 @@
         <div class="title">Token {{ action }}</div>
         <div class="description">
             Please enter the private key for the account
-            (<hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>)
+            (
+            <hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>
+            )
             to <span>{{ action }}</span> it with the token <span>{{ tokenName }}</span>
-            (<hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>)
+            (
+            <hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>
+            )
         </div>
         <form class="form" [formGroup]="dataForm">
             <mat-form-field appearance="outline">
                 <mat-label>* Private Key</mat-label>
-                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key" type="password" />
+                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key"
+                       type="password"/>
                 <button
                     (click)="privateKeyInput.type === 'password'
                             ? (privateKeyInput.type = 'text')
@@ -19,9 +24,11 @@
                     mat-icon-button
                     matSuffix
                 >
-                    <mat-icon>
-                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}
-                    </mat-icon>
+                    <!--                    <mat-icon>-->
+                    <!--                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}-->
+                    <!--                    </mat-icon>-->
+                    <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+
                 </button>
             </mat-form-field>
             <div style="margin-top: 15px; margin-left: auto;">

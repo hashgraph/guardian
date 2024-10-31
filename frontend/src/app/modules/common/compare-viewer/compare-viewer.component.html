@@ -1,6 +1,6 @@
 <div class="context" *ngIf="count > 0">
 
-    <div 
+    <div
         [class.current]="active"
         class="item cursor-pointer"
     >
@@ -12,7 +12,7 @@
                 </span>
             </div>
         </div>
-        <div 
+        <div
             [class.hidden-logotype]="collapsed"
             class="span-icon"
             (click)="onMenuOpened($event)"
@@ -30,10 +30,10 @@
         </div>
     </div>
 
-    <mat-menu 
-        #compareMenu="matMenu" 
-        yPosition="below" 
-        xPosition="after" 
+    <mat-menu
+        #compareMenu="matMenu"
+        yPosition="below"
+        xPosition="after"
         class="compare-menu-panel">
         <div class="compare-menu" (click)="$event.stopPropagation()">
             <div class="compare-header">
@@ -41,23 +41,25 @@
             </div>
             <div *ngFor="let item of ids" class="compare-item">
                 <div class="compare-item-select" (click)="onSelect(item)">
-                    <input 
-                    class="compare-checkbox" 
-                    type="checkbox" 
-                    [checked]="isSelected(item)">
+                    <input
+                        class="compare-checkbox"
+                        type="checkbox"
+                        [checked]="isSelected(item)">
                 </div>
                 <div class="compare-item-name" (click)="onSelect(item)">
-                    {{item}}
+                    {{ item }}
                 </div>
                 <div class="compare-item-delete" (click)="onDelete(item)">
-                    <mat-icon>delete</mat-icon>
+                    <!--                    <mat-icon>delete</mat-icon>-->
+
+                    <i class="pi pi-trash"></i>
                 </div>
             </div>
             <div class="compare-results">
-                <div class="compare-results-btn" 
-                    [attr.disable]="selectedCount<2" 
-                    (click)="onCompare()">
-                    Compare ({{selectedCount}})
+                <div class="compare-results-btn"
+                     [attr.disable]="selectedCount<2"
+                     (click)="onCompare()">
+                    Compare ({{ selectedCount }})
                 </div>
             </div>
         </div>

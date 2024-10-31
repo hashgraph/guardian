@@ -343,7 +343,9 @@
                     </div>
                     <div class="prop-table-value" [attr.prop-type]="field.propType">
                         <div class="compare-btn" (click)="compareSchema(field)">
-                            <mat-icon>search</mat-icon>
+<!--                            <mat-icon>search</mat-icon>-->
+
+                            <i class="pi pi-search"></i>
                         </div>
                         <span *ngIf="field.propType" [title]="field.value">
                             {{ field.value }}

@@ -63,6 +63,7 @@
         </div>
         <div class="guardian-user-page-buttons">
             <button 
+                *ngIf="user.STATISTICS_STATISTIC_CREATE"
                 (click)="onCreate()" 
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -72,6 +73,19 @@
                     </svg-icon>
                 </div>
                 <div class="guardian-button-label">Create New</div>
+            </button>
+
+            <button 
+                *ngIf="user.STATISTICS_STATISTIC_CREATE"
+                (click)="onImport()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/import.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Import</div>
             </button>
         </div>
     </div>
@@ -116,6 +130,17 @@
                                             </svg-icon>
                                         </div>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'export'">
+                                        <div 
+                                            class="guardian-icon-button big" 
+                                            (click)="onExport(row)">
+                                            <svg-icon 
+                                                class="icon-btn"
+                                                src="/assets/images/icons/export.svg"
+                                                [svgClass]="'icon-color-primary'">
+                                            </svg-icon>
+                                        </div>
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'options'">
                                         <button 
                                             [disabled]="row.status !== 'PUBLISHED'"
@@ -135,7 +160,7 @@
                                             [status]="row.status"
                                             [value]="row.status"
                                             [options]="statuses"
-                                            (change)="onChangeStatus($event, row)"></status-dropdown>
+                                            (onChange)="onChangeStatus($event, row)"></status-dropdown>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 

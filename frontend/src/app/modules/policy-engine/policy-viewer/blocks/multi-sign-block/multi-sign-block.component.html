@@ -21,11 +21,11 @@
         </div>
     </div>
     <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
-        <div class="progress-container" 
-            matTooltip="Click here to see more details" 
-            matTooltipPosition="above" 
+        <div class="progress-container"
+            matTooltip="Click here to see more details"
+            matTooltipPosition="above"
             matTooltipClass="helpText"
-            (click)="onDetails()" 
+            (click)="onDetails()"
             [matMenuTriggerFor]="menu2"
         >
             <div class="progress">
@@ -38,7 +38,9 @@
                 <div class="threshold" [style.left.%]="threshold"></div>
             </div>
             <div class="icon-details">
-                <mat-icon>info_outline</mat-icon>
+<!--                <mat-icon>info_outline</mat-icon>-->
+
+                <i class="pi pi-info-circle"></i>
             </div>
         </div>
         <mat-menu #menu2="matMenu">

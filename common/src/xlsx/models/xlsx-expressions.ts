@@ -102,7 +102,7 @@ export class XlsxExpressions {
                     throw new Error('Parent not found.');
                 }
             } else {
-                throw new Error('Invalid group level.');
+                throw new Error(`Invalid group level (${variable.name}).`);
             }
             last = variable;
             parents.set(variable.lvl, variable);

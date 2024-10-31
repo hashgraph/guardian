@@ -6,10 +6,6 @@
     position: relative;
     padding: 56px 48px 48px 48px;
 
-    .guardian-loading {
-        border-radius: 0px;
-    }
-
     .guardian-user-not-registered {
         position: absolute;
         left: 50%;
@@ -105,6 +101,10 @@
             display: flex;
             flex-direction: row;
             justify-content: flex-end;
+
+            button {
+                margin-left: 12px;
+            }
         }
     }
 
@@ -112,5 +112,19 @@
         height: 100%;
         width: 100%;
         position: relative;
+    }
+}
+
+.guardian-user-back-button {
+    height: 40px;
+    min-width: 170px;
+    width: min-content;
+
+    button {
+        height: 40px;
+        width: 100%;
+        padding-right: 18px;
+        font-size: 14px;
+        font-weight: 500;
     }
 }

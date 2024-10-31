@@ -1,20 +1,24 @@
 <mat-select [(value)]="value" [multiple]="multiple" [disabled]="readonly" (selectionChange)="onChange()">
     <mat-select-trigger>
-        <span class="custom">{{text}}</span>
+        <span class="custom">{{ text }}</span>
     </mat-select-trigger>
     <div class="components-search">
         <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
-        <mat-icon class="components-search-icon">search</mat-icon>
+        <!--        <mat-icon class="components-search-icon">search</mat-icon>-->
+
+        <i class="pi pi-search components-search-icon"></i>
     </div>
     <mat-option *ngFor="let item of searchData" [value]="item.value">
         <div class="block-name" [attr.root]="item.root">
             <div *ngIf="item.svg" class="block-icon">
-                <mat-icon class="svg-icon" [svgIcon]="item.icon"></mat-icon>
+                <!--                <mat-icon class="svg-icon" [svgIcon]="item.icon"></mat-icon>-->
+                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
             </div>
             <div *ngIf="!item.svg" class="block-icon">
-                <mat-icon>{{item.icon}}</mat-icon>
+                <!--                <mat-icon>{{item.icon}}</mat-icon>-->
+                <i [ngClass]="'pi pi-' + item.icon"></i>
             </div>
-            {{item.name}}
+            {{ item.name }}
         </div>
     </mat-option>
 </mat-select>

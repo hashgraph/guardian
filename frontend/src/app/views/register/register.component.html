@@ -1,9 +1,12 @@
 <div class="content login">
     <div class="overlay"></div>
-    <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
+    <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()"
+          *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
         <div class="login-header">
             <button class="login-header__back-button" (click)="setRole('')">
-                <mat-icon>chevron_left</mat-icon>
+                <!--                <mat-icon>chevron_left</mat-icon>-->
+
+                <i class="pi pi-chevron-left"></i>
                 <span>Back</span>
             </button>
             <span class="login-header__title">Create Account</span>
@@ -14,7 +17,7 @@
                 <mat-label>Username:</mat-label>
                 <input matInput formControlName="login" (input)="onInput()">
 
-                <span *ngIf="error" class="field-error">{{error}}</span>
+                <span *ngIf="error" class="field-error">{{ error }}</span>
                 <span *ngIf="shouldShowRequiredError('login')" class="field-error">
                     Value is required
                 </span>
@@ -30,16 +33,24 @@
                     </span>
                 </mat-form-field>
 
-                <mat-icon
+                <!--                <mat-icon-->
+                <!--                    *ngIf="showPasswordValue; else hidePassBtn"-->
+                <!--                    class="eye-icon"-->
+                <!--                    (click)="togglePasswordShow()"-->
+                <!--                >-->
+                <!--                    visibility_on-->
+                <!--                </mat-icon>-->
+
+                <i
                     *ngIf="showPasswordValue; else hidePassBtn"
-                    class="eye-icon"
+                    class="pi pi-eye eye-icon"
                     (click)="togglePasswordShow()"
-                >
-                    visibility_on
-                </mat-icon>
+                ></i>
 
                 <ng-template #hidePassBtn>
-                    <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
+                    <!--                    <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>-->
+
+                    <i class="pi pi-eye-slash eye-icon" (click)="togglePasswordShow()"></i>
                 </ng-template>
             </div>
 
@@ -56,16 +67,24 @@
                     </span>
                 </mat-form-field>
 
-                <mat-icon
+                <!--                <mat-icon-->
+                <!--                    *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"-->
+                <!--                    class="eye-icon"-->
+                <!--                    (click)="toggleConfirmPasswordShow()"-->
+                <!--                >-->
+                <!--                    visibility_on-->
+                <!--                </mat-icon>-->
+
+                <i
                     *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"
-                    class="eye-icon"
+                    class="pi pi-eye eye-icon"
                     (click)="toggleConfirmPasswordShow()"
-                >
-                    visibility_on
-                </mat-icon>
+                ></i>
 
                 <ng-template #hideConfirmPassBtn>
-                    <mat-icon class="eye-icon" (click)="toggleConfirmPasswordShow()">visibility_off</mat-icon>
+                    <!--                    <mat-icon class="eye-icon" (click)="toggleConfirmPasswordShow()">visibility_off</mat-icon>-->
+
+                    <i class="pi pi-eye-slash eye-icon" (click)="toggleConfirmPasswordShow()"></i>
                 </ng-template>
             </div>
         </div>
@@ -90,7 +109,9 @@
             </button>
 
             <button mat-icon-button class="close-button" type="button" (click)="goBack()">
-                <mat-icon>clear</mat-icon>
+                <!--                <mat-icon>clear</mat-icon>-->
+
+                <i class="pi pi-times"></i>
             </button>
         </div>
     </ng-template>

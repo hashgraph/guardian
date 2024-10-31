@@ -27,8 +27,8 @@
 
         <div *ngIf="error" class="extended-config">
             <div class="input-field-container error-text">
-                <div>{{error.text}}</div>
-                <div *ngIf="error.message" class="error-text-message">{{error.message}}</div>
+                <div>{{ error.text }}</div>
+                <div *ngIf="error.message" class="error-text-message">{{ error.message }}</div>
             </div>
         </div>
 
@@ -131,9 +131,9 @@
                 >
                     <ng-template let-item pTemplate="item">
                         <div class="flex align-items-center gap-2">
-                            <span *ngIf="item.component" class="sub-schema-component">{{item.component}}:</span>
-                            <span class="sub-schema-name">{{item.label}}</span>
-                            <span *ngIf="item.version" class="sub-schema-version">{{item.version}}</span>
+                            <span *ngIf="item.component" class="sub-schema-component">{{ item.component }}:</span>
+                            <span class="sub-schema-name">{{ item.label }}</span>
+                            <span *ngIf="item.version" class="sub-schema-version">{{ item.version }}</span>
                         </div>
                     </ng-template>
                 </p-dropdown>
@@ -175,7 +175,8 @@
                     />
                 </div>
                 <div (click)="onHepTextReset()" class="reset-btn">
-                    <mat-icon>restart_alt</mat-icon>
+                    <!--                    <mat-icon>restart_alt</mat-icon>-->
+                    <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
                     <span class="reset-btn-label">Reset</span>
                 </div>
             </ng-container>
@@ -230,7 +231,8 @@
                 [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
                 class="enum-edit-button"
             >
-                <mat-icon>edit</mat-icon>
+                <!--                <mat-icon>edit</mat-icon>-->
+                <i class="pi pi-pencil"></i>
                 <span class="enum-edit-button-label">Edit values</span>
             </div>
         </div>

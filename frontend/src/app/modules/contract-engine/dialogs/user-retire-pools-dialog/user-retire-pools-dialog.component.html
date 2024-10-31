@@ -1,13 +1,15 @@
 <app-dialog-wrapper (cancel)="onNoClick()" [confirmVisible]="retireMod" [syncVisible]="false" [loading]="loading"
-    [confirmDisabled]="!this.retireForm.valid" [title]="'Retire'" [paginatorVisible]="!retireMod" [length]="length"
-    [pageSize]="pageSize" (page)="onPage($event)" (confirm)="confirm()">
+                    [confirmDisabled]="!this.retireForm.valid" [title]="'Retire'" [paginatorVisible]="!retireMod"
+                    [length]="length"
+                    [pageSize]="pageSize" (page)="onPage($event)" (confirm)="confirm()">
     <ng-container *ngIf="!retireMod; else retireView">
         <div class="action-buttons">
             <mat-form-field appearance="outline">
                 <mat-label>Tokens</mat-label>
                 <mat-select [(value)]="selectedTokens" multiple (selectionChange)="loadPools()">
-                    <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{token.tokenSymbol}}
-                        ({{token.tokenId}})</mat-option>
+                    <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{ token.tokenSymbol }}
+                        ({{ token.tokenId }})
+                    </mat-option>
                 </mat-select>
             </mat-form-field>
         </div>
@@ -16,16 +18,23 @@
                 <div class="tokens">
                     <div class="token-card" *ngFor="let token of pool.tokens">
                         <span class="token-card__token">
-                            <mat-icon>abc</mat-icon>
-                            <span>{{token.tokenSymbol}}</span>
+<!--                            <mat-icon>abc</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
+                            <span>{{ token.tokenSymbol }}</span>
                         </span>
                         <span class="token-card__token">
-                            <mat-icon>generating_tokens</mat-icon>
-                            <span>{{token.token}}</span>
+<!--                            <mat-icon>generating_tokens</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
+                            <span>{{ token.token }}</span>
                         </span>
                         <span class="token-card__count">
-                            <mat-icon>calculate</mat-icon>
-                            <span>{{token.count | tokenCount: token.decimals }}</span>
+<!--                            <mat-icon>calculate</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/calculate.svg"
+                                      svgClass="icon-style-calculate"></svg-icon>
+                            <span>{{ token.count | tokenCount: token.decimals }}</span>
                         </span>
                     </div>
                 </div>
@@ -46,38 +55,48 @@
 
 <ng-template #retireView>
     <div class="retire">
-        <button class="retire__back" mat-icon-button (click)="back()"><mat-icon>arrow_back</mat-icon></button>
+        <button class="retire__back" mat-icon-button (click)="back()">
+            <!--            <mat-icon>arrow_back</mat-icon>-->
+
+            <i class="pi pi-arrow-left"></i>
+        </button>
         <div class="tokens">
             <div class="token-card" *ngFor="let token of selectedPool.tokens; let i = index">
                 <span class="token-card__token">
-                    <mat-icon>abc</mat-icon>
-                    <span>{{token.tokenSymbol}}</span>
+<!--                    <mat-icon>abc</mat-icon>-->
+
+                    <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
+                    <span>{{ token.tokenSymbol }}</span>
                 </span>
                 <span class="token-card__token">
-                    <mat-icon>generating_tokens</mat-icon>
-                    <span>{{token.token}}</span>
+<!--                    <mat-icon>generating_tokens</mat-icon>-->
+
+                    <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
+                    <span>{{ token.token }}</span>
                 </span>
                 <span class="token-card__count">
-                    <mat-icon>calculate</mat-icon>
-                    <span>{{token.count | tokenCount: token.decimals }}</span>
-                </span>
+<!--                    <mat-icon>calculate</mat-icon>-->
 
+                    <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
+                    <span>{{ token.count | tokenCount: token.decimals }}</span>
+                </span>
 
 
                 <form [formGroup]="getRetireForm(i)">
                     <mat-form-field *ngIf="token.type == 'fungible'" appearance="outline"
-                        style="transform: scale(0.8) translateY(5px); width: 100px;">
+                                    style="transform: scale(0.8) translateY(5px); width: 100px;">
                         <mat-label>Count</mat-label>
                         <input matInput formControlName="count" type="number" placeholder="1">
                     </mat-form-field>
 
                     <mat-form-field *ngIf="token.type == 'non-fungible'" appearance="outline"
-                        style="transform: scale(0.8) translateY(5px); width: 100px;">
+                                    style="transform: scale(0.8) translateY(5px); width: 100px;">
                         <mat-label>Serials</mat-label>
                         <mat-select formControlName="serials" multiple placeholder="Serials">
                             <mat-option
                                 *ngFor="let serial of token.serials"
-                                [value]="serial">{{serial}}</mat-option>
+                                [value]="serial">{{ serial }}
+                            </mat-option>
                         </mat-select>
                     </mat-form-field>
                 </form>

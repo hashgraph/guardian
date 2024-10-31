@@ -22,17 +22,17 @@
                         <div *ngFor="let state of service.states" [ngSwitch]="state" [pTooltip]="state">
                             <svg-icon *ngSwitchCase="'READY'"
                                       src="/assets/images/icons/check.svg"
-                                svgClass="success-color">
+                                      svgClass="success-color">
                             </svg-icon>
                             <svg-icon *ngSwitchCase="'BAD_CONFIGURATION'"
                                       src="/assets/images/icons/warning.svg"
-                                svgClass="warning-color">
+                                      svgClass="warning-color">
                             </svg-icon>
                             <div *ngSwitchCase="'INITIALIZING'" class="preloader-image"></div>
                             <div *ngSwitchCase="'STARTED'" class="preloader-image"></div>
                             <svg-icon *ngSwitchCase="'STOPPED'"
                                       src="/assets/images/icons/time.svg"
-                                svgClass="error-color">
+                                      svgClass="error-color">
                             </svg-icon>
                         </div>
                     </div>
@@ -73,11 +73,16 @@
                 <td class="flex-line">
                     <div *ngFor="let state of service.states" [ngSwitch]="state">
                         <div *ngSwitchCase="'READY'" class="icon-row">
-                            <mat-icon class="icon-status ready-status">check</mat-icon>
+                            <!--                            <mat-icon class="icon-status ready-status">check</mat-icon>-->
+
+                            <i class="pi pi-check icon-status ready-status"></i>
                             <!--                            <span>(Ready)</span>-->
                         </div>
                         <div *ngSwitchCase="'BAD_CONFIGURATION'" class="icon-row">
-                            <mat-icon class="icon-status bad-configuration-status">build</mat-icon>
+                            <!--                            <mat-icon class="icon-status bad-configuration-status">build</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/abc.svg"
+                                      svgClass="icon-style-abc icon-status bad-configuration-status"></svg-icon>
                             <!--                            <span>(Wrong configuration, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View-->
                             <!--                                    Logs</a>, <a [routerLink]="'/admin/settings'">Update</a>)</span>-->
                         </div>
@@ -90,7 +95,9 @@
                             <!--                            <span>(Started)</span>-->
                         </div>
                         <div *ngSwitchCase="'STOPPED'" class="icon-row">
-                            <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>
+                            <!--                            <mat-icon *ngSwitchCase="'STOPPED'" class="icon-status stopped-status">close</mat-icon>-->
+
+                            <i *ngSwitchCase="'STOPPED'" class="pi pi-times icon-status stopped-status"></i>
                             <!--                            <span>-->
                             <!--                                (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View-->
                             <!--                                    Logs</a>)-->
@@ -98,7 +105,9 @@
                         </div>
                     </div>
                     <div *ngIf="!service.states.length" class="icon-row">
-                        <mat-icon class="icon-status stopped-status">close</mat-icon>
+                        <!--                        <mat-icon class="icon-status stopped-status">close</mat-icon>-->
+
+                        <i class="pi pi-times icon-status stopped-status"></i>
                         <span>
                             (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View
                             Logs</a>)

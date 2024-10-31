@@ -1,11 +1,12 @@
 <div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
     <mat-stepper linear="false" #stepper [selectedIndex]="stepIndex">
         <ng-template matStepperIcon="description">
-            <mat-icon>description</mat-icon>
+            <!--            <mat-icon>description</mat-icon>-->
+            <i class="pi pi-receipt"></i>
         </ng-template>
 
         <mat-step [stepControl]="topicForm" label="Source topic selection" [completed]="completed[0]"
-            [editable]="editable[0]">
+                  [editable]="editable[0]">
             <form [formGroup]="topicForm" (submit)="setTopic()">
                 <div class="form-content">
                     <div class="text">
@@ -31,27 +32,27 @@
                 </div>
                 <div *ngIf="policyTopicId" class="field">
                     <div class="field-name">Policy Topic Id</div>
-                    <div class="field-value">{{policyTopicId}}</div>
+                    <div class="field-value">{{ policyTopicId }}</div>
                 </div>
                 <div *ngIf="policyInstanceMessage" class="field">
                     <div class="field-name">Policy Name</div>
-                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                    <div class="field-value">{{ policyInstanceMessage.name }}</div>
                 </div>
                 <div *ngIf="policyInstanceMessage" class="field">
                     <div class="field-name">Policy Version</div>
-                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                    <div class="field-value">{{ policyInstanceMessage.version }}</div>
                 </div>
                 <div *ngIf="instanceTopicId" class="field">
                     <div class="field-name">Instance Topic Id</div>
-                    <div class="field-value">{{instanceTopicId}}</div>
+                    <div class="field-value">{{ instanceTopicId }}</div>
                 </div>
                 <div *ngIf="documentMessage" class="field">
                     <div class="field-name">Document Topic</div>
-                    <div class="field-value">{{documentMessage.name}}</div>
+                    <div class="field-value">{{ documentMessage.name }}</div>
                 </div>
                 <div *ngIf="documentTopicId" class="field">
                     <div class="field-name">Document Topic Id</div>
-                    <div class="field-value">{{documentTopicId}}</div>
+                    <div class="field-value">{{ documentTopicId }}</div>
                 </div>
             </div>
             <div class="form-buttons">
@@ -63,7 +64,7 @@
         </mat-step>
 
         <mat-step [stepControl]="schemaForm" label="Document schema selection" [completed]="completed[2]"
-            [editable]="editable[2]">
+                  [editable]="editable[2]">
             <form [formGroup]="schemaForm" (submit)="setSchema()">
                 <div class="form-content">
                     <div class="text">
@@ -77,11 +78,12 @@
                         <div *ngFor="let s of schemas" class="schema-row">
                             <div>
                                 <mat-radio-button [value]="s.id" color="primary"
-                                    [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
+                                                  [disabled]="s.status === 'INCOMPATIBLE'"></mat-radio-button>
                             </div>
-                            <div>{{s.name}}</div>
+                            <div>{{ s.name }}</div>
                             <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">Need
-                                verification</div>
+                                verification
+                            </div>
                             <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">Incompatible
                             </div>
                             <div *ngIf="s.status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">Verified</div>
@@ -104,31 +106,31 @@
             <div class="form-content">
                 <div *ngIf="policyTopicId" class="field">
                     <div class="field-name">Policy Topic Id</div>
-                    <div class="field-value">{{policyTopicId}}</div>
+                    <div class="field-value">{{ policyTopicId }}</div>
                 </div>
                 <div *ngIf="policyInstanceMessage" class="field">
                     <div class="field-name">Policy Name</div>
-                    <div class="field-value">{{policyInstanceMessage.name}}</div>
+                    <div class="field-value">{{ policyInstanceMessage.name }}</div>
                 </div>
                 <div *ngIf="policyInstanceMessage" class="field">
                     <div class="field-name">Policy Version</div>
-                    <div class="field-value">{{policyInstanceMessage.version}}</div>
+                    <div class="field-value">{{ policyInstanceMessage.version }}</div>
                 </div>
                 <div *ngIf="instanceTopicId" class="field">
                     <div class="field-name">Instance Topic Id</div>
-                    <div class="field-value">{{instanceTopicId}}</div>
+                    <div class="field-value">{{ instanceTopicId }}</div>
                 </div>
                 <div *ngIf="documentMessage" class="field">
                     <div class="field-name">Document Topic</div>
-                    <div class="field-value">{{documentMessage.name}}</div>
+                    <div class="field-value">{{ documentMessage.name }}</div>
                 </div>
                 <div *ngIf="documentTopicId" class="field">
                     <div class="field-name">Document Topic Id</div>
-                    <div class="field-value">{{documentTopicId}}</div>
+                    <div class="field-value">{{ documentTopicId }}</div>
                 </div>
                 <div *ngIf="schema" class="field">
                     <div class="field-name">Schema</div>
-                    <div class="field-value">{{schema.name}}</div>
+                    <div class="field-value">{{ schema.name }}</div>
                 </div>
             </div>
             <div class="form-buttons">
@@ -180,42 +182,43 @@
         </div>
         <div *ngIf="policyTopicId" class="field">
             <div class="field-name">Policy Topic Id</div>
-            <div class="field-value">{{policyTopicId}}</div>
+            <div class="field-value">{{ policyTopicId }}</div>
         </div>
         <div *ngIf="policyInstanceMessage" class="field">
             <div class="field-name">Policy Name</div>
-            <div class="field-value">{{policyInstanceMessage.name}}</div>
+            <div class="field-value">{{ policyInstanceMessage.name }}</div>
         </div>
         <div *ngIf="policyInstanceMessage" class="field">
             <div class="field-name">Policy Version</div>
-            <div class="field-value">{{policyInstanceMessage.version}}</div>
+            <div class="field-value">{{ policyInstanceMessage.version }}</div>
         </div>
         <div *ngIf="instanceTopicId" class="field">
             <div class="field-name">Instance Topic Id</div>
-            <div class="field-value">{{instanceTopicId}}</div>
+            <div class="field-value">{{ instanceTopicId }}</div>
         </div>
         <div *ngIf="documentMessage" class="field">
             <div class="field-name">Document Topic</div>
-            <div class="field-value">{{documentMessage.name}}</div>
+            <div class="field-value">{{ documentMessage.name }}</div>
         </div>
         <div *ngIf="documentTopicId" class="field">
             <div class="field-name">Document Topic Id</div>
-            <div class="field-value">{{documentTopicId}}</div>
+            <div class="field-value">{{ documentTopicId }}</div>
         </div>
         <div *ngIf="schema" class="field">
             <div class="field-name">Schema</div>
-            <div class="field-value">{{schema.name}}</div>
+            <div class="field-value">{{ schema.name }}</div>
         </div>
         <div class="field">
             <div class="field-name">Last Update</div>
             <div class="field-value">
                 <div class="synchronization">
-                    <div *ngIf="lastUpdate" class="synchronization-time">{{lastUpdate}}</div>
+                    <div *ngIf="lastUpdate" class="synchronization-time">{{ lastUpdate }}</div>
                     <div *ngIf="!lastUpdate" class="synchronization-time">
                         -
                     </div>
                     <div class="synchronization-update" (click)="onRefresh()">
-                        <mat-icon>sync</mat-icon>
+                        <!--                        <mat-icon>sync</mat-icon>-->
+                        <i class="pi pi-sync"></i>
                     </div>
                 </div>
 

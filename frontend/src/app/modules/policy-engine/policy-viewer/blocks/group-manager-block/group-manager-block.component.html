@@ -46,8 +46,8 @@
                     </td>
                 </ng-container>
                 <tr
-                        *matHeaderRowDef="groupColumns; sticky: true"
-                        mat-header-row
+                    *matHeaderRowDef="groupColumns; sticky: true"
+                    mat-header-row
                 ></tr>
                 <tr *matRowDef="let row; columns: groupColumns" mat-row></tr>
             </table>
@@ -58,7 +58,8 @@
         <div class="actions">
             <div class="role">
                 <div (click)="onBack()" class="link">
-                    <mat-icon>chevron_left</mat-icon>
+                    <!--                    <mat-icon>chevron_left</mat-icon>-->
+                    <i class="pi pi-chevron-left"></i>
                     Back
                 </div>
             </div>
@@ -113,7 +114,8 @@
                             *ngIf="canDelete && element.type !== 'Owner'"
                             class="btn-settings btn-delete"
                         >
-                            <mat-icon>delete</mat-icon>
+                            <!--                            <mat-icon>delete</mat-icon>-->
+                            <i class="pi pi-trash"></i>
                         </div>
                     </td>
                 </ng-container>

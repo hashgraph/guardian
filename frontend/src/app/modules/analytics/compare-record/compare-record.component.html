@@ -254,9 +254,14 @@
                             <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
                             <!--                            </div>-->
 
+                            <!--                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">-->
+                            <!--                                <span class="icon open-icon" *ngIf="row.collapse === 1">−</span>-->
+                            <!--                                <span class="icon collapse-icon" *ngIf="row.collapse === 2">+</span>-->
+                            <!--                            </div>-->
+
                             <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
-                                <span class="icon open-icon" *ngIf="row.collapse === 1">−</span>
-                                <span class="icon collapse-icon" *ngIf="row.collapse === 2">+</span>
+                                <i class="pi pi-minus open-icon" *ngIf="row.collapse === 1"></i>
+                                <i class="pi pi-plus collapse-icon" *ngIf="row.collapse === 2"></i>
                             </div>
                             <ng-container *ngFor="let treeItemContext of row.contexts">
                                 <div
@@ -294,8 +299,10 @@
                                     <!--                                    </div>-->
 
                                     <div class="compare-btn" (click)="row.open = !row.open">
-                                        <span *ngIf="!row.open" class="icon">▼</span>
-                                        <span *ngIf="row.open" class="icon">▲</span>
+                                        <!--                                        <span *ngIf="!row.open" class="icon">▼</span>-->
+                                        <!--                                        <span *ngIf="row.open" class="icon">▲</span>-->
+                                        <i *ngIf="!_systemProp" class="pi pi-chevron-down"></i>
+                                        <i *ngIf="_systemProp" class="pi pi-chevron-up"></i>
                                     </div>
                                 </div>
                             </ng-container>
@@ -426,9 +433,14 @@
                 <!--                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>-->
                 <!--                </div>-->
 
+                <!--                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">-->
+                <!--                    <span *ngIf="!_systemProp" class="icon">▼</span>-->
+                <!--                    <span *ngIf="_systemProp" class="icon">▲</span>-->
+                <!--                </div>-->
+
                 <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
-                    <span *ngIf="!_systemProp" class="icon">▼</span>
-                    <span *ngIf="_systemProp" class="icon">▲</span>
+                    <i *ngIf="!_systemProp" class="pi pi-chevron-down"></i>
+                    <i *ngIf="_systemProp" class="pi pi-chevron-up"></i>
                 </div>
             </div>
             <div class="prop-table-body">
@@ -445,7 +457,9 @@
                     </div>
                     <div class="prop-table-value" [attr.prop-type]="field.propType">
                         <div class="compare-btn" (click)="compareSchema(field)">
-                            <mat-icon>search</mat-icon>
+                            <!--                            <mat-icon>search</mat-icon>-->
+
+                            <i class="pi pi-search"></i>
                         </div>
                         <span *ngIf="field.propType" [title]="field.value">
                             {{ field.value }}

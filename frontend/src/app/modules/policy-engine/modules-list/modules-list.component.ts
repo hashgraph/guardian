@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
 import { ModulesService } from 'src/app/services/modules.service';
@@ -15,6 +14,7 @@ import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog
 import { DialogService } from 'primeng/dynamicdialog';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 enum OperationMode {
     None,
@@ -158,7 +158,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loadAllModules();
     }
 
-    private importDetails(result: any) {
+    private importDetails(result: IImportEntityResult) {
         const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
             header: 'Import module',
@@ -192,16 +192,16 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     public importModules(messageId?: string) {
-        const dialogRef = this.dialog.open(ImportPolicyDialog, {
-            header: 'Select action',
+        const dialogRef = this.dialog.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            closable: true,
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'module',
+                type: ImportEntityType.Module,
                 timeStamp: messageId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
             }

@@ -41,8 +41,10 @@
 
             <div>
                 <button mat-raised-button color="primary" (click)="comparePolicy()" class="toolbar-btn">
-                    <mat-icon>compare</mat-icon>
-                    <span>Compare ({{selectedCount}})</span>
+                    <!--                    <mat-icon>compare</mat-icon>-->
+
+                    <svg-icon src="/assets/images/icons/compare.svg" svgClass="icon-style-compare"></svg-icon>
+                    <span>Compare ({{ selectedCount }})</span>
                 </button>
             </div>
         </div>
@@ -52,22 +54,23 @@
                     <ng-container matColumnDef="selector">
                         <th mat-header-cell *matHeaderCellDef>
                             <mat-checkbox color="primary" [checked]="selectedAll"
-                                (change)="selectAllPolicy()"></mat-checkbox>
+                                          (change)="selectAllPolicy()"></mat-checkbox>
                         </th>
                         <td mat-cell *matCellDef="let element">
                             <mat-checkbox color="primary" [checked]="element._select"
-                                (change)="selectPolicy(element)"></mat-checkbox>
+                                          (change)="selectPolicy(element)"></mat-checkbox>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="topic">
-                        <th mat-header-cell *matHeaderCellDef> Hedera Topic Id </th>
+                        <th mat-header-cell *matHeaderCellDef> Hedera Topic Id</th>
                         <td mat-cell *matCellDef="let element">
                             <hedera-explorer type="topics"
-                                [params]="element.topicId">{{element.topicId}}</hedera-explorer>
+                                             [params]="element.topicId">{{ element.topicId }}
+                            </hedera-explorer>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="tokens">
-                        <th mat-header-cell *matHeaderCellDef> Tokens </th>
+                        <th mat-header-cell *matHeaderCellDef> Tokens</th>
                         <td mat-cell *matCellDef="let element">
                             <a [routerLink]="['/tokens']" [queryParams]="{ policy: element.id }">
                                 Tokens
@@ -75,7 +78,7 @@
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="schemas">
-                        <th mat-header-cell *matHeaderCellDef> Schemas </th>
+                        <th mat-header-cell *matHeaderCellDef> Schemas</th>
                         <td mat-cell *matCellDef="let element">
                             <a [routerLink]="['/schemas']" [queryParams]="{ topic: element.topicId }">
                                 Schemas
@@ -83,34 +86,34 @@
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="name">
-                        <th mat-header-cell *matHeaderCellDef> Policy Name </th>
+                        <th mat-header-cell *matHeaderCellDef> Policy Name</th>
                         <td mat-cell *matCellDef="let element" [matTooltip]="element.name" matTooltipPosition="above"
                             matTooltipClass="guardian-tooltip" matTooltipShowDelay="500" matTooltipHideDelay="100">
                             {{ element.name }}
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="version">
-                        <th mat-header-cell *matHeaderCellDef> Version </th>
+                        <th mat-header-cell *matHeaderCellDef> Version</th>
                         <td mat-cell *matCellDef="let element">
                             {{ element.version }}
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="tags">
-                        <th mat-header-cell *matHeaderCellDef> Tags </th>
+                        <th mat-header-cell *matHeaderCellDef> Tags</th>
                         <td mat-cell *matCellDef="let element">
-                            <tags-explorer 
+                            <tags-explorer
                                 *ngIf="user.TAGS_TAG_READ"
                                 [user]="user"
-                                [data]="element._tags" 
-                                [owner]="owner" 
+                                [data]="element._tags"
+                                [owner]="owner"
                                 [target]="element.id"
-                                [schemas]="tagSchemas" 
-                                [entity]="tagEntity" 
+                                [schemas]="tagSchemas"
+                                [entity]="tagEntity"
                                 [service]="tagsService"></tags-explorer>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="description">
-                        <th mat-header-cell *matHeaderCellDef> Description </th>
+                        <th mat-header-cell *matHeaderCellDef> Description</th>
                         <td mat-cell *matCellDef="let element" [matTooltip]="element.description"
                             matTooltipPosition="above" matTooltipClass="guardian-tooltip" matTooltipShowDelay="500"
                             matTooltipHideDelay="100">
@@ -119,7 +122,7 @@
                     </ng-container>
 
                     <ng-container matColumnDef="status">
-                        <th mat-header-cell *matHeaderCellDef> Status </th>
+                        <th mat-header-cell *matHeaderCellDef> Status</th>
                         <td mat-cell *matCellDef="let element">
                             <div class="status-draft" *ngIf="element.status == 'DRAFT'">
                                 Draft
@@ -139,10 +142,10 @@
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="rate">
-                        <th mat-header-cell *matHeaderCellDef> Rate </th>
+                        <th mat-header-cell *matHeaderCellDef> Rate</th>
                         <td mat-cell *matCellDef="let element">
                             <div class="{{element._color}} color-field">
-                                {{element._rate}}
+                                {{ element._rate }}
                             </div>
                         </td>
                     </ng-container>

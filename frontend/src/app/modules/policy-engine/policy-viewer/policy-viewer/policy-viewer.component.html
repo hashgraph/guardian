@@ -20,7 +20,8 @@
                 class="dry-run-action-btn"
                 title="Edit Policy"
             >
-                <mat-icon>edit</mat-icon>
+                <!--                <mat-icon>edit</mat-icon>-->
+                <i class="pi pi-pencil"></i>
                 <span>Edit</span>
             </div>
 
@@ -29,22 +30,26 @@
                 class="dry-run-action-btn"
                 title="Save Policy"
             >
-                <mat-icon>restart_alt</mat-icon>
+                <!--                <mat-icon>restart_alt</mat-icon>-->
+                <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
                 <span>Restart</span>
             </div>
 
             <div class="delimiter"></div>
 
             <div class="dry-run-action-btn" (click)="createVirtualUser()">
-                <mat-icon>person_add</mat-icon>
+                <!--                <mat-icon>person_add</mat-icon>-->
+                <i class="pi pi-user-plus"></i>
                 <span>Create User</span>
             </div>
 
             <div class="dry-run-group-btn" [matMenuTriggerFor]="menu">
-                <mat-icon>group</mat-icon>
+                <!--                <mat-icon>group</mat-icon>-->
+                <i class="pi pi-users"></i>
                 <span>Users</span>
                 <div class="expand-group">
-                    <mat-icon>arrow_drop_down</mat-icon>
+                    <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
+                    <i class="pi pi-chevron-down"></i>
                 </div>
             </div>
 
@@ -55,7 +60,8 @@
                 (click)="startRecord()"
                 title="Start Record"
                 [attr.disabled]="recordingActive">
-                <mat-icon>radio_button_checked</mat-icon>
+                <!--                <mat-icon>radio_button_checked</mat-icon>-->
+                <i class="pi pi-circle-on"></i>
                 <span>Record</span>
             </div>
 
@@ -64,7 +70,8 @@
                 (click)="runRecord()"
                 title="Run Record"
                 [attr.disabled]="recordingActive">
-                <mat-icon>play_arrow</mat-icon>
+                <!--                <mat-icon>play_arrow</mat-icon>-->
+                <i class="pi pi-play"></i>
                 <span>Run</span>
             </div>
 
@@ -102,21 +109,26 @@
             <div class="delimiter"></div>
         </div>
 
-        <div class="policy-header" [attr.policy-status]="policyInfo.status" [attr.expired]="!!policyInfo.discontinuedDate">
-            <div>
-                <a routerLink="/policy-viewer">
-                    <p-button
-                        [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
-                        icon="pi pi-arrow-left"
-                        label="Back to Manage Policies"
-                        class="p-button-sm"
-                        [outlined]=true
-                    ></p-button>
-                </a>
+        <div class="policy-header" [attr.policy-status]="policyInfo.status"
+             [attr.expired]="!!policyInfo.discontinuedDate">
+            <div class="guardian-user-back-button">
+                <button
+                    (click)="onBack()"
+                    class="guardian-button guardian-button-secondary"
+                    [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
+                >
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                                  src="/assets/images/icons/left-arrow.svg"
+                                  svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Back to Manage Policies</div>
+                </button>
             </div>
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">
-                    <span *ngIf="policyInfo && policyInfo.name">{{policyInfo.name}}</span>
+                    <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>
                 </div>
 
                 <div class="policy-additional-info-container">
@@ -140,9 +152,10 @@
                             class="additional-policy-info-text"
                             title="Group: {{userGroup}} / Role: {{userRole}}"
                         >
-                            Group: {{userGroup}} / Role: {{userRole}}</span>
+                            Group: {{ userGroup }} / Role: {{ userRole }}</span>
                             <div>
-                                <mat-icon>arrow_drop_down</mat-icon>
+<!--                                <mat-icon>arrow_drop_down</mat-icon>-->
+                                <i class="pi pi-chevron-down"></i>
                             </div>
                     </span>
                 </div>
@@ -168,7 +181,8 @@
 
                 <div *ngIf="!navigationFooterDisabled" class="progress-footer-container">
                     <div class="progress-footer">
-                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button" label="Previous" pButton
+                        <button (click)="onNavigationPrevButton()" [disabled]="prevButtonDisabled" class="button"
+                                label="Previous" pButton
                                 type="button"></button>
                         <div *ngIf="!nextButtonDisabled">
                             <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->

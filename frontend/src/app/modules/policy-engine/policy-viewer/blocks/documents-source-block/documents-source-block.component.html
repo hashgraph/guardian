@@ -23,9 +23,10 @@
                     </th>
                     <td *matCellDef="let element" mat-cell>
                         <div *ngIf="element.history && element.history.length">
-                            <mat-icon>
-                                {{statusDetailed === element? "keyboard_arrow_down": "keyboard_arrow_right"}}
-                            </mat-icon>
+                            <!--                            <mat-icon>-->
+                            <!--                                {{statusDetailed === element? "keyboard_arrow_down": "keyboard_arrow_right"}}-->
+                            <!--                            </mat-icon>-->
+                            <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
                         </div>
                     </td>
                 </ng-container>
@@ -72,9 +73,10 @@
                                     class="text array"
                                 >
                                     {{ getText(element, option) }}
-                                    <mat-icon (click)="onArray($event, element, option)">
-                                        keyboard_arrow_down
-                                    </mat-icon>
+                                    <!--                                    <mat-icon (click)="onArray($event, element, option)">-->
+                                    <!--                                        keyboard_arrow_down-->
+                                    <!--                                    </mat-icon>-->
+                                    <i class="pi pi-chevron-down" (click)="onArray($event, element, option)"></i>
                                 </span>
                                 <span
                                     *ngIf="option.type == 'serials' && getArray(element, option)"
@@ -88,16 +90,18 @@
                                         subType="serials"
                                         type="tokens"
                                     >{{ serial.serial }}</hedera-explorer>
-                                    <mat-icon (click)="onSerials($event, element, option)">
-                                        keyboard_arrow_down
-                                    </mat-icon>
+                                    <!--                                    <mat-icon (click)="onSerials($event, element, option)">-->
+                                    <!--                                        keyboard_arrow_down-->
+                                    <!--                                    </mat-icon>-->
+                                    <i class="pi pi-chevron-down" (click)="onSerials($event, element, option)"></i>
                                 </span>
                                 <span
                                     (click)="$event.stopImmediatePropagation()"
                                     *ngIf="option.type == 'button'"
                                     class="col-btn"
                                 >
-                                    <div (click)="onButton($event, element, option)" class="btn-field {{ option.uiClass }}">
+                                    <div (click)="onButton($event, element, option)"
+                                         class="btn-field {{ option.uiClass }}">
                                         {{ getText(element, option) }}
                                     </div>
                                 </span>
@@ -153,7 +157,7 @@
                                     <h1 class="timeline-header-title">
                                         {{ historyElem.labelValue }}
                                     </h1>
-                                    <p>{{parseArrayValue(historyElem.comment)}}</p>
+                                    <p>{{ parseArrayValue(historyElem.comment) }}</p>
                                 </div>
                             </div>
                         </div>

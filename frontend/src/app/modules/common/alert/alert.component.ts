@@ -28,14 +28,27 @@ export class AlertComponent implements OnInit {
 
     ngOnInit(): void {}
 
+    // private getIconByType(type?: AlertType) {
+    //     switch (type) {
+    //         case AlertType.ERROR:
+    //             return 'error';
+    //         case AlertType.WARN:
+    //             return 'warning';
+    //         case AlertType.INFO:
+    //             return 'info';
+    //         default:
+    //             return;
+    //     }
+    // }
+
     private getIconByType(type?: AlertType) {
         switch (type) {
             case AlertType.ERROR:
-                return 'error';
+                return 'times';
             case AlertType.WARN:
-                return 'warning';
+                return 'exclamation-triangle';
             case AlertType.INFO:
-                return 'info';
+                return 'info-circle';
             default:
                 return;
         }

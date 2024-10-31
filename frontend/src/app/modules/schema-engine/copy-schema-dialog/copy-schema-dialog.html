@@ -2,7 +2,8 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div (click)="onClose()" class="g-dialog-cancel-btn">
-                <mat-icon>close</mat-icon>
+                <!--                <mat-icon>close</mat-icon>-->
+                <i class="pi pi-times"></i>
             </div>
         </div>
         <div *ngIf="type=='new'" class="g-dialog-title">
@@ -10,9 +11,9 @@
         </div>
         <div class="g-dialog-actions">
             <div
-                    (click)="onCreate()"
-                    [attr.disabled]="!dataForm.valid"
-                    class="g-dialog-actions-btn">
+                (click)="onCreate()"
+                [attr.disabled]="!dataForm.valid"
+                class="g-dialog-actions-btn">
                 Copy schema
             </div>
         </div>
@@ -40,7 +41,7 @@
                     <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>
                         <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>
                         <mat-option *ngFor="let policy of policies" [value]="policy.topicId">
-                            {{policy.name}}
+                            {{ policy.name }}
                         </mat-option>
                     </mat-select>
                 </mat-form-field>
@@ -50,7 +51,7 @@
                     <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>
                         <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>
                         <mat-option *ngFor="let tool of tools" [value]="tool.topicId">
-                            {{tool.name}}
+                            {{ tool.name }}
                         </mat-option>
                     </mat-select>
                 </mat-form-field>

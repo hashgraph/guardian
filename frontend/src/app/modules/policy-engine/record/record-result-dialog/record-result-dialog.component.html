@@ -2,11 +2,12 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <mat-icon>close</mat-icon>
+                <!--                <mat-icon>close</mat-icon>-->
+                <i class="pi pi-times"></i>
             </div>
         </div>
         <div class="g-dialog-title">
-            {{title}}
+            {{ title }}
         </div>
     </div>
     <div class="g-dialog-body">
@@ -22,15 +23,15 @@
 
                 <div class="results-info">
                     <div class="results-info-header">Created documents:</div>
-                    <div>{{info.documents}}</div>
+                    <div>{{ info.documents }}</div>
                 </div>
                 <div class="results-info">
                     <div class="results-info-header">Minted tokens:</div>
-                    <div>{{info.tokens}}</div>
+                    <div>{{ info.tokens }}</div>
                 </div>
                 <div class="results-info">
                     <div class="results-info-header">Total rate:</div>
-                    <div [attr.rate-color]="total">{{total}}%</div>
+                    <div [attr.rate-color]="total">{{ total }}%</div>
                 </div>
 
                 <div class="results-header">
@@ -38,9 +39,9 @@
                 </div>
                 <div class="results-body">
                     <div *ngFor="let item of results; let i=index" class="results-item">
-                        <div class="document-type">{{item.type}}</div>
-                        <div class="document-schema">{{item.schema}}</div>
-                        <div class="document-rate" [attr.rate-color]="item.rate">{{item.rate}}</div>
+                        <div class="document-type">{{ item.type }}</div>
+                        <div class="document-schema">{{ item.schema }}</div>
+                        <div class="document-rate" [attr.rate-color]="item.rate">{{ item.rate }}</div>
                         <div class="document-view">
                             <a (click)="openDocument(item)">View Document</a>
                         </div>

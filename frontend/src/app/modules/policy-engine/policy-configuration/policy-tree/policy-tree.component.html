@@ -2,48 +2,57 @@
     <div #parent class="canvas">
         <canvas #canvas></canvas>
     </div>
-    <div class="drop-container" 
-        #treeList="cdkDropList" 
-        cdkDropList 
-        onDragEntered 
-        [cdkDropListDisabled]="readonly"
-        [cdkDropListConnectedTo]="menuList" 
-        (cdkDropListDropped)="drop($event)"
-        (cdkDropListSorted)="onDragSorted($event)" 
-        (cdkDropListEntered)="onDragEntered($event)"
-        [cdkDropListSortPredicate]="onDragSortPredicate"
+    <div class="drop-container"
+         #treeList="cdkDropList"
+         cdkDropList
+         onDragEntered
+         [cdkDropListDisabled]="readonly"
+         [cdkDropListConnectedTo]="menuList"
+         (cdkDropListDropped)="drop($event)"
+         (cdkDropListSorted)="onDragSorted($event)"
+         (cdkDropListEntered)="onDragEntered($event)"
+         [cdkDropListSortPredicate]="onDragSortPredicate"
     >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
-                <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>
-                <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>
+                <!--                <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>-->
+
+                <i *ngIf="allCollapse === '2'" class="pi pi-chevron-down"></i>
+                <!--                <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>-->
+
+                <i *ngIf="allCollapse !== '2'" class="pi pi-chevron-up"></i>
             </div>
 
             <ng-container *ngFor="let item of data">
 
-                <div class="block-container" 
-                    [attr.expandable]="item.expandable" 
-                    [attr.collapsed]="item.collapsed"
-                    [attr.selected]="isSelect(item)" 
-                    [attr.error]="item.error" 
-                    [attr.root]="item.root"
-                    [attr.block-id]="item.id" 
-                    [attr.block-instance]="item.node.tag" 
-                    [attr.block-type]="item.type"
-                    [style.paddingLeft]="item.offset" 
-                    cdkDrag 
-                    [cdkDragData]="item.level" 
-                    [cdkDragDisabled]="item.root"
-                    [attr.deprecated]="item.deprecated"
+                <div class="block-container"
+                     [attr.expandable]="item.expandable"
+                     [attr.collapsed]="item.collapsed"
+                     [attr.selected]="isSelect(item)"
+                     [attr.error]="item.error"
+                     [attr.root]="item.root"
+                     [attr.block-id]="item.id"
+                     [attr.block-instance]="item.node.tag"
+                     [attr.block-type]="item.type"
+                     [style.paddingLeft]="item.offset"
+                     cdkDrag
+                     [cdkDragData]="item.level"
+                     [cdkDragDisabled]="item.root"
+                     [attr.deprecated]="item.deprecated"
                 >
                     <div class="block-expand" (click)="onCollapse($event, item)">
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+
+                        <i class="pi pi-chevron-down"></i>
                     </div>
 
                     <div *ngIf="isRootBlockStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon>article</mat-icon>
+                                <!--                                <mat-icon>article</mat-icon>-->
+
+                                <svg-icon src="/assets/images/icons/article.svg"
+                                          svgClass="icon-style-article"></svg-icon>
                             </div>
 
                             <div class="module-item-name">
@@ -55,7 +64,9 @@
                     <div *ngIf="isRootModuleStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>
+                                <!--                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>-->
+
+                                <svg-icon src="/assets/images/icons/policy-module.svg" class="svg-icon"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 Module
@@ -66,7 +77,10 @@
                     <div *ngIf="isRootToolStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon class="tool-icon">handyman</mat-icon>
+                                <!--                                <mat-icon class="tool-icon">handyman</mat-icon>-->
+
+                                <svg-icon src="/assets/images/icons/handyman.svg"
+                                          svgClass="icon-style-handyman"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 Tool
@@ -77,50 +91,60 @@
                     <div *ngIf="isBlockStyle(item)" class="block-body" [style]="blockStyle(item)">
                         <div class="block-item" (click)="onSelect($event, item)" theme-all>
                             <div class="block-item-icon">
-                                <mat-icon theme-text>{{item.icon}}</mat-icon>
+                                <!--                                <mat-icon theme-text>{{item.icon}}</mat-icon>-->
+
+                                <i [ngClass]="'pi pi-' + item.icon" class="theme-text"></i>
                             </div>
                             <div class="block-item-name" theme-text>
-                                {{item.node.localTag}}
+                                {{ item.node.localTag }}
                             </div>
                         </div>
                         <div class="block-menu">
                             <div class="move-actions-container"
-                                [attr.can-up]="item.canUp"
-                                [attr.can-down]="item.canDown"
-                                [attr.can-left]="item.canLeft"
-                                [attr.can-right]="item.canRight"
+                                 [attr.can-up]="item.canUp"
+                                 [attr.can-down]="item.canDown"
+                                 [attr.can-left]="item.canLeft"
+                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button 
-                                    class="action-button move-action-up">
-                                    <mat-icon>arrow_drop_up</mat-icon>
+                                <button (click)="onDropUp($event)" mat-icon-button
+                                        class="action-button move-action-up">
+                                    <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
+                                    <i class="pi pi-chevron-up"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
-                                    class="action-button move-action-left">
-                                    <mat-icon>arrow_left</mat-icon>
+                                        class="action-button move-action-left">
+                                    <!--                                    <mat-icon>arrow_left</mat-icon>-->
+                                    <i class="pi pi-chevron-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
-                                    class="action-button move-action-right">
-                                    <mat-icon>arrow_right</mat-icon>
+                                        class="action-button move-action-right">
+                                    <!--                                    <mat-icon>arrow_right</mat-icon>-->
+                                    <i class="pi pi-chevron-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
-                                    class="action-button move-action-down">
-                                    <mat-icon>arrow_drop_down</mat-icon>
+                                        class="action-button move-action-down">
+                                    <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
+                                    <i class="pi pi-chevron-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button move-more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                        class="action-button move-more-action-button">
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
                                         class="action-button more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onSearch($event)" mat-icon-button class="action-button">
-                                    <mat-icon>search</mat-icon>
+                                    <!--                                    <mat-icon>search</mat-icon>-->
+                                    <i class="pi pi-search"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
-                                    <mat-icon>delete</mat-icon>
+                                    <!--                                    <mat-icon>delete</mat-icon>-->
+                                    <i class="pi pi-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -129,47 +153,55 @@
                     <div *ngIf="isModuleStyle(item)" class="block-body module-body">
                         <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>
+                                <!--                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>-->
+                                <svg-icon src="/assets/icons/policy-module.svg" class="svg-icon"></svg-icon>
                             </div>
                             <div class="module-item-name">
-                                {{item.node.localTag}}
+                                {{ item.node.localTag }}
                             </div>
                         </div>
                         <div class="block-menu module-menu">
                             <div class="move-actions-container"
-                                [attr.can-up]="item.canUp"
-                                [attr.can-down]="item.canDown"
-                                [attr.can-left]="item.canLeft"
-                                [attr.can-right]="item.canRight"
+                                 [attr.can-up]="item.canUp"
+                                 [attr.can-down]="item.canDown"
+                                 [attr.can-left]="item.canLeft"
+                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button 
-                                    class="action-button move-action-up">
-                                    <mat-icon>arrow_drop_up</mat-icon>
+                                <button (click)="onDropUp($event)" mat-icon-button
+                                        class="action-button move-action-up">
+                                    <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
+                                    <i class="pi pi-chevron-down"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
-                                    class="action-button move-action-left">
-                                    <mat-icon>arrow_left</mat-icon>
+                                        class="action-button move-action-left">
+                                    <!--                                    <mat-icon>arrow_left</mat-icon>-->
+                                    <i class="pi pi-chevron-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
-                                    class="action-button move-action-right">
-                                    <mat-icon>arrow_right</mat-icon>
+                                        class="action-button move-action-right">
+                                    <!--                                    <mat-icon>arrow_right</mat-icon>-->
+                                    <i class="pi pi-chevron-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
-                                    class="action-button move-action-down">
-                                    <mat-icon>arrow_drop_down</mat-icon>
+                                        class="action-button move-action-down">
+                                    <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
+                                    <i class="pi pi-chevron-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button move-more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                        class="action-button move-more-action-button">
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                        class="action-button more-action-button">
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
-                                    <mat-icon>delete</mat-icon>
+                                    <!--                                    <mat-icon>delete</mat-icon>-->
+                                    <i class="pi pi-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -178,47 +210,56 @@
                     <div *ngIf="isToolStyle(item)" class="block-body tool-body">
                         <div class="block-item" (click)="onSelect($event, item)">
                             <div class="module-item-icon">
-                                <mat-icon class="tool-icon">handyman</mat-icon>
+                                <!--                                <mat-icon class="tool-icon">handyman</mat-icon>-->
+                                <svg-icon src="/assets/images/icons/handyman.svg"
+                                          svgClass="icon-style-handyman"></svg-icon>
                             </div>
                             <div class="module-item-name">
-                                {{item.node.localTag}}
+                                {{ item.node.localTag }}
                             </div>
                         </div>
                         <div class="block-menu module-menu">
                             <div class="move-actions-container"
-                                [attr.can-up]="item.canUp"
-                                [attr.can-down]="item.canDown"
-                                [attr.can-left]="item.canLeft"
-                                [attr.can-right]="item.canRight"
+                                 [attr.can-up]="item.canUp"
+                                 [attr.can-down]="item.canDown"
+                                 [attr.can-left]="item.canLeft"
+                                 [attr.can-right]="item.canRight"
                             >
-                                <button (click)="onDropUp($event)" mat-icon-button 
-                                    class="action-button move-action-up">
-                                    <mat-icon>arrow_drop_up</mat-icon>
+                                <button (click)="onDropUp($event)" mat-icon-button
+                                        class="action-button move-action-up">
+                                    <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
+                                    <i class="pi pi-chevron-up"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
-                                    class="action-button move-action-left">
-                                    <mat-icon>arrow_left</mat-icon>
+                                        class="action-button move-action-left">
+                                    <!--                                    <mat-icon>arrow_left</mat-icon>-->
+                                    <i class="pi pi-chevron-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
-                                    class="action-button move-action-right">
-                                    <mat-icon>arrow_right</mat-icon>
+                                        class="action-button move-action-right">
+                                    <!--                                    <mat-icon>arrow_right</mat-icon>-->
+                                    <i class="pi pi-chevron-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
-                                    class="action-button move-action-down">
-                                    <mat-icon>arrow_drop_down</mat-icon>
+                                        class="action-button move-action-down">
+                                    <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
+                                    <i class="pi pi-chevron-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button move-more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                        class="action-button move-more-action-button">
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                             </div>
                             <div class="actions-container">
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
-                                    class="action-button more-action-button">
-                                    <mat-icon>more_horiz</mat-icon>
+                                        class="action-button more-action-button">
+                                    <!--                                    <mat-icon>more_horiz</mat-icon>-->
+                                    <i class="pi pi-ellipsis-h"></i>
                                 </button>
                                 <button (click)="onDelete($event)" mat-icon-button class="action-button delete-action">
-                                    <mat-icon>delete</mat-icon>
+                                    <!--                                    <mat-icon>delete</mat-icon>-->
+                                    <i class="pi pi-trash"></i>
                                 </button>
                             </div>
                         </div>
@@ -226,50 +267,54 @@
 
                 </div>
 
-                <div 
+                <div
                     *ngIf="isSuggenstionEnabled && isSelect(item) && nestedBlock"
-                    class="block-container preview" 
-                    [attr.expandable]="false" 
+                    class="block-container preview"
+                    [attr.expandable]="false"
                     [attr.selected]="false"
-                    [attr.block-type]="nestedBlock.type" 
+                    [attr.block-type]="nestedBlock.type"
                     [style.paddingLeft]="getNestedOffset(item.level+1)"
                     (click)="nested.emit(nestedBlock.type)">
                     <div class="block-expand">
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+                        <i class="pi pi-chevron-down"></i>
                     </div>
                     <div class="block-body" [style]="blockStyle(nestedBlock)"
-                        [matTooltip]="blockTypeTips[nestedBlock.type]" matTooltipPosition="above"
-                        matTooltipClass="guardian-tooltip">
+                         [matTooltip]="blockTypeTips[nestedBlock.type]" matTooltipPosition="above"
+                         matTooltipClass="guardian-tooltip">
                         <div class="block-item" theme-all>
                             <div class="block-item-icon">
-                                <mat-icon theme-text>{{nestedBlock.icon}}</mat-icon>
+                                <!--                                <mat-icon theme-text>{{nestedBlock.icon}}</mat-icon>-->
+                                <i [ngClass]="'pi pi-' + nestedBlock.icon" class="theme-text"></i>
                             </div>
                             <div class="block-item-name" theme-text>
-                                {{nestedBlock.name}}
+                                {{ nestedBlock.name }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div 
+                <div
                     *ngIf="isSuggenstionEnabled && nextBlock && isLatestBlockInSelect(item)"
                     (click)="next.emit(nextBlock.type)"
                     class="block-container preview"
-                    [attr.expandable]="false" 
-                    [attr.selected]="false" 
+                    [attr.expandable]="false"
+                    [attr.selected]="false"
                     [attr.block-type]="nextBlock.type"
                     [style.paddingLeft]="selectedNode?.offset">
                     <div class="block-expand">
-                        <mat-icon>arrow_drop_down</mat-icon>
+                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+                        <i class="pi pi-chevron-down"></i>
                     </div>
                     <div class="block-body" [style]="blockStyle(nextBlock)" [matTooltip]="blockTypeTips[nextBlock.type]"
-                        matTooltipPosition="below" matTooltipClass="guardian-tooltip">
+                         matTooltipPosition="below" matTooltipClass="guardian-tooltip">
                         <div class="block-item" theme-all>
                             <div class="block-item-icon">
-                                <mat-icon theme-text>{{nextBlock.icon}}</mat-icon>
+                                <!--                                <mat-icon theme-text>{{nextBlock.icon}}</mat-icon>-->
+                                <i [ngClass]="'pi pi-' + nestedBlock.icon" class="theme-text"></i>
                             </div>
                             <div class="block-item-name" theme-text>
-                                {{nextBlock.name}}
+                                {{ nextBlock.name }}
                             </div>
                         </div>
                     </div>

@@ -4,13 +4,15 @@
     </div>
 
     <div *ngIf="error" class="error-message">
-        <div>{{error}}</div>
+        <div>{{ error }}</div>
     </div>
 
     <div *ngIf="result" class="merge-options">
         <div class="merge-back">
             <div *ngIf="parent" (click)="onBack()">
-                <mat-icon>chevron_left</mat-icon>
+                <!--                <mat-icon>chevron_left</mat-icon>-->
+
+                <i class="pi pi-chevron-left"></i>
                 <span>Back</span>
             </div>
         </div>
@@ -55,15 +57,18 @@
             </div>
         </div>
         <div class="merge-lvl-apply">
-            <div 
+            <div
                 [attr.need-apple]="needApplyFilters"
                 *ngIf="isApplyBtn"
-                 class="merge-lvl-btn"
-                (click)="onApply()">Apply</div>
+                class="merge-lvl-btn"
+                (click)="onApply()">Apply
+            </div>
         </div>
         <div>
             <div class="export-btn" (click)="onExport()">
-                <mat-icon>download</mat-icon>
+                <!--                <mat-icon>download</mat-icon>-->
+
+                <i class="pi pi-download"></i>
                 Export
             </div>
         </div>
@@ -82,64 +87,64 @@
 
     <div *ngIf="isPolicies" class="content-result">
         <app-compare-policy
-                [childrenLvl]="childrenLvl"
-                [eventsLvl]="eventsLvl"
-                [idLvl]="idLvl"
-                [propLvl]="propLvl"
-                [type]="visibleType"
-                [value]="result"
-                (change)="onChange($event)"></app-compare-policy>
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
+            [value]="result"
+            (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="isSchemas" class="content-result">
         <app-compare-schema
-                [type]="visibleType"
-                [value]="result"
-                [idLvl]="idLvl"
-                (change)="onChange($event)"></app-compare-schema>
+            [type]="visibleType"
+            [value]="result"
+            [idLvl]="idLvl"
+            (change)="onChange($event)"></app-compare-schema>
     </div>
 
     <div *ngIf="isModules" class="content-result">
         <app-compare-module
-                [childrenLvl]="childrenLvl"
-                [eventsLvl]="eventsLvl"
-                [idLvl]="idLvl"
-                [propLvl]="propLvl"
-                [type]="visibleType"
-                [value]="result"
-                (change)="onChange($event)"></app-compare-module>
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
+            [value]="result"
+            (change)="onChange($event)"></app-compare-module>
     </div>
 
     <div *ngIf="isMultiPolicies" class="content-result">
         <app-multi-compare-policy
-                [childrenLvl]="childrenLvl"
-                [eventsLvl]="eventsLvl"
-                [idLvl]="idLvl"
-                [propLvl]="propLvl"
-                [type]="visibleType"
-                [value]="result"
-                (change)="onChange($event)"></app-multi-compare-policy>
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
+            [value]="result"
+            (change)="onChange($event)"></app-multi-compare-policy>
     </div>
 
     <div *ngIf="isDocuments" class="content-result">
         <app-compare-document
-                [childrenLvl]="childrenLvl"
-                [eventsLvl]="eventsLvl"
-                [idLvl]="idLvl"
-                [propLvl]="propLvl"
-                [type]="visibleType"
-                [value]="result"
-                (change)="onChange($event)"></app-compare-document>
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
+            [value]="result"
+            (change)="onChange($event)"></app-compare-document>
     </div>
 
     <div *ngIf="isTools" class="content-result">
         <app-compare-tool
-                [childrenLvl]="childrenLvl"
-                [eventsLvl]="eventsLvl"
-                [idLvl]="idLvl"
-                [propLvl]="propLvl"
-                [type]="visibleType"
-                [value]="result"
-                (change)="onChange($event)"></app-compare-tool>
+            [childrenLvl]="childrenLvl"
+            [eventsLvl]="eventsLvl"
+            [idLvl]="idLvl"
+            [propLvl]="propLvl"
+            [type]="visibleType"
+            [value]="result"
+            (change)="onChange($event)"></app-compare-tool>
     </div>
 </div>

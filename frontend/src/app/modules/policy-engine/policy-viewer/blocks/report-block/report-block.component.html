@@ -21,7 +21,9 @@
                     matSuffix
                     type="submit"
                 >
-                    <mat-icon>search</mat-icon>
+                    <!--                    <mat-icon>search</mat-icon>-->
+
+                    <i class="pi pi-search"></i>
                 </button>
             </mat-form-field>
         </form>
@@ -38,9 +40,12 @@
                 <div *ngIf="item.vpDocument" class="header card-block">
                     <div class="card-info">
                         <h3>Verifiable Presentation</h3>
-                        <mat-icon>check_circle</mat-icon>
+                        <!--                        <mat-icon>check_circle</mat-icon>-->
+
+                        <i class="pi pi-check-circle"></i>
                         <span class="vertical-devider"></span>
-                        <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file" label="VP File"
+                        <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file"
+                                label="VP File"
                                 pButton
                         ></button>
                     </div>
@@ -60,7 +65,8 @@
                         <button (click)="onBackClick()" class="p-button-outlined" icon="pi pi-chevron-left" label=""
                                 pButton
                         ></button>
-                        <button (click)="openVCDocument(item.vcDocument)" class="p-button-outlined" icon="pi pi-file" label="File"
+                        <button (click)="openVCDocument(item.vcDocument)" class="p-button-outlined" icon="pi pi-file"
+                                label="File"
                                 pButton
                         ></button>
                         <div>
@@ -78,7 +84,8 @@
                     <div class="vp-section-header">
                         <h3>Token & Issuer</h3>
                         <span class="vertical-devider"></span>
-                        <button (click)="openJsonDocument(item.mintDocument)" class="p-button-outlined" icon="pi pi-file" label="VC File"
+                        <button (click)="openJsonDocument(item.mintDocument)" class="p-button-outlined"
+                                icon="pi pi-file" label="VC File"
                                 pButton
                         ></button>
                     </div>
@@ -139,14 +146,17 @@
                                     >
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon>workspace_premium</mat-icon>
+                                                <!--                                                <mat-icon>workspace_premium</mat-icon>-->
+
+                                                <svg-icon src="/assets/images/icons/workspace_premium.svg"
+                                                          svgClass="icon-style-workspace_premium"></svg-icon>
                                             </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
                                             <a (click)="openVCDocument(item,item.document.document)"
-                                                *ngIf="item.document"
-                                                class="open-vc"
+                                               *ngIf="item.document"
+                                               class="open-vc"
                                             >VC File</a>
                                         </div>
                                         <div class="card-body">
@@ -157,7 +167,7 @@
                                                     margin-bottom: 10px;
                                                     padding-bottom: 10px;
                                                 ">
-                                                <span>{{item.description}}</span>
+                                                <span>{{ item.description }}</span>
                                             </div>
                                             <div>
                                                 <span>{{ item.amount }}</span>
@@ -184,15 +194,20 @@
                         <div class="vp-table">
                             <div class="cards">
                                 <div class="cards-container">
-                                    <div *ngFor="let item of item.secondaryImpacts" [attr.main]="false" class="card-item">
+                                    <div *ngFor="let item of item.secondaryImpacts" [attr.main]="false"
+                                         class="card-item">
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <mat-icon>workspace_premium</mat-icon>
+                                                <!--                                                <mat-icon>workspace_premium</mat-icon>-->
+
+                                                <svg-icon src="/assets/images/icons/workspace_premium.svg"
+                                                          svgClass="icon-style-workspace_premium"></svg-icon>
                                             </div>
                                             <span>{{ item.label }}</span>
                                         </div>
                                         <div class="card-right">
-                                            <a (click)="openVCDocument(item,item.document.document)" *ngIf="item.document" class="open-vc">VC File</a>
+                                            <a (click)="openVCDocument(item,item.document.document)"
+                                               *ngIf="item.document" class="open-vc">VC File</a>
                                         </div>
                                         <div class="card-body">
                                             <div style="
@@ -201,7 +216,7 @@
                                                     margin-bottom: 10px;
                                                     padding-bottom: 10px;
                                                 ">
-                                                <span>{{item.description}}</span>
+                                                <span>{{ item.description }}</span>
                                             </div>
                                             <div>
                                                 <span>{{ item.amount }}</span>
@@ -229,7 +244,7 @@
                                 Verified Signature:
                             </div>
                             <div class="vp-field-value">
-                                {{ item.vpDocument.document.document?.proof?.jws}}
+                                {{ item.vpDocument.document.document?.proof?.jws }}
                             </div>
                         </div>
                         <div *ngIf="item.vcDocument" class="vp-signature">
@@ -237,7 +252,7 @@
                                 Verified Signature:
                             </div>
                             <div class="vp-field-value">
-                                {{item.vcDocument.document.document?.proof?.jws}}
+                                {{ item.vcDocument.document.document?.proof?.jws }}
                             </div>
                         </div>
                     </div>
@@ -249,7 +264,8 @@
                     <div class="vp-section-header">
                         <h3>Policy Overview</h3>
                         <span class="vertical-devider"></span>
-                        <button (click)="openVCDocument(policyDocument)" class="p-button-outlined" icon="pi pi-file" label="VC File"
+                        <button (click)="openVCDocument(policyDocument)" class="p-button-outlined" icon="pi pi-file"
+                                label="VC File"
                                 pButton
                         ></button>
                     </div>
@@ -288,7 +304,9 @@
 
             <div class="container">
                 <div (click)="onScrollButtonPress(scrollContainer, -150)" class="scroll-right">
-                    <mat-icon>chevron_left</mat-icon>
+                    <!--                    <mat-icon>chevron_left</mat-icon>-->
+
+                    <i class="pi pi-chevron-left"></i>
                 </div>
                 <div
                     #scrollContainer
@@ -319,16 +337,25 @@
                                                     ? 'scale(1, 1) translate(0, 0)'
                                                     : 'scale(1, 0) translate(20px, 0)'
                                         }"
-                                        class="item-relationships-delimiter"
+                                         class="item-relationships-delimiter"
                                     ></div>
-                                    <mat-icon
+                                    <!--                                    <mat-icon-->
+                                    <!--                                        *ngIf="-->
+                                    <!--                                        document.index === 0 &&-->
+                                    <!--                                        item.dynamicFilters.length &&-->
+                                    <!--                                        item.document.length > 1"-->
+                                    <!--                                        class="item-relationships-icon material-icons-outlined">-->
+                                    <!--                                        account_tree-->
+                                    <!--                                    </mat-icon>-->
+
+                                    <i
                                         *ngIf="
                                         document.index === 0 &&
                                         item.dynamicFilters.length &&
                                         item.document.length > 1"
-                                        class="item-relationships-icon material-icons-outlined">
-                                        account_tree
-                                    </mat-icon>
+                                        class="pi pi-sitemap item-relationships-icon"
+                                    ></i>
+
                                     <div
                                         [ngClass]="{
                                             'active-multiple-document':
@@ -352,7 +379,9 @@
                                                 *ngIf="item.icon"
                                                 [ngSwitch]="item.iconType"
                                             >
-                                                <mat-icon *ngSwitchCase="'common'">{{ item.icon }}</mat-icon>
+                                                <!--                                                <mat-icon *ngSwitchCase="'common'">{{ item.icon }}</mat-icon>-->
+
+                                                <i *ngSwitchCase="'common'" [ngClass]="'pi pi-' + item.icon"></i>
                                                 <img
                                                     *ngSwitchCase="'custom'"
                                                     [src]="item.icon"
@@ -368,8 +397,10 @@
                                             "
                                             class="revoke-container"
                                         >
-                                            <mat-icon class="revoke-icon">warning</mat-icon>
-                                            <b>Revoked with reason: "{{document.document.comment}}"</b>
+                                            <!--                                            <mat-icon class="revoke-icon">warning</mat-icon>-->
+
+                                            <i class="pi pi-exclamation-triangle revoke-icon"></i>
+                                            <b>Revoked with reason: "{{ document.document.comment }}"</b>
                                         </div>
                                         <div class="chain-id">
                                             {{ item.description }}
@@ -390,8 +421,8 @@
                                         <div class="nested-documents">
                                             <ng-container *ngFor="let link of item.documents">
                                                 <a (click)="openVCDocument(link)"
-                                                    [title]="link.description"
-                                                    class="nested-documents-value"
+                                                   [title]="link.description"
+                                                   class="nested-documents-value"
                                                 >
                                                     {{ link.title }}
                                                 </a>
@@ -411,10 +442,19 @@
                                             "
                                             class="multiple-documents-count"
                                         >
-                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left</mat-icon>
+                                            <!--                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left-->
+                                            <!--                                            </mat-icon>-->
+
+                                            <i class="pi pi-chevron-left"
+                                               (click)="onPrevDocumentClick($event, item, document)"></i>
                                             {{ item.activeDocumentIndex }} in
                                             {{ item.document.length }}
-                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">chevron_right</mat-icon>
+                                            <!--                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">-->
+                                            <!--                                                chevron_right-->
+                                            <!--                                            </mat-icon>-->
+
+                                            <i class="pi pi-chevron-right"
+                                               (click)="onNextDocumentClick($event, item, document)"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -432,7 +472,8 @@
                                             {{ item.title }}
                                         </div>
                                         <div class="empty-documents-description">
-                                            <mat-icon>search</mat-icon>
+                                            <!--                                            <mat-icon>search</mat-icon>-->
+                                            <i class="pi pi-search"></i>
                                             <div class="chain-id">
                                                 Documents Not Found
                                             </div>
@@ -447,7 +488,9 @@
                     (click)="onScrollButtonPress(scrollContainer, 150)"
                     class="scroll-right"
                 >
-                    <mat-icon>chevron_right</mat-icon>
+                    <!--                    <mat-icon>chevron_right</mat-icon>-->
+
+                    <i class="pi pi-chevron-right"></i>
                 </div>
             </div>
             <div style="height: 64px;"></div>

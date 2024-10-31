@@ -13,12 +13,16 @@
         <div class="actions">
             <div style="text-align: end">
                 <button mat-raised-button color="primary" class="toolbar-btn add" (click)="openRetirePoolsDialog()">
-                    <mat-icon>visibility</mat-icon>
+                    <!--                    <mat-icon>visibility</mat-icon>-->
+
+                    <i class="pi pi-eye"></i>
                     <span>Retire</span>
                 </button>
                 <button (click)="openRetireRequestsDialog()" class="toolbar-btn" color="primary"
                         mat-raised-button>
-                    <mat-icon>visibility</mat-icon>
+                    <!--                    <mat-icon>visibility</mat-icon>-->
+
+                    <i class="pi pi-eye"></i>
                     <span>Requests</span>
                 </button>
             </div>
@@ -27,25 +31,28 @@
             <ng-container>
                 <table mat-table [dataSource]="contractRequests" class="retire-table">
                     <ng-container matColumnDef="contractId">
-                        <th mat-header-cell *matHeaderCellDef> Contract Id </th>
+                        <th mat-header-cell *matHeaderCellDef> Contract Id</th>
                         <td mat-cell *matCellDef="let element">
                             <hedera-explorer type="accounts"
-                                [params]="element.document.credentialSubject[0].contractId">{{element.document.credentialSubject[0].contractId}}</hedera-explorer>
+                                             [params]="element.document.credentialSubject[0].contractId">{{ element.document.credentialSubject[0].contractId }}
+                            </hedera-explorer>
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="date">
-                        <th mat-header-cell *matHeaderCellDef> Date </th>
+                        <th mat-header-cell *matHeaderCellDef> Date</th>
                         <td mat-cell *matCellDef="let element">
-                            {{ getDate(element.document.issuanceDate)}}
+                            {{ getDate(element.document.issuanceDate) }}
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="operation">
-                        <th mat-header-cell *matHeaderCellDef> Operations </th>
+                        <th mat-header-cell *matHeaderCellDef> Operations</th>
                         <td mat-cell *matCellDef="let element">
                             <div class="view-action-btn"
-                                (click)="viewRetireRequest(element)">
+                                 (click)="viewRetireRequest(element)">
                                 <span>View Details</span>
-                                <mat-icon>visibility</mat-icon>
+                                <!--                                <mat-icon>visibility</mat-icon>-->
+
+                                <i class="pi pi-eye"></i>
                             </div>
                         </td>
                     </ng-container>
@@ -57,7 +64,7 @@
         </div>
         <div class="table-paginator">
             <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
+                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
             </mat-paginator>
         </div>
     </ng-container>

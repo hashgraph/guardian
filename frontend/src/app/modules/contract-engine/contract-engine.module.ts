@@ -6,6 +6,7 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { MaterialModule } from '../common/material.module';
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { AppRoutingModule } from 'src/app/app-routing.module';
+import {AngularSvgIconModule} from 'angular-svg-icon';
 // Components
 import { RefreshBtnComponent } from './components/refresh-btn/refresh-btn.component';
 // Configs
@@ -43,6 +44,7 @@ import { UserContractConfigComponent } from './configs/user-contract-config/user
         MaterialModule,
         TagEngineModule,
         AppRoutingModule,
+        AngularSvgIconModule.forRoot()
     ],
     exports: [],
 })

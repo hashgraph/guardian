@@ -34,7 +34,9 @@
                 <mat-label>HASH/Message ID:</mat-label>
                 <input matInput type="text" placeholder="HASH/ID" formControlName="value">
                 <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
-                    <mat-icon>search</mat-icon>
+<!--                    <mat-icon>search</mat-icon>-->
+
+                    <i class="pi pi-search"></i>
                 </button>
             </mat-form-field>
         </form>
@@ -67,7 +69,9 @@
                                 [attr.selected]="topic.message && topic.message === selected"
                                 [attr.readonly]="!topic.message">
                                 <div class="topic-header">
-                                    <mat-icon>cloud</mat-icon>
+<!--                                    <mat-icon>cloud</mat-icon>-->
+
+                                    <i class="pi pi-cloud"></i>
                                     {{getTopicHeader(topic.message)}}
                                 </div>
                                 <div class="topic-data">
@@ -99,7 +103,9 @@
 
                                 <ng-container *ngIf="message.__ifPolicyMessage">
                                     <div class="message-header">
-                                        <mat-icon>policy</mat-icon>
+<!--                                        <mat-icon>policy</mat-icon>-->
+
+                                        <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
                                         Create policy
                                     </div>
                                     <div class="message-data">
@@ -109,7 +115,9 @@
                                 </ng-container>
                                 <ng-container *ngIf="message.__ifInstanceMessage">
                                     <div class="message-header">
-                                        <mat-icon>policy</mat-icon>
+<!--                                        <mat-icon>policy</mat-icon>-->
+
+                                        <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
                                         Publish policy
                                     </div>
                                     <div class="message-data">
@@ -120,7 +128,9 @@
 
                                 <ng-container *ngIf="message.__ifDIDMessage">
                                     <div class="message-header">
-                                        <mat-icon>key</mat-icon>
+<!--                                        <mat-icon>key</mat-icon>-->
+
+                                        <i class="pi pi-key"></i>
                                         Registration
                                     </div>
                                     <div class="message-data">
@@ -133,7 +143,9 @@
 
                                 <ng-container *ngIf="message.__ifVCMessage">
                                     <div class="message-header">
-                                        <mat-icon>description</mat-icon>
+<!--                                        <mat-icon>description</mat-icon>-->
+
+                                        <i class="pi pi-file"></i>
                                         {{message.__status}}
                                     </div>
                                     <div class="message-data">
@@ -146,7 +158,10 @@
 
                                 <ng-container *ngIf="message.__ifMintMessage">
                                     <div class="message-header">
-                                        <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
+<!--                                        <mat-icon class="svg-icon" svgIcon="token"></mat-icon>-->
+
+                                        <svg-icon src="/assets/images/icons/token.svg" class="svg-icon"></svg-icon>
+
                                         Mint token
                                     </div>
                                     <div class="message-data">
@@ -158,7 +173,9 @@
 
                                 <ng-container *ngIf="message.__ifVPMessage">
                                     <div class="message-header">
-                                        <mat-icon>receipt</mat-icon>
+<!--                                        <mat-icon>receipt</mat-icon>-->
+
+                                        <svg-icon src="/assets/images/icons/receipt.svg" svgClass="icon-style-receipt"></svg-icon>
                                         Mint confirmation
                                     </div>
                                     <div class="message-data">
@@ -171,7 +188,9 @@
 
                                 <ng-container *ngIf="message.__ifRoleMessage">
                                     <div class="message-header">
-                                        <mat-icon>person</mat-icon>
+<!--                                        <mat-icon>person</mat-icon>-->
+
+                                        <i class="pi pi-user"></i>
                                         Roles & Groups
                                     </div>
                                     <div class="message-data">
@@ -200,17 +219,23 @@
                 <div class="dashboard-right-header">
                     <span>{{selected.topicId}}</span>
                     <span>
-                        <mat-icon>chevron_right</mat-icon>
+<!--                        <mat-icon>chevron_right</mat-icon>-->
+
+                            <i class="pi pi-chevron-right"></i>
                     </span>
                     <span>{{selected.id}}</span>
                     <div (click)="onSelect(null)" class="dashboard-right-close">
-                        <mat-icon>close</mat-icon>
+<!--                        <mat-icon>close</mat-icon>-->
+
+                        <i class="pi pi-times"></i>
                     </div>
                 </div>
                 <div class="dashboard-right-body">
                     <ng-container *ngIf="selected.__ifPolicyMessage">
                         <div class="document-header">
-                            <mat-icon>policy</mat-icon>
+<!--                            <mat-icon>policy</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
                             Policy
                         </div>
 
@@ -256,7 +281,9 @@
 
                     <ng-container *ngIf="selected.__ifInstanceMessage">
                         <div class="document-header">
-                            <mat-icon>policy</mat-icon>
+<!--                            <mat-icon>policy</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/policy.svg" svgClass="icon-style-policy"></svg-icon>
                             Instance policy
                         </div>
 
@@ -306,7 +333,9 @@
 
                     <ng-container *ngIf="selected.__ifDIDMessage">
                         <div class="document-header">
-                            <mat-icon>key</mat-icon>
+<!--                            <mat-icon>key</mat-icon>-->
+
+                            <i class="pi pi-key"></i>
                             User registration
                         </div>
 
@@ -350,7 +379,9 @@
 
                     <ng-container *ngIf="selected.__ifRoleMessage">
                         <div class="document-header">
-                            <mat-icon>person</mat-icon>
+<!--                            <mat-icon>person</mat-icon>-->
+
+                            <i class="pi pi-user"></i>
                             Roles & Groups
                         </div>
 
@@ -405,7 +436,9 @@
 
                     <ng-container *ngIf="selected.__ifVCMessage">
                         <div class="document-header">
-                            <mat-icon>description</mat-icon>
+<!--                            <mat-icon>description</mat-icon>-->
+
+                            <i class="pi pi-file"></i>
                             Document
                         </div>
 
@@ -470,7 +503,9 @@
                             <div class="array-field">
                                 <div *ngFor="let relationship of selected.__relationships" class="array-value">
                                     <div class="relationship-document" (click)="onSelectById(relationship)">
-                                        <mat-icon>description</mat-icon>
+<!--                                        <mat-icon>description</mat-icon>-->
+
+                                        <i class="pi pi-file"></i>
                                         {{relationship.name}}
                                     </div>
                                 </div>
@@ -480,7 +515,9 @@
 
                     <ng-container *ngIf="selected.__ifMintMessage">
                         <div class="document-header">
-                            <mat-icon class="svg-icon" svgIcon="token"></mat-icon>
+<!--                            <mat-icon class="svg-icon" svgIcon="token"></mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/token.svg" class="svg-icon"></svg-icon>
                             Mint token
                         </div>
 
@@ -557,7 +594,9 @@
                             <div class="array-field">
                                 <div *ngFor="let relationship of selected.__relationships" class="array-value">
                                     <div class="relationship-document" (click)="onSelectById(relationship)">
-                                        <mat-icon>description</mat-icon>
+<!--                                        <mat-icon>description</mat-icon>-->
+
+                                        <i class="pi pi-file"></i>
                                         {{relationship.name}}
                                     </div>
                                 </div>
@@ -567,7 +606,9 @@
 
                     <ng-container *ngIf="selected.__ifVPMessage">
                         <div class="document-header">
-                            <mat-icon>receipt</mat-icon>
+<!--                            <mat-icon>receipt</mat-icon>-->
+
+                            <svg-icon src="/assets/images/icons/receipt.svg" svgClass="icon-style-receipt"></svg-icon>
                             Mint confirmation
                         </div>
 
@@ -641,7 +682,9 @@
                             <div class="array-field">
                                 <div *ngFor="let relationship of selected.__relationships" class="array-value">
                                     <div class="relationship-document" (click)="onSelectById(relationship)">
-                                        <mat-icon>description</mat-icon>
+<!--                                        <mat-icon>description</mat-icon>-->
+
+                                        <i class="pi pi-file"></i>
                                         {{relationship.name}}
                                     </div>
                                 </div>
@@ -651,7 +694,9 @@
 
                     <ng-container *ngIf="selected.__ifTopicMessage">
                         <div class="document-header">
-                            <mat-icon>cloud</mat-icon>
+<!--                            <mat-icon>cloud</mat-icon>-->
+
+                            <i class="pi pi-cloud"></i>
                             Catalog
                         </div>
 

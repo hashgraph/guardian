@@ -52,7 +52,7 @@ import {ButtonModule} from 'primeng/button';
         AccordionModule,
         TableModule,
 
-        // MatIconModule,
+        MatIconModule,
         ButtonModule,
 
         ReactiveFormsModule,
@@ -91,7 +91,7 @@ import {ButtonModule} from 'primeng/button';
         AccordionModule,
         TableModule,
 
-        // MatIconModule,
+        MatIconModule,
         ButtonModule,
 
         ReactiveFormsModule,
