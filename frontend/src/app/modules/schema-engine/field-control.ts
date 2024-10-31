@@ -30,6 +30,8 @@ export class FieldControl {
     public controlDefault: UntypedFormControl;
     public controlSuggest: UntypedFormControl;
     public controlExample: UntypedFormControl;
+    public autocalculated: UntypedFormControl;
+    public expression: UntypedFormControl;
 
     private readonly _defaultFieldMap!: any;
     private _entityType: UntypedFormControl | undefined;
@@ -42,6 +44,7 @@ export class FieldControl {
         entityType?: UntypedFormControl,
         name?: string
     ) {
+        console.log(field);
         this._defaultFieldMap = defaultFieldMap;
         this._entityType = entityType;
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;
@@ -76,6 +79,8 @@ export class FieldControl {
             this.controlDefault = new UntypedFormControl(field.default);
             this.controlSuggest = new UntypedFormControl(field.suggest);
             this.controlExample = new UntypedFormControl(field.examples?.[0]);
+            this.autocalculated = new UntypedFormControl(field.autocalculate);
+            this.expression = new UntypedFormControl(field.expression);
         } else {
             this.controlKey = new UntypedFormControl(name || this.name, [
                 Validators.required,
@@ -103,6 +108,8 @@ export class FieldControl {
             this.controlExample = new UntypedFormControl();
             this.hidden = new UntypedFormControl(false);
             this.property = new UntypedFormControl('');
+            this.autocalculated = new UntypedFormControl(false);
+            this.expression = new UntypedFormControl('');
         }
         if (this._entityType) {
             this._entityType.valueChanges
@@ -203,6 +210,8 @@ export class FieldControl {
             default: this.controlDefault,
             suggest: this.controlSuggest,
             example: this.controlExample,
+            autocalculate: this.autocalculated,
+            expression: this.expression
         });
     }
 
@@ -226,6 +235,8 @@ export class FieldControl {
             const isPrivate = group.controlPrivate;
             const pattern = group.controlPattern;
             const hidden = group.hidden;
+            const autocalculate = group.autocalculate;
+            const expression = group.expression;
             const property = group.property;
             const suggest = group.suggest;
             const example = group.example;
@@ -249,6 +260,8 @@ export class FieldControl {
                 default: group.default,
                 suggest,
                 example,
+                autocalculate,
+                expression
             };
         } else {
             return null;

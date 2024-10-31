@@ -11,7 +11,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
-import { SchemaRuleValidateResult, SchemaRuleValidators } from '../../common/models/field-rule-validator';
+import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -72,6 +72,7 @@ interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | Untype
     readonly?: boolean;
     list?: IFieldIndexControl<any>[];
     open: boolean;
+    autocalculate: boolean;
 }
 
 interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
@@ -417,120 +418,9 @@ export class SchemaFormComponent implements OnInit {
         input.click();
     }
 
-    private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
-        const item: IFieldControl<any> = {
-            ...field,
-            hide: false,
-            id: GenerateUUIDv4(),
-            field,
-            path: field.path || '',
-            fullPath: field.fullPath || '',
-            control: null,
-            open: true
-        }
-
-        item.preset = field.default;
-        if (preset) {
-            item.isPreset = true;
-            item.preset = preset[field.name];
-        }
-
-        if (!field.isArray && !field.isRef) {
-            item.fileUploading = false;
-            item.control = this.createControl(item, item.preset);
-            if (field.remoteLink) {
-                item.fileUploading = true;
-                this.ipfs
-                    .getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
-            }
-            if (field.enum) {
-                item.enumValues = field.enum;
-            }
-            this.postFormat(item, item.control);
-        }
-
-        if (!field.isArray && field.isRef) {
-            item.fields = field.fields;
-            item.displayRequired = item.fields?.some((refField: any) => refField.required);
-            if (field.required || item.preset) {
-                item.control = this.createSubSchemaControl(item);
-            }
-        }
-
-        if (field.isArray && !field.isRef) {
-            item.control = this.createArrayControl();
-            item.list = [];
-            if (field.remoteLink) {
-                item.fileUploading = true;
-                this.ipfs
-                    .getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
-            }
-            if (field.enum) {
-                item.enumValues = field.enum;
-            }
-            if (item.preset && item.preset.length) {
-                for (let index = 0; index < item.preset.length; index++) {
-                    const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
-                    item.list.push(listItem);
-                    item.control.push(listItem.control);
-                }
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            } else if (field.required) {
-                const listItem = this.createListControl(item);
-                item.list.push(listItem);
-                item.control.push(listItem.control);
-
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            }
-        }
-
-        if (field.isArray && field.isRef) {
-            item.control = this.createArrayControl();
-            item.list = [];
-            item.fields = field.fields;
-            if (item.preset && item.preset.length) {
-                for (let index = 0; index < item.preset.length; index++) {
-                    const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);//todo
-                    item.list.push(listItem);
-                    item.control.push(listItem.control);
-                }
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            } else if (field.required) {
-                const listItem = this.createListControl(item);//todo
-                item.list.push(listItem);
-                item.control.push(listItem.control);
-
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            }
-        }
-
-        if (
-            this.readonly &&
-            this.readonly.find(
-                (readonlyItem: any) => readonlyItem.name === field.name
-            )
-        ) {
-            item.readonly = true;
-            setTimeout(() => {
-                item.control?.disable();
-                item.control?.disable();
-            });
-        }
-        return item;
+    public ifFieldVisible(item: IFieldControl<any>): boolean {
+        const comment = JSON.parse(item.comment as string);
+        return !item.hide && !item.hidden && !comment.autocalculate;
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
@@ -1044,8 +934,121 @@ export class SchemaFormComponent implements OnInit {
         return JSON.stringify(value, null, 4);
     }
 
-    public ifFieldVisible(item: IFieldControl<any>): boolean {
-        return !item.hide && !item.hidden;
+    private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
+        const item: IFieldControl<any> = {
+            ...field,
+            hide: false,
+            autocalculate: false,
+            id: GenerateUUIDv4(),
+            field,
+            path: field.path || '',
+            fullPath: field.fullPath || '',
+            control: null,
+            open: true
+        }
+
+        item.preset = field.default;
+        if (preset) {
+            item.isPreset = true;
+            item.preset = preset[field.name];
+        }
+
+        if (!field.isArray && !field.isRef) {
+            item.fileUploading = false;
+            item.control = this.createControl(item, item.preset);
+            if (field.remoteLink) {
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    })
+                    .finally(() => item.fileUploading = false);
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
+            this.postFormat(item, item.control);
+        }
+
+        if (!field.isArray && field.isRef) {
+            item.fields = field.fields;
+            item.displayRequired = item.fields?.some((refField: any) => refField.required);
+            if (field.required || item.preset) {
+                item.control = this.createSubSchemaControl(item);
+            }
+        }
+
+        if (field.isArray && !field.isRef) {
+            item.control = this.createArrayControl();
+            item.list = [];
+            if (field.remoteLink) {
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    })
+                    .finally(() => item.fileUploading = false);
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
+            if (item.preset && item.preset.length) {
+                for (let index = 0; index < item.preset.length; index++) {
+                    const preset = item.preset[index];
+                    const listItem = this.createListControl(item, preset);
+                    item.list.push(listItem);
+                    item.control.push(listItem.control);
+                }
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            } else if (field.required) {
+                const listItem = this.createListControl(item);
+                item.list.push(listItem);
+                item.control.push(listItem.control);
+
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            }
+        }
+
+        if (field.isArray && field.isRef) {
+            item.control = this.createArrayControl();
+            item.list = [];
+            item.fields = field.fields;
+            if (item.preset && item.preset.length) {
+                for (let index = 0; index < item.preset.length; index++) {
+                    const preset = item.preset[index];
+                    const listItem = this.createListControl(item, preset);//todo
+                    item.list.push(listItem);
+                    item.control.push(listItem.control);
+                }
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            } else if (field.required) {
+                const listItem = this.createListControl(item);//todo
+                item.list.push(listItem);
+                item.control.push(listItem.control);
+
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            }
+        }
+
+        if (
+            this.readonly &&
+            this.readonly.find(
+                (readonlyItem: any) => readonlyItem.name === field.name
+            )
+        ) {
+            item.readonly = true;
+            setTimeout(() => {
+                item.control?.disable();
+                item.control?.disable();
+            });
+        }
+        return item;
     }
 
     public showPage(item: IFieldControl<any>, index: number): boolean {

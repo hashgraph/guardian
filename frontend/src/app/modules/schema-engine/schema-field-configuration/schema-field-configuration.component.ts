@@ -10,6 +10,7 @@ import { FieldControl } from '../field-control';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * Schemas constructor
@@ -38,6 +39,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Output('remove') remove = new EventEmitter<any>();
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
+    public autocalculated = false;
     public unit: boolean = true;
     public enum: boolean = false;
     public helpText: boolean = false;
@@ -65,6 +67,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         { label: 'None', value: 'none' },
         { label: 'Hidden', value: 'hidden' },
         { label: 'Required', value: 'required' },
+        {label: 'Auto Calculate', value: 'autocalculate'},
 
     ];
     public error: any;
@@ -180,7 +183,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             if (remoteLinkValue) {
                 this.loadRemoteEnumData(remoteLinkValue);
             }
-            if (this.field.controlRequired.value === true) {
+            if (this.field.autocalculated.value === true) {
+                this.fieldType.setValue('autocalculate')
+            } else if (this.field.controlRequired.value === true) {
                 this.fieldType.setValue('required')
             } else if (this.field.hidden.value === true) {
                 this.fieldType.setValue('hidden')
@@ -196,21 +201,35 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         }
         this.fieldTypeSub = this.fieldType.valueChanges.subscribe(value => {
             switch (value) {
+                case 'autocalculate':
+                    this.autocalculated = true;
+                    this.field.controlRequired.setValue(false);
+                    this.field.hidden.setValue(false);
+                    this.field.autocalculated.setValue(true)
+                    break;
                 case 'required':
+                    this.autocalculated = false;
                     this.field.controlRequired.setValue(true);
                     this.field.hidden.setValue(false);
+                    this.field.autocalculated.setValue(false)
                     break;
                 case 'hidden':
+                    this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(true);
+                    this.field.autocalculated.setValue(false)
                     break;
                 case 'none':
+                    this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
+                    this.field.autocalculated.setValue(false)
                     break;
                 default:
+                    this.autocalculated = false;
                     this.field.controlRequired.setValue(false);
                     this.field.hidden.setValue(false);
+                    this.field.autocalculated.setValue(false)
                     break;
             }
         });
@@ -423,5 +442,24 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             positionClass: 'toast-bottom-right',
             enableHtml: true,
         });
+    }
+
+    onEditExpression() {
+        const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
+            width: '80%',
+            panelClass: 'g-dialog',
+            data: {
+                mode: 'json',
+                expression: this.field.expression.value,
+                readonly: this.readonly
+            },
+            autoFocus: true,
+            disableClose: true
+        })
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.field.expression.patchValue(result.expression);
+            }
+        })
     }
 }

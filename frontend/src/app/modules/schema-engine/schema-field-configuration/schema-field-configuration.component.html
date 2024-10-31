@@ -193,9 +193,18 @@
                     ></p-dropdown>
                 </div>
 
-                <div class="checkbox-field-container">
+                <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
                     <mat-checkbox [formControl]="field.controlArray"></mat-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
+                </div>
+
+                <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
+                    <button
+                            (click)="onEditExpression()"
+                            class=".edit-button button secondary"
+                            label="Edit expression"
+                            pButton>
+                    </button>
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container">

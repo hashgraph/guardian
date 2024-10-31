@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { UntypedFormBuilder } from '@angular/forms';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { ISchema, Schema, SchemaCategory, SchemaField, SchemaHelper } from '@guardian/interfaces';
+import { ISchema, Schema, SchemaHelper } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
@@ -86,6 +86,7 @@ export class SchemaDialog {
     }
 
     onClose() {
+        console.log(this.scheme);
         this.ref.close(null);
     }
 
