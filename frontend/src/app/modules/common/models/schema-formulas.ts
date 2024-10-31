@@ -1,6 +1,5 @@
 import { IFormulaData } from "@guardian/interfaces";
 
-
 export class SchemaFormula implements IFormulaData {
     public id: string;
     public type: string;

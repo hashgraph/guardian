@@ -1,0 +1,94 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{dialogTitle}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+    <div class="dialog-body-container">
+        <div *ngIf="restoreData" class="restore-data">
+            <svg-icon class="svg-icon"
+                src="/assets/images/icons/info.svg"
+                svgClass="icon-color-primary">
+            </svg-icon>
+            <b>There is some data to restore. You can restore latest values:</b>
+            <button 
+                (click)="onRestoreClick()"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/16/refresh.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Restore Values</div>
+            </button>
+        </div>
+
+        <div *ngIf="dryRun" class="restore-data">
+            <svg-icon class="svg-icon"
+                src="/assets/images/icons/info.svg"
+                svgClass="icon-color-primary">
+            </svg-icon>
+            <b>There is dry run mode. You can fill document with test data:</b>
+            <button 
+                (click)="onDryRun()"
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/16/refresh.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Test</div>
+            </button>
+        </div>
+
+        <div *ngIf="schema" class="body-dialog-template">
+            <ng-template #preloader>
+                <div class="preloader-image"></div>
+            </ng-template>
+            <form (ngSubmit)="onSubmit()" [formGroup]="dataForm">
+                <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
+                    <app-schema-form
+                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
+                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
+                        [comesFromDialog]="true"
+                        [showButtons]="false"
+                        [formGroup]="dataForm"
+                        [preset]="presetDocument"
+                        [private-fields]="hideFields"
+                        [readonly-fields]="presetReadonlyFields"
+                        [dryRun]="dryRun"
+                        [policyId]="policyId"
+                        [schema]="schema"
+                        [rules]="rulesResults"
+                        cancelText = "Cancel"
+                        submitText = "Create"
+                        (buttons)="onChangeButtons($event)"
+                    >
+                    </app-schema-form>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div 
+            *ngFor="let config of buttons"
+            [attr.visible]="config.visible()"
+            [attr.id]="config.id"
+            class="dialog-button">
+            <button 
+                (click)="config.fn()"
+                [disabled]="ifDisabledBtn(config)"
+                class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
+        </div>
+    </div>
+</div>

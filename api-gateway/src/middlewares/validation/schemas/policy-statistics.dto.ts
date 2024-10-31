@@ -2,7 +2,7 @@ import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
 import { IsArray, IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
-import { VpDocumentDTO } from './document.dto.js';
+import { VcDocumentDTO } from './document.dto.js';
 import { PolicyDTO } from './policies.dto.js';
 import { SchemaDTO } from './schemas.dto.js';
 
@@ -234,24 +234,24 @@ export class StatisticAssessmentDTO {
     document?: any;
 }
 
-@ApiExtraModels(VpDocumentDTO)
+@ApiExtraModels(VcDocumentDTO)
 export class StatisticAssessmentRelationshipsDTO {
     @ApiProperty({
-        type: () => VpDocumentDTO,
+        type: () => VcDocumentDTO,
         required: false,
     })
     @IsOptional()
     @IsObject()
-    target?: VpDocumentDTO;
+    target?: VcDocumentDTO;
 
     @ApiProperty({
-        type: () => VpDocumentDTO,
+        type: () => VcDocumentDTO,
         required: false,
         isArray: true,
     })
     @IsOptional()
     @IsArray()
-    relationships?: VpDocumentDTO[];
+    relationships?: VcDocumentDTO[];
 }
 
 @ApiExtraModels(PolicyDTO, SchemaDTO)

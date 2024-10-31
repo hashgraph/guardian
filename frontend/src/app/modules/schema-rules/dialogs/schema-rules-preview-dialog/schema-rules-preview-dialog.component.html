@@ -1,0 +1,60 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Preview</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+        <div class="preview-container">
+            <div *ngIf="preview" class="fields-container">
+                <div *ngFor="let variable of preview" class="field-container field-status-{{variable.status}}">
+                    <div class="field-name">
+                        {{variable.description}}
+                    </div>
+                    <div class="field-input">
+                        <input 
+                            class="guardian-input"
+                            [(ngModel)]="variable.value"
+                            pInputText 
+                            type="text"
+                        />
+                        <div class="field-status">
+                            <svg-icon 
+                                *ngIf="variable.status === 'Error'" 
+                                src="/assets/images/icons/close-2.svg" 
+                                svgClass="icon-color-failure"></svg-icon>
+                            <svg-icon 
+                                *ngIf="variable.status === 'Failure'" 
+                                src="/assets/images/icons/warning-2.svg" 
+                                svgClass="icon-color-warning"></svg-icon>
+                            <svg-icon 
+                                *ngIf="variable.status === 'Success'" 
+                                src="/assets/images/icons/check.svg" 
+                                svgClass="icon-color-success"></svg-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Check</button>
+        </div>
+    </div>
+</div>

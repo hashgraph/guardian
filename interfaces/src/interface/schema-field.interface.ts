@@ -87,6 +87,11 @@ export interface SchemaField {
     path?: string;
 
     /**
+     * Full field path
+     */
+    fullPath?: string;
+
+    /**
      * Remote link
      */
     remoteLink?: string;

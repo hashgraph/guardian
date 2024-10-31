@@ -50,6 +50,8 @@ import { StatisticAssessmentsComponent } from './modules/policy-statistics/stati
 import { StatisticAssessmentConfigurationComponent } from './modules/policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
 import { StatisticDefinitionConfigurationComponent } from './modules/policy-statistics/statistic-definition-configuration/statistic-definition-configuration.component';
 import { StatisticDefinitionsComponent } from './modules/policy-statistics/statistic-definitions/statistic-definitions.component';
+import { SchemaRulesComponent } from './modules/schema-rules/schema-rules/schema-rules.component';
+import { SchemaRuleConfigurationComponent } from './modules/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
 
 @Injectable({
     providedIn: 'root'
@@ -499,7 +501,13 @@ const routes: Routes = [
         component: StatisticDefinitionsComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
         }
     },
     {
@@ -507,7 +515,13 @@ const routes: Routes = [
         component: StatisticDefinitionConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
         }
     },
     {
@@ -515,7 +529,13 @@ const routes: Routes = [
         component: StatisticAssessmentConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
         }
     },
     {
@@ -523,7 +543,13 @@ const routes: Routes = [
         component: StatisticAssessmentsComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
         }
     },
     {
@@ -531,11 +557,44 @@ const routes: Routes = [
         component: StatisticAssessmentViewComponent,
         canActivate: [PermissionsGuard],
         data: {
-            roles: [UserRole.USER]
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
         }
     },
 
-
+    {
+        path: 'schema-rules',
+        component: SchemaRulesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
+    {
+        path: 'schema-rule/:ruleId',
+        component: SchemaRuleConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

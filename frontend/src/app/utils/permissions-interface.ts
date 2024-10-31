@@ -98,6 +98,7 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.TOOL, 'Tool'],
     [PermissionEntities.DOCUMENT, 'Document'],
     [PermissionEntities.SCHEMA, 'Schema'],
+    [PermissionEntities.RULE, 'Schema Rule'],
     [PermissionEntities.MODULE, 'Module'],
     [PermissionEntities.FILE, 'File'],
     [PermissionEntities.CONFIG, 'Config'],

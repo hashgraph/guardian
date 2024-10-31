@@ -4,20 +4,20 @@ import { EntityStatus, IStatistic, Schema, UserPermissions } from '@guardian/int
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TreeGraphComponent } from '../tree-graph/tree-graph.component';
-import { TreeNode } from '../tree-graph/tree-node';
-import { TreeListItem } from '../tree-graph/tree-list';
-import { SchemaData, SchemaNode } from '../models/schema-node';
-import { SchemaVariables } from "../models/schema-variables";
-import { SchemaFormulas } from "../models/schema-formulas";
+import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
+import { TreeNode } from '../../common/tree-graph/tree-node';
+import { TreeListItem } from '../../common/tree-graph/tree-list';
+import { SchemaData, SchemaNode } from '../../common/models/schema-node';
+import { SchemaVariables } from "../../common/models/schema-variables";
+import { SchemaFormulas } from "../../common/models/schema-formulas";
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
-import { TreeSource } from '../tree-graph/tree-source';
-import { createAutocomplete } from '../lang-modes/autocomplete';
-import { SchemaScore, SchemaScores } from '../models/schema-scores';
+import { TreeSource } from '../../common/tree-graph/tree-source';
+import { createAutocomplete } from '../../common/models/lang-modes/autocomplete';
+import { SchemaScore, SchemaScores } from '../../common/models/schema-scores';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
-import { SchemaRule, SchemaRules } from '../models/schema-rules';
+import { SchemaRule, SchemaRules } from '../../common/models/schema-rules';
 import { StatisticPreviewDialog } from '../dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
 import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
@@ -353,7 +353,11 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
     }
 
     public onSelectField(field: TreeListItem<any>) {
-        if (this.readonly || field.expandable) {
+        if (field.expandable) {
+            this.onCollapseField(field);
+            return;
+        }
+        if (this.readonly) {
             return;
         }
         field.selected = !field.selected;

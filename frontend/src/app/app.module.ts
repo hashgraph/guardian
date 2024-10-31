@@ -35,6 +35,8 @@ import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
 import { NotificationService } from './services/notify.service';
 import { PermissionsService } from './services/permissions.service';
+import { WorkerTasksService } from './services/worker-tasks.service';
+import { SchemaRulesService } from './services/schema-rules.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -74,6 +76,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
 import { PolicyStatisticsModule } from './modules/policy-statistics/policy-statistics.module';
+import { SchemaRulesModule } from './modules/schema-rules/schema-rules.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -126,7 +129,6 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
-import { WorkerTasksService } from './services/worker-tasks.service';
 
 @NgModule({
     declarations: [
@@ -187,6 +189,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         SchemaEngineModule,
         PolicyEngineModule,
         PolicyStatisticsModule,
+        SchemaRulesModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -229,6 +232,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         AuditService,
         PolicyEngineService,
         PolicyStatisticsService,
+        SchemaRulesService,
         PolicyHelper,
         IPFSService,
         ArtifactService,

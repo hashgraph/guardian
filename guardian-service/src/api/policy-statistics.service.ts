@@ -1,8 +1,8 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyStatistic, PolicyStatisticImportExport, StatisticAssessmentMessage, StatisticMessage, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { publishSchema } from './helpers/index.js';
-import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments, validateConfig } from './helpers/policy-statistics-helpers.js';
+import { findRelationships, generateSchema, generateVcDocument, getOrCreateTopic, publishConfig, uniqueDocuments } from './helpers/policy-statistics-helpers.js';
 
 /**
  * Connect to the message broker methods of working with statistics.
@@ -43,7 +43,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 definition.policyTopicId = policy.topicId;
                 definition.policyInstanceTopicId = policy.instanceTopicId;
                 definition.status = EntityStatus.DRAFT;
-                definition.config = validateConfig(definition.config);
+                definition.config = PolicyStatisticImportExport.validateConfig(definition.config);
                 const row = await DatabaseServer.createStatistic(definition);
                 return new MessageResponse(row);
             } catch (error) {
@@ -223,7 +223,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.name = definition.name;
                 item.description = definition.description;
                 item.method = definition.method;
-                item.config = validateConfig(definition.config);
+                item.config = PolicyStatisticImportExport.validateConfig(definition.config);
                 const result = await DatabaseServer.updateStatistic(item);
                 return new MessageResponse(result);
             } catch (error) {
@@ -616,6 +616,108 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                     target,
                     relationships
                 });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Export statistic definition
+     *
+     * @param {any} msg - Export statistic definition parameters
+     *
+     * @returns {any} - zip file
+     */
+    ApiResponse(MessageAPI.EXPORT_STATISTIC_DEFINITION_FILE,
+        async (msg: { definitionId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid export theme parameters');
+                }
+                const { definitionId, owner } = msg;
+
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!(item && item.owner === owner.owner)) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const zip = await PolicyStatisticImportExport.generate(item);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3,
+                    },
+                });
+
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Import statistic definition
+     *
+     * @param {any} msg - Import statistic definition parameters
+     *
+     * @returns {any} new statistic definition
+     */
+    ApiResponse(MessageAPI.IMPORT_STATISTIC_DEFINITION_FILE,
+        async (msg: { zip: any, policyId: string, owner: IOwner }) => {
+            try {
+                const { zip, policyId, owner } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const preview = await PolicyStatisticImportExport.parseZipFile(Buffer.from(zip.data));
+                const { definition } = preview;
+
+                delete definition._id;
+                delete definition.id;
+                delete definition.status;
+                delete definition.owner;
+                delete definition.messageId;
+                definition.creator = owner.creator;
+                definition.owner = owner.owner;
+                definition.policyId = policyId;
+                definition.policyTopicId = policy.topicId;
+                definition.policyInstanceTopicId = policy.instanceTopicId;
+                definition.status = EntityStatus.DRAFT;
+                definition.config = PolicyStatisticImportExport.validateConfig(definition.config);
+                const row = await DatabaseServer.createStatistic(definition);
+                return new MessageResponse(row);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Preview statistic definition
+     *
+     * @param {any} msg - zip file
+     *
+     * @returns {any} Preview
+     */
+    ApiResponse(MessageAPI.PREVIEW_STATISTIC_DEFINITION_FILE,
+        async (msg: { zip: any, owner: IOwner }) => {
+            try {
+                const { zip } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await PolicyStatisticImportExport.parseZipFile(Buffer.from(zip.data));
+                const { definition } = preview;
+                return new MessageResponse(definition);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

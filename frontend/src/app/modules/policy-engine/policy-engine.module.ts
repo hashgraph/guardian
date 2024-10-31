@@ -82,7 +82,6 @@ import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-docu
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
 import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
-import { ImportPolicyDialog } from './dialogs/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
 import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
@@ -96,7 +95,6 @@ import { ComparePolicyDialog } from './dialogs/compare-policy-dialog/compare-pol
 import { NewModuleDialog } from './dialogs/new-module-dialog/new-module-dialog.component';
 import { PolicyWizardDialogComponent } from './dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
 import { NewPolicyDialog } from './dialogs/new-policy-dialog/new-policy-dialog.component';
-import { ImportFileDialog } from './dialogs/import-file-dialog/import-file-dialog.component';
 import { NewThemeDialog } from './dialogs/new-theme-dialog/new-theme-dialog.component';
 import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
@@ -148,6 +146,7 @@ import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
 import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-editor-dialog.component';
 import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
 import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
+import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 
 @NgModule({
     declarations: [
@@ -183,7 +182,6 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
-        ImportPolicyDialog,
         PreviewPolicyDialog,
         ExportPolicyDialog,
         CalculateConfigComponent,
@@ -232,7 +230,6 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         TagsManagerBlockComponent,
         NewPolicyDialog,
         PolicySettingsComponent,
-        ImportFileDialog,
         NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
@@ -255,6 +252,7 @@ import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import
         DropdownBlockAddonComponent,
         RequestAddonConfigComponent,
         RequestDocumentBlockAddonComponent,
+        RequestDocumentBlockDialog
     ],
     imports: [
         CommonModule,

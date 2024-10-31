@@ -20,7 +20,7 @@ export class StatusDropdown {
     @Input('value') value!: string;
     @Input('status') status!: string;
     @Output('valueChange') valueChange = new EventEmitter<string>();
-    @Output('change') change = new EventEmitter<string>();
+    @Output('onChange') change = new EventEmitter<string>();
 
     public list: IOptions[] = [];
     public disabled: boolean = true;

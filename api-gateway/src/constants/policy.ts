@@ -1,11 +1,14 @@
 export const REQUIRED_PROPS = {
-    DESCRIPTION: 'description',
-    INSTANCE_TOPIC_ID: 'instanceTopicId',
+    _ID: '_id',
+    UUID: 'uuid',
     NAME: 'name',
+    DESCRIPTION: 'description',
     STATUS: 'status',
     TOPIC_ID: 'topicId',
-    UUID: 'uuid',
-    _ID: '_id',
+    INSTANCE_TOPIC_ID: 'instanceTopicId',
+    VERSION: 'version',
+    OWNER: 'owner',
+    MESSAGE_ID: 'messageId',
 };
 
 export const UN_REQUIRED_PROPS = {
