@@ -636,6 +636,11 @@
                         max-width: 300px;
                     }
 
+                    .cell-max {
+                        min-width: 250px;
+                        width: auto;
+                    }
+
                     .cell-btn {
                         button {
                             width: 24px;
@@ -711,7 +716,7 @@
                         display: flex;
                         flex-direction: row;
                         padding: 0px 8px;
-                        width: max-content;
+                        width: 100%;
                         min-width: 100%;
 
                         &>div {
@@ -724,7 +729,7 @@
                     }
 
                     .variables-grid-body {
-                        width: max-content;
+                        width: 100%;
                         min-width: 100%;
                         border: 1px solid var(--guardian-border-color, #E1E7EF);
                         border-radius: 8px;
