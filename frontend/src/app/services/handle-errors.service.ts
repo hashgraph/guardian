@@ -5,8 +5,8 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
-import { AuthService } from './auth.service';
-import { AuthStateService } from './auth-state.service';
+// import { AuthService } from './auth.service';
+// import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -17,8 +17,8 @@ export class HandleErrorsService implements HttpInterceptor {
         public router: Router,
         private toastr: ToastrService,
         private messageTranslator: MessageTranslationService,
-        private auth: AuthService,
-        private authState: AuthStateService,
+        // private auth: AuthService,
+        // private authState: AuthStateService,
     ) {
     }
 
@@ -135,13 +135,13 @@ export class HandleErrorsService implements HttpInterceptor {
         return next.handle(req).pipe(
             catchError((error: any) => {
                 console.error(error);
-                if(this.ifTokenExpired(error)) {
-                    this.auth.removeAccessToken();
-                    this.auth.removeUsername();
-                    this.authState.updateState(false);
-                    this.router.navigate(['/login']);
-                    return throwError(error);
-                }
+                // if(this.ifTokenExpired(error)) {
+                //     this.auth.removeAccessToken();
+                //     this.auth.removeUsername();
+                //     this.authState.updateState(false);
+                //     this.router.navigate(['/login']);
+                //     return throwError(error);
+                // }
                 this.getMessage(error).then((result) => {
                     this.createMessage(result, error);
                 })
