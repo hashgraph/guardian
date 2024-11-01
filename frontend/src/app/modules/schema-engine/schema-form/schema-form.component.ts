@@ -700,6 +700,14 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         valueToSet = "";
                     }
+                } else if (format === 'time') {
+                    const momentDate = moment(val);
+                    if (momentDate.isValid()) {
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.format('HH:mm:ss');
+                    } else {
+                        valueToSet = "";
+                    }
                 } else if (type === 'number' || type === 'integer') {
                     if (typeof (val) === 'string') {
                         if (

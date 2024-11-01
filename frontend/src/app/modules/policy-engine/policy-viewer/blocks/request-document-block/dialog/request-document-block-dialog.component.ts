@@ -37,6 +37,13 @@ export class RequestDocumentBlockDialog {
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public rulesResults: any;
 
+    private buttonNames: { [id: string]: string } = {
+        cancel: "Cancel",
+        prev: "Previous",
+        next: "Next",
+        submit: "Create"
+    }
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -139,7 +146,15 @@ export class RequestDocumentBlockDialog {
 
     public onChangeButtons($event: any) {
         setTimeout(() => {
-            this.buttons = $event;
+            this.buttons = [];
+            if (Array.isArray($event)) {
+                for (const item of $event) {
+                    this.buttons.push({
+                        ...item,
+                        text: this.buttonNames[item.id] || item.text
+                    })
+                }
+            }
         }, 0);
     }
 

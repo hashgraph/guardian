@@ -9,6 +9,7 @@ import { BaseEntity } from '@guardian/common';
 @Entity()
 @Index({ name: 'id_idx', properties: ['id', 'owner'] })
 @Index({ name: 'owner_idx', properties: ['owner'] })
+@Index({ options: { owner: 1, createDate: -1 }  })
 export class DynamicRole extends BaseEntity {
     /**
      * Role id

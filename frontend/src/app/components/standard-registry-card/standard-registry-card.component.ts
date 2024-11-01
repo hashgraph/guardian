@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 import { DomSanitizer } from '@angular/platform-browser';
@@ -15,6 +15,10 @@ export class StandardRegistryCardComponent {
     @Input() isRegistrySelected!: boolean;
     @Output() registrySelected: EventEmitter<string> = new EventEmitter<string>();
 
+    public fields: any[];
+
+    private ignoreFields: string[] = ['@context', 'id', 'type'];
+
     constructor(private matIconRegistry: MatIconRegistry, private domSanitizer: DomSanitizer) {
         this.matIconRegistry.addSvgIconLiteral(
             'chevron_down',
@@ -24,6 +28,28 @@ export class StandardRegistryCardComponent {
                 </svg>
             `)
         );
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.fields = [];
+        if (this.registry?.vcDocument?.document) {
+            let cs: any = this.registry.vcDocument.document.credentialSubject;
+            if (Array.isArray(cs)) {
+                cs = cs[0];
+            }
+            if (cs) {
+                for (const [name, value] of Object.entries(cs)) {
+                    if (
+                        !this.ignoreFields.includes(name) &&
+                        value &&
+                        typeof value !== 'function' &&
+                        typeof value !== 'object'
+                    ) {
+                        this.fields.push({ name, value });
+                    }
+                }
+            }
+        }
     }
 
     onCardClick(): void {

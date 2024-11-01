@@ -64,7 +64,9 @@
                             [formControl]="item.control" 
                             [showIcon]="true" 
                             [showTime]="true" 
-                            dateFormat="yy-mm-dd"/>
+                            [showSeconds]="true"
+                            dateFormat="yy-mm-dd"
+                            appendTo='body'/>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
@@ -72,7 +74,8 @@
                             class="guardian-datepicker"
                             [formControl]="item.control" 
                             [showIcon]="true" 
-                            dateFormat="yy-mm-dd"/>
+                            dateFormat="yy-mm-dd"
+                            appendTo='body'/>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
@@ -81,7 +84,9 @@
                             [formControl]="item.control" 
                             [showIcon]="true" 
                             [timeOnly]="true"
-                            dateFormat="yy-mm-dd"/>
+                            [showSeconds]="true"
+                            dateFormat="yy-mm-dd"
+                            appendTo='body'/>
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
@@ -206,7 +211,9 @@
                                     [formControl]="listItem.control" 
                                     [showIcon]="true" 
                                     [showTime]="true"
-                                    dateFormat="yy-mm-dd"/>
+                                    [showSeconds]="true"
+                                    dateFormat="yy-mm-dd"
+                                    appendTo='body'/>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
@@ -214,7 +221,8 @@
                                     class="guardian-datepicker"
                                     [formControl]="listItem.control" 
                                     [showIcon]="true"
-                                    dateFormat="yy-mm-dd"/>
+                                    dateFormat="yy-mm-dd"
+                                    appendTo='body'/>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
@@ -223,7 +231,9 @@
                                     [formControl]="listItem.control" 
                                     [showIcon]="true" 
                                     [timeOnly]="true"
-                                    dateFormat="yy-mm-dd"/>
+                                    [showSeconds]="true"
+                                    dateFormat="yy-mm-dd"
+                                    appendTo='body'/>
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">

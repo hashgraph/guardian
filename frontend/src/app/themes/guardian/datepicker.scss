@@ -35,3 +35,7 @@
         border-color: var(--guardian-primary-color, #4169E2);
     }
 }
+
+.p-datepicker:not(.p-datepicker-inline) {
+    min-width: 200px !important;
+}

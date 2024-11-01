@@ -6,14 +6,14 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { QueueService } from './queue-service/queue-service';
+import { QueueService } from './queue-service/queue-service.js';
 
 @Module({
     providers: [
         NotificationService,
     ]
 })
-class AppModule{
+class AppModule {
 }
 
 const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().substring(26)}`).toUpperCase();
@@ -55,6 +55,11 @@ Promise.all([
     }
 
     await new QueueService().setConnection(cn).init();
+
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
 
     await state.updateState(ApplicationStates.READY);
     await logger.info('Queue service started', ['QUEUE_SERVICE'])

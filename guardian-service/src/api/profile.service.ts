@@ -424,7 +424,7 @@ async function createUserProfile(
     if (vcDocument) {
         logger.info('Create VC Document', ['GUARDIAN_SERVICE']);
 
-        let credentialSubject: any = { ...vcDocument } || {};
+        let credentialSubject: any = { ...vcDocument };
         credentialSubject.id = userDID;
         if (schemaObject) {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
