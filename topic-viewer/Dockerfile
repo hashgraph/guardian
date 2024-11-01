@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.17-alpine
+ARG NODE_VERSION=20.18-alpine
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
 # Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
@@ -16,9 +16,10 @@ RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
 # Stage 2: Build service
 FROM base AS build
 COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
-COPY --link topic-viewer/src src/
 RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
-    yarn install --immutable && yarn run build:prod
+    yarn install --immutable
+COPY --link topic-viewer/src src/
+RUN yarn run build:prod
 
 # Stage 3: Create the final image
 FROM node:${NODE_VERSION} AS image
