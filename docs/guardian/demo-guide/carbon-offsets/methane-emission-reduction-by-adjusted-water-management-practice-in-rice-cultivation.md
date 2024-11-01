@@ -48,7 +48,7 @@ The Methane Emission Reduction in Rice Cultivation methodology offers a comprehe
 
 <div align="left">
 
-<img src="../../../.gitbook/assets/0.png" alt="">
+<img src="../../../.gitbook/assets/0 (1).png" alt="">
 
 </div>
 
