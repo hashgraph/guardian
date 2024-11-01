@@ -49,6 +49,11 @@ Promise.all([
     await state.setServiceName('QUEUE').setConnection(cn).init();
     await state.updateState(ApplicationStates.STARTED);
 
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
+
     await new QueueService().setConnection(cn).init();
 
     const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
