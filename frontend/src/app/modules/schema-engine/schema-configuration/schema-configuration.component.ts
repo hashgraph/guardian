@@ -988,6 +988,24 @@ export class SchemaConfigurationComponent implements OnInit {
                 });
         }
 
+        if (format === 'time') {
+            return control.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((val: any) => {
+                    let momentDate = moment(val);
+                    let valueToSet = '';
+                    if (momentDate.isValid()) {
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.format('HH:mm:ss');
+                    }
+
+                    control.setValue(valueToSet, {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
+                });
+        }
+
         return null;
     }
 
