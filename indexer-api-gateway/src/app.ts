@@ -29,6 +29,7 @@ Promise.all([
                     queue: 'INDEXER_API_SERVICES',
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
                 },
+                // tls: GenerateTLSOptionsNats()
             });
             app.useGlobalPipes(
                 new ValidationPipe({

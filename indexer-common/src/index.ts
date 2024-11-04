@@ -1,9 +1,11 @@
 import 'reflect-metadata';
 import * as ent from './entity/index.js';
+
 export * from './entity/index.js';
 export * from './utils/utils.js';
 export * from './utils/environment.js';
 export * from './utils/job.js';
+export * from './utils/tls.js';
 export * from './db-helper/db-config.js';
 export * from './db-helper/db-migration.js';
 export * from './db-helper/db-helper.js';
