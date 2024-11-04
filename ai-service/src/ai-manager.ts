@@ -1,5 +1,5 @@
 import { FilesManager } from './helpers/files-manager-helper.js';
-import { FaissStore } from '@langchain/community/vectorstores/faiss.cjs';
+import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
 import { OpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';

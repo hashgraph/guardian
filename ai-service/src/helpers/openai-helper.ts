@@ -1,5 +1,5 @@
 import { OpenAI } from '@langchain/openai';
-import { FaissStore } from '@langchain/community/vectorstores/faiss.cjs';
+import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { loadQAStuffChain, RetrievalQAChain } from 'langchain/chains';
 import { Methodology, ResponseData } from '../models/models.js';
 import { GetMehodologiesByPolicies } from './general-helper.js';
