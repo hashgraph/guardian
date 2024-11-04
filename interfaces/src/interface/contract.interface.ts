@@ -58,4 +58,9 @@ export class IContract {
      * Wipe contract ids
      */
     wipeContractIds: string[];
+
+    /**
+     * Wipe token ids
+     */
+    wipeTokenIds: string[];
 }

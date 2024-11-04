@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, mongoForLoggingInitialization, NotificationService, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -6,14 +6,14 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { QueueService } from './queue-service/queue-service';
+import { QueueService } from './queue-service/queue-service.js';
 
 @Module({
     providers: [
         NotificationService,
     ]
 })
-class AppModule{
+class AppModule {
 }
 
 const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().substring(26)}`).toUpperCase();
@@ -21,9 +21,6 @@ const channelName = (process.env.SERVICE_CHANNEL || `queue.${GenerateUUIDv4().su
 Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
-        driverOptions: {
-            useUnifiedTopology: true
-        },
         ensureIndexes: true
     }),
     MessageBrokerChannel.connect('QUEUE_SERVICE'),
@@ -33,13 +30,15 @@ Promise.all([
             name: channelName,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
 
     app.listen();
     // new MessageBrokerChannel(cn, 'worker');
@@ -51,6 +50,11 @@ Promise.all([
     await state.updateState(ApplicationStates.STARTED);
 
     await new QueueService().setConnection(cn).init();
+
+    const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
+    if (Number.isInteger(maxPayload)) {
+        new LargePayloadContainer().runServer();
+    }
 
     await state.updateState(ApplicationStates.READY);
     await logger.info('Queue service started', ['QUEUE_SERVICE'])

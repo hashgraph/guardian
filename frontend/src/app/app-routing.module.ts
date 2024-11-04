@@ -45,6 +45,13 @@ import { UsersManagementComponent } from './views/user-management/user-managemen
 import { UsersManagementDetailComponent } from './views/user-management-detail/user-management-detail.component';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 import { MapService } from './services/map.service';
+import { StatisticAssessmentViewComponent } from './modules/policy-statistics/statistic-assessment-view/statistic-assessment-view.component';
+import { StatisticAssessmentsComponent } from './modules/policy-statistics/statistic-assessments/statistic-assessments.component';
+import { StatisticAssessmentConfigurationComponent } from './modules/policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
+import { StatisticDefinitionConfigurationComponent } from './modules/policy-statistics/statistic-definition-configuration/statistic-definition-configuration.component';
+import { StatisticDefinitionsComponent } from './modules/policy-statistics/statistic-definitions/statistic-definitions.component';
+import { SchemaRulesComponent } from './modules/schema-rules/schema-rules/schema-rules.component';
+import { SchemaRuleConfigurationComponent } from './modules/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
 
 @Injectable({
     providedIn: 'root'
@@ -485,6 +492,106 @@ const routes: Routes = [
             permissions: [
                 Permissions.DELEGATION_ROLE_MANAGE,
                 Permissions.PERMISSIONS_ROLE_MANAGE
+            ]
+        }
+    },
+
+    {
+        path: 'policy-statistics',
+        component: StatisticDefinitionsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId',
+        component: StatisticDefinitionConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessment',
+        component: StatisticAssessmentConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessments',
+        component: StatisticAssessmentsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-statistics/:definitionId/assessment/:assessmentId',
+        component: StatisticAssessmentViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_STATISTIC_READ
+            ]
+        }
+    },
+
+    {
+        path: 'schema-rules',
+        component: SchemaRulesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
+    {
+        path: 'schema-rule/:ruleId',
+        component: SchemaRuleConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
             ]
         }
     },

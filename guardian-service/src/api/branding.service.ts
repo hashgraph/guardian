@@ -1,6 +1,6 @@
 import { MessageAPI } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { Branding, DataBaseHelper, MessageResponse } from '@guardian/common';
+import { Branding, DatabaseServer, MessageResponse } from '@guardian/common';
 
 const termsAndConditions = `Lorem Ipsum Version Introduction
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -23,10 +23,9 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *
- * @param brandingRepository - table with Branding
- */
-export async function brandingAPI(
-    brandingRepository: DataBaseHelper<Branding>
+ * @param dataBaseServer - Data base server
+ */export async function brandingAPI(
+    dataBaseServer: DatabaseServer,
 ): Promise<void> {
     /**
      * Return Branding
@@ -34,20 +33,20 @@ export async function brandingAPI(
      * @returns {Branding} - branding object
      */
     ApiResponse(MessageAPI.GET_BRANDING, async () => {
-        const brandingJSON: Branding[] = await brandingRepository.findAll();
+        const brandingJSON: Branding[] = await dataBaseServer.findAll(Branding);
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
             const initialBranding = JSON.stringify({
-                'headerColor': '#000',
+                'headerColor': '#000000',
                 'primaryColor': '#4169E2',
                 'companyName': 'Guardian',
-                'companyLogoUrl': '',
-                'loginBannerUrl': 'bg.jpg',
+                'companyLogoUrl': '/assets/images/logo.png',
+                'loginBannerUrl': '/assets/bg.jpg',
                 'faviconUrl': 'favicon.ico',
                 termsAndConditions
             });
-            await brandingRepository.save({ config: initialBranding });
-            newBrandingJSON = await brandingRepository.findAll();
+            await dataBaseServer.save(Branding, { config: initialBranding });
+            newBrandingJSON = await dataBaseServer.findAll(Branding);
         }
         return new MessageResponse(brandingJSON.length ? brandingJSON[brandingJSON.length - 1] : newBrandingJSON[newBrandingJSON.length - 1]);
     });
@@ -60,7 +59,7 @@ export async function brandingAPI(
      * @returns {Branding} - new branding object
      */
     ApiResponse(MessageAPI.STORE_BRANDING, async (config) => {
-        const branding: any = await brandingRepository.save(config);
+        const branding: any = await dataBaseServer.save(Branding, config);
         return new MessageResponse(branding);
     });
 }

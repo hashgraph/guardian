@@ -1,25 +1,32 @@
-import crypto from 'crypto';
 import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
-import { DataBaseHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { UserPassword } from '#utils';
+import process from 'process';
 
 /**
  * Create default users
  */
 export async function fixtures(): Promise<void> {
-    const usersRepository = new DataBaseHelper(User);
+    const usersRepository = new DatabaseServer();
     // Fixture user
-    if ((await usersRepository.count()) === 0) {
-        const user = usersRepository.create({
+    if ((await usersRepository.count(User, null)) === 0) {
+        const users = [{
             username: 'StandardRegistry',
-            password: crypto
-                .createHash('sha256')
-                .update(process.env.SR_INITIAL_PASSWORD)
-                .digest('hex'),
-            //walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
             role: UserRole.STANDARD_REGISTRY,
-        });
-        await usersRepository.save(user);
+            //walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }]
+
+        for (const user of users) {
+            const password = await UserPassword.generatePasswordV2(process.env.SR_INITIAL_PASSWORD || 'test');
+            const row = usersRepository.create(User, {
+                ...user,
+                password: password.password,
+                salt: password.salt,
+                passwordVersion: password.passwordVersion,
+            });
+            await usersRepository.save(User, row);
+        }
     }
 }

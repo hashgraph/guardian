@@ -498,6 +498,28 @@ export class UserPermissions {
         return this.check(Permissions.DELEGATION_ROLE_MANAGE);
     }
 
+    //STATISTICS
+    public get STATISTICS_STATISTIC_CREATE(): boolean {
+        return this.check(Permissions.STATISTICS_STATISTIC_CREATE);
+    }
+
+    public get STATISTICS_STATISTIC_READ(): boolean {
+        return this.check(Permissions.STATISTICS_STATISTIC_READ);
+    }
+
+    //SCHEMA RULES
+    public get SCHEMAS_RULE_CREATE(): boolean {
+        return this.check(Permissions.SCHEMAS_RULE_CREATE);
+    }
+
+    public get SCHEMAS_RULE_READ(): boolean {
+        return this.check(Permissions.SCHEMAS_RULE_READ);
+    }
+
+    public get SCHEMAS_RULE_EXECUTE(): boolean {
+        return this.check(Permissions.SCHEMAS_RULE_EXECUTE);
+    }
+
     public static isPolicyAdmin(user: any): boolean {
         return (
             UserPermissions.has(user, Permissions.POLICIES_MIGRATION_CREATE) ||

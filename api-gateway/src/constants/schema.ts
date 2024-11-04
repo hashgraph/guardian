@@ -46,7 +46,7 @@ export const UN_REQUIRED_PROPS = {
     SYSTEM: 'system',
     // TOPIC_ID: 'topicId',
     UPDATE_DATE: 'updateDate',
-    UUID: 'uuid',
+    // UUID: 'uuid',
     // VERSION: 'version',
     // _ID: '_id',
 };

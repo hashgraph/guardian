@@ -1,6 +1,6 @@
 import {
     COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
+    DatabaseServer,
     LargePayloadContainer,
     MessageBrokerChannel,
     Migration,
@@ -29,9 +29,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false,
         },
-        driverOptions: {
-            useUnifiedTopology: true,
-        },
         ensureIndexes: true,
     }, [
         'v2-21-0',
@@ -44,7 +41,8 @@ Promise.all([
     mongoForLoggingInitialization(),
 ]).then(async ([db, app, cn, loggerMongo]) => {
     try {
-        DataBaseHelper.orm = db;
+        DatabaseServer.connectBD(db);
+
         app.connectMicroservice<MicroserviceOptions>({
             transport: Transport.NATS,
             options: {

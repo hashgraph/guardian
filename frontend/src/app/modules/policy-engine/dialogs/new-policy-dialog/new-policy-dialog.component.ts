@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import {
-    FormBuilder,
-    FormControl,
-    FormGroup,
+    UntypedFormBuilder,
+    UntypedFormControl,
+    UntypedFormGroup,
     Validators,
 } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -30,12 +30,12 @@ export class NewPolicyDialog {
     subTypeOptions: IPolicyCategory[] = [];
 
     started = false;
-    dataForm: FormGroup;
+    dataForm: UntypedFormGroup;
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService
     ) {
         this.loading = true;
@@ -73,11 +73,11 @@ export class NewPolicyDialog {
 
         this.dataForm = this.fb.group({
             name: ['', Validators.required],
-            sectoralScope: new FormControl({
+            sectoralScope: new UntypedFormControl({
                 value: '',
                 disabled: this.loading,
             }),
-            projectScale: new FormControl({
+            projectScale: new UntypedFormControl({
                 value: '',
                 disabled: this.loading,
             }),
@@ -87,15 +87,15 @@ export class NewPolicyDialog {
             typicalProjects: [''],
             topicDescription: [''],
             description: [''],
-            appliedTechnologyType: new FormControl({
+            appliedTechnologyType: new UntypedFormControl({
                 value: '',
                 disabled: this.loading,
             }),
-            migrationActivityType: new FormControl({
+            migrationActivityType: new UntypedFormControl({
                 value: [],
                 disabled: this.loading,
             }),
-            subType: new FormControl({value: [], disabled: this.loading}),
+            subType: new UntypedFormControl({value: [], disabled: this.loading}),
             atValidation: [''],
             monitored: [''],
         });

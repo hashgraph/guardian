@@ -1,7 +1,8 @@
 # 💻 Indexer User Guide
 
-1. [Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
-2. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
+[Step By Step Process](indexer-user-guide.md#id-1.-step-by-step-process)
+
+1. [Demo Video](indexer-user-guide.md#id-2.-demo-video)
 
 ## 1. Step By Step Process
 
@@ -20,6 +21,10 @@ docker compose -f "docker-compose-indexer.yml" up -d --build
 ### **Launching Indexer**
 
 Once the above command is successfully executed and all the docker containers are running, Indexer can be launched at [http://localhost:3005](http://localhost:3005)
+
+{% hint style="info" %}
+Please note that it would take minimum 6 hours to load complete Indexer data.
+{% endhint %}
 
 ### Landing page includes following information:
 
@@ -171,6 +176,18 @@ Topic details includes following tabs:
 * Raw Data - raw topic data.
 
 Synchronization of all entity data starts one time per hour, but it can be changed by changing environment variables.
+
+### 1.1 Handling Local Node Files:
+
+For documents (VC, VP, DID, Schema) with local CIDs (i.e. Such documents were uploaded onto local IPFS nodes) Guardian attempts to automatically download the file when user attempts to open in in the Indexer UI. This may not be possible if the local node is ‘closed’ for outside requests. For such cases there is also an option for the user to manually attempt to download from the local IPFS node. This can be retried unlimited number of times, for situations when local node administrators open access to the node\[s] at a later date.
+
+<figure><img src="../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+
+{% hint style="info" %}
+**Note:** This functionality requires the correct setting for the IPFS\_GATEWAY configuration option in the `indexer-service .env` file:
+
+**For example:** `IPFS_GATEWAY="https://ipfs.io/ipfs/${cid}"`
+{% endhint %}
 
 ## 2. Demo Video
 

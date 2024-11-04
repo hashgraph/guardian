@@ -11,11 +11,6 @@
         0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%);
 }
 
-.content-dialog {
-    display: block;
-    background: var(--color-grey-1);
-}
-
 .loading {
     position: fixed;
     /* background: #ffffff32; */
@@ -35,35 +30,6 @@
     width: 80%;
     height: 80%;
 }
-
-.loading-dialog {
-    background: #fff;
-    position: absolute;
-    z-index: 99;
-    top: 0;
-    left: 0;
-    bottom: 62px;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-items: center;
-    justify-content: center;
-    align-content: center;
-}
-
-.form-page {
-    width: 80%;
-    margin: 40px auto;
-    padding: 10px;
-    border: 1px solid #c3c3c3;
-    border-radius: 4px;
-}
-
-.dialog-template {
-    max-height: calc(81vh - 65px) !important;
-    overflow: hidden;
-}
-
 
 .form-dialog {
     padding: 18px 20px 8px 20px;
@@ -138,44 +104,35 @@
             height: 28px;
         }
     }
-
-    //width: auto !important;
-    //font-size: 20px !important;
-    //color: #0b73f8 !important;
-    //text-decoration: none !important;
-    //padding: 0 0 3px 0 !important;
-    //margin: 0 !important;
-    //font-weight: normal !important;
-    //background-color: transparent !important;
-    //box-shadow: none !important;
-    //border-radius: 0 !important;
-    //height: 33px !important;
-    //box-sizing: border-box !important;
-    //position: relative !important;
-    //top: -9px !important;
 }
 
 .restore-data {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: center;
     color: var(--primary-color);
-    margin-top: 10px;
-    margin-left: 25px;
-    margin-right: 50px;
-    padding-bottom: 15px;
-    padding-left: 15px;
-    border-bottom: 1px solid #c8c8c8;
-    margin-bottom: 10px;
-}
+    background: #F9FAFC;
+    border: 1px solid #C4D0E1;
+    height: 65px;
+    border-radius: 8px;
+    margin-bottom: 16px;
 
-.restore-data button.mat-raised-button {
-    padding: 0 12px;
-    height: 36px;
-}
+    svg-icon {
+        height: 30px;
+        padding: 2px;
+        width: 36px;
+    }
 
-.restore-data button mat-icon {
-    margin-left: 3px;
+    b {
+        height: 30px;
+        line-height: 30px;
+        padding-right: 16px;
+    }
+
+    button {
+        height: 30px;
+        padding: 0px 30px 0px 12px;
+    }
 }
 
 .registrant-application-create-btn {
@@ -183,10 +140,10 @@
 }
 
 .form-page {
-    //width: 60%;
-    //border: none;
-    //margin: 0;
-    //padding: 0;
+    background: #FFFFFF;
+    box-shadow: 0px 4px 8px 0px #00000014;
+    padding: 24px;
+    border-radius: 8px;
 
     &::ng-deep {
         h1 {
@@ -194,51 +151,17 @@
         }
 
         .schema-form {
-            max-height: calc(100vh - 465px);
+            max-height: calc(100vh - 355px);
             padding: 20px 20px 0px 0;
             margin-bottom: 0;
+
+            &[dryRun="true"] {
+                max-height: calc(100vh - 400px);
+            }
         }
 
         .delimiter {
             display: none;
-        }
-
-        .label-field .page-number {
-            display: block;
-            font-size: 18px;
-            padding: 4px 10px;
-            margin-right: 8px;
-            display: inline-block;
-            background: #2c78f6;
-            color: white;
-            border-radius: 100px;
-        }
-
-        #detail-section {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin: 20px 0 40px 0;
-        }
-
-        .label-field .delimiter-to-next-page {
-            display: block;
-            height: 0px;
-            border: 1px solid #bababa;
-            flex-grow: 1;
-            display: inline-block;
-            margin: 0 8px;
-        }
-
-        .label-field .next-page-number {
-            display: block;
-            font-size: 18px;
-            padding: 4px 10px;
-            display: inline-block;
-            background: #2c78f6;
-            opacity: 0.3;
-            color: white;
-            border-radius: 100px;
         }
 
         .page-btns {
@@ -313,15 +236,6 @@
 
         .page-btns-last-page #previous-btn {
             width: calc(100% - 5px);
-        }
-
-        .form-field-group {
-            padding-left: 0 !important;
-        }
-
-        .schema-form-field-array-group>.form-field-array-item,
-        .form-field-array-item>.schema-form-field-group {
-            padding-left: 10px !important;
         }
 
         .short-delimiter-container .delimiter {

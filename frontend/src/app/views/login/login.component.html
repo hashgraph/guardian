@@ -67,6 +67,10 @@
                                 style="position: absolute; right: 20%;"></button>
                     </div>
                 </div>
+                <div class="form-input-container" *ngIf="wrongNameOrPassword">
+                    <div class="error-message">Invalid username or password</div>
+                </div>
+
                 <div style="display: flex; column-gap: 10px; align-items: center;">
                     <button (click)="onLogin()"
                             [disabled]="!this.loginForm.controls['login'].value || !this.loginForm.controls['password'].value"

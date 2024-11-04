@@ -1,19 +1,6 @@
 import { AccountService } from './api/account-service.js';
 import { WalletService } from './api/wallet-service.js';
-import {
-    ApplicationState,
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    LargePayloadContainer,
-    MessageBrokerChannel,
-    Migration,
-    mongoForLoggingInitialization,
-    OldSecretManager,
-    PinoLogger,
-    pinoLoggerInitialization,
-    SecretManager,
-    ValidateConfiguration,
-} from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, Migration, mongoForLoggingInitialization, OldSecretManager, PinoLogger, pinoLoggerInitialization, SecretManager, ValidateConfiguration, } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -39,7 +26,6 @@ Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
-            useUnifiedTopology: true,
             minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
             maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
             maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10),
@@ -55,12 +41,15 @@ Promise.all([
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`,
             ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     InitializeVault(process.env.VAULT_PROVIDER),
     mongoForLoggingInitialization(),
 ]).then(async ([_, db, cn, app, vault, loggerMongo]) => {
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
+
     const state = new ApplicationState();
     await state.setServiceName('AUTH_SERVICE').setConnection(cn).init();
 
@@ -104,10 +93,14 @@ Promise.all([
                 }
             }
             const secretManager = SecretManager.New();
-            let { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth');
-            if (!ACCESS_TOKEN_SECRET) {
-                ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-                await secretManager.setSecrets('secretkey/auth', { ACCESS_TOKEN_SECRET });
+            let {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY} = await secretManager.getSecrets('secretkey/auth');
+            if (!JWT_PRIVATE_KEY || !JWT_PUBLIC_KEY) {
+                JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
+                JWT_PUBLIC_KEY = process.env.JWT_PUBLIC_KEY;
+                if (JWT_PRIVATE_KEY.length < 8 || JWT_PUBLIC_KEY.length < 8) {
+                    return false;
+                }
+                await secretManager.setSecrets('secretkey/auth', {JWT_PRIVATE_KEY, JWT_PUBLIC_KEY});
             }
             return true;
         })

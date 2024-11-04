@@ -348,7 +348,10 @@ export class Worker extends NatsService {
                     break;
                 }
 
-                case WorkerTaskType.GENERATE_DEMO_KEY: {
+                /*
+                 * Task represents "Create Account" functionality in Hedera SDK. It is available on every network.
+                 */
+                case WorkerTaskType.CREATE_ACCOUNT: {
                     const { operatorId, operatorKey, initialBalance } = task.data;
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const treasury = await client.newAccount(initialBalance);
@@ -830,25 +833,11 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_CONTRACT_INFO: {
                     const {
-                        hederaAccountId,
-                        hederaAccountKey,
                         contractId,
                     } = task.data;
-                    client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    // const address = await client.contractQuery(
-                    //     contractId,
-                    //     'getOwner',
-                    //     new ContractFunctionParameters()
-                    // );
-                    // const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
-                    const info = await client.getContractInfo(contractId);
+                    const info = await HederaSDKHelper.getContractInfo(contractId);
                     result.data = {
-                        memo: info.contractMemo
+                        memo: info.memo
                     };
 
                     break;
@@ -859,9 +848,8 @@ export class Worker extends NatsService {
                         timestamp,
                         contractId,
                         order,
-                        limit
                     } = task.data;
-                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order, limit);
+                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order);
                     break;
                 }
 
@@ -908,9 +896,8 @@ export class Worker extends NatsService {
                         order,
                         filter,
                         limit,
-                        findOne,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
                     result.data = transactions || [];
                     break;
                 }

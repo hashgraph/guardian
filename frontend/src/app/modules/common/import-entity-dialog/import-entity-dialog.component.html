@@ -1,0 +1,69 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading && !taskId" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <p-tabView *ngIf="canImportFile && canImportMessage" class="action-tabs" (onChange)="setImportType($event)">
+            <p-tabPanel *ngFor="let tab of items; let i = index">
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">
+                        {{ tab.label }}
+                    </div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
+
+        <div class="form-container">
+            <app-file-drag-n-drop
+                *ngIf="importType === 0"
+                (onFileLoaded)="importFromFile($event)"
+                [dropZoneLabel]="placeholder"
+                [fileExtension]="fileExtension"
+            ></app-file-drag-n-drop>
+
+            <form  *ngIf="importType === 1" [formGroup]="dataForm">
+                <div class="guardian-input-container">
+                    <label class="form-label" htmlFor="version">* Message timestamp</label>
+                    <input 
+                        id="timestamp" 
+                        formControlName="timestamp" 
+                        placeholder="0000000000.000000000" 
+                        pInputText 
+                        type="text"/>
+                </div>
+            </form>
+        </div>
+
+        <async-progress
+            class="async-progress"
+            *ngIf="loading && taskId"
+            (completed)="onAsyncCompleted()"
+            (error)="onAsyncError($event)"
+            [taskId]="taskId"
+        ></async-progress>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="importFromMessage()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="importType === 0 || dataForm.invalid">Import</button>
+        </div>
+    </div>
+</div>

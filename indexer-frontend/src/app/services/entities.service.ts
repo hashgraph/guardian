@@ -45,7 +45,7 @@ import {
 export class EntitiesService {
     private readonly url: string = `${API_BASE_URL}/entities`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     //#region ACCOUNTS
     //#region REGISTRIES
@@ -320,4 +320,10 @@ export class EntitiesService {
     }
     //#endregion
     //#endregion
+
+    public updateFiles<T>(messageId: string): Observable<T> {
+        return this.http.post<T>(`${this.url}/update-files`, {
+            messageId
+        }) as any;
+    }
 }

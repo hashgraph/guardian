@@ -17,4 +17,10 @@ export class WiperRequest extends BaseEntity {
      */
     @Property()
     user: string;
+
+    /**
+     * Token
+     */
+    @Property({ nullable: true })
+    token?: string
 }

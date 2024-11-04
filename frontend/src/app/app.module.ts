@@ -17,6 +17,7 @@ import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
+import { PolicyStatisticsService } from './services/policy-statistics.service';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { IPFSService } from './services/ipfs.service';
@@ -34,9 +35,12 @@ import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
 import { NotificationService } from './services/notify.service';
 import { PermissionsService } from './services/permissions.service';
+import { WorkerTasksService } from './services/worker-tasks.service';
+import { SchemaRulesService } from './services/schema-rules.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
+import { ChangePasswordComponent } from './views/login/change-password/change-password.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
@@ -71,6 +75,8 @@ import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
+import { PolicyStatisticsModule } from './modules/policy-statistics/policy-statistics.module';
+import { SchemaRulesModule } from './modules/schema-rules/schema-rules.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -123,13 +129,13 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
-import { WorkerTasksService } from './services/worker-tasks.service';
 
 @NgModule({
     declarations: [
         AppComponent,
         UserProfileComponent,
         LoginComponent,
+        ChangePasswordComponent,
         HomeComponent,
         HeaderComponent,
         RegisterComponent,
@@ -182,6 +188,8 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
+        PolicyStatisticsModule,
+        SchemaRulesModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -223,6 +231,8 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         AnalyticsService,
         AuditService,
         PolicyEngineService,
+        PolicyStatisticsService,
+        SchemaRulesService,
         PolicyHelper,
         IPFSService,
         ArtifactService,

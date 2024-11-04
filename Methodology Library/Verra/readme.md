@@ -21,7 +21,7 @@ Methodologies often refer to modules or tools, which include specific methodolog
 |---|---|---:|
 | VMR0006 | Envision |July 31st|
 
-**Following are the Testnet and Mainnet timestamps for Verra Methodologies**
+**Following are the Testnet and Mainnet timestamps for CDM Methodologies**
 
 | Policy | Testnet Timestamp | Policy File Link |
 |---|---|---:|

@@ -1,4 +1,3 @@
-export * from './_dev/services/elastic.js';
 export * from './_dev/services/logs.js';
 export * from './_dev/services/status.js';
 export * from './services/search.js';

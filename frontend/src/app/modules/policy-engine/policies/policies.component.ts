@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { ContractType, IUser, PolicyHelper, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -7,7 +7,6 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
-import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { TasksService } from 'src/app/services/tasks.service';
 import { InformService } from 'src/app/services/inform.service';
@@ -17,7 +16,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { SchemaService } from 'src/app/services/schema.service';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { SearchPolicyDialog } from '../../analytics/search-policy-dialog/search-policy-dialog.component';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
@@ -32,6 +31,7 @@ import { PolicyTestDialog } from '../dialogs/policy-test-dialog/policy-test-dial
 import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-import-file-dialog.component';
 import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -219,11 +219,11 @@ export class PoliciesComponent implements OnInit {
     ];
 
     private filteredPolicies: any[] = [];
-    public filtersForm = new FormGroup({
-        policyName: new FormControl(''),
-        tag: new FormControl(''),
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl(''),
+        tag: new UntypedFormControl(''),
     }, (fg) => {
-        for (const key in (fg as FormGroup).controls) {
+        for (const key in (fg as UntypedFormGroup).controls) {
             if (!fg.get(key)) {
                 continue;
             }
@@ -841,30 +841,27 @@ export class PoliciesComponent implements OnInit {
     }
 
     public importPolicy(messageId?: string) {
-        const dialogRef = this.dialogService.open(ImportPolicyDialog, {
-            header: 'Select action',
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
-                timeStamp: messageId,
-            },
+                type: ImportEntityType.Policy,
+                timeStamp: messageId
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importPolicyDetails(result);
             }
         });
     }
 
-    private importPolicyDetails(result: any) {
+    private importPolicyDetails(result: IImportEntityResult) {
         const { type, data, policy } = result;
         const distinctPolicies = this.getDistinctPolicy();
         let dialogRef;
         if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(
-                bodyStyles.getPropertyValue('--header-height')
-            );
             dialogRef = this.dialogService.open(PreviewPolicyDialog, {
                 header: 'Preview',
                 width: `${window.innerWidth.toString()}px`,
@@ -930,7 +927,7 @@ export class PoliciesComponent implements OnInit {
         });
     }
 
-    private importExcelDetails(result: any, policyId: string) {
+    private importExcelDetails(result: IImportEntityResult, policyId: string) {
         const { type, data, xlsx } = result;
         let dialogRef;
         if (window.innerWidth <= 810) {
@@ -1004,15 +1001,15 @@ export class PoliciesComponent implements OnInit {
     }
 
     public importFromExcel(policy?: any) {
-        const dialogRef = this.dialogService.open(ImportPolicyDialog, {
-            header: 'Select action',
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'xlsx'
-            },
+                type: ImportEntityType.Xlsx,
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importExcelDetails(result, policy?.id);
             }
@@ -1180,9 +1177,10 @@ export class PoliciesComponent implements OnInit {
 
     public createNewPolicy() {
         const dialogRef = this.dialogService.open(NewPolicyDialog, {
+            showHeader: false,
             header: 'New Policy',
             width: '650px',
-            styleClass: 'custom-dialog',
+            styleClass: 'guardian-dialog',
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
@@ -1372,7 +1370,7 @@ export class PoliciesComponent implements OnInit {
                 fileExtension: 'record',
                 label: 'Add test .record file',
                 multiple: true,
-                type: 'File' 
+                type: 'File'
             }
         });
         dialogRef.onClose.subscribe(async (files) => {

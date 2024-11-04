@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { forkJoin } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -17,6 +17,7 @@ import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import { ChangePasswordComponent } from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
@@ -73,9 +74,9 @@ export class UserProfileComponent implements OnInit {
         );
     }
 
-    public filtersForm = new FormGroup({
-        policyName: new FormControl(''),
-        geography: new FormControl(''),
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl(''),
+        geography: new UntypedFormControl(''),
     });
 
     private get filters(): { policyName: string; geography: string } {
@@ -91,14 +92,14 @@ export class UserProfileComponent implements OnInit {
 
     public privateFields: any = { id: true };
     public schema!: Schema | null;
-    public fullForm!: FormGroup;
-    public hederaCredentialsForm!: FormGroup;
-    public standardRegistryForm!: FormControl;
-    public didDocumentType!: FormControl;
-    public didDocumentForm!: FormControl;
-    public didKeysForm!: FormGroup;
-    public vcDocumentType!: FormControl;
-    public vcDocumentForm!: FormGroup;
+    public fullForm!: UntypedFormGroup;
+    public hederaCredentialsForm!: UntypedFormGroup;
+    public standardRegistryForm!: UntypedFormControl;
+    public didDocumentType!: UntypedFormControl;
+    public didDocumentForm!: UntypedFormControl;
+    public didKeysForm!: UntypedFormGroup;
+    public vcDocumentType!: UntypedFormControl;
+    public vcDocumentForm!: UntypedFormGroup;
     public didKeys: any[] = [];
 
     private interval: any;
@@ -120,27 +121,27 @@ export class UserProfileComponent implements OnInit {
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef
     ) {
-        this.standardRegistryForm = new FormControl('', [Validators.required]);
-        this.hederaCredentialsForm = new FormGroup({
-            id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            useFireblocksSigning: new FormControl(false),
-            fireBlocksVaultId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksAssetId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksApiKey: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksPrivateiKey: new FormControl('', [
+        this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
+        this.hederaCredentialsForm = new UntypedFormGroup({
+            id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            key: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            useFireblocksSigning: new UntypedFormControl(false),
+            fireBlocksVaultId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksAssetId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksApiKey: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksPrivateiKey: new UntypedFormControl('', [
                 ValidateIfFieldEqual('useFireblocksSigning', true,
                     [
                         Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
                     ])])
         });
-        this.didDocumentType = new FormControl(false, [Validators.required]);
-        this.didDocumentForm = new FormControl('', [Validators.required]);
-        this.didKeysForm = new FormGroup({});
-        this.vcDocumentType = new FormControl(false, [Validators.required]);
-        this.vcDocumentForm = new FormGroup({});
+        this.didDocumentType = new UntypedFormControl(false, [Validators.required]);
+        this.didDocumentForm = new UntypedFormControl('', [Validators.required]);
+        this.didKeysForm = new UntypedFormGroup({});
+        this.vcDocumentType = new UntypedFormControl(false, [Validators.required]);
+        this.vcDocumentForm = new UntypedFormGroup({});
 
-        this.fullForm = new FormGroup({});
+        this.fullForm = new UntypedFormGroup({});
         this.fullForm.addControl('standardRegistry', this.standardRegistryForm);
         this.fullForm.addControl('hederaCredentials', this.hederaCredentialsForm);
         this.fullForm.addControl('didDocumentType', this.didDocumentType);
@@ -332,7 +333,7 @@ export class UserProfileComponent implements OnInit {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
                         const { id, key } = task.result;
-                        this.hederaCredentialsForm.patchValue({id, key});
+                        this.hederaCredentialsForm.patchValue({ id, key });
                         this.loading = false;
                     });
                     break;
@@ -348,33 +349,35 @@ export class UserProfileComponent implements OnInit {
 
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
                 viewDocument: true,
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'DID',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'JSON',
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => { });
     }
@@ -560,15 +563,15 @@ export class UserProfileComponent implements OnInit {
                             return;
                         }
                         this.didKeys = [];
-                        this.didKeysForm = new FormGroup({});
+                        this.didKeysForm = new UntypedFormGroup({});
                         this.fullForm.removeControl('didKeys');
                         this.fullForm.addControl('didKeys', this.didKeysForm);
 
                         const names = Object.keys(result.keys);
                         for (const name of names) {
-                            const keyNameControl = new FormControl('', [Validators.required]);
-                            const keyValueControl = new FormControl('', [Validators.required]);
-                            const keyControl = new FormGroup({
+                            const keyNameControl = new UntypedFormControl('', [Validators.required]);
+                            const keyValueControl = new UntypedFormControl('', [Validators.required]);
+                            const keyControl = new UntypedFormGroup({
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
@@ -649,7 +652,7 @@ export class UserProfileComponent implements OnInit {
         }
     }
 
-    private setErrors(form: FormControl | FormGroup, type?: string): void {
+    private setErrors(form: UntypedFormControl | UntypedFormGroup, type?: string): void {
         const errors: any = {};
         errors[type || 'incorrect'] = true;
         form.setErrors(errors);
@@ -704,5 +707,18 @@ export class UserProfileComponent implements OnInit {
                 console.error(message);
             }
         );
+    }
+
+    public changePassword(profile: any) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Change password',
+            width: '640px',
+            modal: true,
+            data: {
+                login: profile?.username,
+            }
+        }).onClose.subscribe((data) => {
+            this.loadDate();
+        });
     }
 }

@@ -1,0 +1,17 @@
+var _pp = {
+  "field0": "GreenCheck Verifications Ltd. Reference No.: PV-2024-00765",
+  "field1": "James Henry",
+  "field2": "+998 71 568 6888",
+  "field3": "henry@greencheck.com",
+  "field4": "contact@greencheck.com",
+  "field5": "https://www.greencheck.com",
+  "field6": "CDM Accreditation",
+  "field7": "Active accreditation from United Nations Framework Convention on Climate Change valid till 01/08/2024; Ref no. CDM-E-0066; ",
+  "field8": "https://www.greencheckverifications.com/credentials/12388",
+  "field9": {
+    "field0": "2023-10-08",
+    "field1": "2025-08-01"
+  },
+  "field10": "GHG Sectoral Scope 1 - Energy Industries (renewable / nonrenewable sources) GCC scopes – GHG-SS #1 - Energy Industries (renewable / nonrenewable sources) Environmental no-net harm (E+) Social no-net harm (S+) UN Sustainability Development Goals (SDG+)"
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

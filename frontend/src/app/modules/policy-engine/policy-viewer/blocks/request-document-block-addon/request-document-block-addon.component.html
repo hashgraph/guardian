@@ -1,0 +1,13 @@
+<div class="create-button-container">
+    <p-button (click)="onDialog()" class="btn-block-{{ uiClass }}">
+        {{ buttonName }}
+    </p-button>
+</div>
+
+<ng-template #preloader>
+    <div class="preloader-image"></div>
+</ng-template>
+
+<div *ngIf="loading" class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+</div>

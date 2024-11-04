@@ -103,15 +103,20 @@
         </div>
 
         <div class="policy-header" [attr.policy-status]="policyInfo.status" [attr.expired]="!!policyInfo.discontinuedDate">
-            <div>
-                <a routerLink="/policy-viewer">
-                    <p-button
-                        [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
-                        icon="pi pi-arrow-left"
-                        label="Back to Manage Policies"
-                        styleClass="p-button-outlined p-button-sm"
-                    ></p-button>
-                </a>
+            <div class="guardian-user-back-button">
+                <button 
+                    (click)="onBack()" 
+                    class="guardian-button guardian-button-secondary"
+                    [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
+                >
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/left-arrow.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Back to Manage Policies</div>
+                </button>
             </div>
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">

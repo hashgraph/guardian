@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { PolicyTool, Schema, Tag } from '../entity/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 
@@ -31,7 +30,10 @@ export class ToolImportExport {
      */
     public static async loadToolComponents(tool: PolicyTool): Promise<IToolComponents> {
         const topicId = tool.topicId;
-        const schemas = await new DataBaseHelper(Schema).find({ topicId, readonly: false });
+
+        const dataBaseServer = new DatabaseServer();
+
+        const schemas = await dataBaseServer.find(Schema, { topicId, readonly: false });
         const tagTargets: string[] = [];
         tagTargets.push(tool.id.toString());
         for (const schema of schemas) {
@@ -39,7 +41,7 @@ export class ToolImportExport {
         }
         const tags = await DatabaseServer.getTags({ localTarget: { $in: tagTargets } });
         const toolIds = ImportExportUtils.findAllTools(tool.config);
-        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: toolIds } });
+        const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
         return { tool, schemas, tags, tools };
     }
 

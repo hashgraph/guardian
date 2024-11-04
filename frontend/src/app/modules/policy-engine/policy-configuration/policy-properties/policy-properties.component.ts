@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables } from '../../structures';
-import { PolicyCategoryType } from '@guardian/interfaces';
+import { IContract, PolicyCategoryType } from '@guardian/interfaces';
 
 /**
  * Settings for policy.
@@ -16,6 +16,7 @@ export class PolicyPropertiesComponent implements OnInit {
     @Input('policyCategories') policyCategories!: IPolicyCategory[];
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
+    @Input('wipeContracts') wipeContracts: IContract[] = [];
 
     @Output() onInit = new EventEmitter();
 
@@ -213,5 +214,11 @@ export class PolicyPropertiesComponent implements OnInit {
 
     onTokenTypeChange(item: any) {
         item.decimals = '';
+    }
+
+    onEnableWipeChange(template: PolicyToken) {
+        if (template.enableWipe !== true) {
+            template.wipeContractId = undefined;
+        }
     }
 }

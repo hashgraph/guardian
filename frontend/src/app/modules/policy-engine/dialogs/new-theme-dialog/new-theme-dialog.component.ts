@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormBuilder, Validators } from '@angular/forms';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 
 /**
  * Dialog for creating theme.
@@ -21,7 +21,7 @@ export class NewThemeDialog {
 
     constructor(
         public dialogRef: MatDialogRef<NewThemeDialog>,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
 
         if (data && data.theme) {

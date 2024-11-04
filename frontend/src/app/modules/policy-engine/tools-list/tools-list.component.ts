@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
@@ -10,11 +10,10 @@ import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
 import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../dialogs/import-policy-dialog/import-policy-dialog.component';
 import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
-import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { DialogService } from 'primeng/dynamicdialog';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 enum OperationMode {
     None,
@@ -157,7 +156,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         this.loadAllTools();
     }
 
-    private importDetails(result: any) {
+    private importDetails(result: IImportEntityResult) {
         const { type, data, tool } = result;
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Import tool',
@@ -196,17 +195,16 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     public importTool(messageId?: string) {
-        const dialogRef = this.dialogService.open(ImportPolicyDialog, {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            header: 'Select action',
-            styleClass: 'custom-dialog',
-            closable: true,
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'tool',
+                type: ImportEntityType.Tool,
                 timeStamp: messageId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
             }

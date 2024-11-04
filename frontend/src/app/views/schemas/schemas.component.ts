@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType, UserPermissions } from '@guardian/interfaces';
@@ -956,20 +956,21 @@ export class SchemaConfigComponent implements OnInit {
             disableClose: true,
             data: { schema, example, category: this.getCategory() },
         });
-        dialogRef.afterClosed().subscribe(async (exampleDate: any) => {
-            if (exampleDate) {
+        dialogRef.afterClosed().subscribe(async ({ exampleDate, currentSchema }: { exampleDate: any, currentSchema: Schema }) => {
+            if (exampleDate && currentSchema) {
                 schema.setExample(exampleDate);
-                this.updateSchema(schema.id, schema);
+                this.updateSchema(currentSchema.id, currentSchema);
             }
         });
     }
 
     public onOpenDocument(element: Schema): void {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            header: 'Schema',
-            width: '850px',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
+                row: element,
                 document: element?.document,
                 title: 'Schema',
                 type: 'JSON',
@@ -1081,7 +1082,8 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools,
                 properties: this.properties,
-                scheme: element
+                scheme: element,
+                category: this.getCategory(),
             }
         });
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {

@@ -12,8 +12,7 @@ import {
  */
 @Entity()
 @Index({ name: 'user_idx', properties: ['type', 'did'] })
-@Index({ name: 'entity_idx', properties: ['type', 'did', 'entityId'] })
-@Unique({ name: 'unique_idx', properties: ['type', 'did', 'entityId'] })
+@Unique({ name: 'entity_idx', properties: ['type', 'did', 'entityId'] })
 export class AssignEntity extends BaseEntity {
     /**
      * Type

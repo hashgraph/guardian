@@ -1,7 +1,6 @@
 import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
-    DataBaseHelper,
     DatabaseServer,
     findAllEntities,
     getArtifactType,
@@ -16,7 +15,7 @@ import {
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
-    replaceArtifactProperties,
+    replaceArtifactProperties, Schema as SchemaCollection,
     SchemaFields,
     Singleton,
     SynchronizationMessage,
@@ -42,6 +41,7 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
 import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Result of publishing
@@ -296,7 +296,7 @@ export class PolicyEngine extends NatsService {
                     { topicId: 'draft' },
                     { owner: owner.owner },
                 ],
-            });
+            } as FilterObject<SchemaCollection>);
             for (const dependencySchema of dependencySchemas) {
                 dependencySchema.topicId = policyTopicId;
                 await sendSchemaMessage(
@@ -443,10 +443,15 @@ export class PolicyEngine extends NatsService {
             await DatabaseServer.updateTopic(newTopic);
         }
 
+        const artifactObjects = []
+
         for (const addedArtifact of addedArtifacts) {
             addedArtifact.policyId = policy.id;
-            await DatabaseServer.saveArtifact(addedArtifact);
+
+            artifactObjects.push(addedArtifact);
         }
+
+        await DatabaseServer.saveArtifacts(artifactObjects);
 
         notifier.completedAndStart('Updating hash');
         policy = await PolicyImportExportHelper.updatePolicyComponents(policy, logger);
@@ -561,7 +566,7 @@ export class PolicyEngine extends NatsService {
         }
 
         notifier.completedAndStart('Delete artifacts');
-        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
@@ -610,7 +615,8 @@ export class PolicyEngine extends NatsService {
             }
         }
         notifier.completedAndStart('Delete artifacts');
-        const artifactsToDelete = await new DataBaseHelper(Artifact).find({
+
+        const artifactsToDelete = await new DatabaseServer().find(Artifact, {
             policyId: policyToDelete.id
         });
         for (const artifact of artifactsToDelete) {
@@ -749,15 +755,18 @@ export class PolicyEngine extends NatsService {
             notifier.completedAndStart('Token');
             const tokenIds = findAllEntities(model.config, ['tokenId']);
             const tokens = await DatabaseServer.getTokens({ tokenId: { $in: tokenIds }, owner: model.owner });
+
             for (const token of tokens) {
                 let _token = token;
                 if (token.draftToken) {
                     const oldId = token.tokenId;
                     const newToken = await createHederaToken({ ...token, changeSupply: true }, root);
-                    _token = await new DataBaseHelper(Token).update(newToken, token?.id);
+
+                    _token = await new DatabaseServer().update(Token, token?.id, newToken);
 
                     replaceAllEntities(model.config, ['tokenId'], oldId, newToken.tokenId);
                     replaceAllVariables(model.config, 'Token', oldId, newToken.tokenId);
+
                     model = await DatabaseServer.updatePolicy(model);
                 }
 
@@ -1360,7 +1369,7 @@ export class PolicyEngine extends NatsService {
             user: userAccount.hederaAccountId,
             policyOwner: root.hederaAccountId,
             type: data.mainPolicyTopicId === policy.instanceTopicId ? 'Main' : 'Sub',
-        });
+        } as MultiPolicy);
 
         const message = new SynchronizationMessage(MessageAction.CreateMultiPolicy);
         message.setDocument(multipleConfig);

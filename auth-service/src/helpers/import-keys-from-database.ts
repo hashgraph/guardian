@@ -1,5 +1,5 @@
 import { WalletAccount } from '../entity/wallet-account.js';
-import { DataBaseHelper, PinoLogger } from '@guardian/common';
+import { DatabaseServer, PinoLogger } from '@guardian/common';
 import { IVault } from '../vaults/index.js';
 
 /**
@@ -15,8 +15,8 @@ export async function ImportKeysFromDatabase(vault: IVault, logger: PinoLogger):
     const re = /^(.*KEY)\|(.+)$/;
 
     await logger.info('Start import keys', ['AUTH_SERVICE']);
-    const walletRepository = new DataBaseHelper(WalletAccount)
-    const databaseWallets = await walletRepository.find({
+    const walletRepository = new DatabaseServer()
+    const databaseWallets = await walletRepository.find(WalletAccount, {
         type: re
     });
     const walletAccounts = databaseWallets.map(w => {

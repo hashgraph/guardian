@@ -6,6 +6,7 @@ import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { FilterQuery } from '@mikro-orm/core';
 
 /**
  * Policy engine utils
@@ -1020,14 +1021,12 @@ export class PolicyUtils {
             let documentRef: any = null;
             if (typeof (refId) === 'string') {
                 documentRef = await ref.databaseServer.getVcDocument({
-                    where: {
                         'policyId': { $eq: policyId },
                         $or: [
                             {'document.credentialSubject.id': {$eq: refId}},
                             {'document.credentialSubject.0.id': {$eq: refId}}
                         ]
-                    }
-                });
+                } as unknown as FilterQuery<VcDocumentCollection>);
             } else if (typeof (refId) === 'object') {
                 const objectId = refId.id || refId._id;
                 if (objectId) {
@@ -1038,11 +1037,9 @@ export class PolicyUtils {
                 } else {
                     const id = PolicyUtils.getSubjectId(refId);
                     documentRef = await ref.databaseServer.getVcDocument({
-                        where: {
-                            'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: id }
-                        }
-                    });
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: id }
+                    } as FilterQuery<VcDocumentCollection>);
                 }
             }
             if (!documentRef) {

@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { Artifact, Policy, PolicyCategory, PolicyTest, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';
@@ -39,7 +38,7 @@ export class PolicyImportExport {
         schemasIds: string[]
     ): Promise<Schema[]> {
         const result = new Map<string, Schema>();
-        const schemas = await new DataBaseHelper(Schema).find({ iri: { $in: schemasIds }, topicId, readonly: false });
+        const schemas = await new DatabaseServer().find(Schema, { iri: { $in: schemasIds }, topicId, readonly: false });
         for (const schema of schemas) {
             result.set(schema.iri, schema);
         }
@@ -55,7 +54,7 @@ export class PolicyImportExport {
             }
 
         }
-        const defSchemas = await new DataBaseHelper(Schema).find({ iri: { $in: Array.from(defIds) }, topicId, readonly: false });
+        const defSchemas = await new DatabaseServer().find(Schema, { iri: { $in: Array.from(defIds) }, topicId, readonly: false });
         for (const schema of defSchemas) {
             result.set(schema.iri, schema);
         }
@@ -75,11 +74,13 @@ export class PolicyImportExport {
         const schemasIds = ImportExportUtils.findAllSchemas(policy.config);
         const toolIds = ImportExportUtils.findAllTools(policy.config);
 
-        const tokens = await new DataBaseHelper(Token).find({ tokenId: { $in: tokenIds } });
+        const dataBaseServer = new DatabaseServer();
+
+        const tokens = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds } });
         const schemas = await PolicyImportExport.loadSchemas(topicId, schemasIds);
-        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: toolIds } });
+        const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
         const artifacts: IArtifact[] = [];
-        const artifactRows = await new DataBaseHelper(Artifact).find({ policyId: policy.id });
+        const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
         for (const item of artifactRows) {
             const data = await DatabaseServer.getArtifactFileByUUID(item.uuid);
             artifacts.push({
@@ -135,7 +136,7 @@ export class PolicyImportExport {
                 }
             }
         }
-        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: Array.from(toolsMap) } });
+        const tools = await new DatabaseServer().find(PolicyTool, { messageId: { $in: Array.from(toolsMap) } });
         const toolsTopicMap = tools.map((t) => t.topicId);
         const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
         const schemas = components.schemas;

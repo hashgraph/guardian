@@ -25,11 +25,16 @@ export async function publishSchemaTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
+    const tagObjects = []
+
     for (const tag of tags) {
         tag.target = schema.messageId;
         await publishTag(tag, messageServer, owner);
-        await DatabaseServer.updateTag(tag);
+
+        tagObjects.push(tag);
     }
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -55,11 +60,16 @@ export async function publishPolicyTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
+    const tagObjects = []
+
     for (const tag of tags) {
         tag.target = policy.messageId;
         await publishTag(tag, messageServer, owner);
-        await DatabaseServer.updateTag(tag);
+
+        tagObjects.push(tag);
     }
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -85,11 +95,16 @@ export async function publishTokenTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
+    const tagObjects = []
+
     for (const tag of tags) {
         tag.target = token.tokenId;
         await publishTag(tag, messageServer, owner);
-        await DatabaseServer.updateTag(tag);
+
+        tagObjects.push(tag);
     }
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -113,11 +128,17 @@ export async function publishToolTags(
     const topicConfig = await TopicConfig.fromObject(topic, true);
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
+
+    const tagObjects = []
+
     for (const tag of tags) {
         tag.target = tool.tagsTopicId;
         await publishTag(tag, messageServer, owner);
-        await DatabaseServer.updateTag(tag);
+
+        tagObjects.push(tag);
     }
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -143,11 +164,16 @@ export async function publishModuleTags(
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
         .setTopicObject(topicConfig);
 
+    const tagObjects = []
+
     for (const tag of tags) {
         tag.target = module.messageId;
         await publishTag(tag, messageServer, owner);
-        await DatabaseServer.updateTag(tag);
+
+        tagObjects.push(tag);
     }
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -207,13 +233,9 @@ export async function deleteTag(
  * @param entity
  */
 export async function exportTag(targets: string[], entity?: TagType): Promise<any[]> {
-    const filter: any = {
-        where: {
-            localTarget: { $in: targets }
-        }
-    }
+    const filter: any = { localTarget: { $in: targets } }
     if (entity) {
-        filter.where.entity = entity;
+        filter.entity = entity;
     }
     const items = await DatabaseServer.getTags(filter);
     for (const item of items) {
@@ -404,10 +426,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTags(filter);
                 return new MessageResponse(items);
@@ -425,10 +445,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTagCache(filter);
                 return new MessageResponse(items);
@@ -467,6 +485,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                                 map.set(tag.messageId, { message: null, local: tag });
                             }
                         }
+                        const tagObjects = []
+
                         for (const item of map.values()) {
                             if (item.message) {
                                 const message: TagMessage = item.message;
@@ -486,12 +506,14 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                                 tag.date = tag.date || (new Date()).toISOString();
 
                                 if (tag.id) {
-                                    await DatabaseServer.updateTag(tag);
+                                    tagObjects.push(tag);
                                 } else {
                                     await DatabaseServer.createTag(tag);
                                 }
                             }
                         }
+
+                        await new DatabaseServer().updateTags(tagObjects)
                     }
                 } else {
                     throw new Error('Invalid target');
@@ -500,10 +522,16 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 const date = (new Date()).toISOString()
                 const cache = await DatabaseServer.getTagCache(filter);
                 if (cache.length) {
+
+                    const tagCacheObjects = []
+
                     for (const item of cache) {
                         item.date = date;
-                        await DatabaseServer.updateTagCache(item);
+
+                        tagCacheObjects.push(item);
                     }
+
+                    await DatabaseServer.updateTagsCache(tagCacheObjects)
                 } else {
                     await DatabaseServer.createTagCache({ localTarget, entity, date });
                 }
@@ -555,10 +583,8 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const { targets, entity } = msg;
                 const filter: any = {
-                    where: {
                         localTarget: { $in: targets },
                         entity
-                    }
                 }
                 const items = await DatabaseServer.getTags(filter);
                 for (const item of items) {

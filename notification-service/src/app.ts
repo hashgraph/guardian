@@ -1,4 +1,4 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, MessageBrokerChannel, Migration, mongoForLoggingInitialization, PinoLogger, pinoLoggerInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
@@ -19,7 +19,6 @@ Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
-            useUnifiedTopology: true,
             minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
             maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
             maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
@@ -33,13 +32,15 @@ Promise.all([
             queue: 'notification-service',
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
 ]).then(
     async (values) => {
         const [_, db, mqConnection, app, loggerMongo] = values;
-        DataBaseHelper.orm = db;
+
+        DatabaseServer.connectBD(db);
 
         app.listen();
 

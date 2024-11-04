@@ -1,12 +1,14 @@
 import { DataSourceBlock } from '../helpers/decorators/data-source-block.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyAddonBlock, IPolicySourceBlock } from '../policy-engine.interface.js';
+import { IPolicyAddonBlock, IPolicyEventState, IPolicySourceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyUser } from '../policy-user.js';
 import { StateField } from '../helpers/decorators/index.js';
-import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import ObjGet from 'lodash.get';
+import { BlockActionError } from '../errors/index.js';
+import { MAP_DOCUMENT_AGGREGATION_FILTERS } from '@guardian/common';
 
 /**
  * Document source block with UI
@@ -58,6 +60,39 @@ export class InterfaceDocumentsSource {
         }
     }
 
+    async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+            field?.bindBlocks?.includes(tag)
+        );
+        const sourceAddons = fields
+            ?.filter((field) => field.bindGroup)
+            .map((field) => field.bindGroup);
+        const documents = (await this._getData(user, ref, ref.options.uiMetaData.enableSorting)) as any[];
+        const document = documents.find(
+            // tslint:disable-next-line:no-shadowed-variable
+            (document) =>
+                document.id === documentId &&
+                (sourceAddons.length === 0 ||
+                    sourceAddons.includes(document.__sourceTag__))
+        );
+        if (!document) {
+            throw new BlockActionError(
+                'Document is not found.',
+                ref.blockType,
+                ref.uuid
+            );
+        }
+        const state = await handler(document);
+        ref.triggerEvents(tag, user, state);
+        PolicyComponentsUtils.ExternalEventFn(
+            new ExternalEvent(ExternalEventType.Set, ref, user, {
+                button: ref.tag,
+                documents: ExternalDocuments(state.data),
+            })
+        );
+    }
+
     /**
      * Set block data
      * @param user
@@ -74,6 +109,25 @@ export class InterfaceDocumentsSource {
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 
+    private async _getData(
+        user: PolicyUser,
+        ref: IPolicySourceBlock,
+        enableCommonSorting: boolean,
+        sortState = {},
+        paginationData?,
+        history?
+    ) {
+        return enableCommonSorting
+            ? await this.getDataByAggregationFilters(
+                  ref,
+                  user,
+                  sortState,
+                  paginationData,
+                  history
+              )
+            : await ref.getGlobalSources(user, paginationData);
+    }
+
     /**
      * Get block data
      * @param user
@@ -82,6 +136,8 @@ export class InterfaceDocumentsSource {
      */
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+
+        let ret = {};
 
         if (!queryParams) {
             queryParams = {};
@@ -107,9 +163,9 @@ export class InterfaceDocumentsSource {
                 });
                 if (filter) {
                     if (useStrict === 'true') {
-                        await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
+                      await (filter as IPolicyAddonBlock).setFiltersStrict(user, {filterValue});
                     } else {
-                        await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
+                      await (filter as IPolicyAddonBlock).setFilterState(user, {filterValue});
                     }
                 }
             }
@@ -154,9 +210,17 @@ export class InterfaceDocumentsSource {
             };
             this.state[user.id] = sortState;
         }
-        let data: any = enableCommonSorting
-            ? await this.getDataByAggregationFilters(ref, user, sortState, paginationData, history)
-            : await ref.getGlobalSources(user, paginationData);
+        let data: any = await this._getData(user, ref, enableCommonSorting, sortState, paginationData, history);
+
+        if (paginationData) {
+            ret = Object.assign(ret, {
+                page: paginationData.page,
+                pageSize: paginationData.itemsPerPage,
+                totalCount: paginationData.size,
+                hasPreviousPage: paginationData.page > 0,
+                hasNextPage: ((paginationData.page + 1) * paginationData.itemsPerPage) < paginationData.size
+            });
+        }
 
         if (
             !enableCommonSorting && history
@@ -206,14 +270,18 @@ export class InterfaceDocumentsSource {
                     return (_filter.uuid === filterId) || (_filter.tag === filterId);
                 });
                 if (filter) {
-                    if (useStrict === 'true') {
-                        await (filter as IPolicyAddonBlock).resetFilters(user);
-                    }
+                    await (filter as IPolicyAddonBlock).resetFilters(user);
                 }
             }
         }
 
-        return Object.assign(
+        if (pagination) {
+            if ((!isNaN(page)) && (!isNaN(itemsPerPage))) {
+                await pagination.resetPagination(user);
+            }
+        }
+
+        ret = Object.assign(ret,
             {
                 data,
                 blocks: filters,
@@ -224,6 +292,8 @@ export class InterfaceDocumentsSource {
             }),
             sortState
         );
+
+        return ret;
     }
 
     /**
@@ -236,59 +306,27 @@ export class InterfaceDocumentsSource {
      */
     private async getDataByAggregationFilters(ref: IPolicySourceBlock, user: PolicyUser, sortState: any, paginationData: any, history? : IPolicyAddonBlock) {
         const filtersAndDataType = await ref.getGlobalSourcesFilters(user);
-        const aggregation = [...filtersAndDataType.filters, {
-            $match: {
-                '__sourceTag__': { $ne: null }
-            }
-        }, {
-            $set: {
-                'option': {
-                    $cond: {
-                        if: {
-                            $or: [
-                                { $eq: [null, '$newOption'] },
-                                { $not: '$newOption' }
-                            ]
-                        },
-                        then: '$option',
-                        else: '$newOption'
-                    }
-                }
-            }
-        }, {
-            $unset: 'newOptions',
-        }];
+
+        const aggregation = [...filtersAndDataType.filters] as unknown[];
+
+        ref.databaseServer.getDocumentAggregationFilters({
+            aggregation,
+            aggregateMethod: 'push',
+            nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.BASE
+        });
 
         if (history) {
-            aggregation.push({
-                $lookup: {
-                    from: `${
-                        ref.databaseServer.getDryRun()
-                            ? 'dry_run'
-                            : 'document_state'
-                    }`,
-                    localField: 'id',
-                    foreignField: 'documentId',
-                    pipeline: [
-                        {
-                            $set: {
-                                labelValue: history
-                                    ? '$document.' +
-                                      (history.options.timelineLabelPath ||
-                                          'option.status')
-                                    : '$document.option.status',
-                                comment: history
-                                    ? '$document.' +
-                                      (history.options
-                                          .timelineDescriptionPath ||
-                                          'option.comment')
-                                    : '$document.option.comment',
-                                created: '$createDate',
-                            },
-                        },
-                    ],
-                    as: 'history',
-                },
+            const dryRun = ref.databaseServer.getDryRun();
+
+            const { timelineLabelPath, timelineDescriptionPath } = history.options;
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.HISTORY,
+                timelineLabelPath,
+                timelineDescriptionPath,
+                dryRun,
             });
         }
 
@@ -305,47 +343,61 @@ export class InterfaceDocumentsSource {
                     sortObject[sortState.orderField] = 1;
                     break;
             }
-            aggregation.push({
-                $sort: sortObject
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.SORT,
+                sortObject,
             });
         }
 
         if (paginationData) {
-            aggregation.push({
-                $skip: paginationData.itemsPerPage * paginationData.page
-            },
-            {
-                $limit: paginationData.itemsPerPage
+            const { itemsPerPage, page } = paginationData;
+
+            ref.databaseServer.getDocumentAggregationFilters({
+                aggregation,
+                aggregateMethod: 'push',
+                nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION,
+                itemsPerPage,
+
+                page
             });
         }
 
         switch (filtersAndDataType.dataType) {
             case 'vc-documents':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VC_DOCUMENTS,
+                    policyId: ref.policyId,
                 });
+
                 return await ref.databaseServer.getVcDocumentsByAggregation(aggregation);
             case 'did-documents':
                 return await ref.databaseServer.getDidDocumentsByAggregation(aggregation);
             case 'vp-documents':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.VP_DOCUMENTS,
+                    policyId: ref.policyId,
                 });
+
                 const data =  await ref.databaseServer.getVpDocumentsByAggregation(aggregation);
                 for (const item of data as any[]) {
                     [item.serials, item.amount, item.error, item.wasTransferNeeded, item.transferSerials, item.transferAmount, item.tokenIds] = await ref.databaseServer.getVPMintInformation(item);
                 }
                 return data;
             case 'approve':
-                aggregation.unshift({
-                    $match: {
-                        policyId: { $eq: ref.policyId }
-                    }
+                ref.databaseServer.getDocumentAggregationFilters({
+                    aggregation,
+                    aggregateMethod: 'unshift',
+                    nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.APPROVE,
+                    policyId: ref.policyId,
                 });
+
                 return await ref.databaseServer.getApprovalDocumentsByAggregation(aggregation);
             default:
                 return [];

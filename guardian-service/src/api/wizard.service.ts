@@ -1,10 +1,11 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DatabaseServer, MessageError, MessageResponse, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, PinoLogger, Policy, RunFunctionAsync } from '@guardian/common';
 import { IOwner, IWizardConfig, MessageAPI, SchemaCategory } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
 import { PolicyEngine } from '../policy-engine/policy-engine.js';
 import { SchemaImportExportHelper } from './helpers/schema-import-export-helper.js';
 import { PolicyWizardHelper } from './helpers/policy-wizard-helper.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Create existing policy schemas
@@ -174,7 +175,7 @@ export async function wizardAPI(logger: PinoLogger): Promise<void> {
                 const policy = await DatabaseServer.getPolicy({
                     owner: owner.owner,
                     _id: policyId,
-                });
+                } as FilterObject<Policy>);
                 if (!policy) {
                     throw new Error(`Can not found policy with id: ${policyId}`);
                 }

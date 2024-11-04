@@ -30,6 +30,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { CheckboxModule } from 'primeng/checkbox';
 import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { DeleteSchemaDialogComponent } from './delete-schema-dialog/delete-schema-dialog.component';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
@@ -37,6 +39,9 @@ import { SchemaTreeComponent } from './schema-tree/schema-tree.component';
 import { CopySchemaDialog } from './copy-schema-dialog/copy-schema-dialog';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.component';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { AccordionModule } from 'primeng/accordion';
 
 @NgModule({
     declarations: [
@@ -79,6 +84,11 @@ import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.
         InputTextareaModule,
         CheckboxModule,
         DropdownModule,
+        CalendarModule,
+        TooltipModule,
+        RadioButtonModule,
+        SelectButtonModule,
+        AccordionModule,
         AngularSvgIconModule.forRoot()
     ],
     exports: [

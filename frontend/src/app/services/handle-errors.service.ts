@@ -5,6 +5,8 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
+// import { AuthService } from './auth.service';
+// import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -14,11 +16,14 @@ export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
         private toastr: ToastrService,
-        private messageTranslator: MessageTranslationService
+        private messageTranslator: MessageTranslationService,
+        // private auth: AuthService,
+        // private authState: AuthStateService,
     ) {
     }
 
     excludeErrorCodes: string[] = ['401'];
+    excludeErrorTexts: string[] = ['Block Unavailable'];
 
     private messageToText(message: any) {
         if (typeof message === 'object') {
@@ -90,34 +95,55 @@ export class HandleErrorsService implements HttpInterceptor {
         return { warning, text, header };
     }
 
-    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    private createMessage(result: { warning: any, text: any, header: any }, error: any) {
+        if (result.warning) {
+            this.toastr.warning(result.text, 'Waiting for initialization', {
+                timeOut: 30000,
+                closeButton: true,
+                positionClass: 'toast-bottom-right',
+                enableHtml: true
+            });
+        } else {
+            if (
+                !this.excludeErrorCodes.includes(String(error.status)) &&
+                !this.excludeErrorTexts.includes(String(result.text))
+            ) {
+                const body = `
+                    <div>${result.text}</div>
+                    <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
+                `;
+                this.toastr.error(body, result.header, {
+                    timeOut: 100000,
+                    extendedTimeOut: 30000,
+                    closeButton: true,
+                    positionClass: 'toast-bottom-right',
+                    toastClass: 'ngx-toastr error-message-toastr',
+                    enableHtml: true,
+                });
+            }
+        }
+    }
+
+    private ifTokenExpired(error:any){
+        if( error?.status === 401 && error?.error?.message === 'Token expired') {
+            return true;
+        }
+        return false;
+    }
+
+    public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(req).pipe(
             catchError((error: any) => {
                 console.error(error);
+                // if(this.ifTokenExpired(error)) {
+                //     this.auth.removeAccessToken();
+                //     this.auth.removeUsername();
+                //     this.authState.updateState(false);
+                //     this.router.navigate(['/login']);
+                //     return throwError(error);
+                // }
                 this.getMessage(error).then((result) => {
-                    if (result.warning) {
-                        this.toastr.warning(result.text, 'Waiting for initialization', {
-                            timeOut: 30000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true
-                        });
-                    } else {
-                        const body = `
-                            <div>${result.text}</div>
-                            <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
-                        `;
-                        if (!this.excludeErrorCodes.includes(String(error.status))) {
-                            this.toastr.error(body, result.header, {
-                                timeOut: 100000,
-                                extendedTimeOut: 30000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                toastClass: 'ngx-toastr error-message-toastr',
-                                enableHtml: true,
-                            });
-                        }
-                    }
+                    this.createMessage(result, error);
                 })
                 return throwError(error);
             })

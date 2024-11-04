@@ -1,0 +1,162 @@
+.guardian-multiselect {
+    height: 40px;
+
+    .p-multiselect {
+        background: #ffffff;
+        border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+        border-radius: 8px;
+        outline: 0 none;
+        height: 40px;
+        width: 100%;
+
+        &:not(.p-disabled):hover {
+            border-color: var(--guardian-primary-color, #4169E2);
+        }
+
+        &:not(.p-disabled).p-focus {
+            box-shadow: none;
+            border-color: var(--guardian-primary-color, #4169E2);
+        }
+
+        .p-multiselect-label {
+            padding: 8px 16px;
+        }
+
+        .p-multiselect-trigger {
+            .p-multiselect-trigger-icon {
+                font-size: 12px;
+                color: var(--guardian-font-color, #23252E);
+            }
+        }
+
+        .p-inputtext {
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 400;
+            padding: 0px 16px;
+            display: flex;
+            color: #000;
+            align-items: center;
+        }
+    }
+
+    &.full-size {
+        width: 100%;
+        height: 100%;
+
+        .p-multiselect { 
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    .guardian-multiselect-selected {
+        text-overflow: ellipsis;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+
+        .guardian-multiselect-label {
+            font-family: Inter;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 16px;
+            text-align: left;
+            color: #848FA9;
+            padding-right: 8px;
+        }
+
+        .guardian-multiselect-item {
+            font-family: Inter;
+            font-size: 14px;
+            line-height: 16px;
+            text-align: left;
+        }
+    }
+
+    .guardian-multiselect-item {}
+
+    &.guardian-multiselect-cell {
+        width: 100%;
+
+        .p-multiselect {
+            border: none !important;
+        }
+    }
+}
+
+.guardian-multiselect-panel {
+    border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+    border-radius: 8px;
+
+    .p-inputtext:enabled:focus {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: none;
+        border-color: var(--guardian-primary-color, #4169E2);
+    }
+
+    .p-multiselect-item {
+        padding: 12px 16px !important;
+        font-family: Inter;
+        font-size: 14px;
+        line-height: 16px;
+        text-align: left;
+    }
+
+    .p-multiselect-items .p-multiselect-item:focus {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: none;
+    }
+
+    .p-multiselect-item.p-highlight {
+        position: relative;
+        background: none !important;
+
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            background: var(--guardian-primary-color, #4169E2);
+            opacity: 0.16;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+    }
+
+    .p-multiselect-item:not(.p-highlight):not(.p-disabled):hover {
+        position: relative;
+        background: none !important;
+
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            background: var(--guardian-primary-color, #4169E2);
+            opacity: 0.08;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+    }
+
+    .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box.p-highlight:hover {
+        border-color: var(--guardian-primary-color, #4169E2);
+        background: var(--guardian-primary-color, #4169E2);
+        color: #ffffff;
+    }
+    .p-checkbox:not(.p-checkbox-disabled) .p-checkbox-box:hover {
+        border-color: var(--guardian-primary-color, #4169E2);
+    }
+    
+    .p-checkbox .p-checkbox-box.p-highlight {
+        border-color: var(--guardian-primary-color, #4169E2);
+        background: var(--guardian-primary-color, #4169E2);
+    }
+}

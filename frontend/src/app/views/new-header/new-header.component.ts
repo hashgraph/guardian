@@ -5,7 +5,7 @@ import { AuthStateService } from '../../services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
 import { DemoService } from '../../services/demo.service';
 import { NavigationEnd, Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ProfileService } from '../../services/profile.service';
 import { WebSocketService } from '../../services/web-socket.service';
 import { HeaderPropsService } from '../../services/header-props.service';
@@ -144,8 +144,14 @@ export class NewHeaderComponent implements OnInit {
                 this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
             }
             this.brandingService.getBrandingData().then(res => {
-                if (document.getElementById('company-logo') as HTMLImageElement) {
-                    (document.getElementById('company-logo') as HTMLImageElement)!.src = res.companyLogoUrl;
+                const logo = document.getElementById('company-logo') as HTMLImageElement;
+                if (logo) {
+                    logo.src = res.companyLogoUrl;
+                    if(res.companyLogoUrl) {
+                        logo.style.display = 'block';
+                    } else {
+                        logo.style.display = 'none';
+                    }
                 }
 
                 if (document.getElementById('company-name')) {

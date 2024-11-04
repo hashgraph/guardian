@@ -1,8 +1,8 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
-import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper, UnitSystem, } from '@guardian/interfaces';
+import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
+import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, UnitSystem, } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -20,7 +20,7 @@ enum SchemaType {
     Tool = 'tool'
 }
 
-function NoBindingValidator(control: FormControl): ValidationErrors | null {
+function NoBindingValidator(control: UntypedFormControl): ValidationErrors | null {
     return (control.value && control.value.length) ? null : {wrongTopicId: true};
 }
 
@@ -56,9 +56,9 @@ export class SchemaConfigurationComponent implements OnInit {
     public loading: boolean = true;
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
-    public fieldsForm!: FormGroup;
-    public conditionsForm!: FormGroup;
-    public dataForm!: FormGroup;
+    public fieldsForm!: UntypedFormGroup;
+    public conditionsForm!: UntypedFormGroup;
+    public dataForm!: UntypedFormGroup;
     public defaultFieldsMap!: any;
     public typesMap!: any;
     public types!: any[];
@@ -66,6 +66,7 @@ export class SchemaConfigurationComponent implements OnInit {
     public errors!: any[];
     public schemaTypes!: any[];
     public schemaTypeMap!: any;
+    public buildField!: (fieldConfig: FieldControl, data: any) => SchemaField;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     private _patternByNumberType: any = {
         duration: /^[0-9]+$/,
@@ -109,9 +110,8 @@ export class SchemaConfigurationComponent implements OnInit {
 
     constructor(
         private schemaService: SchemaService,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
-        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -172,6 +172,7 @@ export class SchemaConfigurationComponent implements OnInit {
             isRef: false,
             customType: 'hederaAccount'
         };
+        this.buildField = this.buildSchemaField.bind(this);
     }
 
     public get isEdit(): boolean {
@@ -302,14 +303,14 @@ export class SchemaConfigurationComponent implements OnInit {
             }
         } else {
             this.fieldsForm = this.fb.group({});
-            this.conditionsForm = new FormGroup({});
+            this.conditionsForm = new UntypedFormGroup({});
 
             let props: any;
             if (this.isSystem) {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
-                    entity: new FormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required),
+                    entity: new UntypedFormControl(SchemaEntity.STANDARD_REGISTRY, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
@@ -324,7 +325,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 props = {
                     name: ['', Validators.required],
                     description: [''],
-                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
@@ -333,7 +334,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     name: ['', Validators.required],
                     description: [''],
                     topicId: [this.topicId, NoBindingValidator],
-                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
@@ -342,7 +343,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     name: ['', Validators.required],
                     description: [''],
                     topicId: [this.topicId],
-                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
@@ -351,7 +352,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     name: ['', Validators.required],
                     description: [''],
                     topicId: [this.topicId],
-                    entity: new FormControl(SchemaEntity.VC, Validators.required),
+                    entity: new UntypedFormControl(SchemaEntity.VC, Validators.required),
                     fields: this.fieldsForm,
                     conditions: this.conditionsForm
                 };
@@ -384,7 +385,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.mappingSubSchemas();
         }
 
-        this.useUpdateSubSchemas.emit();
+        this.useUpdateSubSchemas.emit(topicId);
     }
 
     mappingSubSchemas(data?: Schema[], topicId?: string): void {
@@ -461,7 +462,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.getType(field),
                     this.destroy$,
                     this.defaultFieldsMap,
-                    this.dataForm?.get('entity') as FormControl,
+                    this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
                 newCondition.addThenControl(fieldValue);
@@ -473,7 +474,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     this.getType(field),
                     this.destroy$,
                     this.defaultFieldsMap,
-                    this.dataForm?.get('entity') as FormControl,
+                    this.dataForm?.get('entity') as UntypedFormControl,
                     this.getFieldName()
                 );
                 newCondition.addElseControl(fieldValue);
@@ -496,7 +497,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.getType(field),
                 this.destroy$,
                 this.defaultFieldsMap,
-                this.dataForm?.get('entity') as FormControl,
+                this.dataForm?.get('entity') as UntypedFormControl,
                 this.getFieldName()
             );
             control.append(this.fieldsForm);
@@ -662,7 +663,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.getType(null),
             this.destroy$,
             this.defaultFieldsMap,
-            this.dataForm?.get('entity') as FormControl,
+            this.dataForm?.get('entity') as UntypedFormControl,
             this.getFieldName()
         );
         condition.addControl(type, field);
@@ -686,7 +687,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.getType(null),
             this.destroy$,
             this.defaultFieldsMap,
-            this.dataForm?.get('entity') as FormControl,
+            this.dataForm?.get('entity') as UntypedFormControl,
             this.getFieldName()
         );
         control.append(this.fieldsForm);
@@ -712,7 +713,12 @@ export class SchemaConfigurationComponent implements OnInit {
         }
     }
 
-    private buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+    private isNotEmpty(value: any) {
+        return !['', undefined, null].includes(value);
+    }
+
+    public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+        console.log(data, fieldConfig);
         const {
             key,
             title,
@@ -729,16 +735,47 @@ export class SchemaConfigurationComponent implements OnInit {
             isPrivate,
             pattern,
             hidden,
-            property
+            property,
+            default: defaultValueRaw,
+            suggest,
+            example,
+            autocalculate,
+            expression
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
+        let suggestValue;
+        let defaultValue;
+        let exampleValue;
+        if (isArray) {
+            suggestValue =
+                suggest && suggest.length > 0
+                    ? suggest.filter(this.isNotEmpty)
+                    : undefined;
+            defaultValue =
+                defaultValueRaw && defaultValueRaw.length > 0
+                    ? defaultValueRaw.filter(this.isNotEmpty)
+                    : undefined;
+            exampleValue =
+                example && example.length > 0
+                    ? example.filter(this.isNotEmpty)
+                    : undefined;
+        } else {
+            suggestValue = suggest;
+            defaultValue = defaultValueRaw;
+            exampleValue = example;
+        }
         return {
+            autocalculate,
+            expression,
             name: key,
-            title: title,
-            description: description,
-            required: required,
-            isArray: isArray,
+            title,
+            description,
+            required,
+            isArray,
             isRef: type.isRef,
+            fields:
+                this.subSchemas.find((schema) => schema.iri === type.type)
+                    ?.fields || [],
             type: type.type,
             format: type.format,
             pattern: type.pattern || pattern,
@@ -760,6 +797,11 @@ export class SchemaConfigurationComponent implements OnInit {
                 this.dataForm.value?.entity === SchemaEntity.EVC
                     ? isPrivate
                     : undefined,
+            default: defaultValue,
+            suggest: suggestValue,
+            examples: this.isNotEmpty(exampleValue)
+                ? [exampleValue]
+                : undefined,
         };
     }
 
@@ -789,6 +831,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 name: fieldConfig.name,
                 title: '',
                 description: '',
+                autocalculate: fieldConfig.autocalculate,
+                expression: fieldConfig.expression,
                 required: fieldConfig.required,
                 isArray: fieldConfig.isArray,
                 isRef: fieldConfig.isRef,
@@ -833,6 +877,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         schema.update(fields, conditions);
         schema.updateRefs(this.subSchemas);
+        console.log(schema);
         return schema;
     }
 
@@ -849,7 +894,7 @@ export class SchemaConfigurationComponent implements OnInit {
         return schema;
     }
 
-    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl) {
+    public onIfConditionFieldChange(condition: ConditionControl, field: FieldControl | any) {
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false
@@ -913,7 +958,7 @@ export class SchemaConfigurationComponent implements OnInit {
         condition.fieldValue.updateValueAndValidity();
     }
 
-    private subscribeFormatDateValue(control: FormControl, format: string) {
+    private subscribeFormatDateValue(control: UntypedFormControl, format: string) {
         if (format === 'date') {
             return control.valueChanges
                 .pipe(takeUntil(this.destroy$))
@@ -950,11 +995,29 @@ export class SchemaConfigurationComponent implements OnInit {
                 });
         }
 
+        if (format === 'time') {
+            return control.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((val: any) => {
+                    let momentDate = moment(val);
+                    let valueToSet = '';
+                    if (momentDate.isValid()) {
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.format('HH:mm:ss');
+                    }
+
+                    control.setValue(valueToSet, {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
+                });
+        }
+
         return null;
     }
 
     private subscribeFormatNumberValue(
-        control: FormControl,
+        control: UntypedFormControl,
         type: string,
         pattern?: string
     ) {
@@ -1057,7 +1120,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
     private fieldNameValidator(): ValidatorFn {
         return (group: any): ValidationErrors | null => {
-            const all: FormControl[] = [];
+            const all: UntypedFormControl[] = [];
             const map: any = {};
 
             const fields = group.get('fields');

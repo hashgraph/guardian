@@ -1,0 +1,130 @@
+.guardian-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 56px 48px 48px 48px;
+
+    .guardian-user-not-registered {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: darkgrey;
+        z-index: 2;
+    }
+
+    .guardian-user-not-data {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--color-grey-black-2);
+        font-family: Inter, serif;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        row-gap: 8px;
+        justify-content: center;
+
+        &__text {
+            color: var(--color-grey-5, #848fa9);
+            text-align: center;
+            font-family: Inter, sans-serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
+        }
+
+        &__text-strong {
+            color: var(--color-grey-5, #848fa9);
+            text-align: center;
+            font-family: Inter, sans-serif;
+            font-size: 16px;
+            font-style: normal;
+            font-weight: 600;
+            line-height: normal;
+        }
+    }
+
+    .guardian-user-back-button {
+        height: 40px;
+        width: 170px;
+
+        button {
+            height: 40px;
+            width: 100%;
+            padding-right: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    }
+
+    .guardian-user-page-header {
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--guardian-header-color, #000);
+        height: 72px;
+        padding: 32px 0px 18px 0px;
+        position: relative;
+    }
+
+    .guardian-user-page-toolbar {
+        height: 56px;
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        padding: 0px 0px 16px 0px;
+        justify-content: flex-end;
+
+        button {
+            height: 40px;
+            padding: 0px 16px;
+        }
+
+        .guardian-user-page-filters {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+        }
+
+        .guardian-user-page-buttons {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+
+            button {
+                margin-left: 12px;
+            }
+        }
+    }
+
+    .guardian-user-page-grid {
+        height: 100%;
+        width: 100%;
+        position: relative;
+    }
+}
+
+.guardian-user-back-button {
+    height: 40px;
+    min-width: 170px;
+    width: min-content;
+
+    button {
+        height: 40px;
+        width: 100%;
+        padding-right: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+}

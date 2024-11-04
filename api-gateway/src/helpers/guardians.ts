@@ -29,7 +29,20 @@ import {
 } from '@guardian/interfaces';
 import { IAuthUser, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
-import { ModuleDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO } from '#middlewares';
+import {
+    ModuleDTO,
+    TagDTO,
+    ThemeDTO,
+    TokenDTO,
+    ToolDTO,
+    StatisticDefinitionDTO,
+    StatisticAssessmentDTO,
+    StatisticAssessmentRelationshipsDTO,
+    StatisticDefinitionRelationshipsDTO,
+    SchemaRuleDTO,
+    SchemaRuleRelationshipsDTO,
+    SchemaRuleDataDTO
+} from '#middlewares';
 
 /**
  * Filters type
@@ -527,7 +540,7 @@ export class Guardians extends NatsService {
      * @returns {any} Demo Key
      */
     public async generateDemoKey(role: string, userId: string): Promise<any> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, {role, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY, { role, userId });
     }
 
     /**
@@ -537,7 +550,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async generateDemoKeyAsync(role: string, task: NewTask, userId: string): Promise<NewTask> {
-        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, {role, task, userId});
+        return await this.sendMessage(MessageAPI.GENERATE_DEMO_KEY_ASYNC, { role, task, userId });
     }
 
     /**
@@ -576,10 +589,15 @@ export class Guardians extends NatsService {
      *
      * @param {string} type - schema type
      *
+     * @param owner
      * @returns {ISchema} - schema
      */
-    public async getSchemaByType(type: string): Promise<ISchema> {
-        return await this.sendMessage(MessageAPI.GET_SCHEMA, { type });
+    public async getSchemaByType(type: string, owner?: string): Promise<ISchema> {
+        if (owner) {
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type, owner });
+        } else {
+            return await this.sendMessage(MessageAPI.GET_SCHEMA, { type });
+        }
     }
 
     /**
@@ -1452,11 +1470,13 @@ export class Guardians extends NatsService {
      */
     public async clearWipeRequests(
         owner: IOwner,
-        id: string
+        id: string,
+        hederaId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.CLEAR_WIPE_REQUESTS, {
             owner,
             id,
+            hederaId,
         });
     }
 
@@ -1546,12 +1566,14 @@ export class Guardians extends NatsService {
     public async addWipeWiper(
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        tokenId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.ADD_WIPE_WIPER, {
             owner,
             id,
             hederaId,
+            tokenId,
         });
     }
 
@@ -1565,12 +1587,14 @@ export class Guardians extends NatsService {
     public async removeWipeWiper(
         owner: IOwner,
         id: string,
-        hederaId: string
+        hederaId: string,
+        tokenId?: string,
     ): Promise<boolean> {
         return await this.sendMessage(ContractAPI.REMOVE_WIPE_WIPER, {
             owner,
             id,
             hederaId,
+            tokenId,
         });
     }
 
@@ -2812,7 +2836,7 @@ export class Guardians extends NatsService {
      * @param pageSize
      */
     public async getAllWorkerTasks(user: IAuthUser, pageIndex: number, pageSize: number): Promise<any> {
-        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, {userId: user.id.toString(), pageIndex, pageSize});
+        return this.sendMessage(QueueEvents.GET_TASKS_BY_USER, { userId: user.id.toString(), pageIndex, pageSize });
     }
 
     /**
@@ -2821,7 +2845,7 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async restartTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.RESTART_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.RESTART_TASK, { taskId, userId });
     }
 
     /**
@@ -2830,6 +2854,347 @@ export class Guardians extends NatsService {
      * @param userId
      */
     public async deleteTask(taskId: string, userId: string) {
-        return this.sendMessage(QueueEvents.DELETE_TASK, {taskId, userId});
+        return this.sendMessage(QueueEvents.DELETE_TASK, { taskId, userId });
+    }
+
+    /**
+     * Create statistic definition
+     *
+     * @param definition
+     * @param owner
+     * @returns statistic
+     */
+    public async createStatisticDefinition(definition: StatisticDefinitionDTO, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC_DEFINITION, { definition, owner });
+    }
+
+    /**
+     * Return statistic definitions
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<StatisticDefinitionDTO>}
+     */
+    public async getStatisticDefinitions(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<StatisticDefinitionDTO>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DEFINITIONS, { filters, owner });
+    }
+
+    /**
+     * Get statistic definition
+     *
+     * @param definitionId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getStatisticDefinitionById(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getStatisticRelationships(definitionId: string, owner: IOwner): Promise<StatisticDefinitionRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_RELATIONSHIPS, { definitionId, owner });
+    }
+
+    /**
+     * Return documents
+     *
+     * @param definitionId
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getStatisticDocuments(
+        definitionId: string,
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_DOCUMENTS, { definitionId, owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Update statistic definition
+     *
+     * @param definitionId
+     * @param definition
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updateStatisticDefinition(
+        definitionId: string,
+        definition: StatisticDefinitionDTO,
+        owner: IOwner
+    ): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_STATISTIC_DEFINITION, { definitionId, definition, owner });
+    }
+
+    /**
+     * Delete statistic definition
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteStatisticDefinition(definitionId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Publish statistic definition
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async publishStatisticDefinition(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_STATISTIC_DEFINITION, { definitionId, owner });
+    }
+
+    /**
+     * Create statistic assessment
+     *
+     * @param definitionId
+     * @param assessment
+     * @param owner
+     *
+     * @returns statistic report
+     */
+    public async createStatisticAssessment(
+        definitionId: string,
+        assessment: StatisticAssessmentDTO,
+        owner: IOwner
+    ): Promise<StatisticAssessmentDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_STATISTIC_ASSESSMENT, { definitionId, assessment, owner });
+    }
+
+    /**
+     * Return statistic assessments
+     *
+     * @param definitionId
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<StatisticAssessmentDTO>}
+     */
+    public async getStatisticAssessments(
+        definitionId: string,
+        filters: IFilter,
+        owner: IOwner
+    ): Promise<ResponseAndCount<StatisticAssessmentDTO>> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENTS, { definitionId, filters, owner });
+    }
+
+    /**
+     * Get statistic assessment
+     *
+     * @param definitionId
+     * @param assessmentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getStatisticAssessment(
+        definitionId: string,
+        assessmentId: string,
+        owner: IOwner
+    ): Promise<StatisticAssessmentDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT, { definitionId, assessmentId, owner });
+    }
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param definitionId
+     * @param assessmentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getStatisticAssessmentRelationships(
+        definitionId: string,
+        assessmentId: string,
+        owner: IOwner
+    ): Promise<StatisticAssessmentRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_STATISTIC_ASSESSMENT_RELATIONSHIPS, { definitionId, assessmentId, owner });
+    }
+
+    /**
+     * Load statistic definition file for import
+     * @param zip
+     * @param owner
+     */
+    public async importStatisticDefinition(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_STATISTIC_DEFINITION_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get statistic definition export file
+     * @param definitionId
+     * @param owner
+     */
+    public async exportStatisticDefinition(definitionId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_STATISTIC_DEFINITION_FILE, { definitionId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get statistic definition info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewStatisticDefinition(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_STATISTIC_DEFINITION_FILE, { zip, owner });
+    }
+
+    /**
+     * Create schema rule
+     *
+     * @param rule
+     * @param owner
+     * @returns schema rule
+     */
+    public async createSchemaRule(rule: SchemaRuleDTO, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_RULE, { rule, owner });
+    }
+
+    /**
+     * Return schema rules
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<SchemaRuleDTO>}
+     */
+    public async getSchemaRules(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<SchemaRuleDTO>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULES, { filters, owner });
+    }
+
+    /**
+     * Get schema rule
+     *
+     * @param ruleId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getSchemaRuleById(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getSchemaRuleRelationships(ruleId: string, owner: IOwner): Promise<SchemaRuleRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_RELATIONSHIPS, { ruleId, owner });
+    }
+
+    /**
+     * Update schema rule
+     *
+     * @param ruleId
+     * @param definition
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updateSchemaRule(
+        ruleId: string,
+        rule: SchemaRuleDTO,
+        owner: IOwner
+    ): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_SCHEMA_RULE, { ruleId, rule, owner });
+    }
+
+    /**
+     * Delete schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteSchemaRule(ruleId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Activate schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Activate schema rule
+     *
+     * @param ruleId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
+        return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { ruleId, owner });
+    }
+
+    /**
+     * Get Schema Rule Data
+     *
+     * @param options
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getSchemaRuleData(options: any, owner: IOwner): Promise<SchemaRuleDataDTO> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
+    }
+
+    /**
+     * Load Schema Rule file for import
+     * @param zip
+     * @param owner
+     */
+    public async importSchemaRule(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_SCHEMA_RULE_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get Schema Rule export file
+     * @param ruleId
+     * @param owner
+     */
+    public async exportSchemaRule(ruleId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_SCHEMA_RULE_FILE, { ruleId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get Schema Rule info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewSchemaRule(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
 }

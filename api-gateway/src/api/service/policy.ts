@@ -2,8 +2,8 @@ import { Auth, AuthUser } from '#auth';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
-import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, TaskDTO } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
@@ -185,11 +185,16 @@ export class PolicyApi {
     @HttpCode(HttpStatus.CREATED)
     async createPolicy(
         @AuthUser() user: IAuthUser,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
             await engineService.createPolicy(body, new EntityOwner(user));
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${body.id}/navigation`, `${PREFIXES.POLICIES}${body.id}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -317,7 +322,8 @@ export class PolicyApi {
     @HttpCode(HttpStatus.ACCEPTED)
     async createPolicyAsync(
         @AuthUser() user: IAuthUser,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_POLICY, user.id);
@@ -328,6 +334,10 @@ export class PolicyApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${body.id}/navigation`, `${PREFIXES.POLICIES}${body.id}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -367,7 +377,8 @@ export class PolicyApi {
     async updatePolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CLONE_POLICY, user.id);
@@ -378,6 +389,10 @@ export class PolicyApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -413,6 +428,7 @@ export class PolicyApi {
     async deletePolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Req() req
     ): Promise<any> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.DELETE_POLICY, user.id);
@@ -423,6 +439,10 @@ export class PolicyApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -510,7 +530,8 @@ export class PolicyApi {
     async updatePolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() policy: PolicyDTO
+        @Body() policy: PolicyDTO,
+        @Req() req
     ): Promise<PolicyDTO> {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -531,6 +552,10 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.savePolicy(model, new EntityOwner(user), policyId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -573,12 +598,17 @@ export class PolicyApi {
     async publishPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
             const result = await engineService.publishPolicy(body, new EntityOwner(user), policyId);
             result.policies = await getOldResult(user);
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return result;
         } catch (error) {
             await InternalException(error, this.logger);
@@ -621,7 +651,8 @@ export class PolicyApi {
     async publishPolicyAsync(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.PUBLISH_POLICY, user.id);
@@ -632,6 +663,10 @@ export class PolicyApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message || error });
         });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -667,11 +702,16 @@ export class PolicyApi {
     async dryRunPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Req() req
     ): Promise<PoliciesValidationDTO> {
         try {
             const engineService = new PolicyEngine();
             const result = await engineService.dryRunPolicy(policyId, new EntityOwner(user));
             result.policies = await getOldResult(user);
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return result;
         } catch (error) {
             await InternalException(error, this.logger);
@@ -722,11 +762,16 @@ export class PolicyApi {
     async discontinuePolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
             await engineService.discontinuePolicy(policyId, new EntityOwner(user), body?.date);
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -766,10 +811,15 @@ export class PolicyApi {
     async draftPolicy(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Req() req
     ): Promise<PolicyDTO[]> {
         try {
             const engineService = new PolicyEngine();
             await engineService.draft(policyId, new EntityOwner(user));
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await getOldResult(user);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -805,10 +855,15 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async validatePolicy(
         @AuthUser() user: IAuthUser,
-        @Body() body: PolicyDTO
+        @Body() body: PolicyDTO,
+        @Req() req
     ): Promise<PolicyValidationDTO> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${body.id}/navigation`, `${PREFIXES.POLICIES}${body.id}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.validatePolicy(body, new EntityOwner(user));
         } catch (error) {
             await InternalException(error, this.logger);
@@ -850,7 +905,7 @@ export class PolicyApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    // @UseCache()
+    @UseCache()
     @HttpCode(HttpStatus.OK)
     async getPolicyNavigation(
         @AuthUser() user: IAuthUser,
@@ -895,7 +950,7 @@ export class PolicyApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    // @UseCache()
+    @UseCache()
     @HttpCode(HttpStatus.OK)
     async getPolicyGroups(
         @AuthUser() user: IAuthUser,
@@ -1090,10 +1145,15 @@ export class PolicyApi {
     @HttpCode(HttpStatus.OK)
     async uploadPolicyData(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${body.id}/navigation`, `${PREFIXES.POLICIES}${body.id}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.uploadPolicyData(new EntityOwner(user), body);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1191,10 +1251,15 @@ export class PolicyApi {
     async uploadVirtualKeys(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.uploadVirtualKeys(new EntityOwner(user), body, policyId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1285,10 +1350,15 @@ export class PolicyApi {
     async setPolicyGroups(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<any> {
         const engineService = new PolicyEngine();
         try {
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.selectGroup(user, policyId, body?.uuid);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -1318,6 +1388,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -1368,6 +1442,10 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: BlockDTO
     })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
@@ -1384,6 +1462,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockData(user, policyId, uuid, query);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1423,6 +1502,10 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: BlockDTO
     })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
@@ -1433,12 +1516,18 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('uuid') uuid: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.setBlockData(user, policyId, uuid, body);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1478,6 +1567,10 @@ export class PolicyApi {
         description: 'Successful operation.',
         type: BlockDTO
     })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
@@ -1488,12 +1581,18 @@ export class PolicyApi {
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
         @Param('tagName') tagName: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<any> {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.setBlockDataByTag(user, policyId, tagName, body);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1544,6 +1643,7 @@ export class PolicyApi {
             const engineService = new PolicyEngine();
             return await engineService.getBlockByTagName(user, policyId, tagName);
         } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
             await InternalException(error, this.logger);
         }
     }
@@ -1578,6 +1678,10 @@ export class PolicyApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
@@ -2438,13 +2542,18 @@ export class PolicyApi {
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
-        @Body() file: ArrayBuffer
+        @Body() file: ArrayBuffer,
+        @Req() req
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.importXlsx(file, new EntityOwner(user), policyId);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2488,7 +2597,8 @@ export class PolicyApi {
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Query('policyId') policyId: string,
-        @Body() file: ArrayBuffer
+        @Body() file: ArrayBuffer,
+        @Req() req
     ): Promise<TaskDTO> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2502,6 +2612,10 @@ export class PolicyApi {
             await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: 'Unknown error: ' + error.message });
         });
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         return task;
     }
 
@@ -2622,10 +2736,15 @@ export class PolicyApi {
     async setDryRunUser(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
+        @Req() req
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         try {
             return await engineService.createVirtualUser(policyId, owner);
         } catch (error) {
@@ -2668,12 +2787,17 @@ export class PolicyApi {
     async loginDryRunUser(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
         await engineService.accessPolicy(policyId, owner, 'read');
         try {
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.loginVirtualUser(policyId, body.did, owner);
         } catch (error) {
             await InternalException(error, this.logger);
@@ -2714,7 +2838,8 @@ export class PolicyApi {
     async restartDryRun(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ) {
         const engineService = new PolicyEngine();
         const owner = new EntityOwner(user);
@@ -2722,6 +2847,10 @@ export class PolicyApi {
         if (!PolicyHelper.isDryRunMode(policy)) {
             throw new HttpException('Invalid status.', HttpStatus.FORBIDDEN)
         }
+
+        const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+        await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
         try {
             return await engineService.restartDryRun(body, owner, policyId);
         } catch (error) {
@@ -3001,10 +3130,15 @@ export class PolicyApi {
     async setMultiplePolicies(
         @AuthUser() user: IAuthUser,
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ) {
         try {
             const engineService = new PolicyEngine();
+
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await engineService.setMultiPolicy(new EntityOwner(user), policyId, body);
         } catch (error) {
             await InternalException(error, this.logger);

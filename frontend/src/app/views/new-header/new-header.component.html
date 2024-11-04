@@ -21,7 +21,7 @@
 
 <ng-template #logotype>
     <div [routerLink]="'/'" id="logotype">
-        <div alt="" id="company-logo"></div>
+        <img alt="" id="company-logo" src="/assets/images/logo.png" />
         <span [class.hidden-logotype]="menuCollapsed" id="company-name"></span>
     </div>
 </ng-template>
@@ -70,9 +70,9 @@
         </div>
 
         <div
-                [class.current]="activeLink.startsWith('/worker-tasks')"
-                [routerLink]="'/worker-tasks'"
-                class="item cursor-pointer"
+            [class.current]="activeLink.startsWith('/worker-tasks')"
+            [routerLink]="'/worker-tasks'"
+            class="item cursor-pointer"
         >
             <img alt="" src="assets/images/icons/table.svg">
             <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">

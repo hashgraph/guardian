@@ -3,11 +3,11 @@ import { ThemeService } from '../../../../services/theme.service';
 import { Theme } from '../../structures/storage/theme';
 import { ThemeRule } from '../../structures/storage/theme-rule';
 import { RegisteredService } from '../../services/registered.service';
-import { ImportFileDialog } from '../../dialogs/import-file-dialog/import-file-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NewThemeDialog } from '../../dialogs/new-theme-dialog/new-theme-dialog.component';
-import { ConfirmationDialog } from '../../policy-viewer/blocks/confirmation-dialog/confirmation-dialog.component';
 import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Settings.
@@ -56,6 +56,7 @@ export class PolicySettingsComponent implements OnInit {
     constructor(
         private registeredService: RegisteredService,
         private themeService: ThemeService,
+        private dialogService: DialogService,
         private dialog: MatDialog
     ) {
         this.roles = [];
@@ -209,16 +210,19 @@ export class PolicySettingsComponent implements OnInit {
     }
 
     public importTheme() {
-        const dialogRef = this.dialog.open(ImportFileDialog, {
-            width: '500px',
-            autoFocus: false,
-            disableClose: true,
-            data: {}
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.Theme,
+            }
         });
-        dialogRef.afterClosed().subscribe(async (arrayBuffer) => {
-            if (arrayBuffer) {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
+            if (result) {
+                const { data } = result;
                 this.loading = true;
-                this.themeService.import(arrayBuffer).subscribe((result) => {
+                this.themeService.import(data).subscribe((result) => {
                     this.themeService.addTheme(result);
                     this.themeService.saveTheme();
                     this.themes = this.themeService.getThemes();

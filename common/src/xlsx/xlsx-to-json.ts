@@ -1,6 +1,6 @@
 import { Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
-import { xlsxToArray, xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToUnit } from './models/value-converters.js';
+import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
@@ -199,7 +199,10 @@ export class XlsxToJson {
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const fieldCache = new Map<string, SchemaField>();
+
+            let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
+                const groupIndex = worksheet.getRow(row).getOutline();
                 const field: SchemaField = XlsxToJson.readField(
                     worksheet,
                     table,
@@ -207,8 +210,21 @@ export class XlsxToJson {
                     xlsxResult
                 );
                 if (field) {
-                    fields.push(field);
                     fieldCache.set(field.name, field);
+                    parents = parents.slice(0, groupIndex);
+                    parents[groupIndex] = field;
+                    if (groupIndex === 0) {
+                        fields.push(field);
+                    } else {
+                        const parent = parents[groupIndex - 1];
+                        if (parent) {
+                            if (parent.fields) {
+                                parent.fields.push(field);
+                            } else {
+                                parent.fields = [field];
+                            }
+                        }
+                    }
                 }
             }
 
@@ -241,7 +257,7 @@ export class XlsxToJson {
                 );
             }
 
-            if(schema.entity === SchemaEntity.VC || schema.entity === SchemaEntity.EVC) {
+            if (schema.entity === SchemaEntity.VC || schema.entity === SchemaEntity.EVC) {
                 fields.push({
                     name: 'policyId',
                     title: 'Policy Id',
@@ -300,9 +316,6 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
-        if (worksheet.getRow(row).getOutline()) {
-            return null;
-        }
         const field: SchemaField = {
             name: '',
             description: '',
@@ -327,12 +340,15 @@ export class XlsxToJson {
             const description = worksheet.getValue<string>(table.getCol(Dictionary.QUESTION), row);
             const required = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.REQUIRED_FIELD), row));
             const isArray = xlsxToBoolean(worksheet.getValue<string>(table.getCol(Dictionary.ALLOW_MULTIPLE_ANSWERS), row));
+            const visibility = worksheet.getValue<string>(table.getCol(Dictionary.VISIBILITY), row);
 
             field.name = name;
             field.description = description;
             field.required = required;
             field.isArray = isArray;
+            field.hidden = visibility === 'Hidden';
 
+            let typeError = false;
             const fieldType = FieldTypes.findByName(type);
             if (fieldType) {
                 field.type = fieldType?.type;
@@ -341,7 +357,7 @@ export class XlsxToJson {
                 field.unit = fieldType?.unit;
                 field.unitSystem = fieldType?.unitSystem;
                 field.customType = fieldType?.customType;
-                field.hidden = fieldType?.hidden;
+                field.hidden = field.hidden || fieldType?.hidden;
                 field.isRef = fieldType?.isRef;
                 XlsxToJson.readFieldParams(
                     worksheet,
@@ -358,6 +374,7 @@ export class XlsxToJson {
                 field.type = xlsxResult.addLink(type, hyperlink);
                 field.isRef = true;
             } else {
+                typeError = true;
                 xlsxResult.addError({
                     type: 'error',
                     text: 'Unknown field type.',
@@ -367,6 +384,39 @@ export class XlsxToJson {
                     row,
                     col: table.getCol(Dictionary.FIELD_TYPE),
                 }, field);
+            }
+
+            if (!typeError && !XlsxToJson.isAutoCalculate(type, field)) {
+                let parseType = (val) => val;
+                if (fieldType) {
+                    parseType = fieldType.pars.bind(fieldType);
+                }
+
+                const exampleValue = worksheet
+                    .getCell(table.getCol(Dictionary.ANSWER), row)
+                    .getValue<any>();
+                const example = field.isArray && !field.isRef
+                    ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
+                    : parseType(xlsxToPresetValue(field, exampleValue))
+                field.examples = example ? [example] : null;
+
+                if (table.hasCol(Dictionary.DEFAULT)) {
+                    const defaultValue = worksheet
+                        .getCell(table.getCol(Dictionary.DEFAULT), row)
+                        .getValue<any>();
+                    field.default = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, defaultValue));
+                }
+
+                if (table.hasCol(Dictionary.SUGGEST)) {
+                    const suggest = worksheet
+                        .getCell(table.getCol(Dictionary.SUGGEST), row)
+                        .getValue<any>();
+                    field.suggest = field.isArray && !field.isRef
+                        ? xlsxToPresetArray(field, suggest)?.map(parseType)
+                        : parseType(xlsxToPresetValue(field, suggest));
+                }
             }
 
             return field;
@@ -564,15 +614,10 @@ export class XlsxToJson {
         const field = fieldCache.get(path);
         try {
             if (field && !field.isRef) {
-                if (type === 'Auto-Calculate') {
+                if (XlsxToJson.isAutoCalculate(type, field)) {
                     const formulae = worksheet.getFormulae(table.getCol(Dictionary.ANSWER), row);
                     if (formulae) {
                         field.formulae = formulae;
-                    }
-                } else {
-                    const answer = worksheet.getValue<string>(table.getCol(Dictionary.ANSWER), row);
-                    if (answer) {
-                        field.examples = xlsxToArray(answer, field.isArray);
                     }
                 }
             }
@@ -653,5 +698,9 @@ export class XlsxToJson {
         } else {
             throw new Error(`Failed to parse formulae: ${formulae}.`)
         }
+    }
+
+    private static isAutoCalculate(type: string, field: SchemaField): boolean {
+        return field.hidden || type === 'Auto-Calculate';
     }
 }

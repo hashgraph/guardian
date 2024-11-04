@@ -25,6 +25,15 @@ export class VCViewerDialog {
     public toggle: boolean = true;
     public schema: any;
     public dryRun: boolean = false;
+    public getByUser: boolean = false;
+    public viewDocumentOptions = [
+        { label: 'Form View', value: true, icon: 'file' },
+        { label: 'Code View', value: false, icon: 'number' }
+    ];
+
+    public policyId?: string;
+    public documentId?: string;
+    public schemaId?: string;
 
     constructor(
         public dialogRef: DynamicDialogRef,
@@ -36,6 +45,7 @@ export class VCViewerDialog {
     ngOnInit() {
         const {
             id,
+            row,
             dryRun,
             document,
             title,
@@ -46,7 +56,15 @@ export class VCViewerDialog {
             schemaId,
             topicId,
             category,
+            getByUser
         } = this.dialogConfig.data;
+
+
+        this.policyId = row?.policyId;
+        this.documentId = row?.id;
+        this.schemaId = row?.schema;
+
+        this.getByUser = getByUser;
         this.id = id;
         this.dryRun = !!dryRun;
         this.title = title;
@@ -73,17 +91,17 @@ export class VCViewerDialog {
         this.viewDocument = (viewDocument || false) && (this.isVcDocument || this.isVpDocument);
         this.schema = schema;
 
-        this.getSubSchemes(schemaId, topicId, category)
+        this.getSubSchemes(schemaId, topicId, category);
     }
 
-    onClick(): void {
+    public onClose(): void {
         this.dialogRef.close(null);
     }
 
     getSubSchemes(id: string, topicId: string, category: string) {
-        if(id && topicId && category) {
+        if (id && topicId && category) {
             this.schemaService.getSchemaWithSubSchemas(category, id, topicId).subscribe((data) => {
-                if(data.schema) {
+                if (data.schema) {
                     const document = new Schema(data.schema).document;
 
                     this.json = document ? JSON.stringify((document), null, 4) : ''

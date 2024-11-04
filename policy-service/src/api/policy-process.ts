@@ -1,24 +1,5 @@
 import '../config.js'
-import {
-    COMMON_CONNECTION_CONFIG,
-    DataBaseHelper,
-    DatabaseServer,
-    entities,
-    Environment,
-    ExternalEventChannel,
-    IPFS,
-    LargePayloadContainer,
-    mongoForLoggingInitialization,
-    PinoLogger,
-    pinoLoggerInitialization,
-    MessageBrokerChannel,
-    MessageServer,
-    NotificationService,
-    OldSecretManager,
-    Users,
-    Wallet,
-    Workers,
-} from '@guardian/common';
+import { COMMON_CONNECTION_CONFIG, DatabaseServer, entities, Environment, ExternalEventChannel, GenerateTLSOptionsNats, IPFS, LargePayloadContainer, MessageBrokerChannel, MessageServer, mongoForLoggingInitialization, NotificationService, OldSecretManager, PinoLogger, pinoLoggerInitialization, Users, Wallet, Workers, } from '@guardian/common';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -26,7 +7,6 @@ import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import process from 'process';
 import { CommonVariables } from '../helpers/common-variables.js';
 import { PolicyEvents } from '@guardian/interfaces';
-import { GridFSBucket } from 'mongodb';
 import { SynchronizationService } from '../policy-engine/multi-policy-service/index.js';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -52,7 +32,6 @@ Promise.all([
     MikroORM.init<MongoDriver>({
         ...COMMON_CONNECTION_CONFIG,
         driverOptions: {
-            useUnifiedTopology: true,
             minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE, 10),
             maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE, 10),
             maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS, 10)
@@ -67,16 +46,19 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
     }),
     mongoForLoggingInitialization()
 ]).then(async values => {
     const [db, cn, app, loggerMongo] = values;
     app.listen();
-    DataBaseHelper.orm = db;
-    // @ts-ignore
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+
+    DatabaseServer.connectBD(db);
+
+    DatabaseServer.connectGridFS();
+
     Environment.setLocalNodeProtocol(process.env.LOCALNODE_PROTOCOL);
     Environment.setLocalNodeAddress(process.env.LOCALNODE_ADDRESS);
     Environment.setNetwork(process.env.HEDERA_NET);

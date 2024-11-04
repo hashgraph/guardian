@@ -1,19 +1,15 @@
 import { IDidObject, IVCDocument, MessageAPI, PolicyType, } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+import { DatabaseServer, DidDocument, MessageError, MessageResponse, Policy, VcDocument, VpDocument } from '@guardian/common';
+import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 /**
  * Connect to the message broker methods of working with VC, VP and DID Documents
  *
- * @param didDocumentRepository - table with DID Documents
- * @param vcDocumentRepository - table with VC Documents
- * @param vpDocumentRepository - table with VP Documents
+ * @param dataBaseServer - Data base server
  */
 export async function documentsAPI(
-    didDocumentRepository: DataBaseHelper<DidDocument>,
-    vcDocumentRepository: DataBaseHelper<VcDocument>,
-    vpDocumentRepository: DataBaseHelper<VpDocument>,
-    policyRepository: DataBaseHelper<Policy>,
+    dataBaseServer: DatabaseServer,
 ): Promise<void> {
     /**
      * Return DID Documents by DID
@@ -24,8 +20,8 @@ export async function documentsAPI(
      * @returns {IDidDocument[]} - DID Documents
      */
     ApiResponse(MessageAPI.GET_DID_DOCUMENTS, async (msg: any) => {
-        const reqObj = { where: { did: { $eq: msg.did } } };
-        const didDocuments: IDidObject[] = await didDocumentRepository.find(reqObj);
+        const reqObj = { did: { $eq: msg.did } };
+        const didDocuments: IDidObject[] = await dataBaseServer.find(DidDocument, reqObj);
         return new MessageResponse(didDocuments);
     });
 
@@ -50,10 +46,10 @@ export async function documentsAPI(
                     reqObj.type = { $eq: type }
                 }
                 Object.assign(reqObj, otherArgs);
-                const vcDocuments: IVCDocument[] = await vcDocumentRepository.find(reqObj);
+                const vcDocuments: IVCDocument[] = await dataBaseServer.find(VcDocument, reqObj);
                 return new MessageResponse(vcDocuments);
             } else {
-                const vcDocuments: IVCDocument[] = await vcDocumentRepository.findAll();
+                const vcDocuments: IVCDocument[] = await dataBaseServer.findAll(VcDocument);
                 return new MessageResponse(vcDocuments);
             }
         }
@@ -81,7 +77,7 @@ export async function documentsAPI(
                 otherOptions.offset = _pageIndex * _pageSize;
             }
             if (filters?.policyOwner) {
-                const policies = await policyRepository.find({
+                const policies = await dataBaseServer.find(Policy, {
                     owner: filters.policyOwner,
                     status: PolicyType.PUBLISH
                 }, {
@@ -89,24 +85,20 @@ export async function documentsAPI(
                 });
                 if (policies && policies.length) {
                     const policyIds = policies.map(p => p.id.toString());
-                    const [items, count] = await vpDocumentRepository.findAndCount({
-                        where: {
-                            policyId: { $in: policyIds }
-                        }
-                    }, otherOptions);
+                    const [items, count] = await dataBaseServer.findAndCount(VpDocument, { policyId: { $in: policyIds } }, otherOptions);
                     return new MessageResponse({ items, count });
                 } else {
                     return new MessageResponse({ items: [], count: 0 });
                 }
             } else {
-                const [items, count] = await vpDocumentRepository.findAndCount(filters, otherOptions);
+                const [items, count] = await dataBaseServer.findAndCount(VpDocument, filters, otherOptions);
                 return new MessageResponse({ items, count });
             }
         } else {
-            const [items, count] = await vpDocumentRepository.findAndCount(null, {
+            const [items, count] = await dataBaseServer.findAndCount(VpDocument, null, {
                 limit: 100,
                 orderBy: { createDate: 'DESC' }
-            });
+            } as FindOptions<unknown>);
             return new MessageResponse({ items, count });
         }
     });

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { IUser } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -152,21 +152,21 @@ export class UserContractConfigComponent implements OnInit {
     }
 
     viewRetireRequest(document: any) {
-        this.dialogService.open(
-            VCViewerDialog,
-            {
-                width: '850px',
-                closable: true,
-                header: 'VC',
-                styleClass: 'custom-dialog',
-                data: {
-                    id: document.id,
-                    dryRun: !!document.dryRunId,
-                    viewDocument: true,
-                    document: document.document,
-                    type: 'VC',
-                },
+        const title = `VC Document`;
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                title: title,
+                row: document,
+                id: document.id,
+                dryRun: !!document.dryRunId,
+                viewDocument: true,
+                document: document.document,
+                type: 'VC',
             }
-        );
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 }

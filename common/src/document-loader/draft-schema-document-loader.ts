@@ -1,6 +1,5 @@
 import { ISchema } from '@guardian/interfaces';
 import { Schema } from '../entity/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { LocalSchemaDocumentLoader } from './local-schema-document-loader.js';
 
 /**
@@ -12,7 +11,7 @@ export class DraftSchemaDocumentLoader extends LocalSchemaDocumentLoader {
         iri: string
     ): Promise<ISchema[]> {
         try {
-            return await new DataBaseHelper(Schema).find({ iri });
+            return await this.dataBaseServer.find(Schema, { iri });
         } catch (error) {
             return null;
         }

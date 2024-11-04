@@ -130,7 +130,7 @@ export class RegisteredService {
 
     private update(): void {
         for (const type of this.types) {
-            const name = this.blockName[type] || type;
+            const name = this.blockName[type] || type || '';
             const search = (name + type).toLowerCase();
             this.list.push({
                 type: type,

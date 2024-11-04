@@ -25,6 +25,10 @@ export class AuthService {
         return this.http.post<string>(`${this.url}/login`, { username, password });
     }
 
+    public changePassword(username: string, oldPassword: string, newPassword: string): Observable<any> {
+        return this.http.post<string>(`${this.url}/change-password`, { username, oldPassword, newPassword });
+    }
+
     public updateAccessToken(): Observable<any> {
         return this.http.post<any>(`${this.url}/access-token`, { refreshToken: this.getRefreshToken() }).pipe(
             map(result => {

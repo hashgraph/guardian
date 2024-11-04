@@ -73,15 +73,22 @@ a.go-back-link mat-icon {
 }
 
 .back-button {
-    ::ng-deep {
-        .p-button {
-            background: none !important;
-            color: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #fff;
-            &.p-button-outlined:enabled:hover {
-               color: #d5d5d5;
-            }
+    background: none !important;
+    color: #ffffff !important;
+    border: 1px solid #fff !important;
+
+    svg {
+        transition: all 0.25s ease-in-out;
+        fill: #ffffff !important;
+        color: #ffffff !important;
+    }
+
+    &:hover {
+        color: #d5d5d5 !important;
+
+        svg {
+            fill: #d5d5d5 !important;
+            color: #d5d5d5 !important;
         }
     }
 }

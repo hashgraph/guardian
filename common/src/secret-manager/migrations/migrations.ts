@@ -8,6 +8,7 @@ import { SecretManager } from '../secret-manager.js';
 import { Wallet } from '../../wallet/index.js';
 import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'process';
+import { DatabaseServer } from '../../database-modules';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')
 // const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
@@ -133,7 +134,6 @@ async function migrate() {
       'dist/secret-manager/migrations/vault-account.js'
     ],
       driverOptions: {
-        useUnifiedTopology: true,
           minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MIN_POOL_SIZE, RADIX),
           maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MAX_POOL_SIZE, RADIX),
           maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MAX_IDLE_TIME_MS, RADIX),
@@ -141,7 +141,8 @@ async function migrate() {
       ensureIndexes: true,
   })
 
-  DataBaseHelper.orm = db;
+  DatabaseServer.connectBD(db);
+
   const dbSecret = new DataBaseHelper(WalletAccount)
 
   // write IPFS API KEY to Vault

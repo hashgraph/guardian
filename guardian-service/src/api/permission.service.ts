@@ -1,6 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
-    DataBaseHelper,
     GuardianRoleMessage,
     IAuthUser,
     MessageAction,
@@ -18,7 +17,7 @@ import {
     KeyType,
     KEY_TYPE_KEY_ENTITY,
     KeyEntity,
-    Token,
+    Token, DatabaseServer,
 } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from './helpers/index.js';
@@ -29,7 +28,9 @@ async function getSchema(
     owner: IOwner,
     messageServer: MessageServer
 ): Promise<SchemaCollection> {
-    let schema = await new DataBaseHelper(SchemaCollection).findOne({
+    const dataBaseServer = new DatabaseServer();
+
+    let schema = await dataBaseServer.findOne(SchemaCollection, {
         entity,
         readonly: true,
         topicId: messageServer.getTopic()
@@ -37,7 +38,7 @@ async function getSchema(
     if (schema) {
         return schema;
     } else {
-        schema = await new DataBaseHelper(SchemaCollection).findOne({
+        schema = await dataBaseServer.findOne(SchemaCollection, {
             entity,
             system: true,
             active: true,
@@ -52,7 +53,7 @@ async function getSchema(
                 MessageAction.PublishSystemSchema,
                 emptyNotifier()
             );
-            const result = await new DataBaseHelper(SchemaCollection).save(item);
+            const result = await dataBaseServer.save(SchemaCollection, item);
             return result;
         } else {
             throw new Error(`Schema (${entity}) not found`);
@@ -86,7 +87,7 @@ async function createVc(
 }
 
 async function createMessageServer(owner: IOwner): Promise<MessageServer> {
-    const row = await new DataBaseHelper(Topic).findOne({
+    const row = await new DatabaseServer().findOne(Topic, {
         owner: owner.owner,
         type: TopicType.UserTopic
     });
@@ -120,7 +121,8 @@ export async function serDefaultRole(user: IAuthUser, owner: IOwner): Promise<an
     message.setRole(data);
     message.setDocument(document);
     await messageServer.sendMessage(message);
-    const result = await new DataBaseHelper(VcDocumentCollection).save({
+
+    const result = await new DatabaseServer().save(VcDocumentCollection, {
         hash: message.hash,
         owner: owner.owner,
         creator: owner.creator,
@@ -158,7 +160,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 message.setRole(data);
                 message.setDocument(document);
                 await messageServer.sendMessage(message);
-                const result = await new DataBaseHelper(VcDocumentCollection).save({
+                const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
                     creator: owner.creator,
@@ -194,7 +196,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 message.setRole(data);
                 message.setDocument(document);
                 await messageServer.sendMessage(message);
-                const result = await new DataBaseHelper(VcDocumentCollection).save({
+                const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
                     creator: owner.creator,
@@ -230,7 +232,7 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                 message.setRole(data);
                 message.setDocument(document);
                 await messageServer.sendMessage(message);
-                const result = await new DataBaseHelper(VcDocumentCollection).save({
+                const result = await new DatabaseServer().save(VcDocumentCollection, {
                     hash: message.hash,
                     owner: owner.owner,
                     creator: owner.creator,
@@ -271,6 +273,8 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                     return new MessageResponse(false);
                 }
 
+                const dataBaseServer = new DatabaseServer();
+
                 switch (entity) {
                     case KeyEntity.KEY:
                         return new MessageResponse(did === entityId);
@@ -280,14 +284,14 @@ export async function permissionAPI(logger: PinoLogger): Promise<void> {
                         );
                     case KeyEntity.TOKEN:
                         return new MessageResponse(
-                            await new DataBaseHelper(Token).count({
+                            await dataBaseServer.count(Token, {
                                 owner: did,
                                 tokenId: entityId
                             }) > 0
                         );
                     case KeyEntity.TOPIC:
                         return new MessageResponse(
-                            await new DataBaseHelper(Topic).count({
+                            await dataBaseServer.count(Topic, {
                                 owner: did,
                                 topicId: entityId
                             }) > 0

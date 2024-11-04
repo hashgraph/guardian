@@ -27,24 +27,20 @@
 
 <ng-template #userInfo>
     <div class="user-info-container">
+        <div class="item-header">Account</div>
         <div class="item">
-            <span>DID Document</span>
-            <div (click)="openDIDDocument(profile!.didDocument, 'DID')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
-                <span>View document</span>
+            <span>User Name</span>
+            <span class="value-text">{{ profile!.username }}</span>
+        </div>
+        <div class="item">
+            <span>Password</span>
+            <div (click)="changePassword(profile)" class="view-document-button">
+                <span>Change Password</span>
             </div>
         </div>
-        <div class="item">
-            <span>VC Document</span>
-            <div (click)="openVCDocument(profile!.vcDocument, 'VC')" class="view-document-button">
-                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
-                <span>View document</span>
-            </div>
-        </div>
-        <div class="item">
-            <span>Balance</span>
-            <span>{{ balance }}</span>
-        </div>
+
+
+        <div class="item-header">Hedera</div>
         <div class="item">
             <span>Hedera Account ID</span>
             <div>
@@ -52,10 +48,6 @@
                     {{ profile!.hederaAccountId }}
                 </hedera-explorer>
             </div>
-        </div>
-        <div class="item">
-            <span>DID</span>
-            <span>{{ profile!.did }}</span>
         </div>
         <div *ngIf="profile!.topicId" class="item">
             <span>User Topic</span>
@@ -73,6 +65,31 @@
                 </hedera-explorer>
             </div>
         </div>
+        <div class="item">
+            <span>Balance</span>
+            <span class="value-text">{{ balance }}</span>
+        </div>
+
+
+        <div class="item-header">Documents</div>
+        <div class="item">
+            <span>DID</span>
+            <span class="value-text">{{ profile!.did }}</span>
+        </div>
+        <div class="item">
+            <span>DID Document</span>
+            <div (click)="openDIDDocument(profile!.didDocument, 'DID Document')" class="view-document-button">
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                <span>View document</span>
+            </div>
+        </div>
+        <div class="item">
+            <span>VC Document</span>
+            <div (click)="openVCDocument(profile!.vcDocument, 'VC Document')" class="view-document-button">
+                <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                <span>View document</span>
+            </div>
+        </div>
     </div>
 </ng-template>
 
@@ -86,7 +103,7 @@
         <div *ngIf="!isRestore && step === 'HEDERA'" class="finish-setup-title">Hedera Account</div>
         <div *ngIf="!isRestore && step === 'DID'" class="finish-setup-title">DID Document</div>
         <div *ngIf="!isRestore && step === 'DID_KEYS'" class="finish-setup-title">DID Document signing keys</div>
-        <div *ngIf="!isRestore && step === 'VC'" class="finish-setup-title">VC Document</div>
+        <div *ngIf="!isRestore && step === 'VC'" class="finish-setup-title">Standard Registry Details</div>
         <div *ngIf="isRestore" class="finish-setup-title">Restore Data</div>
 
         <div class="finish-setup-form-container">
@@ -206,7 +223,7 @@
                                         [disabled]="!hederaForm.valid"
                                         class="generate-btn"
                                         label="Load topics"
-                                        styleClass="p-button-outlined"
+                                        [outlined]=true
                                 >
                                     <i class="pi pi-replay"></i>
                                 </p-button>
@@ -278,7 +295,7 @@
                         (click)="randomKey()"
                         class="generate-btn"
                         label="Generate"
-                        styleClass="p-button-outlined"
+                        [outlined]=true
                 >
                 </p-button>
                 <p-button
@@ -286,7 +303,7 @@
                         [disabled]="!hederaForm.valid"
                         class="generate-btn"
                         label="Restore data"
-                        styleClass="p-button-outlined"
+                        [outlined]=true
                 >
                     <i class="pi pi-replay"></i>
                 </p-button>
@@ -305,7 +322,7 @@
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                     >
                     </p-button>
                     <p-button
@@ -332,7 +349,7 @@
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                     >
                     </p-button>
                     <p-button
@@ -350,7 +367,7 @@
                         (click)="onPrevStep()"
                         class="generate-btn"
                         label="Prev"
-                        styleClass="p-button-outlined"
+                        [outlined]=true
                 >
                 </p-button>
                 <p-button
@@ -368,7 +385,7 @@
                             (click)="onPrevStep()"
                             class="generate-btn"
                             label="Prev"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                     >
                     </p-button>
                     <p-button

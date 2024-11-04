@@ -1,6 +1,6 @@
 import {
-    FormControl,
-    FormGroup,
+    UntypedFormControl,
+    UntypedFormGroup,
     ValidationErrors,
     ValidatorFn,
     Validators
@@ -14,10 +14,10 @@ export class ConditionControl {
 
     public thenControls: FieldControl[];
     public elseControls: FieldControl[];
-    public readonly thenFieldControls: FormGroup;
-    public readonly elseFieldControls: FormGroup;
-    public readonly field: FormControl;
-    public readonly fieldValue: FormControl;
+    public readonly thenFieldControls: UntypedFormGroup;
+    public readonly elseFieldControls: UntypedFormGroup;
+    public readonly field: UntypedFormControl;
+    public readonly fieldValue: UntypedFormControl;
     public changeEvents: any[] | null = null;
     public fieldChange: Subscription | null = null;
 
@@ -27,20 +27,20 @@ export class ConditionControl {
 
         this.thenControls = [];
         this.elseControls = [];
-        this.thenFieldControls = new FormGroup({});
-        this.elseFieldControls = new FormGroup({});
+        this.thenFieldControls = new UntypedFormGroup({});
+        this.elseFieldControls = new UntypedFormGroup({});
 
-        this.field = new FormControl(field, Validators.required);
-        this.fieldValue = new FormControl(fieldValue, Validators.required);
+        this.field = new UntypedFormControl(field, Validators.required);
+        this.fieldValue = new UntypedFormControl(fieldValue, Validators.required);
     }
 
     public get fieldControl(): FieldControl | undefined {
         return this.field?.value
     }
 
-    public createGroup(): FormGroup {
-        return new FormGroup({
-            ifCondition: new FormGroup({
+    public createGroup(): UntypedFormGroup {
+        return new UntypedFormGroup({
+            ifCondition: new UntypedFormGroup({
                 field: this.field,
                 fieldValue: this.fieldValue
             }),
