@@ -419,8 +419,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public ifFieldVisible(item: IFieldControl<any>): boolean {
-        const comment = JSON.parse(item.comment as string);
-        return !item.hide && !item.hidden && !comment.autocalculate;
+        return !item.hide && !item.hidden && !item.autocalculate;
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {
@@ -942,11 +941,24 @@ export class SchemaFormComponent implements OnInit {
         return JSON.stringify(value, null, 4);
     }
 
+    private getComment(field: SchemaField) {
+        try {
+            if (typeof field.comment === 'string') {
+                const comment = JSON.parse(field.comment);
+                return comment;
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
     private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
+        const comment = this.getComment(field);
         const item: IFieldControl<any> = {
             ...field,
             hide: false,
-            autocalculate: false,
+            autocalculate: !!comment?.autocalculate,
             id: GenerateUUIDv4(),
             field,
             path: field.path || '',
