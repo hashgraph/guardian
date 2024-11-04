@@ -2,7 +2,7 @@ import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';
-import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, Migration, Utils, } from '@indexer/common';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
 import { SearchService } from './api/search.service.js';
@@ -12,7 +12,6 @@ import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
 import { SynchronizationAnalytics, SynchronizationContracts, SynchronizationDid, SynchronizationModules, SynchronizationPolicy, SynchronizationProjects, SynchronizationRegistries, SynchronizationRoles, SynchronizationSchemas, SynchronizationTools, SynchronizationTopics, SynchronizationVCs, SynchronizationVPs, } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
-import { GenerateTLSOptionsNats } from '@guardian/common';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
