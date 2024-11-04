@@ -1,7 +1,7 @@
 import { FilesManager } from './helpers/files-manager-helper.js';
-import { FaissStore } from 'langchain/vectorstores/faiss';
+import { FaissStore } from '@langchain/community/vectorstores/faiss';
 import { RetrievalQAChain } from 'langchain/chains';
-import { OpenAI } from 'langchain/llms/openai';
+import { OpenAI } from '@langchain/openai';
 import { OpenAIConnect } from './helpers/openai-helper.js';
 import { VectorStorage } from './helpers/vector-storage-helper.js';
 import { AISuggestionsDB } from './helpers/ai-suggestions-db.js';
