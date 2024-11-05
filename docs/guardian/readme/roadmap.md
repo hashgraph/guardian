@@ -732,7 +732,7 @@ The ability to set parameters, which may not be public on Verifiable Credential 
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4025](https://github.com/hashgraph/guardian/issues/4025)
 
-Documentation Link:&#x20;
+Documentation Link: https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-rules
 
 ### Verify and Fix the features that got affected by Mirror Node changes
 

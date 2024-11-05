@@ -8,8 +8,8 @@
 #####  Project Files  ######
 ############################
 
-/src/**                                         @hashgraph/developer-advocates
-/__tests__/**                                   @hashgraph/developer-advocates
+*/src/**                                         @hashgraph/developer-advocates @hashgraph/envision-blockchain-hedera
+*/tests/**                                       @hashgraph/developer-advocates @hashgraph/envision-blockchain-hedera
 
 
 #########################

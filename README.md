@@ -53,6 +53,7 @@ The following steps need to be executed in order to start Guardian using docker:
 4. Setup IPFS
 5. Build and launch with Docker
 6. Browse to http://localhost:3000
+7. For increased security remove credentials from .env file
 
 Here the steps description follows:
 
@@ -64,8 +65,7 @@ Here the steps description follows:
 
 #### 2. Configure project level .env file.
 
-The main configuration file that needs to be provided to the Guardian system is the `.env` file.
-Cut and paste the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
+The main configuration file that needs to be provided to the Guardian system is the .env file. Note that these files contain sensitive configuration such as keys and access credentials which are only used at the initial start of Guardian. For increased security it is recommended to disable inbound network access until after the first run of Guardian, when the credentials configuration has been removed from .env file (see p8 below).
 
 For this example purpose let's name the Guardian platform as "develop"
 
@@ -164,6 +164,10 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 > **_NOTE:_**  You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 
 > **_NOTE:_**  for any other GUARDIAN\_ENV name of your choice just copy and paste the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
+
+##### 3.2. Setting up JWT keys in /.env file
+
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
 
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 
@@ -280,6 +284,10 @@ for other examples go to:
 * [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop)
 * [Steps to deploy Guardian using a specific Environment ( QA)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa)
 * [Steps to deploy Guardian using default Environment](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment)
+
+#### 8. For increased security remove credentials from .env file and enable network access
+
+On first state the credentials from .env file are copied into the secure storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
 
 
 ## Manual installation

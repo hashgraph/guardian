@@ -49,7 +49,7 @@
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <input [readonly]="true" [value]="item.value | date: 'mediumTime'" class="p-field-input" pInputText>
+                        <input [readonly]="true" [value]="item.value" class="p-field-input" pInputText>
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
@@ -137,7 +137,7 @@
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <input [readonly]="true" [value]="listItem.value | date: 'mediumTime'" class="p-field-input" pInputText>
+                                <input [readonly]="true" [value]="listItem.value" class="p-field-input" pInputText>
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">

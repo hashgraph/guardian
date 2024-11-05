@@ -360,6 +360,7 @@ export class InterfaceDocumentsSource {
                 aggregateMethod: 'push',
                 nameFilter: MAP_DOCUMENT_AGGREGATION_FILTERS.PAGINATION,
                 itemsPerPage,
+
                 page
             });
         }

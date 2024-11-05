@@ -5,6 +5,14 @@ import { SchemaCondition } from '../index.js';
  */
 export interface SchemaField {
     /**
+     * Expression
+     */
+    expression?: string;
+    /**
+     * Autocalculate type
+     */
+    autocalculate?: boolean;
+    /**
      * Name
      */
     name: string;

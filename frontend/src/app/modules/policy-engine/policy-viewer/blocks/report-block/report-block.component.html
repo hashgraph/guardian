@@ -304,9 +304,16 @@
 
             <div class="container">
                 <div (click)="onScrollButtonPress(scrollContainer, -150)" class="scroll-right">
+<<<<<<< HEAD
                     <!--                    <mat-icon>chevron_left</mat-icon>-->
 
                     <i class="pi pi-chevron-left"></i>
+=======
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-font">
+                    </svg-icon>
+>>>>>>> develop
                 </div>
                 <div
                     #scrollContainer
@@ -442,19 +449,18 @@
                                             "
                                             class="multiple-documents-count"
                                         >
+
                                             <!--                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left-->
                                             <!--                                            </mat-icon>-->
 
-                                            <i class="pi pi-chevron-left"
-                                               (click)="onPrevDocumentClick($event, item, document)"></i>
-                                            {{ item.activeDocumentIndex }} in
-                                            {{ item.document.length }}
+                                            <i class="pi pi-chevron-left" (click)="onPrevDocumentClick($event, item, document)"></i>
+
+                                            {{ item.activeDocumentIndex }} in {{ item.document.length }}
                                             <!--                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">-->
                                             <!--                                                chevron_right-->
                                             <!--                                            </mat-icon>-->
 
-                                            <i class="pi pi-chevron-right"
-                                               (click)="onNextDocumentClick($event, item, document)"></i>
+                                            <i class="pi pi-chevron-right" (click)="onNextDocumentClick($event, item, document)"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -488,9 +494,16 @@
                     (click)="onScrollButtonPress(scrollContainer, 150)"
                     class="scroll-right"
                 >
+<<<<<<< HEAD
                     <!--                    <mat-icon>chevron_right</mat-icon>-->
 
                     <i class="pi pi-chevron-right"></i>
+=======
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/right-arrow.svg"
+                        svgClass="icon-color-font">
+                    </svg-icon>
+>>>>>>> develop
                 </div>
             </div>
             <div style="height: 64px;"></div>
