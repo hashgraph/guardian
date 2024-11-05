@@ -138,7 +138,7 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
    - As a second example: to test the new release change the HEDERA_NET to "testnet". This is the complete configuration:
 
-   Set the name of the Guardian platform to whatever descripting name in the `.env` file
+   Set the name of the Guardian platform to whatever description name in the `.env` file
 
    ```shell
       GUARDIAN_ENV="testupgrading"
