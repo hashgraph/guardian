@@ -37,11 +37,11 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
         let newBrandingJSON: Branding[];
         if (!brandingJSON.length) {
             const initialBranding = JSON.stringify({
-                'headerColor': '#000',
+                'headerColor': '#000000',
                 'primaryColor': '#4169E2',
                 'companyName': 'Guardian',
                 'companyLogoUrl': '/assets/images/logo.png',
-                'loginBannerUrl': 'bg.jpg',
+                'loginBannerUrl': '/assets/bg.jpg',
                 'faviconUrl': 'favicon.ico',
                 termsAndConditions
             });

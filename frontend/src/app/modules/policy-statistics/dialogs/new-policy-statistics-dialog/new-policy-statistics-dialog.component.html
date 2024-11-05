@@ -1,6 +1,6 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">Create New</div>
+        <div class="header-text">{{title}}</div>
         <div *ngIf="policy" class="header-item">{{policy.name}}</div>
     </div>
     <div class="header-icon" (click)="onClose()">
@@ -16,11 +16,11 @@
         <form [formGroup]="dataForm">
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">* Name</label>
-                <input formControlName="name" id="name" pInputText type="text"/>
+                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
             </div>
             <div class="guardian-input-container">
                 <label class="form-label" htmlFor="version">Description</label>
-                <input formControlName="description" id="description" pInputText type="text"/>
+                <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
             </div>
 
             <div class="guardian-input-container">
@@ -37,10 +37,6 @@
                         <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
                             <span class="guardian-dropdown-label">Policy</span> 
                             <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
-                        </div>
-                        <div *ngIf="!currentPolicy || !currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
-                            <span class="guardian-dropdown-label"></span> 
-                            <span class="guardian-dropdown-item"></span>
                         </div>
                     </ng-template>
                     <ng-template let-policy pTemplate="item">
@@ -60,7 +56,7 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div class="cancel-button">
+        <div class="dialog-button">
             <button 
                 (click)="onClose()" 
                 class="guardian-button guardian-button-secondary">Close</button>
@@ -69,7 +65,7 @@
             <button 
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="dataForm.invalid">Create</button>
+                [disabled]="dataForm.invalid">{{action}}</button>
         </div>
     </div>
 </div>

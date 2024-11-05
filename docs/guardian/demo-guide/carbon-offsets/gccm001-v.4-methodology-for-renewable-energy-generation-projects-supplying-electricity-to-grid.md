@@ -86,7 +86,7 @@ The workflow outlined in this policy replicates the procedural steps required fo
 
 ## Policy Workflow <a href="#toc705007519" id="toc705007519"></a>
 
-![](../../../.gitbook/assets/1.png)
+![](<../../../.gitbook/assets/1 (1).png>)
 
 ## Policy Import <a href="#toc2064975104" id="toc2064975104"></a>
 
@@ -156,59 +156,59 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
 
-![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/2 (1).png>)
 
 2. Any tools used within the policy can be seen in the policy workflow blocks.
 
-![](../../../.gitbook/assets/3.png)
+![](<../../../.gitbook/assets/3 (1).png>)
 
 3. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.
 
-![](../../../.gitbook/assets/4.png)
+![](<../../../.gitbook/assets/4 (1).png>)
 
-![](../../../.gitbook/assets/5.png)
+![](<../../../.gitbook/assets/5 (1).png>)
 
 4. Create three new user accounts and assign each one a role: Project Owner, Verifier, and Steering Committee. Ensure that all user registration forms are completed.
 
-![](../../../.gitbook/assets/6.png)
+![](<../../../.gitbook/assets/6 (1).png>)
 
-![](../../../.gitbook/assets/7.png)
+![](<../../../.gitbook/assets/7 (1).png>)
 
-![](../../../.gitbook/assets/8.png)
+![](<../../../.gitbook/assets/8 (1).png>)
 
-![](../../../.gitbook/assets/9.png)
+![](<../../../.gitbook/assets/9 (1).png>)
 
-![](../../../.gitbook/assets/10.png)
+![](<../../../.gitbook/assets/10 (1).png>)
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (1).png>)
 
-![](../../../.gitbook/assets/12.png)
+![](<../../../.gitbook/assets/12 (1).png>)
 
 5. Log in to the administrator account to review and approve the Project Owner and Verifier accounts. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.
 
-![](../../../.gitbook/assets/13.png)
+![](<../../../.gitbook/assets/13 (1).png>)
 
-![](../../../.gitbook/assets/14.png)
+![](<../../../.gitbook/assets/14 (1).png>)
 
 6. The Project Owner can click 'Create Project' to submit the Project Submission Form.
 
-![](../../../.gitbook/assets/15.png)
+![](<../../../.gitbook/assets/15 (1).png>)
 
-![](../../../.gitbook/assets/16.png)
+![](<../../../.gitbook/assets/16 (1).png>)
 
 7. The Project Owner can also submit an Investment Analysis, though this is optional.
 
-![](../../../.gitbook/assets/17.png)
+![](<../../../.gitbook/assets/17 (1).png>)
 
 8. Return to the administrator account to review the Project Submission Form for completeness and assign a submission number after approving it.
 
-![](../../../.gitbook/assets/18.png)
+![](<../../../.gitbook/assets/18 (1).png>)
 
-![](../../../.gitbook/assets/19.png)
+![](<../../../.gitbook/assets/19 (1).png>)
 
 9. Log in to the Project Owner account and assign a Verifier to the project for third party verification.
 
-<figure><img src="../../../.gitbook/assets/20.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/20 (1).png" alt=""><figcaption></figcaption></figure>
 
 10. Using the assigned Verifier account, they can now complete and submit the Project Verification Report.
 

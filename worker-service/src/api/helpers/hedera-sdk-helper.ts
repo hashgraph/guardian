@@ -50,7 +50,7 @@ import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode,
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
-import { FireblocksHelper } from './fireblocks-helper';
+import { FireblocksHelper } from './fireblocks-helper.js';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;

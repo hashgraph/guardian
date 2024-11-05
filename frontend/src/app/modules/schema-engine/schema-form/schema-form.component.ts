@@ -1,6 +1,6 @@
 import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
@@ -11,6 +11,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
+import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -47,6 +48,44 @@ enum ErrorArrayMessageByFieldType {
     Other = "Please make sure all fields contain a valid value"
 };
 
+class IButton {
+    id: string;
+    visible: () => boolean;
+    text: string;
+    class: string;
+    type: string;
+    fn: () => void;
+}
+
+interface IFieldControl<T extends UntypedFormControl | UntypedFormGroup | UntypedFormArray> extends SchemaField {
+    id: string;
+    hide: boolean;
+    field: SchemaField;
+    path: string;
+    fullPath: string;
+    control: T;
+    preset?: any;
+    isPreset?: boolean;
+    fileUploading?: boolean;
+    enumValues?: any;
+    displayRequired?: boolean;
+    readonly?: boolean;
+    list?: IFieldIndexControl<any>[];
+    open: boolean;
+    autocalculate: boolean;
+}
+
+interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
+    id: string;
+    name: string;
+    preset: any,
+    index: string;
+    index2: string;
+    control: T;
+    fileUploading?: boolean;
+    open: boolean
+}
+
 /**
  * Form built by schema
  */
@@ -56,14 +95,14 @@ enum ErrorArrayMessageByFieldType {
     styleUrls: ['./schema-form.component.scss'],
     providers: [
         { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
+        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
     ]
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
     @Input('readonly-fields') readonly?: any;
     @Input('schema') schema!: Schema;
-    @Input('fields') schemaFields!: SchemaField[];
+    @Input('fields') schemaFields?: SchemaField[];
     @Input('formGroup') group!: UntypedFormGroup;
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('conditions') conditions: any = null;
@@ -78,20 +117,86 @@ export class SchemaFormComponent implements OnInit {
     @Input() comesFromDialog: boolean = false;
     @Input() dryRun?: boolean = false;
     @Input() policyId?: string = '';
-
+    @Input() rules?: SchemaRuleValidateResult;
+    @Input() paginationHidden: boolean = true;
     @Input() isFormForFinishSetup: boolean = false;
 
     @Output('change') change = new EventEmitter<Schema | null>();
     @Output('destroy') destroy = new EventEmitter<void>();
     @Output() cancelBtnEvent = new EventEmitter<boolean>();
-    @Output() submitBtnEvent = new EventEmitter<boolean>();
+    @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean>();
+    @Output('buttons') buttons = new EventEmitter<any>();
 
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public options: UntypedFormGroup | undefined;
-    public fields: any[] | undefined = [];
+    public fields: IFieldControl<any>[] | undefined = [];
     public conditionFields: SchemaField[] = [];
     public isShown: boolean[] = [true];
     public currentIndex: number = 0;
+    public iri?: string;
+
+    public buttonsConfig: IButton[] = [
+        {
+            id: 'cancel',
+            visible: () => {
+                if (!this.fields || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex === 0 && !this.cancelHidden;
+            },
+            text: this.cancelText,
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.onCancelBtnClick();
+            },
+        },
+        {
+            id: 'prev',
+            visible: () => {
+                if (!this.fields || this.isChildSchema) {
+                    return false;
+                }
+                return this.currentIndex !== 0;
+            },
+            text: 'Previous',
+            class: 'p-button-outlined',
+            type: 'secondary',
+            fn: () => {
+                this.getPrevShownFields(this.fields);
+            },
+        },
+        {
+            id: 'next',
+            visible: () => {
+                if (!this.fields || this.isChildSchema) {
+                    return false;
+                }
+                return !this.isShown[this.fields.length - 1];
+            },
+            text: 'Next',
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.getNextShownFields(this.fields);
+            },
+        },
+        {
+            id: 'submit',
+            visible: () => {
+                if (!this.fields || this.isChildSchema) {
+                    return false;
+                }
+                return !!this.isShown[this.fields.length - 1] && !this.submitHidden;
+            },
+            text: this.submitText,
+            class: 'p-button',
+            type: 'primary',
+            fn: () => {
+                this.onSubmitBtnClick(this.fields);
+            },
+        }
+    ]
 
     private _patternByNumberType: any = {
         number: /^-?\d*(\.\d+)?$/,
@@ -107,7 +212,43 @@ export class SchemaFormComponent implements OnInit {
     ngOnInit(): void {
     }
 
-    ngOnChanges() {
+    ngOnChanges(changes: SimpleChanges) {
+        if (
+            changes.schema ||
+            changes.schemaFields ||
+            changes.hide ||
+            changes.readonly ||
+            changes.group ||
+            changes.conditions ||
+            changes.presetDocument
+        ) {
+            this.buildFields();
+        }
+        if (changes.rules && this.rules) {
+            for (const value of Object.values(this.rules)) {
+                if (value.status === 'Failure' || value.status === 'Error') {
+                    value.tooltip = 'Failure: ' + value.rules
+                        .filter((r) => r.status === 'Failure' || r.status === 'Error')
+                        .map((r) => r.name)
+                        .join(', ');
+                } else {
+                    value.tooltip = 'Success: ' + value.rules
+                        .filter((r) => r.status === 'Success')
+                        .map((r) => r.name)
+                        .join(', ');
+                }
+
+            }
+        }
+    }
+
+    ngOnDestroy() {
+        this.destroy.emit();
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
+    private buildFields() {
         let schemaFields: SchemaField[] | undefined = undefined;
 
         if (this.schema) {
@@ -116,6 +257,8 @@ export class SchemaFormComponent implements OnInit {
             if (!this.conditions) {
                 this.conditions = this.schema.conditions;
             }
+
+            this.iri = this.schema.iri;
         }
 
         if (this.schemaFields) {
@@ -147,12 +290,29 @@ export class SchemaFormComponent implements OnInit {
         }
 
         this.update(schemaFields);
+        this.updateButton();
     }
 
-    ngOnDestroy() {
-        this.destroy.emit();
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();
+    private createControl(item: IFieldControl<any>, preset: any): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        const validators = this.getValidators(item);
+        const value = (preset === null || preset === undefined) ? undefined : preset;
+        return new UntypedFormControl(value, validators);
+    }
+
+    private createArrayControl(): UntypedFormArray {
+        return new UntypedFormArray([]);
+    }
+
+    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        if (item.customType === 'geo' || item.customType === 'sentinel') {
+            return new UntypedFormControl({})
+        } else {
+            return new UntypedFormGroup({});
+        }
+    }
+
+    private updateButton() {
+        this.buttons.emit(this.buttonsConfig);
     }
 
     private update(schemaFields?: SchemaField[]) {
@@ -198,9 +358,8 @@ export class SchemaFormComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
-    public addGroup(item: any) {
-        item.control =
-            item.customType === ('geo' || 'sentinel') ? new UntypedFormControl({}) : new UntypedFormGroup({});
+    public addGroup(item: IFieldControl<any>) {
+        item.control = this.createSubSchemaControl(item);
         this.options?.addControl(item.name, item.control);
         this.change.emit();
         this.changeDetectorRef.detectChanges();
@@ -259,166 +418,73 @@ export class SchemaFormComponent implements OnInit {
         input.click();
     }
 
-    private createFieldControl(field: SchemaField, preset?: any): any {
-        const item: any = {
-            ...field,
-            hide: false,
-            id: GenerateUUIDv4(),
-            field,
-        }
-
-        item.preset = field.default;
-        if (preset) {
-            item.isPreset = true;
-            item.preset = preset[field.name];
-        }
-
-        if (!field.isArray && !field.isRef) {
-            item.fileUploading = false;
-            const validators = this.getValidators(item);
-            item.control = new UntypedFormControl(item.preset === null || item.preset === undefined ? "" : item.preset, validators);
-            if (field.remoteLink) {
-                item.fileUploading = true;
-                this.ipfs
-                    .getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
-            }
-            if (field.enum) {
-                item.enumValues = field.enum;
-            }
-            this.postFormat(item, item.control);
-        }
-
-        if (!field.isArray && field.isRef) {
-            item.fields = field.fields;
-            item.displayRequired = item.fields.some((refField: any) => refField.required);
-            if (field.required || item.preset) {
-                item.control =
-                    item.customType === ('geo' || 'sentinel')
-                        ? new UntypedFormControl({})
-                        : new UntypedFormGroup({});
-            }
-        }
-
-        if (field.isArray && !field.isRef) {
-            item.control = new UntypedFormArray([]);
-            item.list = [];
-            if (field.remoteLink) {
-                item.fileUploading = true;
-                this.ipfs
-                    .getJsonFileByLink(field.remoteLink)
-                    .then((res: any) => {
-                        item.enumValues = res.enum;
-                    })
-                    .finally(() => item.fileUploading = false);
-            }
-            if (field.enum) {
-                item.enumValues = field.enum;
-            }
-            if (item.preset && item.preset.length) {
-                for (let index = 0; index < item.preset.length; index++) {
-                    const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);
-                    item.list.push(listItem);
-                    item.control.push(listItem.control);
-                }
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            } else if (field.required) {
-                const listItem = this.createListControl(item);
-                item.list.push(listItem);
-                item.control.push(listItem.control);
-
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            }
-        }
-
-        if (field.isArray && field.isRef) {
-            item.control = new UntypedFormArray([]);
-            item.list = [];
-            item.fields = field.fields;
-            if (item.preset && item.preset.length) {
-                for (let index = 0; index < item.preset.length; index++) {
-                    const preset = item.preset[index];
-                    const listItem = this.createListControl(item, preset);//todo
-                    item.list.push(listItem);
-                    item.control.push(listItem.control);
-                }
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            } else if (field.required) {
-                const listItem = this.createListControl(item);//todo
-                item.list.push(listItem);
-                item.control.push(listItem.control);
-
-                this.options?.updateValueAndValidity();
-                this.change.emit();
-            }
-        }
-        if (
-            this.readonly &&
-            this.readonly.find(
-                (readonlyItem: any) => readonlyItem.name === field.name
-            )
-        ) {
-            item.readonly = true;
-            setTimeout(() => {
-                item.control?.disable();
-                item.control?.disable();
-            });
-        }
-        return item;
+    public ifFieldVisible(item: IFieldControl<any>): boolean {
+        return !item.hide && !item.hidden && !item.autocalculate;
     }
 
-    public addItem(item: any) {
+    public addItem(item: IFieldControl<UntypedFormArray>) {
         const listItem = this.createListControl(item);
-        item.list.push(listItem);
+        if (item.list) {
+            item.list.push(listItem);
+            for (let index = 0; index < item.list.length; index++) {
+                const element = item.list[index];
+                element.index = String(index);
+                element.index2 = String(index + 1);
+            }
+        }
         setTimeout(() => {
-            item.control.push(listItem.control);
+            if (item.control) {
+                item.control.push(listItem.control);
+            }
             this.options?.updateValueAndValidity();
             this.change.emit();
         });
     }
 
-    private createListControl(item: any, preset?: any): any {
-        const listItem: any = {
+    private createListControl(item: IFieldControl<any>, preset?: any): IFieldIndexControl<any> {
+        const count = item.list?.length || 0;
+        const listItem: IFieldIndexControl<any> = {
+            id: GenerateUUIDv4(),
             name: item.name,
             preset: preset,
-            index: String(item.list.length),
+            index: String(count),
+            index2: String(count + 1),
+            control: null,
+            open: true
         }
         if (item.isRef) {
-            listItem.control =
-                item.customType === ('geo' || 'sentinel')
-                    ? new UntypedFormControl({})
-                    : new UntypedFormGroup({});
+            listItem.control = this.createSubSchemaControl(item);
         } else {
             listItem.fileUploading = false;
-            const validators = this.getValidators(item);
-            listItem.control = new UntypedFormControl(preset === null || preset === undefined ? "" : preset, validators);
+            listItem.control = this.createControl(item, preset);
             this.postFormat(item, listItem.control);
         }
 
         return listItem;
     }
 
-    public removeGroup(item: any) {
+    public removeGroup(item: IFieldControl<any>, event: any) {
+        if (event?.stopPropagation) {
+            event.stopPropagation();
+        }
+        item.control = null;
+        this.changeDetectorRef.detectChanges();
         this.options?.removeControl(item.name);
         this.options?.updateValueAndValidity();
-        item.control = null;
         this.change.emit();
     }
 
-    public removeItem(item: any, listItem: any) {
+    public removeItem(item: any, listItem: any, event: any) {
+        if (event?.stopPropagation) {
+            event.stopPropagation();
+        }
         const index = item.list.indexOf(listItem);
         item.control.removeAt(index);
         item.list.splice(index, 1);
         for (let index = 0; index < item.list.length; index++) {
             const element = item.list[index];
             element.index = String(index);
+            element.index2 = String(index + 1);
         }
         this.options?.updateValueAndValidity();
         this.change.emit();
@@ -633,6 +699,14 @@ export class SchemaFormComponent implements OnInit {
                     } else {
                         valueToSet = "";
                     }
+                } else if (format === 'time') {
+                    const momentDate = moment(val);
+                    if (momentDate.isValid()) {
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.format('HH:mm:ss');
+                    } else {
+                        valueToSet = "";
+                    }
                 } else if (type === 'number' || type === 'integer') {
                     if (typeof (val) === 'string') {
                         if (
@@ -649,7 +723,7 @@ export class SchemaFormComponent implements OnInit {
                     if (!Number.isFinite(valueToSet)) {
                         valueToSet = val;
                     }
-                } else if (customType === ('geo' || 'sentinel')) {
+                } else if (customType === 'geo' || customType === 'sentinel') {
                     try {
                         valueToSet = JSON.parse(val);
                     } catch {
@@ -677,7 +751,10 @@ export class SchemaFormComponent implements OnInit {
         return item.unitSystem === UnitSystem.Postfix;
     }
 
-    public getNextShownFields(fields: SchemaField[]): boolean[] {
+    public getNextShownFields(fields: SchemaField[] | undefined): boolean[] {
+        if (!fields) {
+            return this.isShown;
+        }
         this.isShown = new Array(fields.length).fill(false);
         let nextRefIndex = -1;
         let initialDivision = 0;
@@ -707,6 +784,8 @@ export class SchemaFormComponent implements OnInit {
             }
             this.currentIndex = nextRefIndex;
         }
+        this.updateButton();
+
         const contentElement = document.querySelector('#main-content');
         const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
@@ -728,7 +807,10 @@ export class SchemaFormComponent implements OnInit {
         return this.isShown;
     }
 
-    public getPrevShownFields(fields: SchemaField[]): boolean[] {
+    public getPrevShownFields(fields: SchemaField[] | undefined): boolean[] {
+        if (!fields) {
+            return this.isShown;
+        }
         this.isShown = new Array(fields.length).fill(false);
         let prevRefIndex = -1;
         if (this.currentIndex === 0) {
@@ -762,6 +844,8 @@ export class SchemaFormComponent implements OnInit {
                 this.currentIndex = prevRefIndex;
             }
         }
+        this.updateButton();
+
         const contentElement = document.querySelector('#main-content');
         const formElement = document.querySelector('.schema-form');
         setTimeout(() => {
@@ -792,18 +876,11 @@ export class SchemaFormComponent implements OnInit {
         this.cancelBtnEvent.emit(false);
     }
 
-    public onSubmitBtnClick(fields: any) {
+    public onSubmitBtnClick(fields: IFieldControl<any>[] | undefined) {
         this.submitBtnEvent.emit(fields);
     }
 
-    public patchSuggestValue(item: {
-        isRef?: boolean;
-        isArray?: boolean;
-        control: any;
-        list: any[];
-        suggest: any;
-        field?: any;
-    }) {
+    public patchSuggestValue(item: IFieldControl<any>) {
         const suggest = item.suggest;
         if (item.isRef) {
             const newItem = this.createFieldControl(item.field, {
@@ -812,22 +889,22 @@ export class SchemaFormComponent implements OnInit {
             this.options?.removeControl(item.field.name);
             this.options?.addControl(item.field.name, newItem.control);
             this.fields = this.fields?.map(field => field === item ? newItem : field);
-            newItem.control.markAsDirty();
+            newItem.control?.markAsDirty();
             this.changeDetectorRef.detectChanges();
             return;
         }
         if (item.isArray) {
-            item.control.clear();
+            (item.control as UntypedFormArray)?.clear();
             item.list = [];
             let count = suggest.length;
-            while(count-- > 0) {
+            while (count-- > 0) {
                 const control = this.createListControl(item);
                 item.list.push(control);
-                item.control.push(control.control);
+                (item.control as UntypedFormArray).push(control.control);
             }
         }
-        item.control.patchValue(suggest);
-        item.control.markAsDirty();
+        item.control?.patchValue(suggest);
+        item.control?.markAsDirty();
     }
 
     public isEmpty(value: any): boolean {
@@ -837,7 +914,7 @@ export class SchemaFormComponent implements OnInit {
         return [undefined, null, ''].includes(value);
     }
 
-    public isEmptyRef(value: any, field: { customType: string; fields: any[] }): boolean {
+    public isEmptyRef(value: any, field: SchemaField): boolean {
         if (value === undefined || value === null) {
             return true;
         }
@@ -847,12 +924,14 @@ export class SchemaFormComponent implements OnInit {
         if (field.customType === 'geo') {
             return Object.keys(value).length === 0;
         }
-        for (const _field of field.fields) {
-            if (_field.isRef && !this.isEmptyRef(value[_field.name], _field)) {
-                return false;
-            }
-            if (!_field.isRef && !this.isEmpty(value[_field.name])) {
-                return false;
+        if (field.fields) {
+            for (const _field of field.fields) {
+                if (_field.isRef && !this.isEmptyRef(value[_field.name], _field)) {
+                    return false;
+                }
+                if (!_field.isRef && !this.isEmpty(value[_field.name])) {
+                    return false;
+                }
             }
         }
         return true;
@@ -860,5 +939,171 @@ export class SchemaFormComponent implements OnInit {
 
     public getJSON(value: any) {
         return JSON.stringify(value, null, 4);
+    }
+
+    private getComment(field: SchemaField) {
+        try {
+            if (typeof field.comment === 'string') {
+                const comment = JSON.parse(field.comment);
+                return comment;
+            }
+        } catch (error) {
+            return null;
+        }
+        return null;
+    }
+
+    private createFieldControl(field: SchemaField, preset?: any): IFieldControl<any> {
+        const comment = this.getComment(field);
+        const item: IFieldControl<any> = {
+            ...field,
+            hide: false,
+            autocalculate: !!comment?.autocalculate,
+            id: GenerateUUIDv4(),
+            field,
+            path: field.path || '',
+            fullPath: field.fullPath || '',
+            control: null,
+            open: true
+        }
+
+        item.preset = field.default;
+        if (preset) {
+            item.isPreset = true;
+            item.preset = preset[field.name];
+        }
+
+        if (!field.isArray && !field.isRef) {
+            item.fileUploading = false;
+            item.control = this.createControl(item, item.preset);
+            if (field.remoteLink) {
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    })
+                    .finally(() => item.fileUploading = false);
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
+            this.postFormat(item, item.control);
+        }
+
+        if (!field.isArray && field.isRef) {
+            item.fields = field.fields;
+            item.displayRequired = item.fields?.some((refField: any) => refField.required);
+            if (field.required || item.preset) {
+                item.control = this.createSubSchemaControl(item);
+            }
+        }
+
+        if (field.isArray && !field.isRef) {
+            item.control = this.createArrayControl();
+            item.list = [];
+            if (field.remoteLink) {
+                item.fileUploading = true;
+                this.ipfs
+                    .getJsonFileByLink(field.remoteLink)
+                    .then((res: any) => {
+                        item.enumValues = res.enum;
+                    })
+                    .finally(() => item.fileUploading = false);
+            }
+            if (field.enum) {
+                item.enumValues = field.enum;
+            }
+            if (item.preset && item.preset.length) {
+                for (let index = 0; index < item.preset.length; index++) {
+                    const preset = item.preset[index];
+                    const listItem = this.createListControl(item, preset);
+                    item.list.push(listItem);
+                    item.control.push(listItem.control);
+                }
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            } else if (field.required) {
+                const listItem = this.createListControl(item);
+                item.list.push(listItem);
+                item.control.push(listItem.control);
+
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            }
+        }
+
+        if (field.isArray && field.isRef) {
+            item.control = this.createArrayControl();
+            item.list = [];
+            item.fields = field.fields;
+            if (item.preset && item.preset.length) {
+                for (let index = 0; index < item.preset.length; index++) {
+                    const preset = item.preset[index];
+                    const listItem = this.createListControl(item, preset);//todo
+                    item.list.push(listItem);
+                    item.control.push(listItem.control);
+                }
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            } else if (field.required) {
+                const listItem = this.createListControl(item);//todo
+                item.list.push(listItem);
+                item.control.push(listItem.control);
+
+                this.options?.updateValueAndValidity();
+                this.change.emit();
+            }
+        }
+
+        if (
+            this.readonly &&
+            this.readonly.find(
+                (readonlyItem: any) => readonlyItem.name === field.name
+            )
+        ) {
+            item.readonly = true;
+            setTimeout(() => {
+                item.control?.disable();
+                item.control?.disable();
+            });
+        }
+        return item;
+    }
+
+    public showPage(item: IFieldControl<any>, index: number): boolean {
+        return this.isShown[index] || this.isChildSchema;
+    }
+
+    public ifSimpleField(item: IFieldControl<any>): boolean {
+        return !item.isArray && !item.isRef;
+    }
+
+    public ifSubSchema(item: IFieldControl<any>): boolean {
+        return !item.isArray && item.isRef;
+    }
+
+    public ifSimpleArray(item: IFieldControl<any>): boolean {
+        return item.isArray && !item.isRef;
+    }
+
+    public ifSubSchemaArray(item: IFieldControl<any>): boolean {
+        return item.isArray && item.isRef;
+    }
+
+    public ifInvalidField(item: IFieldControl<any> | IFieldIndexControl<any>): boolean {
+        return (item.control && !item.control.valid && !item.control.disabled);
+    }
+
+    public ifRequiredField(item: IFieldControl<any>): boolean {
+        return item.required && !item.control.disabled;
+    }
+
+    public isRules(item: IFieldControl<any>) {
+        return this.rules ? this.rules[item.fullPath] : undefined;
+    }
+
+    public isRulesStatus(item: IFieldControl<any>) {
+        return this.rules?.[item.fullPath]?.status;
     }
 }

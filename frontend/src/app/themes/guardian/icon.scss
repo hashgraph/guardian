@@ -10,8 +10,8 @@
     }
 
     &-disabled {
-        fill: var(--guardian-disabled-color);
-        color: var(--guardian-disabled-color);
+        fill: var(--guardian-disabled-icon);
+        color: var(--guardian-disabled-icon);
     }
 
     &-delete {
@@ -29,8 +29,18 @@
         color: var(--guardian-failure-color);
     }
 
+    &-warning {
+        fill: var(--guardian-warning-color);
+        color: var(--guardian-warning-color);
+    }
+
     &-close {
         fill: var(--guardian-close-color);
         color: var(--guardian-close-color);
+    }
+
+    &-font {
+        fill: var(--guardian-font-color);
+        color: var(--guardian-font-color);
     }
 }

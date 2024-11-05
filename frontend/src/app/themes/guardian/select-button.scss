@@ -1,0 +1,75 @@
+.guardian-select-button {
+    height: 40px;
+    width: auto;
+
+    .p-selectbutton {
+        height: 40px;
+        width: auto;
+
+        .p-button:first-child {
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+        }
+
+        .p-button:last-child {
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+        }
+
+        .p-button {
+            outline: none;
+            box-shadow: none;
+            border-radius: 0px;
+            color: var(--guardian-primary-color);
+            background: var(--guardian-secondary-color);
+            border-color: var(--guardian-primary-color);
+
+            &:hover {
+                color: var(--guardian-primary-color);
+                background: var(--guardian-secondary-color);
+                border-color: var(--guardian-primary-color);
+                filter: brightness(0.95);
+            }
+
+            svg-icon svg {
+                fill: var(--guardian-primary-color);
+                color: var(--guardian-primary-color);
+            }
+        }
+
+        .p-button.p-highlight {
+            color: var(--guardian-secondary-color);
+            background: var(--guardian-primary-color);
+            border-color: var(--guardian-primary-color);
+
+            &:hover {
+                color: var(--guardian-secondary-color);
+                background: var(--guardian-primary-color);
+                border-color: var(--guardian-primary-color);
+                filter: brightness(0.95);
+            }
+
+            svg-icon svg {
+                fill: var(--guardian-secondary-color);
+                color: var(--guardian-secondary-color);
+            }
+        }
+    }
+
+    .guardian-select-button-item {
+        display: flex;
+        height: 22px;
+        align-items: center;
+        font-family: Roboto;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 30px;
+        text-align: left;
+        pointer-events: none;
+
+        svg-icon {
+            height: 18px;
+            width: 26px;
+        }
+    }
+}

@@ -89,6 +89,8 @@ export class SchemaHelper {
             isPrivate,
             hidden,
             suggest,
+            autocalculate,
+            expression
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -127,6 +129,8 @@ export class SchemaHelper {
         field.isPrivate = isPrivate;
         field.required = required;
         field.hidden = !!hidden;
+        field.autocalculate = !!autocalculate;
+        field.expression = expression;
         field.order = orderPosition || -1;
         return field;
     }
@@ -544,6 +548,12 @@ export class SchemaHelper {
         }
         if (field.suggest) {
             comment.suggest = field.suggest;
+        }
+        if (field.autocalculate) {
+            comment.autocalculate = field.autocalculate;
+        }
+        if (field.expression) {
+            comment.expression = field.expression;
         }
         return JSON.stringify(comment);
     }

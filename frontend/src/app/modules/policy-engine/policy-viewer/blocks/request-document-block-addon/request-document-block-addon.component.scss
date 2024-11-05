@@ -17,29 +17,6 @@
     overflow: hidden;
 }
 
-.restore-data {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--primary-color);
-    margin-top: 10px;
-    margin-left: 25px;
-    margin-right: 50px;
-    padding-bottom: 15px;
-    padding-left: 15px;
-    border-bottom: 1px solid #c8c8c8;
-    margin-bottom: 10px;
-}
-
-.restore-data button.mat-raised-button {
-    padding: 0 12px;
-    height: 36px;
-}
-
-.restore-data button mat-icon {
-    margin-left: 3px;
-}
-
 .form-dialog {
     padding: 18px 20px 8px 20px;
     overflow: auto;

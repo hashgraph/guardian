@@ -2,7 +2,7 @@ import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
-import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, SchemaHelper, UnitSystem, } from '@guardian/interfaces';
+import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, UnitSystem, } from '@guardian/interfaces';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -112,7 +112,6 @@ export class SchemaConfigurationComponent implements OnInit {
         private schemaService: SchemaService,
         private fb: UntypedFormBuilder
     ) {
-        console.log(this);
         const vcDefaultFields = [{
             name: 'policyId',
             title: 'Policy Id',
@@ -719,6 +718,7 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
+        console.log(data, fieldConfig);
         const {
             key,
             title,
@@ -739,6 +739,8 @@ export class SchemaConfigurationComponent implements OnInit {
             default: defaultValueRaw,
             suggest,
             example,
+            autocalculate,
+            expression
         } = fieldConfig.getValue(data);
         const type = this.schemaTypeMap[typeIndex];
         let suggestValue;
@@ -763,6 +765,8 @@ export class SchemaConfigurationComponent implements OnInit {
             exampleValue = example;
         }
         return {
+            autocalculate,
+            expression,
             name: key,
             title,
             description,
@@ -827,6 +831,8 @@ export class SchemaConfigurationComponent implements OnInit {
                 name: fieldConfig.name,
                 title: '',
                 description: '',
+                autocalculate: fieldConfig.autocalculate,
+                expression: fieldConfig.expression,
                 required: fieldConfig.required,
                 isArray: fieldConfig.isArray,
                 isRef: fieldConfig.isRef,
@@ -871,6 +877,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         schema.update(fields, conditions);
         schema.updateRefs(this.subSchemas);
+        console.log(schema);
         return schema;
     }
 
@@ -979,6 +986,24 @@ export class SchemaConfigurationComponent implements OnInit {
                         momentDate.seconds(0);
                         momentDate.milliseconds(0);
                         valueToSet = momentDate.toISOString();
+                    }
+
+                    control.setValue(valueToSet, {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
+                });
+        }
+
+        if (format === 'time') {
+            return control.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((val: any) => {
+                    let momentDate = moment(val);
+                    let valueToSet = '';
+                    if (momentDate.isValid()) {
+                        momentDate.milliseconds(0);
+                        valueToSet = momentDate.format('HH:mm:ss');
                     }
 
                     control.setValue(valueToSet, {

@@ -113,6 +113,9 @@ export class BrandingService {
             if (this.brandingData?.companyLogoUrl) {
                 favicon[0].href = this.brandingData.companyLogoUrl;
             }
+            // if (this.brandingData?.faviconUrl) {
+            //     favicon[0].href = this.brandingData.faviconUrl;
+            // }
         } finally {
             disableGlobalLoader();
         }

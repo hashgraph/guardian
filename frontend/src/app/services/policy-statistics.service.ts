@@ -104,4 +104,25 @@ export class PolicyStatisticsService {
         return this.http.get<any>(`${this.url}/${definitionId}/documents`, { observe: 'response', params });
     }
 
+    public export(ruleId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${ruleId}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public import(policyId: string, file: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/${policyId}/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public previewByFile(policyFile: any): Observable<any> {
+        return this.http.post<any[]>(`${this.url}/import/file/preview`, policyFile, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
 }
