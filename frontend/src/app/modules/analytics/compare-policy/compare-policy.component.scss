@@ -160,17 +160,17 @@
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
     position: absolute;
-    top: 14px;
-    left: 3px;
+    top: 18px;
+    left: 4px;
     cursor: pointer;
 }
 
 .compare-btn i,
 .compare-btn svg {
-    font-size: 22px;
+    font-size: 16px;
     position: absolute;
-    left: 2px;
-    top: 1px;
+    left: 4px;
+    top: 4px;
 }
 
 .left-compare-result {
@@ -582,9 +582,8 @@
 .report-collapse svg {
     position: absolute;
     pointer-events: none;
-    left: -1px;
-    top: -1px;
-    font-size: 16px;
+    top: 2px;
+    font-size: 10px;
     display: none;
 }
 
@@ -670,40 +669,4 @@
     height: 100%;
     position: relative;
     background-color: white;
-}
-
-.compare-btn {
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    font-size: 14px;
-}
-
-.icon {
-    font-size: 16px;
-    line-height: 16px;
-}
-
-.custom-icon {
-    font-family: 'Material Icons', sans-serif;
-    font-size: 16px;
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    text-align: center;
-    line-height: 16px;
-    vertical-align: middle;
-    user-select: none;
-}
-
-.report-collapse .icon {
-    font-size: 19px;
-    line-height: 12px;
 }

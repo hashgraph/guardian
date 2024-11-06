@@ -391,8 +391,11 @@
                             <!--                            </div>-->
 
                             <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
-                                <span class="icon open-icon" *ngIf="item._collapse === 1">−</span>
-                                <span class="icon collapse-icon" *ngIf="item._collapse !== 1">+</span>
+<!--                                <span class="icon open-icon" *ngIf="item._collapse === 1">−</span>-->
+<!--                                <span class="icon collapse-icon" *ngIf="item._collapse !== 1">+</span>-->
+
+                                <i class="pi pi-minus icon open-icon" *ngIf="item._collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="item._collapse !== 1"></i>
                             </div>
                             <ng-container *ngIf="item.left_type">
                                 <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"
@@ -405,7 +408,7 @@
                                         <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
                                         <!--                                        </div>-->
                                         <div class="block-icon">
-                                            <span class="custom-icon">{{ icons[item.left_type] }}</span>
+                                            <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
                                         <div class="block-type">{{ item.left_tag || item.left_type }}</div>
                                     </div>
@@ -421,7 +424,7 @@
                                         <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
                                         <!--                                        </div>-->
                                         <div class="block-icon">
-                                            <span class="custom-icon">{{ icons[item.left_type] }}</span>
+                                            <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
                                         <div class="block-type">{{ item.left_tag || item.left_type }}</div>
                                     </div>
@@ -439,7 +442,7 @@
                                         <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
                                         <!--                                        </div>-->
                                         <div class="block-icon">
-                                            <span class="custom-icon">{{ icons[item.right_type] }}</span>
+                                            <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
                                         <div class="block-type">{{ item.right_tag || item.right_type }}</div>
                                     </div>
@@ -455,7 +458,7 @@
                                         <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
                                         <!--                                        </div>-->
                                         <div class="block-icon">
-                                            <span class="custom-icon">{{ icons[item.right_type] }}</span>
+                                            <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
                                         <div class="block-type">{{ item.right_tag || item.right_type }}</div>
                                     </div>
@@ -471,8 +474,8 @@
 
                             <div class="middle-tree">
                                 <div class="compare-btn" (click)="item._open = !item._open">
-                                    <span *ngIf="!item._open" class="icon">▼</span>
-                                    <span *ngIf="item._open" class="icon">▲</span>
+                                    <i *ngIf="!item._open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                    <i  *ngIf="item._open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                 </div>
                             </div>
 
@@ -606,7 +609,7 @@
                     <!--                    </div>-->
 
                     <div class="compare-btn" (click)="compareSchema(prop)">
-                        <span class="icon">🔍</span>
+                        <i class="pi pi-search"></i>
                     </div>
 
                     <span *ngIf="prop.items[index]" [title]="prop.items[index].value">
@@ -721,7 +724,7 @@
                     <!--                    </div>-->
 
                     <div class="compare-btn" (click)="compareSchema(prop)">
-                        <span class="icon">🔍</span>
+                        <i class="pi pi-search"></i>
                     </div>
                     <span *ngIf="prop.items[index]">
                         {{ prop.items[index].value }}

@@ -523,8 +523,10 @@
                             <!--                            </div>-->
 
                             <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
-                                <span class="open-icon" *ngIf="row.collapse === 1">-</span>
-                                <span class="collapse-icon" *ngIf="row.collapse === 2">+</span>
+                                <i class="pi pi-minus icon open-icon" *ngIf="row.collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="row.collapse === 2"></i>
+<!--                                <span class="open-icon" *ngIf="row.collapse === 1">-</span>-->
+<!--                                <span class="collapse-icon" *ngIf="row.collapse === 2">+</span>-->
                             </div>
 
                             <ng-container *ngFor="let context of row.contexts">
@@ -722,7 +724,7 @@
                     <!--                    </div>-->
 
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
-                        <span class="icon">🔍</span>
+                        <i class="pi pi-search"></i>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">
                         {{ prop.value }}
@@ -897,7 +899,7 @@
                     <!--                    </div>-->
 
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
-                        <span class="icon">🔍</span>
+                        <i class="pi pi-search"></i>
                     </div>
                     <span *ngIf="prop.propType" [title]="prop.value">
                         {{ prop.value }}

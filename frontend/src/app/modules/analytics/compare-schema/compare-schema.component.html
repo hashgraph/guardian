@@ -196,10 +196,18 @@
                             <div class="report-number">{{ i + 1 }}</div>
 
                             <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
-                                <div class="collapse-btn">
-                                    <span *ngIf="item._collapse === 1" class="icon">▼</span>
-                                    <span *ngIf="item._collapse === 2" class="icon">▲</span>
-                                </div>
+<!--                                <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">-->
+<!--                                    <mat-icon class="open-icon">remove</mat-icon>-->
+<!--                                    <mat-icon class="collapse-icon">add</mat-icon>-->
+<!--                                </div>-->
+
+                                <i class="pi pi-minus icon open-icon" *ngIf="item._collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="item._collapse === 2"></i>
+
+<!--                                <div class="collapse-btn">-->
+<!--                                    <i *ngIf="item._collapse === 1" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>-->
+<!--                                    <i *ngIf="item._collapse === 2" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>-->
+<!--                                </div>-->
                             </div>
 
                             <div *ngIf="item.left_name" [attr.offset]="item.lvl" [style.padding-left.px]="30*item.lvl"
@@ -230,8 +238,8 @@
 
                             <div class="middle-tree">
                                 <div class="compare-btn" (click)="item._open = !item._open">
-                                    <span *ngIf="!item._open" class="icon">▼</span>
-                                    <span *ngIf="item._open" class="icon">▲</span>
+                                    <i *ngIf="!item._open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                    <i  *ngIf="item._open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                 </div>
                             </div>
 

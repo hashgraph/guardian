@@ -254,11 +254,6 @@
                             <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
                             <!--                            </div>-->
 
-                            <!--                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">-->
-                            <!--                                <span class="icon open-icon" *ngIf="row.collapse === 1">−</span>-->
-                            <!--                                <span class="icon collapse-icon" *ngIf="row.collapse === 2">+</span>-->
-                            <!--                            </div>-->
-
                             <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
                                 <i class="pi pi-minus open-icon" *ngIf="row.collapse === 1"></i>
                                 <i class="pi pi-plus collapse-icon" *ngIf="row.collapse === 2"></i>
@@ -285,7 +280,8 @@
                                         <!--                                        </div>-->
 
                                         <div class="block-icon">
-                                            <span class="icon">{{ treeItemContext.data.docIcon }}</span>
+<!--                                            <span class="icon">{{ treeItemContext.data.docIcon }}</span>-->
+                                            <i [ngClass]="'pi pi-' + treeItemContext.data.docIcon"></i>
                                         </div>
                                         <div class="block-type">{{ treeItemContext.data.docName }}</div>
                                     </div>
@@ -301,8 +297,8 @@
                                     <div class="compare-btn" (click)="row.open = !row.open">
                                         <!--                                        <span *ngIf="!row.open" class="icon">▼</span>-->
                                         <!--                                        <span *ngIf="row.open" class="icon">▲</span>-->
-                                        <i *ngIf="!_systemProp" class="pi pi-chevron-down"></i>
-                                        <i *ngIf="_systemProp" class="pi pi-chevron-up"></i>
+                                        <i *ngIf="!row.open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                        <i  *ngIf="row.open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                     </div>
                                 </div>
                             </ng-container>
@@ -439,8 +435,8 @@
                 <!--                </div>-->
 
                 <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
-                    <i *ngIf="!_systemProp" class="pi pi-chevron-down"></i>
-                    <i *ngIf="_systemProp" class="pi pi-chevron-up"></i>
+                    <i *ngIf="!_systemProp" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                    <i  *ngIf="_systemProp" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                 </div>
             </div>
             <div class="prop-table-body">

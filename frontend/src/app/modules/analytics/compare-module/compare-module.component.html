@@ -362,10 +362,13 @@
                             <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
                                 <!--                                <mat-icon class="open-icon">remove</mat-icon>-->
 
-                                <i class="pi pi-trash"></i>
+<!--                                <i class="pi pi-trash"></i>-->
                                 <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
 
-                                <i class="pi pi-plus toolbar-icons"></i>
+<!--                                <i class="pi pi-plus toolbar-icons"></i>-->
+
+                                <i class="pi pi-minus icon open-icon" *ngIf="item._collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="item._collapse === 2"></i>
                             </div>
                             <ng-container *ngIf="item.left_type">
                                 <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"
@@ -442,9 +445,8 @@
                                 <div class="compare-btn" (click)="item._open = !item._open">
                                     <!--                                    <span *ngIf="!item._open" class="icon">▼</span>-->
                                     <!--                                    <span *ngIf="item._open" class="icon">▲</span>-->
-
-                                    <i *ngIf="!item._open" class="pi pi-chevron-down"></i>
-                                    <i *ngIf="item._open" class="pi pi-chevron-up"></i>
+                                    <i *ngIf="!item._open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                    <i  *ngIf="item._open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                 </div>
                             </div>
 
