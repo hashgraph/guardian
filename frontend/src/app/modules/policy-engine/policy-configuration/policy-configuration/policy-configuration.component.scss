@@ -57,6 +57,7 @@
 
 .action-color {
     color: var(--pc-active-icon-color);
+    fill: var(--pc-active-icon-color);
 }
 
 .no-action-color {
@@ -290,6 +291,14 @@
         }
     }
 
+    .top-toolbar-btn.long_title_svg {
+        padding-top: 6px;
+    }
+
+    .top-toolbar-btn.long_title_i {
+        padding-top: 10px;
+    }
+
     .top-toolbar-group,
     .top-toolbar-btn {
         display: flex;
@@ -423,6 +432,7 @@
             .pi {
                 position: absolute;
                 top: 22px;
+                left: 2px;
                 font-size: 14px;
             }
         }
@@ -538,10 +548,10 @@
 
         .components-search-icon {
             position: absolute;
-            top: 9px;
-            right: 5px;
+            top: 12px;
+            right: 16px;
             color: var(--pc-border-color);
-            font-size: 18px;
+            font-size: 14px;
         }
     }
 
@@ -570,9 +580,9 @@
             .components-group-name-icon {
                 color: var(--pc-favorite-color);
                 position: absolute;
-                left: 22px;
-                top: 7px;
-                font-size: 22px;
+                left: 26px;
+                top: 12px;
+                font-size: 14px;
             }
 
             &:hover {
@@ -581,17 +591,19 @@
         }
 
         .components-group-collapse {
+            width: 16px;
             position: absolute;
-            left: 0px;
-            top: 6px;
+            left: 4px;
+            top: 12px;
             display: block;
             pointer-events: all;
         }
 
         .components-group-open {
+            width: 16px;
             position: absolute;
-            left: 0px;
-            top: 6px;
+            left: 4px;
+            top: 12px;
             display: none;
             pointer-events: all;
         }
@@ -599,7 +611,7 @@
         .components-group-item {
             position: relative;
             width: 100%;
-            max-width: 220px;
+            max-width: 100%;
             height: 32px;
             overflow: hidden;
 
@@ -632,14 +644,15 @@
         }
 
         .component-btn {
-            height: 32px;
+            top: 5px;
+            height: 22px;
             position: relative;
-            padding: 7px 32px 7px 46px;
+            padding: 2px 32px 7px 46px;
             box-sizing: border-box;
             color: var(--pc-active-icon-color);
             cursor: pointer;
             user-select: none;
-            max-width: 220px;
+            max-width: 100%;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -659,7 +672,7 @@
                 right: 6px;
                 color: var(--pc-background-color);
                 cursor: pointer;
-                font-size: 22px;
+                font-size: 16px;
 
                 &[favorite="true"] {
                     color: var(--pc-favorite-color) !important;
@@ -692,7 +705,7 @@
             top: 0px;
             right: 0px;
 
-            mat-icon {
+            i, svg {
                 top: 3px;
                 right: 6px;
                 cursor: pointer;
@@ -705,6 +718,12 @@
                 filter: grayscale(1);
                 opacity: 0.6;
             }
+        }
+
+        svg.icon-style-policy-module,
+        svg.icon-style-handyman {
+            width: 18px;
+            padding-bottom: 5px;
         }
     }
 }
@@ -784,6 +803,8 @@
                 overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+                display: grid;
+                grid-template-columns: 30px 130px;
 
                 &:hover {
                     background: var(--pc-tabs-hover-color);
@@ -794,19 +815,22 @@
                     cursor: default !important;
                 }
 
-                mat-icon {
+                svg {
                     position: absolute;
                     left: 5px;
                     top: 6px;
                     font-size: 18px;
                     height: 20px;
-                    width: 20px;
+                    width: 28px;
                 }
 
                 span {
-                    padding-left: 30px;
+                    padding-top: 1px;
+                    padding-left: 10px;
                     position: relative;
-                    top: 1px;
+                    display: grid;
+                    align-items: center;
+                    font-size: 15px;
                 }
 
                 &.tab-header-icon {
@@ -828,6 +852,16 @@
                         span {
                             display: none;
                         }
+                    }
+
+                    .icon-style-article {
+                        svg {
+                            fill: var(--pc-active-icon-color);
+                        }
+                    }
+
+                    .icon-style-handyman {
+                        fill: var(--pc-event-color);
                     }
                 }
             }
@@ -853,7 +887,7 @@
                     background: var(--pc-tabs-hover-color);
                 }
 
-                mat-icon {
+                i, svg {
                     position: absolute;
                     left: 4px;
                     top: 5px;
@@ -914,7 +948,9 @@
                 flex: none;
 
                 &.tab-header-icon {
-                    padding: 6px 16px 6px 32px;
+                    //padding: 6px 16px 6px 32px;
+                    display: grid;
+                    grid-template-columns: 30px auto !important;
                 }
             }
         }
@@ -943,12 +979,18 @@
             overflow: hidden;
             cursor: pointer;
             box-sizing: border-box;
-            padding: 3px;
             border-left: 1px solid var(--pc-border-color);
             color: #555;
+            display: grid;
+            justify-content: center;
+            align-content: center;
 
             &:hover {
                 background: var(--pc-tabs-hover-color);
+            }
+
+            i, svg {
+                font-size: 22px;
             }
         }
 
@@ -1029,9 +1071,9 @@
             cursor: pointer;
             user-select: none;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
-                left: -1px;
+                //left: -1px;
                 top: 1px;
                 height: 20px;
                 width: 20px;
@@ -1039,9 +1081,15 @@
                 color: var(--pc-header-color);
             }
 
-            &[collapse="true"] mat-icon {
-                transform: rotate(-90deg);
+            &[collapse="false"] i,
+            &[collapse="false"] svg {
                 top: 5px;
+            }
+
+            &[collapse="true"] i,
+            &[collapse="true"] svg {
+                transform: rotate(-90deg);
+                //top: 5px;
             }
         }
 
@@ -1301,12 +1349,17 @@
             width: 100%;
             min-width: 175px;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
                 left: 1px;
                 top: -1px;
                 font-size: 20px;
                 pointer-events: none;
+            }
+
+            i {
+                font-size: 14px;
+                margin: 4px;
             }
 
             span {
@@ -1330,7 +1383,7 @@
             color: var(--pc-del-color);
             cursor: pointer;
 
-            mat-icon {
+            i, svg {
                 font-size: 20px;
             }
 
@@ -1345,7 +1398,7 @@
             color: #e30101;
             cursor: pointer;
 
-            mat-icon {
+            i, svg {
                 font-size: 20px;
             }
 
@@ -1437,7 +1490,8 @@
             overflow: hidden !important;
         }
 
-        .prop-icon mat-icon {
+        .prop-icon i,
+        .prop-icon svg {
             position: relative !important;
             font-size: 20px !important;
         }
@@ -1481,8 +1535,10 @@
             position: relative;
         }
 
-        .prop-icon-output-event mat-icon,
-        .prop-icon-input-event mat-icon {
+        .prop-icon-output-event i,
+        .prop-icon-input-event i,
+        .prop-icon-output-event svg,
+        .prop-icon-input-event svg{
             position: relative !important;
             font-size: 18px !important;
             top: 0px;

@@ -54,7 +54,8 @@ body>.leader-line-areaAnchor {
             cursor: pointer;
         }
 
-        .example-icon mat-icon {
+        .example-icon i,
+        .example-icon svg {
             color: rgba(255, 255, 255, 0.54);
         }
     }

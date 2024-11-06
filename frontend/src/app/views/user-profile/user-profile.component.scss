@@ -704,7 +704,7 @@ a[disabled="true"] {
     height: 56px;
     padding: 8px 24px;
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -731,7 +731,7 @@ a[disabled="true"] {
 .step-item.active {
     background: rgba(6, 129, 238, 0.08);
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;

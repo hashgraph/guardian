@@ -7,7 +7,7 @@
 
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')"
             [attr.collapse]="propHidden.properties">
-            <i class="pi" [ngClass]="propHidden.properties ? 'pi-chevron-down' : 'pi-chevron-right'"></i>
+            <i class="pi" [ngClass]="propHidden.properties ? 'pi-caret-down' : 'pi-caret-right'"></i>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -110,7 +110,7 @@
                     [attr.collapse]="propHidden.dynamicFilters[i]">
                     <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
 
-                    <i class="pi pi-chevron-down"></i>
+                    <i class="pi pi-caret-down"></i>
                 </td>
                 <td class="propRowCell cellName">Dynamic Filter {{ i }}</td>
                 <td class="propRowCell">

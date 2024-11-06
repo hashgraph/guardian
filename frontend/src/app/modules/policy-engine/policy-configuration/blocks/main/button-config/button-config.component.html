@@ -13,7 +13,7 @@
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'buttonsGroup')">
             <!--            <mat-icon *ngIf="properties.uiMetaData.buttons.length">arrow_drop_down</mat-icon>-->
 
-            <i class="pi pi-chevron-down" *ngIf="properties.uiMetaData.buttons.length"></i>
+            <i class="pi pi-caret-down" *ngIf="properties.uiMetaData.buttons.length"></i>
         </td>
         <td class="propHeaderCell cellName">Buttons</td>
         <td class="propHeaderCell">
@@ -31,7 +31,7 @@
                 [attr.collapse]="propHidden.buttons[i].collapse">
                 <!--                <mat-icon>arrow_drop_down</mat-icon>-->
 
-                <i class="pi pi-chevron-down"></i>
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Button {{ i }}</td>
             <td class="propRowCell not-editable-text">
@@ -121,7 +121,7 @@
                 [attr.collapse]="propHidden.buttons[i].filtersGroup">
                 <!--                <mat-icon>arrow_drop_down</mat-icon>-->
 
-                <i class="pi pi-chevron-down"></i>
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Filters Option {{ i }}</td>
             <td class="propRowCell">
@@ -141,7 +141,7 @@
                     [attr.collapse]="propHidden.buttons[i][j]">
                     <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
 
-                    <i class="pi pi-chevron-down"></i>
+                    <i class="pi pi-caret-down"></i>
                 </td>
                 <td class="propRowCell cellName">Filter {{ j }}</td>
                 <td class="propRowCell">

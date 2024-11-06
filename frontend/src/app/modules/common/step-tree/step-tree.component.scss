@@ -17,7 +17,7 @@
 
     background: rgba(6, 129, 238, 0.08);
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -59,7 +59,7 @@
     padding-left: 24px;
     padding-right: 24px;
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -86,7 +86,7 @@
 .current-node {
     background: rgba(6, 129, 238, 0.08);
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;

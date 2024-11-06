@@ -54,6 +54,10 @@
     height: 40px;
     position: relative;
     cursor: pointer;
+
+    .pi-caret-down {
+        margin: 5px
+    }
 }
 
 .block-item {
@@ -88,19 +92,21 @@
     position: relative;
 }
 
-.block-expand mat-icon {
+.block-expand i,
+.block-all-expand svg {
     position: absolute;
     left: 4px;
     top: 4px;
     color: var(--pc-header-color);
-    font-size: 26px;
+    font-size: 18px;
     width: 26px;
     height: 26px;
     padding: 3px;
     background: #f5f5f5;
 }
 
-.block-expand:hover mat-icon {
+.block-expand:hover i,
+.block-all-expand svg {
     color: #000;
 }
 
@@ -109,14 +115,16 @@
     cursor: default;
 }
 
-.block-container[expandable="false"] .block-expand mat-icon {
+.block-container[expandable="false"] .block-expand i,
+.block-all-expand svg {
     display: none !important;
 }
 
-.block-container[collapsed="true"] .block-expand mat-icon {
+.block-container[collapsed="true"] .block-expand i,
+.block-all-expand svg {
     transform: rotate(-90deg);
     left: 4px;
-    top: 10px;
+    //top: 10px;
 }
 
 .block-container[selected="true"] .block-item {
@@ -165,7 +173,8 @@
     height: 18px;
 }
 
-.module-item-icon mat-icon {
+.module-item-icon i,
+.block-all-expand svg {
     top: 2px;
     left: 2px;
     position: relative;
@@ -173,7 +182,8 @@
     color: #404fb2;
 }
 
-.module-item-icon mat-icon.svg-icon {
+.module-item-icon i,
+.block-all-expand svg {
     position: relative;
     left: 0px;
     top: 0;
@@ -185,7 +195,8 @@
     color: #c37a29 !important;
 }
 
-.block-item-icon mat-icon {
+.block-item-icon i,
+.block-all-expand svg {
     font-size: 18px;
 }
 
@@ -222,27 +233,29 @@
 
 .block-all-expand {
     position: absolute;
-    left: 0px;
-    top: 10px;
+    left: 5px;
+    top: 20px;
     width: 40px;
     height: 40px;
     cursor: pointer;
     z-index: 1;
 }
 
-.block-all-expand mat-icon {
+.block-all-expand i,
+.block-all-expand svg{
     position: absolute;
     left: 1px;
     top: 3px;
     color: var(--pc-header-color);
     width: 30px;
     height: 30px;
-    font-size: 30px;
+    font-size: 18px;
     background: #f5f5f5;
     padding: 4px;
 }
 
-.block-all-expand:hover mat-icon {
+.block-all-expand:hover i,
+.block-all-expand svg {
     color: #000;
 }
 
@@ -305,6 +318,10 @@
     height: 28px;
     width: 28px;
     overflow: hidden;
+
+    svg {
+        fill: var(--pc-active-icon-color);
+    }
 }
 
 .module-item-name {

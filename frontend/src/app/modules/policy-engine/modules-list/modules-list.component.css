@@ -388,3 +388,19 @@ button[disabled] {
     background-color: #ffffff !important;
     border: 1px solid #cdddfd;
 }
+
+.module-actions-buttons-container .pi {
+    margin-right: 8px;
+}
+
+.module-actions-buttons-container .pi-file-import {
+    font-size: 18px;
+}
+
+.module-actions-buttons-container .icon-style-compare {
+    margin-right: 6px;
+}
+
+.module-actions-buttons-container svg.icon-style-compare {
+    fill: var(--color-primary);
+}

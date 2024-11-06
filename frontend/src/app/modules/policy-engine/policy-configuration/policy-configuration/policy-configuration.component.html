@@ -286,7 +286,7 @@
                     openType !== 'Sub' &&
                     !currentBlock?.isModule &&
                     !currentBlock?.isRoot">
-                    <div class="top-toolbar-btn readonly-status" title="Create New Module" (click)="onCreateModule()">
+                    <div class="top-toolbar-btn readonly-status long_title_i" title="Create New Module" (click)="onCreateModule()">
                         <!--                        <mat-icon>create_new_folder</mat-icon>-->
 
                         <i class="pi pi-folder-plus"></i>
@@ -295,7 +295,7 @@
 
                     <div
                         *ngIf="user.MODULES_MODULE_CREATE"
-                        class="top-toolbar-btn readonly-status"
+                        class="top-toolbar-btn readonly-status long_title_svg"
                         title="Convert to Module"
                         (click)="onConvertToModule()">
                         <!--                        <mat-icon>move_to_inbox</mat-icon>-->
@@ -452,14 +452,16 @@
                                  (click)="select('components')">
                                 <!--                                <mat-icon class="action-color">article</mat-icon>-->
 
-                                <i class="pi pi-align-left action-color"></i>
+<!--                                <i class="pi pi-align-left action-color"></i>-->
+                                <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article action-color"
+                                          class="icon-style-article action-color"></svg-icon>
                                 <span>Blocks</span>
                             </div>
                             <div class="tab-header tab-header-min" [attr.selected]="options.moduleLibrary"
                                  (click)="select('moduleLibrary')">
                                 <!--                                <mat-icon class="action-color" svgIcon="policy-module"></mat-icon>-->
 
-                                <svg-icon src="/assets/icons/policy-module.svg" class="action-color"></svg-icon>
+                                <svg-icon src="/assets/images/icons/policy-module.svg" class="action-color"></svg-icon>
                                 <span>Modules</span>
                             </div>
                             <div class="tab-header tab-header-min" [attr.selected]="options.toolLibrary"
@@ -467,7 +469,7 @@
                                 <!--                                <mat-icon class="action-color tool-icon">handyman</mat-icon>-->
 
                                 <svg-icon src="/assets/images/icons/handyman.svg"
-                                          svgClass="icon-style-handyman"></svg-icon>
+                                          svgClass="icon-style-handyman" class="icon-style-handyman"></svg-icon>
                                 <span>Tools</span>
                             </div>
                         </div>
@@ -486,7 +488,7 @@
                                     <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
                                     <!--                                    <mat-icon class="components-search-icon">search</mat-icon>-->
 
-                                    <i class="pi pi-search"></i>
+                                    <i class="pi pi-search components-search-icon"></i>
                                 </div>
                                 <div
                                     *ngIf="componentsList.favorites.length"
@@ -496,12 +498,12 @@
                                 >
                                     <div class="components-group-name" (click)="collapse('favoritesGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <!--                                        <mat-icon class="components-group-name-icon">star</mat-icon>-->
                                         <i class="pi pi-star components-group-name-icon"></i>
-                                        <span style="padding-left: 22px">
+                                        <span style="padding-left: 24px">
                                             Favorites ({{ componentsList.favorites.length }})
                                         </span>
                                     </div>
@@ -516,14 +518,14 @@
                                                 (click)="onAdd(item)"
                                             >
                                                 <div class="drag-component">
-                                                    <!--                                                    <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>-->
+<!--                                                                                                        <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>-->
 
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
                                             <div class="component-btn" (click)="onAdd(item)">
-                                                <!--                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>-->
+<!--                                                                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>-->
 
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
@@ -544,10 +546,10 @@
                                     <div class="components-group-name" (click)="collapse('uiGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
 
-                                        <i class="pi pi-sort-down-fill"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
 
-                                        <i class="pi pi-chevron-right"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>UI Components ({{ componentsList.uiComponents.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -587,10 +589,10 @@
                                     <div class="components-group-name" (click)="collapse('serverGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
 
-                                        <i class="pi pi-sort-down-fill"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
 
-                                        <i class="pi pi-chevron-right"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Server Components ({{ componentsList.serverBlocks.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -624,10 +626,10 @@
                                      [attr.collapsed]="options.addonsGroup">
                                     <div class="components-group-name" (click)="collapse('addonsGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
 
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Addons ({{ componentsList.addons.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -670,10 +672,10 @@
                                     <div class="components-group-name" (click)="collapse('unGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
 
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
 
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>unGrouped</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -727,9 +729,9 @@
                                 >
                                     <div class="components-group-name" (click)="collapse('favoritesModulesGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <!--                                        <mat-icon class="components-group-name-icon">star</mat-icon>-->
                                         <i class="pi pi-star components-group-name-icon"></i>
                                         <span style="padding-left: 22px">Favorites
@@ -741,7 +743,7 @@
                                                  [attr.block-type]="item.header" (click)="onAddModule(item)">
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
-                                                        <svg-icon src="/assets/icons/policy-module.svg"
+                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
                                                                   class="action-color"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
@@ -750,7 +752,7 @@
                                             <div class="component-btn" (click)="onAddModule(item)">
                                                 <div class="component-btn-icon">
                                                     <!--                                                    <mat-icon svgIcon="policy-module"></mat-icon>-->
-                                                    <svg-icon src="/assets/icons/policy-module.svg"
+                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
                                                               class="action-color"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
@@ -774,9 +776,9 @@
                                      [attr.readonly]="disableModuleMenu">
                                     <div class="components-group-name" (click)="collapse('defaultModulesGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
-                                        <i class="pi pi-chevron-right"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Default Modules ({{ modulesList.defaultModules.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -787,7 +789,7 @@
                                                 <div class="drag-component drag-module">
                                                     <div class="drag-component-icon">
                                                         <!--                                                        <mat-icon svgIcon="policy-module"></mat-icon>-->
-                                                        <svg-icon src="/assets/icons/policy-module.svg"
+                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
                                                                   class="action-color"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
@@ -796,7 +798,7 @@
                                             <div class="component-btn" (click)="onAddModule(item)">
                                                 <div class="component-btn-icon">
                                                     <!--                                                    <mat-icon svgIcon="policy-module"></mat-icon>-->
-                                                    <svg-icon src="/assets/icons/policy-module.svg"
+                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
                                                               class="action-color"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
@@ -817,10 +819,10 @@
                                      [attr.readonly]="disableModuleMenu">
                                     <div class="components-group-name" (click)="collapse('customModulesGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
 
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Custom models ({{ modulesList.customModules.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -832,8 +834,8 @@
                                                     <div class="drag-component-icon">
                                                         <!--                                                        <mat-icon svgIcon="policy-module"></mat-icon>-->
 
-                                                        <svg-icon src="/assets/icons/policy-module.svg"
-                                                                  class="action-color"></svg-icon>
+                                                        <svg-icon src="/assets/images/icons/policy-module.svg"
+                                                                  svgClass="icon-style-policy-module action-color" class="icon-style-policy-module action-color"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
@@ -842,8 +844,8 @@
                                                 <div class="component-btn-icon">
                                                     <!--                                                    <mat-icon svgIcon="policy-module"></mat-icon>/-->
 
-                                                    <svg-icon src="/assets/icons/policy-module.svg"
-                                                              class="action-color"></svg-icon>
+                                                    <svg-icon src="/assets/images/icons/policy-module.svg"
+                                                              svgClass="icon-style-policy-module action-color" class="icon-style-policy-module action-color"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
@@ -873,9 +875,9 @@
                                      [attr.readonly]="disableToolMenu">
                                     <div class="components-group-name" (click)="collapse('customToolsGroup')">
                                         <!--                                        <mat-icon class="components-group-collapse">arrow_drop_down</mat-icon>-->
-                                        <i class="pi pi-sort-down-fill components-group-collapse"></i>
+                                        <i class="pi pi-caret-down components-group-collapse"></i>
                                         <!--                                        <mat-icon class="components-group-open">arrow_right</mat-icon>-->
-                                        <i class="pi pi-chevron-right components-group-open"></i>
+                                        <i class="pi pi-caret-right components-group-open"></i>
                                         <span>Tools ({{ modulesList.customTools.length }})</span>
                                     </div>
                                     <div class="components-group-body readonly-status">
@@ -938,13 +940,14 @@
                                  style="width: 100px;margin-right: 6px"
                             >
                                 <!--                                <mat-icon class="action-color">article</mat-icon>-->
-                                <i class="pi pi-align-left action-color"></i>
+                                <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article action-color"
+                                          class="icon-style-article action-color"></svg-icon>
                                 Policy
                             </div>
                             <div *ngIf="rootType ==='Module'" class="tab-header tab-header-icon" [attr.selected]="true"
                                  (click)="onOpenRoot(moduleTemplate)" style="width: 100px;margin-right: 6px">
                                 <!--                                <mat-icon class="module-root-icon action-color" svgIcon="policy-module"></mat-icon>-->
-                                <svg-icon src="/assets/icons/policy-module.svg"
+                                <svg-icon src="/assets/images/icons/policy-module.svg"
                                           class="action-color module-root-icon action-color"></svg-icon>
                                 Module
                             </div>
@@ -963,7 +966,7 @@
                                      (click)="onOpenModule(item)"
                                 >
                                     <!--                                    <mat-icon class="module-root-icon edit-color" svgIcon="policy-module"></mat-icon>-->
-                                    <svg-icon src="/assets/icons/policy-module.svg"
+                                    <svg-icon src="/assets/images/icons/policy-module.svg"
                                               class="module-root-icon edit-color"></svg-icon>
                                     {{ item.localTag }}
                                 </div>
@@ -1086,7 +1089,10 @@
                             [attr.collapse-bottom]="options.rightBottomMenu"
                         >
                             <!--                            <mat-icon *cdkDragPreview>article</mat-icon>-->
-                            <i *cdkDragPreview class="pi pi-align-left"></i>
+
+                            <svg-icon *cdkDragPreview src="/assets/images/icons/article.svg"
+                                      svgClass="icon-style-article action-color"
+                                      class="icon-style-article action-color"></svg-icon>
                             <div *ngIf="policyDescription" class="pc-tabs">
                                 <div class="pc-tabs-headers" cdkDragHandle>
                                     <div class="tab-header" [attr.selected]="options.description"
@@ -1457,7 +1463,7 @@
     <div class="toolbar-menu all-status event-color" (click)="onView('blocks')">
         <!--        <mat-icon class="action-color">view_agenda</mat-icon>-->
         <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
-<!--        <svg-icon src="/assets/icons/action-color.svg" class="action-color"></svg-icon>-->
+<!--        <svg-icon src="/assets/images/icons/action-color.svg" class="action-color"></svg-icon>-->
         <span class="action-color">Tree</span>
     </div>
     <div class="toolbar-menu all-status event-color" (click)="onView('json')">

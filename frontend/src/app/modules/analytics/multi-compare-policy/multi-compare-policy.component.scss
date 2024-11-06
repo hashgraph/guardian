@@ -191,7 +191,8 @@
     cursor: pointer;
 }
 
-.compare-btn mat-icon {
+.compare-btn i,
+.compare-btn svg {
     font-size: 22px;
     position: absolute;
     left: 2px;
@@ -394,7 +395,8 @@
     overflow: hidden;
 }
 
-.block-icon mat-icon {
+.block-icon i,
+.block-icon svg {
     font-size: 16px;
     height: 16px;
     width: 16px;
@@ -551,7 +553,8 @@
     display: none;
 }
 
-.report-collapse mat-icon {
+.report-collapse i,
+.report-collapse svg {
     position: absolute;
     pointer-events: none;
     left: -1px;
@@ -763,7 +766,7 @@
     &[value="50%"] {
         background: #ffb5b7;
     }
-    
+
     &[value="51%"], &[value="52%"], &[value="53%"], &[value="54%"], &[value="55%"], &[value="56%"], &[value="57%"], &[value="58%"], &[value="59%"],
     &[value="60%"], &[value="61%"], &[value="62%"], &[value="63%"], &[value="64%"], &[value="65%"], &[value="66%"], &[value="67%"], &[value="68%"], &[value="69%"],
     &[value="70%"], &[value="71%"], &[value="72%"], &[value="73%"], &[value="74%"], &[value="75%"], &[value="76%"], &[value="77%"], &[value="78%"], &[value="79%"],

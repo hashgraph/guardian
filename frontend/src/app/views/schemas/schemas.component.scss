@@ -238,7 +238,8 @@ a {
     text-decoration: underline;
 }
 
-.btn-settings mat-icon {
+.btn-settings i,
+.btn-settings svg {
     position: absolute;
     left: 0px;
     top: 2px;
@@ -477,11 +478,13 @@ a {
     border-color: var(--color-primary);
 }
 
-.schema-menu-btn mat-icon {
+.schema-menu-btn i,
+.schema-menu-btn svg {
     color: var(--color-primary);
 }
 
-.schema-menu-btn-del mat-icon {
+.schema-menu-btn-del i,
+.schema-menu-btn-del svg {
     color: var(--color-accent-red-1);
 }
 

@@ -589,7 +589,8 @@
     display: none;
 }
 
-.report-collapse mat-icon {
+.report-collapse i,
+.report-collapse svg {
     position: absolute;
     pointer-events: none;
     left: -1px;

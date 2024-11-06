@@ -90,7 +90,8 @@ a[disabled="true"]{
     display: flex;
 }
 
-.container > mat-icon {
+.container > i,
+.container > svg {
     font-size: 50px;
     flex: 0 0 80px;
     align-self: center;
@@ -110,7 +111,8 @@ a[disabled="true"]{
     box-shadow: inset 0px 0px 5px 0px rgb(0 0 0 / 10%);
 }
 
-.scroll-right mat-icon {
+.scroll-right i,
+.scroll-right svg {
     font-size: 50px;
     margin-top: 80px;
 }
@@ -206,7 +208,8 @@ a[disabled="true"]{
     gap: 15px;
 }
 
-.chain-title mat-icon {
+.chain-title i,
+.chain-title svg{
     font-size: 30px;
     color: #000;
     position: relative;
@@ -261,7 +264,8 @@ a.go-back-link {
     padding-right: 28px;
 }
 
-a.go-back-link mat-icon {
+a.go-back-link i,
+a.go-back-link svg {
     color: #707070;
     position: relative;
     top: -3px;
@@ -273,7 +277,8 @@ a.go-back-link mat-icon {
     padding: 45px;
 }
 
-.header mat-icon {
+.header i,
+.header svg {
     color: #00D048;
     font-size: 30px;
     vertical-align: bottom;

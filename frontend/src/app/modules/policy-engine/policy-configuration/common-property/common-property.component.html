@@ -2,7 +2,7 @@
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
             <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-            <i class="pi pi-chevron-down"></i>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
             <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
@@ -23,7 +23,7 @@
     <tr class="propHeader" [attr.collapse]="collapse">
         <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
             <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-            <i class="pi pi-chevron-down"></i>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName" [title]="property.title">
             <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
@@ -41,7 +41,7 @@
             <td class="propRowCol cellCollapse" (click)="onHideItem(i)"
                 [attr.collapse]="groupCollapse || itemCollapse[i]">
                 <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-                <i class="pi pi-chevron-down"></i>
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">
                 {{ property.items.label }} {{ i }}

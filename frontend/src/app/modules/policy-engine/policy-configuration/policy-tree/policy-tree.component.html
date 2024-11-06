@@ -15,12 +15,12 @@
     >
         <div *ngIf="data" class="tree" [attr.readonly]="readonly" [attr.move-actions]="visibleMoveActions">
             <div class="block-all-expand" (click)="onAllCollapse()" [attr.collapsed]="allCollapse">
-                <!--                <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>-->
+<!--                                <mat-icon *ngIf="allCollapse === '2'">unfold_more</mat-icon>-->
 
-                <i *ngIf="allCollapse === '2'" class="pi pi-chevron-down"></i>
+                <i *ngIf="allCollapse === '2'" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
                 <!--                <mat-icon *ngIf="allCollapse !== '2'">unfold_less</mat-icon>-->
 
-                <i *ngIf="allCollapse !== '2'" class="pi pi-chevron-up"></i>
+                <i *ngIf="allCollapse !== '2'" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
             </div>
 
             <ng-container *ngFor="let item of data">
@@ -41,9 +41,9 @@
                      [attr.deprecated]="item.deprecated"
                 >
                     <div class="block-expand" (click)="onCollapse($event, item)">
-                        <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
+<!--                                                <mat-icon>arrow_drop_down</mat-icon>-->
 
-                        <i class="pi pi-chevron-down"></i>
+                        <i class="pi pi-caret-down"></i>
                     </div>
 
                     <div *ngIf="isRootBlockStyle(item)" class="block-body module-body">
@@ -51,8 +51,8 @@
                             <div class="module-item-icon">
                                 <!--                                <mat-icon>article</mat-icon>-->
 
-                                <svg-icon src="/assets/images/icons/article.svg"
-                                          svgClass="icon-style-article"></svg-icon>
+                                <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article action-color"
+                                          class="icon-style-article action-color"></svg-icon>
                             </div>
 
                             <div class="module-item-name">
@@ -109,22 +109,22 @@
                                 <button (click)="onDropUp($event)" mat-icon-button
                                         class="action-button move-action-up">
                                     <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
-                                    <i class="pi pi-chevron-up"></i>
+                                    <i class="pi pi-caret-up"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
                                         class="action-button move-action-left">
                                     <!--                                    <mat-icon>arrow_left</mat-icon>-->
-                                    <i class="pi pi-chevron-left"></i>
+                                    <i class="pi pi-caret-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
                                         class="action-button move-action-right">
                                     <!--                                    <mat-icon>arrow_right</mat-icon>-->
-                                    <i class="pi pi-chevron-right"></i>
+                                    <i class="pi pi-caret-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
                                         class="action-button move-action-down">
                                     <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
-                                    <i class="pi pi-chevron-down"></i>
+                                    <i class="pi pi-caret-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
                                         class="action-button move-more-action-button">
@@ -154,7 +154,7 @@
                         <div class="block-item" (click)="onSelect($event, item)" (dblclick)="onOpen($event, item)">
                             <div class="module-item-icon">
                                 <!--                                <mat-icon class="svg-icon" svgIcon="policy-module"></mat-icon>-->
-                                <svg-icon src="/assets/icons/policy-module.svg" class="svg-icon"></svg-icon>
+                                <svg-icon src="/assets/images/icons/policy-module.svg" class="svg-icon"></svg-icon>
                             </div>
                             <div class="module-item-name">
                                 {{ item.node.localTag }}
@@ -170,22 +170,22 @@
                                 <button (click)="onDropUp($event)" mat-icon-button
                                         class="action-button move-action-up">
                                     <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
-                                    <i class="pi pi-chevron-down"></i>
+                                    <i class="pi pi-caret-down"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
                                         class="action-button move-action-left">
                                     <!--                                    <mat-icon>arrow_left</mat-icon>-->
-                                    <i class="pi pi-chevron-left"></i>
+                                    <i class="pi pi-caret-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
                                         class="action-button move-action-right">
                                     <!--                                    <mat-icon>arrow_right</mat-icon>-->
-                                    <i class="pi pi-chevron-right"></i>
+                                    <i class="pi pi-caret-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
                                         class="action-button move-action-down">
                                     <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
-                                    <i class="pi pi-chevron-down"></i>
+                                    <i class="pi pi-caret-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
                                         class="action-button move-more-action-button">
@@ -228,22 +228,22 @@
                                 <button (click)="onDropUp($event)" mat-icon-button
                                         class="action-button move-action-up">
                                     <!--                                    <mat-icon>arrow_drop_up</mat-icon>-->
-                                    <i class="pi pi-chevron-up"></i>
+                                    <i class="pi pi-caret-up"></i>
                                 </button>
                                 <button (click)="onDropLeft($event)" mat-icon-button
                                         class="action-button move-action-left">
                                     <!--                                    <mat-icon>arrow_left</mat-icon>-->
-                                    <i class="pi pi-chevron-left"></i>
+                                    <i class="pi pi-caret-left"></i>
                                 </button>
                                 <button (click)="onDropRight($event)" mat-icon-button
                                         class="action-button move-action-right">
                                     <!--                                    <mat-icon>arrow_right</mat-icon>-->
-                                    <i class="pi pi-chevron-right"></i>
+                                    <i class="pi pi-caret-right"></i>
                                 </button>
                                 <button (click)="onDropDown($event)" mat-icon-button
                                         class="action-button move-action-down">
                                     <!--                                    <mat-icon>arrow_drop_down</mat-icon>-->
-                                    <i class="pi pi-chevron-down"></i>
+                                    <i class="pi pi-caret-down"></i>
                                 </button>
                                 <button (click)="onVisibleMoreActions($event)" mat-icon-button
                                         class="action-button move-more-action-button">
@@ -277,7 +277,7 @@
                     (click)="nested.emit(nestedBlock.type)">
                     <div class="block-expand">
                         <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
-                        <i class="pi pi-chevron-down"></i>
+                        <i class="pi pi-caret-down"></i>
                     </div>
                     <div class="block-body" [style]="blockStyle(nestedBlock)"
                          [matTooltip]="blockTypeTips[nestedBlock.type]" matTooltipPosition="above"
@@ -304,7 +304,7 @@
                     [style.paddingLeft]="selectedNode?.offset">
                     <div class="block-expand">
                         <!--                        <mat-icon>arrow_drop_down</mat-icon>-->
-                        <i class="pi pi-chevron-down"></i>
+                        <i class="pi pi-caret-down"></i>
                     </div>
                     <div class="block-body" [style]="blockStyle(nextBlock)" [matTooltip]="blockTypeTips[nextBlock.type]"
                          matTooltipPosition="below" matTooltipClass="guardian-tooltip">

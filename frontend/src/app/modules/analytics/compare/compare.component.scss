@@ -131,7 +131,8 @@
 
 }
 
-.export-btn mat-icon {
+.export-btn i,
+.export-btn svg {
     position: absolute;
     left: 10px;
     top: 8px;
@@ -156,7 +157,8 @@
     pointer-events: none;
 }
 
-.merge-back>div mat-icon {
+.merge-back>div i,
+.merge-back>div svg{
     color: #707070;
     position: absolute;
     top: 3px;

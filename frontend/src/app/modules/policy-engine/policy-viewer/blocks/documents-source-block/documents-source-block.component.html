@@ -26,7 +26,7 @@
                             <!--                            <mat-icon>-->
                             <!--                                {{statusDetailed === element? "keyboard_arrow_down": "keyboard_arrow_right"}}-->
                             <!--                            </mat-icon>-->
-                            <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                            <i [ngClass]="statusDetailed === element ? 'pi pi-caret-down' : 'pi pi-caret-right'"></i>
                         </div>
                     </td>
                 </ng-container>
@@ -76,7 +76,7 @@
                                     <!--                                    <mat-icon (click)="onArray($event, element, option)">-->
                                     <!--                                        keyboard_arrow_down-->
                                     <!--                                    </mat-icon>-->
-                                    <i class="pi pi-chevron-down" (click)="onArray($event, element, option)"></i>
+                                    <i class="pi pi-caret-down" (click)="onArray($event, element, option)"></i>
                                 </span>
                                 <span
                                     *ngIf="option.type == 'serials' && getArray(element, option)"
@@ -93,7 +93,7 @@
                                     <!--                                    <mat-icon (click)="onSerials($event, element, option)">-->
                                     <!--                                        keyboard_arrow_down-->
                                     <!--                                    </mat-icon>-->
-                                    <i class="pi pi-chevron-down" (click)="onSerials($event, element, option)"></i>
+                                    <i class="pi pi-caret-down" (click)="onSerials($event, element, option)"></i>
                                 </span>
                                 <span
                                     (click)="$event.stopImmediatePropagation()"

@@ -377,7 +377,8 @@
     overflow: hidden;
 }
 
-.block-icon mat-icon {
+.block-icon i,
+.block-icon svg {
     font-size: 16px;
     height: 16px;
     width: 16px;
@@ -564,7 +565,8 @@
     display: none;
 }
 
-.report-collapse mat-icon {
+.report-collapse i,
+.report-collapse svg {
     position: absolute;
     pointer-events: none;
     left: -1px;

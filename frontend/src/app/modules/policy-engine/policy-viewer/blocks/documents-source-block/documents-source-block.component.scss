@@ -198,7 +198,8 @@
     position: relative;
 }
 
-.array.text mat-icon {
+.array.text i,
+.array.text svg,{
     position: absolute;
     right: 0;
     top: 0;
@@ -211,7 +212,8 @@
     position: relative;
 }
 
-.serials mat-icon {
+.serials i,
+.serials svg {
     position: absolute;
     right: 0;
     top: 0;

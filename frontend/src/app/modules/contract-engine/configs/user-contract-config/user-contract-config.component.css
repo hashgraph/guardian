@@ -70,13 +70,15 @@
     padding-right: 30px;
 }
 
-.toolbar-btn mat-icon {
+.toolbar-btn i,
+.toolbar-btn svg {
     position: absolute;
     left: 14px;
     top: 10px;
 }
 
-.toolbar-btn.add mat-icon {
+.toolbar-btn.add i,
+.toolbar-btn.add svg {
     font-size: 30px;
     left: 10px;
     top: 7px;
