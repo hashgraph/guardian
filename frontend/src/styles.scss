@@ -116,6 +116,43 @@ body>.leader-line-areaAnchor {
     }
 }
 
+p-table {
+    tbody {
+        tr.header {
+            box-shadow: 0 3px 6px rgb(0 0 0 / 16%);
+            position: relative;
+        }
+
+        tr.body {
+            height: var(--table-row-height);
+
+            &:hover {
+                background-color: rgba(112, 112, 112, 0.04);
+            }
+
+            td {
+                font-size: 20px;
+                line-height: 23px;
+                padding: 0 10px;
+
+                a,
+                .btn-field,
+                .btn-link {
+                    width: auto;
+                    font-size: 20px;
+                    color: #0B73F8;
+                    text-decoration: none;
+                    display: inline-block;
+                    border-bottom: 3px solid #0C77FF !important;
+                    padding-bottom: 3px;
+                    font-weight: normal;
+                    text-transform: capitalize;
+                }
+            }
+        }
+    }
+}
+
 .guardian-tooltip {
     font-size: 16px;
     overflow-wrap: break-word !important;
