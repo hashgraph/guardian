@@ -13142,7 +13142,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.27.1
+  version: 3.0.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -16190,6 +16190,8 @@ components:
             - PERMISSIONS_ROLE_MANAGE
             - STATISTICS_STATISTIC_READ
             - STATISTICS_STATISTIC_CREATE
+            - STATISTICS_LABEL_READ
+            - STATISTICS_LABEL_CREATE
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
             - SCHEMAS_RULE_EXECUTE
@@ -16278,6 +16280,7 @@ components:
             - ROLE
             - STATISTIC
             - RULE
+            - LABEL
           example: POLICY
         action:
           type: string
@@ -16564,6 +16567,60 @@ components:
         - '@context'
         - id
         - type
+    PolicyLabelDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    PolicyLabelRelationshipsDTO:
+      type: object
+      properties: {}
     ProofDTO:
       type: object
       properties:
