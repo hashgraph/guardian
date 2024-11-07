@@ -9,3 +9,4 @@ export * from './token-import-export-helper.js';
 export * from './artifact-import-export-helper.js';
 export * from './tag-import-export-helper.js';
 export * from './contract-api.js';
+export * from './policy-labels-helpers.js';

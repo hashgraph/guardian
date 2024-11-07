@@ -37,6 +37,7 @@ import { NotificationService } from './services/notify.service';
 import { PermissionsService } from './services/permissions.service';
 import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
+import { PolicyLabelsService } from './services/policy-labels.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -129,6 +130,7 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
+import { PolicyLabelsModule } from './modules/policy-labels/policy-labels.module';
 
 @NgModule({
     declarations: [
@@ -190,6 +192,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         PolicyEngineModule,
         PolicyStatisticsModule,
         SchemaRulesModule,
+        PolicyLabelsModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -233,6 +236,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         PolicyEngineService,
         PolicyStatisticsService,
         SchemaRulesService,
+        PolicyLabelsService,
         PolicyHelper,
         IPFSService,
         ArtifactService,

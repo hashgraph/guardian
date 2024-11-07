@@ -41,7 +41,8 @@ import {
     StatisticDefinitionRelationshipsDTO,
     SchemaRuleDTO,
     SchemaRuleRelationshipsDTO,
-    SchemaRuleDataDTO
+    SchemaRuleDataDTO,
+    PolicyLabelDTO
 } from '#middlewares';
 
 /**
@@ -3196,5 +3197,154 @@ export class Guardians extends NatsService {
      */
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Create policy label
+     *
+     * @param label
+     * @param owner
+     * @returns policy label
+     */
+    public async createPolicyLabel(label: PolicyLabelDTO, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_POLICY_LABEL, { label, owner });
+    }
+
+    /**
+     * Return policy labels
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async getPolicyLabels(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABELS, { filters, owner });
+    }
+
+    /**
+     * Get policy label
+     *
+     * @param labelId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getPolicyLabelById(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL, { labelId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param labelId
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getPolicyLabelRelationships(labelId: string, owner: IOwner): Promise<SchemaRuleRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_RELATIONSHIPS, { labelId, owner });
+    }
+
+    /**
+     * Update policy label
+     *
+     * @param labelId
+     * @param label
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updatePolicyLabel(
+        labelId: string,
+        label: PolicyLabelDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_POLICY_LABEL, { labelId, label, owner });
+    }
+
+    /**
+     * Delete policy label
+     *
+     * @param labelId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deletePolicyLabel(labelId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_POLICY_LABEL, { labelId, owner });
+    }
+
+    /**
+     * Activate policy label
+     *
+     * @param labelId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async activatePolicyLabel(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.ACTIVATE_POLICY_LABEL, { labelId, owner });
+    }
+
+    /**
+     * Activate policy label
+     *
+     * @param labelId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async inactivatePolicyLabel(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.INACTIVATE_POLICY_LABEL, { labelId, owner });
+    }
+
+    /**
+     * Load policy label file for import
+     * @param zip
+     * @param owner
+     */
+    public async importPolicyLabel(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_POLICY_LABEL_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get policy label export file
+     * @param labelId
+     * @param owner
+     */
+    public async exportPolicyLabel(labelId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_POLICY_LABEL_FILE, { labelId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get policy label info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewPolicyLabel(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_POLICY_LABEL_FILE, { zip, owner });
     }
 }

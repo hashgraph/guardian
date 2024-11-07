@@ -40,6 +40,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Manage Schema Rules',
                 routerLink: '/schema-rules'
             },
+            {
+                title: 'Manage Policy Labels',
+                routerLink: '/policy-labels'
+            },
         ],
     },
     {
@@ -157,6 +161,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 childItems.push({
                     title: 'Schema Rules',
                     routerLink: '/schema-rules'
+                });
+            }
+            if (user.STATISTICS_LABEL_READ) {
+                childItems.push({
+                    title: 'Policy Labels',
+                    routerLink: '/policy-labels'
                 });
             }
         }

@@ -596,6 +596,38 @@ const routes: Routes = [
         }
     },
 
+
+
+    {
+        path: 'policy-labels',
+        component: SchemaRulesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-label/:ruleId',
+        component: SchemaRuleConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+
+
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },
     { path: '**', redirectTo: '', pathMatch: 'full' },

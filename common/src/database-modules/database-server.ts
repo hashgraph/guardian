@@ -40,7 +40,8 @@ import {
     Artifact,
     PolicyStatistic,
     PolicyStatisticDocument,
-    SchemaRule
+    SchemaRule,
+    PolicyLabel
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -3981,5 +3982,81 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
         return await new DataBaseHelper(SchemaRule).remove(rule);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /**
+     * Create PolicyLabel
+     * @param label
+     */
+    public static async createPolicyLabel(
+        label: FilterObject<PolicyLabel>
+    ): Promise<PolicyLabel> {
+        const item = new DataBaseHelper(PolicyLabel).create(label);
+        return await new DataBaseHelper(PolicyLabel).save(item);
+    }
+
+    /**
+     * Get PolicyLabel
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyLabelsAndCount(
+        filters?: FilterObject<PolicyLabel>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyLabel[], number]> {
+        return await new DataBaseHelper(PolicyLabel).findAndCount(filters, options);
+    }
+
+    /**
+     * Get PolicyLabel
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyLabels(
+        filters?: FilterObject<PolicyLabel>,
+        options?: unknown
+    ): Promise<PolicyLabel[]> {
+        return await new DataBaseHelper(PolicyLabel).find(filters, options);
+    }
+
+    /**
+     * Get PolicyLabel By ID
+     * @param id
+     */
+    public static async getPolicyLabelById(id: string): Promise<PolicyLabel | null> {
+        return await new DataBaseHelper(PolicyLabel).findOne(id);
+    }
+
+    /**
+     * Update PolicyLabel
+     * @param label
+     */
+    public static async updatePolicyLabel(label: PolicyLabel): Promise<PolicyLabel> {
+        return await new DataBaseHelper(PolicyLabel).update(label);
+    }
+
+    /**
+     * Delete PolicyLabel
+     * @param label
+     */
+    public static async removePolicyLabel(label: PolicyLabel): Promise<void> {
+        return await new DataBaseHelper(PolicyLabel).remove(label);
     }
 }
