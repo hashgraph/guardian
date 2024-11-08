@@ -39,7 +39,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
 
 Policy: 1698754217.516521003
 
