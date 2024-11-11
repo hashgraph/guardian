@@ -93,6 +93,232 @@
             }
         }
 
+        .imports-viewer {
+            padding: 24px 48px;
+
+            .import-list {
+                box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+                background: var(--guardian-background, #FFFFFF);
+                padding: 24px 24px 2px 24px;
+                border-radius: 8px;
+            }
+        }
+
+        .navigation-viewer {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow: hidden;
+
+            .navigation-toolbar {
+                position: absolute;
+                top: 0px;
+                bottom: 0px;
+                left: 0px;
+                width: 240px;
+                z-index: 2;
+                background: var(--guardian-background, #FFFFFF);
+                border-left: 1px solid var(--guardian-border-color, #E1E7EF);
+                box-shadow: 0px 0px 4px 0px var(--guardian-shadow, #00000014);
+                overflow: hidden;
+
+                .navigation-toolbar-header {
+                    font-family: Poppins;
+                    font-size: 16px;
+                    font-weight: 600;
+                    line-height: 20px;
+                    text-align: left;
+                    text-underline-position: from-font;
+                    text-decoration-skip-ink: none;
+                    padding: 24px 0px 21px 24px;
+                }
+
+                .navigation-toolbar-search {}
+
+                .navigation-toolbar-group {
+                    padding: 0px 24px 0px 24px;
+
+                    .navigation-toolbar-group-header {
+                        font-family: Inter;
+                        font-size: 12px;
+                        font-weight: 400;
+                        line-height: 16px;
+                        text-align: left;
+                        text-underline-position: from-font;
+                        text-decoration-skip-ink: none;
+                        height: 24px;
+                        padding: 5px 0px 5px 0px;
+                        color: #848FA9;
+                        text-transform: uppercase;
+                        margin-bottom: 8px;
+                    }
+
+                    .navigation-toolbar-group-item {
+                        width: 100%;
+                        height: 32px;
+                        border-radius: 4px;
+                        border: 1px solid var(--primary-primary, #4169E2);
+                        display: flex;
+                        overflow: hidden;
+                        flex-direction: row;
+                        cursor: pointer;
+                        margin-bottom: 8px;
+                        box-shadow: 0px 4px 4px 0px #00000014;
+                        padding: 0px 8px;
+                        align-items: center;
+
+                        .navigation-toolbar-group-item-icon {
+                            width: 16px;
+                            height: 16px;
+                            overflow: hidden;
+                        }
+
+                        .navigation-toolbar-group-item-label {
+                            font-family: Inter;
+                            font-size: 12px;
+                            font-weight: 500;
+                            line-height: 14px;
+                            padding-left: 8px;
+                            color: #23252E;
+                        }
+                    }
+                }
+            }
+
+            .navigation-tree-container {
+                position: absolute;
+                left: 240px;
+                top: 0px;
+                bottom: 0px;
+                right: 0px;
+                z-index: 1;
+                user-select: none;
+                padding: 24px;
+
+                .navigation-tree {
+                    width: 100%;
+                    height: 100%;
+
+                    &::ng-deep {
+                        ul[role="tree"]>p-treenode>.p-treenode-droppoint {
+                            display: none !important;
+                        }
+
+                        .p-treenode-droppoint.p-treenode-droppoint-active {
+                            background-color: transparent !important;
+                            border-bottom: 2px dashed var(--guardian-primary-color, #4169E2);
+                        }
+
+                        .p-tree .p-treenode-children {
+                            padding: 0 0 0 34px;
+                        }
+
+                        .p-treenode-content {
+                            position: relative;
+                            width: 275px;
+                            cursor: pointer;
+                            box-shadow: none;
+                            padding: 2px 0px;
+
+                            .navigation-item {
+                                height: 32px;
+                                width: 200px;
+                                border: 1px solid var(--guardian-primary-color, #4169E2);
+                                border-radius: 6px;
+                                box-shadow: 0px 4px 4px 0px #00000014;
+                                padding: 0px 8px;
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                background: #fff;
+
+                                .navigation-item-icon {
+                                    width: 16px;
+                                    height: 16px;
+                                    overflow: hidden;
+                                }
+
+                                .navigation-item-label {
+                                    font-family: Inter;
+                                    font-size: 12px;
+                                    font-weight: 500;
+                                    line-height: 14px;
+                                    padding-left: 8px;
+                                    color: #23252E;
+                                }
+                            }
+
+                            &.p-treenode-dragover {
+                                background: transparent;
+                                position: relative;
+
+                                &::before {
+                                    content: "";
+                                    display: block;
+                                    position: absolute;
+                                    left: 35px;
+                                    top: -2px;
+                                    right: 0px;
+                                    bottom: -2px;
+                                    border: 2px dashed var(--guardian-primary-color, #4169E2);
+                                    background: #f0f3fc;
+                                    z-index: -2;
+                                }
+
+                                &+ul[role="group"] {
+                                    position: relative;
+
+                                    &::before {
+                                        content: "";
+                                        display: block;
+                                        position: absolute;
+                                        left: 35px;
+                                        top: -38px;
+                                        right: 0px;
+                                        bottom: -2px;
+                                        border: 2px dashed var(--guardian-primary-color, #4169E2);
+                                        background: #f0f3fc;
+                                        z-index: -1;
+                                    }
+                                }
+                            }
+                        }
+
+                        .p-treenode:focus>.p-treenode-content {
+                            .navigation-item {
+                                box-shadow: 0 0 0 2px #4169E2;
+                            }
+                        }
+                    }
+                }
+            }
+
+            .item-config {
+                position: absolute;
+                top: 0px;
+                bottom: 0px;
+                right: 0px;
+                width: 400px;
+                z-index: 3;
+                background: var(--guardian-background, #FFFFFF);
+                border-left: 1px solid var(--guardian-border-color, #E1E7EF);
+                box-shadow: 0px 0px 4px 0px var(--guardian-shadow, #00000014);
+                overflow: hidden;
+                -webkit-transition: width 0.2s ease-in-out;
+                -moz-transition: width 0.2s ease-in-out;
+                -o-transition: width 0.2s ease-in-out;
+                transition: width 0.2s ease-in-out;
+                transform: translateZ(0);
+                will-change: transform, width;
+
+                &[hidden-schema="true"] {
+                    width: 0px;
+                }
+            }
+        }
+
         .schema-viewer {
             position: absolute;
             left: 0;

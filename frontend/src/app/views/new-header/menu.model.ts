@@ -40,10 +40,6 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Manage Schema Rules',
                 routerLink: '/schema-rules'
             },
-            {
-                title: 'Manage Policy Labels',
-                routerLink: '/policy-labels'
-            },
         ],
     },
     {

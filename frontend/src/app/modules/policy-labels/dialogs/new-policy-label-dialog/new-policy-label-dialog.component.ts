@@ -29,14 +29,14 @@ export class NewPolicyLabelDialog {
         this.action = this.config.data?.action || '';
         this.policies = this.config.data?.policies || [];
         this.policies = this.policies.filter((p) => p.instanceTopicId);
-        const rule = this.config.data?.rule;
+        const label = this.config.data?.label;
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
-        if (rule) {
+        if (label) {
             this.readonly = true;
             this.dataForm.setValue({
-                name: rule.name || 'N\\A',
-                description: rule.description || 'N\\A',
+                name: label.name || 'N\\A',
+                description: label.description || 'N\\A',
                 policy: this.policy
             })
         } else {

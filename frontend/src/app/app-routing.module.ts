@@ -52,6 +52,8 @@ import { StatisticDefinitionConfigurationComponent } from './modules/policy-stat
 import { StatisticDefinitionsComponent } from './modules/policy-statistics/statistic-definitions/statistic-definitions.component';
 import { SchemaRulesComponent } from './modules/schema-rules/schema-rules/schema-rules.component';
 import { SchemaRuleConfigurationComponent } from './modules/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
+import { PolicyLabelsComponent } from './modules/policy-labels/policy-labels/policy-labels.component';
+import { PolicyLabelConfigurationComponent } from './modules/policy-labels/policy-label-configuration/policy-label-configuration.component';
 
 @Injectable({
     providedIn: 'root'
@@ -600,7 +602,7 @@ const routes: Routes = [
 
     {
         path: 'policy-labels',
-        component: SchemaRulesComponent,
+        component: PolicyLabelsComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [
@@ -613,8 +615,8 @@ const routes: Routes = [
         }
     },
     {
-        path: 'policy-label/:ruleId',
-        component: SchemaRuleConfigurationComponent,
+        path: 'policy-label/:labelId',
+        component: PolicyLabelConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [

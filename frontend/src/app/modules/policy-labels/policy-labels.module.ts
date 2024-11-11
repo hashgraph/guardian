@@ -22,6 +22,9 @@ import { PolicyLabelsComponent } from './policy-labels/policy-labels.component';
 import { PolicyLabelConfigurationComponent } from './policy-label-configuration/policy-label-configuration.component';
 import { NewPolicyLabelDialog } from './dialogs/new-policy-label-dialog/new-policy-label-dialog.component';
 import { PolicyLabelPreviewDialog } from './dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
+import { DragDropModule } from 'primeng/dragdrop';
+import { TreeModule } from 'primeng/tree';
+import { TreeDragDropService } from 'primeng/api';
 
 @NgModule({
     declarations: [
@@ -49,11 +52,14 @@ import { PolicyLabelPreviewDialog } from './dialogs/policy-label-preview-dialog/
         CodemirrorModule,
         MultiSelectModule,
         OverlayPanelModule,
+        DragDropModule,
+        TreeModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],
     providers: [
-        DialogService
+        DialogService,
+        TreeDragDropService
     ],
 })
 export class PolicyLabelsModule { }

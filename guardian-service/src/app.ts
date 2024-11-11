@@ -52,6 +52,7 @@ import {
     PolicyStatistic,
     PolicyStatisticDocument,
     SchemaRule,
+    PolicyLabel,
     PolicyTest,
     PolicyTool,
     Record,
@@ -111,6 +112,7 @@ import { AISuggestionsService } from './helpers/ai-suggestions.js';
 import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
+import { policyLabelsAPI } from './api/policy-labels.service.js';
 
 export const obj = {};
 
@@ -161,7 +163,8 @@ const necessaryEntity = [
     PolicyTest,
     PolicyStatistic,
     PolicyStatisticDocument,
-    SchemaRule
+    SchemaRule,
+    PolicyLabel
 ]
 
 Promise.all([
@@ -266,6 +269,7 @@ Promise.all([
         await permissionAPI(logger);
         await statisticsAPI(logger);
         await schemaRulesAPI(logger);
+        await policyLabelsAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

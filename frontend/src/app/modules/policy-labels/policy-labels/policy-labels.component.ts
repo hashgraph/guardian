@@ -188,7 +188,7 @@ export class PolicyLabelsComponent implements OnInit {
         }
         this.pageIndex = 0;
         const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/schema-rules'], { queryParams: { topic } });
+        this.router.navigate(['/policy-label'], { queryParams: { topic } });
         this.loadData();
     }
 
@@ -219,7 +219,7 @@ export class PolicyLabelsComponent implements OnInit {
     }
 
     public onEdit(item: any) {
-        this.router.navigate(['/schema-rule', item.id]);
+        this.router.navigate(['/policy-label', item.id]);
     }
 
     public onImport() {
@@ -228,7 +228,7 @@ export class PolicyLabelsComponent implements OnInit {
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.SchemaRule,
+                type: ImportEntityType.PolicyLabel,
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -239,7 +239,7 @@ export class PolicyLabelsComponent implements OnInit {
     }
 
     private importDetails(result: IImportEntityResult) {
-        const { type, data, rule } = result;
+        const { type, data, label } = result;
         const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
             width: '720px',
@@ -249,7 +249,7 @@ export class PolicyLabelsComponent implements OnInit {
                 action: 'Import',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
-                rule
+                label
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
@@ -273,10 +273,10 @@ export class PolicyLabelsComponent implements OnInit {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-rules'
+                        type: 'application/guardian-label'
                     })
                 );
-                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.rules`);
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.label`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();
@@ -297,8 +297,8 @@ export class PolicyLabelsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete Rules',
-                text: `Are you sure want to delete rules (${item.name})?`,
+                header: 'Delete Label',
+                text: `Are you sure want to delete label (${item.name})?`,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'

@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
@@ -18,6 +18,65 @@ import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
+import { TreeDragDropService, TreeNode as PTreeNode } from 'primeng/api';
+
+const NavIcons: { [type: string]: string } = {
+    'group': 'file',
+    'label': 'file',
+    'statistic': 'file'
+}
+
+class NavItem implements PTreeNode {
+    public key?: string | undefined;
+    public data?: any;
+    public type?: string | undefined;
+    public icon?: string | undefined;
+    public label: string;
+    public children?: NavItem[] | undefined;
+    public parent?: NavItem | undefined;
+    public itemType: string;
+    public itemIcon: string;
+
+    constructor(itemType: string, label: string, data?: any) {
+        this.key = GenerateUUIDv4();
+        this.label = label;
+        this.data = data;
+        this.itemType = itemType;
+        this.itemIcon = NavIcons[itemType];
+        this.type = 'default';
+    }
+
+    public clone(): NavItem {
+        return new NavItem(this.itemType, this.label, this.data);
+    }
+}
+
+class RootNavItem implements PTreeNode {
+    public key?: string | undefined;
+    public data?: any;
+    public type?: string | undefined;
+    public icon?: string | undefined;
+    public label: string;
+    public children?: NavItem[] | undefined;
+    public parent?: NavItem | undefined;
+    public itemType: string;
+    public itemIcon: string;
+    public draggable?: boolean | undefined = false;
+
+    constructor(itemType: string, label: string, data?: any) {
+        this.key = GenerateUUIDv4();
+        this.label = label;
+        this.data = data;
+        this.itemType = itemType;
+        this.itemIcon = NavIcons[itemType];
+        this.type = 'root';
+    }
+
+    public clone(): RootNavItem {
+        return new RootNavItem(this.itemType, this.label, this.data);
+    }
+}
+
 
 @Component({
     selector: 'app-policy-label-configuration',
@@ -32,7 +91,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
 
-    public ruleId: string;
+    public labelId: string;
     public item: any | undefined;
     public policy: any;
     public schemas: Schema[];
@@ -104,6 +163,31 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         singleLine: true
     };
 
+    public menuItems = [{
+        title: 'General',
+        items: [
+            new NavItem('group', 'Group'),
+            new NavItem('group', 'Group'),
+        ]
+    }, {
+        title: 'Statistics',
+        items: [
+            new NavItem('group', 'Group'),
+            new NavItem('group', 'Group'),
+        ]
+    }, {
+        title: 'Labels',
+        items: [
+            new NavItem('group', 'Group'),
+            new NavItem('group', 'Group'),
+        ]
+    }];
+    private draggedMenuItem: any = null;
+
+    public navigationTree: NavItem[] = [
+        new RootNavItem('group', 'Group'),
+    ];
+
     constructor(
         private profileService: ProfileService,
         private schemaService: SchemaService,
@@ -111,8 +195,10 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         private ipfs: IPFSService,
         private dialogService: DialogService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private dragDropService: TreeDragDropService,
     ) {
+        this.menuItems.slice = function (start?: number | undefined, end?: number | undefined) { return this };
     }
 
     ngOnInit() {
@@ -150,11 +236,11 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.ruleId = this.route.snapshot.params['ruleId'];
+        this.labelId = this.route.snapshot.params['labelId'];
         this.loading = true;
         forkJoin([
-            this.policyLabelsService.getLabel(this.ruleId),
-            this.policyLabelsService.getRelationships(this.ruleId),
+            this.policyLabelsService.getLabel(this.labelId),
+            this.policyLabelsService.getRelationships(this.labelId),
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
@@ -226,7 +312,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         }
     }
 
-    private updateForm(item: ISchemaRules) {
+    private updateForm(item: IPolicyLabel) {
         this.overviewForm.setValue({
             name: item.name || '',
             description: item.description || '',
@@ -418,11 +504,10 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.loading = true;
         setTimeout(() => {
             for (let i = 0; i < this.stepper.length; i++) {
-                this.stepper[i] = false;
+                this.stepper[i] = i == index;
             }
-            this.stepper[index] = true;
-            this.tree?.move(18, 46);
-            if (index === 1) {
+            if (index === 4) {
+                this.tree?.move(18, 46);
                 setTimeout(() => {
                     this.tree?.refresh();
                     this.loading = false;
@@ -503,7 +588,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public onSave() {
         this.loading = true;
         const value = this.overviewForm.value;
-        const config: ISchemaRulesConfig = {
+        const config: IPolicyLabelConfig = {
             fields: this.variables.getJson()
         };
         const item = {
@@ -527,7 +612,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
 
     public onPreview() {
         const value = this.overviewForm.value;
-        const config: ISchemaRulesConfig = {
+        const config: IPolicyLabelConfig = {
             fields: this.variables.getJson(),
         };
         const item = {
@@ -592,5 +677,36 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                 this.updateCodeMirror();
             }
         });
+    }
+
+    public dragMenuStart(item: NavItem) {
+        this.draggedMenuItem = item.clone();
+        this.dragDropService.startDrag({
+            tree: null,
+            node: this.draggedMenuItem,
+            subNodes: [this.draggedMenuItem],
+            index: 0,
+            scope: "navigationTree"
+        })
+    }
+
+    public dragMenuEnd() {
+        this.draggedMenuItem = null;
+    }
+
+    public drop() {
+        if (this.draggedMenuItem) {
+            this.draggedMenuItem = null;
+        }
+    }
+
+    public onDropValidator($event: any) {
+        if ($event.dropNode?.type === 'root') {
+            if ($event.originalEvent.target.tagName === 'LI') {
+                return;
+            }
+        }
+        debugger;
+        $event.accept()
     }
 }
