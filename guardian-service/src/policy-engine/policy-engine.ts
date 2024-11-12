@@ -160,18 +160,17 @@ export class PolicyEngine extends NatsService {
      */
     public async accessPolicyCode(policy: Policy, user: IOwner): Promise<number> {
         if (!policy) {
-            return 1
+            //Policy does not exist
+            return 1;
         }
         if (user.owner !== policy.owner) {
-            return 2
+            //Insufficient permissions
+            return 2;
         }
         if (user.creator === policy.creator) {
-            return 0
+            return 0;
         }
-        const published = (
-            policy.status === PolicyType.PUBLISH ||
-            policy.status === PolicyType.DISCONTINUED
-        );
+        const published = (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
         switch (user.access) {
@@ -191,9 +190,11 @@ export class PolicyEngine extends NatsService {
                 return (published && assigned) ? 0 : 2;
             }
             case AccessType.NONE: {
+                //Insufficient permissions
                 return 2;
             }
             default: {
+                //Insufficient permissions
                 return 2;
             }
         }
