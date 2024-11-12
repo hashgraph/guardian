@@ -206,9 +206,24 @@
                             display: none !important;
                         }
 
-                        .p-treenode-droppoint.p-treenode-droppoint-active {
-                            background-color: transparent !important;
-                            border-bottom: 2px dashed var(--guardian-primary-color, #4169E2);
+                        .p-treenode-droppoint {
+                            height: 8px;
+                            position: relative;
+
+                            &.p-treenode-droppoint-active {
+                                background-color: transparent !important;
+                                &::before {
+                                    content: "";
+                                    display: block;
+                                    position: absolute;
+                                    left: 0;
+                                    top: 0;
+                                    right: 0px;
+                                    bottom: 3px;
+                                    border-bottom: 2px dashed var(--guardian-primary-color, #4169E2);
+                                    background: #f0f3fc;
+                                }
+                            }
                         }
 
                         .p-tree .p-treenode-children {
