@@ -56,7 +56,7 @@ AMS-II.G provides a standardized and measurable framework for clean cooking proj
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
 
 Policy: 1706881318.979259003
 

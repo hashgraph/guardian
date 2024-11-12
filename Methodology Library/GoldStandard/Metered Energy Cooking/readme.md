@@ -49,7 +49,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
 
 <img width="717" alt="image" src="https://user-images.githubusercontent.com/9518151/229341068-fb33b357-712e-4f52-ac6e-8eb46fbc2dab.png">
 

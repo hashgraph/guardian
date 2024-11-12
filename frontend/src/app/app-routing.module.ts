@@ -300,7 +300,8 @@ const routes: Routes = [
             roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
                 Permissions.POLICIES_POLICY_READ,
-                Permissions.POLICIES_POLICY_EXECUTE
+                Permissions.POLICIES_POLICY_EXECUTE,
+                Permissions.POLICIES_POLICY_MANAGE,
             ]
         }
     },
@@ -311,7 +312,8 @@ const routes: Routes = [
         data: {
             roles: [UserRole.STANDARD_REGISTRY, UserRole.USER],
             permissions: [
-                Permissions.POLICIES_POLICY_EXECUTE
+                Permissions.POLICIES_POLICY_EXECUTE,
+                Permissions.POLICIES_POLICY_MANAGE,
             ]
         }
     },
