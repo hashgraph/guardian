@@ -189,10 +189,6 @@
     color: var(--button-primary-color);
 }
 
-::ng-deep .p-datatable-wrapper {
-    max-height: calc(100vh - 172px) !important;
-}
-
 .header {
     height: 56px;
     font-size: 12px;

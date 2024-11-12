@@ -99,6 +99,37 @@
     z-index: 0;
 }
 
+.select-btn__container {
+    display: grid;
+    align-items: center;
+}
+
+::ng-deep p-selectbutton .p-button {
+    height: 50px;
+    width: max-content;
+    font-size: 14px;
+    padding: 9px;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+::ng-deep p-selectbutton .p-button[aria-pressed="true"] {
+    background-color: #e0e0e0;
+    border: 1px solid #ced4da;
+}
+
+::ng-deep p-selectbutton .p-button[aria-pressed="true"]:focus {
+    border: 1px solid #ced4da;
+}
+
+::ng-deep .p-selectbutton .p-button:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+::ng-deep .p-selectbutton .p-button.p-highlight {
+    pointer-events: none;
+}
+
 .action-btn {
     background: #4caf50;
     color: #fff;
@@ -140,8 +171,8 @@
 
 .actions {
     display: grid;
-    grid-template-columns: auto 1fr;
-    padding: 14px 14px 14px 14px;
+    grid-template-columns: auto 0;
+    padding: 14px 20px 14px 14px;
     border-bottom: 1px solid #eee;
     margin: 0;
     height: 92px;
@@ -153,7 +184,18 @@
     margin: 8px 10px 0 10px;
 }
 
-.toolbar-btn {
+.toolbar-btn__container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 30%;
+    /*margin-left: 65%;*/
+    column-gap: 20px;
+    align-content: center;
+    justify-content: end;
+}
+
+.toolbar-btn,
+::ng-deep button.p-toolbar-btn {
     margin: 15px;
     min-width: 120px;
     cursor: pointer;
@@ -168,16 +210,37 @@
     padding-right: 30px;
 }
 
-.toolbar-btn i,
-.toolbar-btn svg {
-    position: absolute;
+::ng-deep button.p-toolbar-btn {
+    height: 48px;
+    width: 178px;
+    padding: 0;
+    padding-left: 22px!important;
+    margin: 0;
+    background: var(--color-primary);
+}
+
+/*.toolbar-btn i,*/
+/*.toolbar-btn svg {*/
+/*    position: absolute;*/
+/*    left: 14px;*/
+/*    top: 12px;*/
+/*    font-size: 20px;*/
+/*}*/
+
+/*.toolbar-btn.add i,*/
+/*.toolbar-btn.add svg {*/
+/*    font-size: 20px;*/
+/*    left: 14px;*/
+/*    top: 12px;*/
+/*}*/
+
+::ng-deep button span.pi {
     left: 14px;
     top: 12px;
     font-size: 20px;
 }
 
-.toolbar-btn.add i,
-.toolbar-btn.add svg {
+::ng-deep button span.pi-plus {
     font-size: 20px;
     left: 14px;
     top: 12px;
@@ -212,10 +275,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-::ng-deep .p-datatable-wrapper {
-    max-height: calc(100vh - 172px) !important;
 }
 
 .header {

@@ -54,7 +54,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
-import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
+// import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -152,7 +152,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         InfoComponent,
         SchemaConfigComponent,
         BrandingComponent,
-        BrandingDialogComponent,
+        // BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         NotificationComponent,
