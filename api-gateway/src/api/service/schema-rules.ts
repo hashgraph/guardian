@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaRuleDTO, SchemaRuleDataDTO, SchemaRuleRelationshipsDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
@@ -384,7 +384,7 @@ export class SchemaRulesApi {
      * Get rules and data
      */
     @Post('/data')
-    @Auth(Permissions.SCHEMAS_RULE_EXECUTE)
+    @Auth()
     @ApiOperation({
         summary: '',
         description: '',
@@ -412,9 +412,13 @@ export class SchemaRulesApi {
             if (!options) {
                 throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            const owner = new EntityOwner(user);
-            const guardian = new Guardians();
-            return await guardian.getSchemaRuleData(options, owner);
+            if (!UserPermissions.has(user, Permissions.SCHEMAS_RULE_EXECUTE)) {
+                return null;
+            } else {
+                const owner = new EntityOwner(user);
+                const guardian = new Guardians();
+                return await guardian.getSchemaRuleData(options, owner);
+            }
         } catch (error) {
             await InternalException(error, this.logger);
         }
