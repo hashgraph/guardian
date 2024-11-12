@@ -189,13 +189,19 @@
 
             .navigation-tree-container {
                 position: absolute;
-                left: 240px;
-                top: 0px;
+                left: 252px;
+                top: 12px;
                 bottom: 0px;
                 right: 0px;
                 z-index: 1;
                 user-select: none;
                 padding: 24px;
+                background-color: #f9fafc;
+                // background-image: linear-gradient(#e8e8e8 0.8px, transparent 0.8px), linear-gradient(90deg, #e8e8e8 0.8px, transparent 0.8px), linear-gradient(#e8e8e8 0.4px, transparent 0.4px), linear-gradient(90deg, #e8e8e8 0.4px, #f9fafc 0.4px);
+                // background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
+                // background-position: -0.8px -0.8px, -0.8px -0.8px, -0.4px -0.4px, -0.4px -0.4px;
+                background-image: radial-gradient(circle, #bfbfbf 1px, #f9fafc 1px);
+                background-size: 20px 20px;
 
                 .navigation-tree {
                     width: 100%;
@@ -206,6 +212,11 @@
                             display: none !important;
                         }
 
+                        .p-tree-toggler-icon {
+                            height: 24px;
+                            width: 24px;
+                        }
+
                         .p-treenode-droppoint {
                             height: 8px;
                             position: relative;
@@ -213,6 +224,7 @@
 
                             &.p-treenode-droppoint-active {
                                 background-color: transparent !important;
+
                                 &::before {
                                     content: "";
                                     display: block;
@@ -263,6 +275,7 @@
                                     line-height: 14px;
                                     padding-left: 8px;
                                     color: #23252E;
+                                    width: 160px;
                                 }
                             }
 

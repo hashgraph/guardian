@@ -21,9 +21,10 @@ import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { TreeDragDropService, TreeNode as PTreeNode } from 'primeng/api';
 
 const NavIcons: { [type: string]: string } = {
-    'group': 'file',
-    'label': 'file',
-    'statistic': 'file'
+    'group': 'folder',
+    'rules': 'file',
+    'label': 'circle-check',
+    'statistic': 'stats'
 }
 
 class NavItem implements PTreeNode {
@@ -48,6 +49,31 @@ class NavItem implements PTreeNode {
 
     public clone(): NavItem {
         return new NavItem(this.itemType, this.label, this.data);
+    }
+}
+
+class ReadOnlyNavItem implements PTreeNode {
+    public key?: string | undefined;
+    public data?: any;
+    public type?: string | undefined;
+    public icon?: string | undefined;
+    public label: string;
+    public children?: NavItem[] | undefined;
+    public parent?: NavItem | undefined;
+    public itemType: string;
+    public itemIcon: string;
+
+    constructor(itemType: string, label: string, data?: any) {
+        this.key = GenerateUUIDv4();
+        this.label = label;
+        this.data = data;
+        this.itemType = itemType;
+        this.itemIcon = NavIcons[itemType];
+        this.type = 'readonly';
+    }
+
+    public clone(): ReadOnlyNavItem {
+        return new ReadOnlyNavItem(this.itemType, this.label, this.data);
     }
 }
 
@@ -167,19 +193,19 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         title: 'General',
         items: [
             new NavItem('group', 'Group'),
-            new NavItem('group', 'Group'),
+            new NavItem('rules', 'Rules'),
         ]
     }, {
         title: 'Statistics',
         items: [
-            new NavItem('group', 'Group'),
-            new NavItem('group', 'Group'),
+            new ReadOnlyNavItem('statistic', 'Statistic 1'),
+            new ReadOnlyNavItem('statistic', 'Statistic 2'),
         ]
     }, {
         title: 'Labels',
         items: [
-            new NavItem('group', 'Group'),
-            new NavItem('group', 'Group'),
+            new ReadOnlyNavItem('label', 'Label 1'),
+            new ReadOnlyNavItem('label', 'Label 2'),
         ]
     }];
     private draggedMenuItem: any = null;
@@ -203,8 +229,14 @@ export class PolicyLabelConfigurationComponent implements OnInit {
 
     ngOnInit() {
         this.subscription.add(
-            this.route.queryParams.subscribe((queryParams) => {
+            this.route.params.subscribe((queryParams) => {
                 this.loadProfile();
+            })
+        );
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                const index = queryParams.tab || 0;
+                this.onStep(index);
             })
         );
     }
@@ -502,6 +534,13 @@ export class PolicyLabelConfigurationComponent implements OnInit {
 
     public onStep(index: number) {
         this.loading = true;
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {
+                tab: String(index),
+            },
+            queryParamsHandling: 'merge',
+        });
         setTimeout(() => {
             for (let i = 0; i < this.stepper.length; i++) {
                 this.stepper[i] = i == index;
@@ -706,7 +745,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                 return;
             }
         }
-        debugger;
-        $event.accept()
+        $event.accept();
     }
 }

@@ -118,6 +118,35 @@
                     droppableScope="navigationTree"
                     [validateDrop]="true"
                     (onNodeDrop)="onDropValidator($event)">
+                    <ng-template let-expanded pTemplate="togglericon">
+                        <svg-icon 
+                            *ngIf="!expanded"
+                            class="icon-btn svg-icon" 
+                            src="/assets/images/icons/collapse-down.svg"
+                            svgClass="icon-color-primary"
+                        ></svg-icon>
+                        <svg-icon 
+                            *ngIf="expanded"
+                            class="icon-btn svg-icon" 
+                            src="/assets/images/icons/collapse-up.svg"
+                            svgClass="icon-color-primary"
+                        ></svg-icon>
+                    </ng-template>
+                    <ng-template let-node pTemplate="readonly">
+                        <div class="navigation-item">
+                            <div class="navigation-item-icon">
+                                <svg-icon 
+                                    class="icon-btn svg-icon-16" 
+                                    src="/assets/images/icons/16/{{node.itemIcon}}.svg"
+                                    svgClass="icon-color-primary"
+                                >
+                                </svg-icon>
+                            </div>
+                            <div class="navigation-item-label">
+                                {{node.label}}
+                            </div>
+                        </div>
+                    </ng-template>
                     <ng-template let-node pTemplate="default">
                         <div class="navigation-item">
                             <div class="navigation-item-icon">
@@ -130,6 +159,14 @@
                             </div>
                             <div class="navigation-item-label">
                                 {{node.label}}
+                            </div>
+                            <div class="navigation-item-icon">
+                                <svg-icon 
+                                    class="icon-btn svg-icon-16" 
+                                    src="/assets/images/icons/16/edit.svg"
+                                    svgClass="icon-color-close"
+                                >
+                                </svg-icon>
                             </div>
                         </div>
                     </ng-template>
