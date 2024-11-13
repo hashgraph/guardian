@@ -20,6 +20,14 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
                 policyId = response.body.at(0).id;
                 cy.request({
+                    method: 'PUT',
+                    url: API.ApiServer + 'policies/' + policyId + '/publish',
+                    body: { policyVersion: "1.2.5" },
+                    headers: { authorization },
+                    timeout: 600000
+                })
+            }).then(() => {
+                cy.request({
                     method: METHOD.POST,
                     url: API.ApiServer + 'permissions/users/' + UserUsername + '/policies/assign',
                     headers: { authorization },

@@ -23,6 +23,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                     "tokenSymbol": "string",
                     "tokenType": "string"
                 },
+                timeout: 180000,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
             });

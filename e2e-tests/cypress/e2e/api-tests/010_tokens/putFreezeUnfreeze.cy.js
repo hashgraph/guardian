@@ -17,14 +17,28 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                 }
             }).then((response) => {
                 let tokenId = response.body.at(-1).tokenId
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'tokens/' + tokenId + '/associate',
-                    headers: {
-                        authorization
-                    }
-                }).then(() => {
-                    Authorization.getAccessToken(SRUsername).then((authorization) => {
+                Authorization.getAccessToken(SRUsername).then((authorization) => {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url:
+                            API.ApiServer +
+                            API.ListOfTokens +
+                            tokenId +
+                            "/" +
+                            UserUsername +
+                            "/freeze",
+                        headers: {
+                            authorization,
+                        },
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+
+                        let token = response.body.tokenId;
+                        let frozen = response.body.frozen;
+
+                        expect(token).to.deep.equal(tokenId);
+                        expect(frozen).to.be.true;
+
                         cy.request({
                             method: METHOD.PUT,
                             url:
@@ -32,8 +46,8 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                                 API.ListOfTokens +
                                 tokenId +
                                 "/" +
-                                user +
-                                "/freeze",
+                                UserUsername +
+                                "/unfreeze",
                             headers: {
                                 authorization,
                             },
@@ -44,32 +58,10 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                             let frozen = response.body.frozen;
 
                             expect(token).to.deep.equal(tokenId);
-                            expect(frozen).to.be.true;
-
-                            cy.request({
-                                method: METHOD.PUT,
-                                url:
-                                    API.ApiServer +
-                                    API.ListOfTokens +
-                                    tokenId +
-                                    "/" +
-                                    user +
-                                    "/unfreeze",
-                                headers: {
-                                    authorization,
-                                },
-                            }).then((response) => {
-                                expect(response.status).eql(STATUS_CODE.OK);
-
-                                let token = response.body.tokenId;
-                                let frozen = response.body.frozen;
-
-                                expect(token).to.deep.equal(tokenId);
-                                expect(frozen).to.be.false;
-                            });
+                            expect(frozen).to.be.false;
                         });
+                    });
 
-                    })
                 })
             })
         })

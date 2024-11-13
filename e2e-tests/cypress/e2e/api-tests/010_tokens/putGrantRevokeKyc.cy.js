@@ -26,7 +26,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                             API.ListOfTokens +
                             tokenId +
                             "/" +
-                            user +
+                            UserUsername +
                             "/grant-kyc",
                         headers: {
                             authorization,
@@ -44,7 +44,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                                 API.ListOfTokens +
                                 tokenId +
                                 "/" +
-                                user +
+                                UserUsername +
                                 "/revoke-kyc",
                             headers: {
                                 authorization,

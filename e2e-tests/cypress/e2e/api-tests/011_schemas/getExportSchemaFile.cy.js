@@ -5,7 +5,7 @@ import * as Authorization from "../../../support/authorization";
 context("Schema", { tags: ['schema', 'thirdPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    it("Export schema message", () => {
+    it("Export schema file", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -19,17 +19,14 @@ context("Schema", { tags: ['schema', 'thirdPool'] }, () => {
 
                 cy.request({
                     method: METHOD.GET,
-                    url:
-                        API.ApiServer +
-                        API.Schemas +
-                        schemaId +
-                        "/export/message",
+                    url: API.ApiServer + API.Schemas + schemaId + "/export/file",
                     encoding: null,
                     headers: {
                         authorization,
                     },
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
+                    expect(response.body).to.not.be.oneOf([null, ""]);
                 });
             });
         })

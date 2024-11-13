@@ -4,6 +4,7 @@ import * as Authorization from "../../../support/authorization";
 
 context("Schemas", { tags: ['schema', 'thirdPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    let schema;
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -30,13 +31,8 @@ context("Schemas", { tags: ['schema', 'thirdPool'] }, () => {
                 }).then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.OK);
                     expect(response.body).to.not.be.oneOf([null, ""]);
-                    let schema = Cypress.Blob.arrayBufferToBinaryString(
+                    schema = Cypress.Blob.arrayBufferToBinaryString(
                         response.body
-                    );
-                    cy.writeFile(
-                        "cypress/fixtures/exportedSchema.schema",
-                        schema,
-                        "binary"
                     );
                 });
             })
@@ -53,29 +49,24 @@ context("Schemas", { tags: ['schema', 'thirdPool'] }, () => {
                 },
             }).then((response) => {
                 const topicUid = response.body[0].topicId;
-
-                cy.fixture("exportedSchema.schema", "binary")
-                    .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
-                    .then((file) => {
-                        cy.request({
-                            method: METHOD.POST,
-                            url:
-                                API.ApiServer +
-                                API.Schemas +
-                                "push/" +
-                                topicUid +
-                                "/import/file",
-                            body: file,
-                            headers: {
-                                "content-type": "binary/octet-stream",
-                                authorization,
-                            },
-                        }).then((response) => {
-                            expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
-                            expect(response.body).to.not.be.oneOf([null, ""]);
-                        });
-                    });
+                cy.request({
+                    method: METHOD.POST,
+                    url:
+                        API.ApiServer +
+                        API.Schemas +
+                        "push/" +
+                        topicUid +
+                        "/import/file",
+                    body: schema,
+                    headers: {
+                        "content-type": "binary/octet-stream",
+                        authorization,
+                    },
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
+                    expect(response.body).to.not.be.oneOf([null, ""]);
+                });
             });
         });
-    })
+    });
 });
