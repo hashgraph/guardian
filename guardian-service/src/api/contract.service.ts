@@ -1328,7 +1328,7 @@ export async function contractAPI(
                     type: TopicType.ContractTopic,
                     name: TopicType.ContractTopic,
                     description: TopicType.ContractTopic,
-                    owner: owner.creator,
+                    owner: owner.owner,
                     policyId: null,
                     policyUUID: null,
                 },
@@ -1355,7 +1355,7 @@ export async function contractAPI(
             );
             const contract = await dataBaseServer.save(Contract, {
                 contractId,
-                owner: owner.creator,
+                owner: owner.owner,
                 description,
                 permissions: type === ContractType.WIPE ?
                     (version !== '1.0.0' ? 7 : 15)
@@ -1380,7 +1380,7 @@ export async function contractAPI(
                 .setTopicObject(topic)
                 .sendMessage(contractMessage);
             const userTopic = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(owner.creator, TopicType.UserTopic),
+                await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true
             );
             await topicHelper.twoWayLink(topic, userTopic, contractMessageResult.getId());
@@ -1436,7 +1436,7 @@ export async function contractAPI(
                 Contract,
                 {
                     contractId,
-                    owner: owner.creator,
+                    owner: owner.owner,
                     description,
                     permissions,
                     topicId: memo,
@@ -1454,7 +1454,7 @@ export async function contractAPI(
                 },
                 {
                     contractId,
-                    owner: owner.creator,
+                    owner: owner.owner,
                 }
             ) as Contract & { contractId: string; version: string; };
             if (
