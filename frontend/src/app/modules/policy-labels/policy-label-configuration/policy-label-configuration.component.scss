@@ -192,7 +192,7 @@
                 left: 252px;
                 top: 12px;
                 bottom: 0px;
-                right: 0px;
+                right: 410px;
                 z-index: 1;
                 user-select: none;
                 padding: 24px;
@@ -203,18 +203,132 @@
                 background-image: radial-gradient(circle, #bfbfbf 1px, #f9fafc 1px);
                 background-size: 20px 20px;
 
+                -webkit-transition: right 0.2s ease-in-out;
+                -moz-transition: right 0.2s ease-in-out;
+                -o-transition: right 0.2s ease-in-out;
+                transition: right 0.2s ease-in-out;
+                transform: translateZ(0);
+                will-change: transform, right;
+
+                &[hidden-config="true"] {
+                    right: 0px;
+                }
+
+                .navigation-drop-area {
+                    position: absolute;
+                    left: 0px;
+                    top: 0px;
+                    right: 0px;
+                    bottom: 0px;
+                    z-index: -1;
+
+                    &::before {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        left: 20px;
+                        top: 20px;
+                        right: 20px;
+                        bottom: 20px;
+                        border: 2px dashed var(--guardian-primary-color, #4169E2);
+                        background: #f0f3fc75;
+                        pointer-events: none;
+                        opacity: 0;
+                    }
+
+                    &.p-draggable-enter {
+                        &::before {
+                            opacity: 1;
+                            transition-delay: 0.2s;
+                            transition-property: opacity;
+                        }
+                    }
+                }
+
+                .navigation-root {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    .navigation-expand {
+                        width: 32px;
+                        height: 32px;
+                        margin-right: 8px;
+
+                        .navigation-expand-btn {
+                            cursor: pointer;
+                            border-radius: 50%;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            width: 32px;
+                            height: 32px;
+
+                            &:hover {
+                                background: #e9ecef;
+                            }
+                        }
+                    }
+
+                    .navigation-item {
+                        height: 32px;
+                        width: 200px;
+                        border: 1px solid #848FA9;
+                        border-radius: 6px;
+                        box-shadow: 0px 4px 4px 0px #00000014;
+                        padding: 0px 8px;
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        background: #EFF3F7;
+
+                        .navigation-item-icon {
+                            width: 16px;
+                            height: 16px;
+                            overflow: hidden;
+                        }
+
+                        .navigation-item-label {
+                            font-family: Inter;
+                            font-size: 12px;
+                            font-weight: 500;
+                            line-height: 14px;
+                            padding-left: 8px;
+                            color: #23252E;
+                            width: 160px;
+                        }
+                    }
+
+                    &[drop="true"] {
+                        pointer-events: none;
+                    }
+                }
+
+                .navigation-tree-area {
+                    padding: 6px 34px;
+                    width: fit-content;
+
+                    &[hidden-tree="true"] {
+                        display: none;
+                    }
+                }
+
                 .navigation-tree {
                     width: 100%;
                     height: 100%;
 
                     &::ng-deep {
-                        ul[role="tree"]>p-treenode>.p-treenode-droppoint {
-                            display: none !important;
-                        }
+                        // ul[role="tree"]>p-treenode>.p-treenode-droppoint {
+                        //     display: none !important;
+                        // }
 
                         .p-tree-toggler-icon {
                             height: 24px;
                             width: 24px;
+                        }
+
+                        .p-tree-empty-message {
+                            display: none;
                         }
 
                         .p-treenode-droppoint {
@@ -245,10 +359,15 @@
 
                         .p-treenode-content {
                             position: relative;
-                            width: 275px;
+                            width: 242px;
                             cursor: pointer;
                             box-shadow: none;
                             padding: 2px 0px;
+
+                            button {
+                                box-shadow: none;
+                                outline: none;
+                            }
 
                             .navigation-item {
                                 height: 32px;
@@ -276,6 +395,10 @@
                                     padding-left: 8px;
                                     color: #23252E;
                                     width: 160px;
+                                }
+
+                                &[selected="true"] {
+                                    box-shadow: 0 0 0 2px #4169E2;
                                 }
                             }
 
@@ -315,11 +438,11 @@
                             }
                         }
 
-                        .p-treenode:focus>.p-treenode-content {
-                            .navigation-item {
-                                box-shadow: 0 0 0 2px #4169E2;
-                            }
-                        }
+                        // .p-treenode:focus>.p-treenode-content {
+                        //     .navigation-item {
+                        //         box-shadow: 0 0 0 2px #4169E2;
+                        //     }
+                        // }
                     }
                 }
             }
@@ -342,8 +465,60 @@
                 transform: translateZ(0);
                 will-change: transform, width;
 
-                &[hidden-schema="true"] {
+                &[hidden-config="true"] {
                     width: 0px;
+                }
+
+                .config-close {
+                    width: 32px;
+                    height: 32px;
+                    min-width: 32px;
+                    max-width: 32px;
+                    position: absolute;
+                    padding: 4px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    top: 17px;
+                    right: 16px;
+
+                    &:hover {
+                        background: var(--guardian-primary-background);
+                    }
+                }
+
+                .config-icon {
+                    width: 32px;
+                    height: 32px;
+                    min-width: 32px;
+                    max-width: 32px;
+                    position: absolute;
+                    padding: 4px;
+                    top: 16px;
+                    left: 16px;
+                }
+
+                .item-config-container {
+                    width: 400px;
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+
+                    .item-name {
+                        width: 400px;
+                        padding: 24px 24px 24px 54px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        line-height: 18px;
+                        text-align: left;
+                        color: var(--guardian-font-color, #23252E);
+                        position: relative;
+                    }
+
+                    .item-options {
+                        width: 100%;
+                        height: 100%;
+                        padding: 0px 24px 24px 24px;
+                    }
                 }
             }
         }

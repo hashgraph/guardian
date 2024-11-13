@@ -18,91 +18,8 @@ import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
-import { TreeDragDropService, TreeNode as PTreeNode } from 'primeng/api';
-
-const NavIcons: { [type: string]: string } = {
-    'group': 'folder',
-    'rules': 'file',
-    'label': 'circle-check',
-    'statistic': 'stats'
-}
-
-class NavItem implements PTreeNode {
-    public key?: string | undefined;
-    public data?: any;
-    public type?: string | undefined;
-    public icon?: string | undefined;
-    public label: string;
-    public children?: NavItem[] | undefined;
-    public parent?: NavItem | undefined;
-    public itemType: string;
-    public itemIcon: string;
-
-    constructor(itemType: string, label: string, data?: any) {
-        this.key = GenerateUUIDv4();
-        this.label = label;
-        this.data = data;
-        this.itemType = itemType;
-        this.itemIcon = NavIcons[itemType];
-        this.type = 'default';
-    }
-
-    public clone(): NavItem {
-        return new NavItem(this.itemType, this.label, this.data);
-    }
-}
-
-class ReadOnlyNavItem implements PTreeNode {
-    public key?: string | undefined;
-    public data?: any;
-    public type?: string | undefined;
-    public icon?: string | undefined;
-    public label: string;
-    public children?: NavItem[] | undefined;
-    public parent?: NavItem | undefined;
-    public itemType: string;
-    public itemIcon: string;
-
-    constructor(itemType: string, label: string, data?: any) {
-        this.key = GenerateUUIDv4();
-        this.label = label;
-        this.data = data;
-        this.itemType = itemType;
-        this.itemIcon = NavIcons[itemType];
-        this.type = 'readonly';
-    }
-
-    public clone(): ReadOnlyNavItem {
-        return new ReadOnlyNavItem(this.itemType, this.label, this.data);
-    }
-}
-
-class RootNavItem implements PTreeNode {
-    public key?: string | undefined;
-    public data?: any;
-    public type?: string | undefined;
-    public icon?: string | undefined;
-    public label: string;
-    public children?: NavItem[] | undefined;
-    public parent?: NavItem | undefined;
-    public itemType: string;
-    public itemIcon: string;
-    public draggable?: boolean | undefined = false;
-
-    constructor(itemType: string, label: string, data?: any) {
-        this.key = GenerateUUIDv4();
-        this.label = label;
-        this.data = data;
-        this.itemType = itemType;
-        this.itemIcon = NavIcons[itemType];
-        this.type = 'root';
-    }
-
-    public clone(): RootNavItem {
-        return new RootNavItem(this.itemType, this.label, this.data);
-    }
-}
-
+import { TreeDragDropService } from 'primeng/api';
+import { NavItem, NavItemType } from './nav-item';
 
 @Component({
     selector: 'app-policy-label-configuration',
@@ -192,27 +109,27 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public menuItems = [{
         title: 'General',
         items: [
-            new NavItem('group', 'Group'),
-            new NavItem('rules', 'Rules'),
+            NavItem.menu(NavItemType.Group, 'Group'),
+            NavItem.menu(NavItemType.Rules, 'Rules'),
         ]
     }, {
         title: 'Statistics',
         items: [
-            new ReadOnlyNavItem('statistic', 'Statistic 1'),
-            new ReadOnlyNavItem('statistic', 'Statistic 2'),
+            NavItem.menu(NavItemType.Statistic, 'Statistic 1'),
+            NavItem.menu(NavItemType.Statistic, 'Statistic 2'),
         ]
     }, {
         title: 'Labels',
         items: [
-            new ReadOnlyNavItem('label', 'Label 1'),
-            new ReadOnlyNavItem('label', 'Label 2'),
+            NavItem.menu(NavItemType.Label, 'Label 1'),
+            NavItem.menu(NavItemType.Label, 'Label 2'),
         ]
     }];
-    private draggedMenuItem: any = null;
+    public draggedMenuItem: any = null;
 
-    public navigationTree: NavItem[] = [
-        new RootNavItem('group', 'Group'),
-    ];
+    public navigationTree: NavItem[] = [];
+    public rootExpanded: boolean = true;
+    public selectedNavItem: NavItem | null = null;
 
     constructor(
         private profileService: ProfileService,
@@ -733,18 +650,36 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.draggedMenuItem = null;
     }
 
-    public drop() {
+    public onDrop() {
         if (this.draggedMenuItem) {
+            this.navigationTree.push(this.draggedMenuItem);
+            NavItem.updateOrder(this.navigationTree);
             this.draggedMenuItem = null;
         }
     }
 
     public onDropValidator($event: any) {
-        if ($event.dropNode?.type === 'root') {
-            if ($event.originalEvent.target.tagName === 'LI') {
-                return;
-            }
-        }
+        // if ($event.dropNode?.type === 'root') {
+        //     if ($event.originalEvent.target.tagName === 'LI') {
+        //         return;
+        //     }
+        // }
         $event.accept();
+        NavItem.updateOrder(this.navigationTree);
+    }
+
+    public onClearNavItem() {
+        this.selectedNavItem = null;
+    }
+
+    public onNavItemSelect(node: NavItem) {
+        this.selectedNavItem = node;
+    }
+
+    public ifNavSelected(node: NavItem) {
+        if (this.selectedNavItem) {
+            return this.selectedNavItem.key === node.key;
+        }
+        return false;
     }
 }

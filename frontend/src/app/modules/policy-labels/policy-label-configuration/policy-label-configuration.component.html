@@ -95,7 +95,7 @@
                         <div class="navigation-toolbar-group-item-icon">
                             <svg-icon 
                                 class="icon-btn svg-icon-16" 
-                                src="/assets/images/icons/16/{{item.itemIcon}}.svg"
+                                src="/assets/images/icons/16/{{item.nodeIcon}}.svg"
                                 svgClass="icon-color-primary"
                             >
                             </svg-icon>
@@ -107,86 +107,158 @@
                 </div>
             </div>
 
-
-            <div class="navigation-tree-container">
-                <p-tree 
-                    class="navigation-tree guardian-tree" 
-                    [value]="navigationTree" 
-                    [draggableNodes]="true" 
-                    [droppableNodes]="true" 
-                    draggableScope="navigationTree" 
-                    droppableScope="navigationTree"
-                    [validateDrop]="true"
-                    (onNodeDrop)="onDropValidator($event)">
-                    <ng-template let-expanded pTemplate="togglericon">
-                        <svg-icon 
-                            *ngIf="!expanded"
-                            class="icon-btn svg-icon" 
-                            src="/assets/images/icons/collapse-down.svg"
-                            svgClass="icon-color-primary"
-                        ></svg-icon>
-                        <svg-icon 
-                            *ngIf="expanded"
-                            class="icon-btn svg-icon" 
-                            src="/assets/images/icons/collapse-up.svg"
-                            svgClass="icon-color-primary"
-                        ></svg-icon>
-                    </ng-template>
-                    <ng-template let-node pTemplate="readonly">
-                        <div class="navigation-item">
-                            <div class="navigation-item-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon-16" 
-                                    src="/assets/images/icons/16/{{node.itemIcon}}.svg"
-                                    svgClass="icon-color-primary"
-                                >
-                                </svg-icon>
-                            </div>
-                            <div class="navigation-item-label">
-                                {{node.label}}
-                            </div>
+            <div class="navigation-tree-container" [attr.hidden-config]="!selectedNavItem">
+                <div 
+                    *ngIf="draggedMenuItem" 
+                    class="navigation-drop-area"
+                    pDroppable="navigationTree" 
+                    (onDrop)="onDrop()"></div>
+                <div class="navigation-root" [attr.drop]="!!draggedMenuItem">
+                    <div class="navigation-expand">
+                        <div 
+                            *ngIf="navigationTree.length" 
+                            class="navigation-expand-btn" 
+                            (click)="rootExpanded=!rootExpanded"
+                        >
+                            <svg-icon 
+                                *ngIf="!rootExpanded"
+                                class="icon-btn svg-icon" 
+                                src="/assets/images/icons/collapse-down.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                            <svg-icon 
+                                *ngIf="rootExpanded"
+                                class="icon-btn svg-icon" 
+                                src="/assets/images/icons/collapse-up.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
                         </div>
-                    </ng-template>
-                    <ng-template let-node pTemplate="default">
-                        <div class="navigation-item">
-                            <div class="navigation-item-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon-16" 
-                                    src="/assets/images/icons/16/{{node.itemIcon}}.svg"
-                                    svgClass="icon-color-primary"
-                                >
-                                </svg-icon>
-                            </div>
-                            <div class="navigation-item-label">
-                                {{node.label}}
-                            </div>
-                            <div class="navigation-item-icon">
-                                <svg-icon 
-                                    class="icon-btn svg-icon-16" 
-                                    src="/assets/images/icons/16/edit.svg"
-                                    svgClass="icon-color-close"
-                                >
-                                </svg-icon>
-                            </div>
+                    </div>
+                    <div class="navigation-item">
+                        <div class="navigation-item-icon">
+                            <svg-icon 
+                                class="icon-btn svg-icon-16" 
+                                src="/assets/images/icons/16/folder.svg"
+                                svgClass="icon-color-close"
+                            >
+                            </svg-icon>
                         </div>
-                    </ng-template>
-                    <ng-template let-node pTemplate="root">
-                        <div class="navigation-item">
-                            <div class="navigation-item-icon">
-                            </div>
-                            <div class="navigation-item-label">
-                                Root
-                            </div>
+                        <div class="navigation-item-label">
+                            Current Label
                         </div>
-                    </ng-template>
-                </p-tree>
+                    </div>
+                </div>
+                <div class="navigation-tree-area" [attr.hidden-tree]="!rootExpanded">
+                    <p-tree 
+                        [attr.expanded]="rootExpanded"
+                        class="navigation-tree guardian-tree" 
+                        [value]="navigationTree" 
+                        [draggableNodes]="true" 
+                        [droppableNodes]="true" 
+                        draggableScope="navigationTree" 
+                        droppableScope="navigationTree"
+                        [validateDrop]="true"
+                        (onNodeDrop)="onDropValidator($event)">
+                        <ng-template let-expanded pTemplate="togglericon">
+                            <svg-icon 
+                                *ngIf="!expanded"
+                                class="icon-btn svg-icon" 
+                                src="/assets/images/icons/collapse-down.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                            <svg-icon 
+                                *ngIf="expanded"
+                                class="icon-btn svg-icon" 
+                                src="/assets/images/icons/collapse-up.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                        </ng-template>
+                        <ng-template let-node pTemplate="readonly">
+                            <div class="navigation-item" (click)="onNavItemSelect(node)" [attr.selected]="ifNavSelected(node)">
+                                <div class="navigation-item-icon">
+                                    <svg-icon 
+                                        class="icon-btn svg-icon-16" 
+                                        src="/assets/images/icons/16/{{node.nodeIcon}}.svg"
+                                        svgClass="icon-color-primary"
+                                    >
+                                    </svg-icon>
+                                </div>
+                                <div class="navigation-item-label">
+                                    {{node.label}}
+                                </div>
+                            </div>
+                        </ng-template>
+                        <ng-template let-node pTemplate="default">
+                            <div class="navigation-item" (click)="onNavItemSelect(node)" [attr.selected]="ifNavSelected(node)">
+                                <div class="navigation-item-icon">
+                                    <svg-icon 
+                                        class="icon-btn svg-icon-16" 
+                                        src="/assets/images/icons/16/{{node.nodeIcon}}.svg"
+                                        svgClass="icon-color-primary"
+                                    >
+                                    </svg-icon>
+                                </div>
+                                <div class="navigation-item-label">
+                                    {{node.label}}
+                                </div>
+                                <div class="navigation-item-icon">
+                                    <svg-icon 
+                                        class="icon-btn svg-icon-16" 
+                                        src="/assets/images/icons/16/edit.svg"
+                                        svgClass="icon-color-close"
+                                    >
+                                    </svg-icon>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-tree>
+                </div>
             </div>
 
-            <div class="item-config"></div>
+            <div class="item-config" [attr.hidden-config]="!selectedNavItem">
+                <div *ngIf="selectedNavItem" class="item-config-container">
+                    <div class="item-name">
+                        <div class="config-icon">
+                            <svg-icon 
+                                src="/assets/images/icons/{{selectedNavItem.nodeIcon}}.svg" 
+                                svgClass="icon-color-primary"></svg-icon>
+                        </div>
+                        {{selectedNavItem.label}}
+                        <div class="config-close" (click)="onClearNavItem()">
+                            <svg-icon 
+                                src="/assets/images/icons/close.svg" 
+                                svgClass="icon-color-close"></svg-icon>
+                        </div>
+                    </div>
+                    <div class="item-options" [ngSwitch]="selectedNavItem.config.type">
+                        <ng-container *ngSwitchCase="'group'">
+                            <div class="guardian-input-container">
+                                <label class="form-label" htmlFor="version">* Name</label>
+                                <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                            </div>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'rules'">
+                            <div class="guardian-input-container">
+                                <label class="form-label" htmlFor="version">* Name</label>
+                                <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                            </div>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'label'">
+                            <div class="guardian-input-container">
+                                <label class="form-label" htmlFor="version">* Name</label>
+                                <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                            </div>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="'statistic'">
+                            <div class="guardian-input-container">
+                                <label class="form-label" htmlFor="version">* Name</label>
+                                <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
         </div>
-
-
-
 
         <div *ngIf="stepper[3]" class="schema-viewer">
             <div class="tree-container">
