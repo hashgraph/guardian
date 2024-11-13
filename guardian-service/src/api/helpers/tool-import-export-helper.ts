@@ -384,14 +384,14 @@ export async function importToolByFile(
 
     notifier.completedAndStart('Create topic');
     const parent = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
+        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
     );
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.ToolTopic,
         name: tool.name || TopicType.ToolTopic,
         description: tool.description || TopicType.ToolTopic,
-        owner: user.creator,
+        owner: user.owner,
         targetId: null,
         targetUUID: null
     }, { admin: true, submit: true });
