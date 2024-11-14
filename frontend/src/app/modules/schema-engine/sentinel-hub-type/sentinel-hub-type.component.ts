@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+// import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
+// import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Subscription } from 'rxjs';
 import { MapService } from '../../../services/map.service';
 
@@ -21,10 +21,10 @@ const MY_FORMATS = {
     selector: 'app-sentinel-hub-type',
     templateUrl: './sentinel-hub-type.component.html',
     styleUrls: ['./sentinel-hub-type.component.scss'],
-    providers: [
-        {provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter},
-        {provide: NGX_MAT_DATE_FORMATS, useValue: MY_FORMATS},
-    ],
+    // providers: [
+    //     {provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter},
+    //     {provide: NGX_MAT_DATE_FORMATS, useValue: MY_FORMATS},
+    // ],
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     public key: string;
@@ -34,8 +34,10 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
     public datePicker = new UntypedFormGroup({
-        from: new UntypedFormControl(),
-        to: new UntypedFormControl()
+        // from: new UntypedFormControl(),
+        // to: new UntypedFormControl()
+        from: new UntypedFormControl(null, Validators.required),
+        to: new UntypedFormControl(null, Validators.required)
     });
     protected readonly FormControl = UntypedFormControl;
 
@@ -111,5 +113,13 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         if (skipValidation || this.control.valid) {
             this.formattedImageLink = `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
         }
+    }
+
+    get fromControl(): UntypedFormControl {
+        return this.datePicker.get('from') as UntypedFormControl;
+    }
+
+    get toControl(): UntypedFormControl {
+        return this.datePicker.get('to') as UntypedFormControl;
     }
 }

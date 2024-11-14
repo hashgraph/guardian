@@ -204,26 +204,60 @@
                                     />
                                 </div>
 
+<!--                                <mat-form-field-->
+<!--                                    *ngIf="isConditionType3(condition)"-->
+<!--                                    appearance="outline"-->
+<!--                                    class="example-full-width required-form-field"-->
+<!--                                >-->
+<!--                                    <mat-label>Choose a date & time</mat-label>-->
+<!--                                    <input-->
+<!--                                        [formControl]="condition.fieldValue"-->
+<!--                                        [ngxMatDatetimePicker]="dateTimePicker"-->
+<!--                                        matInput-->
+<!--                                    />-->
+<!--                                    <mat-datepicker-toggle-->
+<!--                                        [for]="$any(dateTimePicker)"-->
+<!--                                        matSuffix-->
+<!--                                    ></mat-datepicker-toggle>-->
+<!--                                    <ngx-mat-datetime-picker-->
+<!--                                        #dateTimePicker-->
+<!--                                        [enableMeridian]="true"-->
+<!--                                    ></ngx-mat-datetime-picker>-->
+<!--                                </mat-form-field>-->
+
                                 <mat-form-field
                                     *ngIf="isConditionType3(condition)"
                                     appearance="outline"
                                     class="example-full-width required-form-field"
                                 >
                                     <mat-label>Choose a date & time</mat-label>
-                                    <input
+                                    <p-calendar
                                         [formControl]="condition.fieldValue"
-                                        [ngxMatDatetimePicker]="dateTimePicker"
-                                        matInput
-                                    />
-                                    <mat-datepicker-toggle
-                                        [for]="$any(dateTimePicker)"
-                                        matSuffix
-                                    ></mat-datepicker-toggle>
-                                    <ngx-mat-datetime-picker
-                                        #dateTimePicker
-                                        [enableMeridian]="true"
-                                    ></ngx-mat-datetime-picker>
+                                        [showTime]="true"
+                                        [hourFormat]="'12'"
+                                    inputId="dateTimePicker"
+                                    placeholder="Choose a date & time"
+                                    appendTo="body"
+                                    ></p-calendar>
                                 </mat-form-field>
+
+<!--                                <mat-form-field-->
+<!--                                    *ngIf="isConditionType4(condition)"-->
+<!--                                    appearance="outline"-->
+<!--                                    class="example-full-width required-form-field"-->
+<!--                                >-->
+<!--                                    <mat-label>Choose a date</mat-label>-->
+<!--                                    <input-->
+<!--                                        [formControl]="condition.fieldValue"-->
+<!--                                        [matDatepicker]="dateItem"-->
+<!--                                        matInput-->
+<!--                                    />-->
+<!--                                    <mat-datepicker-toggle-->
+<!--                                        [for]="dateItem"-->
+<!--                                        matSuffix-->
+<!--                                    ></mat-datepicker-toggle>-->
+<!--                                    <mat-datepicker #dateItem></mat-datepicker>-->
+<!--                                </mat-form-field>-->
 
                                 <mat-form-field
                                     *ngIf="isConditionType4(condition)"
@@ -231,16 +265,13 @@
                                     class="example-full-width required-form-field"
                                 >
                                     <mat-label>Choose a date</mat-label>
-                                    <input
+                                    <p-calendar
                                         [formControl]="condition.fieldValue"
-                                        [matDatepicker]="dateItem"
-                                        matInput
-                                    />
-                                    <mat-datepicker-toggle
-                                        [for]="dateItem"
-                                        matSuffix
-                                    ></mat-datepicker-toggle>
-                                    <mat-datepicker #dateItem></mat-datepicker>
+                                        inputId="dateTimePicker"
+                                        [showTime]="false"
+                                        placeholder="Choose a date"
+                                        appendTo="body"
+                                    ></p-calendar>
                                 </mat-form-field>
 
                                 <div *ngIf="isConditionType5(condition)">

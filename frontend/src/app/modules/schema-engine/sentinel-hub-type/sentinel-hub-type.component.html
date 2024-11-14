@@ -25,18 +25,46 @@
     <input [disabled]="isDisabled" [formControl]="getControlByName('bbox')" matInput pattern="\d+,\d+,\d+,\d+" placeholder="11111,22222,33333,44444"
            required/>
 </mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>From</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getDateByName('from')" [ngxMatDatetimePicker]="dateTimePicker1"
-           matInput>
-    <mat-datepicker-toggle [for]="$any(dateTimePicker1)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>To</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getDateByName('to')" [ngxMatDatetimePicker]="dateTimePicker2"
-           matInput>
-    <mat-datepicker-toggle [for]="$any(dateTimePicker2)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
-</mat-form-field>
+<!--<mat-form-field appearance="outline" class="type-selector">-->
+<!--    <mat-label>From</mat-label>-->
+<!--    <input [disabled]="isDisabled" [formControl]="getDateByName('from')" [ngxMatDatetimePicker]="dateTimePicker1"-->
+<!--           matInput>-->
+<!--    <mat-datepicker-toggle [for]="$any(dateTimePicker1)" matSuffix></mat-datepicker-toggle>-->
+<!--    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>-->
+<!--</mat-form-field>-->
+<!--<mat-form-field appearance="outline" class="type-selector">-->
+<!--    <mat-label>To</mat-label>-->
+<!--    <input [disabled]="isDisabled" [formControl]="getDateByName('to')" [ngxMatDatetimePicker]="dateTimePicker2"-->
+<!--           matInput>-->
+<!--    <mat-datepicker-toggle [for]="$any(dateTimePicker2)" matSuffix></mat-datepicker-toggle>-->
+<!--    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>-->
+<!--</mat-form-field>-->
+
+<div class="type-selector">
+    <mat-form-field appearance="outline">
+        <mat-label>From</mat-label>
+        <p-calendar
+            [formControl]="fromControl"
+            [disabled]="isDisabled"
+            [showTime]="false"
+            inputId="from"
+            [appendTo]="'body'"
+            placeholder="Select date">
+        </p-calendar>
+    </mat-form-field>
+</div>
+
+<div class="type-selector">
+    <mat-form-field appearance="outline">
+        <mat-label>To</mat-label>
+        <p-calendar
+            [formControl]="toControl"
+            [disabled]="isDisabled"
+            [showTime]="false"
+            inputId="to"
+            [appendTo]="'body'"
+            placeholder="Select date">
+        </p-calendar>
+    </mat-form-field>
+</div>
 <img *ngIf="formattedImageLink" [src]="formattedImageLink" class="image">

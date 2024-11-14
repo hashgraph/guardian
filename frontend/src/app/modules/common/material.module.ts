@@ -38,6 +38,7 @@ import {AccordionModule} from 'primeng/accordion';
 import {TableModule} from 'primeng/table';
 import {ButtonModule} from 'primeng/button';
 import {SelectButtonModule} from 'primeng/selectbutton';
+import {CalendarModule} from 'primeng/calendar';
 
 @NgModule({
     declarations: [],
@@ -66,6 +67,8 @@ import {SelectButtonModule} from 'primeng/selectbutton';
         // MatDialogModule,
 
         MatDatepickerModule,
+        CalendarModule,
+
         MatRadioModule,
         MatNativeDateModule,
         MatProgressSpinnerModule,
@@ -109,7 +112,9 @@ import {SelectButtonModule} from 'primeng/selectbutton';
 
         // MatDialogModule,
 
-        MatDatepickerModule,
+        // MatDatepickerModule,
+        CalendarModule,
+
         MatRadioModule,
         MatNativeDateModule,
         MatProgressSpinnerModule,

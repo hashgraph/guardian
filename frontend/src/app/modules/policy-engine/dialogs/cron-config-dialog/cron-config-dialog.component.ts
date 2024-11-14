@@ -16,7 +16,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 export class CronConfigDialog {
     started = false;
     period: string;
-    startDate: string;
+    // startDate: string;
+    startDate: any;
 
     dataForm = this.fb.group({
         mask: ['* * * * *', Validators.required],
@@ -59,8 +60,15 @@ export class CronConfigDialog {
         ) {
         const data = this.config.data
 
+        if (data.startDate) {
+            this.startDate = new Date(data.startDate) as Date;
+        } else {
+            this.startDate =new Date() as Date;
+        }
+
         this.period = 'week';
-        this.startDate = data.startDate || (new Date).toISOString();
+        // this.startDate = data.startDate || (new Date).toISOString();
+        // this.startDate = this.startDate || new Date();
         this.sd = moment(this.startDate).utc();
         this.sd_local = this.sd.clone().local();
         switch (this.sd.day()) {
