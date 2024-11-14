@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { IUser } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -40,7 +40,7 @@ export class UserContractConfigComponent implements OnInit {
         private profileService: ProfileService,
         private contractService: ContractService,
         private tokenService: TokenService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -120,11 +120,14 @@ export class UserContractConfigComponent implements OnInit {
     openRetirePoolsDialog() {
         const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            // autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }
@@ -145,9 +148,12 @@ export class UserContractConfigComponent implements OnInit {
     openRetireRequestsDialog() {
         this.dialog.open(UserRetireRequestsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            // autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
     }
 

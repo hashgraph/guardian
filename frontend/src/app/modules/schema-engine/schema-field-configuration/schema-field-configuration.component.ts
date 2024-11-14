@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
 import { IPFS_SCHEMA } from 'src/app/services/api';
@@ -83,7 +83,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     private _sd?: any;
 
     constructor(
-        public dialog: MatDialog,
+        public dialog: DialogService,
         private dialogService: DialogService,
         private ipfs: IPFSService,
         private toastr: ToastrService,
@@ -447,16 +447,19 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     onEditExpression() {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             width: '80%',
-            panelClass: 'g-dialog',
+            // panelClass: 'g-dialog',
             data: {
                 mode: 'json',
                 expression: this.field.expression.value,
                 readonly: this.readonly
             },
-            autoFocus: true,
-            disableClose: true
+            // autoFocus: true,
+            // disableClose: true
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         })
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.field.expression.patchValue(result.expression);
             }

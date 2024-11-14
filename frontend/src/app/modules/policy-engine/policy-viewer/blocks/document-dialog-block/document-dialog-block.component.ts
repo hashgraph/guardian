@@ -1,5 +1,7 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, OnInit, Inject} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 
 /**
  * Dialog for display json
@@ -10,12 +12,18 @@ import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALO
     styleUrls: ['./document-dialog-block.component.scss']
 })
 export class DocumentDialogBlock implements OnInit {
-    title: string = "";
-    json: string = "";
+    title: string = '';
+    json: string = '';
+
+    public data: any
 
     constructor(
-        public dialogRef: MatDialogRef<DocumentDialogBlock>,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        // public dialogRef: MatDialogRef<DocumentDialogBlock>,
+        // @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
+    ) {
+        this.data = this.config.data;
     }
 
     ngOnInit() {

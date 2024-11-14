@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { AuthService } from 'src/app/services/auth.service';
@@ -29,7 +29,7 @@ export class PolicySearchComponent implements OnInit {
         private auth: AuthService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         private headerProps: HeaderPropsService,
         private profileService: ProfileService,
     ) {

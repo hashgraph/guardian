@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
 import { Schema } from '@guardian/interfaces';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { SchemaService } from '../../../services/schema.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+// import { SchemaService } from '../../../services/schema.service';
 
 enum SchemaType {
     System = 'system',
@@ -42,11 +43,15 @@ export class CopySchemaDialog {
     public dataForm!: UntypedFormGroup;
 
     constructor(
-        public dialogRef: MatDialogRef<CopySchemaDialog>,
+        // public dialogRef: MatDialogRef<CopySchemaDialog>,
         private cdr: ChangeDetectorRef,
         private fb: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        // @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
+        const data = this.config.data
+
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;

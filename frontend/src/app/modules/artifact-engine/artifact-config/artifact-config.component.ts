@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { HttpResponse } from '@angular/common/http';
@@ -8,6 +8,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { ArtifactService } from 'src/app/services/artifact.service';
 import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -46,7 +47,8 @@ export class ArtifactConfigComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
+        private dialog: DialogService,
         private artifact: ArtifactService) {
         this.policies = [];
         this.filterOptions = [];
@@ -157,10 +159,12 @@ export class ArtifactConfigComponent implements OnInit {
                 policyId: this.currentPolicy?.id,
                 policies: this.policies
             },
-            disableClose: true,
+            // disableClose: true,
+            modal: true,
+            closable: false,
         });
 
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }

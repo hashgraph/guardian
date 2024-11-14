@@ -1,5 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, Inject} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 
 /**
  * Dialog allowing you to select a file and load schemes.
@@ -16,9 +18,13 @@ export class ConfirmDialog {
     public cancelButton: string = 'Cancel';
 
     constructor(
-        public dialogRef: MatDialogRef<ConfirmDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        // public dialogRef: MatDialogRef<ConfirmDialog>,
+        // @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
+        const data = this.config.data
+
         this.title = data.title;
         this.submitButton = data.submitButton || 'Ok';
         this.cancelButton = data.cancelButton || 'Cancel';

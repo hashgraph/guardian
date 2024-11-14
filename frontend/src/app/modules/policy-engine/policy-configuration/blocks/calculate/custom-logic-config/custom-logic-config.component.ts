@@ -1,7 +1,8 @@
 import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { CodeEditorDialogComponent } from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
 import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {DialogService} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-custom-logic-config',
@@ -24,9 +25,10 @@ export class CustomLogicConfigComponent implements OnInit {
     schemas!: SchemaVariables[];
 
     constructor(
-        private dialog: MatDialog
-    ) { 
-        
+        // private dialog: MatDialog
+        private dialog: DialogService,
+    ) {
+
     }
 
     ngOnInit(): void {
@@ -49,15 +51,18 @@ export class CustomLogicConfigComponent implements OnInit {
     editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             width: '80%',
-            panelClass: 'g-dialog',
+            // panelClass: 'g-dialog',
             data: {
                 expression: this.properties.expression,
                 readonly: this.readonly
             },
-            autoFocus: true,
-            disableClose: true
+            // autoFocus: true,
+            // disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         })
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe(result => {
             if(result) {
                 this.properties.expression = result.expression;
             }

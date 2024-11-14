@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
@@ -45,7 +45,7 @@ export class AuditComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private policyEngineService: PolicyEngineService,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         private dialogService: DialogService,
     ) {
         this.dataCount = 0;

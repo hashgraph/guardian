@@ -1,6 +1,9 @@
-import { MatLegacyDialogConfig as MatDialogConfig } from "@angular/material/legacy-dialog";
+// import { MatLegacyDialogConfig as MatDialogConfig } from "@angular/material/legacy-dialog";
+import { DynamicDialogConfig } from 'primeng/dynamicdialog';
 
-export function mobileDialog<T>(config: MatDialogConfig<T>): MatDialogConfig<T> {
+export function mobileDialog<T>(
+    config: DynamicDialogConfig<T>
+): DynamicDialogConfig<T> {
     const innerWidth = window.innerWidth;
     const innerHeight = window.innerHeight;
     if (innerWidth <= 810) {

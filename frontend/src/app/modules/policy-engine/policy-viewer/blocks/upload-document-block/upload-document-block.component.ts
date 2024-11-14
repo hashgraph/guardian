@@ -1,10 +1,11 @@
 import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'requestVcDocument' types.
@@ -12,13 +13,14 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'request-document-block',
     templateUrl: './upload-document-block.component.html',
-    styleUrls: ['./upload-document-block.component.scss']
+    styleUrls: ['./upload-document-block.component.scss'],
+    providers: [DialogService]
 })
 export class UploadDocumentBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-    @ViewChild("dialogTemplate") dialogTemplate!: TemplateRef<any>;
+    @ViewChild("dialogTemplate") dialogTemplate!: any;
 
     isExist = false;
     disabled = false;
@@ -42,7 +44,8 @@ export class UploadDocumentBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
+        // private dialog: MatDialog,
+        private dialog: DialogService,
     ) {
     }
 
@@ -151,22 +154,26 @@ export class UploadDocumentBlockComponent implements OnInit {
             const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: `100vw`,
-                maxWidth: '100vw',
+                // maxWidth: '100vw',
                 height: `${window.innerHeight - headerHeight}px`,
-                position: {
-                    'bottom': '0'
-                },
-                panelClass: 'g-dialog',
-                hasBackdrop: true, // Shadows beyond the dialog
-                closeOnNavigation: true,
-                autoFocus: false,
-                disableClose: true,
+                // bottom: '0',
+                //     'bottom': '0'
+                // },
+                // panelClass: 'g-dialog',
+                // hasBackdrop: true, // Shadows beyond the dialog
+                // closeOnNavigation: true,
+                // autoFocus: false,
+                // disableClose: true,
+                styleClass: 'g-dialog',
+                closable: true,
                 data: this
             });
         } else {
             this.dialogRef = this.dialog.open(this.dialogTemplate, {
                 width: '850px',
-                disableClose: true,
+                // disableClose: true,
+                modal: true,
+                closable: false,
                 data: this
             });
         }

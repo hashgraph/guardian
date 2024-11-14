@@ -1,14 +1,16 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { PermissionsService } from '../../services/permissions.service';
-import { ProfileService } from '../../services/profile.service';
-import { UserPermissions } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
-import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { CategoryGroup, EntityGroup, PermissionsGroup } from 'src/app/utils/index';
-import { ICategory, IEntity } from 'src/app/utils/permissions-interface';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {PermissionsService} from '../../services/permissions.service';
+import {ProfileService} from '../../services/profile.service';
+import {UserPermissions} from '@guardian/interfaces';
+import {forkJoin} from 'rxjs';
+import {ActivatedRoute, Router} from '@angular/router';
+import {UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {CategoryGroup, EntityGroup, PermissionsGroup} from 'src/app/utils/index';
+import {ICategory, IEntity} from 'src/app/utils/permissions-interface';
+import {ConfirmationDialogComponent} from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
+
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-roles-view',
@@ -36,7 +38,8 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private fb: UntypedFormBuilder,
-        private dialog: MatDialog
+        // private dialog: MatDialog
+        private dialog: DialogService,
     ) {
     }
 
@@ -129,10 +132,12 @@ export class RolesViewComponent implements OnInit, OnDestroy {
                 dialogTitle: 'Delete role',
                 dialogText: 'Are you sure to delete role?'
             },
-            disableClose: true,
-            autoFocus: false
+            // disableClose: true,
+            // autoFocus: false
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { HttpResponse } from '@angular/common/http';
 import { WorkerTasksService } from '../../services/worker-tasks.service';
 
@@ -21,7 +21,7 @@ export class WorkerTasksComponent implements OnInit{
 
     constructor(
         private tasksService: WorkerTasksService,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
     ) {
         this.pageIndex = 0;
         this.pageSize = 10;

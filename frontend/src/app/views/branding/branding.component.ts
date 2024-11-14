@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { colorToGradient } from '../../static/color-remoter.function';
 import { Subscription } from 'rxjs';
 
@@ -65,7 +65,6 @@ export class BrandingComponent implements OnInit, OnDestroy{
         private http: HttpClient,
         private informService: InformService,
         private brandingService: BrandingService,
-        private dialog: MatDialog
     ) {
         this.fontControl.valueChanges.subscribe((value) => {
             this.selectedFont = this.fonts.find(font => font.value === value);

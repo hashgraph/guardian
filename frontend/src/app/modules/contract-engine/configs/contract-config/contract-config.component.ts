@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ContractType, IUser, SchemaHelper, TagType, Token, UserPermissions, } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -13,6 +13,7 @@ import { WipeRequestsDialogComponent } from '../../dialogs/wipe-requests-dialog/
 import { RetirePoolsDialogComponent } from '../../dialogs/retire-pools-dialog/retire-pools-dialog.component';
 import { RetireRequestsDialogComponent } from '../../dialogs/retire-requests-dialog/retire-requests-dialog.component';
 import { Validators } from '@angular/forms';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Component for operating with Contracts
@@ -195,7 +196,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
         private profileService: ProfileService,
         private contractsService: ContractService,
         private tokenService: TokenService,
-        private dialog: MatDialog,
+        // private dialog: MatDialog,
+        private dialog: DialogService,
         private router: Router,
         private route: ActivatedRoute
     ) {
@@ -315,8 +317,10 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     importContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '700px',
-            autoFocus: false,
-            disableClose: true,
+            // autoFocus: false,
+            // disableClose: true,
+            modal: true,
+            closable: false,
             data: {
                 fieldsConfig: [
                     {
@@ -337,7 +341,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 title: 'Import Contract',
             },
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
                 this.contractsService
@@ -360,8 +364,10 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     createContract() {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '700px',
-            autoFocus: false,
-            disableClose: true,
+            // autoFocus: false,
+            // disableClose: true,
+            modal: true,
+            closable: false,
             data: {
                 fieldsConfig: [
                     {
@@ -373,7 +379,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 title: 'Create Contract',
             },
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
             }
@@ -393,8 +399,10 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     inputHederaIdentifier(callback: (result: string) => void) {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '700px',
-            autoFocus: false,
-            disableClose: true,
+            // autoFocus: false,
+            // disableClose: true,
+            modal: true,
+            closable: false,
             data: {
                 fieldsConfig: [
                     {
@@ -410,7 +418,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 title: 'Enter Hedera Identifier',
             },
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
             }
@@ -421,8 +429,10 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     inputHederaAndTokenIdentifier(callback: (hederaId: string, tokenId: string) => void) {
         const dialogRef = this.dialog.open(DataInputDialogComponent, {
             width: '700px',
-            autoFocus: false,
-            disableClose: true,
+            // autoFocus: false,
+            // disableClose: true,
+            modal: true,
+            closable: false,
             data: {
                 fieldsConfig: [
                     {
@@ -447,7 +457,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 title: 'Enter Hedera and Token identifiers',
             },
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
             }
@@ -642,11 +652,14 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     .filter((token: Token) => !token.draftToken);
                 const dialogRef = this.dialog.open(SetPoolDialogComponent, {
                     width: '750px',
-                    panelClass: 'g-dialog',
-                    disableClose: true,
-                    autoFocus: false,
+                    // panelClass: 'g-dialog',
+                    // disableClose: true,
+                    // autoFocus: false,
+                    styleClass: 'g-dialog',
+                    modal: true,
+                    closable: false,
                 });
-                dialogRef.afterClosed().subscribe(async (result) => {
+                dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
                         result.tokens = result.tokens.map((item: any) => {
                             const token = tokens.find(
@@ -688,9 +701,12 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openWipeRequests(contract: any) {
         this.dialog.open(WipeRequestsDialogComponent, {
             width: contract.version === '1.0.0' ? '650px' : '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            // autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: contract,
         });
     }
@@ -698,9 +714,12 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openPools(contract: any) {
         this.dialog.open(RetirePoolsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            // autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: contract,
         });
     }
@@ -708,9 +727,12 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openRetireRequests(contract: any) {
         this.dialog.open(RetireRequestsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            // autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: contract,
         });
     }

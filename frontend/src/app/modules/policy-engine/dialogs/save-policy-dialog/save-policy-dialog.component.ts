@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
+
 import { Observable, ReplaySubject } from 'rxjs';
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 
 export enum PolicyAction {
     CREATE_NEW_POLICY = 1,
@@ -21,19 +23,27 @@ export class SavePolicyDialog {
     dataForm = this.fb.group({});
     isNewVersionDisabled: boolean = false;
 
+    isVisible: boolean = true;
+    data: any;
+
     private _isActionSelected$ = new ReplaySubject<boolean>(1);
 
     constructor(
-        public dialogRef: MatDialogRef<SavePolicyDialog>,
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        // public dialogRef: MatDialogRef<SavePolicyDialog>,
+        // @Inject(MAT_DIALOG_DATA) public data: any
+    ) {
+        this.data = config.data;
+
         if (this.data.action) {
             this.setAction(this.data.action);
         } else {
             this._isActionSelected$.next(false);
         }
 
-        this.isNewVersionDisabled = data.policy.owner !== data.policy.creator;
+        this.isNewVersionDisabled = this.data.policy.owner !== this.data.policy.creator;
     }
 
     public get isActionSelected$(): Observable<boolean> {

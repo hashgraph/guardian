@@ -7,13 +7,13 @@ import { AuthStateService } from 'src/app/services/auth-state.service';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
 import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { environment } from 'src/environments/environment';
 import { takeUntil } from 'rxjs/operators';
 import { BrandingService } from '../../services/branding.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
 import { AccountTypeSelectorDialogComponent } from './register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
 import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-password-dialog.component';
 import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
@@ -46,8 +46,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
     initialMeecoBtnTitle: string = 'Meeco Login';
     meecoBtnTitle: string = this.initialMeecoBtnTitle;
-    qrCodeDialogRef: MatDialogRef<QrCodeDialogComponent> | null = null;
-    vcSubmitDialogRef: MatDialogRef<MeecoVCSubmitDialogComponent> | null = null;
+    // qrCodeDialogRef: MatDialogRef<QrCodeDialogComponent> | null = null;
+    // vcSubmitDialogRef: MatDialogRef<MeecoVCSubmitDialogComponent> | null = null;
+    qrCodeDialogRef: DynamicDialogRef | null = null;
+    vcSubmitDialogRef: DynamicDialogRef | null = null;
     currentMeecoRequestId: string | null = null;
     private _subscriptions: Subscription[] = [];
 
@@ -65,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         private auth: AuthService,
         private router: Router,
         private wsService: WebSocketService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private brandingService: BrandingService,
         private dialogService: DialogService,
     ) {
@@ -305,7 +307,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         });
     }
 
-
     private handleMeecoVPVerification(): void {
         this.wsService.meecoVerifyVP$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
             this.qrCodeDialogRef?.close();
@@ -319,8 +320,10 @@ export class LoginComponent implements OnInit, OnDestroy {
                     MeecoVCSubmitDialogComponent,
                     {
                         width: '750px',
-                        disableClose: true,
-                        autoFocus: false,
+                        // disableClose: true,
+                        // autoFocus: false,
+                        modal: true,
+                        closable: false,
                         data: {
                             document: event.vc,
                             presentationRequestId:
@@ -331,9 +334,13 @@ export class LoginComponent implements OnInit, OnDestroy {
                     }
                 );
 
-                this.vcSubmitDialogRef
-                    .afterClosed()
-                    .subscribe(() => (this.vcSubmitDialogRef = null));
+                // this.vcSubmitDialogRef
+                //     .afterClosed()
+                //     .subscribe(() => (this.vcSubmitDialogRef = null));
+
+                this.vcSubmitDialogRef.onClose.subscribe(() => {
+                    this.vcSubmitDialogRef = null;
+                });
             }
         });
     }
@@ -342,16 +349,24 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.wsService.meecoPresentVP$.pipe(takeUntil(this.destroy$)).subscribe((event) => {
             if (!this.qrCodeDialogRef) {
                 this.qrCodeDialogRef = this.dialog.open(QrCodeDialogComponent, {
-                    panelClass: 'g-dialog',
-                    disableClose: true,
-                    autoFocus: false,
+                    // panelClass: 'g-dialog',
+                    // disableClose: true,
+                    // autoFocus: false,
+                    styleClass: 'g-dialog',
+                    modal: true,
+                    closable: false,
                     data: {
                         qrCodeData: event.redirectUri,
                     },
                 });
             }
 
-            this.qrCodeDialogRef.beforeClosed().subscribe(() => {
+            // this.qrCodeDialogRef.beforeClosed().subscribe(() => {
+            //     this.qrCodeDialogRef = null;
+            //     this.meecoBtnTitle = this.initialMeecoBtnTitle;
+            // });
+
+            this.qrCodeDialogRef.onClose.subscribe(() => {
                 this.qrCodeDialogRef = null;
                 this.meecoBtnTitle = this.initialMeecoBtnTitle;
             });

@@ -5,7 +5,7 @@ import { AuthStateService } from '../../services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
 import { DemoService } from '../../services/demo.service';
 import { NavigationEnd, Router } from '@angular/router';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ProfileService } from '../../services/profile.service';
 import { WebSocketService } from '../../services/web-socket.service';
 import { HeaderPropsService } from '../../services/header-props.service';
@@ -39,7 +39,7 @@ export class NewHeaderComponent implements OnInit {
         public auth: AuthService,
         public otherService: DemoService,
         public router: Router,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,

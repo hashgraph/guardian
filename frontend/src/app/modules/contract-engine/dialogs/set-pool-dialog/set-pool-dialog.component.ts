@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {
     AbstractControl,
     UntypedFormArray,
@@ -13,6 +13,7 @@ import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validat
 import { MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/legacy-radio';
 import { Token } from '@guardian/interfaces';
 import { TokenService } from 'src/app/services/token.service';
+import { DynamicDialogRef } from 'primeng/dynamicdialog';
 /**
  * Dialog for creating pair.
  */
@@ -40,9 +41,10 @@ export class SetPoolDialogComponent {
     }
 
     constructor(
-        public dialogRef: MatDialogRef<SetPoolDialogComponent>,
+        // public dialogRef: MatDialogRef<SetPoolDialogComponent>,
         public tokenService: TokenService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        // @Inject(MAT_DIALOG_DATA) public data: any,
+        private dialogRef: DynamicDialogRef,
     ) {}
 
     ngOnInit() {

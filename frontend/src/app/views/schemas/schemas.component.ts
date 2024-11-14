@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType, UserPermissions } from '@guardian/interfaces';
@@ -133,7 +133,7 @@ export class SchemaConfigComponent implements OnInit {
         private projectComparisonService: ProjectComparisonService,
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService
     ) {
         this.readonlyByTopic = {};
@@ -952,11 +952,14 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenForm(schema: Schema, example: boolean): void {
         const dialogRef = this.dialog.open(SchemaFormDialog, {
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
             data: { schema, example, category: this.getCategory() },
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async ({ exampleDate, currentSchema }: { exampleDate: any, currentSchema: Schema }) => {
+        dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: { exampleDate: any, currentSchema: Schema }) => {
             if (exampleDate && currentSchema) {
                 schema.setExample(exampleDate);
                 this.updateSchema(currentSchema.id, currentSchema);
@@ -1044,10 +1047,12 @@ export class SchemaConfigComponent implements OnInit {
                     dialogTitle: 'Delete schema',
                     dialogText: 'Are you sure to delete schema?'
                 },
-                disableClose: true,
-                autoFocus: false
+                // disableClose: true,
+                // autoFocus: false
+                modal: true,
+                closable: false,
             });
-            dialogRef.afterClosed().subscribe((result) => {
+            dialogRef.onClose.subscribe((result) => {
                 if (!result) {
                     return;
                 }
@@ -1132,8 +1137,11 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: {
                 type: 'new',
                 topicId: this.currentTopic,
@@ -1145,7 +1153,7 @@ export class SchemaConfigComponent implements OnInit {
                 scheme: newDocument,
             }
         });
-        dialogRef.afterClosed().subscribe(async (copyInfo: any | null) => {
+        dialogRef.onClose.subscribe(async (copyInfo: any | null) => {
             if (copyInfo) {
                 this.schemaService.copySchema(copyInfo).subscribe((result) => {
                     const { taskId } = result;
@@ -1164,9 +1172,11 @@ export class SchemaConfigComponent implements OnInit {
     public onPublish(element: Schema): void {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
-            disableClose: true
+            // disableClose: true
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async (version) => {
+        dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publishSchema(element.id, version);
             }
@@ -1198,8 +1208,11 @@ export class SchemaConfigComponent implements OnInit {
         const { type, data, schemas, errors } = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+            // panelClass: 'g-dialog',
+            // disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: {
                 schemas: schemas,
                 errors: errors,
@@ -1210,7 +1223,7 @@ export class SchemaConfigComponent implements OnInit {
                 tools: this.draftTools
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result && result.messageId) {
                 this.onImportSchemas(result.messageId);
                 return;
@@ -1290,7 +1303,7 @@ export class SchemaConfigComponent implements OnInit {
     public onViewSchemaTree(element: Schema): void {
         this.dialog.open(SchemaTreeComponent, {
             data: element,
-            autoFocus: false
+            // autoFocus: false
         })
     }
 

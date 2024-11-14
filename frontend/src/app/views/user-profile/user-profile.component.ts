@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { forkJoin } from 'rxjs';
 import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -116,7 +116,7 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         public dialogService: DialogService,
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef

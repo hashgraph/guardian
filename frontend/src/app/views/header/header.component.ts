@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NavigationEnd, Router } from '@angular/router';
 import { IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
@@ -45,7 +45,7 @@ export class HeaderComponent implements OnInit {
         public auth: AuthService,
         public otherService: DemoService,
         public router: Router,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService

@@ -1,51 +1,101 @@
-<div mat-dialog-content class="content">
-    <div *ngIf="isActionSelected$ | async; else selectActionTemplate">
-        <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{ getTitle() }}</h1>
-        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>* NAME:</mat-label>
-                <input matInput type="text" placeholder="Policy name" formControlName="name">
-            </mat-form-field>
+<!--<div mat-dialog-content class="content">-->
+<!--    <div *ngIf="isActionSelected$ | async; else selectActionTemplate">-->
+<!--        <h1 mat-dialog-title *ngIf="isActionSelected$ | async">{{ getTitle() }}</h1>-->
+<!--        <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">-->
+<!--            <mat-form-field class="example-full-width" appearance="outline">-->
+<!--                <mat-label>* NAME:</mat-label>-->
+<!--                <input matInput type="text" placeholder="Policy name" formControlName="name">-->
+<!--            </mat-form-field>-->
 
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>* TAG:</mat-label>
-                <input matInput type="text" placeholder="policyTag" formControlName="policyTag">
-            </mat-form-field>
+<!--            <mat-form-field class="example-full-width" appearance="outline">-->
+<!--                <mat-label>* TAG:</mat-label>-->
+<!--                <input matInput type="text" placeholder="policyTag" formControlName="policyTag">-->
+<!--            </mat-form-field>-->
 
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>TOPIC DESCRIPTION:</mat-label>
-                <input matInput type="text" placeholder="Topic description" formControlName="topicDescription"
-                       maxlength="50">
-            </mat-form-field>
+<!--            <mat-form-field class="example-full-width" appearance="outline">-->
+<!--                <mat-label>TOPIC DESCRIPTION:</mat-label>-->
+<!--                <input matInput type="text" placeholder="Topic description" formControlName="topicDescription"-->
+<!--                       maxlength="50">-->
+<!--            </mat-form-field>-->
 
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>DESCRIPTION:</mat-label>
-                <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>
-            </mat-form-field>
+<!--            <mat-form-field class="example-full-width" appearance="outline">-->
+<!--                <mat-label>DESCRIPTION:</mat-label>-->
+<!--                <textarea matInput type="text" placeholder="Description" formControlName="description"></textarea>-->
+<!--            </mat-form-field>-->
 
-            <div mat-dialog-actions>
-                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>
-                <button mat-button type="button" (click)="onNoClick()">Cancel</button>
-            </div>
-        </form>
+<!--            <div mat-dialog-actions>-->
+<!--                <button mat-raised-button color="primary" type="submit" [disabled]="!dataForm.valid">Ok</button>-->
+<!--                <button mat-button type="button" (click)="onNoClick()">Cancel</button>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+<!--    <ng-template #selectActionTemplate>-->
+<!--        <div class="action-select-step">-->
+<!--            <div class="login-header">-->
+<!--                Select action-->
+<!--            </div>-->
+<!--            <button mat-button (click)="setAction(1)">-->
+<!--                <span class="action-name">Create new policy</span>-->
+<!--            </button>-->
+<!--            <button mat-button (click)="setAction(2)" *ngIf="!isNewVersionDisabled">-->
+<!--                <span class="action-name">Create new version</span>-->
+<!--            </button>-->
+<!--        </div>-->
+<!--    </ng-template>-->
+
+<!--    <button *ngIf="!(isActionSelected$ | async)" mat-icon-button class="close-button" type="button" [mat-dialog-close]>-->
+<!--        &lt;!&ndash;        <mat-icon>clear</mat-icon>&ndash;&gt;-->
+
+<!--        <i class="pi pi-times"></i>-->
+<!--    </button>-->
+<!--</div>-->
+
+<p-dialog [(visible)]="isVisible"
+          [header]="(isActionSelected$ | async) ? getTitle() : 'Select action'"
+          [modal]="true"
+          [closable]="false"
+          (onHide)="onNoClick()"
+          [draggable]="false"
+          class="p-dialog dialog">
+    <div class="dialog-content">
+        <ng-container *ngIf="isActionSelected$ | async; else selectActionTemplate">
+            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()" class="form-field">
+                <div class="example-full-width custom-form-field">
+                    <label>NAME:</label>
+                    <input pInputText type="text" placeholder="Policy name" formControlName="name"/>
+                </div>
+                <div class="example-full-width custom-form-field">
+                    <label>TAG:</label>
+                    <input pInputText type="text" placeholder="policyTag" formControlName="policyTag"/>
+                </div>
+                <div class="example-full-width custom-form-field">
+                    <label>TOPIC DESCRIPTION:</label>
+                    <input pInputText type="text" placeholder="Topic description" formControlName="topicDescription"
+                           maxlength="50"/>
+                </div>
+                <div class="example-full-width custom-form-field">
+                    <label>DESCRIPTION:</label>
+                    <textarea pInputTextarea placeholder="Description" formControlName="description"></textarea>
+                </div>
+                <div class="dialog-actions">
+                    <p-button label="Ok" icon="pi pi-check" type="submit" [disabled]="!dataForm.valid"
+                              styleClass="p-button-raised p-button-primary p-button-ok"></p-button>
+                    <p-button label="Cancel" icon="pi pi-times" (onClick)="onNoClick()"
+                              styleClass="p-button-text p-button-cancel"></p-button>
+                </div>
+            </form>
+        </ng-container>
     </div>
     <ng-template #selectActionTemplate>
         <div class="action-select-step">
-            <div class="login-header">
-                Select action
-            </div>
-            <button mat-button (click)="setAction(1)">
+            <div class="login-header">Select action</div>
+            <p-button label="Create new policy" styleClass="p-button-text" (onClick)="setAction(1)">
                 <span class="action-name">Create new policy</span>
-            </button>
-            <button mat-button (click)="setAction(2)" *ngIf="!isNewVersionDisabled">
+            </p-button>
+            <p-button *ngIf="!isNewVersionDisabled" label="Create new version" styleClass="p-button-text"
+                      (onClick)="setAction(2)">
                 <span class="action-name">Create new version</span>
-            </button>
+            </p-button>
         </div>
     </ng-template>
-
-    <button *ngIf="!(isActionSelected$ | async)" mat-icon-button class="close-button" type="button" [mat-dialog-close]>
-        <!--        <mat-icon>clear</mat-icon>-->
-
-        <i class="pi pi-times"></i>
-    </button>
-</div>
+</p-dialog>

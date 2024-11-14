@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
+// import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 @Component({
     selector: 'app-save-before-dialog',
@@ -8,7 +9,10 @@ import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dia
 })
 export class SaveBeforeDialogComponent implements OnInit {
 
-    constructor(public dialogRef: MatDialogRef<SaveBeforeDialogComponent>) {
+    constructor(
+        // public dialogRef: MatDialogRef<SaveBeforeDialogComponent>
+        private dialogRef: DynamicDialogRef,
+    ) {
     }
 
     ngOnInit(): void {

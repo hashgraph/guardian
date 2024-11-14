@@ -1,5 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { ContractType, IUser, PolicyHelper, PolicyType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -144,9 +144,6 @@ const columns = [{
         )
     }
 }];
-
-
-
 
 /**
  * Component for choosing a policy and
@@ -512,7 +509,7 @@ export class PoliciesComponent implements OnInit {
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private router: Router,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private taskService: TasksService,
         private informService: InformService,
@@ -1093,16 +1090,27 @@ export class PoliciesComponent implements OnInit {
     }
 
     public createMultiPolicy(element: any) {
-        const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
+        // const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
+        //     width: '650px',
+        //     panelClass: 'g-dialog',
+        //     disableClose: true,
+        //     autoFocus: false,
+        //     autoZIndex: true,
+        //     data: {
+        //         policyId: element.id
+        //     }
+        // }));
+
+        const dialogRef = this.dialogService.open(MultiPolicyDialogComponent, {
             width: '650px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'g-dialog',
+            closable: false,
+            autoZIndex: true,
             data: {
                 policyId: element.id
             }
-        }));
-        dialogRef.afterClosed().subscribe(async (result) => {
+        });
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
             }

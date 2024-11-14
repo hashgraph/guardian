@@ -9,10 +9,11 @@ import {
     ValidatorFn,
     Validators,
 } from '@angular/forms';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { RetireTokenPool, Token, TokenType } from '@guardian/interfaces';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenService } from 'src/app/services/token.service';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-user-retire-pools-dialog',
@@ -39,7 +40,8 @@ export class UserRetirePoolsDialogComponent implements OnInit {
     );
 
     constructor(
-        public dialogRef: MatDialogRef<UserRetirePoolsDialogComponent>,
+        // public dialogRef: MatDialogRef<UserRetirePoolsDialogComponent>,
+        private dialogRef: DynamicDialogRef,
         public contractService: ContractService,
         public tokenService: TokenService
     ) {}

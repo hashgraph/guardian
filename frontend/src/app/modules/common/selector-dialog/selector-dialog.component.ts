@@ -1,5 +1,7 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, Inject, OnInit} from '@angular/core';
+// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 export interface SelectorDialogOptions {
     name: string;
@@ -20,16 +22,22 @@ export class SelectorDialogComponent implements OnInit {
 
     result: any;
 
+    isVisible: boolean = true;
+
     constructor(
-        @Inject(MAT_DIALOG_DATA)
-        public data: {
-            title: string;
-            description: string;
-            label?: string;
-            options: SelectorDialogOptions[];
-            multiple?: boolean;
-        }
+        //     @Inject(MAT_DIALOG_DATA)
+        //     public data: {
+        //         title: string;
+        //         description: string;
+        //         label?: string;
+        //         options: SelectorDialogOptions[];
+        //         multiple?: boolean;
+        //     }
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
+        const data = config.data;
+
         this.title = data?.title;
         this.description = data?.description;
         this.multiple = !!data?.multiple;
@@ -39,5 +47,14 @@ export class SelectorDialogComponent implements OnInit {
         }
     }
 
-    ngOnInit(): void {}
+    ngOnInit(): void {
+    }
+
+    onConfirm(): void {
+        this.dialogRef.close({ok: true, result: this.result});
+    }
+
+    onCancel(): void {
+        this.dialogRef.close({ok: false});
+    }
 }

@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { API_BASE_URL } from '../../../services/api';
-import { IWizardConfig, Schema, Token } from '@guardian/interfaces';
-import { SelectorDialogComponent } from '../../common/selector-dialog/selector-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ConfirmationDialogComponent } from '../../common/confirmation-dialog/confirmation-dialog.component';
-import { PolicyWizardDialogComponent } from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {Observable} from 'rxjs';
+import {API_BASE_URL} from '../../../services/api';
+import {IWizardConfig, Schema, Token} from '@guardian/interfaces';
+import {SelectorDialogComponent} from '../../common/selector-dialog/selector-dialog.component';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {ConfirmationDialogComponent} from '../../common/confirmation-dialog/confirmation-dialog.component';
+import {PolicyWizardDialogComponent} from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
 
 export enum WizardMode {
     CREATE = 'CREATE',
@@ -21,7 +21,11 @@ export enum WizardMode {
 export class WizardService {
     private readonly url: string = `${API_BASE_URL}/wizard`;
 
-    constructor(private http: HttpClient, private dialog: MatDialog, private dialogService: DialogService,) {
+    constructor(
+        private http: HttpClient,
+        private dialog: DialogService,
+        private dialogService: DialogService
+    ) {
     }
 
     public createPolicyAsync(
@@ -89,10 +93,12 @@ export class WizardService {
                 dialogTitle: 'Save progress',
                 dialogText: 'Do you want to save progress?',
             },
-            disableClose: true,
+            // disableClose: true,
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((saveState) => {
-            callback(Object.assign(value, { saveState }));
+        dialogRef.onClose.subscribe((saveState) => {
+            callback(Object.assign(value, {saveState}));
         });
     }
 
@@ -199,9 +205,11 @@ export class WizardService {
                         },
                     ].concat(options),
                 },
-                disableClose: true,
+                // disableClose: true,
+                modal: true,
+                closable: false,
             });
-            selectorDialog.afterClosed().subscribe((value) => {
+            selectorDialog.onClose.subscribe((value) => {
                 if (!value?.ok) {
                     return;
                 }

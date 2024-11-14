@@ -1,6 +1,6 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
     ContractType,
@@ -208,7 +208,7 @@ export class PolicyConfigurationComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private changeDetector: ChangeDetectorRef,
         private informService: InformService,
@@ -746,9 +746,11 @@ export class PolicyConfigurationComponent implements OnInit {
                     dialogTitle: 'Apply latest changes',
                     dialogText: 'Do you want to apply latest changes?'
                 },
-                disableClose: true
+                // disableClose: true
+                modal: true,
+                closable: false,
             })
-            applyChangesDialog.afterClosed().subscribe((result) => {
+            applyChangesDialog.onClose.subscribe((result) => {
                 if (result) {
                     this.loadState(this.storage.current);
                 } else {
@@ -1273,10 +1275,12 @@ export class PolicyConfigurationComponent implements OnInit {
                     ? PolicyAction.CREATE_NEW_POLICY
                     : null
             },
-            autoFocus: false,
-            disableClose: true
+            // autoFocus: false,
+            // disableClose: true
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result && this.policyTemplate) {
                 this.loading = true;
                 const json = this.policyTemplate.getJSON();
@@ -1409,10 +1413,12 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.hasChanges) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
-                autoFocus: false,
-                disableClose: true,
+                // autoFocus: false,
+                // disableClose: true,
+                modal: true,
+                closable: false,
             });
-            dialogRef.afterClosed().subscribe((result) => {
+            dialogRef.onClose.subscribe((result) => {
                 if (result) {
                     this.asyncUpdatePolicy().subscribe(() => {
                         this.setVersion();
@@ -1428,10 +1434,12 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.hasChanges) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
-                autoFocus: false,
-                disableClose: true,
+                // autoFocus: false,
+                // disableClose: true,
+                modal: true,
+                closable: false,
             });
-            dialogRef.afterClosed().subscribe((result) => {
+            dialogRef.onClose.subscribe((result) => {
                 if (result) {
                     this.asyncUpdatePolicy().subscribe(() => {
                         this.dryRunPolicy();

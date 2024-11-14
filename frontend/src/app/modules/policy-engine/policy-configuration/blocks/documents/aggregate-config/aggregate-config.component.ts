@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**
@@ -29,7 +29,9 @@ export class AggregateConfigComponent implements OnInit {
     properties!: any;
     allTimer!: PolicyBlock[];
 
-    constructor(private dialog: MatDialog) {
+    constructor(
+        // private dialog: MatDialog
+    ) {
     }
 
     ngOnInit(): void {

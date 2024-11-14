@@ -3,7 +3,7 @@ import { ThemeService } from '../../../../services/theme.service';
 import { Theme } from '../../structures/storage/theme';
 import { ThemeRule } from '../../structures/storage/theme-rule';
 import { RegisteredService } from '../../services/registered.service';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { NewThemeDialog } from '../../dialogs/new-theme-dialog/new-theme-dialog.component';
 import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
@@ -57,7 +57,7 @@ export class PolicySettingsComponent implements OnInit {
         private registeredService: RegisteredService,
         private themeService: ThemeService,
         private dialogService: DialogService,
-        private dialog: MatDialog
+        private dialog: DialogService
     ) {
         this.roles = [];
         for (let i = 0; i < 20; i++) {
@@ -157,14 +157,17 @@ export class PolicySettingsComponent implements OnInit {
         }
         const dialogRef = this.dialog.open(NewThemeDialog, {
             width: '650px',
-            panelClass: 'g-dialog',
+            // panelClass: 'g-dialog',
             data: {
                 type,
                 theme: newTheme
             },
-            disableClose: true,
+            // disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async (r) => {
+        dialogRef.onClose.subscribe(async (r) => {
             if (r) {
                 if (r.name) {
                     newTheme.name = r.name;
@@ -190,9 +193,11 @@ export class PolicySettingsComponent implements OnInit {
                 title: 'Delete theme',
                 description: 'Are you sure you want to delete this theme?'
             },
-            disableClose: true,
+            // disableClose: true,
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.loading = true;
                 this.themeService.delete(theme).subscribe((result: any) => {
@@ -268,14 +273,17 @@ export class PolicySettingsComponent implements OnInit {
     public editTheme(theme: Theme) {
         const dialogRef = this.dialog.open(NewThemeDialog, {
             width: '650px',
-            panelClass: 'g-dialog',
+            // panelClass: 'g-dialog',
             data: {
                 type: 'edit',
                 theme: theme
             },
-            disableClose: true,
+            // disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 theme.name = result.name;
                 this.themeService.update(theme).subscribe((result: any) => {

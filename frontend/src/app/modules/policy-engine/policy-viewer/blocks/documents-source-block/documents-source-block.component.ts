@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
@@ -56,7 +56,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
     ) {
         this.fields = [];
@@ -230,7 +230,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     dryRun: this.dryRun
                 }
             });
-            dialogRef.afterClosed().subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => { });
         } else {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
                 showHeader: false,
@@ -421,7 +421,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 value: links,
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     onButton(event: MouseEvent, row: any, field: any) {

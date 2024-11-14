@@ -2,13 +2,13 @@ import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 // import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
 import {MatStepperModule} from '@angular/material/stepper';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatIconModule} from '@angular/material/icon';
+// import {MatExpansionModule} from '@angular/material/expansion';
+// import {MatIconModule} from '@angular/material/icon';
 import {ReactiveFormsModule} from '@angular/forms';
-import {MatLegacyInputModule as MatInputModule} from '@angular/material/legacy-input';
-import {MatLegacyButtonModule as MatButtonModule} from '@angular/material/legacy-button';
-import {MatLegacyTableModule as MatTableModule} from '@angular/material/legacy-table';
-import {MatLegacyDialogModule as MatDialogModule} from '@angular/material/legacy-dialog';
+// import {MatLegacyInputModule as MatInputModule} from '@angular/material/legacy-input';
+// import {MatLegacyButtonModule as MatButtonModule} from '@angular/material/legacy-button';
+// import {MatLegacyTableModule as MatTableModule} from '@angular/material/legacy-table';
+// import {MatLegacyDialogModule as MatDialogModule} from '@angular/material/legacy-dialog';
 import {MatLegacyProgressSpinnerModule as MatProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
 import {MatToolbarModule} from '@angular/material/toolbar';
 import {MatLegacyMenuModule as MatMenuModule} from '@angular/material/legacy-menu';
@@ -28,7 +28,7 @@ import {MatLegacyPaginatorModule as MatPaginatorModule} from '@angular/material/
 import {MatSortModule} from '@angular/material/sort';
 import {MatLegacyChipsModule as MatChipsModule} from '@angular/material/legacy-chips';
 import {MatLegacyAutocompleteModule as MatAutocompleteModule} from '@angular/material/legacy-autocomplete';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+// import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {CdkTableModule} from '@angular/cdk/table';
 import {MatLegacySliderModule as MatSliderModule} from '@angular/material/legacy-slider';
@@ -63,7 +63,7 @@ import {SelectButtonModule} from 'primeng/selectbutton';
         // MatButtonToggleModule,
         SelectButtonModule,
 
-        MatDialogModule,
+        // MatDialogModule,
 
         MatDatepickerModule,
         MatRadioModule,
@@ -107,7 +107,7 @@ import {SelectButtonModule} from 'primeng/selectbutton';
         // MatButtonToggleModule,
         SelectButtonModule,
 
-        MatDialogModule,
+        // MatDialogModule,
 
         MatDatepickerModule,
         MatRadioModule,

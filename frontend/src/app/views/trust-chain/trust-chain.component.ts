@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,7 +38,7 @@ export class TrustChainComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private fb: UntypedFormBuilder,
-        public dialog: MatDialog,
+        // public dialog: MatDialog,
         private dialogService: DialogService,
         iconRegistry: MatIconRegistry,
         sanitizer: DomSanitizer

@@ -1,8 +1,10 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+
 
 /**
  * Dialog for creating and editing schemas.
@@ -23,11 +25,15 @@ export class SchemaFormDialog {
     public category: string;
 
     constructor(
-        public dialogRef: MatDialogRef<SchemaFormDialog>,
+        // public dialogRef: MatDialogRef<SchemaFormDialog>,
+        // @Inject(MAT_DIALOG_DATA) public data: any,
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
         private schemaService: SchemaService,
-        @Inject(MAT_DIALOG_DATA) public data: any
     ) {
+        const data = this.config.data
+
         this.schema = data.schema || null;
         this.example = data.example || false;
         this.dataForm = fb.group({});

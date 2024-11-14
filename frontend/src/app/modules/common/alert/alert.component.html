@@ -1,14 +1,27 @@
-<div mat-dialog-title>
-    <div class="dialog-header" [attr.type]="type">
-        <!--        <mat-icon>{{icon}}</mat-icon>-->
+<!--<div mat-dialog-title>-->
+<!--    <div class="dialog-header" [attr.type]="type">-->
+<!--        &lt;!&ndash;        <mat-icon>{{icon}}</mat-icon>&ndash;&gt;-->
 
-        <i [ngClass]="'pi-' + icon"></i>
+<!--        <i [ngClass]="'pi-' + icon"></i>-->
+<!--        <span>{{ type }}</span>-->
+<!--    </div>-->
+<!--</div>-->
+<!--<mat-dialog-content>-->
+<!--    <pre>{{ text }}</pre>-->
+<!--</mat-dialog-content>-->
+<!--<mat-dialog-actions align="center">-->
+<!--    <button mat-flat-button mat-dialog-close>OK</button>-->
+<!--</mat-dialog-actions>-->
+
+<p-dialog [(visible)]="isVisible" [header]="type" [modal]="true" [closable]="false" [draggable]="false"
+          (onHide)="closeDialog()" class="p-dialog dialog">
+    <div class="dialog-header modal-header p-dialog-header" [attr.type]="type">
+        <i [ngClass]="'pi pi-' + icon"></i>
         <span>{{ type }}</span>
     </div>
-</div>
-<mat-dialog-content>
     <pre>{{ text }}</pre>
-</mat-dialog-content>
-<mat-dialog-actions align="center">
-    <button mat-flat-button mat-dialog-close>OK</button>
-</mat-dialog-actions>
+    <div style="text-align: center;">
+        <p-button label="OK" (onClick)="closeDialog()"
+                  styleClass="p-button-ok p-button-primary p-button-raised"></p-button>
+    </div>
+</p-dialog>

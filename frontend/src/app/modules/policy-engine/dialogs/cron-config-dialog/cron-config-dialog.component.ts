@@ -1,8 +1,9 @@
 import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import * as moment from 'moment';
 import cronstrue from 'cronstrue';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating policy.
@@ -50,9 +51,14 @@ export class CronConfigDialog {
     sd_local: moment.Moment;
 
     constructor(
-        public dialogRef: MatDialogRef<CronConfigDialog>,
+        // public dialogRef: MatDialogRef<CronConfigDialog>,
         private fb: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        // @Inject(MAT_DIALOG_DATA) public data: any,
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
+        ) {
+        const data = this.config.data
+
         this.period = 'week';
         this.startDate = data.startDate || (new Date).toISOString();
         this.sd = moment(this.startDate).utc();
