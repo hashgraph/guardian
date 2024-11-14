@@ -121,7 +121,8 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.THEME, 'Theme'],
     [PermissionEntities.TOKEN, 'Token'],
     [PermissionEntities.TRUST_CHAIN, 'Trust Chain'],
-    [PermissionEntities.ROLE, 'Role']
+    [PermissionEntities.ROLE, 'Role'],
+    [PermissionEntities.STATISTIC, 'Statistic']
 ])
 
 export const actionIndexes = new Map<PermissionActions, number>([
