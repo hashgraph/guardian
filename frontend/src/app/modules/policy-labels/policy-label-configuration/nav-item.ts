@@ -20,12 +20,18 @@ export interface INavItemConfig {
     id: string;
     type: NavItemType;
     name: string;
+    config?: any;
 }
 
 export class NavItem implements TreeNode {
     public readonly config: INavItemConfig;
     public readonly nodeType: string = 'default';
     public readonly nodeIcon: string = 'default';
+
+    public prefix: string = '';
+    public get blockType(): string {
+        return this.config.type;
+    }
 
     //Tree Node
     public get key(): string {
@@ -39,8 +45,6 @@ export class NavItem implements TreeNode {
     }
     public children?: NavItem[] | undefined;
     public parent?: NavItem | undefined;
-
-    public prefix: string = '';
 
     constructor(type: NavItemType, config?: INavItemConfig) {
         if (config) {
@@ -77,6 +81,10 @@ export class NavItem implements TreeNode {
         return new NavItem(config.type, config);
     }
 
+    public save(): void {
+
+    }
+
     public static from(config: INavItemConfig): NavItem {
         const node = new NavItem(config?.type, config);
         return node;
@@ -97,6 +105,36 @@ export class NavItem implements TreeNode {
             item.prefix = `${prefix}${i + 1}. `;
             if (item.children) {
                 NavItem.updateOrder(item.children, `${prefix}${i + 1}.`);
+            }
+        }
+    }
+}
+
+export class NavTree {
+    public data: NavItem[] = [];
+
+    public add(node: NavItem): void {
+        this.data.push(node);
+    }
+
+    public update() {
+        NavItem.updateOrder(this.data);
+    }
+
+    public delete(node: NavItem): void {
+        this._deleteNode(this.data, node);
+    }
+
+    private _deleteNode(nodes: NavItem[] | undefined, node: NavItem): void {
+        if (!Array.isArray(nodes)) {
+            return;
+        }
+        const index = nodes.indexOf(node);
+        if (index > -1) {
+            nodes.splice(index, 1);
+        } else {
+            for (const item of nodes) {
+                this._deleteNode(item.children, node);
             }
         }
     }

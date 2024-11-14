@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
 import { TreeNode } from '../../common/tree-graph/tree-node';
@@ -19,50 +19,21 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { TreeDragDropService } from 'primeng/api';
-import { NavItem, NavItemType } from './nav-item';
+import { NavItem, NavItemType, NavTree } from './nav-item';
 
-@Component({
-    selector: 'app-policy-label-configuration',
-    templateUrl: './policy-label-configuration.component.html',
-    styleUrls: ['./policy-label-configuration.component.scss'],
-})
-export class PolicyLabelConfigurationComponent implements OnInit {
-    public readonly title: string = 'Configuration';
-
-    public loading: boolean = true;
-    public isConfirmed: boolean = false;
-    public user: UserPermissions = new UserPermissions();
-    public owner: string;
-
-    public labelId: string;
-    public item: any | undefined;
-    public policy: any;
-    public schemas: Schema[];
-    public enumMap: Map<string, Map<string, EnumValue>>;
-
-    private subscription = new Subscription();
-    private tree: TreeGraphComponent;
-    private nodes: SchemaNode[];
-    private source: TreeSource<SchemaNode>;
-
-    public selectedNode: SchemaNode | null = null;
-    public rootNode: SchemaNode | null = null;
-
-    public nodeLoading: boolean = true;
-    public searchField: string = '';
-
-    public stepper = [true, false, false];
-
+class LabelConfig {
+    public show: boolean = false;
     public readonly: boolean = false;
+    public stepper = [true, false, false];
+    public policy: any;
 
-    @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
-    @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
+    public readonly step = new Subject<number>();
 
-    private _selectTimeout1: any;
-    private _selectTimeout2: any;
-    private _selectTimeout3: any;
-
-    public variables: FieldRules = new FieldRules();
+    constructor(
+        private dialogService: DialogService,
+        private dragDropService: TreeDragDropService,
+    ) {
+    }
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -70,20 +41,167 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         policy: new FormControl<string>('', Validators.required),
     });
 
-    public schemaFilterType: number = 1;
-    public properties: Map<string, string>;
+    public menuItems = [{
+        title: 'General',
+        items: [
+            NavItem.menu(NavItemType.Group, 'Group'),
+            NavItem.menu(NavItemType.Rules, 'Rules'),
+        ]
+    }, {
+        title: 'Statistics',
+        items: [
+            NavItem.menu(NavItemType.Statistic, 'Statistic 1'),
+            NavItem.menu(NavItemType.Statistic, 'Statistic 2'),
+        ]
+    }, {
+        title: 'Labels',
+        items: [
+            NavItem.menu(NavItemType.Label, 'Label 1'),
+            NavItem.menu(NavItemType.Label, 'Label 2'),
+        ]
+    }];
 
-    public get zoom(): number {
-        if (this.tree) {
-            return Math.round(this.tree.zoom * 100);
-        } else {
-            return 100;
+    public selectedNavItem: NavItem | null = null;
+    public draggedMenuItem: any = null;
+    public navigationTree: NavTree = new NavTree();
+
+    public setData(item: IPolicyLabel) {
+        this.overviewForm.setValue({
+            name: item.name || '',
+            description: item.description || '',
+            policy: this.policy?.name || '',
+        });
+    }
+
+    public setPolicy(relationships: any) {
+        this.policy = relationships?.policy || {};
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
+    }
+
+    public async goToStep(index: number) {
+        for (let i = 0; i < this.stepper.length; i++) {
+            this.stepper[i] = (i == index);
+        }
+        return this.refreshView();
+    }
+
+    public async refreshView() {
+        return new Promise<void>((resolve, reject) => {
+            setTimeout(() => {
+                resolve();
+            }, 400);
+        });
+    }
+
+    public onStep(index: number) {
+        this.step.next(index);
+    }
+
+    public dragMenuStart(item: NavItem) {
+        this.draggedMenuItem = item.clone();
+        this.dragDropService.startDrag({
+            tree: null,
+            node: this.draggedMenuItem,
+            subNodes: [this.draggedMenuItem],
+            index: 0,
+            scope: "navigationTree"
+        })
+    }
+
+    public dragMenuEnd() {
+        this.draggedMenuItem = null;
+    }
+
+    public onDrop() {
+        if (this.draggedMenuItem) {
+            this.navigationTree.add(this.draggedMenuItem);
+            this.navigationTree.update();
+            this.draggedMenuItem = null;
         }
     }
 
-    public get roots(): SchemaNode[] {
-        return this.source?.roots;
+    public onDropValidator($event: any) {
+        // if ($event.dropNode?.type === 'root') {
+        //     if ($event.originalEvent.target.tagName === 'LI') {
+        //         return;
+        //     }
+        // }
+        $event.accept();
+        this.navigationTree.update();
     }
+
+    public onClearNavItem() {
+        this.selectedNavItem = null;
+    }
+
+    public onNavItemSelect(node: NavItem) {
+        this.selectedNavItem = node;
+    }
+
+    public ifNavSelected(node: NavItem) {
+        if (this.selectedNavItem) {
+            return this.selectedNavItem.key === node.key;
+        }
+        return false;
+    }
+
+    public onDeleteNavItem(node: NavItem) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete item',
+                text: 'Are you sure want to delete item?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.selectedNavItem = null;
+                this.navigationTree.delete(node);
+                this.navigationTree.update();
+            }
+        });
+    }
+}
+
+class RulesConfig {
+    public show: boolean = false;
+    public readonly: boolean = false;
+    public stepper = [true, false];
+
+    public searchField: string = '';
+    public nodeLoading: boolean = true;
+    public selectedNode: SchemaNode | null = null;
+    public rootNode: SchemaNode | null = null;
+    public schemaFilterType: number = 1;
+    public variables: FieldRules = new FieldRules();
+    public schemas: Schema[];
+    public policy: any;
+
+    private _selectTimeout1: any;
+    private _selectTimeout2: any;
+    private _selectTimeout3: any;
+
+    private tree: TreeGraphComponent;
+    private fieldTree: ElementRef;
+    private treeTabs: ElementRef;
+    private currentNode: NavItem;
+
+    private nodes: SchemaNode[];
+    private enumMap: Map<string, Map<string, EnumValue>>;
+    private source: TreeSource<SchemaNode>;
+    private properties: Map<string, string>;
 
     public codeMirrorOptions: any = {
         theme: 'default',
@@ -106,116 +224,43 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         singleLine: true
     };
 
-    public menuItems = [{
-        title: 'General',
-        items: [
-            NavItem.menu(NavItemType.Group, 'Group'),
-            NavItem.menu(NavItemType.Rules, 'Rules'),
-        ]
-    }, {
-        title: 'Statistics',
-        items: [
-            NavItem.menu(NavItemType.Statistic, 'Statistic 1'),
-            NavItem.menu(NavItemType.Statistic, 'Statistic 2'),
-        ]
-    }, {
-        title: 'Labels',
-        items: [
-            NavItem.menu(NavItemType.Label, 'Label 1'),
-            NavItem.menu(NavItemType.Label, 'Label 2'),
-        ]
-    }];
-    public draggedMenuItem: any = null;
+    public get zoom(): number {
+        if (this.tree) {
+            return Math.round(this.tree.zoom * 100);
+        } else {
+            return 100;
+        }
+    }
 
-    public navigationTree: NavItem[] = [];
-    public rootExpanded: boolean = true;
-    public selectedNavItem: NavItem | null = null;
+    public get roots(): SchemaNode[] {
+        return this.source?.roots;
+    }
+
+    public readonly step = new Subject<number>();
 
     constructor(
-        private profileService: ProfileService,
-        private schemaService: SchemaService,
-        private policyLabelsService: PolicyLabelsService,
-        private ipfs: IPFSService,
         private dialogService: DialogService,
-        private router: Router,
-        private route: ActivatedRoute,
-        private dragDropService: TreeDragDropService,
+        private ipfs: IPFSService,
     ) {
-        this.menuItems.slice = function (start?: number | undefined, end?: number | undefined) { return this };
     }
 
-    ngOnInit() {
-        this.subscription.add(
-            this.route.params.subscribe((queryParams) => {
-                this.loadProfile();
-            })
-        );
-        this.subscription.add(
-            this.route.queryParams.subscribe((queryParams) => {
-                const index = queryParams.tab || 0;
-                this.onStep(index);
-            })
-        );
-    }
-
-    ngOnDestroy(): void {
-        this.subscription.unsubscribe();
-    }
-
-    private loadProfile() {
-        this.isConfirmed = false;
-        this.loading = true;
-        this.profileService
-            .getProfile()
-            .subscribe((profile) => {
-                this.isConfirmed = !!(profile && profile.confirmed);
-                this.user = new UserPermissions(profile);
-                this.owner = this.user.did;
-
-                if (this.isConfirmed) {
-                    this.loadData();
-                } else {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                }
-            }, (e) => {
-                this.loading = false;
-            });
-    }
-
-    private loadData() {
-        this.labelId = this.route.snapshot.params['labelId'];
-        this.loading = true;
-        forkJoin([
-            this.policyLabelsService.getLabel(this.labelId),
-            this.policyLabelsService.getRelationships(this.labelId),
-            this.schemaService.properties()
-        ]).subscribe(([item, relationships, properties]) => {
-            this.item = item;
-            this.readonly = this.item?.status === EntityStatus.ACTIVE;
-            if (relationships) {
-                this.updateTree(relationships, properties);
-            }
-            this.updateForm(item);
-            setTimeout(() => {
-                this.loading = false;
-            }, 1000);
-        }, (e) => {
-            this.loading = false;
-        });
-    }
-
-    private updateTree(relationships: any, properties: any[]) {
-        this.policy = relationships.policy || {};
-        this.nodes = [];
+    public setProperties(properties: any[]) {
         this.properties = new Map<string, string>();
         if (properties) {
             for (const property of properties) {
                 this.properties.set(property.title, property.value);
             }
         }
+    }
+
+    public setPolicy(relationships: any) {
+        this.policy = relationships?.policy || {};
+    }
+
+    public setSchemas(relationships: any) {
         const schemas = relationships.schemas || [];
+
+        this.nodes = [];
         this.schemas = [];
         for (const schema of schemas) {
             try {
@@ -238,10 +283,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             this.tree.setData(this.source);
         }
 
-        this.updateFieldMap();
-    }
-
-    private updateFieldMap() {
         this.enumMap = new Map<string, Map<string, EnumValue>>();
         for (const schema of this.schemas) {
             const map = new Map<string, EnumValue>();
@@ -261,14 +302,12 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         }
     }
 
-    private updateForm(item: IPolicyLabel) {
-        this.overviewForm.setValue({
-            name: item.name || '',
-            description: item.description || '',
-            policy: this.policy?.name || '',
-        });
+    public setData(node: NavItem) {
+        this.currentNode = node;
 
-        const config = item.config;
+        const item = node.config;
+        const config = item.config || {};
+
         this.variables.fromData(config?.fields);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
@@ -289,15 +328,74 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         }
     }
 
-    public onBack() {
-        this.router.navigate(['/schema-rules']);
-    }
-
     public initTree($event: TreeGraphComponent) {
         this.tree = $event;
         if (this.nodes) {
             this.tree.setData(this.source);
         }
+    }
+
+    private getEnum(variable: FieldRule): EnumValue | undefined {
+        const map = this.enumMap.get(variable.schemaId);
+        if (map) {
+            return map.get(variable.path);
+        }
+        return undefined;
+    }
+
+    private getEnums(): { [x: string]: EnumValue } {
+        const enums: { [x: string]: EnumValue } = {};
+        for (const variable of this.variables.variables) {
+            const item = this.getEnum(variable);
+            if (item) {
+                enums[variable.id] = item;
+            } else {
+                enums[variable.id] = new EnumValue(this.ipfs);
+            }
+        }
+        return enums;
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
+    }
+
+    public async goToStep(index: number) {
+        for (let i = 0; i < this.stepper.length; i++) {
+            this.stepper[i] = (i == index);
+        }
+        return this.refreshView();
+    }
+
+    public async refreshView() {
+        return new Promise<void>((resolve, reject) => {
+            if (this.stepper[0]) {
+                setTimeout(() => {
+                    this.tree?.move(18, 46);
+                    setTimeout(() => {
+                        this.tree?.refresh();
+                        resolve();
+                    }, 1500);
+                }, 100);
+            } else {
+                setTimeout(() => {
+                    resolve();
+                }, 400);
+            }
+        });
+    }
+
+    public onStep(index: number) {
+        this.step.next(index);
+    }
+
+    public schemaConfigChange($event: any) {
+        if ($event.index === 1) {
+            this.schemaFilterType = 2;
+        } else {
+            this.schemaFilterType = 1;
+        }
+        this.onSchemaFilter(0);
     }
 
     public createNodes($event: any) {
@@ -449,33 +547,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.tree?.onSelectNode(null);
     }
 
-    public onStep(index: number) {
-        this.loading = true;
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: {
-                tab: String(index),
-            },
-            queryParamsHandling: 'merge',
-        });
-        setTimeout(() => {
-            for (let i = 0; i < this.stepper.length; i++) {
-                this.stepper[i] = i == index;
-            }
-            if (index === 4) {
-                this.tree?.move(18, 46);
-                setTimeout(() => {
-                    this.tree?.refresh();
-                    this.loading = false;
-                }, 1500);
-            } else {
-                setTimeout(() => {
-                    this.loading = false;
-                }, 400);
-            }
-        }, 200);
-    }
-
     public onZoom(d: number) {
         if (this.tree) {
             this.tree.onZoom(d);
@@ -485,13 +556,10 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         }
     }
 
-    public schemaConfigChange($event: any) {
-        if ($event.index === 1) {
-            this.schemaFilterType = 2;
-        } else {
-            this.schemaFilterType = 1;
-        }
-        this.onSchemaFilter(0);
+    private updateVariables() {
+        this.variables.fromNodes(this.source.roots);
+        this.variables.updateType(this.schemas);
+        this.updateCodeMirror();
     }
 
     private updateCodeMirror() {
@@ -503,90 +571,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                 hint: createAutocomplete(variables)
             }
         }
-    }
-
-    private updateVariables() {
-        this.variables.fromNodes(this.source.roots);
-        this.variables.updateType(this.schemas);
-        this.updateCodeMirror();
-    }
-
-    public getRelationshipsName(id: string) {
-        const variable = this.variables.get(id);
-        if (variable) {
-            return `${variable.id} - ${variable.fieldDescription}`;
-        } else {
-            return id;
-        }
-    }
-
-    private getEnum(variable: FieldRule): EnumValue | undefined {
-        const map = this.enumMap.get(variable.schemaId);
-        if (map) {
-            return map.get(variable.path);
-        }
-        return undefined;
-    }
-
-    private getEnums(): { [x: string]: EnumValue } {
-        const enums: { [x: string]: EnumValue } = {};
-        for (const variable of this.variables.variables) {
-            const item = this.getEnum(variable);
-            if (item) {
-                enums[variable.id] = item;
-            } else {
-                enums[variable.id] = new EnumValue(this.ipfs);
-            }
-        }
-        return enums;
-    }
-
-    public onSave() {
-        this.loading = true;
-        const value = this.overviewForm.value;
-        const config: IPolicyLabelConfig = {
-            fields: this.variables.getJson()
-        };
-        const item = {
-            ...this.item,
-            name: value.name,
-            description: value.description,
-            config
-        };
-        this.policyLabelsService
-            .updateLabel(item)
-            .subscribe((item) => {
-                this.item = item;
-                this.updateForm(item);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 1000);
-            }, (e) => {
-                this.loading = false;
-            });
-    }
-
-    public onPreview() {
-        const value = this.overviewForm.value;
-        const config: IPolicyLabelConfig = {
-            fields: this.variables.getJson(),
-        };
-        const item = {
-            ...this.item,
-            name: value.name,
-            description: value.description,
-            config
-        };
-        const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
-            showHeader: false,
-            header: 'Preview',
-            width: '800px',
-            styleClass: 'guardian-dialog',
-            data: {
-                item
-            }
-        });
-        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public onEditRule(variable: FieldRule) {
@@ -634,52 +618,220 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             }
         });
     }
+}
 
-    public dragMenuStart(item: NavItem) {
-        this.draggedMenuItem = item.clone();
-        this.dragDropService.startDrag({
-            tree: null,
-            node: this.draggedMenuItem,
-            subNodes: [this.draggedMenuItem],
-            index: 0,
-            scope: "navigationTree"
-        })
+@Component({
+    selector: 'app-policy-label-configuration',
+    templateUrl: './policy-label-configuration.component.html',
+    styleUrls: ['./policy-label-configuration.component.scss'],
+})
+export class PolicyLabelConfigurationComponent implements OnInit {
+    public readonly title: string = 'Configuration';
+
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public user: UserPermissions = new UserPermissions();
+    public owner: string;
+    public labelId: string;
+    public item: any | undefined;
+    public policy: any;
+    public readonly: boolean = false;
+
+    private subscription = new Subscription();
+
+    public readonly labelConfig: LabelConfig;
+    public readonly rulesConfig: RulesConfig;
+
+    constructor(
+        private profileService: ProfileService,
+        private schemaService: SchemaService,
+        private policyLabelsService: PolicyLabelsService,
+        private router: Router,
+        private route: ActivatedRoute,
+        private ipfs: IPFSService,
+        private dialogService: DialogService,
+        private dragDropService: TreeDragDropService
+    ) {
+        this.labelConfig = new LabelConfig(dialogService, dragDropService);
+        this.rulesConfig = new RulesConfig(dialogService, ipfs);
     }
 
-    public dragMenuEnd() {
-        this.draggedMenuItem = null;
+    ngOnInit() {
+        this.subscription.add(
+            this.route.params.subscribe((queryParams) => {
+                this.loadProfile();
+            })
+        );
+        this.subscription.add(
+            this.route.queryParams.subscribe((queryParams) => {
+                const index = queryParams.tab || 0;
+                this.labelConfig.onStep(index);
+            })
+        );
+        this.subscription.add(
+            this.labelConfig.step.subscribe((index) => {
+                this.loading = true;
+                this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: {
+                        tab: String(index),
+                    },
+                    queryParamsHandling: 'merge',
+                });
+                setTimeout(() => {
+                    this.labelConfig.goToStep(index).then(() => {
+                        this.loading = false;
+                    })
+                }, 100);
+            })
+        );
+        this.subscription.add(
+            this.rulesConfig.step.subscribe((index) => {
+                this.loading = true;
+                setTimeout(() => {
+                    this.rulesConfig.goToStep(index).then(() => {
+                        this.loading = false;
+                    })
+                }, 100);
+            })
+        );
     }
 
-    public onDrop() {
-        if (this.draggedMenuItem) {
-            this.navigationTree.push(this.draggedMenuItem);
-            NavItem.updateOrder(this.navigationTree);
-            this.draggedMenuItem = null;
-        }
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
     }
 
-    public onDropValidator($event: any) {
-        // if ($event.dropNode?.type === 'root') {
-        //     if ($event.originalEvent.target.tagName === 'LI') {
-        //         return;
-        //     }
-        // }
-        $event.accept();
-        NavItem.updateOrder(this.navigationTree);
+    private loadProfile() {
+        this.isConfirmed = false;
+        this.loading = true;
+        this.profileService
+            .getProfile()
+            .subscribe((profile) => {
+                this.isConfirmed = !!(profile && profile.confirmed);
+                this.user = new UserPermissions(profile);
+                this.owner = this.user.did;
+
+                if (this.isConfirmed) {
+                    this.loadData();
+                } else {
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                }
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
-    public onClearNavItem() {
-        this.selectedNavItem = null;
+    private loadData() {
+        this.labelId = this.route.snapshot.params['labelId'];
+        this.loading = true;
+        forkJoin([
+            this.schemaService.properties(),
+            this.policyLabelsService.getLabel(this.labelId),
+            this.policyLabelsService.getRelationships(this.labelId),
+        ]).subscribe(([properties, item, relationships]) => {
+            this.item = item;
+            this.readonly = this.item?.status === EntityStatus.ACTIVE;
+            this.policy = relationships?.policy || {};
+
+            this.rulesConfig.setPolicy(relationships);
+            this.rulesConfig.setProperties(properties);
+            this.rulesConfig.setSchemas(relationships);
+            this.labelConfig.setPolicy(relationships);
+            this.labelConfig.setData(this.item);
+            this.labelConfig.show = true;
+
+            setTimeout(() => {
+                this.loading = false;
+            }, 1000);
+        }, (e) => {
+            this.loading = false;
+        });
     }
 
-    public onNavItemSelect(node: NavItem) {
-        this.selectedNavItem = node;
+    public onBack() {
+        this.router.navigate(['/schema-rules']);
     }
 
-    public ifNavSelected(node: NavItem) {
-        if (this.selectedNavItem) {
-            return this.selectedNavItem.key === node.key;
-        }
-        return false;
+    public onSave() {
+        // this.loading = true;
+        // const value = this.overviewForm.value;
+        // const config: IPolicyLabelConfig = {
+        //     fields: this.variables.getJson()
+        // };
+        // const item = {
+        //     ...this.item,
+        //     name: value.name,
+        //     description: value.description,
+        //     config
+        // };
+        // this.policyLabelsService
+        //     .updateLabel(item)
+        //     .subscribe((item) => {
+        //         this.item = item;
+        //         this.updateForm(item);
+        //         setTimeout(() => {
+        //             this.loading = false;
+        //         }, 1000);
+        //     }, (e) => {
+        //         this.loading = false;
+        //     });
     }
+
+    // public onPreview() {
+    //     const value = this.overviewForm.value;
+    //     const config: IPolicyLabelConfig = {
+    //         fields: this.variables.getJson(),
+    //     };
+    //     const item = {
+    //         ...this.item,
+    //         name: value.name,
+    //         description: value.description,
+    //         config
+    //     };
+    //     const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
+    //         showHeader: false,
+    //         header: 'Preview',
+    //         width: '800px',
+    //         styleClass: 'guardian-dialog',
+    //         data: {
+    //             item
+    //         }
+    //     });
+    //     dialogRef.onClose.subscribe(async (result) => { });
+    // }
+
+
+    public onEditNavItem(node: NavItem) {
+        this.loading = true;
+        this.rulesConfig.show = true;
+        this.rulesConfig.setData(node);
+        setTimeout(() => {
+            this.rulesConfig.goToStep(0).then(() => {
+                this.loading = false;
+            })
+        }, 100);
+    }
+
+    public onCancelNavItem() {
+        this.loading = true;
+        this.rulesConfig.show = false;
+        setTimeout(() => {
+            this.labelConfig.goToStep(2).then(() => {
+                this.loading = false;
+            })
+        }, 100);
+    }
+
+    public onSaveNavItem() {
+        this.loading = true;
+        this.rulesConfig.show = false;
+        setTimeout(() => {
+            this.labelConfig.goToStep(2).then(() => {
+                this.loading = false;
+            })
+        }, 100);
+    }
+
 }
