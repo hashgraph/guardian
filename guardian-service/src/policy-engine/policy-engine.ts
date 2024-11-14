@@ -932,7 +932,7 @@ export class PolicyEngine extends NatsService {
         const databaseServer = new DatabaseServer(dryRunId);
 
         //Create Services
-        const root = await this.users.getHederaAccount(user.creator);
+        const root = await this.users.getHederaAccount(user.owner);
         const topic = await TopicConfig.fromObject(
             await DatabaseServer.getTopicById(model.topicId), !demo
         );
@@ -952,7 +952,7 @@ export class PolicyEngine extends NatsService {
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
-            owner: user.creator,
+            owner: user.owner,
             policyId: dryRunId,
             policyUUID: model.uuid
         });
@@ -998,11 +998,11 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
         const vcHelper = new VcHelper();
-        const didDocument = await vcHelper.loadDidDocument(user.creator);
+        const didDocument = await vcHelper.loadDidDocument(user.owner);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
         await databaseServer.saveVC({
             hash: vc.toCredentialHash(),
-            owner: user.creator,
+            owner: user.owner,
             document: vc.toJsonTree(),
             type: SchemaEntity.POLICY,
             policyId: `${model.id}`

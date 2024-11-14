@@ -77,13 +77,17 @@
                     <div *ngIf="errorsCount>0" class="error-count">{{errorsCount}}</div>
                 </div>
 
-                <div *ngIf="policyTemplate.isRun" class="top-toolbar-btn all-status"
-                    [routerLink]="['/policy-viewer', policyId]">
-                    <mat-icon>double_arrow</mat-icon>
-                    <span>Go</span>
-                </div>
+                <ng-container *ngIf="user.POLICIES_POLICY_MANAGE || user.POLICIES_POLICY_EXECUTE">
+                    <div 
+                        *ngIf="policyTemplate.isRun"
+                        class="top-toolbar-btn all-status"
+                        [routerLink]="['/policy-viewer', policyId]">
+                        <mat-icon>double_arrow</mat-icon>
+                        <span>Go</span>
+                    </div>
 
-                <div class="delimiter"></div>
+                    <div class="delimiter"></div>
+                </ng-container>
             </ng-container>
 
             <ng-container *ngIf="rootType === 'Module'">
