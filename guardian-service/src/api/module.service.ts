@@ -127,11 +127,11 @@ export async function publishModule(
     logger.info('Publish module', ['GUARDIAN_SERVICE']);
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.owner);
     notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic),
+        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
         true
     );
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
@@ -143,7 +143,7 @@ export async function publishModule(
         type: TopicType.ModuleTopic,
         name: model.name || TopicType.ModuleTopic,
         description: TopicType.ModuleTopic,
-        owner: user.creator,
+        owner: user.owner,
         policyId: null,
         policyUUID: null
     });

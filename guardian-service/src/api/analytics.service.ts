@@ -82,7 +82,14 @@ async function localSearch(
         });
     } else {
         filter.$and.push({
-            owner: user.creator,
+            $or: [
+                {
+                    owner: user.creator,
+                },
+                {
+                    creator: user.creator,
+                },
+            ],
             hash: { $exists: true, $ne: null }
         });
     }
