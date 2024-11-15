@@ -12,6 +12,8 @@ import {
     Workers
 } from '@guardian/common';
 import { TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { IPolicyReportBlock } from '../policy-engine.interface.js';
+import { PolicyUtils } from './utils.js';
 
 /**
  * Trust Chain interface
@@ -64,7 +66,7 @@ export class MessagesReport {
      */
     private readonly users: Map<string, any>;
 
-    constructor() {
+    constructor(private _ref: IPolicyReportBlock) {
         this.topics = new Map<string, any>();
         this.messages = new Map<string, any>();
         this.schemas = new Map<string, any>();
@@ -76,8 +78,8 @@ export class MessagesReport {
      * Build report
      * @param messageId
      */
-    public async start(messageId: string) {
-        await this.checkMessage(messageId);
+    public async start(messageId: string, userKey: string) {
+        await this.checkMessage(messageId, userKey);
         await this.checkUsers();
     }
 
@@ -87,6 +89,7 @@ export class MessagesReport {
      */
     private needDocument(message: Message): boolean {
         return (
+            message.type === MessageType.EVCDocument ||
             message.type === MessageType.VCDocument ||
             message.type === MessageType.VPDocument ||
             message.type === MessageType.RoleDocument
@@ -97,7 +100,7 @@ export class MessagesReport {
      * Search messages
      * @param timestamp
      */
-    private async checkMessage(timestamp: string) {
+    private async checkMessage(timestamp: string, userKey: string) {
         if (this.messages.has(timestamp)) {
             return;
         }
@@ -109,17 +112,25 @@ export class MessagesReport {
         }
 
         if (this.needDocument(message)) {
-            await MessageServer.loadDocument(message);
+            try {
+                await MessageServer.loadDocument(message, userKey)
+            } catch (error) {
+                this._ref.error(
+                    `Message report - load document: ${PolicyUtils.getErrorMessage(
+                        error
+                    )}`
+                );
+            }
         }
 
         this.messages.set(timestamp, message.toJson());
         this.users.set(message.getOwner(), null);
 
         await this.checkToken(message);
-        await this.checkTopic(message.getTopicId());
+        await this.checkTopic(message.getTopicId(), userKey);
 
         for (const id of message.getRelationships()) {
-            await this.checkMessage(id);
+            await this.checkMessage(id, userKey);
         }
     }
 
@@ -157,7 +168,7 @@ export class MessagesReport {
      * Search topics
      * @param topicId
      */
-    private async checkTopic(topicId: string) {
+    private async checkTopic(topicId: string, userKey: string) {
         if (this.topics.has(topicId)) {
             return;
         }
@@ -171,10 +182,10 @@ export class MessagesReport {
         this.topics.set(topicId, message.toJson());
 
         if (message.parentId) {
-            await this.checkTopic(message.parentId);
+            await this.checkTopic(message.parentId, userKey);
         }
         if (message.rationale) {
-            await this.checkMessage(message.rationale);
+            await this.checkMessage(message.rationale, userKey);
         }
 
         await this.checkSchemas(message);

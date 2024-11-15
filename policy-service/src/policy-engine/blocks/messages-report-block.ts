@@ -65,8 +65,15 @@ export class MessagesReportBlock {
     private async createReport(user: PolicyUser, messageId: string): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyReportBlock>(this);
         try {
-            const report = new MessagesReport();
-            await report.start(messageId);
+            const report = new MessagesReport(ref);
+            const userWithCredentials = await PolicyUtils.getUserCredentials(
+                ref,
+                user.did
+            );
+            const account = await userWithCredentials.loadHederaCredentials(
+                ref
+            );
+            await report.start(messageId, account.hederaAccountKey);
             await ref.setLongCache<IReport>(this.USER_REPORT, report.toJson(), user);
             await ref.setShortCache<string>(this.USER_REPORT_STATUS, 'FINISHED', user);
             this.updateStatus(ref, 'FINISHED', user);
