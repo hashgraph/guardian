@@ -76,8 +76,7 @@ import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
-import { PolicyStatisticsModule } from './modules/policy-statistics/policy-statistics.module';
-import { SchemaRulesModule } from './modules/schema-rules/schema-rules.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -130,7 +129,6 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
-import { PolicyLabelsModule } from './modules/policy-labels/policy-labels.module';
 
 @NgModule({
     declarations: [
@@ -190,9 +188,7 @@ import { PolicyLabelsModule } from './modules/policy-labels/policy-labels.module
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
-        PolicyStatisticsModule,
-        SchemaRulesModule,
-        PolicyLabelsModule,
+        StatisticsModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),

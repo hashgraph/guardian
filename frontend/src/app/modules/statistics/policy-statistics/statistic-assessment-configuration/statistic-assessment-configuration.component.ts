@@ -7,8 +7,8 @@ import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { Formula } from 'src/app/utils';
-import { IDocument, IFormula, IOption, IScore, IVariable } from '../../common/models/assessment';
-import { IColumn } from '../../common/models/grid';
+import { IDocument, IFormula, IOption, IScore, IVariable } from '../../../common/models/assessment';
+import { IColumn } from '../../../common/models/grid';
 
 @Component({
     selector: 'app-statistic-assessment-configuration',

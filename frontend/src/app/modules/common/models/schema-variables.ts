@@ -121,6 +121,17 @@ export class SchemaVariables {
         return Array.from(names);
     }
 
+    public getOptions(): any[] {
+        const options = [];
+        for (const variable of this.variables) {
+            options.push({
+                label: variable.fieldDescription,
+                value: variable.id,
+            })
+        }
+        return options;
+    }
+
     public fromData(data: IVariableData[] | undefined) {
         const map = new Map<string, SchemaVariable>();
         if (data) {

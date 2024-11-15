@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
-
+import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../../common/import-entity-dialog/import-entity-dialog.component';
+import { NewPolicyLabelDialog } from '../dialogs/new-policy-label-dialog/new-policy-label-dialog.component';
+import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 
 interface IColumn {
     id: string;
@@ -22,12 +21,12 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-statistic-definitions',
-    templateUrl: './statistic-definitions.component.html',
-    styleUrls: ['./statistic-definitions.component.scss'],
+    selector: 'app-policy-labels',
+    templateUrl: './policy-labels.component.html',
+    styleUrls: ['./policy-labels.component.scss'],
 })
-export class StatisticDefinitionsComponent implements OnInit {
-    public readonly title: string = 'Statistics';
+export class PolicyLabelsComponent implements OnInit {
+    public readonly title: string = 'Policy Labels';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -40,30 +39,12 @@ export class StatisticDefinitionsComponent implements OnInit {
     public columns: IColumn[];
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
-    public statuses = [{
-        label: 'Draft',
-        value: EntityStatus.DRAFT,
-        description: 'Return to editing.',
-        disable: true
-    }, {
-        label: 'Published',
-        value: EntityStatus.PUBLISHED,
-        description: 'Release version into public domain.',
-        disable: (value: string): boolean => {
-            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
-        }
-    }, {
-        label: 'Error',
-        value: EntityStatus.ERROR,
-        description: '',
-        disable: true
-    }]
 
     private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
-        private policyStatisticsService: PolicyStatisticsService,
+        private policyLabelsService: PolicyLabelsService,
         private policyEngineService: PolicyEngineService,
         private dialogService: DialogService,
         private router: Router,
@@ -82,22 +63,10 @@ export class StatisticDefinitionsComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
-            id: 'topicId',
-            title: 'Topic',
-            type: 'text',
-            size: '135',
-            tooltip: false
-        }, {
             id: 'status',
             title: 'Status',
             type: 'text',
             size: '180',
-            tooltip: false
-        }, {
-            id: 'documents',
-            title: 'Documents',
-            type: 'text',
-            size: '125',
             tooltip: false
         }, {
             id: 'edit',
@@ -110,12 +79,6 @@ export class StatisticDefinitionsComponent implements OnInit {
             title: '',
             type: 'text',
             size: '56',
-            tooltip: false
-        }, {
-            id: 'options',
-            title: '',
-            type: 'text',
-            size: '210',
             tooltip: false
         }, {
             id: 'delete',
@@ -136,7 +99,6 @@ export class StatisticDefinitionsComponent implements OnInit {
                 this.loadProfile();
             })
         );
-        // this.loadProfile();
     }
 
     ngOnDestroy(): void {
@@ -144,7 +106,6 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     private loadProfile() {
-        // const policyId = this.route.snapshot.params['policyId'];
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
@@ -185,14 +146,14 @@ export class StatisticDefinitionsComponent implements OnInit {
             filters.policyInstanceTopicId = this.currentPolicy?.instanceTopicId;
         }
         this.loading = true;
-        this.policyStatisticsService
-            .getDefinitions(
+        this.policyLabelsService
+            .getLabels(
                 this.pageIndex,
                 this.pageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.policyStatisticsService.parsePage(response);
+                const { page, count } = this.policyLabelsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
                 for (const item of this.page) {
@@ -227,12 +188,12 @@ export class StatisticDefinitionsComponent implements OnInit {
         }
         this.pageIndex = 0;
         const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/policy-statistics'], { queryParams: { topic } });
+        this.router.navigate(['/policy-label'], { queryParams: { topic } });
         this.loadData();
     }
 
     public onCreate() {
-        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+        const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -245,20 +206,20 @@ export class StatisticDefinitionsComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                this.create(result)
+                this.loading = true;
+                this.policyLabelsService
+                    .createLabel(result)
+                    .subscribe((newItem) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
             }
         });
     }
 
-    private create(item: any) {
-        this.loading = true;
-        this.policyStatisticsService
-            .createDefinition(item)
-            .subscribe((newItem) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+    public onEdit(item: any) {
+        this.router.navigate(['/policy-label', item.id]);
     }
 
     public onImport() {
@@ -267,7 +228,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.Statistic,
+                type: ImportEntityType.PolicyLabel,
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -278,8 +239,8 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     private importDetails(result: IImportEntityResult) {
-        const { type, data, statistic } = result;
-        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+        const { type, data, label } = result;
+        const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -288,13 +249,13 @@ export class StatisticDefinitionsComponent implements OnInit {
                 action: 'Import',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
-                statistic
+                label
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.policyId) {
                 this.loading = true;
-                this.policyStatisticsService
+                this.policyLabelsService
                     .import(result.policyId, data)
                     .subscribe((newItem) => {
                         this.loadData();
@@ -307,15 +268,15 @@ export class StatisticDefinitionsComponent implements OnInit {
 
     public onExport(item: any) {
         this.loading = true;
-        this.policyStatisticsService.export(item.id)
+        this.policyLabelsService.export(item.id)
             .subscribe((fileBuffer) => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-statistic'
+                        type: 'application/guardian-label'
                     })
                 );
-                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.statistic`);
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.label`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();
@@ -327,30 +288,8 @@ export class StatisticDefinitionsComponent implements OnInit {
             });
     }
 
-    public onEdit(item: any) {
-        this.router.navigate(['/policy-statistics', item.id]);
-    }
-
-    public onChangeStatus($event: string, row: any): void {
-        this.publish(row)
-    }
-
-    public onCreateInstance(item: any): void {
-        if (item.status !== 'PUBLISHED') {
-            return;
-        }
-        this.router.navigate(['/policy-statistics', item.id, 'assessment']);
-    }
-
-    public onOpenInstances(item: any): void {
-        if (item.status !== 'PUBLISHED') {
-            return;
-        }
-        this.router.navigate(['/policy-statistics', item.id, 'assessments']);
-    }
-
     public onDelete(item: any) {
-        if (item.status === 'PUBLISHED') {
+        if (item.status === EntityStatus.ACTIVE) {
             return;
         }
         const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
@@ -358,8 +297,8 @@ export class StatisticDefinitionsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete Statistic',
-                text: `Are you sure want to delete statistic (${item.name})?`,
+                header: 'Delete Label',
+                text: `Are you sure want to delete label (${item.name})?`,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -372,9 +311,9 @@ export class StatisticDefinitionsComponent implements OnInit {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
-                this.policyStatisticsService
-                    .deleteDefinition(item)
-                    .subscribe((newItem) => {
+                this.policyLabelsService
+                    .deleteLabel(item.id)
+                    .subscribe((result) => {
                         this.loadData();
                     }, (e) => {
                         this.loading = false;
@@ -383,53 +322,15 @@ export class StatisticDefinitionsComponent implements OnInit {
         });
     }
 
-    private publish(row: IStatistic) {
-        const rules = row?.config?.rules || [];
-        const main = rules.find((r) => r.type === 'main');
-        if (!main) {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
-                showHeader: false,
-                width: '640px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    header: 'Publish Statistic',
-                    text: 'Statistics cannot be published. Please select main schema.',
-                    buttons: [{
-                        name: 'Close',
-                        class: 'secondary'
-                    }]
-                },
+    public onActive($event: any, row: any) {
+        const active = $event === EntityStatus.ACTIVE;
+        this.loading = true;
+        this.policyLabelsService
+            .activateLabel(row, active)
+            .subscribe((result) => {
+                this.loadData();
+            }, (e) => {
+                this.loading = false;
             });
-            dialogRef.onClose.subscribe((result) => { });
-        } else {
-            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
-                showHeader: false,
-                width: '640px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    header: 'Publish Statistic',
-                    text: `Are you sure want to publish statistic (${row.name})?`,
-                    buttons: [{
-                        name: 'Close',
-                        class: 'secondary'
-                    }, {
-                        name: 'Publish',
-                        class: 'primary'
-                    }]
-                },
-            });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Publish') {
-                    this.loading = true;
-                    this.policyStatisticsService
-                        .publishDefinition(row)
-                        .subscribe((response) => {
-                            this.loadData();
-                        }, (e) => {
-                            this.loading = false;
-                        });
-                }
-            });
-        }
     }
 }

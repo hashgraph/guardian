@@ -1,30 +1,32 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, ISchemaRules, ISchemaRulesConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, IStatistic, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
+import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
-import { TreeNode } from '../../common/tree-graph/tree-node';
-import { TreeListItem } from '../../common/tree-graph/tree-list';
-import { SchemaData, SchemaNode } from '../../common/models/schema-node';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
-import { TreeSource } from '../../common/tree-graph/tree-source';
-import { createAutocomplete } from '../../common/models/lang-modes/autocomplete';
 import { DialogService } from 'primeng/dynamicdialog';
-import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
-import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../common/models/field-rule';
-import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
-import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { IPFSService } from 'src/app/services/ipfs.service';
+import { ScoreDialog } from '../dialogs/score-dialog/score-dialog.component';
+import { StatisticPreviewDialog } from '../dialogs/statistic-preview-dialog/statistic-preview-dialog.component';
+import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
+import { TreeNode } from '../../../common/tree-graph/tree-node';
+import { TreeListItem } from '../../../common/tree-graph/tree-list';
+import { SchemaData, SchemaNode } from '../../../common/models/schema-node';
+import { SchemaVariables } from '../../../common/models/schema-variables';
+import { SchemaFormulas } from '../../../common/models/schema-formulas';
+import { TreeSource } from '../../../common/tree-graph/tree-source';
+import { createAutocomplete } from '../../../common/models/lang-modes/autocomplete';
+import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
+import { SchemaRule, SchemaRules } from '../../../common/models/schema-rules';
+import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
-    selector: 'app-schema-rule-configuration',
-    templateUrl: './schema-rule-configuration.component.html',
-    styleUrls: ['./schema-rule-configuration.component.scss'],
+    selector: 'app-statistic-definition-configuration',
+    templateUrl: './statistic-definition-configuration.component.html',
+    styleUrls: ['./statistic-definition-configuration.component.scss'],
 })
-export class SchemaRuleConfigurationComponent implements OnInit {
+export class StatisticDefinitionConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
     public loading: boolean = true;
@@ -32,11 +34,10 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
 
-    public ruleId: string;
-    public item: any | undefined;
+    public definitionId: string;
+    public item: IStatistic | undefined;
     public policy: any;
     public schemas: Schema[];
-    public enumMap: Map<string, Map<string, EnumValue>>;
 
     private subscription = new Subscription();
     private tree: TreeGraphComponent;
@@ -60,7 +61,10 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     private _selectTimeout2: any;
     private _selectTimeout3: any;
 
-    public variables: FieldRules = new FieldRules();
+    public formulas: SchemaFormulas = new SchemaFormulas();
+    public variables: SchemaVariables = new SchemaVariables();
+    public scores: SchemaScores = new SchemaScores();
+    public rules: SchemaRules = new SchemaRules();
 
     public overviewForm = new FormGroup({
         name: new FormControl<string>('', Validators.required),
@@ -69,6 +73,35 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     });
 
     public schemaFilterType: number = 1;
+
+    // public methods: any[] = [{
+    //     label: 'Manually',
+    //     value: 'manually'
+    // }, {
+    //     label: 'By Event',
+    //     value: 'byEvent'
+    // }, {
+    //     label: 'Every Day',
+    //     value: 'everyDay'
+    // }, {
+    //     label: 'Every Week',
+    //     value: 'everyWeek'
+    // }, {
+    //     label: 'Every Month',
+    //     value: 'everyMonth'
+    // }, {
+    //     label: 'Every Year',
+    //     value: 'everyYear'
+    // }];
+
+    public formulaTypes: any[] = [{
+        label: 'String',
+        value: 'string'
+    }, {
+        label: 'Number',
+        value: 'number'
+    }];
+
     public properties: Map<string, string>;
 
     public get zoom(): number {
@@ -81,6 +114,14 @@ export class SchemaRuleConfigurationComponent implements OnInit {
 
     public get roots(): SchemaNode[] {
         return this.source?.roots;
+    }
+
+    public get rule(): SchemaRule | undefined {
+        if (this.rootNode) {
+            return this.rules.get(this.rootNode.id);
+        } else {
+            return undefined
+        }
     }
 
     public codeMirrorOptions: any = {
@@ -107,8 +148,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     constructor(
         private profileService: ProfileService,
         private schemaService: SchemaService,
-        private schemaRulesService: SchemaRulesService,
-        private ipfs: IPFSService,
+        private policyStatisticsService: PolicyStatisticsService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -150,15 +190,15 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.ruleId = this.route.snapshot.params['ruleId'];
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         forkJoin([
-            this.schemaRulesService.getRule(this.ruleId),
-            this.schemaRulesService.getRelationships(this.ruleId),
+            this.policyStatisticsService.getDefinition(this.definitionId),
+            this.policyStatisticsService.getRelationships(this.definitionId),
             this.schemaService.properties()
         ]).subscribe(([item, relationships, properties]) => {
             this.item = item;
-            this.readonly = this.item?.status === EntityStatus.ACTIVE;
+            this.readonly = this.item?.status === EntityStatus.PUBLISHED;
             if (relationships) {
                 this.updateTree(relationships, properties);
             }
@@ -202,39 +242,21 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         if (this.tree) {
             this.tree.setData(this.source);
         }
-
-        this.updateFieldMap();
     }
 
-    private updateFieldMap() {
-        this.enumMap = new Map<string, Map<string, EnumValue>>();
-        for (const schema of this.schemas) {
-            const map = new Map<string, EnumValue>();
-            this.enumMap.set(schema.iri || '', map);
-            this.getFieldList(schema.fields, map);
-        }
-    }
-
-    private getFieldList(fields: SchemaField[], map: Map<string, EnumValue>) {
-        for (const field of fields) {
-            if (field.enum || field.remoteLink) {
-                map.set(field.path || '', new EnumValue(this.ipfs, field));
-            }
-            if (Array.isArray(field.fields)) {
-                this.getFieldList(field.fields, map);
-            }
-        }
-    }
-
-    private updateForm(item: ISchemaRules) {
+    private updateForm(item: IStatistic) {
         this.overviewForm.setValue({
             name: item.name || '',
             description: item.description || '',
             policy: this.policy?.name || '',
+            // method: item.description,
         });
 
         const config = item.config;
-        this.variables.fromData(config?.fields);
+        this.variables.fromData(config?.variables);
+        this.formulas.fromData(config?.formulas);
+        this.scores.fromData(config?.scores);
+        this.rules.fromData(config?.rules)
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -252,10 +274,13 @@ export class SchemaRuleConfigurationComponent implements OnInit {
                 rootView.updateSelected();
             }
         }
+        for (const root of this.source.roots) {
+            this.rules.add(root.data.iri);
+        }
     }
 
     public onBack() {
-        this.router.navigate(['/schema-rules']);
+        this.router.navigate(['/policy-statistics']);
     }
 
     public initTree($event: TreeGraphComponent) {
@@ -315,6 +340,8 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             this.nodeLoading = false;
         }, 200)
     }
+
+
 
     public onCollapseField(field: TreeListItem<any>) {
         if (this.rootNode) {
@@ -455,11 +482,13 @@ export class SchemaRuleConfigurationComponent implements OnInit {
 
     private updateCodeMirror() {
         const variables = this.variables.getNames();
+        const scores = this.scores.getNames();
+        const all = [...variables, ...scores];
         this.codeMirrorOptions = {
             ...this.codeMirrorOptions,
-            variables: variables,
+            variables: all,
             hintOptions: {
-                hint: createAutocomplete(variables)
+                hint: createAutocomplete(all)
             }
         }
     }
@@ -468,6 +497,82 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         this.variables.fromNodes(this.source.roots);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
+    }
+
+    public onAddVariable() {
+        this.formulas.add();
+    }
+
+    public onDeleteVariable(formula: any) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete formula',
+                text: 'Are you sure want to delete formula?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.formulas.delete(formula);
+            }
+        });
+    }
+
+    public onAddScore() {
+        this.scores.add();
+        this.updateCodeMirror();
+    }
+
+    public onDeleteScore(score: SchemaScore) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete score',
+                text: 'Are you sure want to delete score?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.scores.delete(score);
+                this.updateCodeMirror();
+            }
+        });
+    }
+
+    public onEditScore(score: SchemaScore) {
+        const dialogRef = this.dialogService.open(ScoreDialog, {
+            showHeader: false,
+            header: 'Create New',
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                score: JSON.parse(JSON.stringify(score))
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                score.description = result.description;
+                score.options = result.options;
+            }
+        });
     }
 
     public getRelationshipsName(id: string) {
@@ -479,41 +584,25 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         }
     }
 
-    private getEnum(variable: FieldRule): EnumValue | undefined {
-        const map = this.enumMap.get(variable.schemaId);
-        if (map) {
-            return map.get(variable.path);
-        }
-        return undefined;
-    }
-
-    private getEnums(): { [x: string]: EnumValue } {
-        const enums: { [x: string]: EnumValue } = {};
-        for (const variable of this.variables.variables) {
-            const item = this.getEnum(variable);
-            if (item) {
-                enums[variable.id] = item;
-            } else {
-                enums[variable.id] = new EnumValue(this.ipfs);
-            }
-        }
-        return enums;
-    }
-
     public onSave() {
         this.loading = true;
+        // this.rules.update(this.variables);
         const value = this.overviewForm.value;
-        const config: ISchemaRulesConfig = {
-            fields: this.variables.getJson()
+        const config = {
+            variables: this.variables.getJson(),
+            formulas: this.formulas.getJson(),
+            scores: this.scores.getJson(),
+            rules: this.rules.getJson(),
         };
         const item = {
             ...this.item,
             name: value.name,
             description: value.description,
+            // method: value.method,
             config
         };
-        this.schemaRulesService
-            .updateRule(item)
+        this.policyStatisticsService
+            .updateDefinition(item)
             .subscribe((item) => {
                 this.item = item;
                 this.updateForm(item);
@@ -526,9 +615,13 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public onPreview() {
+        // this.rules.update(this.variables);
         const value = this.overviewForm.value;
-        const config: ISchemaRulesConfig = {
-            fields: this.variables.getJson(),
+        const config = {
+            variables: this.variables.getJson(),
+            formulas: this.formulas.getJson(),
+            scores: this.scores.getJson(),
+            rules: this.rules.getJson(),
         };
         const item = {
             ...this.item,
@@ -536,7 +629,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
-        const dialogRef = this.dialogService.open(SchemaRulesPreviewDialog, {
+        const dialogRef = this.dialogService.open(StatisticPreviewDialog, {
             showHeader: false,
             header: 'Preview',
             width: '800px',
@@ -546,51 +639,5 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
-    }
-
-    public onEditRule(variable: FieldRule) {
-        const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
-            showHeader: false,
-            header: 'Preview',
-            width: '800px',
-            styleClass: 'guardian-dialog',
-            data: {
-                variables: this.variables.getOptions(),
-                item: variable.clone(),
-                readonly: this.readonly,
-                enums: this.getEnums()
-            }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
-                const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
-                variable.addRule(rule);
-            }
-        });
-    }
-
-    public onDeleteVariable(variable: FieldRule) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Delete score',
-                text: 'Are you sure want to delete field?',
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Delete',
-                    class: 'delete'
-                }]
-            },
-        });
-        dialogRef.onClose.subscribe((result: string) => {
-            if (result === 'Delete') {
-                this.variables.delete(variable);
-                this.updateCodeMirror();
-            }
-        });
     }
 }

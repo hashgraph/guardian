@@ -57,6 +57,7 @@ export interface IStatistic {
     description?: string;
     instanceTopicId?: string;
     policyId?: string;
+    messageId?: string;
     owner?: string;
     status?: string;
     config?: IStatisticConfig;

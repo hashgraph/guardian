@@ -5,12 +5,12 @@ import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { IFormula, IOption, IScore, IVariable } from '../../common/models/assessment';
-import { TreeSource } from '../../common/tree-graph/tree-source';
-import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
-import { DocumentNode, SchemaData } from '../../common/models/schema-node';
-import { TreeNode } from '../../common/tree-graph/tree-node';
-import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
+import { IFormula, IOption, IScore, IVariable } from '../../../common/models/assessment';
+import { TreeSource } from '../../../common/tree-graph/tree-source';
+import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
+import { DocumentNode, SchemaData } from '../../../common/models/schema-node';
+import { TreeNode } from '../../../common/tree-graph/tree-node';
+import { VCViewerDialog } from '../../../schema-engine/vc-dialog/vc-dialog.component';
 
 @Component({
     selector: 'app-statistic-assessment-view',

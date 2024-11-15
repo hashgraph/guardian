@@ -160,11 +160,28 @@
                         text-align: left;
                         text-underline-position: from-font;
                         text-decoration-skip-ink: none;
-                        height: 24px;
                         padding: 5px 0px 5px 0px;
                         color: #848FA9;
                         text-transform: uppercase;
                         margin-bottom: 8px;
+                        display: flex;
+                        flex-direction: row;
+                        height: 28px;
+                        align-items: center;
+                        cursor: pointer;
+                    }
+
+                    .navigation-toolbar-group-expanded {
+                        width: 20px;
+                        height: 20px;
+                        cursor: pointer;
+                        margin-right: 8px;
+                        border-radius: 50%;
+                        padding: 2px;
+
+                        &:hover {
+                            background: #e9ecef;
+                        }
                     }
 
                     .navigation-toolbar-group-item {
@@ -194,6 +211,16 @@
                             line-height: 14px;
                             padding-left: 8px;
                             color: #23252E;
+                        }
+
+                        &:last-child {
+                            margin-bottom: 16px; 
+                        }
+                    }
+
+                    &[expanded="false"] {
+                        .navigation-toolbar-group-item {
+                            display: none;
                         }
                     }
                 }
@@ -257,65 +284,6 @@
                     }
                 }
 
-                .navigation-root {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-
-                    .navigation-expand {
-                        width: 32px;
-                        height: 32px;
-                        margin-right: 8px;
-
-                        .navigation-expand-btn {
-                            cursor: pointer;
-                            border-radius: 50%;
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            width: 32px;
-                            height: 32px;
-
-                            &:hover {
-                                background: #e9ecef;
-                            }
-                        }
-                    }
-
-                    .navigation-item {
-                        height: 32px;
-                        width: 200px;
-                        border: 1px solid #848FA9;
-                        border-radius: 6px;
-                        box-shadow: 0px 4px 4px 0px #00000014;
-                        padding: 0px 8px;
-                        display: flex;
-                        flex-direction: row;
-                        align-items: center;
-                        background: #EFF3F7;
-
-                        .navigation-item-icon {
-                            width: 16px;
-                            height: 16px;
-                            overflow: hidden;
-                        }
-
-                        .navigation-item-label {
-                            font-family: Inter;
-                            font-size: 12px;
-                            font-weight: 500;
-                            line-height: 14px;
-                            padding-left: 8px;
-                            color: #23252E;
-                            width: 160px;
-                        }
-                    }
-
-                    &[drop="true"] {
-                        pointer-events: none;
-                    }
-                }
-
                 .navigation-tree-area {
                     padding: 6px 0px;
                     width: fit-content;
@@ -344,7 +312,7 @@
                         }
 
                         .p-treenode-droppoint {
-                            height: 8px;
+                            height: 10px;
                             position: relative;
                             margin: 0px 34px 0px 38px;
 
@@ -362,6 +330,24 @@
                                     border-bottom: 2px dashed var(--guardian-primary-color, #4169E2);
                                     background: #f0f3fc;
                                 }
+                            }
+                        }
+
+                        .p-treenode-content.p-treenode-selectable {
+                            background: transparent !important;
+                            color: #495057;
+                        }
+
+                        .p-treenode-content.p-treenode-selectable+ul {
+                            .p-treenode-droppoint {
+                                pointer-events: none;
+                                opacity: 0;
+                            }
+                        }
+
+                        .p-treenode-dragover {
+                            .p-treenode-content.p-treenode-selectable+.p-treenode-children {
+                                pointer-events: none;
                             }
                         }
 
@@ -407,6 +393,20 @@
                                     padding-left: 8px;
                                     color: #23252E;
                                     width: 160px;
+                                }
+
+                                &[readonly="true"] {
+                                    .navigation-item-edit-icon {
+                                        display: none;
+                                    }
+                                }
+
+                                &[freezed="true"] {
+                                    background: #EFF3F7;
+
+                                    .navigation-item-edit-icon {
+                                        display: none;
+                                    }
                                 }
 
                                 &[selected="true"] {

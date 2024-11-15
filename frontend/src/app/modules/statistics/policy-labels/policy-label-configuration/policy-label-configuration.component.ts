@@ -1,25 +1,27 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IRulesItemConfig, IStatisticItemConfig, NavItemType, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
-import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
-import { TreeNode } from '../../common/tree-graph/tree-node';
-import { TreeListItem } from '../../common/tree-graph/tree-list';
-import { SchemaData, SchemaNode } from '../../common/models/schema-node';
+import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
+import { TreeNode } from '../../../common/tree-graph/tree-node';
+import { TreeListItem } from '../../../common/tree-graph/tree-list';
+import { SchemaData, SchemaNode } from '../../../common/models/schema-node';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { SchemaService } from 'src/app/services/schema.service';
-import { TreeSource } from '../../common/tree-graph/tree-source';
-import { createAutocomplete } from '../../common/models/lang-modes/autocomplete';
+import { TreeSource } from '../../../common/tree-graph/tree-source';
+import { createAutocomplete } from '../../../common/models/lang-modes/autocomplete';
 import { DialogService } from 'primeng/dynamicdialog';
-import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../common/models/field-rule';
-import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
-import { CustomCustomDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { TreeDragDropService } from 'primeng/api';
-import { NavItem, NavItemType, NavTree } from './nav-item';
+import { NavItem, NavTree } from './nav-item';
+import { SchemaFormulas } from '../../../common/models/schema-formulas';
+import { SchemaVariable, SchemaVariables } from '../../../common/models/schema-variables';
+import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
+import { ScoreDialog } from '../../policy-statistics/dialogs/score-dialog/score-dialog.component';
+import { EnumValue } from '../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 
 class LabelConfig {
     public show: boolean = false;
@@ -43,27 +45,88 @@ class LabelConfig {
 
     public menuItems = [{
         title: 'General',
+        expanded: true,
         items: [
             NavItem.menu(NavItemType.Group, 'Group'),
             NavItem.menu(NavItemType.Rules, 'Rules'),
         ]
     }, {
         title: 'Statistics',
-        items: [
-            NavItem.menu(NavItemType.Statistic, 'Statistic 1'),
-            NavItem.menu(NavItemType.Statistic, 'Statistic 2'),
-        ]
+        expanded: true,
+        items: []
     }, {
         title: 'Labels',
-        items: [
-            NavItem.menu(NavItemType.Label, 'Label 1'),
-            NavItem.menu(NavItemType.Label, 'Label 2'),
-        ]
+        expanded: true,
+        items: []
     }];
 
     public selectedNavItem: NavItem | null = null;
-    public draggedMenuItem: any = null;
+    public draggedMenuItem: NavItem | null = null;
     public navigationTree: NavTree = new NavTree();
+
+    public setMenu() {
+        const statisticsMenu = this.menuItems[1];
+        const labelsMenu = this.menuItems[2];
+
+        let statistics: any[] = [{
+            name: 'Statistic 1'
+        }, {
+            name: 'Statistic 2'
+        }];
+        let labels: any[] = [{
+            name: 'Label 1'
+        }, {
+            name: 'Label 2'
+        }, {
+            name: 'Label 3',
+            config: {
+                "children": [
+                    {
+                        "id": "e4db5b63-ec68-4734-b54e-f5ceae752bc9",
+                        "type": "group",
+                        "name": "Group",
+                        "children": [
+                            {
+                                "id": "b71e8e04-f2db-4362-a761-995a6c26db45",
+                                "type": "rules",
+                                "name": "Rules"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "72f4abf1-4c82-4a39-96c3-a0fd307bfcfc",
+                        "type": "group",
+                        "name": "Group",
+                        "children": [
+                            {
+                                "id": "2b2f4fb7-b9d5-40c0-994b-5faebf21a88a",
+                                "type": "rules",
+                                "name": "Rules"
+                            },
+                            {
+                                "id": "3d7d445b-b58d-4159-9b43-58407b23fb23",
+                                "type": "rules",
+                                "name": "Rules"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }];
+
+        for (const item of statistics) {
+            const menuItem = NavItem.fromStatistic(item);
+            if (menuItem) {
+                statisticsMenu.items.push(menuItem)
+            }
+        }
+        for (const item of labels) {
+            const menuItem = NavItem.fromLabel(item);
+            if (menuItem) {
+                labelsMenu.items.push(menuItem);
+            }
+        }
+    }
 
     public setData(item: IPolicyLabel) {
         this.overviewForm.setValue({
@@ -102,6 +165,7 @@ class LabelConfig {
 
     public dragMenuStart(item: NavItem) {
         this.draggedMenuItem = item.clone();
+        this.draggedMenuItem.setId(GenerateUUIDv4())
         this.dragDropService.startDrag({
             tree: null,
             node: this.draggedMenuItem,
@@ -124,11 +188,9 @@ class LabelConfig {
     }
 
     public onDropValidator($event: any) {
-        // if ($event.dropNode?.type === 'root') {
-        //     if ($event.originalEvent.target.tagName === 'LI') {
-        //         return;
-        //     }
-        // }
+        if ($event.dropNode.freezed) {
+            return;
+        }
         $event.accept();
         this.navigationTree.update();
     }
@@ -185,17 +247,18 @@ class RulesConfig {
     public selectedNode: SchemaNode | null = null;
     public rootNode: SchemaNode | null = null;
     public schemaFilterType: number = 1;
-    public variables: FieldRules = new FieldRules();
     public schemas: Schema[];
     public policy: any;
+
+    public formulas: SchemaFormulas = new SchemaFormulas();
+    public variables: SchemaVariables = new SchemaVariables();
+    public scores: SchemaScores = new SchemaScores();
 
     private _selectTimeout1: any;
     private _selectTimeout2: any;
     private _selectTimeout3: any;
 
     private tree: TreeGraphComponent;
-    private fieldTree: ElementRef;
-    private treeTabs: ElementRef;
     private currentNode: NavItem;
 
     private nodes: SchemaNode[];
@@ -224,6 +287,14 @@ class RulesConfig {
         singleLine: true
     };
 
+    public formulaTypes: any[] = [{
+        label: 'String',
+        value: 'string'
+    }, {
+        label: 'Number',
+        value: 'number'
+    }];
+
     public get zoom(): number {
         if (this.tree) {
             return Math.round(this.tree.zoom * 100);
@@ -239,6 +310,7 @@ class RulesConfig {
     public readonly step = new Subject<number>();
 
     constructor(
+        private parent: PolicyLabelConfigurationComponent,
         private dialogService: DialogService,
         private ipfs: IPFSService,
     ) {
@@ -305,10 +377,12 @@ class RulesConfig {
     public setData(node: NavItem) {
         this.currentNode = node;
 
-        const item = node.config;
-        const config = item.config || {};
+        const item = node.config as (IRulesItemConfig | IStatisticItemConfig);
+        const config = item.config;
 
-        this.variables.fromData(config?.fields);
+        this.variables.fromData(config?.variables);
+        this.formulas.fromData(config?.formulas);
+        this.scores.fromData(config?.scores);
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -335,7 +409,7 @@ class RulesConfig {
         }
     }
 
-    private getEnum(variable: FieldRule): EnumValue | undefined {
+    private getEnum(variable: SchemaVariable): EnumValue | undefined {
         const map = this.enumMap.get(variable.schemaId);
         if (map) {
             return map.get(variable.path);
@@ -437,11 +511,11 @@ class RulesConfig {
     private _updateSelectScroll() {
         const first = (document as any)
             .querySelector('.field-item[highlighted="true"]:not([search-highlighted="hidden"])');
-        if (this.fieldTree) {
+        if (this.parent.fieldTree) {
             if (first) {
-                this.fieldTree.nativeElement.scrollTop = first.offsetTop;
+                this.parent.fieldTree.nativeElement.scrollTop = first.offsetTop;
             } else {
-                this.fieldTree.nativeElement.scrollTop = 0;
+                this.parent.fieldTree.nativeElement.scrollTop = 0;
             }
         }
         this._selectTimeout3 = setTimeout(() => {
@@ -531,16 +605,16 @@ class RulesConfig {
     }
 
     public onNavNext(dir: number) {
-        const el = this.treeTabs.nativeElement;
+        const el = this.parent.treeTabs.nativeElement;
         const max = Math.floor((el.scrollWidth - el.offsetWidth) / 148);
-        let current = Math.floor(this.treeTabs.nativeElement.scrollLeft / 148);
+        let current = Math.floor(this.parent.treeTabs.nativeElement.scrollLeft / 148);
         if (dir < 0) {
             current--;
         } else {
             current++;
         }
         current = Math.min(Math.max(current, 0), max);
-        this.treeTabs.nativeElement.scrollLeft = current * 148;
+        this.parent.treeTabs.nativeElement.scrollLeft = current * 148;
     }
 
     public onClearNode() {
@@ -573,35 +647,46 @@ class RulesConfig {
         }
     }
 
-    public onEditRule(variable: FieldRule) {
-        const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
+    public getRelationshipsName(id: string) {
+        const variable = this.variables.get(id);
+        if (variable) {
+            return `${variable.id} - ${variable.fieldDescription}`;
+        } else {
+            return id;
+        }
+    }
+
+    public onAddScore() {
+        this.scores.add();
+        this.updateCodeMirror();
+    }
+
+    public onEditScore(score: SchemaScore) {
+        const dialogRef = this.dialogService.open(ScoreDialog, {
             showHeader: false,
-            header: 'Preview',
-            width: '800px',
+            header: 'Create New',
+            width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                variables: this.variables.getOptions(),
-                item: variable.clone(),
-                readonly: this.readonly,
-                enums: this.getEnums()
+                score: JSON.parse(JSON.stringify(score))
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
-                variable.addRule(rule);
+                score.description = result.description;
+                score.options = result.options;
             }
         });
     }
 
-    public onDeleteVariable(variable: FieldRule) {
+    public onDeleteScore(score: SchemaScore) {
         const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete score',
-                text: 'Are you sure want to delete field?',
+                text: 'Are you sure want to delete score?',
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -613,8 +698,36 @@ class RulesConfig {
         });
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
-                this.variables.delete(variable);
+                this.scores.delete(score);
                 this.updateCodeMirror();
+            }
+        });
+    }
+
+    public onAddVariable() {
+        this.formulas.add();
+    }
+
+    public onDeleteVariable(formula: any) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete formula',
+                text: 'Are you sure want to delete formula?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.formulas.delete(formula);
             }
         });
     }
@@ -642,6 +755,9 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public readonly labelConfig: LabelConfig;
     public readonly rulesConfig: RulesConfig;
 
+    @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
+    @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
+
     constructor(
         private profileService: ProfileService,
         private schemaService: SchemaService,
@@ -653,7 +769,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         private dragDropService: TreeDragDropService
     ) {
         this.labelConfig = new LabelConfig(dialogService, dragDropService);
-        this.rulesConfig = new RulesConfig(dialogService, ipfs);
+        this.rulesConfig = new RulesConfig(this, dialogService, ipfs);
     }
 
     ngOnInit() {
@@ -665,7 +781,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
                 const index = queryParams.tab || 0;
-                this.labelConfig.onStep(index);
+                this.labelConfig.goToStep(index).then();
             })
         );
         this.subscription.add(
@@ -738,7 +854,9 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             this.rulesConfig.setPolicy(relationships);
             this.rulesConfig.setProperties(properties);
             this.rulesConfig.setSchemas(relationships);
+
             this.labelConfig.setPolicy(relationships);
+            this.labelConfig.setMenu();
             this.labelConfig.setData(this.item);
             this.labelConfig.show = true;
 
@@ -755,6 +873,8 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     }
 
     public onSave() {
+        const json = this.labelConfig.navigationTree.toJson();
+        debugger;
         // this.loading = true;
         // const value = this.overviewForm.value;
         // const config: IPolicyLabelConfig = {
