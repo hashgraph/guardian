@@ -233,14 +233,33 @@
                 </div>
 
                 <div *ngIf="step === 'DID'" class="list-item">
-                    <mat-radio-group (change)="onChangeDidType()" [formControl]="didDocumentType">
-                        <mat-radio-button [value]="false" class="boolean-option" color="primary">
-                            Generate new DID document.
-                        </mat-radio-button>
-                        <mat-radio-button [value]="true" class="boolean-option" color="primary">
-                            Custom DID document.
-                        </mat-radio-button>
-                    </mat-radio-group>
+<!--                    <mat-radio-group (change)="onChangeDidType()" [formControl]="didDocumentType">-->
+<!--                        <mat-radio-button [value]="false" class="boolean-option" color="primary">-->
+<!--                            Generate new DID document.-->
+<!--                        </mat-radio-button>-->
+<!--                        <mat-radio-button [value]="true" class="boolean-option" color="primary">-->
+<!--                            Custom DID document.-->
+<!--                        </mat-radio-button>-->
+<!--                    </mat-radio-group>-->
+
+                        <div>
+                            <p-radioButton
+                                name="didType"
+                                [value]="false"
+                                [formControl]="didDocumentType"
+                                class="boolean-option">
+                            </p-radioButton>
+                            <label>Generate new DID document.</label>
+                        </div>
+                        <div>
+                            <p-radioButton
+                                name="didType"
+                                [value]="true"
+                                [formControl]="didDocumentType"
+                                class="boolean-option">
+                            </p-radioButton>
+                            <label>Custom DID document.</label>
+                        </div>
                     <mat-form-field [attr.active-field]="didDocumentType.value" appearance="outline"
                                     class="example-full-width">
                         <mat-label>DID Document:</mat-label>
