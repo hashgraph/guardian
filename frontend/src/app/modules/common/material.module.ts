@@ -41,6 +41,7 @@ import {SelectButtonModule} from 'primeng/selectbutton';
 import {CalendarModule} from 'primeng/calendar';
 import {RadioButtonModule} from 'primeng/radiobutton';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
+import {ToolbarModule} from 'primeng/toolbar';
 
 @NgModule({
     declarations: [],
@@ -79,7 +80,9 @@ import {ProgressSpinnerModule} from 'primeng/progressspinner';
         // MatProgressSpinnerModule,
         ProgressSpinnerModule,
 
-        MatToolbarModule,
+        // MatToolbarModule,
+        ToolbarModule,
+
         MatMenuModule,
         MatDividerModule,
         MatListModule,
@@ -130,7 +133,9 @@ import {ProgressSpinnerModule} from 'primeng/progressspinner';
         // MatProgressSpinnerModule,
         ProgressSpinnerModule,
 
-        MatToolbarModule,
+        // MatToolbarModule,
+        ToolbarModule,
+
         MatMenuModule,
         MatDividerModule,
         MatListModule,
