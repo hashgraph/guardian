@@ -87,11 +87,21 @@
                             <!--                                    Logs</a>, <a [routerLink]="'/admin/settings'">Update</a>)</span>-->
                         </div>
                         <div *ngSwitchCase="'INITIALIZING'" class="icon-row">
-                            <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>
+                            <!--                            <mat-spinner [diameter]="35" *ngSwitchCase="'INITIALIZING'"></mat-spinner>-->
+
+                            <p-progressSpinner
+                                *ngSwitchCase="'INITIALIZING'"
+                                [style]="{ width: '35px', height: '35px' }">
+                            </p-progressSpinner>
                             <!--                            <span>(Initializing)</span>-->
                         </div>
                         <div *ngSwitchCase="'STARTED'" class="icon-row">
-                            <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>
+                            <!--                            <mat-spinner [diameter]="35" *ngSwitchCase="'STARTED'"></mat-spinner>-->
+
+                            <p-progressSpinner
+                                *ngSwitchCase="'STARTED'"
+                                [style]="{ width: '35px', height: '35px' }">
+                            </p-progressSpinner>
                             <!--                            <span>(Started)</span>-->
                         </div>
                         <div *ngSwitchCase="'STOPPED'" class="icon-row">

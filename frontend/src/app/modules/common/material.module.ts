@@ -40,6 +40,7 @@ import {ButtonModule} from 'primeng/button';
 import {SelectButtonModule} from 'primeng/selectbutton';
 import {CalendarModule} from 'primeng/calendar';
 import {RadioButtonModule} from 'primeng/radiobutton';
+import {ProgressSpinnerModule} from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [],
@@ -75,8 +76,8 @@ import {RadioButtonModule} from 'primeng/radiobutton';
 
         // MatNativeDateModule,
 
-        MatProgressSpinnerModule,
-
+        // MatProgressSpinnerModule,
+        ProgressSpinnerModule,
 
         MatToolbarModule,
         MatMenuModule,
@@ -126,8 +127,8 @@ import {RadioButtonModule} from 'primeng/radiobutton';
 
         // MatNativeDateModule,
 
-        MatProgressSpinnerModule,
-
+        // MatProgressSpinnerModule,
+        ProgressSpinnerModule,
 
         MatToolbarModule,
         MatMenuModule,

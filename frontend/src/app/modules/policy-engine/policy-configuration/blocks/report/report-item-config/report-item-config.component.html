@@ -64,8 +64,15 @@
                 <input class="prop-input" type="file" class="file-input" accept="image/*"
                        (change)="onFileSelected($event, properties)" #fileUpload>
                 <ng-container [ngSwitch]="fileLoading" *ngIf="properties.iconType === 'custom' && !readonly">
+                    <!--                    <div *ngSwitchCase="true">-->
+                    <!--                        <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>-->
+                    <!--                    </div>-->
+
                     <div *ngSwitchCase="true">
-                        <mat-spinner [diameter]="20" class="file-spinner"></mat-spinner>
+                        <p-progressSpinner
+                            [style]="{ width: '20px', height: '20px' }"
+                            class="file-spinner">
+                        </p-progressSpinner>
                     </div>
 
                     <div *ngSwitchCase="false">

@@ -45,7 +45,12 @@
                     [options]="codeMirrorOptions"
             ></ngx-codemirror>
         </div>
-        <mat-spinner *ngIf="loading" class="loading"></mat-spinner>
+<!--        <mat-spinner *ngIf="loading" class="loading"></mat-spinner>-->
+
+        <div *ngIf="loading" class="loading">
+            <p-progressSpinner></p-progressSpinner>
+        </div>
+
     </div>
     <div class="g-dialog-actions">
         <div style="margin-left: auto; width: fit-content">

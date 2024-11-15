@@ -269,8 +269,14 @@
             </div>
         </div>
     </div>
+<!--    <div *ngIf="loading" class="loading">-->
+<!--        <mat-spinner [diameter]="65"></mat-spinner>-->
+<!--    </div>-->
+
     <div *ngIf="loading" class="loading">
-        <mat-spinner [diameter]="65"></mat-spinner>
+        <p-progressSpinner
+            [style]="{ width: '65px', height: '65px' }">
+        </p-progressSpinner>
     </div>
 </div>
 

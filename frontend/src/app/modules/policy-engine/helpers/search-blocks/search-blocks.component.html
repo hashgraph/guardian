@@ -1,7 +1,12 @@
 <div class="search-result">
+<!--    <div *ngIf="loading" class="loading">-->
+<!--        <mat-spinner></mat-spinner>-->
+<!--    </div>-->
+
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <p-progressSpinner></p-progressSpinner>
     </div>
+
     <div class="search-result-header">
         <div class="search-result-header__icon">
             <!--            <mat-icon>{{icon}}</mat-icon>-->

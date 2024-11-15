@@ -16,7 +16,11 @@
     <div mat-dialog-content>
         <div #content class="content" (mousedown)="startMove()">
             <canvas #canvas [style.display]="loading ? 'none' : 'block'"></canvas>
-            <mat-spinner class="loading" *ngIf="loading"></mat-spinner>
+<!--            <mat-spinner class="loading" *ngIf="loading"></mat-spinner>-->
+
+            <div *ngIf="loading" class="loading">
+                <p-progressSpinner></p-progressSpinner>
+            </div>
         </div>
     </div>
 </div>
