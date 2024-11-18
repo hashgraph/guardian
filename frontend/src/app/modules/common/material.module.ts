@@ -49,6 +49,7 @@ import {ProgressBarModule} from 'primeng/progressbar';
 import {CheckboxModule} from 'primeng/checkbox';
 import {TooltipModule} from 'primeng/tooltip';
 import {InputTextModule} from 'primeng/inputtext';
+import {ChipsModule} from 'primeng/chips';
 
 @NgModule({
     declarations: [],
@@ -181,8 +182,11 @@ import {InputTextModule} from 'primeng/inputtext';
         // ClipboardModule,
 
         MatPaginatorModule,
-        MatSortModule,
-        MatChipsModule,
+
+        // MatSortModule,
+
+        // MatChipsModule,
+
         MatAutocompleteModule,
 
         DragDropModule,
