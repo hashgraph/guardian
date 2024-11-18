@@ -90,7 +90,75 @@
             </div>
 
             <div *ngIf="labelConfig.isActionStep(1)" class="imports-viewer">
-                <div class="import-list"></div>
+                <div class="import-toolbar">
+                    <button (click)="onImport()" class="guardian-button guardian-button-primary">
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon" 
+                                src="/assets/images/icons/import.svg"
+                                svgClass="icon-color-secondary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Import</div>
+                    </button>
+
+                </div>
+                <div class="import-list">
+                    <div *ngIf="labelConfig.menu.imports.length" class="variables-grid">
+                        <div class="variables-grid-header">
+                            <div class="variables-grid-cell cell-130">TYPE</div>
+                            <div class="variables-grid-cell cell-300">NAME</div>
+                            <div class="variables-grid-cell cell-300">DESCRIPTION</div>
+                            <div class="variables-grid-cell">OWNER</div>
+                            <div class="variables-grid-cell cell-48"></div>
+                        </div>
+                        <div class="variables-grid-body">
+                            <div *ngFor="let item of labelConfig.menu.imports" class="variables-grid-row">
+                                <div class="variables-grid-cell cell-130">
+                                    <div class="import-icon">
+                                        <svg-icon 
+                                            class="icon-btn" 
+                                            src="/assets/images/icons/{{item.nodeIcon}}.svg"
+                                            svgClass="icon-color-primary"
+                                        ></svg-icon>
+                                        <span>{{item.blockType}}</span>
+                                    </div>
+                                </div>
+                                <div class="variables-grid-cell cell-300">
+                                    {{item.config.name}}
+                                </div>
+                                <div class="variables-grid-cell cell-300">
+                                    {{item.config.description}}
+                                </div>
+                                <div class="variables-grid-cell">
+                                    {{item.config.owner}}
+                                </div>
+                                <div class="variables-grid-cell cell-btn">
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="onDeleteImport(item)"
+                                        [disabled]="readonly">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!labelConfig.menu.imports.length" class="variables-empty-grid">
+                        <div>
+                            <svg-icon
+                                class="icon-btn"
+                                src="/assets/images/icons/list.svg"
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                        </div>
+                        <div>There were no items imported yet.</div>
+                    </div>
+
+                </div>
             </div>
 
             <div *ngIf="labelConfig.isActionStep(2)" class="navigation-viewer">
@@ -99,7 +167,7 @@
                     <div class="navigation-toolbar-search"></div>
 
                     <div 
-                        *ngFor="let group of labelConfig.menuItems" 
+                        *ngFor="let group of labelConfig.menu.menu" 
                         class="navigation-toolbar-group"
                         [attr.expanded]="group.expanded">
                         <div 

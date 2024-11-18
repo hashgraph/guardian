@@ -1,4 +1,4 @@
-import { GenerateUUIDv4, IGroupItemConfig, ILabelItemConfig, INavItemConfig, IPolicyLabel, IRulesItemConfig, IStatistic, IStatisticItemConfig, NavItemType } from "@guardian/interfaces";
+import { GenerateUUIDv4, IGroupItemConfig, ILabelItemConfig, INavImportsConfig, INavItemConfig, IPolicyLabel, IRulesItemConfig, IStatistic, IStatisticItemConfig, NavItemType } from "@guardian/interfaces";
 import { TreeNode } from "primeng/api";
 
 export const NavIcons: { [type: string]: string } = {
@@ -23,6 +23,9 @@ export class NavItem implements TreeNode {
             this.config.type === NavItemType.Rules ||
             this.config.type === NavItemType.Statistic
         );
+    }
+    public get messageId(): string {
+        return (this.config as any).messageId;
     }
 
     public readonly readonly: boolean;
@@ -214,9 +217,11 @@ export class NavItem implements TreeNode {
 
     public static fromLabel(item: IPolicyLabel): NavItem | null {
         const config: ILabelItemConfig = {
-            id: GenerateUUIDv4(),
+            id: item.id || GenerateUUIDv4(),
             type: NavItemType.Label,
             name: item.name || '',
+            description: item.description || '',
+            owner: item.owner || '',
             messageId: item.messageId,
             config: item.config,
         }
@@ -225,13 +230,43 @@ export class NavItem implements TreeNode {
 
     public static fromStatistic(item: IStatistic): NavItem | null {
         const config: IStatisticItemConfig = {
-            id: GenerateUUIDv4(),
+            id: item.id || GenerateUUIDv4(),
             type: NavItemType.Statistic,
             name: item.name || '',
+            description: item.description || '',
+            owner: item.owner || '',
             messageId: item.messageId,
             config: item.config,
         }
         return NavItem.from(config);
+    }
+
+    public static fromImport(item: INavImportsConfig): NavItem | null {
+        if (item.type === NavItemType.Statistic) {
+            const config: IStatisticItemConfig = {
+                id: item.id || GenerateUUIDv4(),
+                type: NavItemType.Statistic,
+                name: item.name || '',
+                description: item.description || '',
+                owner: item.owner || '',
+                messageId: item.messageId,
+                config: item.config,
+            }
+            return NavItem.from(config);
+        }
+        if (item.type === NavItemType.Label) {
+            const config: ILabelItemConfig = {
+                id: item.id || GenerateUUIDv4(),
+                type: NavItemType.Label,
+                name: item.name || '',
+                description: item.description || '',
+                owner: item.owner || '',
+                messageId: item.messageId,
+                config: item.config,
+            }
+            return NavItem.from(config);
+        }
+        return null;
     }
 }
 
@@ -292,5 +327,107 @@ export class NavTree {
             }
         }
         return tree;
+    }
+}
+
+interface MenuItem {
+    title: string,
+    expanded: boolean,
+    items: NavItem[]
+}
+
+export class NavMenu {
+    public readonly menu: MenuItem[];
+
+    public imports: NavItem[];
+
+    private readonly generalMenu: MenuItem;
+    private readonly statisticsMenu: MenuItem;
+    private readonly labelsMenu: MenuItem;
+
+    public readonly map: Set<string>;
+
+    constructor() {
+        this.generalMenu = {
+            title: 'General',
+            expanded: true,
+            items: [
+                NavItem.menu(NavItemType.Group, 'Group'),
+                NavItem.menu(NavItemType.Rules, 'Rules'),
+            ]
+        };
+        this.statisticsMenu = {
+            title: 'Statistics',
+            expanded: true,
+            items: []
+        };
+        this.labelsMenu = {
+            title: 'Labels',
+            expanded: true,
+            items: []
+        };
+        this.menu = [
+            this.generalMenu,
+            this.statisticsMenu,
+            this.labelsMenu,
+        ];
+        this.map = new Set<string>();
+        this.imports = [];
+    }
+
+    public addStatistic(item: IStatistic) {
+        const menuItem = NavItem.fromStatistic(item);
+        this.add(menuItem);
+    }
+
+    public addLabel(item: IPolicyLabel) {
+        const menuItem = NavItem.fromLabel(item);
+        this.add(menuItem);
+    }
+
+    public add(item: NavItem | null) {
+        if (!item) {
+            return;
+        }
+        if (this.map.has(item.messageId)) {
+            return;
+        }
+        if (item?.blockType === NavItemType.Statistic) {
+            this.statisticsMenu.items.push(item);
+            this.map.add(item.messageId);
+            this.imports.push(item);
+        }
+        if (item?.blockType === NavItemType.Label) {
+            this.labelsMenu.items.push(item);
+            this.map.add(item.messageId);
+            this.imports.push(item);
+        }
+    }
+
+    public delete(item: NavItem) {
+        this.statisticsMenu.items = this.statisticsMenu.items.filter((e) => e !== item);
+        this.labelsMenu.items = this.labelsMenu.items.filter((e) => e !== item);
+        this.imports = this.imports.filter((e) => e !== item);
+        this.map.delete(item.messageId);
+    }
+
+    public from(item: IPolicyLabel) {
+        this.fromImports(item.config?.imports);
+    }
+
+    public fromImports(imports?: INavImportsConfig[]) {
+        if (Array.isArray(imports)) {
+            for (const item of imports) {
+                const menuItem = NavItem.fromImport(item);
+                if (menuItem?.blockType === NavItemType.Statistic) {
+                    this.statisticsMenu.items.push(menuItem);
+                    this.imports.push(menuItem);
+                }
+                if (menuItem?.blockType === NavItemType.Label) {
+                    this.labelsMenu.items.push(menuItem);
+                    this.imports.push(menuItem);
+                }
+            }
+        }
     }
 }

@@ -16,12 +16,13 @@ import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dial
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { TreeDragDropService } from 'primeng/api';
-import { NavItem, NavTree } from './nav-item';
+import { NavItem, NavMenu, NavTree } from './nav-item';
 import { SchemaFormulas } from '../../../common/models/schema-formulas';
 import { SchemaVariable, SchemaVariables } from '../../../common/models/schema-variables';
 import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
 import { ScoreDialog } from '../../policy-statistics/dialogs/score-dialog/score-dialog.component';
 import { EnumValue } from '../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
+import { SearchLabelDialog } from '../dialogs/search-label-dialog/search-label-dialog.component';
 
 class LabelConfig {
     public show: boolean = false;
@@ -43,90 +44,11 @@ class LabelConfig {
         policy: new FormControl<string>('', Validators.required),
     });
 
-    public menuItems = [{
-        title: 'General',
-        expanded: true,
-        items: [
-            NavItem.menu(NavItemType.Group, 'Group'),
-            NavItem.menu(NavItemType.Rules, 'Rules'),
-        ]
-    }, {
-        title: 'Statistics',
-        expanded: true,
-        items: []
-    }, {
-        title: 'Labels',
-        expanded: true,
-        items: []
-    }];
+    public menu = new NavMenu();
 
     public selectedNavItem: NavItem | null = null;
     public draggedMenuItem: NavItem | null = null;
     public navigationTree: NavTree = new NavTree();
-
-    public setMenu() {
-        const statisticsMenu = this.menuItems[1];
-        const labelsMenu = this.menuItems[2];
-
-        let statistics: any[] = [{
-            name: 'Statistic 1'
-        }, {
-            name: 'Statistic 2'
-        }];
-        let labels: any[] = [{
-            name: 'Label 1'
-        }, {
-            name: 'Label 2'
-        }, {
-            name: 'Label 3',
-            config: {
-                "children": [
-                    {
-                        "id": "e4db5b63-ec68-4734-b54e-f5ceae752bc9",
-                        "type": "group",
-                        "name": "Group",
-                        "children": [
-                            {
-                                "id": "b71e8e04-f2db-4362-a761-995a6c26db45",
-                                "type": "rules",
-                                "name": "Rules"
-                            }
-                        ]
-                    },
-                    {
-                        "id": "72f4abf1-4c82-4a39-96c3-a0fd307bfcfc",
-                        "type": "group",
-                        "name": "Group",
-                        "children": [
-                            {
-                                "id": "2b2f4fb7-b9d5-40c0-994b-5faebf21a88a",
-                                "type": "rules",
-                                "name": "Rules"
-                            },
-                            {
-                                "id": "3d7d445b-b58d-4159-9b43-58407b23fb23",
-                                "type": "rules",
-                                "name": "Rules"
-                            }
-                        ]
-                    }
-                ]
-            }
-        }];
-
-        for (const item of statistics) {
-            const menuItem = NavItem.fromStatistic(item);
-            if (menuItem) {
-                statisticsMenu.items.push(menuItem)
-            }
-        }
-        for (const item of labels) {
-            const menuItem = NavItem.fromLabel(item);
-            if (menuItem) {
-                labelsMenu.items.push(menuItem);
-            }
-        }
-    }
 
     public setData(item: IPolicyLabel) {
         this.overviewForm.setValue({
@@ -134,6 +56,7 @@ class LabelConfig {
             description: item.description || '',
             policy: this.policy?.name || '',
         });
+        this.menu.from(item);
     }
 
     public setPolicy(relationships: any) {
@@ -856,7 +779,6 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             this.rulesConfig.setSchemas(relationships);
 
             this.labelConfig.setPolicy(relationships);
-            this.labelConfig.setMenu();
             this.labelConfig.setData(this.item);
             this.labelConfig.show = true;
 
@@ -922,6 +844,30 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     //     dialogRef.onClose.subscribe(async (result) => { });
     // }
 
+    public onImport() {
+        const dialogRef = this.dialogService.open(SearchLabelDialog, {
+            showHeader: false,
+            width: '1100px',
+            styleClass: 'guardian-dialog',
+            data: {},
+        });
+        dialogRef.onClose.subscribe((result: any[]) => {
+            if (result) {
+                for (const item of result) {
+                    if (item._type === 'label') {
+                        this.labelConfig.menu.addLabel(item)
+                    }
+                    if (item._type === 'statistic') {
+                        this.labelConfig.menu.addStatistic(item)
+                    }
+                }
+            }
+        });
+    }
+
+    public onDeleteImport(item: NavItem) {
+        this.labelConfig.menu.delete(item);
+    }
 
     public onEditNavItem(node: NavItem) {
         this.loading = true;
@@ -953,5 +899,4 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             })
         }, 100);
     }
-
 }

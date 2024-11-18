@@ -7,6 +7,7 @@
         border-radius: 8px;
         outline: 0 none;
         height: 40px;
+        width: 100%;
 
         &:not(.p-disabled):hover {
             border-color: var(--guardian-primary-color, #4169E2);
