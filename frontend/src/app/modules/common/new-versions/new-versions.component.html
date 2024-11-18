@@ -24,17 +24,29 @@
             <!--                >content_copy-->
             <!--            </mat-icon>-->
 
+<!--            <i-->
+<!--                pTooltip="Copy message identifier"-->
+<!--                tooltipStyleClass="guardian-tooltip"-->
+<!--                tooltipPosition="top"-->
+<!--                [cdkCopyToClipboard]="newVersion.messageId"-->
+<!--                class="pi pi-copy new-versions__link-copy"-->
+<!--                (click)="onCopyClick(newVersion)"-->
+<!--                [ngClass]="{-->
+<!--        'new-versions__link-copy&#45;&#45;hidden': newVersion.copied-->
+<!--    }"-->
+<!--            ></i>-->
+
             <i
                 pTooltip="Copy message identifier"
                 tooltipStyleClass="guardian-tooltip"
                 tooltipPosition="top"
-                [cdkCopyToClipboard]="newVersion.messageId"
                 class="pi pi-copy new-versions__link-copy"
                 (click)="onCopyClick(newVersion)"
                 [ngClass]="{
-        'new-versions__link-copy--hidden': newVersion.copied
-    }"
+                    'new-versions__link-copy--hidden': newVersion.copied
+                }"
             ></i>
+
             <!--            <mat-icon class="new-versions__copy-done" *ngIf="newVersion.copied"-->
             <!--                >done-->
             <!--            </mat-icon>-->

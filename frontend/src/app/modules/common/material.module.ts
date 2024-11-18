@@ -9,18 +9,18 @@ import {ReactiveFormsModule} from '@angular/forms';
 // import {MatLegacyButtonModule as MatButtonModule} from '@angular/material/legacy-button';
 // import {MatLegacyTableModule as MatTableModule} from '@angular/material/legacy-table';
 // import {MatLegacyDialogModule as MatDialogModule} from '@angular/material/legacy-dialog';
-import {MatLegacyProgressSpinnerModule as MatProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatLegacyMenuModule as MatMenuModule} from '@angular/material/legacy-menu';
-import {MatDividerModule} from '@angular/material/divider';
-import {MatLegacyListModule as MatListModule} from '@angular/material/legacy-list';
-import {MatLegacyProgressBarModule as MatProgressBarModule} from '@angular/material/legacy-progress-bar';
+// import {MatLegacyProgressSpinnerModule as MatProgressSpinnerModule} from '@angular/material/legacy-progress-spinner';
+// import {MatToolbarModule} from '@angular/material/toolbar';
+// import {MatLegacyMenuModule as MatMenuModule} from '@angular/material/legacy-menu';
+// import {MatDividerModule} from '@angular/material/divider';
+// import {MatLegacyListModule as MatListModule} from '@angular/material/legacy-list';
+// import {MatLegacyProgressBarModule as MatProgressBarModule} from '@angular/material/legacy-progress-bar';
 import {MatLegacySelectModule as MatSelectModule} from '@angular/material/legacy-select';
-import {MatLegacyCheckboxModule as MatCheckboxModule} from '@angular/material/legacy-checkbox';
+// import {MatLegacyCheckboxModule as MatCheckboxModule} from '@angular/material/legacy-checkbox';
 import {MatTreeModule} from '@angular/material/tree';
 import {MatDatepickerModule} from '@angular/material/datepicker';
-import {MatLegacyRadioModule as MatRadioModule} from '@angular/material/legacy-radio';
-import {MatNativeDateModule} from '@angular/material/core';
+// import {MatLegacyRadioModule as MatRadioModule} from '@angular/material/legacy-radio';
+// import {MatNativeDateModule} from '@angular/material/core';
 import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
 import {MatLegacySlideToggleModule as MatSlideToggleModule} from '@angular/material/legacy-slide-toggle';
 import {ClipboardModule} from '@angular/cdk/clipboard';
@@ -43,10 +43,12 @@ import {RadioButtonModule} from 'primeng/radiobutton';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {ToolbarModule} from 'primeng/toolbar';
 import {OverlayPanelModule} from 'primeng/overlaypanel';
-import {MatButtonModule} from '@angular/material/button';
-import {DividerModule} from 'primeng/divider';
+// import {MatButtonModule} from '@angular/material/button';
+// import {DividerModule} from 'primeng/divider';
 import {ProgressBarModule} from 'primeng/progressbar';
 import {CheckboxModule} from 'primeng/checkbox';
+import {TooltipModule} from 'primeng/tooltip';
+import {InputTextModule} from 'primeng/inputtext';
 
 @NgModule({
     declarations: [],
@@ -104,8 +106,12 @@ import {CheckboxModule} from 'primeng/checkbox';
         CheckboxModule,
 
         MatTreeModule,
+
         MatTooltipModule,
-        MatSlideToggleModule,
+        // TooltipModule,
+
+        // MatSlideToggleModule,
+
         MatPaginatorModule,
 
         DragDropModule,
@@ -166,9 +172,14 @@ import {CheckboxModule} from 'primeng/checkbox';
         CheckboxModule,
 
         MatTreeModule,
+
         MatTooltipModule,
-        MatSlideToggleModule,
-        ClipboardModule,
+        //TooltipModule
+
+        // MatSlideToggleModule,
+
+        // ClipboardModule,
+
         MatPaginatorModule,
         MatSortModule,
         MatChipsModule,

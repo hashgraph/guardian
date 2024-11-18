@@ -1,11 +1,11 @@
 <div class="g-dialog-content">
     <div class="g-dialog-header">
         <div class="g-dialog-title">
-            {{header}}
+            {{ header }}
         </div>
         <div mat-dialog-actions>
             <div class="g-dialog-title-btn" (click)="onOk()">
-<!--                <mat-icon>close</mat-icon>-->
+                <!--                <mat-icon>close</mat-icon>-->
 
                 <i class="pi pi-times"></i>
             </div>
@@ -16,7 +16,7 @@
             <mat-form-field appearance="outline">
                 <mat-label>Role</mat-label>
                 <mat-select [(value)]="role">
-                    <mat-option *ngFor="let role of roles" [value]="role">{{role}}</mat-option>
+                    <mat-option *ngFor="let role of roles" [value]="role">{{ role }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <div class="generate-btn" (click)="onInvite()">
@@ -25,8 +25,9 @@
         </div>
         <div *ngIf="invitation" class="link-content">
             <input type="text" [value]="invitation" readonly>
-            <div [cdkCopyToClipboard]="invitation" class="link-btn">
-<!--                <mat-icon>link</mat-icon>-->
+            <!--            <div [cdkCopyToClipboard]="invitation" class="link-btn">-->
+            <div (click)="copyToClipboard(invitation)" class="link-btn">
+                <!--                <mat-icon>link</mat-icon>-->
 
                 <i class="pi pi-link"></i>
                 Copy invitation
@@ -34,8 +35,9 @@
         </div>
         <div *ngIf="invitation" class="link-content">
             <input type="text" [value]="link" readonly>
-            <div [cdkCopyToClipboard]="link" class="link-btn">
-<!--                <mat-icon>link</mat-icon>-->
+            <!--            <div [cdkCopyToClipboard]="link" class="link-btn">-->
+            <div (click)="copyToClipboard(invitation)" class="link-btn">
+                <!--                <mat-icon>link</mat-icon>-->
 
                 <i class="pi pi-link"></i>
                 Copy link
