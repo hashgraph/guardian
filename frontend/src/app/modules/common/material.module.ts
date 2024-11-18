@@ -18,21 +18,21 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {MatLegacySelectModule as MatSelectModule} from '@angular/material/legacy-select';
 // import {MatLegacyCheckboxModule as MatCheckboxModule} from '@angular/material/legacy-checkbox';
 import {MatTreeModule} from '@angular/material/tree';
-import {MatDatepickerModule} from '@angular/material/datepicker';
+// import {MatDatepickerModule} from '@angular/material/datepicker';
 // import {MatLegacyRadioModule as MatRadioModule} from '@angular/material/legacy-radio';
 // import {MatNativeDateModule} from '@angular/material/core';
 import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
-import {MatLegacySlideToggleModule as MatSlideToggleModule} from '@angular/material/legacy-slide-toggle';
-import {ClipboardModule} from '@angular/cdk/clipboard';
+// import {MatLegacySlideToggleModule as MatSlideToggleModule} from '@angular/material/legacy-slide-toggle';
+// import {ClipboardModule} from '@angular/cdk/clipboard';
 import {MatLegacyPaginatorModule as MatPaginatorModule} from '@angular/material/legacy-paginator';
-import {MatSortModule} from '@angular/material/sort';
-import {MatLegacyChipsModule as MatChipsModule} from '@angular/material/legacy-chips';
-import {MatLegacyAutocompleteModule as MatAutocompleteModule} from '@angular/material/legacy-autocomplete';
-// import {MatButtonToggleModule} from '@angular/material/button-toggle';
+// import {MatSortModule} from '@angular/material/sort';
+// import {MatLegacyChipsModule as MatChipsModule} from '@angular/material/legacy-chips';
+// import {MatLegacyAutocompleteModule as MatAutocompleteModule} from '@angular/material/legacy-autocomplete';
+// // import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import {DragDropModule} from '@angular/cdk/drag-drop';
 import {CdkTableModule} from '@angular/cdk/table';
-import {MatLegacySliderModule as MatSliderModule} from '@angular/material/legacy-slider';
-import {MatBadgeModule} from '@angular/material/badge';
+// import {MatLegacySliderModule as MatSliderModule} from '@angular/material/legacy-slider';
+// import {MatBadgeModule} from '@angular/material/badge';
 import {TabViewModule} from 'primeng/tabview';
 import {AccordionModule} from 'primeng/accordion';
 import {TableModule} from 'primeng/table';
@@ -47,9 +47,10 @@ import {OverlayPanelModule} from 'primeng/overlaypanel';
 // import {DividerModule} from 'primeng/divider';
 import {ProgressBarModule} from 'primeng/progressbar';
 import {CheckboxModule} from 'primeng/checkbox';
-import {TooltipModule} from 'primeng/tooltip';
-import {InputTextModule} from 'primeng/inputtext';
+// import {TooltipModule} from 'primeng/tooltip';
+// import {InputTextModule} from 'primeng/inputtext';
 import {ChipsModule} from 'primeng/chips';
+import {StepsModule} from 'primeng/steps';
 
 @NgModule({
     declarations: [],
@@ -58,7 +59,8 @@ import {ChipsModule} from 'primeng/chips';
         // MatTabsModule,
         TabViewModule,
 
-        MatStepperModule,
+        // MatStepperModule,
+        StepsModule,
 
         // MatExpansionModule,
         AccordionModule,
@@ -77,7 +79,7 @@ import {ChipsModule} from 'primeng/chips';
 
         // MatDialogModule,
 
-        MatDatepickerModule,
+        // MatDatepickerModule,
         CalendarModule,
 
         // MatRadioModule,
@@ -116,15 +118,18 @@ import {ChipsModule} from 'primeng/chips';
         MatPaginatorModule,
 
         DragDropModule,
-        MatSliderModule,
+        // MatSliderModule,
+
         CdkTableModule,
-        MatBadgeModule
+
+        // MatBadgeModule
     ],
     exports: [
         // MatTabsModule,
         TabViewModule,
 
-        MatStepperModule,
+        // MatStepperModule,
+        StepsModule,
 
         // MatExpansionModule,
         // MatTableModule,
@@ -186,13 +191,16 @@ import {ChipsModule} from 'primeng/chips';
         // MatSortModule,
 
         // MatChipsModule,
+        ChipsModule,
 
-        MatAutocompleteModule,
+        // MatAutocompleteModule,
 
         DragDropModule,
-        MatSliderModule,
+        // MatSliderModule,
+
         CdkTableModule,
-        MatBadgeModule
+
+        // MatBadgeModule
     ]
 })
 export class MaterialModule {
