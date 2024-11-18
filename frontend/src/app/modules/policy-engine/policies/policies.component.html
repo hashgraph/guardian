@@ -228,15 +228,27 @@
                                         >
                                             <svg-icon src="/assets/images/icons/edit.svg" svgClass="primary-color"></svg-icon>
                                         </div>
+<!--                                        <div-->
+<!--                                            class="btn-icon-menu"-->
+<!--                                            matTooltip="Menu"-->
+<!--                                            matTooltipClass="guardian-tooltip"-->
+<!--                                            matTooltipHideDelay="100"-->
+<!--                                            matTooltipPosition="above"-->
+<!--                                            matTooltipShowDelay="500"-->
+<!--                                            [matMenuTriggerFor]="policyMenu"-->
+<!--                                            [matMenuTriggerData]="getMenu(policy)"-->
+<!--                                        >-->
+
                                         <div
                                             class="btn-icon-menu"
+                                            pTooltip="Menu"
+                                            tooltipPosition="top"
                                             matTooltip="Menu"
                                             matTooltipClass="guardian-tooltip"
                                             matTooltipHideDelay="100"
                                             matTooltipPosition="above"
                                             matTooltipShowDelay="500"
-                                            [matMenuTriggerFor]="policyMenu"
-                                            [matMenuTriggerData]="getMenu(policy)"
+                                            (click)="policyMenu.toggle($event)"
                                         >
                                             <svg-icon src="/assets/images/icons/menu-2.svg" svgClass="primary-color"></svg-icon>
                                         </div>
@@ -390,7 +402,7 @@
     </ng-container>
 </div>
 
-<mat-menu #policyMenu="matMenu">
+<p-overlayPanel #policyMenu>
     <ng-template
         let-groups="groups"
         matMenuContent
@@ -398,11 +410,16 @@
         <ng-container *ngFor="let group of groups; let last = last">
             <ng-container *ngIf="group.visible">
                 <ng-container *ngIf="group.group">
-                    <div
-                        class="policy-menu-btn sub-menu-button"
-                        mat-menu-item
-                        [matMenuTriggerFor]="policySubMenu"
-                        [matMenuTriggerData]="group">
+<!--                    <div-->
+<!--                        class="policy-menu-btn sub-menu-button"-->
+<!--                        mat-menu-item-->
+<!--                        [matMenuTriggerFor]="policySubMenu"-->
+<!--                        [matMenuTriggerData]="group">-->
+
+                        <div
+                            class="policy-menu-btn sub-menu-button"
+                            mat-menu-item
+                            (click)="policySubMenu.toggle($event)">
                         <div>
                             <svg-icon src="/assets/images/icons/{{group.icon}}.svg" svgClass="primary-color"></svg-icon>
                             <span>{{group.tooltip}}</span>
@@ -430,9 +447,9 @@
             </ng-container>
         </ng-container>
     </ng-template>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #policySubMenu="matMenu">
+<p-overlayPanel #policySubMenu>
     <ng-template
         let-buttons="buttons"
         matMenuContent
@@ -452,7 +469,7 @@
             </p-button>
         </ng-container>
     </ng-template>
-</mat-menu>
+</p-overlayPanel>
 
 <ng-template #noData>
     <div class="not-exist">

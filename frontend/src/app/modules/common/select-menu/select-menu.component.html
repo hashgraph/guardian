@@ -1,18 +1,20 @@
 <ng-container *ngIf="options; else elseTemplate">
-    <div class="select-menu" [matMenuTriggerFor]="publishMenu">
+<!--    <div class="select-menu" [matMenuTriggerFor]="publishMenu">-->
+
+        <div class="select-menu" (click)="publishMenu.toggle($event)">
         <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
         <!--        <mat-icon>arrow_drop_down</mat-icon>-->
 
         <i class="pi pi-sort-down-fill"></i>
     </div>
-    <mat-menu #publishMenu="matMenu">
+    <p-overlayPanel #publishMenu>
         <ng-container *ngFor="let item of options">
             <div *ngIf="hasPermissions(item.permissions)" class="select-menu-item" (click)="onAction(item)">
                 <div class="select-menu-item-title" [style.color]="item.color">{{ item.title }}</div>
                 <div class="select-menu-item-description">{{ item.description }}</div>
             </div>
         </ng-container>
-    </mat-menu>
+    </p-overlayPanel>
 </ng-container>
 <ng-template #elseTemplate>
     <div class="select-menu-min" (click)="onClick()">

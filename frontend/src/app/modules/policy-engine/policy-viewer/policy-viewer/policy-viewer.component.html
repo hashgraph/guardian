@@ -44,7 +44,7 @@
                 <span>Create User</span>
             </div>
 
-            <div class="dry-run-group-btn" [matMenuTriggerFor]="menu">
+            <div class="dry-run-group-btn" (click)="menu.toggle($event)">
                 <!--                <mat-icon>group</mat-icon>-->
                 <i class="pi pi-users"></i>
                 <span>Users</span>
@@ -147,7 +147,7 @@
                     >
                         Role: {{ policyInfo.userRoles.join(", ") }}
                     </span>
-                    <span *ngIf="isMultipleGroups" class="current-user-group" [matMenuTriggerFor]="group">
+                    <span *ngIf="isMultipleGroups" class="current-user-group" (click)="group.toggle($event)">
                         <span
                             [ngClass]="isDryRun ? 'white-additional-policy-info-text' : ''"
                             class="additional-policy-info-text"
@@ -338,7 +338,7 @@
     ></app-record-controller>
 </div>
 
-<mat-menu #menu="matMenu">
+<p-overlayPanel #menu>
     <div
         (click)="setVirtualUser(item)"
         *ngFor="let item of virtualUsers"
@@ -349,9 +349,9 @@
         <div class="debug-user-did">{{ item.hederaAccountId }}</div>
         <div class="debug-user-did">{{ item.did }}</div>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #group="matMenu">
+<p-overlayPanel #group>
     <div class="group-header">
         Select Group
     </div>
@@ -385,7 +385,7 @@
             <span>Role: </span><span>Not Set</span>
         </div>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

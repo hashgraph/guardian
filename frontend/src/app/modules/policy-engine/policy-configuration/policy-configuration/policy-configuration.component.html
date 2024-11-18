@@ -11,14 +11,14 @@
         <div class="top-toolbar">
             <ng-container *ngIf="rootType === 'Policy'">
                 <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
-<!--                                        <mat-icon>reply</mat-icon>-->
+                    <!--                                        <mat-icon>reply</mat-icon>-->
 
                     <i class="pi pi-arrow-left"></i>
                     <span>Back</span>
                 </div>
 
                 <div class="top-toolbar-btn readonly-status" (click)="savePolicy()" title="Save Policy">
-<!--                                        <mat-icon>save</mat-icon>-->
+                    <!--                                        <mat-icon>save</mat-icon>-->
 
                     <i class="pi pi-save"></i>
                     <span>Save</span>
@@ -30,7 +30,7 @@
                     [class.readonly-status]="policyTemplate.isDemo"
                     (click)="saveAsPolicy()"
                     title="Save Policy">
-<!--                                        <mat-icon>save</mat-icon>-->
+                    <!--                                        <mat-icon>save</mat-icon>-->
 
                     <i class="pi pi-save"></i>
                     <span>Save As</span>
@@ -46,8 +46,15 @@
 
                 <div class="delimiter"></div>
 
+                <!--                <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status"-->
+                <!--                     [matMenuTriggerFor]="publishMenu"-->
+                <!--                -->
+                <!--                >-->
+
                 <div *ngIf="policyTemplate.isDraft" class="top-toolbar-group all-status"
-                     [matMenuTriggerFor]="publishMenu">
+                     (click)="publishMenu.toggle($event)"
+
+                >
                     <!--                    <mat-icon class="edit-color">edit</mat-icon>-->
 
                     <i class="pi pi-pencil edit-color"></i>
@@ -59,8 +66,12 @@
                     </div>
                 </div>
 
+                <!--                <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 80px"-->
+                <!--                     [matMenuTriggerFor]="dryRunMenu">-->
+
                 <div *ngIf="policyTemplate.isDryRun" class="top-toolbar-group all-status" style="width: 80px"
-                     [matMenuTriggerFor]="dryRunMenu">
+                     (click)="dryRunMenu.toggle($event)">
+
                     <!--                    <mat-icon class="dry-run-color">build</mat-icon>-->
 
                     <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
@@ -138,10 +149,16 @@
 
                 <div class="delimiter"></div>
 
+                <!--                <div-->
+                <!--                    *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW"-->
+                <!--                    class="top-toolbar-group all-status"-->
+                <!--                    [matMenuTriggerFor]="publishMenu2">-->
+
                 <div
                     *ngIf="moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW"
                     class="top-toolbar-group all-status"
-                    [matMenuTriggerFor]="publishMenu2">
+                    (click)="publishMenu2.toggle($event)">
+
                     <!--                    <mat-icon class="edit-color">edit</mat-icon>-->
                     <i class="pi pi-pencil"></i>
                     <span class="edit-color">Draft</span>
@@ -205,10 +222,16 @@
 
                 <div class="delimiter"></div>
 
-                <div
-                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
-                    class="top-toolbar-group all-status"
-                    [matMenuTriggerFor]="publishMenu3">
+<!--                <div-->
+<!--                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"-->
+<!--                    class="top-toolbar-group all-status"-->
+<!--                    [matMenuTriggerFor]="publishMenu3">-->
+
+                    <div
+                        *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
+                        class="top-toolbar-group all-status"
+                        (click)="publishMenu3.toggle($event)">
+
                     <!--                    <mat-icon class="edit-color">edit</mat-icon>-->
                     <i class="pi pi-pencil edit-color"></i>
                     <span class="edit-color">Draft</span>
@@ -255,7 +278,8 @@
                         <i class="pi pi-refresh"></i>
                         <span>Redo</span>
                     </div>
-                    <div class="top-toolbar-btn top-toolbar-btn__suggestions" (click)="onSuggestionsClick()" title="Suggestions"
+                    <div class="top-toolbar-btn top-toolbar-btn__suggestions" (click)="onSuggestionsClick()"
+                         title="Suggestions"
                          [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
                         <!--                        <mat-icon>assistant</mat-icon>-->
 
@@ -286,7 +310,8 @@
                     openType !== 'Sub' &&
                     !currentBlock?.isModule &&
                     !currentBlock?.isRoot">
-                    <div class="top-toolbar-btn readonly-status long_title_i" title="Create New Module" (click)="onCreateModule()">
+                    <div class="top-toolbar-btn readonly-status long_title_i" title="Create New Module"
+                         (click)="onCreateModule()">
                         <!--                        <mat-icon>create_new_folder</mat-icon>-->
 
                         <i class="pi pi-folder-plus"></i>
@@ -329,7 +354,10 @@
                 </ng-container>
             </ng-container>
 
-            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
+<!--            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
+
+                <div (click)="viewMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
+
                 <!--                <mat-icon *ngIf="currentView == 'blocks'">view_agenda</mat-icon>-->
                 <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
                 <!--                <mat-icon *ngIf="currentView == 'json'">code</mat-icon>-->
@@ -361,8 +389,12 @@
             </ng-container>
 
             <ng-container *ngIf="isTree">
-                <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"
-                     style="width: 80px">
+<!--                <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"-->
+<!--                     style="width: 80px">-->
+
+                    <div class="top-toolbar-group all-status event-color" (click)="eventMenu.toggle($event)"
+                         style="width: 80px">
+
                     <!--                    <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>-->
                     <svg-icon *ngIf="eventVisible =='All'" src="/assets/images/icons/flash_on.svg"
                               svgClass="icon-style-flash_on event-color" class="event-color"></svg-icon>
@@ -396,7 +428,9 @@
             </ng-container>
 
 
-            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">
+<!--            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
+
+                <div (click)="themesMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
                 <!--                <mat-icon>palette</mat-icon>-->
 
                 <i class="pi pi-palette"></i>
@@ -452,8 +486,9 @@
                                  (click)="select('components')">
                                 <!--                                <mat-icon class="action-color">article</mat-icon>-->
 
-<!--                                <i class="pi pi-align-left action-color"></i>-->
-                                <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article action-color"
+                                <!--                                <i class="pi pi-align-left action-color"></i>-->
+                                <svg-icon src="/assets/images/icons/article.svg"
+                                          svgClass="icon-style-article action-color"
                                           class="icon-style-article action-color"></svg-icon>
                                 <span>Blocks</span>
                             </div>
@@ -518,14 +553,14 @@
                                                 (click)="onAdd(item)"
                                             >
                                                 <div class="drag-component">
-<!--                                                                                                        <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>-->
+                                                    <!--                                                                                                        <mat-icon class="drag-component-icon">{{item.icon}}</mat-icon>-->
 
                                                     <i [ngClass]="'pi pi-' + item.icon" class="drag-component-icon"></i>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
                                             </div>
                                             <div class="component-btn" (click)="onAdd(item)">
-<!--                                                                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>-->
+                                                <!--                                                                                                <mat-icon class="component-btn-icon">{{item.icon}}</mat-icon>-->
 
                                                 <i [ngClass]="'pi pi-' + item.icon" class="component-btn-icon"></i>
                                                 <span>{{ item.name }}</span>
@@ -835,7 +870,8 @@
                                                         <!--                                                        <mat-icon svgIcon="policy-module"></mat-icon>-->
 
                                                         <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                                  svgClass="icon-style-policy-module action-color" class="icon-style-policy-module action-color"></svg-icon>
+                                                                  svgClass="icon-style-policy-module action-color"
+                                                                  class="icon-style-policy-module action-color"></svg-icon>
                                                     </div>
                                                     <span class="drag-component-name">{{ item.name }}</span>
                                                 </div>
@@ -845,7 +881,8 @@
                                                     <!--                                                    <mat-icon svgIcon="policy-module"></mat-icon>/-->
 
                                                     <svg-icon src="/assets/images/icons/policy-module.svg"
-                                                              svgClass="icon-style-policy-module action-color" class="icon-style-policy-module action-color"></svg-icon>
+                                                              svgClass="icon-style-policy-module action-color"
+                                                              class="icon-style-policy-module action-color"></svg-icon>
                                                 </div>
                                                 <span>{{ item.name }}</span>
                                                 <span class="component-btn-toolbar">
@@ -940,7 +977,8 @@
                                  style="width: 100px;margin-right: 6px"
                             >
                                 <!--                                <mat-icon class="action-color">article</mat-icon>-->
-                                <svg-icon src="/assets/images/icons/article.svg" svgClass="icon-style-article action-color"
+                                <svg-icon src="/assets/images/icons/article.svg"
+                                          svgClass="icon-style-article action-color"
                                           class="icon-style-article action-color"></svg-icon>
                                 Policy
                             </div>
@@ -1371,7 +1409,7 @@
     </div>
 </div>
 
-<mat-menu #publishMenu="matMenu">
+<p-overlayPanel #publishMenu>
     <div
         *ngIf="user.POLICIES_POLICY_REVIEW"
         class="toolbar-menu all-status publish-color"
@@ -1389,9 +1427,9 @@
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
         <span class="dry-run-color">Dry Run</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #publishMenu2="matMenu">
+<p-overlayPanel #publishMenu2>
     <div
         class="toolbar-menu all-status publish-color"
         (click)="tryPublishModule()"
@@ -1400,9 +1438,9 @@
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #publishMenu3="matMenu">
+<p-overlayPanel #publishMenu3>
     <div
         class="toolbar-menu all-status publish-color"
         (click)="tryPublishTool()"
@@ -1411,9 +1449,9 @@
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #dryRunMenu="matMenu">
+<p-overlayPanel #dryRunMenu>
     <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy()"
          title="Release version into public domain.">
         <!--        <mat-icon class="publish-color">public</mat-icon>-->
@@ -1426,12 +1464,13 @@
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #eventMenu="matMenu">
+<p-overlayPanel #eventMenu>
     <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All')">
         <!--        <mat-icon class="event-color">flash_on</mat-icon>-->
-        <svg-icon src="/assets/images/icons/flash_on.svg" svgClass="icon-style-flash_on event-color" class="icon-style-flash_on event-color"></svg-icon>
+        <svg-icon src="/assets/images/icons/flash_on.svg" svgClass="icon-style-flash_on event-color"
+                  class="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Show All Events</span>
     </div>
     <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action')">
@@ -1454,16 +1493,17 @@
     </div>
     <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None')">
         <!--        <mat-icon class="event-color">flash_off</mat-icon>-->
-        <svg-icon src="/assets/images/icons/flash_off.svg" svgClass="icon-style-flash_on event-color" class="icon-style-flash_on event-color"></svg-icon>
+        <svg-icon src="/assets/images/icons/flash_off.svg" svgClass="icon-style-flash_on event-color"
+                  class="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Hide All Events</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #viewMenu="matMenu">
+<p-overlayPanel #viewMenu>
     <div class="toolbar-menu all-status event-color" (click)="onView('blocks')">
         <!--        <mat-icon class="action-color">view_agenda</mat-icon>-->
         <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
-<!--        <svg-icon src="/assets/images/icons/action-color.svg" class="action-color"></svg-icon>-->
+        <!--        <svg-icon src="/assets/images/icons/action-color.svg" class="action-color"></svg-icon>-->
         <span class="action-color">Tree</span>
     </div>
     <div class="toolbar-menu all-status event-color" (click)="onView('json')">
@@ -1477,15 +1517,15 @@
         <i class="pi pi-align-right action-color"></i>
         <span class="action-color">YAML</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
-<mat-menu #themesMenu="matMenu">
+<p-overlayPanel #themesMenu>
     <div class="toolbar-menu all-status" *ngFor="let t of themes" (click)="setTheme(t)">
         <!--        <mat-icon [class]="t === theme ? 'action-color' : 'no-action-color'">palette</mat-icon>-->
         <i [ngClass]="t === theme ? 'pi pi-palette action-color' : 'pi pi-palette no-action-color'"></i>
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{ t.name }}</span>
     </div>
-</mat-menu>
+</p-overlayPanel>
 
 <ng-template #preloader>
     <div class="preloader-image"></div>

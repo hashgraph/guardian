@@ -42,6 +42,9 @@ import {CalendarModule} from 'primeng/calendar';
 import {RadioButtonModule} from 'primeng/radiobutton';
 import {ProgressSpinnerModule} from 'primeng/progressspinner';
 import {ToolbarModule} from 'primeng/toolbar';
+import {OverlayPanelModule} from 'primeng/overlaypanel';
+import {MatButtonModule} from '@angular/material/button';
+import {DividerModule} from 'primeng/divider';
 
 @NgModule({
     declarations: [],
@@ -83,8 +86,11 @@ import {ToolbarModule} from 'primeng/toolbar';
         // MatToolbarModule,
         ToolbarModule,
 
-        MatMenuModule,
-        MatDividerModule,
+        // MatMenuModule,
+        OverlayPanelModule,
+
+        // MatDividerModule
+
         MatListModule,
         MatProgressBarModule,
         MatSelectModule,
@@ -136,8 +142,11 @@ import {ToolbarModule} from 'primeng/toolbar';
         // MatToolbarModule,
         ToolbarModule,
 
-        MatMenuModule,
-        MatDividerModule,
+        // MatMenuModule,
+        OverlayPanelModule,
+
+        // MatDividerModule,
+
         MatListModule,
         MatProgressBarModule,
         MatSelectModule,

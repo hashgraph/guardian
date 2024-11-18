@@ -12,13 +12,19 @@
                 </span>
             </div>
         </div>
-        <div
-            [class.hidden-logotype]="collapsed"
-            class="span-icon"
-            (click)="onMenuOpened($event)"
-            (menuClosed)="menuOpened = false"
-            [matMenuTriggerFor]="compareMenu"
-        >
+<!--        <div-->
+<!--            [class.hidden-logotype]="collapsed"-->
+<!--            class="span-icon"-->
+<!--            (click)="onMenuOpened($event)"-->
+<!--            (menuClosed)="menuOpened = false"-->
+<!--            [matMenuTriggerFor]="compareMenu"-->
+<!--        >-->
+
+            <div
+                [class.hidden-logotype]="collapsed"
+                class="span-icon"
+                (click)="compareMenu.toggle($event); onMenuOpened($event)">
+            >
             <span>Documents</span>
 
             <div class="badge">
@@ -30,11 +36,7 @@
         </div>
     </div>
 
-    <mat-menu
-        #compareMenu="matMenu"
-        yPosition="below"
-        xPosition="after"
-        class="compare-menu-panel">
+    <p-overlayPanel #compareMenu class="compare-menu-panel">
         <div class="compare-menu" (click)="$event.stopPropagation()">
             <div class="compare-header">
                 Documents
@@ -63,5 +65,5 @@
                 </div>
             </div>
         </div>
-    </mat-menu>
+    </p-overlayPanel>
 </div>

@@ -1,11 +1,11 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
-import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
-import { forkJoin, Subscription } from 'rxjs';
-import { NotificationService } from 'src/app/services/notify.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatLegacyMenu as MatMenu, MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {Router} from '@angular/router';
+import {NotificationType, NotifyAPI,} from '@guardian/interfaces';
+import {ToastrService} from 'ngx-toastr';
+import {forkJoin, Subscription} from 'rxjs';
+import {NotificationService} from 'src/app/services/notify.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+// import {MatLegacyMenu as MatMenu, MatLegacyMenuTrigger as MatMenuTrigger} from '@angular/material/legacy-menu';
 
 @Component({
     selector: 'app-notification',
@@ -21,8 +21,8 @@ export class NotificationComponent implements OnInit {
 
     @Input() menuCollapsed: boolean;
 
-    @ViewChild('notificationMenu') notificationMenu: MatMenu;
-    @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
+    // @ViewChild('notificationMenu') notificationMenu: MatMenu;
+    // @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;s
 
     viewDetails($event: MouseEvent, notification: any) {
         if (!notification.action) {
@@ -230,15 +230,16 @@ export class NotificationComponent implements OnInit {
         }, 5000);
     }
 
-    onMenuOpened($event: MouseEvent) {
+    onMenuOpened($event: MouseEvent, notificationMenu: any) {
         $event.stopPropagation();
         $event.stopImmediatePropagation();
         this.menuOpened = true;
-        this.trigger.openMenu();
+        // this.trigger.openMenu();
+        notificationMenu.toggle($event)
 
         // if (this.menuCollapsed) {
         //     $event.stopImmediatePropagation();
-        //     this.router.navigate(['notifications']);
+        //     this.router.navigatыe(['notifications']);
         //     return;
         // }
         //this.readFirstNotification();

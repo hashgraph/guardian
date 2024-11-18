@@ -435,14 +435,26 @@
                                     <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-grey"></svg-icon>
                                 </div>
                             </div>
+<!--                            <div>-->
+<!--                                <div-->
+<!--                                    class="btn-settings"-->
+<!--                                    [matMenuTriggerFor]="schemaMenu"-->
+<!--                                    [matMenuTriggerData]="{ schema }"-->
+<!--                                    matTooltip="Menu"-->
+<!--                                    matTooltipClass="guardian-tooltip"-->
+<!--                                    matTooltipPosition="above"-->
+<!--                                >-->
+<!--                                    <svg-icon src="/assets/images/icons/menu.svg" svgClass="color-primary"></svg-icon>-->
+<!--                                </div>-->
+<!--                            </div>-->
+
                             <div>
                                 <div
                                     class="btn-settings"
-                                    [matMenuTriggerFor]="schemaMenu"
-                                    [matMenuTriggerData]="{ schema }"
-                                    matTooltip="Menu"
-                                    matTooltipClass="guardian-tooltip"
-                                    matTooltipPosition="above">
+                                    (click)="schemaMenu.toggle($event)"
+                                    pTooltip="Menu"
+                                    tooltipPosition="top"
+                                >
                                     <svg-icon src="/assets/images/icons/menu.svg" svgClass="color-primary"></svg-icon>
                                 </div>
                             </div>
@@ -472,7 +484,111 @@
     <div class="preloader-image preloader-image-l-size"></div>
 </div>
 
-<mat-menu #schemaMenu="matMenu">
+<!--<mat-menu #schemaMenu="matMenu">-->
+<!--    <ng-template matMenuContent let-element="schema">-->
+<!--        <p-button-->
+<!--            (click)="ifCanExport(element) ? onExport(element) : null"-->
+<!--            [disabled]="!ifCanExport(element)"-->
+<!--            label="Export schema"-->
+<!--            class="schema-menu-p-btn"-->
+<!--            [outlined]=true-->
+<!--            [pTooltip]="'Export schema'"-->
+<!--            tooltipPosition="bottom">-->
+<!--            <svg-icon src="/assets/images/icons/export.svg"-->
+<!--                      [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>-->
+<!--        </p-button>-->
+
+<!--        <div class="schema-menu-delimiter"></div>-->
+
+<!--        &lt;!&ndash; <p-button-->
+<!--            (click)="ifCanExport(element) ? exportToExcel(element) : null"-->
+<!--            [disabled]="!ifCanExport(element)"-->
+<!--            label="Export schemas to Excel"-->
+<!--            class="schema-menu-p-btn"-->
+<!--            styleClass="p-button-outlined"-->
+<!--            [pTooltip]="'Export schema to Excel'"-->
+<!--            tooltipPosition="bottom">-->
+<!--            <svg-icon src="/assets/images/icons/export.svg"-->
+<!--                [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>-->
+<!--        </p-button> &ndash;&gt;-->
+<!--        &lt;!&ndash; <p-button-->
+<!--            (click)="canImport ? onImportSchemas(): null"-->
+<!--            [disabled]="!canImport"-->
+<!--            label="Import schemas from Excel"-->
+<!--            class="schema-menu-p-btn"-->
+<!--            styleClass="p-button-outlined"-->
+<!--            [pTooltip]="'Import schemas from excel'"-->
+<!--            tooltipPosition="bottom">-->
+<!--            <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>-->
+<!--        </p-button> &ndash;&gt;-->
+
+<!--        &lt;!&ndash; <p-button-->
+<!--            (click)="downloadExcelExample()"-->
+<!--            label="Download Excel example"-->
+<!--            class="schema-menu-p-btn"-->
+<!--            styleClass="p-button-outlined"-->
+<!--            [pTooltip]="'Download Excel Template'"-->
+<!--            tooltipPosition="bottom">-->
+<!--            <svg-icon src="/assets/images/icons/document.svg" svgClass="primary-color"></svg-icon>-->
+<!--        </p-button> &ndash;&gt;-->
+
+<!--        &lt;!&ndash; <div class="schema-menu-delimiter"></div> &ndash;&gt;-->
+
+<!--        <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <a>content_copy</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-copy"></i>-->
+<!--            <span>Copy</span>-->
+<!--        </button>-->
+
+<!--        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>settings</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-cog"></i>-->
+<!--            <span>Configuration</span>-->
+<!--        </button>-->
+
+<!--        <button mat-menu-item (click)="onOpenForm(element, true)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>description</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-receipt"></i>-->
+<!--            <span>Example</span>-->
+<!--        </button>-->
+
+<!--        <button mat-menu-item (click)="onOpenForm(element, false)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>visibility</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-eye"></i>-->
+<!--            <span>Preview</span>-->
+<!--        </button>-->
+
+<!--        <button mat-menu-item (click)="onOpenDocument(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>segment</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-align-right"></i>-->
+<!--            <span>Schema</span>-->
+<!--        </button>-->
+
+<!--        <button mat-menu-item (click)="onViewSchemaTree(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>account_tree</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-sitemap"></i>-->
+<!--            <span>Tree</span>-->
+<!--        </button>-->
+
+<!--        <div class="schema-menu-delimiter"></div>-->
+
+<!--        <p-button-->
+<!--            (click)="ifCanDelete(element) ? onCheckDeleteSchema(element) : null"-->
+<!--            [disabled]="!ifCanDelete(element)"-->
+<!--            label="Delete schema"-->
+<!--            class="schema-menu-p-btn"-->
+<!--            styleClass="p-button-outlined accent-color-red"-->
+<!--            [outlined]="true"-->
+<!--            [pTooltip]="'Delete schema'"-->
+<!--            tooltipPosition="bottom">-->
+<!--            <svg-icon-->
+<!--                src="/assets/images/icons/delete.svg"-->
+<!--                [svgClass]="ifCanDelete(element) ? 'accent-color-red' : 'disabled-color'"></svg-icon>-->
+<!--        </p-button>-->
+<!--    </ng-template>-->
+<!--</mat-menu>-->
+
+<p-overlayPanel #schemaMenu>
     <ng-template matMenuContent let-element="schema">
         <p-button
             (click)="ifCanExport(element) ? onExport(element) : null"
@@ -574,4 +690,4 @@
                 [svgClass]="ifCanDelete(element) ? 'accent-color-red' : 'disabled-color'"></svg-icon>
         </p-button>
     </ng-template>
-</mat-menu>
+</p-overlayPanel>

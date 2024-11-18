@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { MatIconRegistry } from '@angular/material/icon';
-import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
-import { DomSanitizer } from '@angular/platform-browser';
-import { IStandardRegistryResponse } from '@guardian/interfaces';
+import {Component, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {MatIconRegistry} from '@angular/material/icon';
+// import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import {DomSanitizer} from '@angular/platform-browser';
+import {IStandardRegistryResponse} from '@guardian/interfaces';
+import {OverlayPanel} from 'primeng/overlaypanel';
 
 @Component({
     selector: 'app-standard-registry-card',
@@ -10,7 +11,8 @@ import { IStandardRegistryResponse } from '@guardian/interfaces';
     styleUrls: ['./standard-registry-card.component.scss'],
 })
 export class StandardRegistryCardComponent {
-    @ViewChild(MatMenuTrigger) policiesMenuTrigger!: MatMenuTrigger;
+    // @ViewChild(MatMenuTrigger) policiesMenuTrigger!: MatMenuTrigger;
+    @ViewChild('policiesOverlay') policiesOverlay!: OverlayPanel;
     @Input() registry!: IStandardRegistryResponse;
     @Input() isRegistrySelected!: boolean;
     @Output() registrySelected: EventEmitter<string> = new EventEmitter<string>();
@@ -45,7 +47,7 @@ export class StandardRegistryCardComponent {
                         typeof value !== 'function' &&
                         typeof value !== 'object'
                     ) {
-                        this.fields.push({ name, value });
+                        this.fields.push({name, value});
                     }
                 }
             }
@@ -64,7 +66,15 @@ export class StandardRegistryCardComponent {
         return policiesArrLength === 1 ? 'policy' : 'policies';
     }
 
+    // get isPoliciesMenuOpened(): boolean {
+    //     return this.policiesMenuTrigger?.menuOpen || false;
+    // }
+
     get isPoliciesMenuOpened(): boolean {
-        return this.policiesMenuTrigger?.menuOpen || false;
+        return this.policiesOverlay?.overlayVisible || false;
+    }
+
+    togglePoliciesMenu(event: Event): void {
+        this.policiesOverlay.toggle(event);
     }
 }

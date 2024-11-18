@@ -1,16 +1,16 @@
 <div class="content">
     <div *ngIf="confirmationStatus">
-        <div class="status status-{{confirmationStatus}}" [matMenuTriggerFor]="menu1">
-            {{confirmationStatus}}
+        <div class="status status-{{confirmationStatus}}" (click)="menu1.toggle($event)">
+            {{ confirmationStatus }}
         </div>
-        <mat-menu #menu1="matMenu">
+        <p-overlayPanel #menu1>
             <div (click)="onClickMenu($event)">
                 <div *ngFor="let doc of documents" class="documents">
-                    <div class="doc-did" [title]="doc.did">{{doc.username}}</div>
-                    <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+                    <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+                    <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
                 </div>
             </div>
-        </mat-menu>
+        </p-overlayPanel>
     </div>
     <div *ngIf="!confirmationStatus && documentStatus === 'NEW'">
         <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
@@ -21,29 +21,37 @@
         </div>
     </div>
     <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
+        <!--        <div class="progress-container"-->
+        <!--            matTooltip="Click here to see more details"-->
+        <!--            matTooltipPosition="above"-->
+        <!--            matTooltipClass="helpText"-->
+        <!--            (click)="onDetails()"-->
+        <!--            [matMenuTriggerFor]="menu2"-->
+        <!--        >-->
+
         <div class="progress-container"
-            matTooltip="Click here to see more details"
-            matTooltipPosition="above"
-            matTooltipClass="helpText"
-            (click)="onDetails()"
-            [matMenuTriggerFor]="menu2"
+             matTooltip="Click here to see more details"
+             matTooltipPosition="above"
+             matTooltipClass="helpText"
+             (click)="onDetails()"
+             (contextmenu)="menu2.toggle($event); $event.preventDefault()"
         >
             <div class="progress">
                 <div class="signed" [style.width.%]="signed">
-                    <span *ngIf="signed>12" class="p-value">{{signedCount}}</span>
+                    <span *ngIf="signed>12" class="p-value">{{ signedCount }}</span>
                 </div>
                 <div class="declined" [style.width.%]="declined">
-                    <span *ngIf="declined>12" class="p-value">{{declinedCount}}</span>
+                    <span *ngIf="declined>12" class="p-value">{{ declinedCount }}</span>
                 </div>
                 <div class="threshold" [style.left.%]="threshold"></div>
             </div>
             <div class="icon-details">
-<!--                <mat-icon>info_outline</mat-icon>-->
+                <!--                <mat-icon>info_outline</mat-icon>-->
 
                 <i class="pi pi-info-circle"></i>
             </div>
         </div>
-        <mat-menu #menu2="matMenu">
+        <p-overlayPanel #menu2>
             <div (click)="onClickMenu($event)">
                 <div>
                     <div class="details">Required number of signatures</div>
@@ -53,10 +61,10 @@
                             <div>0</div>
                             <div class="result-progress-bar">
                                 <div class="result-progress-signed" [style.width.%]="signedCount/signedMax*100">
-                                    {{signedCount}}
+                                    {{ signedCount }}
                                 </div>
                             </div>
-                            <div>{{signedMax}}</div>
+                            <div>{{ signedMax }}</div>
                         </div>
                     </div>
                     <div class="result">
@@ -65,22 +73,22 @@
                             <div>0</div>
                             <div class="result-progress-bar">
                                 <div class="result-progress-declined" [style.width.%]="declinedCount/declinedMax*100">
-                                    {{declinedCount}}
+                                    {{ declinedCount }}
                                 </div>
                             </div>
-                            <div>{{declinedMax}}</div>
+                            <div>{{ declinedMax }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="details">Details</div>
                 <div style="max-height: 150px;overflow: auto">
                     <div *ngFor="let doc of documents" class="documents">
-                        <div class="doc-did" [title]="doc.did">{{doc.username}}</div>
-                        <div class="doc-status status-{{doc.status}}">{{doc.status}}</div>
+                        <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+                        <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
                     </div>
                 </div>
             </div>
-        </mat-menu>
+        </p-overlayPanel>
     </div>
 </div>
 
