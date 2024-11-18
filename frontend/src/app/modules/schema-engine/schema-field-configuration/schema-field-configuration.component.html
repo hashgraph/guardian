@@ -151,7 +151,7 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlBold"></mat-checkbox>
+                    <p-checkbox [formControl]="field.controlBold"></p-checkbox>
                     <label class="checkbox-label">Bold</label>
                 </div>
 
@@ -195,21 +195,21 @@
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlArray"></mat-checkbox>
+                    <p-checkbox [formControl]="field.controlArray"></p-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
                 </div>
 
                 <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
                     <button
-                            (click)="onEditExpression()"
-                            class=".edit-button button secondary"
-                            label="Edit expression"
-                            pButton>
+                        (click)="onEditExpression()"
+                        class=".edit-button button secondary"
+                        label="Edit expression"
+                        pButton>
                     </button>
                 </div>
 
                 <div *ngIf="canBePrivate" class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlPrivate"></mat-checkbox>
+                    <p-checkbox [formControl]="field.controlPrivate"></p-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
@@ -269,9 +269,9 @@
             </div>
         </div>
     </div>
-<!--    <div *ngIf="loading" class="loading">-->
-<!--        <mat-spinner [diameter]="65"></mat-spinner>-->
-<!--    </div>-->
+    <!--    <div *ngIf="loading" class="loading">-->
+    <!--        <mat-spinner [diameter]="65"></mat-spinner>-->
+    <!--    </div>-->
 
     <div *ngIf="loading" class="loading">
         <p-progressSpinner
@@ -334,23 +334,40 @@
             />
         </div>
         <div class="checkbox-field-container">
-            <mat-checkbox
-                [checked]="value?.required"
+            <!--            <mat-checkbox-->
+            <!--                [checked]="value?.required"-->
+            <!--                [disabled]="readonly"-->
+            <!--                color="primary"-->
+            <!--            >-->
+            <!--            </mat-checkbox>-->
+
+            <p-checkbox
+                [ngModel]="value?.required"
                 [disabled]="readonly"
-                color="primary"
+                [binary]="true"
+                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
             >
-            </mat-checkbox>
+            </p-checkbox>
+
             <label class="checkbox-label" htmlFor="requiredField">
                 Required Field
             </label>
         </div>
         <div class="checkbox-field-container">
-            <mat-checkbox
-                [checked]="value?.isArray"
+            <!--            <mat-checkbox-->
+            <!--                [checked]="value?.isArray"-->
+            <!--                [disabled]="readonly"-->
+            <!--                color="primary"-->
+            <!--            >-->
+            <!--            </mat-checkbox>-->
+
+            <p-checkbox
+                [ngModel]="value?.required"
                 [disabled]="readonly"
-                color="primary"
+                [binary]="true"
+                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
             >
-            </mat-checkbox>
+            </p-checkbox>
             <label class="checkbox-label" htmlFor="isArray">
                 Allow multiple answers
             </label>

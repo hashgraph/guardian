@@ -45,6 +45,8 @@ import {ToolbarModule} from 'primeng/toolbar';
 import {OverlayPanelModule} from 'primeng/overlaypanel';
 import {MatButtonModule} from '@angular/material/button';
 import {DividerModule} from 'primeng/divider';
+import {ProgressBarModule} from 'primeng/progressbar';
+import {CheckboxModule} from 'primeng/checkbox';
 
 @NgModule({
     declarations: [],
@@ -91,10 +93,16 @@ import {DividerModule} from 'primeng/divider';
 
         // MatDividerModule
 
-        MatListModule,
-        MatProgressBarModule,
-        MatSelectModule,
-        MatCheckboxModule,
+        // MatListModule,
+
+        // MatProgressBarModule,
+        ProgressBarModule,
+
+        // MatSelectModule,
+
+        // MatCheckboxModule,
+        CheckboxModule,
+
         MatTreeModule,
         MatTooltipModule,
         MatSlideToggleModule,
@@ -147,10 +155,16 @@ import {DividerModule} from 'primeng/divider';
 
         // MatDividerModule,
 
-        MatListModule,
-        MatProgressBarModule,
+        // MatListModule,
+
+        // MatProgressBarModule,
+        ProgressBarModule,
+
         MatSelectModule,
-        MatCheckboxModule,
+
+        // MatCheckboxModule,
+        CheckboxModule,
+
         MatTreeModule,
         MatTooltipModule,
         MatSlideToggleModule,

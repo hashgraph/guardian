@@ -172,9 +172,16 @@
                 <div class="category-permission">
                     <div *ngFor="let entity of selectedCategory.entities" class="entity">
                         <div *ngIf="entity.canAll" class="entity-all" (click)="onAll(entity)">
-                            <mat-checkbox
-                                color="primary"
-                                [checked]="entity.all"></mat-checkbox>
+                            <!--                            <mat-checkbox-->
+                            <!--                                color="primary"-->
+                            <!--                                [checked]="entity.all"-->
+                            <!--                            ></mat-checkbox>-->
+
+                            <p-checkbox
+                                [(ngModel)]="entity.all"
+                                [binary]="true"
+                                [styleClass]="'primary-checkbox'"
+                            ></p-checkbox>
                         </div>
                         <div class="entity-name" (click)="onAll(entity)">
                             {{ entity.name }}
@@ -182,20 +189,38 @@
                         <div class="permissions">
                             <ng-container *ngIf="entity.type ==='all'">
                                 <div *ngFor="let action of entity.actions;" class="all-permission">
-                                    <mat-checkbox
+                                    <!--                                    <mat-checkbox-->
+                                    <!--                                        *ngIf="action"-->
+                                    <!--                                        color="primary"-->
+                                    <!--                                        (change)="onCheckAll(entity)"-->
+                                    <!--                                        [formControl]="action.control">-->
+                                    <!--                                    </mat-checkbox>-->
+
+                                    <p-checkbox
                                         *ngIf="action"
-                                        color="primary"
-                                        (change)="onCheckAll(entity)"
-                                        [formControl]="action.control"></mat-checkbox>
+                                        [binary]="true"
+                                        [formControl]="action.control"
+                                        (onChange)="onCheckAll(entity)"
+                                        [styleClass]="'primary-checkbox'"
+                                    ></p-checkbox>
                                 </div>
                             </ng-container>
                             <ng-container *ngIf="entity.type ==='checkbox'">
                                 <div *ngFor="let action of entity.actions; let i=index" class="permission perm-{{i}}">
-                                    <mat-checkbox
+                                    <!--                                    <mat-checkbox-->
+                                    <!--                                        *ngIf="action"-->
+                                    <!--                                        color="primary"-->
+                                    <!--                                        (change)="onCheckAll(entity)"-->
+                                    <!--                                        [formControl]="action.control">-->
+                                    <!--                                    </mat-checkbox>-->
+
+                                    <p-checkbox
                                         *ngIf="action"
-                                        color="primary"
-                                        (change)="onCheckAll(entity)"
-                                        [formControl]="action.control"></mat-checkbox>
+                                        [binary]="true"
+                                        [formControl]="action.control"
+                                        (onChange)="onCheckAll(entity)"
+                                        [styleClass]="'primary-checkbox'"
+                                    ></p-checkbox>
                                     <div *ngIf="!action" class="permission-background"></div>
                                 </div>
                             </ng-container>
