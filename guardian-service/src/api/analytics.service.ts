@@ -30,7 +30,9 @@ import {
     VpDocument as VpDocumentCollection,
     VcDocument as VcDocumentCollection,
     Workers,
-    PinoLogger
+    PinoLogger,
+    VpDocument,
+    getVCField
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
@@ -54,6 +56,13 @@ interface ISearchResult {
     tokensCount: number,
     rate: number,
     tags: string[]
+}
+
+function getAmount(vp: VpDocument): number {
+    const vcs = vp.document.verifiableCredential || [];
+    const mintIndex = Math.max(1, vcs.length - 1);
+    const mint = vcs[mintIndex];
+    return Number(getVCField(mint, 'amount')) || 0;
 }
 
 async function localSearch(
@@ -126,7 +135,8 @@ async function localSearch(
         policies = policies.filter((policy) => policy.vpCount >= options.minVpCount);
     }
     for (const policy of policies) {
-        policy.tokensCount = 0;
+        const vps = await dataBaseServer.find(VpDocumentCollection, { policyId: policy.id });
+        policy.tokensCount = vps.map((vp) => getAmount(vp)).reduce((sum, amount) => sum + amount, 0);
     }
     if (options.minTokensCount) {
         policies = policies.filter((policy) => policy.tokensCount >= options.minTokensCount);
