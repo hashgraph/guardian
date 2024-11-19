@@ -1,0 +1,106 @@
+var _pp = {
+  "G6": {
+    "G9": 28,
+    "G10": 0.1,
+    "G11": 0,
+    "G13": [
+      {
+        "G5": "Device 1",
+        "G8": [
+          {
+            "G5": "monthly",
+            "G6": "No",
+            "G14": 0.5,
+            "G9": 272460000
+          }
+        ],
+        "G19": 0.8
+      }
+    ],
+    "G30": "Yes, methane was collected and destroyed at some point prior to the project.",
+    "G32": "Yes, the system was removed or dormant.",
+    "G34": "No, the system has been consistently active.",
+    "G35": "Yes, I will aggregate Destbase weekly or more frequently.",
+    "G36": "Yes, the aggregation period is consistent.",
+    "G39": "Yes, the project is a flare project at a closed landfill.",
+    "G87": "Yes, there is a non-qualifying combustion device.",
+    "G135": "Yes, a new destruction device is being used.",
+    "G43": [
+      {
+        "G5": 0.567,
+        "G6": 48
+      },
+      {
+        "G5": 0.553,
+        "G6": 75
+      },
+      {
+        "G5": 0.581,
+        "G6": 21
+      }
+    ],
+    "G91": [
+      {
+        "G5": 0.567,
+        "G6": 48
+      },
+      {
+        "G5": 0.553,
+        "G6": 75
+      },
+      {
+        "G5": 0.581,
+        "G6": 21
+      }
+    ],
+    "G138": [
+      {
+        "G5": 2005,
+        "G6": "hourly",
+        "G7": 900,
+        "G8": 1000,
+        "G9": 0,
+        "G10": 1
+      },
+      {
+        "G5": 2005,
+        "G6": "hourly",
+        "G7": 900,
+        "G8": 1000,
+        "G9": 0,
+        "G10": 1
+      }
+    ]
+  },
+  "G148": {
+    "G7": [
+      {
+        "G5": "diesel",
+        "G6": 32500025,
+        "G7": 0.78
+      },
+      {
+        "G5": "coal",
+        "G6": 215000,
+        "G7": 0.98
+      }
+    ],
+    "G12": 65200,
+    "G13": 0.8,
+    "G15": [
+      {
+        "G5": "Device 1",
+        "G6": 20,
+        "G7": 0.8
+      },
+      {
+        "G5": "Device 2",
+        "G6": 30,
+        "G7": 0.8
+      }
+    ],
+    "G19": 0.5,
+    "G20": 28
+  }
+}
+Object.values(__request).forEach(r=>r.preset(_pp));
