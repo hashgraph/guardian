@@ -555,6 +555,7 @@
             <button
                 *ngIf="config.visible()"
                 (click)="config.fn()"
+                [disabled]="config.disabled()"
                 type="button"
                 class="guardian-button guardian-button-{{config.type}}">{{config.text}}</button>
         </ng-container>
