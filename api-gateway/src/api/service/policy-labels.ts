@@ -502,4 +502,38 @@ export class PolicyLabelsApi {
             await InternalException(error, this.logger);
         }
     }
+
+    /**
+     * Preview policy label
+     */
+    @Post('/components')
+    @Auth(Permissions.STATISTICS_LABEL_CREATE)
+    @ApiOperation({
+        summary: '.',
+        description: '.',
+    })
+    @ApiBody({
+        description: 'Filters.',
+    })
+    @ApiOkResponse({
+        description: '.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async searchComponents(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.searchComponents(body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
 }

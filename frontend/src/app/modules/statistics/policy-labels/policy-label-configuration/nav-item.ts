@@ -122,7 +122,7 @@ export class NavItem implements TreeNode {
 
     }
 
-    public toJson(): INavItemConfig | null {
+    public toJson<T extends INavItemConfig>(): T | null {
         switch (this.config.type) {
             case NavItemType.Group: {
                 const children: INavItemConfig[] = [];
@@ -140,7 +140,7 @@ export class NavItem implements TreeNode {
                     name: this.config.name,
                     children
                 };
-                return join;
+                return join as any;
             }
             case NavItemType.Label: {
                 const join: ILabelItemConfig = {
@@ -150,7 +150,7 @@ export class NavItem implements TreeNode {
                     messageId: this.config.messageId,
                     config: this.config.config,
                 };
-                return join;
+                return join as any;
             }
             case NavItemType.Rules: {
                 const join: IRulesItemConfig = {
@@ -159,7 +159,7 @@ export class NavItem implements TreeNode {
                     name: this.config.name,
                     config: this.config.config,
                 };
-                return join;
+                return join as any;
             }
             case NavItemType.Statistic: {
                 const join: IStatisticItemConfig = {
@@ -168,7 +168,7 @@ export class NavItem implements TreeNode {
                     name: this.config.name,
                     config: this.config.config,
                 };
-                return join;
+                return join as any;
             }
         }
     }
@@ -302,8 +302,7 @@ export class NavTree {
         }
     }
 
-    public toJson(): IPolicyLabel {
-        const json: IPolicyLabel = {};
+    public toJson(): INavItemConfig[] {
         const children: INavItemConfig[] = [];
         for (const item of this.data) {
             const child = item.toJson();
@@ -311,22 +310,21 @@ export class NavTree {
                 children.push(child);
             }
         }
-        json.config = {
-            children
-        };
-        return json;
+        return children;
     }
 
-    public static from(label: IPolicyLabel): NavTree {
+    public static fromTree(children?: INavItemConfig[]): NavTree {
         const tree = new NavTree();
-        const config = label?.config;
-        const children = config?.children;
         if (Array.isArray(children)) {
             for (const child of children) {
                 tree.add(NavItem.from(child));
             }
         }
         return tree;
+    }
+
+    public static from(item?: IPolicyLabel): NavTree {
+        return this.fromTree(item?.config?.children);
     }
 }
 
@@ -411,23 +409,29 @@ export class NavMenu {
         this.map.delete(item.messageId);
     }
 
-    public from(item: IPolicyLabel) {
-        this.fromImports(item.config?.imports);
+    public toJson(): INavImportsConfig[] {
+        const imports: INavImportsConfig[] = [];
+        for (const item of this.imports) {
+            const child = item.toJson<ILabelItemConfig | IStatisticItemConfig>();
+            if (child) {
+                imports.push(child);
+            }
+        }
+        return imports;
     }
 
-    public fromImports(imports?: INavImportsConfig[]) {
+    public static from(item: IPolicyLabel): NavMenu {
+        return this.fromImports(item.config?.imports);
+    }
+
+    public static fromImports(imports?: INavImportsConfig[]): NavMenu {
+        const menu = new NavMenu();
         if (Array.isArray(imports)) {
             for (const item of imports) {
                 const menuItem = NavItem.fromImport(item);
-                if (menuItem?.blockType === NavItemType.Statistic) {
-                    this.statisticsMenu.items.push(menuItem);
-                    this.imports.push(menuItem);
-                }
-                if (menuItem?.blockType === NavItemType.Label) {
-                    this.labelsMenu.items.push(menuItem);
-                    this.imports.push(menuItem);
-                }
+                menu.add(menuItem);
             }
         }
+        return menu;
     }
 }

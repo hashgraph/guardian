@@ -3347,4 +3347,13 @@ export class Guardians extends NatsService {
     public async previewPolicyLabel(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_POLICY_LABEL_FILE, { zip, owner });
     }
+
+    /**
+     * 
+     * @param options
+     * @param owner
+     */
+    public async searchComponents(options: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS, { options, owner });
+    }
 }

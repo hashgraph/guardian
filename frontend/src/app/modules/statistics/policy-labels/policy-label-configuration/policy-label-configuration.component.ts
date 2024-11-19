@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IRulesItemConfig, IStatisticItemConfig, NavItemType, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
@@ -56,7 +56,10 @@ class LabelConfig {
             description: item.description || '',
             policy: this.policy?.name || '',
         });
-        this.menu.from(item);
+
+        this.menu = NavMenu.from(item);
+        this.navigationTree = NavTree.from(item);
+        this.navigationTree.update();
     }
 
     public setPolicy(relationships: any) {
@@ -157,6 +160,16 @@ class LabelConfig {
                 this.navigationTree.update();
             }
         });
+    }
+
+    public toJson(): IPolicyLabelConfig {
+        const imports = this.menu.toJson();
+        const children = this.navigationTree.toJson();
+        const json: IPolicyLabelConfig = {
+            imports,
+            children
+        }
+        return json;
     }
 }
 
@@ -791,34 +804,30 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     }
 
     public onBack() {
-        this.router.navigate(['/schema-rules']);
+        this.router.navigate(['/policy-labels']);
     }
 
     public onSave() {
-        const json = this.labelConfig.navigationTree.toJson();
-        debugger;
-        // this.loading = true;
-        // const value = this.overviewForm.value;
-        // const config: IPolicyLabelConfig = {
-        //     fields: this.variables.getJson()
-        // };
-        // const item = {
-        //     ...this.item,
-        //     name: value.name,
-        //     description: value.description,
-        //     config
-        // };
-        // this.policyLabelsService
-        //     .updateLabel(item)
-        //     .subscribe((item) => {
-        //         this.item = item;
-        //         this.updateForm(item);
-        //         setTimeout(() => {
-        //             this.loading = false;
-        //         }, 1000);
-        //     }, (e) => {
-        //         this.loading = false;
-        //     });
+        this.loading = true;
+        const value = this.labelConfig.overviewForm.value;
+        const config: IPolicyLabelConfig = this.labelConfig.toJson();
+        const item = {
+            ...this.item,
+            name: value.name,
+            description: value.description,
+            config
+        };
+        this.policyLabelsService
+            .updateLabel(item)
+            .subscribe((item) => {
+                this.item = item;
+                this.labelConfig.setData(this.item);
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     // public onPreview() {

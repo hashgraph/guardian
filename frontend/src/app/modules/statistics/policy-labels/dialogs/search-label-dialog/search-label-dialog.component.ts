@@ -1,9 +1,7 @@
 import { Component } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
-import { Router } from '@angular/router';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 
 /**
  * Search policy dialog.
@@ -16,9 +14,9 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 export class SearchLabelDialog {
     public loading = false;
     public filtersForm = new UntypedFormGroup({
-        name: new UntypedFormControl(''),
+        text: new UntypedFormControl(''),
         type: new UntypedFormControl('local'),
-        itemType: new UntypedFormControl('all'),
+        components: new UntypedFormControl('all'),
         owner: new UntypedFormControl(''),
     });
     public types = [{
@@ -48,9 +46,7 @@ export class SearchLabelDialog {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private analyticsService: AnalyticsService,
-        private policyEngineService: PolicyEngineService,
-        private router: Router
+        private policyLabelsService: PolicyLabelsService
     ) {
 
     }
@@ -67,31 +63,48 @@ export class SearchLabelDialog {
 
         const options: any = {};
         options.type = filters.type;
-        if (filters.name) {
-            options.text = filters.name;
+
+        if (filters.text) {
+            options.text = filters.text;
             this.filtersCount++;
         }
         if (filters.owner) {
             options.owner = filters.owner;
             this.filtersCount++;
         }
-        if (filters.itemType) {
-            options.type = filters.itemType;
-            this.filtersCount++;
+        if (filters.components) {
+            options.components = filters.components;
+            if(filters.components !== 'all') {
+                this.filtersCount++;
+            }
         }
 
         this.error = null;
-        this.analyticsService.searchPolicies(options)
+        this.policyLabelsService.searchComponents(options)
             .subscribe((data) => {
                 this.loading = false;
-                if (!data || !data.result) {
+                if (!data) {
                     return;
                 }
-                const { target, result } = data;
-                this.list = result;
-                for (const item of this.list) {
-                    item._type = 'label';
+                const { labels, statistics } = data;
+                this.list = [];
+                if (Array.isArray(labels)) {
+                    for (const item of labels) {
+                        item._type = 'label';
+                        item._icon = 'circle-check';
+                        this.list.push(item);
+                    }
                 }
+                if (Array.isArray(statistics)) {
+                    for (const item of statistics) {
+                        item._type = 'statistic';
+                        item._icon = 'stats';
+                        this.list.push(item);
+                    }
+                }
+
+                this.list.forEach((_i)=>_i.messageId = Math.random())
+                
                 this.loading = false;
                 this.select();
             }, (error) => {
@@ -112,32 +125,27 @@ export class SearchLabelDialog {
     }
 
     public changeType(): void {
-        // this.loading = true;
-        // setTimeout(() => {
-        //     this.selectedAll = false;
-        //     this.select();
-        //     this.filtersForm.setValue({
-        //         type: this.filtersForm.value.type,
-        //         policyName: '',
-        //         owner: '',
-        //         tokens: false,
-        //         vcDocuments: false,
-        //         vpDocuments: false,
-        //         tokensCount: 1,
-        //         vcDocumentsCount: 1,
-        //         vpDocumentsCount: 1
-        //     })
-        //     this.load();
-        // }, 0);
+        this.loading = true;
+        setTimeout(() => {
+            this.selectedAll = false;
+            this.select();
+            this.filtersForm.setValue({
+                type: this.filtersForm.value.type,
+                text: '',
+                owner: '',
+                components: 'all',
+            })
+            this.load();
+        }, 0);
     }
 
     public clearFilters(): void {
         this.selectedAll = false;
         this.filtersForm.setValue({
-            name: '',
             type: this.filtersForm.value.type,
+            text: '',
             owner: '',
-            itemType: 'all',
+            components: 'all',
         })
         this.select();
         this.load();

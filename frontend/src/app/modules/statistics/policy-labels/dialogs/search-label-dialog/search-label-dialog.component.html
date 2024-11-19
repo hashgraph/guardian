@@ -32,7 +32,7 @@
                 <span class="p-input-icon-right">
                     <input
                         class="guardian-input search-policy-input"
-                        formControlName="name"
+                        formControlName="text"
                         pInputText
                         placeholder="Search by keyword"
                         type="text" />
@@ -67,7 +67,7 @@
                 <div class="filter-row">
                     <div class="filter">
                         <p-dropdown
-                            formControlName="itemType"
+                            formControlName="components"
                             [options]="options"
                             [showClear]="false"
                             class="guardian-dropdown"
@@ -110,10 +110,10 @@
                         [checked]="selectedAll"  
                         (change)="onSelectAll()">
                 </div>
-                <div class="col-80">Type</div>
+                <div class="col-130">Type</div>
                 <div class="col-auto">Name</div>
-                <div class="col-200">Description</div>
-                <div class="col-200">Owner</div>
+                <div class="col-250">Description</div>
+                <div class="col-250">Owner</div>
             </div>
             <div class="grid-body">
                 <div *ngFor="let item of list" class="grid-row" (click)="onSelect(item)">
@@ -124,10 +124,19 @@
                             [checked]="item._select" 
                             (change)="select()">
                     </div>
-                    <div class="col-80"></div>
+                    <div class="col-130">
+                        <div class="import-icon">
+                            <svg-icon 
+                                class="icon-btn" 
+                                src="/assets/images/icons/{{item._icon}}.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                            <span>{{item._type}}</span>
+                        </div>
+                    </div>
                     <div class="col-auto">{{item.name}}</div>
-                    <div class="col-200"></div>
-                    <div class="col-200"></div>
+                    <div class="col-250">{{item.description}}</div>
+                    <div class="col-250">{{item.owner}}</div>
                 </div>
             </div>
         </div>
@@ -144,7 +153,7 @@
                 <div class="empty-grid-text">{{error}}</div>
             </ng-container>
             <ng-container *ngIf="!error">
-                <div class="empty-grid-header">There are no policies</div>
+                <div class="empty-grid-header">There are no components</div>
                 <div class="empty-grid-text">Please try to change or clear filters</div>
             </ng-container>
         </div>

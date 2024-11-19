@@ -41,7 +41,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 label.policyTopicId = policy.topicId;
                 label.policyInstanceTopicId = policy.instanceTopicId;
                 label.status = EntityStatus.DRAFT;
-                label.config = PolicyLabelImportExport.validateRuleConfig(label.config);
+                label.config = PolicyLabelImportExport.validateConfig(label.config);
                 const row = await DatabaseServer.createPolicyLabel(label);
                 return new MessageResponse(row);
             } catch (error) {
@@ -193,7 +193,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 item.name = label.name;
                 item.description = label.description;
-                item.config = PolicyLabelImportExport.validateRuleConfig(label.config);
+                item.config = PolicyLabelImportExport.validateConfig(label.config);
                 const result = await DatabaseServer.updatePolicyLabel(item);
                 return new MessageResponse(result);
             } catch (error) {
@@ -255,7 +255,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 item.status = EntityStatus.ACTIVE;
-                item.config = PolicyLabelImportExport.validateRuleConfig(item.config);
+                item.config = PolicyLabelImportExport.validateConfig(item.config);
                 item.config = publishLabelConfig(item.config);
 
                 const result = await DatabaseServer.updatePolicyLabel(item);
@@ -370,7 +370,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 label.policyTopicId = policy.topicId;
                 label.policyInstanceTopicId = policy.instanceTopicId;
                 label.status = EntityStatus.DRAFT;
-                label.config = PolicyLabelImportExport.validateRuleConfig(label.config);
+                label.config = PolicyLabelImportExport.validateConfig(label.config);
                 const row = await DatabaseServer.createPolicyLabel(label);
 
                 return new MessageResponse(row);
@@ -397,6 +397,60 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const preview = await PolicyLabelImportExport.parseZipFile(Buffer.from(zip.data));
                 const { label } = preview;
                 return new MessageResponse(label);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+
+    /**
+     * Get components
+     *
+     * @param {any} msg - zip file
+     *
+     * @returns {any} Preview
+     */
+    ApiResponse(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS,
+        async (msg: { options: any, owner: IOwner }) => {
+            try {
+                const { options } = msg;
+
+                const filter: any = { $and: [
+                    {
+                        status: EntityStatus.DRAFT
+                    }
+                ] };
+                if (options.text) {
+                    const keywords = options.text.split(' ');
+                    for (const keyword of keywords) {
+                        filter.$and.push({
+                            'name': {
+                                $regex: `.*${keyword.trim()}.*`,
+                                $options: 'si',
+                            },
+                        });
+                    }
+                }
+                if (options.owner) {
+                    filter.$and.push({
+                        owner: options.owner
+                    });
+                }
+
+                if (options.components === 'all') {
+                    const labels = await DatabaseServer.getPolicyLabels(filter);
+                    const statistics = await DatabaseServer.getStatistics(filter);
+                    return new MessageResponse({ labels, statistics });
+                } else if (options.components === 'label') {
+                    const labels = await DatabaseServer.getPolicyLabels(filter);
+                    return new MessageResponse({ labels, statistics: [] });
+                } else if (options.components === 'statistic') {
+                    const statistics = await DatabaseServer.getStatistics(filter);
+                    return new MessageResponse({ labels: [], statistics });
+                } else {
+                    return new MessageResponse({ labels: [], statistics: [] });
+                }
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

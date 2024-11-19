@@ -15,8 +15,18 @@ import {
     IVariableData,
     IScoreData,
     IFormulaData,
-    IScoreOption
+    IScoreOption,
+    INavItemConfig,
+    INavImportsConfig,
+    NavItemType,
+    ILabelItemConfig,
+    IStatisticItemConfig,
+    IRulesItemConfig,
+    IGroupItemConfig,
+    INavLabelImportConfig,
+    INavStatisticImportConfig
 } from '@guardian/interfaces';
+import { PolicyStatisticImportExport } from './policy-statistic.js';
 
 /**
  * PolicyLabel components
@@ -98,327 +108,133 @@ export class PolicyLabelImportExport {
      *
      * @param data config
      */
-    public static validateRuleConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
+    public static validateConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
         const config: IPolicyLabelConfig = {
-            fields: PolicyLabelImportExport.validateFields(data?.fields),
-            variables: PolicyLabelImportExport.validateVariables(data?.variables),
-            scores: PolicyLabelImportExport.validateScores(data?.scores),
-            formulas: PolicyLabelImportExport.validateFormulas(data?.formulas),
+            imports: PolicyLabelImportExport.validateImports(data?.imports),
+            children: PolicyLabelImportExport.validateChildren(data?.children),
         }
         return config;
     }
 
     /**
-     * Validate Variables
+     * Validate children
      *
-     * @param data Variables
+     * @param data children
      */
-    private static validateVariables(data?: IVariableData[]): IVariableData[] {
-        const variables: IVariableData[] = [];
+    private static validateChildren(data?: INavItemConfig[]): INavItemConfig[] {
+        const children: INavItemConfig[] = [];
         if (Array.isArray(data)) {
             for (const variable of data) {
-                variables.push(PolicyLabelImportExport.validateVariable(variable));
-            }
-        }
-        return variables;
-    }
-
-    /**
-     * Validate Variable
-     *
-     * @param data Variable
-     */
-    private static validateVariable(data?: IVariableData): IVariableData {
-        const variable: IVariableData = {
-            id: PolicyLabelImportExport.validateString(data.id),
-            schemaId: PolicyLabelImportExport.validateString(data.schemaId),
-            path: PolicyLabelImportExport.validateString(data.path),
-            schemaName: PolicyLabelImportExport.validateString(data.schemaName),
-            schemaPath: PolicyLabelImportExport.validateString(data.schemaPath),
-            fieldType: PolicyLabelImportExport.validateString(data.fieldType),
-            fieldRef: PolicyLabelImportExport.validateBoolean(data.fieldRef),
-            fieldArray: PolicyLabelImportExport.validateBoolean(data.fieldArray),
-            fieldDescription: PolicyLabelImportExport.validateString(data.fieldDescription),
-            fieldProperty: PolicyLabelImportExport.validateString(data.fieldProperty),
-            fieldPropertyName: PolicyLabelImportExport.validateString(data.fieldPropertyName),
-        };
-        return variable;
-    }
-
-    /**
-     * Validate Scores
-     *
-     * @param data Scores
-     */
-    private static validateScores(data?: IScoreData[]): IScoreData[] {
-        const scores: IScoreData[] = [];
-        if (Array.isArray(data)) {
-            for (const score of data) {
-                scores.push(PolicyLabelImportExport.validateScore(score));
-            }
-        }
-        return scores;
-    }
-
-    /**
-     * Validate Score
-     *
-     * @param data Score
-     */
-    private static validateScore(data?: IScoreData): IScoreData {
-        const score: IScoreData = {
-            id: PolicyLabelImportExport.validateString(data.id),
-            type: PolicyLabelImportExport.validateString(data.type),
-            description: PolicyLabelImportExport.validateString(data.description),
-            relationships: PolicyLabelImportExport.validateStrings(data.relationships),
-            options: PolicyLabelImportExport.validateScoreOptions(data.options)
-        }
-        return score;
-    }
-
-    /**
-     * Validate Formulas
-     *
-     * @param data Formulas
-     */
-    private static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
-        const formulas: IFormulaData[] = [];
-        if (Array.isArray(data)) {
-            for (const formula of data) {
-                formulas.push(PolicyLabelImportExport.validateFormula(formula));
-            }
-        }
-        return formulas;
-    }
-
-    /**
-     * Validate Formula
-     *
-     * @param data Formula
-     */
-    private static validateFormula(data?: IFormulaData): IFormulaData {
-        const formula: IFormulaData = {
-            id: PolicyLabelImportExport.validateString(data.id),
-            type: PolicyLabelImportExport.validateString(data.type),
-            description: PolicyLabelImportExport.validateString(data.description),
-            formula: PolicyLabelImportExport.validateString(data.formula),
-        }
-        return formula;
-    }
-
-    /**
-     * Validate ScoreOptions
-     *
-     * @param data ScoreOptions
-     */
-    private static validateScoreOptions(data: IScoreOption[]): IScoreOption[] {
-        const options: IScoreOption[] = [];
-        if (Array.isArray(data)) {
-            for (const option of data) {
-                options.push(PolicyLabelImportExport.validateScoreOption(option));
-            }
-        }
-        return options;
-    }
-
-    /**
-     * Validate ScoreOption
-     *
-     * @param data ScoreOption
-     */
-    private static validateScoreOption(data: IScoreOption): IScoreOption {
-        const formula: IScoreOption = {
-            description: PolicyLabelImportExport.validateString(data.description),
-            value: PolicyLabelImportExport.validateStringOrNumber(data.value)
-        }
-        return formula;
-    }
-
-    /**
-     * Validate config variables
-     *
-     * @param data variables
-     */
-    private static validateFields(data?: ISchemaRuleData[]): ISchemaRuleData[] {
-        const fields: ISchemaRuleData[] = [];
-        if (Array.isArray(data)) {
-            for (const field of data) {
-                fields.push(PolicyLabelImportExport.validateField(field));
-            }
-        }
-        return fields;
-    }
-
-    /**
-     * Validate config variable
-     *
-     * @param data variable
-     */
-    private static validateField(data?: ISchemaRuleData): ISchemaRuleData {
-        const variable: ISchemaRuleData = {
-            id: PolicyLabelImportExport.validateString(data.id),
-            schemaId: PolicyLabelImportExport.validateString(data.schemaId),
-            path: PolicyLabelImportExport.validateString(data.path),
-            schemaName: PolicyLabelImportExport.validateString(data.schemaName),
-            schemaPath: PolicyLabelImportExport.validateString(data.schemaPath),
-            fieldType: PolicyLabelImportExport.validateString(data.fieldType),
-            fieldRef: PolicyLabelImportExport.validateBoolean(data.fieldRef),
-            fieldArray: PolicyLabelImportExport.validateBoolean(data.fieldArray),
-            fieldDescription: PolicyLabelImportExport.validateString(data.fieldDescription),
-            fieldProperty: PolicyLabelImportExport.validateString(data.fieldProperty),
-            fieldPropertyName: PolicyLabelImportExport.validateString(data.fieldPropertyName),
-            rule: PolicyLabelImportExport.validateRule(data.rule),
-        };
-        return variable;
-    }
-
-    /**
-     * Validate config rule
-     *
-     * @param data variable
-     */
-    private static validateRule(
-        data?: IFormulaRuleData | IConditionRuleData | IRangeRuleData
-    ): IFormulaRuleData | IConditionRuleData | IRangeRuleData {
-        if (data) {
-            if (data.type === 'condition') {
-                return PolicyLabelImportExport.validateConditionRule(data);
-            } else if (data.type === 'formula') {
-                return PolicyLabelImportExport.validateFormulaRule(data);
-            } else if (data.type === 'range') {
-                return PolicyLabelImportExport.validateRangeRule(data);
-            }
-        }
-        return undefined;
-    }
-
-    /**
-     * Validate range
-     *
-     * @param data range
-     */
-    private static validateRangeRule(data: IRangeRuleData): IRangeRuleData {
-        const item: IRangeRuleData = {
-            type: 'range',
-            min: PolicyLabelImportExport.validateStringOrNumber(data.min),
-            max: PolicyLabelImportExport.validateStringOrNumber(data.max)
-        };
-        return item;
-    }
-
-    /**
-     * Validate formula
-     *
-     * @param data formula
-     */
-    private static validateFormulaRule(data: IFormulaRuleData): IFormulaRuleData {
-        const item: IFormulaRuleData = {
-            type: 'formula',
-            formula: PolicyLabelImportExport.validateString(data.formula)
-        };
-        return item;
-    }
-
-    /**
-     * Validate conditions
-     *
-     * @param data condition
-     */
-    private static validateConditionRule(data: IConditionRuleData): IConditionRuleData {
-        const item: IConditionRuleData = {
-            type: 'condition',
-            conditions: PolicyLabelImportExport.validateCondition(data.conditions)
-        };
-        return item;
-    }
-
-    /**
-     * Validate condition
-     *
-     * @param data condition
-     */
-    private static validateCondition(
-        data: (IConditionIfData | IConditionElseData)[]
-    ): (IConditionIfData | IConditionElseData)[] {
-        const result: (IConditionIfData | IConditionElseData)[] = [];
-        if (Array.isArray(data)) {
-            for (const item of data) {
-                if (item.type === 'if') {
-                    result.push(PolicyLabelImportExport.validateIfCondition(item))
-                } else if (item.type === 'else') {
-                    result.push(PolicyLabelImportExport.validateElseCondition(item))
+                const item = PolicyLabelImportExport.validateChild(variable);
+                if (item) {
+                    children.push(item);
                 }
             }
         }
-        return result;
+        return children;
     }
 
     /**
-     * Validate IfCondition
+     * Validate imports
      *
-     * @param data IfCondition
+     * @param data imports
      */
-    private static validateIfCondition(data: IConditionIfData): IConditionIfData {
-        const item: IConditionIfData = {
-            type: 'if',
-            condition: PolicyLabelImportExport.validateIfConditionValue(data.condition),
-            formula: PolicyLabelImportExport.validateIfConditionValue(data.formula),
-        };
-        return item;
-    }
-
-    /**
-     * Validate ElseCondition
-     *
-     * @param data ElseCondition
-     */
-    private static validateElseCondition(data: IConditionElseData): IConditionElseData {
-        const item: IConditionElseData = {
-            type: 'else',
-            formula: PolicyLabelImportExport.validateIfConditionValue(data.formula),
-        };
-        return item;
-    }
-
-    /**
-     * Validate IfConditionValue
-     *
-     * @param data IfConditionValue
-     */
-    private static validateIfConditionValue(
-        data: IConditionFormula | IConditionRange | IConditionText | IConditionEnum
-    ): IConditionFormula | IConditionRange | IConditionText | IConditionEnum {
-        if (data) {
-            if (data.type === 'formula') {
-                return {
-                    type: 'formula',
-                    formula: PolicyLabelImportExport.validateString(data.formula)
-                }
-            } else if (data.type === 'range') {
-                return {
-                    type: 'range',
-                    variable: PolicyLabelImportExport.validateString(data.variable),
-                    min: PolicyLabelImportExport.validateStringOrNumber(data.min),
-                    max: PolicyLabelImportExport.validateStringOrNumber(data.max)
-                }
-            } else if (data.type === 'text') {
-                return {
-                    type: 'text',
-                    variable: PolicyLabelImportExport.validateString(data.variable),
-                    value: PolicyLabelImportExport.validateString(data.value)
-                }
-            } else if (data.type === 'enum') {
-                return {
-                    type: 'enum',
-                    variable: PolicyLabelImportExport.validateString(data.variable),
-                    value: PolicyLabelImportExport.validateStrings(data.value)
+    private static validateImports(data?: INavImportsConfig[]): INavImportsConfig[] {
+        const imports: INavImportsConfig[] = [];
+        if (Array.isArray(data)) {
+            for (const variable of data) {
+                const item = PolicyLabelImportExport.validateImport(variable);
+                if (item) {
+                    imports.push(item);
                 }
             }
         }
-        return {
-            type: 'formula',
-            formula: ''
+        return imports;
+    }
+
+    /**
+     * Validate child
+     *
+     * @param data child
+     */
+    private static validateChild(data: INavItemConfig): INavItemConfig | null {
+        if (data?.type === NavItemType.Group) {
+            const child: IGroupItemConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Group,
+                name: PolicyLabelImportExport.validateString(data.name),
+                description: PolicyLabelImportExport.validateString(data.description),
+                children: PolicyLabelImportExport.validateChildren(data.children),
+            };
+            return child;
         }
+        if (data?.type === NavItemType.Label) {
+            const child: ILabelItemConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Label,
+                name: PolicyLabelImportExport.validateString(data.name),
+                description: PolicyLabelImportExport.validateString(data.description),
+                owner: PolicyLabelImportExport.validateString(data.owner),
+                messageId: PolicyLabelImportExport.validateString(data.messageId),
+                config: PolicyLabelImportExport.validateConfig(data.config),
+            };
+            return child;
+        }
+        if (data?.type === NavItemType.Rules) {
+            const child: IRulesItemConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Rules,
+                name: PolicyLabelImportExport.validateString(data.name),
+                config: PolicyStatisticImportExport.validateConfig(data.config),
+            };
+            return child;
+        }
+        if (data?.type === NavItemType.Statistic) {
+            const child: IStatisticItemConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Statistic,
+                name: PolicyLabelImportExport.validateString(data.name),
+                description: PolicyLabelImportExport.validateString(data.description),
+                owner: PolicyLabelImportExport.validateString(data.owner),
+                messageId: PolicyLabelImportExport.validateString(data.messageId),
+                config: PolicyStatisticImportExport.validateConfig(data.config),
+            };
+            return child;
+        }
+        return null;
+    }
+
+    /**
+     * Validate import
+     *
+     * @param data import
+     */
+    private static validateImport(data: INavImportsConfig): INavImportsConfig | null {
+        if (data?.type === NavItemType.Label) {
+            const child: INavLabelImportConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Label,
+                name: PolicyLabelImportExport.validateString(data.name),
+                description: PolicyLabelImportExport.validateString(data.description),
+                owner: PolicyLabelImportExport.validateString(data.owner),
+                messageId: PolicyLabelImportExport.validateString(data.messageId),
+                config: PolicyLabelImportExport.validateConfig(data.config),
+            };
+            return child;
+        }
+        if (data?.type === NavItemType.Statistic) {
+            const child: INavStatisticImportConfig = {
+                id: PolicyLabelImportExport.validateString(data.id),
+                type: NavItemType.Statistic,
+                name: PolicyLabelImportExport.validateString(data.name),
+                description: PolicyLabelImportExport.validateString(data.description),
+                owner: PolicyLabelImportExport.validateString(data.owner),
+                messageId: PolicyLabelImportExport.validateString(data.messageId),
+                config: PolicyStatisticImportExport.validateConfig(data.config),
+            };
+            return child;
+        }
+        return null;
     }
 
     /**
@@ -432,44 +248,5 @@ export class PolicyLabelImportExport {
         } else {
             return '';
         }
-    }
-
-    /**
-     * Validate Boolean
-     *
-     * @param data Boolean
-     */
-    private static validateBoolean(data: string | boolean): boolean {
-        return data === 'true' || data === true;
-    }
-
-    /**
-     * Validate StringOrNumber
-     *
-     * @param data StringOrNumber
-     */
-    private static validateStringOrNumber(data: string | number): string | number {
-        if (typeof data === 'string') {
-            return data;
-        } else if (typeof data === 'number') {
-            return data;
-        } else {
-            return '';
-        }
-    }
-
-    /**
-     * Validate Strings
-     *
-     * @param data strings
-     */
-    private static validateStrings(data?: string[]): string[] {
-        const items: string[] = [];
-        if (Array.isArray(data)) {
-            for (const item of data) {
-                items.push(PolicyLabelImportExport.validateString(item));
-            }
-        }
-        return items;
     }
 }

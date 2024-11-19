@@ -98,4 +98,8 @@ export class PolicyLabelsService {
             }
         });
     }
+
+    public searchComponents(options: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/components`, options);
+    }
 }

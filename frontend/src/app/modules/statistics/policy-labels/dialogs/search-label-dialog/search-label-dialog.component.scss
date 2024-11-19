@@ -38,7 +38,7 @@
             .filter-row {
                 margin-bottom: 16px;
 
-                .guardian-dropdown  {
+                .guardian-dropdown {
                     margin-right: 16px;
                     max-width: 100%;
                     min-width: 100%;
@@ -165,6 +165,12 @@
             max-width: 75px;
         }
 
+        .col-130 {
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
+        }
+
         .col-80 {
             width: 80px;
             min-width: 80px;
@@ -228,6 +234,17 @@
         width: 16px;
         height: 16px;
         cursor: pointer;
+    }
+
+    .import-icon {
+        height: 24px;
+        display: flex;
+        align-items: center;
+        text-transform: capitalize;
+
+        svg-icon {
+            margin-right: 8px;
+        }
     }
 }
 
