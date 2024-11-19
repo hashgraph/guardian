@@ -52,7 +52,7 @@ The Guardian GHGP Corporate Policy offers a unique technical opportunity for com
 
 ### Policy Guide <a href="#toc146717951" id="toc146717951"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
 Latest Version - 1707206253.006698003
 
