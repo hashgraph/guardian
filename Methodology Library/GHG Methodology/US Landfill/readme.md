@@ -62,6 +62,8 @@ This protocol applies to projects that aim to reduce methane emissions from U.S.
 
 The policy workflow replicates the procedural steps required for landfill gas projects, covering project registration, additionality demonstration, and the submission of monitoring reports to claim carbon credits.
 
+![image](https://github.com/user-attachments/assets/dbdb7733-e474-45d4-b15c-35413a1a0980)
+
 ## Policy Import
 
 This policy is available for import via GitHub or IPFS timestamp.
@@ -96,4 +98,142 @@ Each CRT represents one metric tonne of carbon dioxide equivalent (tCO₂e) redu
 
 ### Step By Step 
 
-Coming Soon
+1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
+
+![image](https://github.com/user-attachments/assets/8c5ab2a7-dc64-481d-9664-e4908c0d3d8c)
+
+![image](https://github.com/user-attachments/assets/636333c0-b93e-4cc4-aaed-5bb2c51201d9)
+
+![image](https://github.com/user-attachments/assets/6b0f9fba-5e35-423f-b671-c6a83b3850bc)
+
+2. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.
+
+![image](https://github.com/user-attachments/assets/8dc8d7fa-46a4-4326-bd6e-60d67ec027d4)
+
+![image](https://github.com/user-attachments/assets/2169c25d-4211-4fdc-a660-6041fdf22787)
+
+3. Create a new user account and assign their role as the Project Developer.
+
+![image](https://github.com/user-attachments/assets/2e4ae3d1-bb43-4d48-934d-bbeefd953e81)
+
+![image](https://github.com/user-attachments/assets/8a9b790e-8e62-4640-9db0-2730a1dd21f5)
+
+![image](https://github.com/user-attachments/assets/853b683d-359d-4499-a997-dc1461db418a)
+
+![image](https://github.com/user-attachments/assets/05c26582-aeb2-4910-baca-a932eb85e5a5)
+
+4. Log in to the administrator account to review and approve the Project Developer account.
+
+![image](https://github.com/user-attachments/assets/4d63751b-67e3-4d70-b528-f38604673bfd)
+
+5. The Project Developer can click 'Create Project' to submit the Project Submission Form.
+
+![image](https://github.com/user-attachments/assets/2c92b4ad-490e-487c-983a-a90e4182654c)
+
+![image](https://github.com/user-attachments/assets/7c7f9dd4-a90e-4907-a53d-f446b467083e)
+
+6. The Project Developer can also submit a Project Diagram.
+
+![image](https://github.com/user-attachments/assets/02f83792-764d-437a-a849-f023a2565bdc)
+
+![image](https://github.com/user-attachments/assets/e61af0df-2468-4a1d-9b1a-ffbef4595753)
+
+7. Return to the administrator account to review the Project Submission Form and the Project Diagram for completeness and approve both submissions.
+
+![image](https://github.com/user-attachments/assets/8a70923d-23cd-46cc-816d-247e420c2da4)
+
+![image](https://github.com/user-attachments/assets/edbef16e-64c4-4fe7-9a87-3fa3152b16e6)
+
+8. Now, we will create a new user to add a verifier account.
+
+![image](https://github.com/user-attachments/assets/7d31c1cb-8ab7-4fc6-a568-814ff46b1062)
+
+![image](https://github.com/user-attachments/assets/a69046a5-90de-49ff-94d3-9fcd0e126cbe)
+
+![image](https://github.com/user-attachments/assets/7528cfcf-8e77-40d8-9f91-0596dbb8b291)
+
+![image](https://github.com/user-attachments/assets/28511d2f-5c52-4cb9-992c-ae205d757d8b)
+
+9. Log in to the Administrator account to review and approve the Verifier account.
+
+![image](https://github.com/user-attachments/assets/a9d6c8d5-3e36-4f18-a0b4-7d40d50d4ae3)
+
+10. The Verifier must complete a NOVA/COI form and submit it to the Administrator.
+
+![image](https://github.com/user-attachments/assets/4e95a8c8-1d24-4f3a-a087-321a1c9325d2)
+
+11. Log in to the Administrator account and approve the NOVA/COI form. This policy also allows the Administrator to identify a conflict of interest (COI) as outlined in the workflow above.
+
+![image](https://github.com/user-attachments/assets/e9af5f27-9fa0-430f-ae3f-d241a22d7268)
+
+12. Once the NOVA/COI form has been approved with no COIs identified you can log in to the Project Developer account and assign a Verifier to the project. This will allow the verifier to see the project submission form.
+
+![image](https://github.com/user-attachments/assets/bd5d59ab-72e4-4ca2-8476-119ae4ae739c)
+
+![image](https://github.com/user-attachments/assets/1e3f4919-2997-4f83-9bf3-4bca973cc42a)
+
+![image](https://github.com/user-attachments/assets/d02fc0ae-3e0c-4229-b8d9-4efc5bf84be1)
+
+13. The Project Developer can submit all the forms outlined in the project documents tab, assigning the third-party verifier to each form.
+
+![image](https://github.com/user-attachments/assets/9efe0f93-49af-49d8-ab4c-fe9f11f23230)
+
+![image](https://github.com/user-attachments/assets/24fec958-78d0-498a-9cac-4e6e548ae13c)
+
+14. Using the assigned Verifier account, they can now review and approve all the project documents. Once approved they can complete and submit the Verification Report.
+
+![image](https://github.com/user-attachments/assets/e8bdfa99-286f-43a5-8a3d-a4cec9fea895)
+
+![image](https://github.com/user-attachments/assets/dfbb9b30-c859-4fc7-ac42-6a1efa057014)
+
+![image](https://github.com/user-attachments/assets/afcca1de-bc44-4e37-a24e-4718a86e0b94)
+
+15. The Administrator must review the report for completeness and choose to approve or reject.
+
+![image](https://github.com/user-attachments/assets/fb49e085-837a-4bba-a176-c917ae0b3de1)
+
+16. The final step before issuing credits would be to approve the Emission Reductions from the Administrators account.
+
+![image](https://github.com/user-attachments/assets/993e0b2d-1550-46a8-bab5-99eeb1f064bb)
+
+17. The project owner and administrator will have access to the Verifiable Presentation (VP) and Trust Chain.
+
+![image](https://github.com/user-attachments/assets/99fcdceb-ae8f-46e7-9074-7326e5c875e5)
+
+![image](https://github.com/user-attachments/assets/83eb74d0-1d99-4599-941e-b6399113b646)
+
+![image](https://github.com/user-attachments/assets/aca752ff-aaae-4d12-8b47-a37d3708a8ff)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
