@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { SchemaField } from '@guardian/interfaces';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ConditionIf, ConditionRule, FieldRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/field-rule';
+import { ConditionIf, ConditionRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/conditions';
+import { FieldRule } from "src/app/modules/common/models/field-rule";
 import { createAutocomplete } from 'src/app/modules/common/models/lang-modes/autocomplete';
 import { IPFSService } from 'src/app/services/ipfs.service';
 

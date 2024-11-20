@@ -132,7 +132,7 @@
                                 <div class="variables-grid-cell">
                                     {{item.config.owner}}
                                 </div>
-                                <div class="variables-grid-cell cell-btn">
+                                <div class="variables-grid-cell cell-48 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
                                         (click)="onDeleteImport(item)"
@@ -245,7 +245,11 @@
                                     (click)="labelConfig.onNavItemSelect(node)" 
                                     [attr.selected]="labelConfig.ifNavSelected(node)"
                                     [attr.readonly]="node.readonly"
-                                    [attr.freezed]="node.freezed">
+                                    [attr.freezed]="node.freezed"
+                                    pTooltip="Unable to move linked elements. You could move only highest element of the list" 
+                                    [showDelay]="300" 
+                                    [tooltipDisabled]="!node.freezed"
+                                    >
                                     <div class="navigation-item-icon">
                                         <svg-icon 
                                             class="icon-btn svg-icon-16" 
@@ -290,29 +294,83 @@
                                     svgClass="icon-color-close"></svg-icon>
                             </div>
                         </div>
-                        <div class="item-options" [ngSwitch]="selectedNavItem.blockType">
-                            <ng-container *ngSwitchCase="'group'">
+                        <div class="item-options">
+                            <ng-container *ngIf="labelConfig.getGroupConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">* Rule</label>
+                                    <p-dropdown
+                                        [(ngModel)]="config.rule"
+                                        [options]="labelConfig.groupTypes"
+                                        [showClear]="false"
+                                        class="guardian-dropdown"
+                                        appendTo="body"
+                                        placeholder="Not selected"
+                                        optionLabel="label" 
+                                        optionValue="value"
+                                        panelStyleClass="guardian-dropdown-panel">
+                                    </p-dropdown>
                                 </div>
                             </ng-container>
-                            <ng-container *ngSwitchCase="'rules'">
+                            <ng-container *ngIf="labelConfig.getRuleConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" />
                                 </div>
                             </ng-container>
-                            <ng-container *ngSwitchCase="'label'">
+                            <ng-container *ngIf="labelConfig.getLabelConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                </div>
+
+                                <div class="item-options-header">
+                                    Overview
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Name</label>
+                                    <input pInputText type="text" [(ngModel)]="config.name" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Description</label>
+                                    <input pInputText type="text" [(ngModel)]="config.description" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Message ID</label>
+                                    <input pInputText type="text" [(ngModel)]="config.messageId" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Owner</label>
+                                    <input pInputText type="text" [(ngModel)]="config.owner" readonly />
                                 </div>
                             </ng-container>
-                            <ng-container *ngSwitchCase="'statistic'">
+                            <ng-container *ngIf="labelConfig.getStatisticConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="selectedNavItem.config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                </div>
+
+                                <div class="item-options-header">
+                                    Overview
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Name</label>
+                                    <input pInputText type="text" [(ngModel)]="config.name" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Description</label>
+                                    <input pInputText type="text" [(ngModel)]="config.description" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Message ID</label>
+                                    <input pInputText type="text" [(ngModel)]="config.messageId" readonly />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">Owner</label>
+                                    <input pInputText type="text" [(ngModel)]="config.owner" readonly />
                                 </div>
                             </ng-container>
                         </div>
@@ -694,7 +752,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="variables-grid-cell cell-btn cell-56">
+                                <div class="variables-grid-cell cell-56 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
                                         (click)="rulesConfig.onEditScore(score)"
@@ -706,7 +764,7 @@
                                         </svg-icon>
                                     </button>
                                 </div>
-                                <div class="variables-grid-cell cell-btn">
+                                <div class="variables-grid-cell cell-48 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
                                         (click)="rulesConfig.onDeleteScore(score)"
@@ -756,7 +814,8 @@
                             <div class="variables-grid-cell cell-200">TYPE</div>
                             <div class="variables-grid-cell cell-300">DESCRIPTION</div>
                             <div class="variables-grid-cell">FORMULA</div>
-                            <div class="variables-grid-cell cell-48"></div>
+                            <div class="variables-grid-cell cell-150">RULES</div>
+                            <div class="variables-grid-cell cell-125"></div>
                         </div>
                         <div class="variables-grid-body">
                             <div *ngFor="let formula of rulesConfig.formulas.formulas" class="variables-grid-row">
@@ -799,10 +858,24 @@
                                         [options]="rulesConfig.codeMirrorOptions"
                                         [disabled]="rulesConfig.readonly"></ngx-codemirror>
                                 </div>
-                                <div class="variables-grid-cell cell-btn">
+                                <div class="variables-grid-cell cell-150 variables-grid-cell-transparent">
+                                    <div *ngIf="formula.ruleType" class="rule-type-name">
+                                        {{formula.ruleType}}
+                                    </div>
+                                </div>
+                                <div class="variables-grid-cell cell-125 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
-                                        (click)="rulesConfig.onDeleteVariable(formula)"
+                                        (click)="rulesConfig.onEditFormula(formula)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/edit.svg"
+                                            svgClass="icon-color-primary">
+                                        </svg-icon>
+                                    </button>
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="rulesConfig.onDeleteFormula(formula)"
                                         [disabled]="rulesConfig.readonly">
                                         <svg-icon
                                             class="icon-btn svg-icon"
@@ -826,7 +899,7 @@
                     </div>
                     <div *ngIf="!rulesConfig.readonly" class="variables-actions">
                         <button 
-                            (click)="rulesConfig.onAddVariable()" 
+                            (click)="rulesConfig.onAddFormula()" 
                             class="guardian-button guardian-button-secondary">
                             <div class="guardian-button-icon">
                                 <svg-icon

@@ -13,6 +13,7 @@ export interface IGroupItemConfig {
     name: string;
     description?: string;
     owner?: string;
+    rule?: string;
     children?: INavItemConfig[];
 }
 

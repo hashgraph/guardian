@@ -163,7 +163,7 @@ export class PolicyLabelImportExport {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Group,
                 name: PolicyLabelImportExport.validateString(data.name),
-                description: PolicyLabelImportExport.validateString(data.description),
+                rule: PolicyLabelImportExport.validateString(data.rule),
                 children: PolicyLabelImportExport.validateChildren(data.children),
             };
             return child;

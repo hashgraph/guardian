@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, GenerateUUIDv4, IPolicyLabel, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IGroupItemConfig, ILabelItemConfig, IPolicyLabel, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType, Schema, SchemaField, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.component';
@@ -17,12 +17,13 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { TreeDragDropService } from 'primeng/api';
 import { NavItem, NavMenu, NavTree } from './nav-item';
-import { SchemaFormulas } from '../../../common/models/schema-formulas';
+import { SchemaFormula, SchemaFormulas } from '../../../common/models/schema-formulas';
 import { SchemaVariable, SchemaVariables } from '../../../common/models/schema-variables';
 import { SchemaScore, SchemaScores } from '../../../common/models/schema-scores';
 import { ScoreDialog } from '../../policy-statistics/dialogs/score-dialog/score-dialog.component';
-import { EnumValue } from '../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
+import { EnumValue, SchemaRuleConfigDialog } from '../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 import { SearchLabelDialog } from '../dialogs/search-label-dialog/search-label-dialog.component';
+import { ConditionRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/conditions';
 
 class LabelConfig {
     public show: boolean = false;
@@ -31,6 +32,14 @@ class LabelConfig {
     public policy: any;
 
     public readonly step = new Subject<number>();
+
+    public groupTypes: any[] = [{
+        label: 'At least one',
+        value: 'one'
+    }, {
+        label: 'Every',
+        value: 'every'
+    }];
 
     constructor(
         private dialogService: DialogService,
@@ -170,6 +179,34 @@ class LabelConfig {
             children
         }
         return json;
+    }
+
+    public getGroupConfig(selectedNavItem: NavItem | null): IGroupItemConfig | null {
+        if (selectedNavItem && selectedNavItem.blockType === NavItemType.Group) {
+            return selectedNavItem.config as IGroupItemConfig;
+        }
+        return null;
+    }
+
+    public getRuleConfig(selectedNavItem: NavItem | null): IRulesItemConfig | null {
+        if (selectedNavItem && selectedNavItem.blockType === NavItemType.Rules) {
+            return selectedNavItem.config as IRulesItemConfig;
+        }
+        return null;
+    }
+
+    public getLabelConfig(selectedNavItem: NavItem | null): ILabelItemConfig | null {
+        if (selectedNavItem && selectedNavItem.blockType === NavItemType.Label) {
+            return selectedNavItem.config as ILabelItemConfig;
+        }
+        return null;
+    }
+
+    public getStatisticConfig(selectedNavItem: NavItem | null): IStatisticItemConfig | null {
+        if (selectedNavItem && selectedNavItem.blockType === NavItemType.Statistic) {
+            return selectedNavItem.config as IStatisticItemConfig;
+        }
+        return null;
     }
 }
 
@@ -316,9 +353,12 @@ class RulesConfig {
         const item = node.config as (IRulesItemConfig | IStatisticItemConfig);
         const config = item.config;
 
+        this.readonly = node.readonly || node.freezed;
+
         this.variables.fromData(config?.variables);
-        this.formulas.fromData(config?.formulas);
         this.scores.fromData(config?.scores);
+        this.formulas.fromData(config?.formulas);
+
         this.variables.updateType(this.schemas);
         this.updateCodeMirror();
 
@@ -640,11 +680,11 @@ class RulesConfig {
         });
     }
 
-    public onAddVariable() {
+    public onAddFormula() {
         this.formulas.add();
     }
 
-    public onDeleteVariable(formula: any) {
+    public onDeleteFormula(formula: SchemaFormula) {
         const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
             showHeader: false,
             width: '640px',
@@ -664,6 +704,27 @@ class RulesConfig {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.formulas.delete(formula);
+            }
+        });
+    }
+
+    public onEditFormula(formula: SchemaFormula) {
+        const dialogRef = this.dialogService.open(SchemaRuleConfigDialog, {
+            showHeader: false,
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                variables: this.variables.getOptions(),
+                item: formula.clone(),
+                readonly: this.readonly,
+                enums: this.getEnums()
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => {
+            if (result) {
+                const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
+                formula.addRule(rule);
             }
         });
     }

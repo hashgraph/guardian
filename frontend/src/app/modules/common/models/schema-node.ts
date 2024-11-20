@@ -1,5 +1,5 @@
 import { Schema } from "@guardian/interfaces";
-import { TreeListView, TreeListData, TreeListItem } from "../tree-graph/tree-list";
+import { TreeListView, TreeListData } from "../tree-graph/tree-list";
 import { TreeNode } from "../tree-graph/tree-node";
 
 export interface SchemaData {

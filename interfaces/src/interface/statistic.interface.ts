@@ -1,8 +1,11 @@
+import { IConditionRuleData, IFormulaRuleData, IRangeRuleData } from './schema-rules.interface';
+
 export interface IFormulaData {
     id: string;
     type: string;
     description: string;
     formula: string;
+    rule?: IFormulaRuleData | IConditionRuleData | IRangeRuleData;
 }
 
 export interface IVariableData {

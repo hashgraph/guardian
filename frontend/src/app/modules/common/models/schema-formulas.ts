@@ -1,4 +1,5 @@
-import { IFormulaData } from "@guardian/interfaces";
+import { IConditionRuleData, IFormulaData, IFormulaRuleData, IRangeRuleData } from "@guardian/interfaces";
+import { ConditionRule, FormulaRule, RangeRule } from "./conditions";
 
 export class SchemaFormula implements IFormulaData {
     public id: string;
@@ -7,16 +8,36 @@ export class SchemaFormula implements IFormulaData {
     public formula: string;
     public index: number;
 
+    public rule?: FormulaRule | ConditionRule | RangeRule;
+
     constructor() {
         this.type = 'string';
     }
 
+    public get ruleType(): string {
+        if (this.rule) {
+            return this.rule.type;
+        } else {
+            return '';
+        }
+    }
+
     public getJson(): IFormulaData {
-        return {
-            id: this.id,
-            type: this.type,
-            description: this.description,
-            formula: this.formula
+        if (this.rule) {
+            return {
+                id: this.id,
+                type: this.type,
+                description: this.description,
+                formula: this.formula,
+                rule: this.rule.getJson()
+            }
+        } else {
+            return {
+                id: this.id,
+                type: this.type,
+                description: this.description,
+                formula: this.formula
+            }
         }
     }
 
@@ -26,7 +47,33 @@ export class SchemaFormula implements IFormulaData {
         formula.type = data.type || 'string';
         formula.description = data.description;
         formula.formula = data.formula;
+        formula.rule = this.parsRule(formula, data.rule);
         return formula;
+    }
+
+    private static parsRule(
+        parent: SchemaFormula,
+        rule?: IFormulaRuleData | IConditionRuleData | IRangeRuleData
+    ) {
+        if (rule) {
+            if (rule.type === 'condition') {
+                return ConditionRule.fromData(parent, rule);
+            } else if (rule.type === 'formula') {
+                return FormulaRule.fromData(parent, rule);
+            } else if (rule.type === 'range') {
+                return RangeRule.fromData(parent, rule);
+            }
+        }
+        return undefined;
+    }
+
+    public addRule(rule?: FormulaRule | ConditionRule | RangeRule) {
+        this.rule = rule;
+        this.rule?.setParent(this);
+    }
+
+    public clone(): SchemaFormula {
+        return SchemaFormula.fromData(this.getJson());
     }
 }
 

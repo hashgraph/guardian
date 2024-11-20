@@ -138,6 +138,7 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Group,
                     name: this.config.name,
+                    rule: this.config.rule,
                     children
                 };
                 return join as any;
@@ -147,6 +148,8 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Label,
                     name: this.config.name,
+                    description: this.config.description,
+                    owner: this.config.owner,
                     messageId: this.config.messageId,
                     config: this.config.config,
                 };
@@ -157,6 +160,8 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Rules,
                     name: this.config.name,
+                    description: this.config.description,
+                    owner: this.config.owner,
                     config: this.config.config,
                 };
                 return join as any;
@@ -166,6 +171,9 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Statistic,
                     name: this.config.name,
+                    description: this.config.description,
+                    owner: this.config.owner,
+                    messageId: this.config.messageId,
                     config: this.config.config,
                 };
                 return join as any;

@@ -14,7 +14,8 @@ import { createAutocomplete } from '../../../common/models/lang-modes/autocomple
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
-import { ConditionRule, FieldRule, FieldRules, FormulaRule, RangeRule } from '../../../common/models/field-rule';
+import { ConditionRule, FormulaRule, RangeRule } from '../../../common/models/conditions';
+import { FieldRule, FieldRules } from "src/app/modules/common/models/field-rule";
 import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
