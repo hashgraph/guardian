@@ -13,25 +13,52 @@
         </div>
 
         <div class="login-content">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>Username:</mat-label>
-                <input matInput formControlName="login" (input)="onInput()">
+            <!--            <mat-form-field class="example-full-width" appearance="outline">-->
+            <!--                <mat-label>Username:</mat-label>-->
+            <!--                <input matInput formControlName="login" (input)="onInput()">-->
 
-                <span *ngIf="error" class="field-error">{{ error }}</span>
-                <span *ngIf="shouldShowRequiredError('login')" class="field-error">
-                    Value is required
-                </span>
-            </mat-form-field>
+            <!--                <span *ngIf="error" class="field-error">{{ error }}</span>-->
+            <!--                <span *ngIf="shouldShowRequiredError('login')" class="field-error">-->
+            <!--                    Value is required-->
+            <!--                </span>-->
+            <!--            </mat-form-field>-->
+
+            <div class="form-group example-full-width">
+                <label for="usernameInput" class="form-label">Username:</label>
+                <input
+                    pInputText
+                    id="usernameInput"
+                    formControlName="login"
+                    (input)="onInput()"
+                    class="full-width">
+
+                <small *ngIf="error" class="p-error">{{ error }}</small>
+                <small *ngIf="shouldShowRequiredError('login')" class="p-error">Value is required</small>
+            </div>
 
             <div class="password-control">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Password:</mat-label>
-                    <input matInput formControlName="password" [type]="passFieldType">
+                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+                <!--                    <mat-label>Password:</mat-label>-->
+                <!--                    <input matInput formControlName="password" [type]="passFieldType">-->
 
-                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">
+                <!--                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">-->
+                <!--                        Value is required-->
+                <!--                    </span>-->
+                <!--                </mat-form-field>-->
+
+                <div class="form-group example-full-width">
+                    <label for="passwordInput" class="form-label">Password:</label>
+                    <input
+                        pInputText
+                        id="passwordInput"
+                        formControlName="password"
+                        [type]="passFieldType"
+                        class="full-width">
+
+                    <small *ngIf="shouldShowRequiredError('password')" class="p-error">
                         Value is required
-                    </span>
-                </mat-form-field>
+                    </small>
+                </div>
 
                 <!--                <mat-icon-->
                 <!--                    *ngIf="showPasswordValue; else hidePassBtn"-->
@@ -55,17 +82,34 @@
             </div>
 
             <div class="password-control">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Confirm Password:</mat-label>
-                    <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">
+                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+                <!--                    <mat-label>Confirm Password:</mat-label>-->
+                <!--                    <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">-->
 
-                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">
+                <!--                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">-->
+                <!--                        Value is required-->
+                <!--                    </span>-->
+                <!--                    <span *ngIf="showPassMismatchError" class="field-error">-->
+                <!--                        The entered passwords do not match-->
+                <!--                    </span>-->
+                <!--                </mat-form-field>-->
+
+                <div class="form-group example-full-width">
+                    <label for="confirmPasswordInput" class="form-label">Confirm Password:</label>
+                    <input
+                        pInputText
+                        id="confirmPasswordInput"
+                        formControlName="confirmPassword"
+                        [type]="confirmPassFieldType"
+                        class="full-width">
+
+                    <small *ngIf="shouldShowRequiredError('confirmPassword')" class="p-error">
                         Value is required
-                    </span>
-                    <span *ngIf="showPassMismatchError" class="field-error">
+                    </small>
+                    <small *ngIf="showPassMismatchError" class="p-error">
                         The entered passwords do not match
-                    </span>
-                </mat-form-field>
+                    </small>
+                </div>
 
                 <!--                <mat-icon-->
                 <!--                    *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"-->

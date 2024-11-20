@@ -13,14 +13,26 @@
             </li>
         </ul>
 
-        <mat-form-field *ngIf="!userRole" class="content__role-select">
-            <mat-label>Role</mat-label>
-            <mat-select [(value)]="selectedRole" [required]="true">
-                <mat-option *ngFor="let role of roles" [value]="role.value">
-                    {{ role.displayName }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+        <!--        <mat-form-field *ngIf="!userRole" class="content__role-select">-->
+        <!--            <mat-label>Role</mat-label>-->
+        <!--            <mat-select [(value)]="selectedRole" [required]="true">-->
+        <!--                <mat-option *ngFor="let role of roles" [value]="role.value">-->
+        <!--                    {{ role.displayName }}-->
+        <!--                </mat-option>-->
+        <!--            </mat-select>-->
+        <!--        </mat-form-field>-->
+
+        <div *ngIf="!userRole" class="p-fluid content__role-select">
+            <label for="roleDropdown">Role</label>
+            <p-dropdown
+                id="roleDropdown"
+                [(ngModel)]="selectedRole"
+                [options]="roles"
+                optionLabel="displayName"
+                [required]="true"
+                placeholder="Select Role">
+            </p-dropdown>
+        </div>
     </div>
 </div>
 

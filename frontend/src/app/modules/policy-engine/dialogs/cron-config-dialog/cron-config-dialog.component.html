@@ -1,24 +1,59 @@
 <h1 mat-dialog-title>Custom Period</h1>
 <div mat-dialog-content class="dialog-content" [attr.started]="started">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <!--        <div class="c1">-->
+        <!--            <div class="f1" style="padding: 6px 4px; margin-right: 8px;">-->
+        <!--                <mat-label>Start Date:</mat-label>-->
+        <!--                <datetime-picker [(value)]="startDate" [readonly]="true"></datetime-picker>-->
+        <!--            </div>-->
+        <!--            <div class="f1" style="padding: 15px 10px; margin-left: 28px;">-->
+        <!--                <mat-label>Interval:</mat-label>-->
+        <!--                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">-->
+        <!--            </div>-->
+        <!--            <div class="f1" style="padding: 15px 10px; margin-left: 8px;">-->
+        <!--                <mat-label>Period:</mat-label>-->
+        <!--                <mat-select [(value)]="period" (selectionChange)="selectPeriod()">-->
+        <!--                    <mat-option value="month">Month</mat-option>-->
+        <!--                    <mat-option value="week">Week</mat-option>-->
+        <!--                    <mat-option value="day">Day</mat-option>-->
+        <!--                    <mat-option value="hour">Hour</mat-option>-->
+        <!--                    <mat-option value="minute">Minute</mat-option>-->
+        <!--                </mat-select>-->
+        <!--            </div>-->
+        <!--        </div>-->
+
         <div class="c1">
             <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
-                <mat-label>Start Date:</mat-label>
-                <datetime-picker [(value)]="startDate" [readonly]="true"></datetime-picker>
+                <label for="startDate">Start Date:</label>
+                <p-calendar
+                    id="startDate"
+                    [(ngModel)]="startDate"
+                    [readonlyInput]="true"
+                    dateFormat="dd/mm/yy">
+                </p-calendar>
             </div>
+
             <div class="f1" style="padding: 15px 10px; margin-left: 28px;">
-                <mat-label>Interval:</mat-label>
-                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">
+                <label for="interval">Interval:</label>
+                <input
+                    id="interval"
+                    pInputText
+                    type="number"
+                    min="1"
+                    max="100"
+                    formControlName="interval"
+                    (change)="selectPeriod()">
             </div>
+
             <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
-                <mat-label>Period:</mat-label>
-                <mat-select [(value)]="period" (selectionChange)="selectPeriod()">
-                    <mat-option value="month">Month</mat-option>
-                    <mat-option value="week">Week</mat-option>
-                    <mat-option value="day">Day</mat-option>
-                    <mat-option value="hour">Hour</mat-option>
-                    <mat-option value="minute">Minute</mat-option>
-                </mat-select>
+                <label for="period">Period:</label>
+                <p-dropdown
+                    id="period"
+                    [(ngModel)]="period"
+                    [options]="periodOptions"
+                    placeholder="Select a period"
+                    (onChange)="selectPeriod()">
+                </p-dropdown>
             </div>
         </div>
 
@@ -33,37 +68,39 @@
         </mat-form-field> -->
 
         <div>
-            {{timeString}}
+            {{ timeString }}
         </div>
 
         <div class="delimiter"></div>
 
-<!--        <mat-accordion>-->
-<!--            <mat-expansion-panel>-->
-<!--                <mat-expansion-panel-header>-->
-<!--                    <mat-panel-title>-->
-<!--                        Cron Mask (advanced)-->
-<!--                    </mat-panel-title>-->
-<!--                </mat-expansion-panel-header>-->
-<!--                <mat-form-field class="example-full-width" appearance="outline">-->
-<!--                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>-->
-<!--                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">-->
-<!--                </mat-form-field>-->
-<!--            </mat-expansion-panel>-->
-<!--        </mat-accordion>-->
+        <!--        <mat-accordion>-->
+        <!--            <mat-expansion-panel>-->
+        <!--                <mat-expansion-panel-header>-->
+        <!--                    <mat-panel-title>-->
+        <!--                        Cron Mask (advanced)-->
+        <!--                    </mat-panel-title>-->
+        <!--                </mat-expansion-panel-header>-->
+        <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+        <!--                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>-->
+        <!--                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">-->
+        <!--                </mat-form-field>-->
+        <!--            </mat-expansion-panel>-->
+        <!--        </mat-accordion>-->
 
         <p-accordion [multiple]="true">
             <p-accordionTab header="Cron Mask (advanced)">
                 <div class="form-group">
                     <label>* Mask: minute hour day(month) month day(week)</label>
-                    <input pInputText type="text" placeholder="* * * * *" formControlName="mask" class="example-full-width" />
+                    <input pInputText type="text" placeholder="* * * * *" formControlName="mask"
+                           class="example-full-width"/>
                 </div>
             </p-accordionTab>
         </p-accordion>
 
         <div mat-dialog-actions>
             <button mat-raised-button color="primary" type="submit" [attr.started]="started"
-                [disabled]="!dataForm.valid">Ok</button>
+                    [disabled]="!dataForm.valid">Ok
+            </button>
             <button mat-button type="button" (click)="onNoClick()">Cancel</button>
         </div>
     </form>

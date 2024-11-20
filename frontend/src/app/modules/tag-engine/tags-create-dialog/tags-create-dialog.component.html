@@ -67,15 +67,37 @@
     <div class="g-dialog-body">
         <div style="padding: 20px 35px 30px 35px">
             <form [formGroup]="dataForm">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* Label</mat-label>
-                    <input matInput type="text" placeholder="Label" formControlName="name">
-                </mat-form-field>
+                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+                <!--                    <mat-label>* Label</mat-label>-->
+                <!--                    <input matInput type="text" placeholder="Label" formControlName="name">-->
+                <!--                </mat-form-field>-->
 
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Description</mat-label>
-                    <input matInput type="text" placeholder="Description" formControlName="description">
-                </mat-form-field>
+                <div class="form-group example-full-width">
+                    <label for="labelInput" class="form-label">* Label</label>
+                    <input
+                        pInputText
+                        id="labelInput"
+                        type="text"
+                        placeholder="Label"
+                        formControlName="name"
+                        class="full-width">
+                </div>
+
+                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+                <!--                    <mat-label>Description</mat-label>-->
+                <!--                    <input matInput type="text" placeholder="Description" formControlName="description">-->
+                <!--                </mat-form-field>-->
+
+                <div class="form-group example-full-width">
+                    <label for="descriptionInput" class="form-label">Description</label>
+                    <input
+                        pInputText
+                        id="descriptionInput"
+                        type="text"
+                        placeholder="Description"
+                        formControlName="description"
+                        class="full-width">
+                </div>
             </form>
 
             <div *ngIf="schemas && schemas.length" class="artifact-container">
@@ -88,11 +110,21 @@
                     </div>
                 </div>
 
-                <mat-select #selector class="artifact-selector" [(value)]="schema" (selectionChange)="onSelectSchema()">
-                    <mat-option *ngFor="let schema of schemas" [value]="schema">
-                        <span>{{ schema.name }}</span>
-                    </mat-option>
-                </mat-select>
+                <!--                <mat-select #selector class="artifact-selector" [(value)]="schema" (selectionChange)="onSelectSchema()">-->
+                <!--                    <mat-option *ngFor="let schema of schemas" [value]="schema">-->
+                <!--                        <span>{{ schema.name }}</span>-->
+                <!--                    </mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown
+                    #selector
+                    class="artifact-selector"
+                    [(ngModel)]="schema"
+                    (onChange)="onSelectSchema()"
+                    [options]="schemas"
+                    optionLabel="name"
+                    placeholder="Select a schema">
+                </p-dropdown>
 
                 <!-- <div *ngIf="schema" class="selected-artifact">
                     <div class="selected-artifact-name">

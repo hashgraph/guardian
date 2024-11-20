@@ -215,26 +215,42 @@
             </ng-template>
         </div>
         <div *ngIf="enum && !loading" class="enum-options-container">
-            <mat-form-field
-                *ngIf="this.field.controlEnum.value.length"
-                appearance="outline"
-                class="enum-form-field"
-            >
-                <mat-label>Enum data</mat-label>
-<!--                <mat-chip-list #chipList aria-label="Enum values">-->
-<!--                    <mat-chip-->
-<!--                        *ngFor="let keyword of keywords"-->
-<!--                        class="mat-chip-value"-->
-<!--                    >-->
-<!--                        <div class="mat-chip-value-label">-->
-<!--                            {{ keyword }}-->
-<!--                        </div>-->
-<!--                    </mat-chip>-->
-<!--                    <mat-chip *ngIf="keywords.length < field.enum.length">-->
-<!--                        ...-->
-<!--                    </mat-chip>-->
-<!--                </mat-chip-list>-->
+            <!--            <mat-form-field-->
+            <!--                *ngIf="this.field.controlEnum.value.length"-->
+            <!--                appearance="outline"-->
+            <!--                class="enum-form-field"-->
+            <!--            >-->
+            <!--                <mat-label>Enum data</mat-label>-->
+            <!--&lt;!&ndash;                <mat-chip-list #chipList aria-label="Enum values">&ndash;&gt;-->
+            <!--&lt;!&ndash;                    <mat-chip&ndash;&gt;-->
+            <!--&lt;!&ndash;                        *ngFor="let keyword of keywords"&ndash;&gt;-->
+            <!--&lt;!&ndash;                        class="mat-chip-value"&ndash;&gt;-->
+            <!--&lt;!&ndash;                    >&ndash;&gt;-->
+            <!--&lt;!&ndash;                        <div class="mat-chip-value-label">&ndash;&gt;-->
+            <!--&lt;!&ndash;                            {{ keyword }}&ndash;&gt;-->
+            <!--&lt;!&ndash;                        </div>&ndash;&gt;-->
+            <!--&lt;!&ndash;                    </mat-chip>&ndash;&gt;-->
+            <!--&lt;!&ndash;                    <mat-chip *ngIf="keywords.length < field.enum.length">&ndash;&gt;-->
+            <!--&lt;!&ndash;                        ...&ndash;&gt;-->
+            <!--&lt;!&ndash;                    </mat-chip>&ndash;&gt;-->
+            <!--&lt;!&ndash;                </mat-chip-list>&ndash;&gt;-->
 
+            <!--                <div class="p-chips" aria-label="Enum values">-->
+            <!--                    <div class="p-chips-container">-->
+            <!--                        <div-->
+            <!--                            class="p-chips-token"-->
+            <!--                            *ngFor="let keyword of keywords">-->
+            <!--                            <span class="p-chips-token-label">{{ keyword }}</span>-->
+            <!--                        </div>-->
+            <!--                        <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">-->
+            <!--                            <span class="p-chips-token-label">...</span>-->
+            <!--                        </div>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </mat-form-field>-->
+
+            <div *ngIf="field.controlEnum.value.length" class="form-group enum-form-field">
+                <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
                 <div class="p-chips" aria-label="Enum values">
                     <div class="p-chips-container">
                         <div
@@ -247,7 +263,7 @@
                         </div>
                     </div>
                 </div>
-            </mat-form-field>
+            </div>
             <div
                 (click)="onEditEnum()"
                 [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"

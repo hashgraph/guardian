@@ -18,42 +18,88 @@
         </div>
         <div class="merge-lvl">
             <div *ngIf="isEventsLvl" class="f1">
-                <mat-form-field appearance="outline">
-                    <mat-label>Events:</mat-label>
-                    <mat-select [(value)]="eventsLvl" (selectionChange)="onFilterChange()">
-                        <mat-option value="0">Don't compare</mat-option>
-                        <mat-option value="1">All events</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>Events:</mat-label>-->
+                <!--                    <mat-select [(value)]="eventsLvl" (selectionChange)="onFilterChange()">-->
+                <!--                        <mat-option value="0">Don't compare</mat-option>-->
+                <!--                        <mat-option value="1">All events</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <div class="p-fluid">
+                    <label for="eventsDropdown">Events:</label>
+                    <p-dropdown
+                        id="eventsDropdown"
+                        [(ngModel)]="eventsLvl"
+                        [options]="eventOptions"
+                        placeholder="Select Event Level"
+                        (onChange)="onFilterChange()">
+                    </p-dropdown>
+                </div>
             </div>
             <div *ngIf="isPropertiesLvl" class="f1">
-                <mat-form-field appearance="outline">
-                    <mat-label>Properties:</mat-label>
-                    <mat-select [(value)]="propLvl" (selectionChange)="onFilterChange()">
-                        <mat-option value="0">Don't compare</mat-option>
-                        <mat-option value="1">Only simple properties</mat-option>
-                        <mat-option value="2">All properties</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>Properties:</mat-label>-->
+                <!--                    <mat-select [(value)]="propLvl" (selectionChange)="onFilterChange()">-->
+                <!--                        <mat-option value="0">Don't compare</mat-option>-->
+                <!--                        <mat-option value="1">Only simple properties</mat-option>-->
+                <!--                        <mat-option value="2">All properties</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <div class="p-fluid">
+                    <label for="propertiesDropdown">Properties:</label>
+                    <p-dropdown
+                        id="propertiesDropdown"
+                        [(ngModel)]="propLvl"
+                        [options]="propertyOptions"
+                        placeholder="Select Property Level"
+                        (onChange)="onFilterChange()">
+                    </p-dropdown>
+                </div>
             </div>
             <div *ngIf="isChildrenLvl" class="f1">
-                <mat-form-field appearance="outline">
-                    <mat-label>Children:</mat-label>
-                    <mat-select [(value)]="childrenLvl" (selectionChange)="onFilterChange()">
-                        <mat-option value="0">Don't compare</mat-option>
-                        <mat-option value="1">Only child blocks of the first level</mat-option>
-                        <mat-option value="2">All children</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>Children:</mat-label>-->
+                <!--                    <mat-select [(value)]="childrenLvl" (selectionChange)="onFilterChange()">-->
+                <!--                        <mat-option value="0">Don't compare</mat-option>-->
+                <!--                        <mat-option value="1">Only child blocks of the first level</mat-option>-->
+                <!--                        <mat-option value="2">All children</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <div class="p-fluid">
+                    <label for="childrenDropdown">Children:</label>
+                    <p-dropdown
+                        id="childrenDropdown"
+                        [(ngModel)]="childrenLvl"
+                        [options]="childrenOptions"
+                        optionLabel="label"
+                        placeholder="Select Children Level"
+                        (onChange)="onFilterChange()">
+                    </p-dropdown>
+                </div>
             </div>
             <div *ngIf="isUUIDLvl" class="f1">
-                <mat-form-field appearance="outline">
-                    <mat-label>UUID:</mat-label>
-                    <mat-select [(value)]="idLvl" (selectionChange)="onFilterChange()">
-                        <mat-option value="0">Don't compare</mat-option>
-                        <mat-option value="1">All UUID</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>UUID:</mat-label>-->
+                <!--                    <mat-select [(value)]="idLvl" (selectionChange)="onFilterChange()">-->
+                <!--                        <mat-option value="0">Don't compare</mat-option>-->
+                <!--                        <mat-option value="1">All UUID</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <div class="p-fluid">
+                    <label for="uuidDropdown">UUID:</label>
+                    <p-dropdown
+                        id="uuidDropdown"
+                        [(ngModel)]="idLvl"
+                        [options]="uuidOptions"
+                        optionLabel="label"
+                        placeholder="Select UUID Level"
+                        (onChange)="onFilterChange()">
+                    </p-dropdown>
+                </div>
             </div>
         </div>
         <div class="merge-lvl-apply">
@@ -74,13 +120,24 @@
         </div>
         <div class="merge-type">
             <div class="f2">
-                <mat-form-field appearance="outline">
-                    <mat-label>Type:</mat-label>
-                    <mat-select [(value)]="visibleType">
-                        <mat-option value="tree">Tree</mat-option>
-                        <mat-option value="table">Table</mat-option>
-                    </mat-select>
-                </mat-form-field>
+                <!--                <mat-form-field appearance="outline">-->
+                <!--                    <mat-label>Type:</mat-label>-->
+                <!--                    <mat-select [(value)]="visibleType">-->
+                <!--                        <mat-option value="tree">Tree</mat-option>-->
+                <!--                        <mat-option value="table">Table</mat-option>-->
+                <!--                    </mat-select>-->
+                <!--                </mat-form-field>-->
+
+                <div class="p-fluid">
+                    <label for="typeDropdown">Type:</label>
+                    <p-dropdown
+                        id="typeDropdown"
+                        [(ngModel)]="visibleType"
+                        [options]="typeOptions"
+                        optionLabel="label"
+                        placeholder="Select Type">
+                    </p-dropdown>
+                </div>
             </div>
         </div>
     </div>

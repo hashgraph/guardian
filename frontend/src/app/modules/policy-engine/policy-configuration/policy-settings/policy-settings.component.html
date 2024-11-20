@@ -33,14 +33,27 @@
 
             <div class="theme-container">
                 <div class="settings-select">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Theme</mat-label>
-                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()" disableOptionCentering="true">
-                            <mat-option *ngFor="let t of themes" [value]="t">
-                                <span>{{ t.name }}</span>
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <!--                    <mat-form-field appearance="outline">-->
+                    <!--                        <mat-label>Theme</mat-label>-->
+                    <!--                        <mat-select [(value)]="theme" (selectionChange)="onSelectTheme()" disableOptionCentering="true">-->
+                    <!--                            <mat-option *ngFor="let t of themes" [value]="t">-->
+                    <!--                                <span>{{ t.name }}</span>-->
+                    <!--                            </mat-option>-->
+                    <!--                        </mat-select>-->
+                    <!--                    </mat-form-field>-->
+
+                    <div class="p-fluid">
+                        <label for="themeDropdown">Theme</label>
+                        <p-dropdown
+                            [(ngModel)]="theme"
+                            [options]="themes"
+                            optionLabel="name"
+                            (onChange)="onSelectTheme()"
+                            placeholder="Выберите тему"
+                            id="themeDropdown">
+                        </p-dropdown>
+                    </div>
+
                 </div>
                 <ng-container *ngIf="theme">
                     <div class="settings-sub-button" (click)="newTheme()">
@@ -112,12 +125,19 @@
 
                                 <div class="rule-condition-header">Condition</div>
                                 <div class="rule-condition-select">
-                                    <mat-select placeholder="Type" [(ngModel)]="rule.type">
-                                        <mat-option value="type">Types</mat-option>
-                                        <mat-option value="role">Roles</mat-option>
-                                        <mat-option value="api">API</mat-option>
-                                        <!-- <mat-option value="custom">Custom</mat-option> -->
-                                    </mat-select>
+                                    <!--                                    <mat-select placeholder="Type" [(ngModel)]="rule.type">-->
+                                    <!--                                        <mat-option value="type">Types</mat-option>-->
+                                    <!--                                        <mat-option value="role">Roles</mat-option>-->
+                                    <!--                                        <mat-option value="api">API</mat-option>-->
+                                    <!--                                        &lt;!&ndash; <mat-option value="custom">Custom</mat-option> &ndash;&gt;-->
+                                    <!--                                    </mat-select>-->
+
+                                    <p-dropdown
+                                        placeholder="Type"
+                                        [(ngModel)]="rule.type"
+                                        [options]="dropdownTypesOptions"
+                                        optionLabel="label">
+                                    </p-dropdown>
                                 </div>
 
                                 <div *ngIf="rule.type === 'type' || rule.type === 'api' || rule.type === 'role'"
@@ -126,30 +146,55 @@
                                 </div>
 
                                 <div *ngIf="rule.type === 'type'" class="rule-condition-select">
-                                    <mat-select placeholder="Blocks" [(ngModel)]="rule.multipleValue" multiple>
-                                        <mat-option *ngFor="let block of allBlocks" [value]="block.type">
-                                            {{ block.name }}
-                                        </mat-option>
-                                    </mat-select>
+                                    <!--                                    <mat-select placeholder="Blocks" [(ngModel)]="rule.multipleValue" multiple>-->
+                                    <!--                                        <mat-option *ngFor="let block of allBlocks" [value]="block.type">-->
+                                    <!--                                            {{ block.name }}-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                    </mat-select>-->
+
+                                    <p-multiSelect
+                                        placeholder="Blocks"
+                                        [(ngModel)]="rule.multipleValue"
+                                        [options]="allBlocks"
+                                        optionLabel="name"
+                                        optionValue="type">
+                                    </p-multiSelect>
                                 </div>
 
                                 <div *ngIf="rule.type === 'api'" class="rule-condition-select">
-                                    <mat-select placeholder="Type" [(ngModel)]="rule.singleValue">
-                                        <mat-option value="post">GET & POST</mat-option>
-                                        <mat-option value="get">Only GET</mat-option>
-                                        <mat-option value="">Not Accessible</mat-option>
-                                    </mat-select>
+                                    <!--                                    <mat-select placeholder="Type" [(ngModel)]="rule.singleValue">-->
+                                    <!--                                        <mat-option value="post">GET & POST</mat-option>-->
+                                    <!--                                        <mat-option value="get">Only GET</mat-option>-->
+                                    <!--                                        <mat-option value="">Not Accessible</mat-option>-->
+                                    <!--                                    </mat-select>-->
+
+                                    <p-dropdown
+                                        placeholder="Type"
+                                        [(ngModel)]="rule.singleValue"
+                                        [options]="dropdownAccessesOptions"
+                                        optionLabel="label"
+                                        optionValue="value">
+                                    </p-dropdown>
                                 </div>
 
                                 <div *ngIf="rule.type === 'role'" class="rule-condition-select">
-                                    <mat-select placeholder="Type" multiple [(ngModel)]="rule.multipleValue">
-                                        <mat-option value="OWNER">Owner</mat-option>
-                                        <mat-option value="NO_ROLE">No Role</mat-option>
-                                        <mat-option value="ANY_ROLE">Any Role</mat-option>
-                                        <mat-option *ngFor="let role of roles" [value]="role">
-                                            Role {{ role }}
-                                        </mat-option>
-                                    </mat-select>
+                                    <!--                                    <mat-select placeholder="Type" multiple [(ngModel)]="rule.multipleValue">-->
+                                    <!--                                        <mat-option value="OWNER">Owner</mat-option>-->
+                                    <!--                                        <mat-option value="NO_ROLE">No Role</mat-option>-->
+                                    <!--                                        <mat-option value="ANY_ROLE">Any Role</mat-option>-->
+                                    <!--                                        <mat-option *ngFor="let role of roles" [value]="role">-->
+                                    <!--                                            Role {{ role }}-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                    </mat-select>-->
+
+
+                                    <p-dropdown
+                                        placeholder="Type"
+                                        [(ngModel)]="rule.singleValue"
+                                        [options]="dropdownRolesOptions"
+                                        optionLabel="label"
+                                        optionValue="value">
+                                    </p-dropdown>
                                 </div>
 
                                 <div *ngIf="rule.type === 'custom'" class="rule-condition-select prop-condition">
@@ -188,44 +233,65 @@
 
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <mat-select placeholder="Type" [(ngModel)]="rule.shape">
-                                            <mat-select-trigger>
-                                                <div class="shape-{{rule.shape}}"></div>
-                                            </mat-select-trigger>
-                                            <mat-option value="0">
-                                                <div class="shape-0"></div>
-                                            </mat-option>
-                                            <mat-option value="1">
-                                                <div class="shape-1"></div>
-                                            </mat-option>
-                                            <mat-option value="2">
-                                                <div class="shape-2"></div>
-                                            </mat-option>
-                                            <mat-option value="3">
-                                                <div class="shape-3"></div>
-                                            </mat-option>
-                                            <mat-option value="4">
-                                                <div class="shape-4"></div>
-                                            </mat-option>
-                                            <mat-option value="5">
-                                                <div class="shape-5"></div>
-                                            </mat-option>
-                                        </mat-select>
+                                        <!--                                        <mat-select placeholder="Type" [(ngModel)]="rule.shape">-->
+                                        <!--                                            <mat-select-trigger>-->
+                                        <!--                                                <div class="shape-{{rule.shape}}"></div>-->
+                                        <!--                                            </mat-select-trigger>-->
+                                        <!--                                            <mat-option value="0">-->
+                                        <!--                                                <div class="shape-0"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                            <mat-option value="1">-->
+                                        <!--                                                <div class="shape-1"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                            <mat-option value="2">-->
+                                        <!--                                                <div class="shape-2"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                            <mat-option value="3">-->
+                                        <!--                                                <div class="shape-3"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                            <mat-option value="4">-->
+                                        <!--                                                <div class="shape-4"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                            <mat-option value="5">-->
+                                        <!--                                                <div class="shape-5"></div>-->
+                                        <!--                                            </mat-option>-->
+                                        <!--                                        </mat-select>-->
+
+                                        <p-dropdown
+                                            placeholder="Type"
+                                            [(ngModel)]="rule.shape"
+                                            [options]="dropdownShapeOptions"
+                                            optionValue="value">
+                                            <ng-template pTemplate="item" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+                                            <ng-template pTemplate="selectedItem" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Shape</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <mat-select placeholder="Type" [(ngModel)]="rule.borderWidth">
-                                            <mat-option value="0px">0px</mat-option>
-                                            <mat-option value="1px">1px</mat-option>
-                                            <mat-option value="2px">2px</mat-option>
-                                            <mat-option value="3px">3px</mat-option>
-                                            <mat-option value="4px">4px</mat-option>
-                                            <mat-option value="5px">5px</mat-option>
-                                            <mat-option value="6px">6px</mat-option>
-                                            <mat-option value="7px">7px</mat-option>
-                                        </mat-select>
+                                        <!--                                        <mat-select placeholder="Type" [(ngModel)]="rule.borderWidth">-->
+                                        <!--                                            <mat-option value="0px">0px</mat-option>-->
+                                        <!--                                            <mat-option value="1px">1px</mat-option>-->
+                                        <!--                                            <mat-option value="2px">2px</mat-option>-->
+                                        <!--                                            <mat-option value="3px">3px</mat-option>-->
+                                        <!--                                            <mat-option value="4px">4px</mat-option>-->
+                                        <!--                                            <mat-option value="5px">5px</mat-option>-->
+                                        <!--                                            <mat-option value="6px">6px</mat-option>-->
+                                        <!--                                            <mat-option value="7px">7px</mat-option>-->
+                                        <!--                                        </mat-select>-->
+
+                                        <p-dropdown
+                                            placeholder="Type"
+                                            [(ngModel)]="rule.borderWidth"
+                                            [options]="dropdownBorderWidthOptions"
+                                            optionLabel="label"
+                                            optionValue="value">
+                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
                                 </div>
@@ -263,10 +329,56 @@
                                     Block Name
                                 </div>
                                 <div class="rule-color-prop">
+                                    <!--                                    <div class="rule-color-prop-value">-->
+                                    <!--                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"-->
+                                    <!--                                                    [palette]="colorPalette" <mat-select placeholder="Type" [(ngModel)]="theme.default.shape">-->
+                                    <!--                                        <mat-select-trigger>-->
+                                    <!--                                            <div class="shape-{{theme.default.shape}}"></div>-->
+                                    <!--                                        </mat-select-trigger>-->
+                                    <!--                                        <mat-option value="0">-->
+                                    <!--                                            <div class="shape-0"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                        <mat-option value="1">-->
+                                    <!--                                            <div class="shape-1"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                        <mat-option value="2">-->
+                                    <!--                                            <div class="shape-2"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                        <mat-option value="3">-->
+                                    <!--                                            <div class="shape-3"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                        <mat-option value="4">-->
+                                    <!--                                            <div class="shape-4"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                        <mat-option value="5">-->
+                                    <!--                                            <div class="shape-5"></div>-->
+                                    <!--                                        </mat-option>-->
+                                    <!--                                    </mat-select>-->
+                                    <!--                                                    [(ngModel)]="theme.default.text"></ngx-colors>-->
+                                    <!--                                    </div>-->
+
                                     <div class="rule-color-prop-value">
-                                        <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                                                    [palette]="colorPalette"
-                                                    [(ngModel)]="theme.default.text"></ngx-colors>
+                                        <ngx-colors
+                                            ngx-colors-trigger
+                                            [colorPickerControls]="colorPickerControls"
+                                            [palette]="colorPalette"
+                                            [(ngModel)]="theme.default.text">
+                                        </ngx-colors>
+
+                                        <p-dropdown
+                                            placeholder="Type"
+                                            [(ngModel)]="theme.default.shape"
+                                            [options]="dropdownThemeShapeOptions"
+                                            optionValue="value">
+
+                                            <ng-template pTemplate="item" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+
+                                            <ng-template pTemplate="selectedItem" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Text</div>
                                 </div>
@@ -289,44 +401,30 @@
 
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <mat-select placeholder="Type" [(ngModel)]="theme.default.shape">
-                                            <mat-select-trigger>
-                                                <div class="shape-{{theme.default.shape}}"></div>
-                                            </mat-select-trigger>
-                                            <mat-option value="0">
-                                                <div class="shape-0"></div>
-                                            </mat-option>
-                                            <mat-option value="1">
-                                                <div class="shape-1"></div>
-                                            </mat-option>
-                                            <mat-option value="2">
-                                                <div class="shape-2"></div>
-                                            </mat-option>
-                                            <mat-option value="3">
-                                                <div class="shape-3"></div>
-                                            </mat-option>
-                                            <mat-option value="4">
-                                                <div class="shape-4"></div>
-                                            </mat-option>
-                                            <mat-option value="5">
-                                                <div class="shape-5"></div>
-                                            </mat-option>
-                                        </mat-select>
+
                                     </div>
                                     <div class="rule-color-prop-name">Shape</div>
                                 </div>
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
-                                        <mat-select placeholder="Type" [(ngModel)]="theme.default.borderWidth">
-                                            <mat-option value="0px">0px</mat-option>
-                                            <mat-option value="1px">1px</mat-option>
-                                            <mat-option value="2px">2px</mat-option>
-                                            <mat-option value="3px">3px</mat-option>
-                                            <mat-option value="4px">4px</mat-option>
-                                            <mat-option value="5px">5px</mat-option>
-                                            <mat-option value="6px">6px</mat-option>
-                                            <mat-option value="7px">7px</mat-option>
-                                        </mat-select>
+                                        <!--                                        <mat-select placeholder="Type" [(ngModel)]="theme.default.borderWidth">-->
+                                        <!--                                            <mat-option value="0px">0px</mat-option>-->
+                                        <!--                                            <mat-option value="1px">1px</mat-option>-->
+                                        <!--                                            <mat-option value="2px">2px</mat-option>-->
+                                        <!--                                            <mat-option value="3px">3px</mat-option>-->
+                                        <!--                                            <mat-option value="4px">4px</mat-option>-->
+                                        <!--                                            <mat-option value="5px">5px</mat-option>-->
+                                        <!--                                            <mat-option value="6px">6px</mat-option>-->
+                                        <!--                                            <mat-option value="7px">7px</mat-option>-->
+                                        <!--                                        </mat-select>-->
+
+                                        <p-dropdown
+                                            placeholder="Type"
+                                            [(ngModel)]="theme.default.borderWidth"
+                                            [options]="dropdownBorderWidthOptions"
+                                            optionLabel="label"
+                                            optionValue="value">
+                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
                                 </div>

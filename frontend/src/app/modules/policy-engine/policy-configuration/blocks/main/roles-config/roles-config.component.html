@@ -4,23 +4,41 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Available Roles</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.roles" [disabled]="readonly" multiple (change)="onSave()">
-                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.roles" [disabled]="readonly" multiple (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of roles" [value]="item.value">{{item.name}}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect [(ngModel)]="properties.roles"
+                           [options]="roles"
+                           [disabled]="readonly"
+                           (onChange)="onSave()"
+                           placeholder="Select Roles"
+                           optionLabel="name"
+                           optionValue="value">
+            </p-multiSelect>
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Available Groups</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.groups" [disabled]="readonly" multiple (change)="onSave()">
-                <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.groups" [disabled]="readonly" multiple (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of groups" [value]="item.value">{{item.name}}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect [(ngModel)]="properties.groups"
+                           [options]="groups"
+                           [disabled]="readonly"
+                           (onChange)="onSave()"
+                           placeholder="Select Groups"
+                           optionLabel="name"
+                           optionValue="value">
+            </p-multiSelect>
         </td>
     </tr>
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-<!--            <mat-icon>arrow_drop_down</mat-icon>-->
+            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -38,7 +56,7 @@
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
 </table>

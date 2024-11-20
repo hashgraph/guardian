@@ -96,12 +96,21 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">Permissions</td>
                     <td class="propRowCell">
-                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly"
-                                    (selectionChange)="onSave()">
-                            <mat-option *ngFor="let item of roles" [value]="item.value">
-                                {{ item.name }}
-                            </mat-option>
-                        </mat-select>
+                        <!--                        <mat-select [(ngModel)]="block.permissions" multiple [disabled]="readonly"-->
+                        <!--                                    (selectionChange)="onSave()">-->
+                        <!--                            <mat-option *ngFor="let item of roles" [value]="item.value">-->
+                        <!--                                {{ item.name }}-->
+                        <!--                            </mat-option>-->
+                        <!--                        </mat-select>-->
+
+                        <p-multiSelect [(ngModel)]="block.permissions"
+                                       [options]="roles"
+                                       [disabled]="readonly"
+                                       (onChange)="onSave()"
+                                       optionLabel="name"
+                                       optionValue="value"
+                                       placeholder="Select Roles">
+                        </p-multiSelect>
                     </td>
                 </tr>
                 <tr class="propRow" [attr.collapse]="propHidden.metaData">
@@ -136,12 +145,21 @@
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">On errors</td>
                     <td class="propRowCell">
-                        <mat-select [(value)]="block.properties.onErrorAction" [disabled]="readonly"
-                                    (selectionChange)="onSave()">
-                            <mat-option *ngFor="let item of errorActions" [value]="item.value">
-                                {{ item.label }}
-                            </mat-option>
-                        </mat-select>
+                        <!--                        <mat-select [(value)]="block.properties.onErrorAction" [disabled]="readonly"-->
+                        <!--                                    (selectionChange)="onSave()">-->
+                        <!--                            <mat-option *ngFor="let item of errorActions" [value]="item.value">-->
+                        <!--                                {{ item.label }}-->
+                        <!--                            </mat-option>-->
+                        <!--                        </mat-select>-->
+
+                        <p-dropdown [(ngModel)]="block.properties.onErrorAction"
+                                    [options]="errorActions"
+                                    [disabled]="readonly"
+                                    (onChange)="onSave()"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select Action">
+                        </p-dropdown>
                     </td>
                 </tr>
                 <tr *ngIf="block.properties.onErrorAction === 'retry'" class="propRow"
@@ -322,11 +340,21 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Type</td>
                             <td class="propRowCell">
-                                <mat-select [value]="isInputEvent(item)" (selectionChange)="chanceType($event, item)"
-                                            [disabled]="readonly">
-                                    <mat-option [value]="true">Input Event</mat-option>
-                                    <mat-option [value]="false">Output Event</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [value]="isInputEvent(item)" (selectionChange)="chanceType($event, item)"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option [value]="true">Input Event</mat-option>-->
+                                <!--                                    <mat-option [value]="false">Output Event</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown [ngModel]="isInputEvent(item)"
+                                            [options]="[
+                                          { label: 'Input Event', value: true },
+                                          { label: 'Output Event', value: false }
+                                     ]"
+                                            (onChange)="chanceType($event.value, item)"
+                                            [disabled]="readonly"
+                                            placeholder="Select Event Type">
+                                </p-dropdown>
                             </td>
                         </tr>
 
@@ -357,12 +385,19 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName source-elm">Output Event</td>
                             <td class="propRowCell">
-                                <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-option value=""></mat-option>
-                                    <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">
-                                        {{ e }}
-                                    </mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(value)]="item.output" [disabled]="readonly" (selectionChange)="onSave()">-->
+                                <!--                                    <mat-option value=""></mat-option>-->
+                                <!--                                    <mat-option *ngFor="let e of getOutputEvents(item)" [value]="e">-->
+                                <!--                                        {{ e }}-->
+                                <!--                                    </mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown [(ngModel)]="item.output"
+                                            [options]="getPreparedInputEvents(item)"
+                                            [disabled]="readonly"
+                                            (onChange)="onSave()"
+                                            placeholder="Select Output">
+                                </p-dropdown>
                             </td>
                         </tr>
 
@@ -393,12 +428,19 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName target-elm">Input Event</td>
                             <td class="propRowCell">
-                                <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">
-                                    <mat-option value=""></mat-option>
-                                    <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">
-                                        {{ e }}
-                                    </mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(value)]="item.input" [disabled]="readonly" (selectionChange)="onSave()">-->
+                                <!--                                    <mat-option value=""></mat-option>-->
+                                <!--                                    <mat-option *ngFor="let e of getInputEvents(item)" [value]="e">-->
+                                <!--                                        {{ e }}-->
+                                <!--                                    </mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown [(ngModel)]="item.input"
+                                            [options]="getPreparedInputEvents(item)"
+                                            [disabled]="readonly"
+                                            (onChange)="onSave()"
+                                            placeholder="Select Input">
+                                </p-dropdown>
                             </td>
                         </tr>
 
@@ -406,11 +448,23 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Event Actor</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.actor" (selectionChange)="onSave()" [disabled]="readonly">
-                                    <mat-option value="">Event Initiator</mat-option>
-                                    <mat-option value="owner">Document Owner</mat-option>
-                                    <mat-option value="issuer">Document Issuer</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.actor" (selectionChange)="onSave()" [disabled]="readonly">-->
+                                <!--                                    <mat-option value="">Event Initiator</mat-option>-->
+                                <!--                                    <mat-option value="owner">Document Owner</mat-option>-->
+                                <!--                                    <mat-option value="issuer">Document Issuer</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown [(ngModel)]="item.actor"
+                                            [options]="[
+                                                    { label: 'Event Initiator', value: '' },
+                                                    { label: 'Document Owner', value: 'owner' },
+                                                    { label: 'Document Issuer', value: 'issuer' }
+                                                ]"
+                                            (onChange)="onSave()"
+                                            [disabled]="readonly"
+                                            placeholder="Select Actor">
+                                </p-dropdown>
+
                             </td>
                         </tr>
 

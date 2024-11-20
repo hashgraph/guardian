@@ -7,25 +7,46 @@
             [formGroup]="searchForm"
             class="filters"
         >
-            <mat-form-field class="search-input" appearance="outline">
-                <mat-label class="hash-label">HASH/ID</mat-label>
-                <input
-                    formControlName="value"
-                    matInput
-                    placeholder="HASH/ID"
-                    type="text"
-                />
-                <button
-                    [disabled]="!searchForm.valid"
-                    mat-icon-button
-                    matSuffix
-                    type="submit"
-                >
-                    <!--                    <mat-icon>search</mat-icon>-->
+            <!--            <mat-form-field class="search-input" appearance="outline">-->
+            <!--                <mat-label class="hash-label">HASH/ID</mat-label>-->
+            <!--                <input-->
+            <!--                    formControlName="value"-->
+            <!--                    matInput-->
+            <!--                    placeholder="HASH/ID"-->
+            <!--                    type="text"-->
+            <!--                />-->
+            <!--                <button-->
+            <!--                    [disabled]="!searchForm.valid"-->
+            <!--                    mat-icon-button-->
+            <!--                    matSuffix-->
+            <!--                    type="submit"-->
+            <!--                >-->
+            <!--                    &lt;!&ndash;                    <mat-icon>search</mat-icon>&ndash;&gt;-->
 
-                    <i class="pi pi-search"></i>
-                </button>
-            </mat-form-field>
+            <!--                    <i class="pi pi-search"></i>-->
+            <!--                </button>-->
+            <!--            </mat-form-field>-->
+
+            <div class="p-fluid">
+                <div class="p-inputgroup search-input">
+                    <span class="p-inputgroup-addon hash-label">
+                      HASH/ID
+                    </span>
+                    <input
+                        pInputText
+                        formControlName="value"
+                        placeholder="HASH/ID"
+                        type="text"
+                    />
+                    <button
+                        pButton
+                        class="p-button-icon-only"
+                        icon="pi pi-search"
+                        [disabled]="!searchForm.valid"
+                        type="submit"
+                    ></button>
+                </div>
+            </div>
         </form>
 
         <div class="not-exist" *ngIf="!mainDocuments && this.hash">
@@ -304,16 +325,16 @@
 
             <div class="container">
                 <div (click)="onScrollButtonPress(scrollContainer, -150)" class="scroll-right">
-<<<<<<< HEAD
+                    <<<<<<< HEAD
                     <!--                    <mat-icon>chevron_left</mat-icon>-->
 
                     <i class="pi pi-chevron-left"></i>
-=======
+                    =======
                     <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/left-arrow.svg"
-                        svgClass="icon-color-font">
+                              src="/assets/images/icons/left-arrow.svg"
+                              svgClass="icon-color-font">
                     </svg-icon>
->>>>>>> develop
+                    >>>>>>> develop
                 </div>
                 <div
                     #scrollContainer
@@ -453,14 +474,16 @@
                                             <!--                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left-->
                                             <!--                                            </mat-icon>-->
 
-                                            <i class="pi pi-chevron-left" (click)="onPrevDocumentClick($event, item, document)"></i>
+                                            <i class="pi pi-chevron-left"
+                                               (click)="onPrevDocumentClick($event, item, document)"></i>
 
                                             {{ item.activeDocumentIndex }} in {{ item.document.length }}
                                             <!--                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">-->
                                             <!--                                                chevron_right-->
                                             <!--                                            </mat-icon>-->
 
-                                            <i class="pi pi-chevron-right" (click)="onNextDocumentClick($event, item, document)"></i>
+                                            <i class="pi pi-chevron-right"
+                                               (click)="onNextDocumentClick($event, item, document)"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -494,16 +517,16 @@
                     (click)="onScrollButtonPress(scrollContainer, 150)"
                     class="scroll-right"
                 >
-<<<<<<< HEAD
+                    <<<<<<< HEAD
                     <!--                    <mat-icon>chevron_right</mat-icon>-->
 
                     <i class="pi pi-chevron-right"></i>
-=======
+                    =======
                     <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/right-arrow.svg"
-                        svgClass="icon-color-font">
+                              src="/assets/images/icons/right-arrow.svg"
+                              svgClass="icon-color-font">
                     </svg-icon>
->>>>>>> develop
+                    >>>>>>> develop
                 </div>
             </div>
             <div style="height: 64px;"></div>

@@ -86,16 +86,26 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.type" [disabled]="readonly"
-                                            (valueChange)="onEditVariable(item)">
-                                    <mat-option value="Schema">Schema</mat-option>
-                                    <mat-option value="Token">Token</mat-option>
-                                    <mat-option value="TokenTemplate">Token Template</mat-option>
-                                    <mat-option value="Role">Role</mat-option>
-                                    <mat-option value="Group">Group</mat-option>
-                                    <mat-option value="Topic">Topic</mat-option>
-                                    <mat-option value="String">String</mat-option>
-                                </mat-select>
+<!--                                <mat-select [(ngModel)]="item.type" [disabled]="readonly"-->
+<!--                                            (valueChange)="onEditVariable(item)">-->
+<!--                                    <mat-option value="Schema">Schema</mat-option>-->
+<!--                                    <mat-option value="Token">Token</mat-option>-->
+<!--                                    <mat-option value="TokenTemplate">Token Template</mat-option>-->
+<!--                                    <mat-option value="Role">Role</mat-option>-->
+<!--                                    <mat-option value="Group">Group</mat-option>-->
+<!--                                    <mat-option value="Topic">Topic</mat-option>-->
+<!--                                    <mat-option value="String">String</mat-option>-->
+<!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.type"
+                                    [options]="typeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    placeholder="Select type"
+                                    (onChange)="onEditVariable(item)">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr *ngIf="item.type === 'Schema'" [attr.collapse]="propHidden.variables[i]"

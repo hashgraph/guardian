@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -27,8 +27,21 @@ export class DocumentValidatorConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor(
-    ) {
+    documentTypeOptions = [
+        {label: 'VC Document', value: 'vc-document'},
+        {label: 'VP Document', value: 'vp-document'},
+        {label: 'Related VC Document', value: 'related-vc-document'},
+        {label: 'Related VP Document', value: 'related-vp-document'}
+    ];
+
+    conditionTypeOptions = [
+        {label: 'Equal', value: 'equal'},
+        {label: 'Not Equal', value: 'not_equal'},
+        {label: 'In', value: 'in'},
+        {label: 'Not In', value: 'not_in'}
+    ];
+
+    constructor() {
 
     }
 

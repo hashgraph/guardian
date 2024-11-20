@@ -1,7 +1,7 @@
-import { Component, Inject } from '@angular/core';
+import {Component, Inject} from '@angular/core';
 // import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { UserRole } from '@guardian/interfaces';
-import { WebSocketService } from 'src/app/services/web-socket.service';
+import {UserRole} from '@guardian/interfaces';
+import {WebSocketService} from 'src/app/services/web-socket.service';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 interface VCSubmitDialogData {
@@ -47,7 +47,7 @@ export class MeecoVCSubmitDialogComponent {
         // private dialogRef: MatDialogRef<MeecoVCSubmitDialogComponent>,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
-    private wsService: WebSocketService
+        private wsService: WebSocketService
     ) {
         const data = this.config.data as VCSubmitDialogData;
 

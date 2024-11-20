@@ -99,12 +99,35 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
         </td>
         <td class="propRowCell ns" [ngSwitch]="property.items">
-            <mat-select *ngSwitchCase="'Roles'" [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let item of roles" [value]="item.value">{{ item.name }}</mat-option>
-            </mat-select>
-            <mat-select *ngSwitchDefault [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let item of property.items" [value]="item.value">{{ item.label }}</mat-option>
-            </mat-select>
+            <!--            <mat-select *ngSwitchCase="'Roles'" [(value)]="value" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of roles" [value]="item.value">{{ item.name }}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                *ngSwitchCase="'Roles'"
+                [(ngModel)]="value"
+                [options]="roles"
+                optionLabel="name"
+                optionValue="value"
+                [disabled]="readonly"
+                placeholder="Select a role"
+                (onChange)="onSave()">
+            </p-dropdown>
+
+            <!--            <mat-select *ngSwitchDefault [(value)]="value" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of property.items" [value]="item.value">{{ item.label }}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                *ngSwitchDefault
+                [(ngModel)]="value"
+                [options]="property.items"
+                optionLabel="label"
+                optionValue="value"
+                [disabled]="readonly"
+                placeholder="Select an option"
+                (onChange)="onSave()">
+            </p-dropdown>
         </td>
     </tr>
 </ng-container>
@@ -116,61 +139,156 @@
             <span *ngIf="property.required" class="required-fields">*</span> {{ property.label }}
         </td>
         <td *ngIf="loaded" [ngSwitch]="property.items" class="propRowCell ns">
-            <mat-select
+            <!--            <mat-select-->
+            <!--                *ngSwitchCase="'Schemas'"-->
+            <!--                multiple-->
+            <!--                [(value)]="value"-->
+            <!--                [disabled]="readonly"-->
+            <!--                (change)="onSave()">-->
+            <!--                <mat-option-->
+            <!--                    *ngFor="let schema of schemas"-->
+            <!--                    class="schema-variable"-->
+            <!--                    [attr.status]="schema.status"-->
+            <!--                    matTooltipPosition="below"-->
+            <!--                    matTooltipClass="guardian-tooltip small-guardian-tooltip"-->
+            <!--                    matTooltipShowDelay="500"-->
+            <!--                    [matTooltip]="schema.tooltip"-->
+            <!--                    [value]="schema.value"-->
+            <!--                    [attr.disable]="schema.disable"-->
+            <!--                >{{ schema.displayName }}-->
+            <!--                </mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect
                 *ngSwitchCase="'Schemas'"
-                multiple
-                [(value)]="value"
+                [(ngModel)]="value"
+                [options]="schemas"
+                optionLabel="displayName"
+                optionValue="value"
                 [disabled]="readonly"
-                (change)="onSave()">
-                <mat-option
-                    *ngFor="let schema of schemas"
-                    class="schema-variable"
-                    [attr.status]="schema.status"
-                    matTooltipPosition="below"
-                    matTooltipClass="guardian-tooltip small-guardian-tooltip"
-                    matTooltipShowDelay="500"
-                    [matTooltip]="schema.tooltip"
-                    [value]="schema.value"
-                    [attr.disable]="schema.disable"
-                >{{ schema.displayName }}
-                </mat-option>
-            </mat-select>
-            <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"
-                        (valueChange)="onSave()">
-                <mat-select-trigger>
-                    <span class="select-custom">{{ value }}</span>
-                </mat-select-trigger>
-                <mat-option *ngFor="let item of allBlocks" [value]="item.value">
+                placeholder="Select schemas"
+                (onChange)="onSave()">
+                <ng-template let-schema pTemplate="item">
+                    <div
+                        class="schema-variable"
+                        [attr.status]="schema.status"
+                        [attr.disable]="schema.disable"
+                        pTooltip="{{ schema.tooltip }}"
+                        tooltipPosition="bottom"
+                        [tooltipOptions]="{ showDelay: 500 }"
+                        tooltipStyleClass="guardian-tooltip small-guardian-tooltip">
+                        {{ schema.displayName }}
+                    </div>
+                </ng-template>
+            </p-multiSelect>
+
+            <!--            <mat-select *ngSwitchCase="'Block'" multiple [(value)]="value" [disabled]="readonly"-->
+            <!--                        (valueChange)="onSave()">-->
+            <!--                <mat-select-trigger>-->
+            <!--                    <span class="select-custom">{{ value }}</span>-->
+            <!--                </mat-select-trigger>-->
+            <!--                <mat-option *ngFor="let item of allBlocks" [value]="item.value">-->
+            <!--                    <div class="select-block-name">-->
+            <!--                        <div class="select-block-icon">-->
+            <!--                            &lt;!&ndash;                            <mat-icon>{{item.icon}}</mat-icon>&ndash;&gt;-->
+            <!--                            <i [ngClass]="'pi pi-' + item.icon"></i>-->
+            <!--                        </div>-->
+            <!--                        {{ item.name }}-->
+            <!--                    </div>-->
+            <!--                </mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect
+                *ngSwitchCase="'Block'"
+                [(ngModel)]="value"
+                [options]="allBlocks"
+                optionLabel="name"
+                optionValue="value"
+                [disabled]="readonly"
+                placeholder="Select blocks"
+                (onChange)="onSave()">
+
+                <ng-template pTemplate="selectedItems" let-selectedItems>
+                    <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                </ng-template>
+
+                <ng-template pTemplate="item" let-item>
                     <div class="select-block-name">
                         <div class="select-block-icon">
-                            <!--                            <mat-icon>{{item.icon}}</mat-icon>-->
                             <i [ngClass]="'pi pi-' + item.icon"></i>
                         </div>
                         {{ item.name }}
                     </div>
-                </mat-option>
-            </mat-select>
-            <mat-select *ngSwitchCase="'Children'" multiple [(value)]="value" [disabled]="readonly"
-                        (valueChange)="onSave()">
-                <mat-select-trigger>
-                    <span class="select-custom">{{ value }}</span>
-                </mat-select-trigger>
-                <mat-option *ngFor="let item of childrenBlocks" [value]="item.value">
+                </ng-template>
+            </p-multiSelect>
+
+            <!--            <mat-select *ngSwitchCase="'Children'" multiple [(value)]="value" [disabled]="readonly"-->
+            <!--                        (valueChange)="onSave()">-->
+            <!--                <mat-select-trigger>-->
+            <!--                    <span class="select-custom">{{ value }}</span>-->
+            <!--                </mat-select-trigger>-->
+            <!--                <mat-option *ngFor="let item of childrenBlocks" [value]="item.value">-->
+            <!--                    <div class="select-block-name">-->
+            <!--                        <div class="select-block-icon">-->
+            <!--                            &lt;!&ndash;                            <mat-icon>{{item.icon}}</mat-icon>&ndash;&gt;-->
+            <!--                            <i [ngClass]="'pi pi-' + item.icon"></i>-->
+            <!--                        </div>-->
+            <!--                        {{ item.name }}-->
+            <!--                    </div>-->
+            <!--                </mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect
+                *ngSwitchCase="'Children'"
+                [(ngModel)]="value"
+                [options]="childrenBlocks"
+                optionLabel="name"
+                optionValue="value"
+                [disabled]="readonly"
+                placeholder="Select children blocks"
+                (onChange)="onSave()">
+
+                <ng-template pTemplate="selectedItems" let-selectedItems>
+                    <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                </ng-template>
+
+                <ng-template pTemplate="item" let-item>
                     <div class="select-block-name">
                         <div class="select-block-icon">
-                            <!--                            <mat-icon>{{item.icon}}</mat-icon>-->
                             <i [ngClass]="'pi pi-' + item.icon"></i>
                         </div>
                         {{ item.name }}
                     </div>
-                </mat-option>
-            </mat-select>
-            <mat-select *ngSwitchCase="'Roles'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let item of roles" [value]="item.value">{{ item.name }}</mat-option>
-            </mat-select>
-            <mat-select *ngSwitchDefault multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let item of property.items" [value]="item.value">{{ item.label }}</mat-option>
-            </mat-select>
+                </ng-template>
+            </p-multiSelect>
+
+            <!--            <mat-select *ngSwitchCase="'Roles'" multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of roles" [value]="item.value">{{ item.name }}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect *ngSwitchCase="'Roles'"
+                           [(ngModel)]="value"
+                           [options]="roles"
+                           [disabled]="readonly"
+                           (onChange)="onSave()"
+                           optionLabel="name"
+                           optionValue="value"
+                           placeholder="Select Roles">
+            </p-multiSelect>
+
+            <!--            <mat-select *ngSwitchDefault multiple [(value)]="value" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option *ngFor="let item of property.items" [value]="item.value">{{ item.label }}</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-multiSelect *ngSwitchDefault
+                           [(ngModel)]="value"
+                           [options]="property.items"
+                           [disabled]="readonly"
+                           (onChange)="onSave()"
+                           optionLabel="label"
+                           optionValue="value"
+                           placeholder="Select Items">
+            </p-multiSelect>
         </td>
     </tr>
 </ng-container>

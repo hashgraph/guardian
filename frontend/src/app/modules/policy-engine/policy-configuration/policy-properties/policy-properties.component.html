@@ -75,15 +75,25 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Project Schema</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="setProjectSchema($event.value)"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="setProjectSchema($event.value)"-->
+                            <!--                                [(ngModel)]="projectSchema"-->
+                            <!--                                [disabled]="!policySchemas"-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of policySchemas" [value]="item.value">-->
+                            <!--                                    {{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-dropdown
                                 [(ngModel)]="projectSchema"
+                                [options]="policySchemas"
+                                optionLabel="name"
+                                optionValue="value"
                                 [disabled]="!policySchemas"
-                            >
-                                <mat-option *ngFor="let item of policySchemas" [value]="item.value">
-                                    {{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select a schema"
+                                (onChange)="setProjectSchema($event.value)">
+                            </p-dropdown>
                         </td>
                     </tr>
 
@@ -102,77 +112,122 @@
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Sectoral scope</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="onCategoriesChanged()"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="onCategoriesChanged()"-->
+                            <!--                                [(ngModel)]="sectoralScopeSelected"-->
+                            <!--                                [disabled]="!allCategories"-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of allCategories?.sectoralScopeOptions"-->
+                            <!--                                            [value]="item">{{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-dropdown
                                 [(ngModel)]="sectoralScopeSelected"
+                                [options]="allCategories?.sectoralScopeOptions"
+                                optionLabel="name"
                                 [disabled]="!allCategories"
-                            >
-                                <mat-option *ngFor="let item of allCategories?.sectoralScopeOptions"
-                                            [value]="item">{{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select a sectoral scope"
+                                (onChange)="onCategoriesChanged()">
+                            </p-dropdown>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Project Scale</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="onCategoriesChanged()"
-                                [(ngModel)]="projectScaleSelected"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="onCategoriesChanged()"-->
+                            <!--                                [(ngModel)]="projectScaleSelected"-->
+                            <!--                                [disabled]="!allCategories"-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of allCategories?.projectScaleOptions"-->
+                            <!--                                            [value]="item">{{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-dropdown
+                                [(ngModel)]="sectoralScopeSelected"
+                                [options]="allCategories?.sectoralScopeOptions"
+                                optionLabel="name"
                                 [disabled]="!allCategories"
-                            >
-                                <mat-option *ngFor="let item of allCategories?.projectScaleOptions"
-                                            [value]="item">{{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select a sectoral scope"
+                                (onChange)="onCategoriesChanged()">
+                            </p-dropdown>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Applied Technology Type</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="onCategoriesChanged()"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="onCategoriesChanged()"-->
+                            <!--                                [(ngModel)]="appliedTechnologyTypeSelected"-->
+                            <!--                                [disabled]="!allCategories"-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of allCategories?.appliedTechnologyTypeOptions"-->
+                            <!--                                            [value]="item">{{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-dropdown
                                 [(ngModel)]="appliedTechnologyTypeSelected"
+                                [options]="allCategories?.appliedTechnologyTypeOptions"
+                                optionLabel="name"
                                 [disabled]="!allCategories"
-                            >
-                                <mat-option *ngFor="let item of allCategories?.appliedTechnologyTypeOptions"
-                                            [value]="item">{{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select a technology type"
+                                (onChange)="onCategoriesChanged()">
+                            </p-dropdown>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Mitigation Activity Type</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="onCategoriesChanged()"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="onCategoriesChanged()"-->
+                            <!--                                [(ngModel)]="migrationActivityTypeSelected"-->
+                            <!--                                [disabled]="!allCategories"-->
+                            <!--                                multiple-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of allCategories?.migrationActivityTypeOptions"-->
+                            <!--                                            [value]="item">{{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-multiSelect
                                 [(ngModel)]="migrationActivityTypeSelected"
+                                [options]="allCategories?.migrationActivityTypeOptions"
+                                optionLabel="name"
                                 [disabled]="!allCategories"
-                                multiple
-                            >
-                                <mat-option *ngFor="let item of allCategories?.migrationActivityTypeOptions"
-                                            [value]="item">{{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select migration activity types"
+                                (onChange)="onCategoriesChanged()">
+                            </p-multiSelect>
                         </td>
                     </tr>
                     <tr [attr.collapse]="propHidden.categorization" class="propRow">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName">Sub Type</td>
                         <td class="propRowCell">
-                            <mat-select
-                                (selectionChange)="onCategoriesChanged()"
-                                [(ngModel)]="subTypeSelected"
+                            <!--                            <mat-select-->
+                            <!--                                (selectionChange)="onCategoriesChanged()"-->
+                            <!--                                [(ngModel)]="subTypeSelected"-->
+                            <!--                                [disabled]="!allCategories"-->
+                            <!--                                multiple-->
+                            <!--                            >-->
+                            <!--                                <mat-option *ngFor="let item of allCategories?.subTypeOptions"-->
+                            <!--                                            [value]="item">{{ item.name }}-->
+                            <!--                                </mat-option>-->
+                            <!--                            </mat-select>-->
+
+                            <p-multiSelect
+                                [(ngModel)]="migrationActivityTypeSelected"
+                                [options]="allCategories?.migrationActivityTypeOptions"
+                                optionLabel="name"
                                 [disabled]="!allCategories"
-                                multiple
-                            >
-                                <mat-option *ngFor="let item of allCategories?.subTypeOptions"
-                                            [value]="item">{{ item.name }}
-                                </mat-option>
-                            </mat-select>
+                                placeholder="Select migration activity types"
+                                (onChange)="onCategoriesChanged()">
+                            </p-multiSelect>
                         </td>
                     </tr>
                 </ng-container>
@@ -348,46 +403,85 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Creator role</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.creator" [disabled]="readonly"
-                                            (selectionChange)="onEditGroup(item)">
-                                    <mat-option *ngFor="let item of policy.policyRoles"
-                                                [value]="item.name">{{ item.name }}
-                                    </mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.creator" [disabled]="readonly"-->
+                                <!--                                            (selectionChange)="onEditGroup(item)">-->
+                                <!--                                    <mat-option *ngFor="let item of policy.policyRoles"-->
+                                <!--                                                [value]="item.name">{{ item.name }}-->
+                                <!--                                    </mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.creator"
+                                    [options]="policy?.policyRoles"
+                                    optionLabel="name"
+                                    optionValue="name"
+                                    [disabled]="readonly"
+                                    (onChange)="onEditGroup(item)">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Members roles</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.members" multiple [disabled]="readonly"
-                                            (selectionChange)="onEditGroup(item)">
-                                    <mat-option *ngFor="let item of policy.policyRoles"
-                                                [value]="item.name">{{ item.name }}
-                                    </mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.members" multiple [disabled]="readonly"-->
+                                <!--                                            (selectionChange)="onEditGroup(item)">-->
+                                <!--                                    <mat-option *ngFor="let item of policy.policyRoles"-->
+                                <!--                                                [value]="item.name">{{ item.name }}-->
+                                <!--                                    </mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-multiSelect
+                                    [(ngModel)]="item.members"
+                                    [options]="policy?.policyRoles"
+                                    optionLabel="name"
+                                    optionValue="name"
+                                    [disabled]="readonly"
+                                    placeholder="Select members"
+                                    (onChange)="onEditGroup(item)">
+                                </p-multiSelect>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Relationship Type</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.groupRelationshipType" [disabled]="readonly"
-                                            (valueChange)="onEditGroup(item)">
-                                    <mat-option value="Single">Single</mat-option>
-                                    <mat-option value="Multiple">Multiple</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.groupRelationshipType" [disabled]="readonly"-->
+                                <!--                                            (valueChange)="onEditGroup(item)">-->
+                                <!--                                    <mat-option value="Single">Single</mat-option>-->
+                                <!--                                    <mat-option value="Multiple">Multiple</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.groupRelationshipType"
+                                    [options]="groupRelationshipTypeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    placeholder="Select relationship type"
+                                    (onChange)="onEditGroup(item)">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Access Type</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.groupAccessType" [disabled]="readonly"
-                                            (valueChange)="onEditGroup(item)">
-                                    <mat-option value="Private">Private</mat-option>
-                                    <mat-option value="Global">Global</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.groupAccessType" [disabled]="readonly"-->
+                                <!--                                            (valueChange)="onEditGroup(item)">-->
+                                <!--                                    <mat-option value="Private">Private</mat-option>-->
+                                <!--                                    <mat-option value="Global">Global</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.groupAccessType"
+                                    [options]="groupAccessTypeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    placeholder="Select access type"
+                                    (onChange)="onEditGroup(item)">
+                                </p-dropdown>
                             </td>
                         </tr>
                     </ng-container>
@@ -443,11 +537,20 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Type</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.type" [disabled]="readonly">
-                                    <mat-option value="any">Any</mat-option>
-                                    <mat-option value="vc">VC</mat-option>
-                                    <mat-option value="vp">VP</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.type" [disabled]="readonly">-->
+                                <!--                                    <mat-option value="any">Any</mat-option>-->
+                                <!--                                    <mat-option value="vc">VC</mat-option>-->
+                                <!--                                    <mat-option value="vp">VP</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.type"
+                                    [options]="groupDocumentOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    placeholder="Select type">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
@@ -462,10 +565,19 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Memo Parameters Object</td>
                             <td class="propRowCell">
-                                <mat-select [(ngModel)]="item.memoObj" [disabled]="readonly">
-                                    <mat-option value="topic">Topic Config</mat-option>
-                                    <mat-option value="doc">Document</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select [(ngModel)]="item.memoObj" [disabled]="readonly">-->
+                                <!--                                    <mat-option value="topic">Topic Config</mat-option>-->
+                                <!--                                    <mat-option value="doc">Document</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    [(ngModel)]="item.memoObj"
+                                    [options]="memoObjOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    placeholder="Select memo object">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
@@ -537,13 +649,23 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Token Type</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user"
-                                            (selectionChange)="onTokenTypeChange(item)" [(ngModel)]="item.tokenType"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option value="non-fungible">Non Fungible</mat-option>
-                                    <mat-option value="fungible">Fungible</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user"-->
+                                <!--                                            (selectionChange)="onTokenTypeChange(item)" [(ngModel)]="item.tokenType"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option value="non-fungible">Non Fungible</mat-option>-->
+                                <!--                                    <mat-option value="fungible">Fungible</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.tokenType"
+                                    [options]="tokenTypeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    (onChange)="onTokenTypeChange(item)">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" *ngIf="item.tokenType==='fungible'"
@@ -559,64 +681,111 @@
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Admin</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableAdmin"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="true">Yes</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableAdmin"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option [value]="true">Yes</mat-option>-->
+                                <!--                                    <mat-option [value]="false">No</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.enableAdmin"
+                                    [options]="enableAdminOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Freeze</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableFreeze"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="true">Yes</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableFreeze"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option [value]="true">Yes</mat-option>-->
+                                <!--                                    <mat-option [value]="false">No</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.enableFreeze"
+                                    [options]="enableFreezeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable KYC</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableKYC"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="true">Yes</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.enableKYC"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option [value]="true">Yes</mat-option>-->
+                                <!--                                    <mat-option [value]="false">No</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.enableKYC"
+                                    [options]="enableKYCOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly">
+                                </p-dropdown>
                             </td>
                         </tr>
                         <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Enable Wipe</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user"
-                                            (selectionChange)="onEnableWipeChange(item)" [(ngModel)]="item.enableWipe"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="true">Yes</mat-option>
-                                    <mat-option [value]="false">No</mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user"-->
+                                <!--                                            (selectionChange)="onEnableWipeChange(item)" [(ngModel)]="item.enableWipe"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option [value]="true">Yes</mat-option>-->
+                                <!--                                    <mat-option [value]="false">No</mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.enableWipe"
+                                    [options]="enableWipeOptions"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly"
+                                    (onChange)="onEnableWipeChange(item)">
+                                </p-dropdown>
+
                             </td>
                         </tr>
                         <tr class="propRow subRow" *ngIf="item.enableWipe" [attr.collapse]="propHidden.tokensGroup[i]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">Wipe Contract</td>
                             <td class="propRowCell">
-                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.wipeContractId"
-                                            [disabled]="readonly">
-                                    <mat-option>To be specified by user</mat-option>
-                                    <mat-option [value]="''">Empty</mat-option>
-                                    <mat-option *ngFor="let contract of wipeContracts"
-                                                [value]="contract.contractId">{{ contract.contractId }}
-                                        ({{ contract.description }})
-                                    </mat-option>
-                                </mat-select>
+                                <!--                                <mat-select placeholder="To be specified by user" [(ngModel)]="item.wipeContractId"-->
+                                <!--                                            [disabled]="readonly">-->
+                                <!--                                    <mat-option>To be specified by user</mat-option>-->
+                                <!--                                    <mat-option [value]="''">Empty</mat-option>-->
+                                <!--                                    <mat-option *ngFor="let contract of wipeContracts"-->
+                                <!--                                                [value]="contract.contractId">{{ contract.contractId }}-->
+                                <!--                                        ({{ contract.description }})-->
+                                <!--                                    </mat-option>-->
+                                <!--                                </mat-select>-->
+
+                                <p-dropdown
+                                    placeholder="To be specified by user"
+                                    [(ngModel)]="item.wipeContractId"
+                                    [options]="getWipeContractOptions()"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [disabled]="readonly">
+                                </p-dropdown>
                             </td>
                         </tr>
                     </ng-container>

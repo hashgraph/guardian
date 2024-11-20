@@ -17,12 +17,20 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Id Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">
-                <mat-option value=""></mat-option>
-                <mat-option value="DID">DID (New DID)</mat-option>
-                <mat-option value="UUID">UUID (New UUID)</mat-option>
-                <mat-option value="OWNER">Owner (Owner DID)</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value=""></mat-option>-->
+            <!--                <mat-option value="DID">DID (New DID)</mat-option>-->
+            <!--                <mat-option value="UUID">UUID (New UUID)</mat-option>-->
+            <!--                <mat-option value="OWNER">Owner (Owner DID)</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.idType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an ID type"
+                [options]="idTypeOptions">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -49,10 +57,18 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="page">PAGE</mat-option>
-                <mat-option value="dialog">DIALOG</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="page">PAGE</mat-option>-->
+            <!--                <mat-option value="dialog">DIALOG</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.uiMetaData.type"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select a UI type"
+                [options]="uiMetaDataTypeOptions">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -177,11 +193,20 @@
                 Preset Field
             </td>
             <td class="propRowCell">
-                <mat-select [(value)]="field.value" [disabled]="readonly" (change)="onSave()">
-                    <mat-option *ngFor="let f of presetMap" [value]="f.name" [title]="f.title">
-                        {{ f.title }}
-                    </mat-option>
-                </mat-select>
+                <!--                <mat-select [(value)]="field.value" [disabled]="readonly" (change)="onSave()">-->
+                <!--                    <mat-option *ngFor="let f of presetMap" [value]="f.name" [title]="f.title">-->
+                <!--                        {{ f.title }}-->
+                <!--                    </mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown
+                    [(ngModel)]="field.value"
+                    [disabled]="readonly"
+                    (onChange)="onSave()"
+                    placeholder="Select a value"
+                    [options]="getPresetOptions()"
+                    optionLabel="label">
+                </p-dropdown>
             </td>
         </tr>
         <tr *ngIf="field.value" class="propRow subRow"

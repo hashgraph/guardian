@@ -41,6 +41,13 @@ export class RequestAddonConfigComponent implements OnInit {
 
     presetMap: any;
 
+    public idTypeOptions = [
+        {label: '', value: ''},
+        {label: 'DID (New DID)', value: 'DID'},
+        {label: 'UUID (New UUID)', value: 'UUID'},
+        {label: 'Owner (Owner DID)', value: 'OWNER'}
+    ];
+
     constructor() {
         this.presetMap = [];
     }
@@ -136,5 +143,12 @@ export class RequestAddonConfigComponent implements OnInit {
 
     onSave() {
         this.item.changed = true;
+    }
+
+    getPresetOptions() {
+        return this.presetMap.map((f: any) => ({
+            label: f.title,
+            value: f.name
+        }));
     }
 }

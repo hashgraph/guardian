@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceSelector' type.
@@ -30,6 +30,10 @@ export class FiltersAddonConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public typeOptions = [
+        {label: 'Dropdown', value: 'dropdown'}
+    ];
 
     constructor() {
     }

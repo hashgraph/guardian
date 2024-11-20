@@ -7,23 +7,47 @@
                     <!--                    <mat-icon>generating_tokens</mat-icon>-->
 
                     <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
-                        <mat-label>Token</mat-label>
-                        <mat-select #select formControlName="token" placeholder="Choose Token">
-                            <mat-option *ngFor="let token of getTokenList(select.value)"
-                                        [value]="token.tokenId">{{ token.tokenSymbol }} ({{ token.tokenId }})
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <!--                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">-->
+                    <!--                        <mat-label>Token</mat-label>-->
+                    <!--                        <mat-select #select formControlName="token" placeholder="Choose Token">-->
+                    <!--                            <mat-option *ngFor="let token of getTokenList(select.value)"-->
+                    <!--                                        [value]="token.tokenId">{{ token.tokenSymbol }} ({{ token.tokenId }})-->
+                    <!--                            </mat-option>-->
+                    <!--                        </mat-select>-->
+                    <!--                    </mat-form-field>-->
+
+                    <p-dropdown
+                        id="tokenDropdown"
+                        formControlName="token"
+                        [options]="getTokenList(form.controls['token'].value)"
+                        optionLabel="label"
+                        placeholder="Choose Token">
+                        <ng-template let-token pTemplate="item">
+                            {{ token.tokenSymbol }} ({{ token.tokenId }})
+                        </ng-template>
+                    </p-dropdown>
+
                 </div>
                 <div class="token-card__count">
                     <!--                    <mat-icon>calculate</mat-icon>-->
 
                     <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
-                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
-                        <mat-label>Count</mat-label>
-                        <input matInput formControlName="count" type="number" placeholder="1">
-                    </mat-form-field>
+                    <!--                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">-->
+                    <!--                        <mat-label>Count</mat-label>-->
+                    <!--                        <input matInput formControlName="count" type="number" placeholder="1">-->
+                    <!--                    </mat-form-field>-->
+
+                    <div class="p-fluid" style="transform: scale(0.8) translateY(5px); width: 100px;">
+                        <label for="countInput">Count</label>
+                        <p-inputNumber
+                            id="countInput"
+                            formControlName="count"
+                            [placeholder]="'1'"
+                            mode="decimal"
+                            [min]="1"
+                            [useGrouping]="false">
+                        </p-inputNumber>
+                    </div>
                 </div>
 
                 <button mat-flat-button color="primary" class="token-card__remove"
@@ -40,7 +64,15 @@
         <div class="content__delimiter">
         </div>
         <div class="content__approval">
-            <mat-checkbox color="primary" [formControl]="immediately">Without approval</mat-checkbox>
+            <!--            <mat-checkbox color="primary" [formControl]="immediately">Without approval</mat-checkbox>-->
+
+            <div class="p-field-checkbox">
+                <p-checkbox
+                    [binary]="true"
+                    [formControl]="immediately">
+                    <span>Without approval</span>
+                </p-checkbox>
+            </div>
         </div>
 
     </div>

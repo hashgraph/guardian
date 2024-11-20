@@ -56,6 +56,15 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     isJSON: boolean = false;
     jsonInput: string = '';
 
+    typeOptions = [
+        { label: 'Point', value: 'Point' },
+        { label: 'Polygon', value: 'Polygon' },
+        { label: 'LineString', value: 'LineString' },
+        { label: 'MultiPoint', value: 'MultiPoint' },
+        { label: 'MultiPolygon', value: 'MultiPolygon' },
+        { label: 'MultiLineString', value: 'MultiLineString' }
+    ];
+
     constructor(
         public mapService: MapService,
         private cdkRef: ChangeDetectorRef

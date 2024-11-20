@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import {Component, Inject} from '@angular/core';
 // import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {
     AbstractControl,
@@ -9,11 +9,12 @@ import {
     ValidatorFn,
     Validators,
 } from '@angular/forms';
-import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
-import { MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/legacy-radio';
-import { Token } from '@guardian/interfaces';
-import { TokenService } from 'src/app/services/token.service';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import {moreThanZeroValidator} from 'src/app/validators/more-than-zero.validator';
+import {MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS} from '@angular/material/legacy-radio';
+import {Token} from '@guardian/interfaces';
+import {TokenService} from 'src/app/services/token.service';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
+
 /**
  * Dialog for creating pair.
  */
@@ -24,7 +25,7 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
     providers: [
         {
             provide: MAT_RADIO_DEFAULT_OPTIONS,
-            useValue: { color: 'primary' },
+            useValue: {color: 'primary'},
         },
     ],
 })
@@ -45,7 +46,8 @@ export class SetPoolDialogComponent {
         public tokenService: TokenService,
         // @Inject(MAT_DIALOG_DATA) public data: any,
         private dialogRef: DynamicDialogRef,
-    ) {}
+    ) {
+    }
 
     ngOnInit() {
         this.loading = true;
@@ -115,7 +117,7 @@ export class SetPoolDialogComponent {
                 if (
                     Math.floor(
                         token.count *
-                            Math.pow(10, Number(tokenConfig?.decimals))
+                        Math.pow(10, Number(tokenConfig?.decimals))
                     ) <= 0
                 ) {
                     return {

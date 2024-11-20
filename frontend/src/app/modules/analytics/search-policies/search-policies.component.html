@@ -19,19 +19,38 @@
                 <span>Filter by</span>
 
                 <div>
-                    <mat-form-field class="policy-filters__control" appearance="outline">
-                        <input matInput placeholder="Policy name" formControlName="policyName">
-                    </mat-form-field>
+                    <!--                    <mat-form-field class="policy-filters__control" appearance="outline">-->
+                    <!--                        <input matInput placeholder="Policy name" formControlName="policyName">-->
+                    <!--                    </mat-form-field>-->
 
-                    <mat-form-field *ngIf="hasTagOptions" class="policy-filters__control" appearance="outline">
-                        <mat-label>Tags</mat-label>
-                        <mat-select formControlName="tag">
-                            <mat-option></mat-option>
-                            <mat-option *ngFor="let tag of tagOptions" [value]="tag">
-                                {{ tag }}
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <div class="p-fluid policy-filters__control">
+                        <label for="policyNameInput">Policy name</label>
+                        <input
+                            pInputText
+                            id="policyNameInput"
+                            placeholder="Policy name"
+                            formControlName="policyName">
+                    </div>
+
+                    <!--                    <mat-form-field *ngIf="hasTagOptions" class="policy-filters__control" appearance="outline">-->
+                    <!--                        <mat-label>Tags</mat-label>-->
+                    <!--                        <mat-select formControlName="tag">-->
+                    <!--                            <mat-option></mat-option>-->
+                    <!--                            <mat-option *ngFor="let tag of tagOptions" [value]="tag">-->
+                    <!--                                {{ tag }}-->
+                    <!--                            </mat-option>-->
+                    <!--                        </mat-select>-->
+                    <!--                    </mat-form-field>-->
+
+                    <div *ngIf="hasTagOptions" class="p-fluid policy-filters__control">
+                        <label for="tagsDropdown">Tags</label>
+                        <p-dropdown
+                            id="tagsDropdown"
+                            formControlName="tag"
+                            [options]="getTagOptions()"
+                            placeholder="Select a Tag">
+                        </p-dropdown>
+                    </div>
                 </div>
 
                 <button *ngIf="lastFilters" mat-stroked-button (click)="clearFilters()">
@@ -175,7 +194,8 @@
                     <ng-template pTemplate="body" let-element>
                         <tr [attr.readonly]="element._readonly" class="body">
                             <td class="mat-cell">
-                                <p-checkbox [(ngModel)]="element._select" (onChange)="selectPolicy(element)"></p-checkbox>
+                                <p-checkbox [(ngModel)]="element._select"
+                                            (onChange)="selectPolicy(element)"></p-checkbox>
                             </td>
                             <td class="mat-cell mat-column-topic">
                                 <hedera-explorer type="topics" [params]="element.topicId">
@@ -198,7 +218,8 @@
                                                [owner]="owner" [target]="element.id" [schemas]="tagSchemas"
                                                [entity]="tagEntity" [service]="tagsService"></tags-explorer>
                             </td>
-                            <td class="mat-cell mat-column-description" pTooltip="{{ element.description }}" tooltipPosition="top"
+                            <td class="mat-cell mat-column-description" pTooltip="{{ element.description }}"
+                                tooltipPosition="top"
                                 [tooltipOptions]="{ tooltipStyleClass: 'guardian-tooltip' }">
                                 {{ element.description }}
                             </td>
@@ -207,7 +228,8 @@
                                 <div *ngIf="element.status === 'DRY-RUN'" class="status-dry-run">In Dry Run</div>
                                 <div *ngIf="element.status === 'DEMO'" class="status-dry-run">Demo</div>
                                 <div *ngIf="element.status === 'PUBLISH'" class="status-publish">Published</div>
-                                <div *ngIf="element.status === 'PUBLISH_ERROR'" class="status-failed">Not published</div>
+                                <div *ngIf="element.status === 'PUBLISH_ERROR'" class="status-failed">Not published
+                                </div>
                             </td>
                             <td class="mat-cell mat-column-rate">
                                 <div [ngClass]="element._color + ' color-field'">{{ element._rate }}</div>

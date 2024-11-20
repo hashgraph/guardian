@@ -27,14 +27,22 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Period</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.period" [disabled]="readonly" (closed)="selectPeriod()">
-                <mat-option value="yearly">Yearly</mat-option>
-                <mat-option value="monthly">Monthly</mat-option>
-                <mat-option value="weekly">Weekly</mat-option>
-                <mat-option value="daily">Daily</mat-option>
-                <mat-option value="hourly">Hourly</mat-option>
-                <mat-option value="custom">Custom</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.period" [disabled]="readonly" (closed)="selectPeriod()">-->
+            <!--                <mat-option value="yearly">Yearly</mat-option>-->
+            <!--                <mat-option value="monthly">Monthly</mat-option>-->
+            <!--                <mat-option value="weekly">Weekly</mat-option>-->
+            <!--                <mat-option value="daily">Daily</mat-option>-->
+            <!--                <mat-option value="hourly">Hourly</mat-option>-->
+            <!--                <mat-option value="custom">Custom</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.period"
+                [disabled]="readonly"
+                (onHide)="selectPeriod()"
+                placeholder="Select a period"
+                [options]="periodOptions">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow" *ngIf="properties.period == 'custom'" [attr.collapse]="propHidden.options">

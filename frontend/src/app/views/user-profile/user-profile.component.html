@@ -155,7 +155,8 @@
                                             [disabled]="!filtersForm.dirty"
                                             class="clear-filters-button"
                                             [outlined]=true
-                                        >Clear filters</p-button>
+                                        >Clear filters
+                                        </p-button>
                                     </div>
                                 </form>
                             </div>
@@ -169,9 +170,9 @@
 
                                     <ul class="standard-registry">
                                         <app-standard-registry-card
-                                                (registrySelected)="selectStandardRegistry($event)"
-                                                *ngFor="let registry of standardRegistriesList; trackBy: trackByDid"
-                                                [isRegistrySelected]="isRegistrySelected(registry.did)"
+                                            (registrySelected)="selectStandardRegistry($event)"
+                                            *ngFor="let registry of standardRegistriesList; trackBy: trackByDid"
+                                            [isRegistrySelected]="isRegistrySelected(registry.did)"
                                             [registry]="registry"></app-standard-registry-card>
                                     </ul>
                                 </ng-container>
@@ -217,10 +218,10 @@
                                     </div>
                                     <div class="input-field-container">
                                         <p-checkbox
-                                                [binary]="true"
-                                                formControlName="useFireblocksSigning"
-                                                inputId="useFireblocksSigning"
-                                                label="Use fireblocks signing"
+                                            [binary]="true"
+                                            formControlName="useFireblocksSigning"
+                                            inputId="useFireblocksSigning"
+                                            label="Use fireblocks signing"
                                         ></p-checkbox>
                                     </div>
                                     <ng-container *ngIf="hederaCredentialsForm.get('useFireblocksSigning')?.value">
@@ -229,11 +230,11 @@
                                                 * Fireblocks Vault ID:
                                             </label>
                                             <input
-                                                    formControlName="fireBlocksVaultId"
-                                                    id="fireBlocksVaultId"
-                                                    placeholder="0"
-                                                    pInputText
-                                                    type="text"
+                                                formControlName="fireBlocksVaultId"
+                                                id="fireBlocksVaultId"
+                                                placeholder="0"
+                                                pInputText
+                                                type="text"
                                             />
                                         </div>
                                         <div class="input-field-container">
@@ -241,11 +242,11 @@
                                                 * Fireblocks Asset ID:
                                             </label>
                                             <input
-                                                    formControlName="fireBlocksAssetId"
-                                                    id="fireBlocksAssetId"
-                                                    placeholder="ASSET_NAME"
-                                                    pInputText
-                                                    type="text"
+                                                formControlName="fireBlocksAssetId"
+                                                id="fireBlocksAssetId"
+                                                placeholder="ASSET_NAME"
+                                                pInputText
+                                                type="text"
                                             />
                                         </div>
                                         <div class="input-field-container">
@@ -253,12 +254,12 @@
                                                 * Fireblocks API Key:
                                             </label>
                                             <input
-                                                    formControlName="fireBlocksApiKey"
-                                                    id="fireBlocksApiKey"
-                                                    autocomplete="off"
-                                                    pInputText
-                                                    placeholder="00000000-0000-0000-0000-000000000000"
-                                                    type="text"
+                                                formControlName="fireBlocksApiKey"
+                                                id="fireBlocksApiKey"
+                                                autocomplete="off"
+                                                pInputText
+                                                placeholder="00000000-0000-0000-0000-000000000000"
+                                                type="text"
                                             />
                                         </div>
                                         <div class="input-field-container">
@@ -266,12 +267,12 @@
                                                 * Fireblocks Private Key:
                                             </label>
                                             <textarea
-                                                    formControlName="fireBlocksPrivateiKey"
-                                                    id="fireBlocksPrivateiKey"
-                                                    autocomplete="off"
-                                                    pInputText
-                                                    placeholder="-----BEGIN PRIVATE KEY----- ..."
-                                                    type="text"
+                                                formControlName="fireBlocksPrivateiKey"
+                                                id="fireBlocksPrivateiKey"
+                                                autocomplete="off"
+                                                pInputText
+                                                placeholder="-----BEGIN PRIVATE KEY----- ..."
+                                                type="text"
                                             ></textarea>
                                         </div>
                                     </ng-container>
@@ -293,14 +294,14 @@
 
                             <div class="hedera-credentials-form-container">
                                 <form class="hedera-form">
-<!--                                    <mat-radio-group [formControl]="didDocumentType" (change)="onChangeDidType()">-->
-<!--                                        <mat-radio-button [value]="false" class="boolean-option"color="primary">-->
-<!--                                            Generate new DID document.-->
-<!--                                        </mat-radio-button>-->
-<!--                                        <mat-radio-button [value]="true" class="boolean-option" color="primary">-->
-<!--                                            Custom DID document.-->
-<!--                                        </mat-radio-button>-->
-<!--                                    </mat-radio-group>-->
+                                    <!--                                    <mat-radio-group [formControl]="didDocumentType" (change)="onChangeDidType()">-->
+                                    <!--                                        <mat-radio-button [value]="false" class="boolean-option"color="primary">-->
+                                    <!--                                            Generate new DID document.-->
+                                    <!--                                        </mat-radio-button>-->
+                                    <!--                                        <mat-radio-button [value]="true" class="boolean-option" color="primary">-->
+                                    <!--                                            Custom DID document.-->
+                                    <!--                                        </mat-radio-button>-->
+                                    <!--                                    </mat-radio-group>-->
 
                                     <div class="boolean-option-group">
                                         <div>
@@ -323,17 +324,35 @@
                                         </div>
                                     </div>
 
-                                    <mat-form-field appearance="outline" class="example-full-width" [attr.active-field]="didDocumentType.value">
-                                        <mat-label>DID Document:</mat-label>
-                                        <textarea [formControl]="didDocumentForm" matInput
-                                                  style="height: 150px"></textarea>
-                                        <mat-error *ngIf="didDocumentForm.hasError('incorrect')">
+                                    <!--                                    <mat-form-field appearance="outline" class="example-full-width" [attr.active-field]="didDocumentType.value">-->
+                                    <!--                                        <mat-label>DID Document:</mat-label>-->
+                                    <!--                                        <textarea [formControl]="didDocumentForm" matInput-->
+                                    <!--                                                  style="height: 150px"></textarea>-->
+                                    <!--                                        <mat-error *ngIf="didDocumentForm.hasError('incorrect')">-->
+                                    <!--                                            Invalid DID Document.-->
+                                    <!--                                        </mat-error>-->
+                                    <!--                                        <mat-error *ngIf="didDocumentForm.hasError('exists')">-->
+                                    <!--                                            DID Document already exists.-->
+                                    <!--                                        </mat-error>-->
+                                    <!--                                    </mat-form-field>-->
+
+                                    <div class="form-group example-full-width"
+                                         [attr.active-field]="didDocumentType.value">
+                                        <label for="didDocumentTextarea" class="form-label">DID Document:</label>
+                                        <textarea
+                                            pInputTextarea
+                                            id="didDocumentTextarea"
+                                            [formControl]="didDocumentForm"
+                                            class="full-width"
+                                            style="height: 150px">
+    </textarea>
+                                        <small *ngIf="didDocumentForm.hasError('incorrect')" class="p-error">
                                             Invalid DID Document.
-                                        </mat-error>
-                                        <mat-error *ngIf="didDocumentForm.hasError('exists')">
+                                        </small>
+                                        <small *ngIf="didDocumentForm.hasError('exists')" class="p-error">
                                             DID Document already exists.
-                                        </mat-error>
-                                    </mat-form-field>
+                                        </small>
+                                    </div>
                                 </form>
                             </div>
                         </ng-container>
@@ -346,23 +365,48 @@
                                 <form class="hedera-form">
                                     <div *ngFor="let item of didKeys" class="group-container">
                                         <label class="form-label" [htmlFor]="item.name">
-                                            {{item.name}}:
+                                            {{ item.name }}:
                                         </label>
-                                        <mat-form-field appearance="outline" class="example-full-width">
-                                            <mat-label>* Method:</mat-label>
-                                            <mat-select [formControl]="item.keyNameControl">
-                                                <mat-option *ngFor="let keyItem of item.keyNames" [value]="keyItem.id">
-                                                    {{keyItem.name}}
-                                                </mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
-                                        <mat-form-field class="example-full-width" appearance="outline">
-                                            <mat-label>* Key:</mat-label>
-                                            <input matInput placeholder="FRs4qVjqvP9Dh..." [formControl]="item.keyValueControl">
-                                            <mat-error *ngIf="item.keyValueControl.hasError('incorrect')">
+                                        <!--                                        <mat-form-field appearance="outline" class="example-full-width">-->
+                                        <!--                                            <mat-label>* Method:</mat-label>-->
+                                        <!--                                            <mat-select [formControl]="item.keyNameControl">-->
+                                        <!--                                                <mat-option *ngFor="let keyItem of item.keyNames" [value]="keyItem.id">-->
+                                        <!--                                                    {{keyItem.name}}-->
+                                        <!--                                                </mat-option>-->
+                                        <!--                                            </mat-select>-->
+                                        <!--                                        </mat-form-field>-->
+                                        <div class="form-group example-full-width">
+                                            <label [htmlFor]="'methodDropdown'" class="form-label">* Method:</label>
+                                            <p-dropdown
+                                                [options]="item.keyNames"
+                                                [formControl]="item.keyNameControl"
+                                                optionLabel="name"
+                                                optionValue="id"
+                                                placeholder="Select a method"
+                                                inputId="methodDropdown"
+                                                class="full-width">
+                                            </p-dropdown>
+                                        </div>
+                                        <!--                                        <mat-form-field class="example-full-width" appearance="outline">-->
+                                        <!--                                            <mat-label>* Key:</mat-label>-->
+                                        <!--                                            <input matInput placeholder="FRs4qVjqvP9Dh..." [formControl]="item.keyValueControl">-->
+                                        <!--                                            <mat-error *ngIf="item.keyValueControl.hasError('incorrect')">-->
+                                        <!--                                                Invalid DID Key-->
+                                        <!--                                            </mat-error>-->
+                                        <!--                                        </mat-form-field>-->
+
+                                        <div class="form-group example-full-width">
+                                            <label for="keyInput" class="form-label">* Key:</label>
+                                            <input
+                                                pInputText
+                                                id="keyInput"
+                                                placeholder="FRs4qVjqvP9Dh..."
+                                                [formControl]="item.keyValueControl"
+                                                class="full-width">
+                                            <small *ngIf="item.keyValueControl.hasError('incorrect')" class="p-error">
                                                 Invalid DID Key
-                                            </mat-error>
-                                        </mat-form-field>
+                                            </small>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -393,7 +437,7 @@
 
             <div class="user-profile-setup-buttons-container">
                 <div class="user-profile-finish-buttons">
-                    <div *ngIf="currentStep !== 0"class="previous-button">
+                    <div *ngIf="currentStep !== 0" class="previous-button">
                         <p-button
                             (click)="onPrev()"
                             label="Previous"

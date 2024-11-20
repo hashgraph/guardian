@@ -12,25 +12,48 @@
             )
         </div>
         <form class="form" [formGroup]="dataForm">
-            <mat-form-field appearance="outline">
-                <mat-label>* Private Key</mat-label>
-                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key"
-                       type="password"/>
-                <button
-                    (click)="privateKeyInput.type === 'password'
-                            ? (privateKeyInput.type = 'text')
-                            : (privateKeyInput.type = 'password')"
-                    aria-label="Visibility"
-                    mat-icon-button
-                    matSuffix
-                >
-                    <!--                    <mat-icon>-->
-                    <!--                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}-->
-                    <!--                    </mat-icon>-->
-                    <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+            <!--            <mat-form-field appearance="outline">-->
+            <!--                <mat-label>* Private Key</mat-label>-->
+            <!--                <input #privateKeyInput formControlName="privateKey" matInput placeholder="Private Key"-->
+            <!--                       type="password"/>-->
+            <!--                <button-->
+            <!--                    (click)="privateKeyInput.type === 'password'-->
+            <!--                            ? (privateKeyInput.type = 'text')-->
+            <!--                            : (privateKeyInput.type = 'password')"-->
+            <!--                    aria-label="Visibility"-->
+            <!--                    mat-icon-button-->
+            <!--                    matSuffix-->
+            <!--                >-->
+            <!--                    &lt;!&ndash;                    <mat-icon>&ndash;&gt;-->
+            <!--                    &lt;!&ndash;                        {{privateKeyInput.type === "password" ? "visibility" : "visibility_off"}}&ndash;&gt;-->
+            <!--                    &lt;!&ndash;                    </mat-icon>&ndash;&gt;-->
+            <!--                    <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>-->
 
-                </button>
-            </mat-form-field>
+            <!--                </button>-->
+            <!--            </mat-form-field>-->
+
+
+            <div class="form-group">
+                <label for="privateKeyInput" class="form-label">* Private Key</label>
+                <div class="input-group">
+                    <input
+                        pInputText
+                        id="privateKeyInput"
+                        #privateKeyInput
+                        formControlName="privateKey"
+                        placeholder="Private Key"
+                        type="password"
+                        class="full-width">
+                    <button
+                        type="button"
+                        (click)="togglePasswordVisibility(privateKeyInput)"
+                        aria-label="Toggle password visibility"
+                        class="p-button p-button-text p-button-icon-only">
+                        <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+                    </button>
+                </div>
+            </div>
+
             <div style="margin-top: 15px; margin-left: auto;">
                 <p-button
                     (click)="onSkip()"

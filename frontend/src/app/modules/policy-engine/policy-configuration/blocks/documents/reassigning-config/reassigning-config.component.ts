@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'reassigning' type.
@@ -23,6 +23,18 @@ export class ReassigningConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public issuerOptions = [
+        {label: 'Current User', value: ''},
+        {label: 'Document Owner', value: 'owner'},
+        {label: 'Policy Owner', value: 'policyOwner'}
+    ];
+
+    public actorOptions = [
+        {label: 'Current User', value: ''},
+        {label: 'Document Owner', value: 'owner'},
+        {label: 'Document Issuer', value: 'issuer'}
+    ];
 
     constructor() {
     }

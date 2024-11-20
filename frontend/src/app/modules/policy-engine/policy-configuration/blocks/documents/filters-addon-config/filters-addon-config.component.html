@@ -4,9 +4,17 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="dropdown">Dropdown</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="dropdown">Dropdown</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.type"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select a type"
+                [options]="typeOptions">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow">

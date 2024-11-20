@@ -3,10 +3,18 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Input Documents</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.inputDocuments" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="aggregate">Aggregate</mat-option>
-                <mat-option value="separate">Separate</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.inputDocuments" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="aggregate">Aggregate</mat-option>-->
+            <!--                <mat-option value="separate">Separate</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.inputDocuments"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select input document type"
+                [options]="inputDocumentsOptions">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow">

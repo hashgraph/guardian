@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
 // import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'aggregateDocument' type.
@@ -28,6 +28,11 @@ export class AggregateConfigComponent implements OnInit {
 
     properties!: any;
     allTimer!: PolicyBlock[];
+
+    public aggregateTypeOptions = [
+        {label: 'Period', value: 'period'},
+        {label: 'Cumulative Dimension', value: 'cumulative'}
+    ];
 
     constructor(
         // private dialog: MatDialog

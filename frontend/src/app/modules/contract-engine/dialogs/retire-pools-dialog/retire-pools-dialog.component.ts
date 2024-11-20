@@ -122,4 +122,11 @@ export class RetirePoolsDialogComponent implements OnInit {
     hasPermissions(permissions: number, index: number) {
         return (permissions >> index) % 2 != 0;
     }
+
+    getTransformedTokens(): any[] {
+        return this.tokens.map(token => ({
+            label: `${token.tokenSymbol} (${token.tokenId})`,
+            value: token.tokenId
+        }));
+    }
 }

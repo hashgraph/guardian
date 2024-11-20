@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
 // import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { CronConfigDialog } from '../../../../dialogs/cron-config-dialog/cron-config-dialog.component';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {CronConfigDialog} from '../../../../dialogs/cron-config-dialog/cron-config-dialog.component';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
 
 /**
@@ -29,6 +29,15 @@ export class TimerConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public periodOptions = [
+        {label: 'Yearly', value: 'yearly'},
+        {label: 'Monthly', value: 'monthly'},
+        {label: 'Weekly', value: 'weekly'},
+        {label: 'Daily', value: 'daily'},
+        {label: 'Hourly', value: 'hourly'},
+        {label: 'Custom', value: 'custom'}
+    ];
 
     constructor(
         // private dialog: MatDialog

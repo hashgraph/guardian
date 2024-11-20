@@ -19,10 +19,22 @@
     <div class="g-dialog-body">
         <div class="context">
             <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* NAME:</mat-label>
-                    <input matInput type="text" placeholder="Theme name" formControlName="name">
-                </mat-form-field>
+                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
+                <!--                    <mat-label>* NAME:</mat-label>-->
+                <!--                    <input matInput type="text" placeholder="Theme name" formControlName="name">-->
+                <!--                </mat-form-field>-->
+
+                <div class="example-full-width">
+                    <label for="name">* NAME:</label>
+                    <input
+                        id="name"
+                        pInputText
+                        type="text"
+                        placeholder="Theme name"
+                        formControlName="name"
+                        class="p-inputtext p-component"
+                    />
+                </div>
             </form>
         </div>
     </div>

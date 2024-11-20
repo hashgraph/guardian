@@ -4,11 +4,19 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="selector">Selector</mat-option>
-                <mat-option value="download">Download</mat-option>
-                <mat-option value="dropdown">Dropdown</mat-option>
-            </mat-select>
+<!--            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">-->
+<!--                <mat-option value="selector">Selector</mat-option>-->
+<!--                <mat-option value="download">Download</mat-option>-->
+<!--                <mat-option value="dropdown">Dropdown</mat-option>-->
+<!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.type"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an option"
+                [options]="dropdownOptions">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -95,10 +103,18 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">User</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="option.user" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="owner">Owner</mat-option>
-                        <mat-option value="current">Current</mat-option>
-                    </mat-select>
+<!--                    <mat-select [(value)]="option.user" [disabled]="readonly" (change)="onSave()">-->
+<!--                        <mat-option value="owner">Owner</mat-option>-->
+<!--                        <mat-option value="current">Current</mat-option>-->
+<!--                    </mat-select>-->
+
+                    <p-dropdown
+                        [(ngModel)]="option.user"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select user"
+                        [options]="userOptions">
+                    </p-dropdown>
                 </td>
             </tr>
             <tr class="propRow subRow-2"

@@ -4,20 +4,38 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Invite</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.canInvite" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="owner">Group Owner</mat-option>
-                <mat-option value="all">All</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.canInvite" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="owner">Group Owner</mat-option>-->
+            <!--                <mat-option value="all">All</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown [(ngModel)]="properties.canInvite"
+                        [options]="canInviteOptions"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select Permission"
+                        optionLabel="label"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Can Delete</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.canDelete" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="owner">Group Owner</mat-option>
-                <mat-option value="all">All</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.canDelete" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="owner">Group Owner</mat-option>-->
+            <!--                <mat-option value="all">All</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown [(ngModel)]="properties.canDelete"
+                        [options]="canDeleteOptions"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select Permission"
+                        optionLabel="label"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
 </table>

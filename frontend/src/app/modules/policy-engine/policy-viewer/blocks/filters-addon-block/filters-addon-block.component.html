@@ -4,12 +4,20 @@
 
 <div *ngIf="type == 'dropdown'" class="content">
     <div class="content-name">
-        {{content}}:
+        {{ content }}:
     </div>
     <div class="content-select">
-        <mat-select [(value)]="currentValue" (selectionChange)="onFilters()">
-            <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
-        </mat-select>
+        <!--        <mat-select [(value)]="currentValue" (selectionChange)="onFilters()">-->
+        <!--            <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>-->
+        <!--        </mat-select>-->
+
+        <p-dropdown
+            [(ngModel)]="currentValue"
+            [options]="options"
+            optionLabel="name"
+            (onChange)="onFilters()"
+            placeholder="Выберите значение">
+        </p-dropdown>
     </div>
 </div>
 

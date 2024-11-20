@@ -4,22 +4,38 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Issuer</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.issuer" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="">Current User</mat-option>
-                <mat-option value="owner">Document Owner</mat-option>
-                <mat-option value="policyOwner">Policy Owner</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.issuer" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="">Current User</mat-option>-->
+            <!--                <mat-option value="owner">Document Owner</mat-option>-->
+            <!--                <mat-option value="policyOwner">Policy Owner</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.issuer"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an issuer"
+                [options]="issuerOptions">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Actor</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.actor" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="">Current User</mat-option>
-                <mat-option value="owner">Document Owner</mat-option>
-                <mat-option value="issuer">Document Issuer</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.actor" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="">Current User</mat-option>-->
+            <!--                <mat-option value="owner">Document Owner</mat-option>-->
+            <!--                <mat-option value="issuer">Document Issuer</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.actor"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select an actor"
+                [options]="actorOptions">
+            </p-dropdown>
         </td>
     </tr>
 </table>

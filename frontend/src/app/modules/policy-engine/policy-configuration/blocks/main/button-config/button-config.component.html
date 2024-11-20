@@ -48,10 +48,19 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="button.type" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value="selector">Selector</mat-option>
-                    <mat-option value="selector-dialog">Selector Dialog</mat-option>
-                </mat-select>
+                <!--                <mat-select [(value)]="button.type" [disabled]="readonly" (change)="onSave()">-->
+                <!--                    <mat-option value="selector">Selector</mat-option>-->
+                <!--                    <mat-option value="selector-dialog">Selector Dialog</mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown [(ngModel)]="button.type"
+                            [options]="buttonTypeOptions"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            placeholder="Select Button Type"
+                            optionLabel="label"
+                            optionValue="value">
+                </p-dropdown>
             </td>
         </tr>
 
@@ -160,12 +169,21 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="filter.type" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="equal">Equal</mat-option>
-                        <mat-option value="not_equal">Not Equal</mat-option>
-                        <mat-option value="in">In</mat-option>
-                        <mat-option value="not_in">Not In</mat-option>
-                    </mat-select>
+                    <!--                    <mat-select [(value)]="filter.type" [disabled]="readonly" (change)="onSave()">-->
+                    <!--                        <mat-option value="equal">Equal</mat-option>-->
+                    <!--                        <mat-option value="not_equal">Not Equal</mat-option>-->
+                    <!--                        <mat-option value="in">In</mat-option>-->
+                    <!--                        <mat-option value="not_in">Not In</mat-option>-->
+                    <!--                    </mat-select>-->
+
+                    <p-dropdown [(ngModel)]="filter.type"
+                                [options]="filterTypeOptions"
+                                [disabled]="readonly"
+                                (onChange)="onSave()"
+                                placeholder="Select Filter Type"
+                                optionLabel="label"
+                                optionValue="value">
+                    </p-dropdown>
                 </td>
             </tr>
             <tr class="propRow subRow-4"

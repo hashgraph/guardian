@@ -53,6 +53,49 @@ export class PolicySettingsComponent implements OnInit {
         '#000000',
     ];
 
+    public dropdownTypesOptions = [
+        { label: 'Types', value: 'type' },
+        { label: 'Roles', value: 'role' },
+        { label: 'API', value: 'api' }
+    ];
+
+    public dropdownAccessesOptions = [
+        { label: 'GET & POST', value: 'post' },
+        { label: 'Only GET', value: 'get' },
+        { label: 'Not Accessible', value: '' }
+    ];
+
+    public dropdownRolesOptions: Record<string, any>[]
+
+    public dropdownShapeOptions = [
+        { label: '', value: '0' },
+        { label: '', value: '1' },
+        { label: '', value: '2' },
+        { label: '', value: '3' },
+        { label: '', value: '4' },
+        { label: '', value: '5' }
+    ];
+
+    public dropdownBorderWidthOptions = [
+        { label: '0px', value: '0px' },
+        { label: '1px', value: '1px' },
+        { label: '2px', value: '2px' },
+        { label: '3px', value: '3px' },
+        { label: '4px', value: '4px' },
+        { label: '5px', value: '5px' },
+        { label: '6px', value: '6px' },
+        { label: '7px', value: '7px' }
+    ];
+
+    public dropdownThemeShapeOptions = [
+        { value: '0', label: 'Shape 0' },
+        { value: '1', label: 'Shape 1' },
+        { value: '2', label: 'Shape 2' },
+        { value: '3', label: 'Shape 3' },
+        { value: '4', label: 'Shape 4' },
+        { value: '5', label: 'Shape 5' }
+    ];
+
     constructor(
         private registeredService: RegisteredService,
         private themeService: ThemeService,
@@ -296,6 +339,21 @@ export class PolicySettingsComponent implements OnInit {
                 });
             }
         });
+    }
+
+    getRolesOptions() {
+        const staticOptions = [
+            { label: 'Owner', value: 'OWNER' },
+            { label: 'No Role', value: 'NO_ROLE' },
+            { label: 'Any Role', value: 'ANY_ROLE' }
+        ];
+
+        const dynamicOptions = this.roles.map(role => ({
+            label: `Role ${role}`,
+            value: role
+        }));
+
+        this.dropdownRolesOptions = [...staticOptions, ...dynamicOptions];
     }
 }
 

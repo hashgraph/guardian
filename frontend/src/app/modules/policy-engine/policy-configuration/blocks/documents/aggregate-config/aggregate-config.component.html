@@ -14,10 +14,17 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Aggregate Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.aggregateType" [disabled]="readonly">
-                <mat-option value="period">Period</mat-option>
-                <mat-option value="cumulative">Cumulative Dimension</mat-option>
-            </mat-select>
+<!--            <mat-select [(value)]="properties.aggregateType" [disabled]="readonly">-->
+<!--                <mat-option value="period">Period</mat-option>-->
+<!--                <mat-option value="cumulative">Cumulative Dimension</mat-option>-->
+<!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.aggregateType"
+                [disabled]="readonly"
+                placeholder="Select an aggregate type"
+                [options]="aggregateTypeOptions">
+            </p-dropdown>
         </td>
     </tr>
     <ng-container *ngIf="properties.aggregateType == 'period'">

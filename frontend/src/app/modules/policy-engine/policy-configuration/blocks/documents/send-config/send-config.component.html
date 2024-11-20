@@ -4,13 +4,21 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Data Type (deprecated)</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.dataType" [disabled]="readonly" (change)="onSave()">
-                <mat-option value=""></mat-option>
-                <mat-option value="vc-documents">Collection (VC)</mat-option>
-                <mat-option value="did-documents">Collection (DID)</mat-option>
-                <mat-option value="approve">Collection (Approve)</mat-option>
-                <mat-option value="hedera">Hedera (Topic)</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.dataType" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value=""></mat-option>-->
+            <!--                <mat-option value="vc-documents">Collection (VC)</mat-option>-->
+            <!--                <mat-option value="did-documents">Collection (DID)</mat-option>-->
+            <!--                <mat-option value="approve">Collection (Approve)</mat-option>-->
+            <!--                <mat-option value="hedera">Hedera (Topic)</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.dataType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select a data type"
+                [options]="dataTypeOptions">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -21,12 +29,20 @@
             Data Source
         </td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.dataSource" [disabled]="readonly"
-                        (selectionChange)="onDataSource($event)">
-                <mat-option value="auto">Auto</mat-option>
-                <mat-option value="database">Database</mat-option>
-                <mat-option value="hedera">Hedera Topic</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.dataSource" [disabled]="readonly"-->
+            <!--                        (selectionChange)="onDataSource($event)">-->
+            <!--                <mat-option value="auto">Auto</mat-option>-->
+            <!--                <mat-option value="database">Database</mat-option>-->
+            <!--                <mat-option value="hedera">Hedera Topic</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown
+                [(ngModel)]="properties.dataType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select a data type"
+                [options]="dataSourceOptions">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -35,21 +51,29 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Hedera Topic</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">
-                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"
-                                matTooltipPosition="above" matTooltipClass="guardian-tooltip small-guardian-tooltip">
-                        {{ topic.name }}
-                    </mat-option>
-                    <mat-option value="root">Policy Instance</mat-option>
-                    <mat-option class="link" value="new">
-                        <span class="mat-option-link">
-<!--                                <mat-icon>add</mat-icon>-->
+                <!--                <mat-select [(value)]="properties.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">-->
+                <!--                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"-->
+                <!--                                matTooltipPosition="above" matTooltipClass="guardian-tooltip small-guardian-tooltip">-->
+                <!--                        {{ topic.name }}-->
+                <!--                    </mat-option>-->
+                <!--                    <mat-option value="root">Policy Instance</mat-option>-->
+                <!--                    <mat-option class="link" value="new">-->
+                <!--                        <span class="mat-option-link">-->
+                <!--&lt;!&ndash;                                <mat-icon>add</mat-icon>&ndash;&gt;-->
 
-                            <i class="pi pi-plus"></i>
-                            <span>Create new topic</span>
-                        </span>
-                    </mat-option>
-                </mat-select>
+                <!--                            <i class="pi pi-plus"></i>-->
+                <!--                            <span>Create new topic</span>-->
+                <!--                        </span>-->
+                <!--                    </mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown
+                    [(ngModel)]="properties.topic"
+                    [disabled]="readonly"
+                    (onChange)="selectTopic($event)"
+                    placeholder="Select a topic"
+                    [options]="getDropdownTopics()">
+                </p-dropdown>
             </td>
         </tr>
 
@@ -57,12 +81,20 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Owner</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.topicOwner" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value=""></mat-option>
-                    <mat-option value="user">Current User</mat-option>
-                    <mat-option value="owner">Document Owner</mat-option>
-                    <mat-option value="issuer">Document Issuer</mat-option>
-                </mat-select>
+                <!--                <mat-select [(value)]="properties.topicOwner" [disabled]="readonly" (change)="onSave()">-->
+                <!--                    <mat-option value=""></mat-option>-->
+                <!--                    <mat-option value="user">Current User</mat-option>-->
+                <!--                    <mat-option value="owner">Document Owner</mat-option>-->
+                <!--                    <mat-option value="issuer">Document Issuer</mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown
+                    [(ngModel)]="properties.topicOwner"
+                    [disabled]="readonly"
+                    (onChange)="onSave()"
+                    placeholder="Select topic owner"
+                    [options]="topicOwnerOptions">
+                </p-dropdown>
             </td>
         </tr>
 

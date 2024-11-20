@@ -225,21 +225,36 @@
                                 <!--                                    ></ngx-mat-datetime-picker>-->
                                 <!--                                </mat-form-field>-->
 
-                                <mat-form-field
+                                <!--                                <mat-form-field-->
+                                <!--                                    *ngIf="isConditionType3(condition)"-->
+                                <!--                                    appearance="outline"-->
+                                <!--                                    class="example-full-width required-form-field"-->
+                                <!--                                >-->
+                                <!--                                    <mat-label>Choose a date & time</mat-label>-->
+                                <!--                                    <p-calendar-->
+                                <!--                                        [formControl]="condition.fieldValue"-->
+                                <!--                                        [showTime]="true"-->
+                                <!--                                        [hourFormat]="'12'"-->
+                                <!--                                        inputId="dateTimePicker"-->
+                                <!--                                        placeholder="Choose a date & time"-->
+                                <!--                                        appendTo="body"-->
+                                <!--                                    ></p-calendar>-->
+                                <!--                                </mat-form-field>-->
+
+                                <div
                                     *ngIf="isConditionType3(condition)"
-                                    appearance="outline"
-                                    class="example-full-width required-form-field"
-                                >
-                                    <mat-label>Choose a date & time</mat-label>
+                                    class="form-group example-full-width required-form-field">
+                                    <label for="dateTimePicker" class="form-label">Choose a date & time</label>
                                     <p-calendar
                                         [formControl]="condition.fieldValue"
                                         [showTime]="true"
                                         [hourFormat]="'12'"
-                                        inputId="dateTimePicker"
+                                        id="dateTimePicker"
                                         placeholder="Choose a date & time"
                                         appendTo="body"
-                                    ></p-calendar>
-                                </mat-form-field>
+                                        class="full-width">
+                                    </p-calendar>
+                                </div>
 
                                 <!--                                <mat-form-field-->
                                 <!--                                    *ngIf="isConditionType4(condition)"-->
@@ -259,20 +274,34 @@
                                 <!--                                    <mat-datepicker #dateItem></mat-datepicker>-->
                                 <!--                                </mat-form-field>-->
 
-                                <mat-form-field
+                                <!--                                <mat-form-field-->
+                                <!--                                    *ngIf="isConditionType4(condition)"-->
+                                <!--                                    appearance="outline"-->
+                                <!--                                    class="example-full-width required-form-field"-->
+                                <!--                                >-->
+                                <!--                                    <mat-label>Choose a date</mat-label>-->
+                                <!--                                    <p-calendar-->
+                                <!--                                        [formControl]="condition.fieldValue"-->
+                                <!--                                        inputId="dateTimePicker"-->
+                                <!--                                        [showTime]="false"-->
+                                <!--                                        placeholder="Choose a date"-->
+                                <!--                                        appendTo="body"-->
+                                <!--                                    ></p-calendar>-->
+                                <!--                                </mat-form-field>-->
+
+                                <div
                                     *ngIf="isConditionType4(condition)"
-                                    appearance="outline"
-                                    class="example-full-width required-form-field"
-                                >
-                                    <mat-label>Choose a date</mat-label>
+                                    class="form-group example-full-width required-form-field">
+                                    <label for="datePicker" class="form-label">Choose a date</label>
                                     <p-calendar
                                         [formControl]="condition.fieldValue"
-                                        inputId="dateTimePicker"
+                                        id="datePicker"
                                         [showTime]="false"
                                         placeholder="Choose a date"
                                         appendTo="body"
-                                    ></p-calendar>
-                                </mat-form-field>
+                                        class="full-width">
+                                    </p-calendar>
+                                </div>
 
                                 <!--                                <div *ngIf="isConditionType5(condition)">-->
                                 <!--                                    <mat-radio-group [formControl]="condition.fieldValue">-->

@@ -44,4 +44,11 @@ export class ArtifactImportDialog {
     onNoClick(): void {
         this.dialogRef.close(false);
     }
+
+    getPolicyOptions(): any[] {
+        return this.policies.map((policy: any) => ({
+            label: policy.name,
+            value: policy.id
+        }));
+    }
 }

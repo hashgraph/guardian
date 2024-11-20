@@ -1,24 +1,58 @@
-<mat-select [(value)]="value" [multiple]="multiple" [disabled]="readonly" (selectionChange)="onChange()">
-    <mat-select-trigger>
-        <span class="custom">{{ text }}</span>
-    </mat-select-trigger>
-    <div class="components-search">
-        <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">
-        <!--        <mat-icon class="components-search-icon">search</mat-icon>-->
+<!--<mat-select [(value)]="value" [multiple]="multiple" [disabled]="readonly" (selectionChange)="onChange()">-->
+<!--    <mat-select-trigger>-->
+<!--        <span class="custom">{{ text }}</span>-->
+<!--    </mat-select-trigger>-->
+<!--    <div class="components-search">-->
+<!--        <input placeholder="Search" [(ngModel)]="search" (input)="onSearch($event)">-->
+<!--        &lt;!&ndash;        <mat-icon class="components-search-icon">search</mat-icon>&ndash;&gt;-->
 
-        <i class="pi pi-search components-search-icon"></i>
-    </div>
-    <mat-option *ngFor="let item of searchData" [value]="item.value">
+<!--        <i class="pi pi-search components-search-icon"></i>-->
+<!--    </div>-->
+<!--    <mat-option *ngFor="let item of searchData" [value]="item.value">-->
+<!--        <div class="block-name" [attr.root]="item.root">-->
+<!--            <div *ngIf="item.svg" class="block-icon">-->
+<!--                &lt;!&ndash;                <mat-icon class="svg-icon" [svgIcon]="item.icon"></mat-icon>&ndash;&gt;-->
+<!--                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>-->
+<!--            </div>-->
+<!--            <div *ngIf="!item.svg" class="block-icon">-->
+<!--                &lt;!&ndash;                <mat-icon>{{item.icon}}</mat-icon>&ndash;&gt;-->
+<!--                <i [ngClass]="'pi pi-' + item.icon"></i>-->
+<!--            </div>-->
+<!--            {{ item.name }}-->
+<!--        </div>-->
+<!--    </mat-option>-->
+<!--</mat-select>-->
+
+<p-multiSelect
+    [(ngModel)]="value"
+    [options]="searchData"
+    [disabled]="readonly"
+    [filter]="false"
+    [displaySelectedLabel]="false"
+    (onChange)="onChange()">
+    <ng-template pTemplate="header">
+        <div class="components-search">
+            <input
+                type="text"
+                placeholder="Search"
+                [(ngModel)]="search"
+                (input)="onSearch($event)"
+            />
+            <i class="pi pi-search components-search-icon"></i>
+        </div>
+    </ng-template>
+    <ng-template let-item pTemplate="item">
         <div class="block-name" [attr.root]="item.root">
             <div *ngIf="item.svg" class="block-icon">
-                <!--                <mat-icon class="svg-icon" [svgIcon]="item.icon"></mat-icon>-->
                 <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
             </div>
             <div *ngIf="!item.svg" class="block-icon">
-                <!--                <mat-icon>{{item.icon}}</mat-icon>-->
                 <i [ngClass]="'pi pi-' + item.icon"></i>
             </div>
             {{ item.name }}
         </div>
-    </mat-option>
-</mat-select>
+    </ng-template>
+    <ng-template pTemplate="selectedItems">
+        <span class="custom">{{ text }}</span>
+    </ng-template>
+</p-multiSelect>

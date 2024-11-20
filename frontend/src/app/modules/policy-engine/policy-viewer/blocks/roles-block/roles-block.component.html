@@ -79,16 +79,40 @@
                             <label>Create new group</label>
                         </div>
                         <div class="group-value" [ngClass]="{'disabled': type !== 'new'}">
-                            <mat-form-field appearance="outline">
-                                <mat-label>Group Template</mat-label>
-                                <mat-select formControlName="roleOrGroup">
-                                    <mat-option *ngFor="let group of groups" [value]="group">{{ group }}</mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                            <mat-form-field *ngIf="ifPrivateGroup()" appearance="outline">
-                                <mat-label>Group Label</mat-label>
-                                <input matInput formControlName="groupLabel">
-                            </mat-form-field>
+                            <!--                            <mat-form-field appearance="outline">-->
+                            <!--                                <mat-label>Group Template</mat-label>-->
+                            <!--                                <mat-select formControlName="roleOrGroup">-->
+                            <!--                                    <mat-option *ngFor="let group of groups" [value]="group">{{ group }}</mat-option>-->
+                            <!--                                </mat-select>-->
+                            <!--                            </mat-form-field>-->
+
+                            <div class="form-group">
+                                <label for="groupDropdown" class="form-label">Group Template</label>
+                                <p-dropdown
+                                    id="groupDropdown"
+                                    formControlName="roleOrGroup"
+                                    [options]="groups"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    placeholder="Select a group"
+                                    class="full-width">
+                                </p-dropdown>
+                            </div>
+
+                            <!--                            <mat-form-field *ngIf="ifPrivateGroup()" appearance="outline">-->
+                            <!--                                <mat-label>Group Label</mat-label>-->
+                            <!--                                <input matInput formControlName="groupLabel">-->
+                            <!--                            </mat-form-field>-->
+
+                            <div *ngIf="ifPrivateGroup()" class="form-group">
+                                <label for="groupLabelInput" class="form-label">Group Label</label>
+                                <input
+                                    pInputText
+                                    id="groupLabelInput"
+                                    formControlName="groupLabel"
+                                    placeholder="Enter group label"
+                                    class="full-width">
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -118,10 +142,21 @@
                                 <span>Role: </span>
                                 <span>{{ inviteRole }}</span>
                             </div>
-                            <mat-form-field appearance="outline">
-                                <mat-label>Invite</mat-label>
-                                <input matInput formControlName="invitation" (ngModelChange)="onParse($event)">
-                            </mat-form-field>
+                            <!--                            <mat-form-field appearance="outline">-->
+                            <!--                                <mat-label>Invite</mat-label>-->
+                            <!--                                <input matInput formControlName="invitation" (ngModelChange)="onParse($event)">-->
+                            <!--                            </mat-form-field>-->
+
+                            <div class="form-group">
+                                <label for="invitationInput" class="form-label">Invite</label>
+                                <input
+                                    pInputText
+                                    id="invitationInput"
+                                    formControlName="invitation"
+                                    (input)="onParse($event)"
+                                    class="full-width"
+                                    placeholder="Enter invitation">
+                            </div>
                         </div>
                     </div>
                 </div>

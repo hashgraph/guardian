@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
+import {Component, Inject} from '@angular/core';
 // import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { UntypedFormBuilder, Validators } from '@angular/forms';
+import {UntypedFormBuilder, Validators} from '@angular/forms';
 import * as moment from 'moment';
 import cronstrue from 'cronstrue';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -51,19 +51,27 @@ export class CronConfigDialog {
     timeString!: string;
     sd_local: moment.Moment;
 
+    public periodOptions = [
+        {label: 'Month', value: 'month'},
+        {label: 'Week', value: 'week'},
+        {label: 'Day', value: 'day'},
+        {label: 'Hour', value: 'hour'},
+        {label: 'Minute', value: 'minute'},
+    ];
+
     constructor(
         // public dialogRef: MatDialogRef<CronConfigDialog>,
         private fb: UntypedFormBuilder,
         // @Inject(MAT_DIALOG_DATA) public data: any,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
-        ) {
+    ) {
         const data = this.config.data
 
         if (data.startDate) {
             this.startDate = new Date(data.startDate) as Date;
         } else {
-            this.startDate =new Date() as Date;
+            this.startDate = new Date() as Date;
         }
 
         this.period = 'week';
@@ -72,13 +80,27 @@ export class CronConfigDialog {
         this.sd = moment(this.startDate).utc();
         this.sd_local = this.sd.clone().local();
         switch (this.sd.day()) {
-            case 0: this.weekDay.Su = true; break;
-            case 1: this.weekDay.Mo = true; break;
-            case 2: this.weekDay.Tu = true; break;
-            case 3: this.weekDay.We = true; break;
-            case 4: this.weekDay.Th = true; break;
-            case 5: this.weekDay.Fr = true; break;
-            case 6: this.weekDay.Sa = true; break;
+            case 0:
+                this.weekDay.Su = true;
+                break;
+            case 1:
+                this.weekDay.Mo = true;
+                break;
+            case 2:
+                this.weekDay.Tu = true;
+                break;
+            case 3:
+                this.weekDay.We = true;
+                break;
+            case 4:
+                this.weekDay.Th = true;
+                break;
+            case 5:
+                this.weekDay.Fr = true;
+                break;
+            case 6:
+                this.weekDay.Sa = true;
+                break;
         }
         this.onWeekChange();
     }
@@ -102,55 +124,101 @@ export class CronConfigDialog {
 
     getWeekMap() {
         const l = [];
-        if (this.weekDay.Mo) l.push(1);
-        if (this.weekDay.Tu) l.push(2);
-        if (this.weekDay.We) l.push(3);
-        if (this.weekDay.Th) l.push(4);
-        if (this.weekDay.Fr) l.push(5);
-        if (this.weekDay.Sa) l.push(6);
-        if (this.weekDay.Su) l.push(0);
-        if (l.length == 7) return '*';
-        if (l.length == 0) return '*';
+        if (this.weekDay.Mo) {
+            l.push(1);
+        }
+        if (this.weekDay.Tu) {
+            l.push(2);
+        }
+        if (this.weekDay.We) {
+            l.push(3);
+        }
+        if (this.weekDay.Th) {
+            l.push(4);
+        }
+        if (this.weekDay.Fr) {
+            l.push(5);
+        }
+        if (this.weekDay.Sa) {
+            l.push(6);
+        }
+        if (this.weekDay.Su) {
+            l.push(0);
+        }
+        if (l.length == 7) {
+            return '*';
+        }
+        if (l.length == 0) {
+            return '*';
+        }
         return l.join(',');
     }
 
     getMonthMap() {
         const l = [];
-        if (this.month.January) l.push(1);
-        if (this.month.February) l.push(2);
-        if (this.month.March) l.push(3);
-        if (this.month.April) l.push(4);
-        if (this.month.May) l.push(5);
-        if (this.month.June) l.push(6);
-        if (this.month.July) l.push(7);
-        if (this.month.August) l.push(8);
-        if (this.month.September) l.push(9);
-        if (this.month.October) l.push(10);
-        if (this.month.November) l.push(11);
-        if (this.month.December) l.push(12);
-        if (l.length == 12) return '*';
-        if (l.length == 0) return '*';
+        if (this.month.January) {
+            l.push(1);
+        }
+        if (this.month.February) {
+            l.push(2);
+        }
+        if (this.month.March) {
+            l.push(3);
+        }
+        if (this.month.April) {
+            l.push(4);
+        }
+        if (this.month.May) {
+            l.push(5);
+        }
+        if (this.month.June) {
+            l.push(6);
+        }
+        if (this.month.July) {
+            l.push(7);
+        }
+        if (this.month.August) {
+            l.push(8);
+        }
+        if (this.month.September) {
+            l.push(9);
+        }
+        if (this.month.October) {
+            l.push(10);
+        }
+        if (this.month.November) {
+            l.push(11);
+        }
+        if (this.month.December) {
+            l.push(12);
+        }
+        if (l.length == 12) {
+            return '*';
+        }
+        if (l.length == 0) {
+            return '*';
+        }
         return l.join(',');
     }
 
     getMask() {
         switch (this.period) {
-            case "month": {
+            case 'month': {
                 return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.getMonthMap()} *`;
             }
-            case "week": {
+            case 'week': {
                 return `${this.sd.minute()} ${this.sd.hour()} * * ${this.getWeekMap()}`;
             }
-            case "year": {
+            case 'year': {
                 return `${this.sd.minute()} ${this.sd.hour()} ${this.sd.date()} ${this.sd.month() + 1} *`;
             }
-            case "day": {
+            case 'day': {
                 return `${this.sd.minute()} ${this.sd.hour()} * * *`;
             }
-            case "hour": {
+            case 'hour': {
                 return `${this.sd.minute()} * * * *`;
             }
-            case "minute": {
+            case 'minute': {
                 return `* * * * *`;
             }
             default:
@@ -161,22 +229,22 @@ export class CronConfigDialog {
     getMaskByInterval() {
         const data = this.dataForm.value;
         switch (this.period) {
-            case "month": {
+            case 'month': {
                 return `${this.sd_local.minute()} ${this.sd_local.hour()} ${this.sd_local.date()} ${this.getMonthMap()}/${data.interval} *`;
             }
-            case "week": {
+            case 'week': {
                 return `${this.sd_local.minute()} ${this.sd_local.hour()} * * ${this.getWeekMap()}`;
             }
-            case "year": {
+            case 'year': {
                 return `${this.sd_local.minute()} ${this.sd_local.hour()} ${this.sd_local.date()} ${this.sd_local.month() + 1} *`;
             }
-            case "day": {
+            case 'day': {
                 return `${this.sd_local.minute()} ${this.sd_local.hour()} */${data.interval} * *`;
             }
-            case "hour": {
+            case 'hour': {
                 return `${this.sd_local.minute()} */${data.interval} * * *`;
             }
-            case "minute": {
+            case 'minute': {
                 return `*/${data.interval} * * * *`;
             }
             default:
@@ -201,10 +269,10 @@ export class CronConfigDialog {
 
     setMask(mask: string) {
         const data = this.dataForm.value;
-        this.dataForm.setValue({ mask: mask, interval: data.interval });
+        this.dataForm.setValue({mask: mask, interval: data.interval});
     }
 
     setText(mask: string) {
-        this.timeString = cronstrue.toString(mask, { use24HourTimeFormat: true });
+        this.timeString = cronstrue.toString(mask, {use24HourTimeFormat: true});
     }
 }

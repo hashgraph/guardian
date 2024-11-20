@@ -1,7 +1,7 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import {Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
 // import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { CodeEditorDialogComponent } from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
 
 @Component({
@@ -23,6 +23,20 @@ export class CustomLogicConfigComponent implements OnInit {
         outputSchemaGroup: false
     };
     schemas!: SchemaVariables[];
+
+    public documentSignerOptions = [
+        {label: 'Policy Owner', value: ''},
+        {label: 'First Document Owner', value: 'owner'},
+        {label: 'First Document Issuer', value: 'issuer'}
+    ];
+
+    public idTypeOptions = [
+        {label: 'None', value: ''},
+        {label: 'DID (New DID)', value: 'DID'},
+        {label: 'UUID (New UUID)', value: 'UUID'},
+        {label: 'Owner (Owner DID)', value: 'OWNER'},
+        {label: 'From First Document Id', value: 'DOCUMENT'}
+    ];
 
     constructor(
         // private dialog: MatDialog
@@ -63,7 +77,7 @@ export class CustomLogicConfigComponent implements OnInit {
             closable: false,
         })
         dialogRef.onClose.subscribe(result => {
-            if(result) {
+            if (result) {
                 this.properties.expression = result.expression;
             }
         })

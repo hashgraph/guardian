@@ -48,10 +48,19 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Icon Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.iconType" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="common">Common Library</mat-option>
-                <mat-option value="custom">Custom</mat-option>
-            </mat-select>
+            <!--            <mat-select [(value)]="properties.iconType" [disabled]="readonly" (change)="onSave()">-->
+            <!--                <mat-option value="common">Common Library</mat-option>-->
+            <!--                <mat-option value="custom">Custom</mat-option>-->
+            <!--            </mat-select>-->
+
+            <p-dropdown [(ngModel)]="properties.iconType"
+                        [options]="iconTypeOptions"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select Icon Type"
+                        optionLabel="label"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
 
@@ -139,12 +148,21 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <mat-select [(value)]="properties.dynamicFilters[i].type" [disabled]="readonly" (change)="onSave()">
-                        <mat-option value="equal">Equal</mat-option>
-                        <mat-option value="not_equal">Not Equal</mat-option>
-                        <mat-option value="in">In</mat-option>
-                        <mat-option value="not_in">Not In</mat-option>
-                    </mat-select>
+                    <!--                    <mat-select [(value)]="properties.dynamicFilters[i].type" [disabled]="readonly" (change)="onSave()">-->
+                    <!--                        <mat-option value="equal">Equal</mat-option>-->
+                    <!--                        <mat-option value="not_equal">Not Equal</mat-option>-->
+                    <!--                        <mat-option value="in">In</mat-option>-->
+                    <!--                        <mat-option value="not_in">Not In</mat-option>-->
+                    <!--                    </mat-select>-->
+
+                    <p-dropdown [(ngModel)]="properties.dynamicFilters[i].type"
+                                [options]="filterTypeOptions"
+                                [disabled]="readonly"
+                                (onChange)="onSave()"
+                                placeholder="Select Filter Type"
+                                optionLabel="label"
+                                optionValue="value">
+                    </p-dropdown>
                 </td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
@@ -315,22 +333,40 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.filters[i].type" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value="equal">Equal</mat-option>
-                    <mat-option value="not_equal">Not Equal</mat-option>
-                    <mat-option value="in">In</mat-option>
-                    <mat-option value="not_in">Not In</mat-option>
-                </mat-select>
+                <!--                <mat-select [(value)]="properties.filters[i].type" [disabled]="readonly" (change)="onSave()">-->
+                <!--                    <mat-option value="equal">Equal</mat-option>-->
+                <!--                    <mat-option value="not_equal">Not Equal</mat-option>-->
+                <!--                    <mat-option value="in">In</mat-option>-->
+                <!--                    <mat-option value="not_in">Not In</mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown [(ngModel)]="properties.filters[i].type"
+                            [options]="filterTypeOptions"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            placeholder="Select Filter Type"
+                            optionLabel="label"
+                            optionValue="value">
+                </p-dropdown>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Variable Type</td>
             <td class="propRowCell">
-                <mat-select [(value)]="properties.filters[i].typeValue" [disabled]="readonly" (change)="onSave()">
-                    <mat-option value="value">Value</mat-option>
-                    <mat-option value="variable">Variable</mat-option>
-                </mat-select>
+                <!--                <mat-select [(value)]="properties.filters[i].typeValue" [disabled]="readonly" (change)="onSave()">-->
+                <!--                    <mat-option value="value">Value</mat-option>-->
+                <!--                    <mat-option value="variable">Variable</mat-option>-->
+                <!--                </mat-select>-->
+
+                <p-dropdown [(ngModel)]="properties.filters[i].typeValue"
+                            [options]="typeValueOptions"
+                            [disabled]="readonly"
+                            (onChange)="onSave()"
+                            placeholder="Select Type Value"
+                            optionLabel="label"
+                            optionValue="value">
+                </p-dropdown>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">

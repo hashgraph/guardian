@@ -3,14 +3,28 @@
                     (page)="onPage($event)">
 
     <div class="action-buttons">
-        <mat-form-field appearance="outline">
-            <mat-label>Tokens</mat-label>
-            <mat-select [(value)]="selectedTokens" multiple (selectionChange)="loadPools()">
-                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{ token.tokenSymbol }}
-                    ({{ token.tokenId }})
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+        <!--        <mat-form-field appearance="outline">-->
+        <!--            <mat-label>Tokens</mat-label>-->
+        <!--            <mat-select [(value)]="selectedTokens" multiple (selectionChange)="loadPools()">-->
+        <!--                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{ token.tokenSymbol }}-->
+        <!--                    ({{ token.tokenId }})-->
+        <!--                </mat-option>-->
+        <!--            </mat-select>-->
+        <!--        </mat-form-field>-->
+
+        <div class="p-fluid">
+            <label for="tokensDropdown">Tokens</label>
+            <p-multiSelect
+                id="tokensDropdown"
+                [(ngModel)]="selectedTokens"
+                [options]="getTransformedTokens()"
+                optionLabel="label"
+                display="chip"
+                placeholder="Select Tokens"
+                [filter]="true"
+                (onChange)="loadPools()">
+            </p-multiSelect>
+        </div>
     </div>
     <div *ngIf="pools?.length; else noPools">
         <div *ngFor="let pool of pools" class="pool">

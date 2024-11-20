@@ -1,7 +1,7 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
 // import { MatLegacyTabsModule as MatTabsModule } from '@angular/material/legacy-tabs';
-import {MatStepperModule} from '@angular/material/stepper';
+// import {MatStepperModule} from '@angular/material/stepper';
 // import {MatExpansionModule} from '@angular/material/expansion';
 // import {MatIconModule} from '@angular/material/icon';
 import {ReactiveFormsModule} from '@angular/forms';
@@ -15,7 +15,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 // import {MatDividerModule} from '@angular/material/divider';
 // import {MatLegacyListModule as MatListModule} from '@angular/material/legacy-list';
 // import {MatLegacyProgressBarModule as MatProgressBarModule} from '@angular/material/legacy-progress-bar';
-import {MatLegacySelectModule as MatSelectModule} from '@angular/material/legacy-select';
+// import {MatLegacySelectModule as MatSelectModule} from '@angular/material/legacy-select';
 // import {MatLegacyCheckboxModule as MatCheckboxModule} from '@angular/material/legacy-checkbox';
 import {MatTreeModule} from '@angular/material/tree';
 // import {MatDatepickerModule} from '@angular/material/datepicker';
@@ -51,6 +51,9 @@ import {CheckboxModule} from 'primeng/checkbox';
 // import {InputTextModule} from 'primeng/inputtext';
 import {ChipsModule} from 'primeng/chips';
 import {StepsModule} from 'primeng/steps';
+import {DropdownModule} from 'primeng/dropdown';
+import {MultiSelectModule} from 'primeng/multiselect';
+import {InputNumberModule} from 'primeng/inputnumber';
 
 @NgModule({
     declarations: [],
@@ -104,6 +107,7 @@ import {StepsModule} from 'primeng/steps';
         ProgressBarModule,
 
         // MatSelectModule,
+        DropdownModule,
 
         // MatCheckboxModule,
         CheckboxModule,
@@ -172,7 +176,10 @@ import {StepsModule} from 'primeng/steps';
         // MatProgressBarModule,
         ProgressBarModule,
 
-        MatSelectModule,
+        // MatSelectModule,
+        DropdownModule,
+        MultiSelectModule,
+        InputNumberModule,
 
         // MatCheckboxModule,
         CheckboxModule,
@@ -196,6 +203,7 @@ import {StepsModule} from 'primeng/steps';
         // MatAutocompleteModule,
 
         DragDropModule,
+
         // MatSliderModule,
 
         CdkTableModule,

@@ -164,10 +164,21 @@
                             <span>Current Policy: </span>
                             <span>{{ instanceTopicId }}</span>
                         </div>
-                        <mat-form-field appearance="outline">
-                            <mat-label>Link</mat-label>
-                            <input matInput [value]="link1" readonly="true">
-                        </mat-form-field>
+                        <!--                        <mat-form-field appearance="outline">-->
+                        <!--                            <mat-label>Link</mat-label>-->
+                        <!--                            <input matInput [value]="link1" readonly="true">-->
+                        <!--                        </mat-form-field>-->
+
+                        <div class="p-fluid">
+                            <label for="link1">Link</label>
+                            <input
+                                id="link1"
+                                pInputText
+                                [value]="link1"
+                                readonly
+                                class="p-inputtext p-component"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
