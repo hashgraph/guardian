@@ -25,6 +25,13 @@ export abstract class SynchronizationTask {
     ) { }
 
     /**
+     * Name
+     */
+    public get taskName(): string {
+        return this._name;
+    }
+
+    /**
      * Start synchronization task
      */
     public start(firstExecution: boolean = false) {
@@ -77,5 +84,5 @@ export abstract class SynchronizationTask {
         this._job?.stop();
     }
 
-    protected abstract sync(): Promise<void>;
+    public abstract sync(): Promise<void>;
 }

@@ -301,4 +301,16 @@ export class RequestDocumentBlockComponent
     public onCancelPage(value: boolean) {
         this.router.navigate(['/policy-viewer']);
     }
+
+    public onChangeButtons($event: any) {
+        if (Array.isArray($event)) {
+            for (const item of $event) {
+                if (item.id === 'submit') {
+                    item.disabled = () => {
+                        return !this.dataForm.valid || this.loading;
+                    }
+                }
+            }
+        }
+    }
 }

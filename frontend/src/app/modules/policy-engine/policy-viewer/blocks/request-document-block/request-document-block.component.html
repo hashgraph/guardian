@@ -70,6 +70,7 @@
                     submitText="Create"
                     [rules]="rulesResults"
                     [paginationHidden]="false"
+                    (buttons)="onChangeButtons($event)"
                 >
                 </app-schema-form>
             </div>
