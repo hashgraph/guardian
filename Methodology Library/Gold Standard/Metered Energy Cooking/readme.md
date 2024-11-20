@@ -4,7 +4,6 @@
 - [Table of content](#table-of-content)
 - [Introduction](#introduction)
 - [Why ME\&ED(Metered and Measured Energy) Methodology?](#why-meedmetered-and-measured-energy-methodology)
-- [Demo Video](#demo-video)
 - [Policy Workflow](#policy-workflow)
 - [Policy Guide](#policy-guide)
   - [Available Roles](#available-roles)
@@ -19,7 +18,6 @@
 - [Existing Cookstove Policy Comparison](#existing-cookstove-policy-comparison)
 
 <!-- /TOC -->
-
 ## Introduction
 
 According to [Gold Standard](https://www.goldstandard.org/our-story/sector-community-based-energy-efficiency) more than 3 billion people lack access to clean cooking solutions leading to over 4 million premature deaths each year. This doesn't attribute the havoc GHG emissions from wood or fossil fuel based cookstoves are going to cause in the future.
@@ -45,9 +43,6 @@ According to a new [research](https://assets.researchsquare.com/files/rs-2606020
 
 This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local communities in the project development and monitoring process. This approach promotes greater transparency and accountability and helps to ensure that the environmental and social benefits of the project are maximized. This Guardian policy, is a reflection of same methodology according to the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle_15042021_Annyta.pdf).
 
-## Demo Video
-
-[Youtube](https://youtu.be/nOQpLmbW0hA)
 
 ## Policy Workflow
   
