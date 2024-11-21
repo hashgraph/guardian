@@ -17,7 +17,7 @@ import {ReactiveFormsModule} from '@angular/forms';
 // import {MatLegacyProgressBarModule as MatProgressBarModule} from '@angular/material/legacy-progress-bar';
 // import {MatLegacySelectModule as MatSelectModule} from '@angular/material/legacy-select';
 // import {MatLegacyCheckboxModule as MatCheckboxModule} from '@angular/material/legacy-checkbox';
-import {MatTreeModule} from '@angular/material/tree';
+// import {MatTreeModule} from '@angular/material/tree';
 // import {MatDatepickerModule} from '@angular/material/datepicker';
 // import {MatLegacyRadioModule as MatRadioModule} from '@angular/material/legacy-radio';
 // import {MatNativeDateModule} from '@angular/material/core';
@@ -55,6 +55,7 @@ import {DropdownModule} from 'primeng/dropdown';
 import {MultiSelectModule} from 'primeng/multiselect';
 import {InputNumberModule} from 'primeng/inputnumber';
 import {TooltipModule} from 'primeng/tooltip';
+import {TreeModule} from 'primeng/tree';
 
 @NgModule({
     declarations: [],
@@ -113,7 +114,8 @@ import {TooltipModule} from 'primeng/tooltip';
         // MatCheckboxModule,
         CheckboxModule,
 
-        MatTreeModule,
+        // MatTreeModule,
+        TreeModule,
 
         // MatTooltipModule,
         TooltipModule,
@@ -185,7 +187,8 @@ import {TooltipModule} from 'primeng/tooltip';
         // MatCheckboxModule,
         CheckboxModule,
 
-        MatTreeModule,
+        // MatTreeModule,
+        TreeModule,
 
         // MatTooltipModule,
         TooltipModule,
