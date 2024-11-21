@@ -187,9 +187,16 @@
 
         </div>
         <div class="table-paginator">
-            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-            </mat-paginator>
+            <!--            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"-->
+            <!--                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">-->
+            <!--            </mat-paginator>-->
+
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [length]="contractsCount"
+                (page)="onPage($event)"
+            ></app-paginator>
         </div>
     </ng-container>
 </div>

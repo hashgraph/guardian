@@ -24,7 +24,7 @@ import {MatTreeModule} from '@angular/material/tree';
 import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
 // import {MatLegacySlideToggleModule as MatSlideToggleModule} from '@angular/material/legacy-slide-toggle';
 // import {ClipboardModule} from '@angular/cdk/clipboard';
-import {MatLegacyPaginatorModule as MatPaginatorModule} from '@angular/material/legacy-paginator';
+// import {MatLegacyPaginatorModule as MatPaginatorModule} from '@angular/material/legacy-paginator';
 // import {MatSortModule} from '@angular/material/sort';
 // import {MatLegacyChipsModule as MatChipsModule} from '@angular/material/legacy-chips';
 // import {MatLegacyAutocompleteModule as MatAutocompleteModule} from '@angular/material/legacy-autocomplete';
@@ -119,7 +119,7 @@ import {InputNumberModule} from 'primeng/inputnumber';
 
         // MatSlideToggleModule,
 
-        MatPaginatorModule,
+        // MatPaginatorModule,
 
         DragDropModule,
         // MatSliderModule,
@@ -193,7 +193,7 @@ import {InputNumberModule} from 'primeng/inputnumber';
 
         // ClipboardModule,
 
-        MatPaginatorModule,
+        // MatPaginatorModule,
 
         // MatSortModule,
 

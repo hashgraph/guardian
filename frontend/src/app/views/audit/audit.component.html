@@ -143,9 +143,16 @@
     </div>
 
     <div *ngIf="dataSource" class="table-paginator">
-        <mat-paginator [length]="dataCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                       [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-        </mat-paginator>
+        <!--        <mat-paginator [length]="dataCount" [pageIndex]="pageIndex" [pageSize]="pageSize"-->
+        <!--                       [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">-->
+        <!--        </mat-paginator>-->
+
+        <app-paginator
+            [length]="dataCount"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            (page)="onPage($event)">
+        </app-paginator>
     </div>
 
     <div *ngIf="loading" class="loading">

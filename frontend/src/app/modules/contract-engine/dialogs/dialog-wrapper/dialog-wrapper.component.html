@@ -35,8 +35,15 @@
                 <p-progressSpinner></p-progressSpinner>
             </div>
         </ng-template>
-        <mat-paginator *ngIf="paginatorVisible && length && length > 0" [length]="length" [pageSize]="pageSize"
-                       [pageSizeOptions]="[5, 10]"
-                       (page)="page.emit($event)"></mat-paginator>
+        <!--        <mat-paginator *ngIf="paginatorVisible && length && length > 0" [length]="length" [pageSize]="pageSize"-->
+        <!--                       [pageSizeOptions]="[5, 10]"-->
+        <!--                       (page)="page.emit($event)"></mat-paginator>-->
+
+        <app-paginator
+            *ngIf="paginatorVisible && length && length > 0"
+            [length]="length"
+            [pageSize]="pageSize"
+            (page)="page.emit($event)">
+        </app-paginator>
     </div>
 </div>

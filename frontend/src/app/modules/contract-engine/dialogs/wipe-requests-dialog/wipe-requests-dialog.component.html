@@ -32,8 +32,16 @@
                 </button>
             </div>
         </div>
-        <mat-paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10]"
-                       (page)="onPage($event)"></mat-paginator>
+        <!--        <mat-paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10]"-->
+        <!--                       (page)="onPage($event)"></mat-paginator>-->
+
+        <app-paginator
+            [length]="length"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            (page)="onPage($event)">
+        </app-paginator>
+
     </ng-container>
 </app-dialog-wrapper>
 <ng-template #noRequests>
