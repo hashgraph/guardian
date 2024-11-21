@@ -1,8 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { UntypedFormBuilder, Validators } from '@angular/forms';
+import {Component, Input, OnInit} from '@angular/core';
+import {UntypedFormBuilder, Validators} from '@angular/forms';
 // import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
+// import { MatIconRegistry } from '@angular/material/icon';
+// import { DomSanitizer } from '@angular/platform-browser';
 import {
     IImpactReport,
     IconType,
@@ -13,13 +13,13 @@ import {
     IVCReport,
     IVPReport,
 } from '@guardian/interfaces';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { IPFSService } from 'src/app/services/ipfs.service';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { IconsArray } from './iconsArray';
-import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {IPFSService} from 'src/app/services/ipfs.service';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {IconsArray} from './iconsArray';
+import {DialogService} from 'primeng/dynamicdialog';
+import {HttpErrorResponse} from '@angular/common/http';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -61,17 +61,17 @@ export class ReportBlockComponent implements OnInit {
         private fb: UntypedFormBuilder,
         // public dialog: MatDialog,
         private dialogService: DialogService,
-        iconRegistry: MatIconRegistry,
-        sanitizer: DomSanitizer,
+        // iconRegistry: MatIconRegistry,
+        // sanitizer: DomSanitizer,
         private ipfs: IPFSService
     ) {
-        for (let i = 0; i < IconsArray.length; i++) {
-            const element = IconsArray[i];
-            iconRegistry.addSvgIconLiteral(
-                element.name,
-                sanitizer.bypassSecurityTrustHtml(element.icon)
-            );
-        }
+        // for (let i = 0; i < IconsArray.length; i++) {
+        //     const element = IconsArray[i];
+        //     iconRegistry.addSvgIconLiteral(
+        //         element.name,
+        //         sanitizer.bypassSecurityTrustHtml(element.icon)
+        //     );
+        // }
     }
 
     ngOnInit(): void {
@@ -249,7 +249,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VC',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openVPDocument(item: any) {
@@ -268,7 +269,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VP',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openJsonDocument(item: ITokenReport) {
@@ -284,7 +286,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     mapData(data: any[]) {
@@ -324,7 +327,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, { filterValue: null })
+            .setBlockData(this.id, this.policyId, {filterValue: null})
             .subscribe(
                 () => {
                     this.loadData();

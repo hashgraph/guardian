@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
+// import { NgxMatDatetimePickerModule } from '@angular-material-components/datetime-picker';
 import { MaterialModule } from './material.module';
 import { DatetimePicker } from './datetime-picker/datetime-picker.component';
 import { HederaExplorer } from './hedera-explorer/hedera-explorer.component';
@@ -73,7 +73,7 @@ import {TooltipModule} from 'primeng/tooltip';
         CommonModule,
         FormsModule,
         MaterialModule,
-        NgxMatDatetimePickerModule,
+        // NgxMatDatetimePickerModule,
         NgxFileDropModule,
         NgxColorsModule,
         NgxMaskDirective,

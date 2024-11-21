@@ -10,7 +10,7 @@ import {
     Validators,
 } from '@angular/forms';
 import {moreThanZeroValidator} from 'src/app/validators/more-than-zero.validator';
-import {MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS} from '@angular/material/legacy-radio';
+// import {MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS} from '@angular/material/legacy-radio';
 import {Token} from '@guardian/interfaces';
 import {TokenService} from 'src/app/services/token.service';
 import {DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -23,10 +23,10 @@ import {DynamicDialogRef} from 'primeng/dynamicdialog';
     templateUrl: './set-pool-dialog.component.html',
     styleUrls: ['./set-pool-dialog.component.scss'],
     providers: [
-        {
-            provide: MAT_RADIO_DEFAULT_OPTIONS,
-            useValue: {color: 'primary'},
-        },
+        // {
+        //     provide: MAT_RADIO_DEFAULT_OPTIONS,
+        //     useValue: {color: 'primary'},
+        // },
     ],
 })
 export class SetPoolDialogComponent {

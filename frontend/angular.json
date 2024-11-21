@@ -106,7 +106,6 @@
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
                         "styles": [
-                          "./node_modules/@angular/material/legacy-prebuilt-themes/legacy-indigo-pink.css",
                           "./node_modules/ngx-toastr/toastr.css",
                           "./node_modules/primeng/resources/themes/saga-blue/theme.css",
                           "./node_modules/primeng/resources/primeng.min.css",

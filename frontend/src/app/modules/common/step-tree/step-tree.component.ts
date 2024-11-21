@@ -6,7 +6,7 @@ import {
     Output,
     SimpleChanges,
 } from '@angular/core';
-import { MatTreeNestedDataSource } from '@angular/material/tree';
+// import { MatTreeNestedDataSource } from '@angular/material/tree';
 
 interface TreeNode {
     name: string;
@@ -20,7 +20,8 @@ interface TreeNode {
 })
 export class StepTreeComponent {
     treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
-    dataSource = new MatTreeNestedDataSource<TreeNode>();
+    // dataSource = new MatTreeNestedDataSource<TreeNode>();
+    dataSource: any
 
     @Input('treeData') treeData!: any;
     @Input('currentNode') currentNode!: any;

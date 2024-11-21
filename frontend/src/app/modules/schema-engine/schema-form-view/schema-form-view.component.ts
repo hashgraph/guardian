@@ -1,5 +1,5 @@
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+// import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
+// import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -33,8 +33,8 @@ interface IFieldIndexControl {
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.scss'],
     providers: [
-        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
+        // { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
+        // { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
 })

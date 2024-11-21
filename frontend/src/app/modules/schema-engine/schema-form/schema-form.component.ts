@@ -1,5 +1,5 @@
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
+// import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
+// import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
@@ -94,8 +94,8 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     templateUrl: './schema-form.component.html',
     styleUrls: ['./schema-form.component.scss'],
     providers: [
-        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
+        // { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
+        // { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
     ]
 })
 export class SchemaFormComponent implements OnInit {

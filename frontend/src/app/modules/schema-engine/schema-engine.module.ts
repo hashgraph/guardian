@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
+// import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GoogleMapsModule } from '@angular/google-maps';
@@ -71,9 +71,9 @@ import { AccordionModule } from 'primeng/accordion';
         FormsModule,
         CommonComponentsModule,
         MaterialModule,
-        NgxMatDatetimePickerModule,
-        NgxMatNativeDateModule,
-        NgxMatTimepickerModule,
+        // NgxMatDatetimePickerModule,
+        // NgxMatNativeDateModule,
+        // NgxMatTimepickerModule,
         ClipboardModule,
         CodemirrorModule,
         ArtifactEngineModule,

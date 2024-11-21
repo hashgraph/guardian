@@ -1,8 +1,6 @@
 {
   "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
   "dependencies": {
-    "@angular-material-components/datetime-picker": "^16.0.0",
-    "@angular-material-components/moment-adapter": "^16.0.0",
     "@angular/animations": "^16.2.12",
     "@angular/cdk": "^16.2.14",
     "@angular/common": "^16.2.12",
@@ -10,7 +8,6 @@
     "@angular/core": "^16.2.12",
     "@angular/forms": "^16.2.12",
     "@angular/google-maps": "^16.2.14",
-    "@angular/material": "^16.2.14",
     "@angular/platform-browser": "^16.2.12",
     "@angular/platform-browser-dynamic": "^16.2.12",
     "@angular/router": "^16.2.12",
