@@ -1,7 +1,8 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, MessageError, MessageResponse, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { publishLabelConfig } from './helpers/index.js';
+import { generateSchema, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
+import { publishSchema } from './helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -238,7 +239,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} - policy label
      */
-    ApiResponse(MessageAPI.ACTIVATE_POLICY_LABEL,
+    ApiResponse(MessageAPI.PUBLISH_POLICY_LABEL,
         async (msg: { labelId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
@@ -254,43 +255,36 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already active.`);
                 }
 
-                item.status = EntityStatus.ACTIVE;
+                item.status = EntityStatus.PUBLISHED;
                 item.config = PolicyLabelImportExport.validateConfig(item.config);
                 item.config = publishLabelConfig(item.config);
 
-                const result = await DatabaseServer.updatePolicyLabel(item);
-                return new MessageResponse(result);
 
-            } catch (error) {
-                await logger.error(error, ['GUARDIAN_SERVICE']);
-                return new MessageError(error);
-            }
-        });
 
-    /**
-     * Inactivate policy label
-     *
-     * @param {any} msg - policy label id
-     *
-     * @returns {any} - policy label
-     */
-    ApiResponse(MessageAPI.INACTIVATE_POLICY_LABEL,
-        async (msg: { labelId: string, owner: IOwner }) => {
-            try {
-                if (!msg) {
-                    return new MessageError('Invalid parameters.');
-                }
-                const { labelId, owner } = msg;
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
-                if (!item || item.owner !== owner.owner) {
-                    return new MessageError('Item does not exist.');
-                }
-                if (item.status !== EntityStatus.ACTIVE) {
-                    return new MessageError(`Item is already inactive.`);
-                }
 
-                item.status = EntityStatus.DRAFT;
+                const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
+                statMessage.setDocument(item);
+
+                const topic = await getOrCreateTopic(item);
+                const user = await (new Users()).getHederaAccount(owner.creator);
+                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const statMessageResult = await messageServer
+                    .setTopicObject(topic)
+                    .sendMessage(statMessage);
+
+                item.topicId = topic.topicId;
+                item.messageId = statMessageResult.getId();
+
+                const schema = await generateSchema(item, owner);
+                await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
+                await DatabaseServer.createAndSaveSchema(schema);
+
+
+
+
+
+
 
                 const result = await DatabaseServer.updatePolicyLabel(item);
                 return new MessageResponse(result);

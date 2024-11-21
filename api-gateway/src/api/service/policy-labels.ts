@@ -251,11 +251,11 @@ export class PolicyLabelsApi {
     /**
      * Activate policy label
      */
-    @Put('/:labelId/activate')
+    @Put('/:labelId/publish')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
-        summary: 'Activates policy label.',
-        description: 'Activates policy label for the specified label ID.',
+        summary: 'Publishes policy label.',
+        description: 'Publishes policy label for the specified label ID.',
     })
     @ApiParam({
         name: 'labelId',
@@ -274,7 +274,7 @@ export class PolicyLabelsApi {
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async activatePolicyLabel(
+    async publishPolicyLabel(
         @AuthUser() user: IAuthUser,
         @Param('labelId') labelId: string
     ): Promise<PolicyLabelDTO> {
@@ -288,53 +288,7 @@ export class PolicyLabelsApi {
             if (!oldItem) {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
-            return await guardians.activatePolicyLabel(labelId, owner);
-        } catch (error) {
-            await InternalException(error, this.logger);
-        }
-    }
-
-    /**
-     * Inactivate policy label
-     */
-    @Put('/:labelId/inactivate')
-    @Auth(Permissions.STATISTICS_LABEL_CREATE)
-    @ApiOperation({
-        summary: 'Inactivates policy label.',
-        description: 'Inactivates policy label for the specified label ID.',
-    })
-    @ApiParam({
-        name: 'labelId',
-        type: 'string',
-        required: true,
-        description: 'policy label Identifier',
-        example: Examples.DB_ID,
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: PolicyLabelDTO
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO
-    })
-    @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.OK)
-    async inactivatePolicyLabel(
-        @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string
-    ): Promise<PolicyLabelDTO> {
-        try {
-            if (!labelId) {
-                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
-            }
-            const owner = new EntityOwner(user);
-            const guardians = new Guardians();
-            const oldItem = await guardians.getPolicyLabelById(labelId, owner);
-            if (!oldItem) {
-                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
-            }
-            return await guardians.inactivatePolicyLabel(labelId, owner);
+            return await guardians.publishPolicyLabel(labelId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

@@ -8,7 +8,7 @@
         <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div class="header-container">
+    <div *ngIf="!rulesConfig.show" class="header-container">
         <div class="guardian-user-back-button">
             <button (click)="onBack()" class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -22,6 +22,27 @@
 
         <div class="guardian-user-page-header">
             <span>{{item?.name}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="rulesConfig.show" class="header-container">
+        <div class="guardian-user-back-button">
+            <button (click)="onCancelNavItem()" class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Label</div>
+            </button>
+        </div>
+
+        <div class="guardian-user-page-header">
+            <span>{{rulesConfig.name}}</span>
             <div *ngIf="policy" class="policy-name">
                 <span>Policy Name: {{policy.name}}</span>
                 <span class="policy-version">Version: {{policy.version}}</span>
@@ -107,8 +128,8 @@
                         <div class="variables-grid-header">
                             <div class="variables-grid-cell cell-130">TYPE</div>
                             <div class="variables-grid-cell cell-300">NAME</div>
-                            <div class="variables-grid-cell cell-300">DESCRIPTION</div>
-                            <div class="variables-grid-cell">OWNER</div>
+                            <div class="variables-grid-cell">DESCRIPTION</div>
+                            <div class="variables-grid-cell cell-300">OWNER</div>
                             <div class="variables-grid-cell cell-48"></div>
                         </div>
                         <div class="variables-grid-body">
@@ -126,11 +147,11 @@
                                 <div class="variables-grid-cell cell-300">
                                     {{item.config.name}}
                                 </div>
-                                <div class="variables-grid-cell cell-300">
+                                <div class="variables-grid-cell">
                                     {{item.config.description}}
                                 </div>
-                                <div class="variables-grid-cell">
-                                    {{item.config.owner}}
+                                <div class="variables-grid-cell cell-300">
+                                    <span>{{item.config.owner}}</span>
                                 </div>
                                 <div class="variables-grid-cell cell-48 cell-btn">
                                     <button 
@@ -298,7 +319,7 @@
                             <ng-container *ngIf="labelConfig.getGroupConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Rule</label>
@@ -311,20 +332,21 @@
                                         placeholder="Not selected"
                                         optionLabel="label" 
                                         optionValue="value"
-                                        panelStyleClass="guardian-dropdown-panel">
+                                        panelStyleClass="guardian-dropdown-panel"
+                                        [readonly]="selectedNavItem.freezed">
                                     </p-dropdown>
                                 </div>
                             </ng-container>
                             <ng-container *ngIf="labelConfig.getRuleConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
                             </ng-container>
                             <ng-container *ngIf="labelConfig.getLabelConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
 
                                 <div class="item-options-header">
@@ -350,7 +372,7 @@
                             <ng-container *ngIf="labelConfig.getStatisticConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
-                                    <input pInputText type="text" [(ngModel)]="config.name" />
+                                    <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
 
                                 <div class="item-options-header">

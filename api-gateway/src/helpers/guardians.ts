@@ -3297,27 +3297,15 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Activate policy label
+     * Publish policy label
      *
      * @param labelId
      * @param owner
      *
      * @returns Operation Success
      */
-    public async activatePolicyLabel(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
-        return await this.sendMessage(MessageAPI.ACTIVATE_POLICY_LABEL, { labelId, owner });
-    }
-
-    /**
-     * Activate policy label
-     *
-     * @param labelId
-     * @param owner
-     *
-     * @returns Operation Success
-     */
-    public async inactivatePolicyLabel(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
-        return await this.sendMessage(MessageAPI.INACTIVATE_POLICY_LABEL, { labelId, owner });
+    public async publishPolicyLabel(labelId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL, { labelId, owner });
     }
 
     /**

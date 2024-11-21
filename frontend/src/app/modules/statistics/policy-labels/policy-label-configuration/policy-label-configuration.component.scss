@@ -1219,6 +1219,12 @@
                 text-align: left;
                 user-select: text;
 
+                span {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
                 .cell-focus {
                     display: none;
                     position: absolute;

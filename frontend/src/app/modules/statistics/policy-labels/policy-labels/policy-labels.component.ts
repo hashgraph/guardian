@@ -40,6 +40,25 @@ export class PolicyLabelsComponent implements OnInit {
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
 
+    public statuses = [{
+        label: 'Draft',
+        value: EntityStatus.DRAFT,
+        description: 'Return to editing.',
+        disable: true
+    }, {
+        label: 'Published',
+        value: EntityStatus.PUBLISHED,
+        description: 'Release version into public domain.',
+        disable: (value: string): boolean => {
+            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
+        }
+    }, {
+        label: 'Error',
+        value: EntityStatus.ERROR,
+        description: '',
+        disable: true
+    }]
+
     private subscription = new Subscription();
 
     constructor(
@@ -61,6 +80,12 @@ export class PolicyLabelsComponent implements OnInit {
             title: 'Policy',
             type: 'text',
             size: 'auto',
+            tooltip: false
+        }, {
+            id: 'topicId',
+            title: 'Topic',
+            type: 'text',
+            size: '135',
             tooltip: false
         }, {
             id: 'status',
@@ -322,15 +347,38 @@ export class PolicyLabelsComponent implements OnInit {
         });
     }
 
-    public onActive($event: any, row: any) {
-        const active = $event === EntityStatus.ACTIVE;
-        this.loading = true;
-        this.policyLabelsService
-            .activateLabel(row, active)
-            .subscribe((result) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+    public onChangeStatus($event: string, row: any): void {
+        this.publish(row)
+    }
+
+    private publish(row: any) {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Publish Label',
+                text: `Are you sure want to publish label (${row.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Publish',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Publish') {
+                this.loading = true;
+                this.policyLabelsService
+                    .publish(row)
+                    .subscribe((response) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

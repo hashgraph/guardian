@@ -227,6 +227,8 @@ class RulesConfig {
     public variables: SchemaVariables = new SchemaVariables();
     public scores: SchemaScores = new SchemaScores();
 
+    public name: string;
+
     private _selectTimeout1: any;
     private _selectTimeout2: any;
     private _selectTimeout3: any;
@@ -354,6 +356,7 @@ class RulesConfig {
         const config = item.config;
 
         this.readonly = node.readonly || node.freezed;
+        this.name = node.label;
 
         this.variables.fromData(config?.variables);
         this.scores.fromData(config?.scores);

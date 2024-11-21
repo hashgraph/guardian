@@ -117,14 +117,11 @@
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'status'">
-                                        <guardian-switch-button
-                                            [(value)]="row.status"
-                                            onValue="ACTIVE" 
-                                            offValue="DRAFT"
-                                            onLabel="Active" 
-                                            offLabel="Inactive"
-                                            (onChange)="onActive($event, row)"
-                                        ></guardian-switch-button>
+                                        <status-dropdown
+                                            [status]="row.status"
+                                            [value]="row.status"
+                                            [options]="statuses"
+                                            (onChange)="onChangeStatus($event, row)"></status-dropdown>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'edit'">
                                         <div 

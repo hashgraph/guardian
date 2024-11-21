@@ -65,12 +65,8 @@ export class PolicyLabelsService {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 
-    public activateLabel(item: any, activate: boolean): Observable<any> {
-        if (activate) {
-            return this.http.put<boolean>(`${this.url}/${item.id}/activate`, item);
-        } else {
-            return this.http.put<boolean>(`${this.url}/${item.id}/inactivate`, item);
-        }
+    public publish(item: any): Observable<any> {
+        return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
     }
 
     public getRelationships(labelId: string): Observable<any> {

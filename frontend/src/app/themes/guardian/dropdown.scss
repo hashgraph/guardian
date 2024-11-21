@@ -142,4 +142,22 @@
             pointer-events: none;
         }
     }
+
+    .p-dropdown-item:not(.p-highlight):not(.p-disabled).p-focus {
+        position: relative;
+        background: none !important;
+
+        &::before {
+            content: "";
+            display: block;
+            position: absolute;
+            background: var(--guardian-primary-color, #4169E2);
+            opacity: 0.08;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+    }
 }
