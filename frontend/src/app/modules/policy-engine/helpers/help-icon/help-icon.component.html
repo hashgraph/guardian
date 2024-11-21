@@ -1,3 +1,10 @@
+<!--<div class="help" *ngIf="text">-->
+<!--    <mat-icon [matTooltip]="text" matTooltipPosition="above" matTooltipClass="helpText">help_outline</mat-icon>-->
+<!--</div>-->
+
 <div class="help" *ngIf="text">
-    <mat-icon [matTooltip]="text" matTooltipPosition="above" matTooltipClass="helpText">help_outline</mat-icon>
+    <i class="pi pi-info-circle"
+       [pTooltip]="text"
+       tooltipPosition="top"
+       tooltipStyleClass="helpText"></i>
 </div>

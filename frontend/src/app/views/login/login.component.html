@@ -75,10 +75,17 @@
                         <span>{{ user.username }}</span>
                         <span class="current-user-role">({{ user.role }})</span>
                     </div>
+                    <!--                    <div class="current-user-policy-roles"-->
+                    <!--                         *ngIf="user.policyRoles && user.policyRoles.length"-->
+                    <!--                         [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"-->
+                    <!--                         matTooltipClass="policy-roles-tooltip">-->
+                    <!--                        <b>User participates in {{ user.policyRoles.length }} policies</b>-->
+                    <!--                    </div>-->
+
                     <div class="current-user-policy-roles"
                          *ngIf="user.policyRoles && user.policyRoles.length"
-                         [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
-                         matTooltipClass="policy-roles-tooltip">
+                         [pTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+                         tooltipStyleClass="policy-roles-tooltip">
                         <b>User participates in {{ user.policyRoles.length }} policies</b>
                     </div>
                 </div>

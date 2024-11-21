@@ -61,13 +61,23 @@
                     }}</span>
             </div>
             <div class="pool-actions">
-                <button class="btn--remove" mat-icon-button [disabled]="!hasPermissions(contract.permissions, 1)"
-                        matTooltip="You are not admin" matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)"
-                        (click)="removePool(pool)">
-                    <!--                    <mat-icon>delete</mat-icon>-->
+                <!--                <button class="btn&#45;&#45;remove" mat-icon-button [disabled]="!hasPermissions(contract.permissions, 1)"-->
+                <!--                        matTooltip="You are not admin" matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)"-->
+                <!--                        (click)="removePool(pool)">-->
+                <!--                    &lt;!&ndash;                    <mat-icon>delete</mat-icon>&ndash;&gt;-->
 
-                    <i class="pi pi-trash"></i>
+                <!--                    <i class="pi pi-trash"></i>-->
+                <!--                </button>-->
+
+                <button class="btn--remove"
+                        pButton
+                        icon="pi pi-trash"
+                        [disabled]="!hasPermissions(contract.permissions, 1)"
+                        [pTooltip]="'You are not admin'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 1)"
+                        (click)="removePool(pool)">
                 </button>
             </div>
         </div>

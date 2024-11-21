@@ -21,7 +21,7 @@ import {MatTreeModule} from '@angular/material/tree';
 // import {MatDatepickerModule} from '@angular/material/datepicker';
 // import {MatLegacyRadioModule as MatRadioModule} from '@angular/material/legacy-radio';
 // import {MatNativeDateModule} from '@angular/material/core';
-import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
+// import {MatLegacyTooltipModule as MatTooltipModule} from '@angular/material/legacy-tooltip';
 // import {MatLegacySlideToggleModule as MatSlideToggleModule} from '@angular/material/legacy-slide-toggle';
 // import {ClipboardModule} from '@angular/cdk/clipboard';
 // import {MatLegacyPaginatorModule as MatPaginatorModule} from '@angular/material/legacy-paginator';
@@ -54,6 +54,7 @@ import {StepsModule} from 'primeng/steps';
 import {DropdownModule} from 'primeng/dropdown';
 import {MultiSelectModule} from 'primeng/multiselect';
 import {InputNumberModule} from 'primeng/inputnumber';
+import {TooltipModule} from 'primeng/tooltip';
 
 @NgModule({
     declarations: [],
@@ -114,8 +115,8 @@ import {InputNumberModule} from 'primeng/inputnumber';
 
         MatTreeModule,
 
-        MatTooltipModule,
-        // TooltipModule,
+        // MatTooltipModule,
+        TooltipModule,
 
         // MatSlideToggleModule,
 
@@ -186,8 +187,8 @@ import {InputNumberModule} from 'primeng/inputnumber';
 
         MatTreeModule,
 
-        MatTooltipModule,
-        //TooltipModule
+        // MatTooltipModule,
+        TooltipModule,
 
         // MatSlideToggleModule,
 

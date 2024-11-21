@@ -15,20 +15,50 @@
                 <span class="token__id">{{ request.token }}</span>
             </div>
             <div class="request__actions">
-                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
-                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                        matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Approve
+                <!--                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn&#45;&#45;approve"-->
+                <!--                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"-->
+                <!--                        matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Approve-->
+                <!--                </button>-->
+
+                <button (click)="approveRequest(request.id)"
+                        pButton
+                        class="btn btn--approve"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Approve
                 </button>
-                <button (click)="rejectRequest(request.id)" mat-flat-button class="btn btn--reject"
-                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                        matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Reject
+                <!--                <button (click)="rejectRequest(request.id)" mat-flat-button class="btn btn&#45;&#45;reject"-->
+                <!--                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"-->
+                <!--                        matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Reject-->
+                <!--                </button>-->
+
+                <button (click)="rejectRequest(request.id)"
+                        pButton
+                        class="btn btn--reject"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Reject
                 </button>
-                <button (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn--ban"
-                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                        matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Ban
+                <!--                <button (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn&#45;&#45;ban"-->
+                <!--                        [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"-->
+                <!--                        matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Ban-->
+                <!--                </button>-->
+
+                <button (click)="rejectRequest(request.id, true)"
+                        pButton
+                        class="btn btn--ban"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Ban
                 </button>
             </div>
         </div>

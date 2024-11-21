@@ -39,15 +39,36 @@
                 </div>
             </div>
             <div class="request__actions">
-                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
-                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"
-                        matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Approve
+                <!--                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn&#45;&#45;approve"-->
+                <!--                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"-->
+                <!--                        matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Approve-->
+                <!--                </button>-->
+
+                <button (click)="approveRequest(request.id)"
+                        pButton
+                        class="btn btn--approve"
+                        [disabled]="!hasPermissions(contract.permissions, 1)"
+                        [pTooltip]="'You are not admin'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 1)">
+                    Approve
                 </button>
-                <button (click)="unsetRetire(request.id)" mat-flat-button class="btn btn--reject"
-                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"
-                        matTooltipClass="guardian-tooltip"
-                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Reject
+
+                <!--                <button (click)="unsetRetire(request.id)" mat-flat-button class="btn btn&#45;&#45;reject"-->
+                <!--                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"-->
+                <!--                        matTooltipClass="guardian-tooltip"-->
+                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Reject-->
+                <!--                </button>-->
+
+                <button (click)="unsetRetire(request.id)"
+                        pButton
+                        class="btn btn--reject"
+                        [disabled]="!hasPermissions(contract.permissions, 1)"
+                        [pTooltip]="'You are not admin'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 1)">
+                    Reject
                 </button>
             </div>
         </div>

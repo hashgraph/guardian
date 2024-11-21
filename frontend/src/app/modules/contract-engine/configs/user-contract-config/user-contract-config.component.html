@@ -1,7 +1,7 @@
 <div class="content">
-<!--    <div *ngIf="loading" class="loading">-->
-<!--        <mat-spinner></mat-spinner>-->
-<!--    </div>-->
+    <!--    <div *ngIf="loading" class="loading">-->
+    <!--        <mat-spinner></mat-spinner>-->
+    <!--    </div>-->
 
     <div *ngIf="loading" class="loading">
         <p-progressSpinner></p-progressSpinner>
@@ -64,37 +64,37 @@
                 <!--                    <tr mat-row *matRowDef="let row; columns: displayedColumnsContractRequests;"></tr>-->
                 <!--                </table>-->
 
-<!--                <p-table [value]="contractRequests" class="retire-table">-->
-<!--                    <ng-template pTemplate="header">-->
-<!--                        <tr>-->
-<!--                            <th>Contract Id</th>-->
-<!--                            <th>Date</th>-->
-<!--                            <th>Operations</th>-->
-<!--                        </tr>-->
-<!--                    </ng-template>-->
+                <!--                <p-table [value]="contractRequests" class="retire-table">-->
+                <!--                    <ng-template pTemplate="header">-->
+                <!--                        <tr>-->
+                <!--                            <th>Contract Id</th>-->
+                <!--                            <th>Date</th>-->
+                <!--                            <th>Operations</th>-->
+                <!--                        </tr>-->
+                <!--                    </ng-template>-->
 
-<!--                    <ng-template pTemplate="body" let-element>-->
-<!--                        <tr>-->
-<!--                            <td>-->
-<!--                                <hedera-explorer type="accounts"-->
-<!--                                                 [params]="element.document.credentialSubject[0].contractId">-->
-<!--                                    {{ element.document.credentialSubject[0].contractId }}-->
-<!--                                </hedera-explorer>-->
-<!--                            </td>-->
+                <!--                    <ng-template pTemplate="body" let-element>-->
+                <!--                        <tr>-->
+                <!--                            <td>-->
+                <!--                                <hedera-explorer type="accounts"-->
+                <!--                                                 [params]="element.document.credentialSubject[0].contractId">-->
+                <!--                                    {{ element.document.credentialSubject[0].contractId }}-->
+                <!--                                </hedera-explorer>-->
+                <!--                            </td>-->
 
-<!--                            <td>-->
-<!--                                {{ getDate(element.document.issuanceDate) }}-->
-<!--                            </td>-->
+                <!--                            <td>-->
+                <!--                                {{ getDate(element.document.issuanceDate) }}-->
+                <!--                            </td>-->
 
-<!--                            <td>-->
-<!--                                <div class="view-action-btn" (click)="viewRetireRequest(element)">-->
-<!--                                    <span>View Details</span>-->
-<!--                                    <i class="pi pi-eye"></i>-->
-<!--                                </div>-->
-<!--                            </td>-->
-<!--                        </tr>-->
-<!--                    </ng-template>-->
-<!--                </p-table>-->
+                <!--                            <td>-->
+                <!--                                <div class="view-action-btn" (click)="viewRetireRequest(element)">-->
+                <!--                                    <span>View Details</span>-->
+                <!--                                    <i class="pi pi-eye"></i>-->
+                <!--                                </div>-->
+                <!--                            </td>-->
+                <!--                        </tr>-->
+                <!--                    </ng-template>-->
+                <!--                </p-table>-->
 
                 <p-table [value]="contractRequests" class="retire-table">
                     <ng-template pTemplate="header">
@@ -131,9 +131,9 @@
             </ng-container>
         </div>
         <div class="table-paginator">
-<!--            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"-->
-<!--                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">-->
-<!--            </mat-paginator>-->
+            <!--            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"-->
+            <!--                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">-->
+            <!--            </mat-paginator>-->
 
             <app-paginator
                 [length]="contractsCount"
