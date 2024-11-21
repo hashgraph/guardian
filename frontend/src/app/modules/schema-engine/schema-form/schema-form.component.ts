@@ -653,7 +653,6 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public parseSuggest(item: any): string {
-        console.log(item)
         return this.findString(item);
     }
 
