@@ -13226,44 +13226,11 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /policy-labels/{labelId}/activate:
+  /policy-labels/{labelId}/publish:
     put:
-      operationId: PolicyLabelsApi_activatePolicyLabel
-      summary: Activates policy label.
-      description: Activates policy label for the specified label ID.
-      parameters:
-        - name: labelId
-          required: true
-          in: path
-          description: policy label Identifier
-          example: '000000000000000000000001'
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyLabelDTO'
-        '401':
-          description: Unauthorized.
-        '403':
-          description: Forbidden.
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
-      security:
-        - bearer: []
-  /policy-labels/{labelId}/inactivate:
-    put:
-      operationId: PolicyLabelsApi_inactivatePolicyLabel
-      summary: Inactivates policy label.
-      description: Inactivates policy label for the specified label ID.
+      operationId: PolicyLabelsApi_publishPolicyLabel
+      summary: Publishes policy label.
+      description: Publishes policy label for the specified label ID.
       parameters:
         - name: labelId
           required: true
@@ -15020,6 +14987,7 @@ components:
             - TAG
             - TOOL
             - STATISTIC
+            - LABEL
           example: POLICY
         documentURL:
           type: string
