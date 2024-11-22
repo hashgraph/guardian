@@ -24,6 +24,7 @@ import { ScoreDialog } from '../../policy-statistics/dialogs/score-dialog/score-
 import { EnumValue, SchemaRuleConfigDialog } from '../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 import { SearchLabelDialog } from '../dialogs/search-label-dialog/search-label-dialog.component';
 import { ConditionRule, FormulaRule, RangeRule } from 'src/app/modules/common/models/conditions';
+import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 
 class LabelConfig {
     public show: boolean = false;
@@ -896,8 +897,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.router.navigate(['/policy-labels']);
     }
 
-    public onSave() {
-        this.loading = true;
+    private getItem(): any {
         const value = this.labelConfig.overviewForm.value;
         const config: IPolicyLabelConfig = this.labelConfig.toJson();
         const item = {
@@ -906,6 +906,12 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
+        return item;
+    }
+
+    public onSave() {
+        this.loading = true;
+        const item = this.getItem();
         this.policyLabelsService
             .updateLabel(item)
             .subscribe((item) => {
@@ -919,28 +925,19 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             });
     }
 
-    // public onPreview() {
-    //     const value = this.overviewForm.value;
-    //     const config: IPolicyLabelConfig = {
-    //         fields: this.variables.getJson(),
-    //     };
-    //     const item = {
-    //         ...this.item,
-    //         name: value.name,
-    //         description: value.description,
-    //         config
-    //     };
-    //     const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
-    //         showHeader: false,
-    //         header: 'Preview',
-    //         width: '800px',
-    //         styleClass: 'guardian-dialog',
-    //         data: {
-    //             item
-    //         }
-    //     });
-    //     dialogRef.onClose.subscribe(async (result) => { });
-    // }
+    public onPreview() {
+        const item = this.getItem();
+        const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
+            showHeader: false,
+            header: 'Preview',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            data: {
+                item
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
 
     public onImport() {
         const dialogRef = this.dialogService.open(SearchLabelDialog, {

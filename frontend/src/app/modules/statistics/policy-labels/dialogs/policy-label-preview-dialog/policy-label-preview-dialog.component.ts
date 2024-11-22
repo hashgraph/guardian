@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ISchemaRuleData } from '@guardian/interfaces';
-import { FieldRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { IPolicyLabelConfig } from '@guardian/interfaces';
+import { LabelValidators } from 'src/app/modules/common/models/label-validator';
 
 
 @Component({
@@ -12,8 +12,7 @@ import { FieldRuleValidators } from 'src/app/modules/common/models/field-rule-va
 export class PolicyLabelPreviewDialog {
     public loading = true;
     public item: any;
-    public preview: any[];
-    public rules: FieldRuleValidators;
+    public validator: LabelValidators;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -21,21 +20,8 @@ export class PolicyLabelPreviewDialog {
         private dialogService: DialogService,
     ) {
         this.item = this.config.data?.item || {};
-
-        const configuration = this.item.config || {};
-
-        const variables: ISchemaRuleData[] = configuration.fields || [];
-
-        this.preview = [];
-        for (const variable of variables) {
-            this.preview.push({
-                id: variable.id,
-                description: variable.fieldDescription || '',
-                value: null
-            });
-        }
-
-        this.rules = new FieldRuleValidators(variables);
+        const configuration: IPolicyLabelConfig = this.item.config || {};
+        this.validator = new LabelValidators(configuration);
     }
 
     ngOnInit() {
@@ -51,14 +37,6 @@ export class PolicyLabelPreviewDialog {
 
     public onSubmit() {
         const document: any = {};
-        for (const field of this.preview) {
-            document[field.id] = field.value;
-        }
-
-        const result = this.rules.validate(document);
-
-        for (const field of this.preview) {
-            field.status = result[field.id];
-        }
+        const result = this.validator.validate(document);
     }
 }

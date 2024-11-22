@@ -418,6 +418,7 @@
         </div>
 
         <div *ngIf="!labelConfig.readonly" class="actions-container">
+            <button *ngIf="labelConfig.isActionStep(2)" (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
             <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
         </div>
     </div>
