@@ -234,7 +234,7 @@ class RulesConfig {
     private _selectTimeout3: any;
 
     private tree: TreeGraphComponent;
-    private currentNode: NavItem;
+    private currentNode: NavItem | null;
 
     private nodes: SchemaNode[];
     private enumMap: Map<string, Map<string, EnumValue>>;
@@ -352,11 +352,12 @@ class RulesConfig {
     public setData(node: NavItem) {
         this.currentNode = node;
 
-        const item = node.config as (IRulesItemConfig | IStatisticItemConfig);
+        const clone = this.currentNode.clone();
+        const item = clone.config as (IRulesItemConfig | IStatisticItemConfig);
         const config = item.config;
 
-        this.readonly = node.readonly || node.freezed;
-        this.name = node.label;
+        this.readonly = clone.readonly || clone.freezed;
+        this.name = clone.label;
 
         this.variables.fromData(config?.variables);
         this.scores.fromData(config?.scores);
@@ -377,6 +378,27 @@ class RulesConfig {
                 }
                 rootView.updateHidden();
                 rootView.updateSelected();
+            }
+        }
+    }
+
+    public onCancel() {
+        this.currentNode = null;
+    }
+
+    public onSave() {
+        if (this.currentNode) {
+            const item = this.currentNode.config as (IRulesItemConfig | IStatisticItemConfig);
+            if (item.config) {
+                item.config.variables = this.variables.getJson();
+                item.config.formulas = this.formulas.getJson();
+                item.config.scores = this.scores.getJson();
+            } else {
+                item.config = {
+                    variables: this.variables.getJson(),
+                    formulas: this.formulas.getJson(),
+                    scores: this.scores.getJson(),
+                };
             }
         }
     }
@@ -626,13 +648,16 @@ class RulesConfig {
         }
     }
 
-    public getRelationshipsName(id: string) {
-        const variable = this.variables.get(id);
-        if (variable) {
-            return `${variable.id} - ${variable.fieldDescription}`;
-        } else {
-            return id;
+    public getRelationshipsName(item: any) {
+        if (item) {
+            const variable = this.variables.get(item.id);
+            if (variable) {
+                return `${variable.id} - ${variable.fieldDescription}`;
+            } else {
+                return item.id;
+            }
         }
+        return item;
     }
 
     public onAddScore() {
@@ -956,6 +981,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public onCancelNavItem() {
         this.loading = true;
         this.rulesConfig.show = false;
+        this.rulesConfig.onCancel();
         setTimeout(() => {
             this.labelConfig.goToStep(2).then(() => {
                 this.loading = false;
@@ -966,6 +992,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public onSaveNavItem() {
         this.loading = true;
         this.rulesConfig.show = false;
+        this.rulesConfig.onSave();
         setTimeout(() => {
             this.labelConfig.goToStep(2).then(() => {
                 this.loading = false;

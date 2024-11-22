@@ -1084,6 +1084,10 @@
                     overflow: hidden;
                     white-space: nowrap;
                     text-overflow: ellipsis;
+
+                    &:last-child {
+                        margin-bottom: 0px;
+                    }
                 }
             }
         }
@@ -1126,6 +1130,12 @@
                 min-width: 84px;
                 width: 84px;
                 max-width: 84px;
+            }
+
+            .cell-90 {
+                min-width: 90px;
+                width: 90px;
+                max-width: 90px;
             }
 
             .cell-125 {
@@ -1194,6 +1204,7 @@
 
             .cell-multiselect {
                 padding: 1px 10px !important;
+                overflow: hidden;
             }
 
             .cell-select {

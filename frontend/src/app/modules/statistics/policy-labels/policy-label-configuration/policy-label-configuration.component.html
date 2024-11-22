@@ -717,8 +717,7 @@
                             <div class="variables-grid-cell">DESCRIPTION</div>
                             <div class="variables-grid-cell cell-300">RELATIONSHIPS</div>
                             <div class="variables-grid-cell cell-300">OPTIONS</div>
-                            <div class="variables-grid-cell cell-56"></div>
-                            <div class="variables-grid-cell cell-48"></div>
+                            <div class="variables-grid-cell cell-90"></div>
                         </div>
                         <div class="variables-grid-body">
                             <div *ngFor="let score of rulesConfig.scores.scores" class="variables-grid-row">
@@ -774,7 +773,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="variables-grid-cell cell-56 cell-btn">
+                                <div class="variables-grid-cell cell-90 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
                                         (click)="rulesConfig.onEditScore(score)"
@@ -785,8 +784,6 @@
                                             [svgClass]="rulesConfig.readonly ? 'icon-color-disabled' : 'icon-color-primary'">
                                         </svg-icon>
                                     </button>
-                                </div>
-                                <div class="variables-grid-cell cell-48 cell-btn">
                                     <button 
                                         class="guardian-icon-button big" 
                                         (click)="rulesConfig.onDeleteScore(score)"

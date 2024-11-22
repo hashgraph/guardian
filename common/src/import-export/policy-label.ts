@@ -1,21 +1,7 @@
 import JSZip from 'jszip';
 import { PolicyLabel } from '../entity/index.js';
 import {
-    IConditionElseData,
-    IConditionEnum,
-    IConditionFormula,
-    IConditionIfData,
-    IConditionRange,
-    IConditionRuleData,
-    IConditionText,
-    IFormulaRuleData,
-    IRangeRuleData,
-    ISchemaRuleData,
     IPolicyLabelConfig,
-    IVariableData,
-    IScoreData,
-    IFormulaData,
-    IScoreOption,
     INavItemConfig,
     INavImportsConfig,
     NavItemType,
@@ -24,7 +10,8 @@ import {
     IRulesItemConfig,
     IGroupItemConfig,
     INavLabelImportConfig,
-    INavStatisticImportConfig
+    INavStatisticImportConfig,
+    IStatisticConfig
 } from '@guardian/interfaces';
 import { PolicyStatisticImportExport } from './policy-statistic.js';
 
@@ -185,7 +172,7 @@ export class PolicyLabelImportExport {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Rules,
                 name: PolicyLabelImportExport.validateString(data.name),
-                config: PolicyStatisticImportExport.validateConfig(data.config),
+                config: PolicyLabelImportExport.validateRulesConfig(data.config),
             };
             return child;
         }
@@ -235,6 +222,20 @@ export class PolicyLabelImportExport {
             return child;
         }
         return null;
+    }
+
+    /**
+     * Validate Config
+     *
+     * @param data config
+     */
+    public static validateRulesConfig(data?: IStatisticConfig): IStatisticConfig {
+        const config: IStatisticConfig = {
+            variables: PolicyStatisticImportExport.validateVariables(data?.variables),
+            scores: PolicyStatisticImportExport.validateScores(data?.scores),
+            formulas: PolicyStatisticImportExport.validateFormulas(data?.formulas)
+        }
+        return config;
     }
 
     /**
