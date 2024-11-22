@@ -43,9 +43,17 @@ class NodeValidator {
     private readonly id: string;
     private readonly name: string;
 
+    private namespaces: ValidateNamespaces;
+    private scope: any;
+
     constructor(item: any) {
         this.id = item.id;
         this.name = item.name;
+    }
+
+    public setData(namespaces: ValidateNamespaces) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
     }
 
     public validate(scope: ValidateNamespaces): IValidateResult {
@@ -92,10 +100,21 @@ class GroupValidator {
     private readonly name: string;
     private readonly children: IValidator[];
 
+    private namespaces: ValidateNamespaces;
+    private scope: any;
+
     constructor(item: IGroupItemConfig) {
         this.id = item.id;
         this.name = item.name;
         this.children = NodeValidator.fromArray(item.children);
+    }
+
+    public setData(namespaces: ValidateNamespaces) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
+        for (const child of this.children) {
+            child.setData(namespaces);
+        }
     }
 
     public validate(namespaces: ValidateNamespaces): IValidateResult {
@@ -122,9 +141,17 @@ class LabelValidator {
     private readonly id: string;
     private readonly name: string;
 
+    private namespaces: ValidateNamespaces;
+    private scope: any;
+
     constructor(item: ILabelItemConfig) {
         this.id = item.id;
         this.name = item.name;
+    }
+
+    public setData(namespaces: ValidateNamespaces) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
     }
 
     public validate(namespaces: ValidateNamespaces): IValidateResult {
@@ -142,9 +169,17 @@ class RuleValidator {
     private readonly id: string;
     private readonly name: string;
 
+    private namespaces: ValidateNamespaces;
+    private scope: any;
+
     constructor(item: IRulesItemConfig) {
         this.id = item.id;
         this.name = item.name;
+    }
+
+    public setData(namespaces: ValidateNamespaces) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
     }
 
     public validate(namespaces: ValidateNamespaces): IValidateResult {
