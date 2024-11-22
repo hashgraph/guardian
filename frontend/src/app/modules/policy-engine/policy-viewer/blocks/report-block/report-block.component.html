@@ -446,6 +446,35 @@
                             </ng-template>
                         </div>
                     </ng-container>
+                    <div class="multiple-documents-container">
+                        <ng-container
+                            *ngIf="retirementDocuments && retirementDocuments.length > 0">
+                            <div style="display: inline-block;">
+                            <div
+                                [ngClass]="{
+                                    'single-multiple-document': true
+                                }"
+                                class="chain-item item-type-RETIRE"
+                            >
+                                <div class="chain-title">
+                                    Token Retirements: {{retirementDocuments.length}}
+                                </div>
+                                <div class="retirement-items-wrapper">
+                                    <div *ngFor="let item of retirementDocuments" class="retirement-item">
+                                        <p>Retirement</p>
+                                        <a (click)="openVCDocument(item, item.document)" class="open-vc">VC File</a>
+                                        <p>ContractID:{{ item.document.credentialSubject[0].contractId }}</p>
+                                        <p>UserID: {{ item.document.credentialSubject[0].user }}</p>
+                                        <div *ngFor="let token of item.document.credentialSubject[0].tokens">
+                                            <p>TokenID: {{ token.tokenId }}</p>
+                                            <p>{{ token.serials ? token.serials.join(',') : token.count }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+                        </ng-container>
+                    </div>
                 </div>
                 <div
                     (click)="onScrollButtonPress(scrollContainer, 150)"

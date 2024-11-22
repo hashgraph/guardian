@@ -20,6 +20,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ContractService } from 'src/app/services/contract.service';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -63,7 +64,8 @@ export class ReportBlockComponent implements OnInit {
         private dialogService: DialogService,
         iconRegistry: MatIconRegistry,
         sanitizer: DomSanitizer,
-        private ipfs: IPFSService
+        private ipfs: IPFSService,
+        private contractService: ContractService,
     ) {
         for (let i = 0; i < IconsArray.length; i++) {
             const element = IconsArray[i];
@@ -94,6 +96,33 @@ export class ReportBlockComponent implements OnInit {
             this.loadData();
         }
     }
+
+    // Testing
+    mintTokenId: string;
+    mintTokenSerials: string[] = [];
+    retirementDocuments: any = [];
+    private loadRetireData() {
+        this.loading = true;
+        this.contractService
+            .getRetireVCs()
+            .subscribe(
+                (policiesResponse) => {
+                    this.retirementDocuments = (policiesResponse.body || [])
+                        .filter((item: any) => item.type == 'RETIRE'
+                            && item.document.credentialSubject.some((subject: any) =>
+                                subject.tokens.some((token: any) =>
+                                    token.tokenId === this.mintTokenId
+                                    && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                    ))));
+
+                    this.loading = false;
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+    }
+    // ...
 
     loadData() {
         this.loading = true;
@@ -149,6 +178,16 @@ export class ReportBlockComponent implements OnInit {
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
+
+
+
+        // Testing
+        this.mintTokenId = report.mintDocument?.tokenId || '';
+        this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
+        this.loadRetireData();
+        // ...
+
+
 
         const mainDocument = this.createAdditionalDocument(report);
         if (mainDocument) {
@@ -249,7 +288,7 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VC',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     openVPDocument(item: any) {
@@ -268,7 +307,7 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VP',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     openJsonDocument(item: ITokenReport) {
@@ -284,7 +323,7 @@ export class ReportBlockComponent implements OnInit {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     mapData(data: any[]) {
