@@ -57,17 +57,6 @@
 
 <ng-template #footerBar>
     <div id="footerBar">
-        <div *ngIf="user.AUDITOR" [class.hidden-logotype]="menuCollapsed"
-             class="item background-light border-item">
-            <img alt="" src="assets/images/icons/money.svg">
-            <span>
-                Balance
-                <strong *ngIf="balance">{{ balance }}</strong>
-            </span>
-            <div *ngIf="!balance" class="preloader">
-                <div class="preloader-image"></div>
-            </div>
-        </div>
 
         <div
             [class.current]="activeLink.startsWith('/worker-tasks')"
@@ -101,9 +90,20 @@
         </div>
 
         <app-compare-viewer
+            *ngIf="user?.ANALYTIC_DOCUMENT_READ"
             [collapsed]="menuCollapsed"
             [active]="activeLink.startsWith('/compare')"
         ></app-compare-viewer>
+
+        <div
+            [class.collapsed-item]="menuCollapsed"
+            class="item balance-item">
+            <img alt="" src="assets/images/icons/money.svg">
+            <span> Balance <span *ngIf="balance">{{ balance }}</span></span>
+            <div *ngIf="!balance" class="preloader">
+                <div class="preloader-image"></div>
+            </div>
+        </div>
 
         <div class="boundary-box">
             <div

@@ -58,6 +58,7 @@
         // left: calc(var(--header-width-expand) - 23px);
     }
 }
+
 #remoteButton.collapse-button,
 .collapse-button {
     left: calc(var(--header-width-collapse) - 1px) !important;
@@ -245,6 +246,22 @@
 .border-item {
     border: 2px solid rgba(255, 255, 255, 0.15);
 }
+
+.balance-item {
+    &>span {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    &.collapsed-item {
+        div,
+        span {
+            display: none;
+        }
+    }
+}
+
 
 .boundary-box {
     height: 78px;
