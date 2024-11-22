@@ -533,6 +533,11 @@ export class EntityService {
                 filters,
                 options
             )) as [Policy[], number];
+            for (const row of rows) {
+                if (row.analytics) {
+                    delete row.analytics.hashMap;
+                }
+            }
             const result = {
                 items: rows,
                 pageIndex: options.offset / options.limit,
