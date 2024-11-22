@@ -53,7 +53,7 @@ In the context of modern emission reduction projects, the necessity for transpar
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
 
 Policy: 1719334564.410514079
 

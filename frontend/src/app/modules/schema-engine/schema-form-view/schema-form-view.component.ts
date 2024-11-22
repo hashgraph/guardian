@@ -17,6 +17,7 @@ interface IFieldControl extends SchemaField {
     count: number;
     pageIndex: number;
     pageSize: number;
+    notCorrespondCondition?: boolean;
 }
 
 interface IFieldIndexControl {
@@ -321,7 +322,7 @@ export class SchemaFormViewComponent implements OnInit {
     }
 
     public ifFieldVisible(item: IFieldControl): boolean {
-        return !item.hide && !item.hidden;
+        return !item.hide && !item.notCorrespondCondition;
     }
 
     public ifSimpleField(item: IFieldControl): boolean {

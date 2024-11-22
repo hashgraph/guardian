@@ -39,7 +39,7 @@ Global Climate Registry (GCR) has built this Guardian Policy that tokenizes the 
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github(.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github(.policy file) or IPFS timestamp.
 
 Hedera Topic (testnet) - [0.0.4234489](https://explore.lworks.io/testnet/topics/0.0.4234489)
 

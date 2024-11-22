@@ -106,7 +106,7 @@ Coming Soon
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp. 
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp. 
 
 Policy: 
 

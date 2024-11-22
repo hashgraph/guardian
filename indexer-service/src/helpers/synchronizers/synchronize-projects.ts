@@ -22,7 +22,7 @@ export class SynchronizationProjects extends SynchronizationTask {
         super('projects', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const projectLocations = await em
             .getCollection('project_coordinates')

@@ -576,13 +576,16 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         });
     }
 
-    public getRelationshipsName(id: string) {
-        const variable = this.variables.get(id);
-        if (variable) {
-            return `${variable.id} - ${variable.fieldDescription}`;
-        } else {
-            return id;
+    public getRelationshipsName(item: any) {
+        if (item) {
+            const variable = this.variables.get(item.id);
+            if (variable) {
+                return `${variable.id} - ${variable.fieldDescription}`;
+            } else {
+                return item.id;
+            }
         }
+        return item;
     }
 
     public onSave() {

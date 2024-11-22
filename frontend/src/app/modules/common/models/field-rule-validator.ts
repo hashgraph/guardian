@@ -331,8 +331,8 @@ export class SchemaRuleValidators {
     public schemas: Set<string | undefined>;
     public validators: SchemaRuleValidator[];
 
-    constructor(data: any[]) {
-        this.validators = data.map((v) => new SchemaRuleValidator(v));
+    constructor(data: any[] | null) {
+        this.validators = (data || []).map((v) => new SchemaRuleValidator(v));
         this.schemas = new Set<string>();
         for (const validator of this.validators) {
             for (const iri of validator.schemas) {

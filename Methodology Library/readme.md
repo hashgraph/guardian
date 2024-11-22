@@ -63,9 +63,10 @@ This folder contains sub folders for each Methodology and their authors (with ma
 3. GHG Scope II - Atma
 4. GHG Scope 3 - Atma
 5. GHGP Corporate Standard - Envision
-6. GHGP Product Standard - Avery Dennison (Coming soon)
-7. E-Mission (Coming soon)
-8. EPA CFR 40 p75 - Serapis (Coming soon)
+6. Climate Action Reserve’s U.S. Landfill Protocol Version 6.0 - Envision
+7. GHGP Product Standard - Avery Dennison (Coming soon)
+8. E-Mission (Coming soon)
+9. EPA CFR 40 p75 - Serapis (Coming soon)
 
 ### Hackathon Policies (Under Testing)
 

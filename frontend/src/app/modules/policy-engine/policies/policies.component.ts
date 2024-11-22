@@ -143,6 +143,11 @@ const columns = [{
             user.POLICIES_POLICY_DELETE
         )
     }
+}, {
+    id: 'multi-instance',
+    permissions: (user: UserPermissions) => {
+        return user.POLICIES_POLICY_EXECUTE && !user.POLICIES_POLICY_MANAGE;
+    }
 }];
 
 /**
@@ -260,23 +265,43 @@ export class PoliciesComponent implements OnInit {
         )
     }
 
-    public instanceLabel(policy: any): string {
-        if (this.user?.POLICIES_POLICY_MANAGE) {
-            if (
-                policy.status === PolicyType.PUBLISH ||
-                policy.status === PolicyType.DISCONTINUED
-            ) {
-                return 'Open';
-            } else if (
-                policy.status === PolicyType.DEMO
-            ) {
-                return 'Demo';
-            } else {
-                return 'Dry run';
+    public showInstance(policy: any): string | null {
+        switch (policy.status) {
+            case PolicyType.PUBLISH:
+            case PolicyType.DISCONTINUED: {
+                if (this.user.POLICIES_POLICY_MANAGE) {
+                    return 'Open';
+                } else if (this.user.POLICIES_POLICY_EXECUTE) {
+                    return 'Register';
+                } else {
+                    return null;
+                }
             }
-        } else {
-            return 'Register'
+            case PolicyType.DRY_RUN: {
+                if (this.user.POLICIES_POLICY_UPDATE) {
+                    return 'Dry run';
+                } else {
+                    return null;
+                }
+            }
+            case PolicyType.DEMO: {
+                if (this.user.POLICIES_POLICY_UPDATE) {
+                    return 'Demo';
+                } else {
+                    return null;
+                }
+            }
+            default: {
+                return null;
+            }
         }
+    }
+
+    public checkMultiPolicyStatus(status: string): boolean {
+        return (
+            status === PolicyType.PUBLISH ||
+            status === PolicyType.DISCONTINUED
+        )
     }
 
     public showStatus(policy: any): boolean {
@@ -285,15 +310,6 @@ export class PoliciesComponent implements OnInit {
             policy.status === PolicyType.DRY_RUN ||
             policy.status === PolicyType.PUBLISH_ERROR ||
             policy.status === PolicyType.PUBLISH
-        )
-    }
-
-    public showInstance(policy: any): boolean {
-        return (
-            policy.status === PolicyType.DRY_RUN ||
-            policy.status === PolicyType.DEMO ||
-            policy.status === PolicyType.PUBLISH ||
-            policy.status === PolicyType.DISCONTINUED
         )
     }
 
@@ -1109,11 +1125,13 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policyId: element.id
             }
+
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);
             }
+
             this.loadPolicy();
         });
     }

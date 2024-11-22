@@ -37,6 +37,7 @@
 
                 <div
                     class="form-field-value"
+
                     [attr.invalid-required-field]="ifRequiredField(item) && !item.control.valid"
                     [attr.rules-status]="isRulesStatus(item)"
                 >
@@ -117,6 +118,7 @@
                                 [value]="false"
                                 [formControl]="item.control"
                                 inputId="{{item.id}}_false"/>
+
                             <label for="{{item.id}}_false">False</label>
                         </div>
                         <div *ngIf="!item.required" class="boolean-field">
@@ -126,6 +128,7 @@
                                 [value]="undefined"
                                 [formControl]="item.control"
                                 inputId="{{item.id}}_unset"/>
+
                             <label for="{{item.id}}_unset">Unset</label>
                         </div>
                     </div>
@@ -186,18 +189,18 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{ item.suggest }}
+                    <div class="suggestion-name"><span
+                            class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
                     <button
-                        (click)="patchSuggestValue(item)"
-                        class="guardian-button guardian-button-secondary">Fill the field with suggestion
-                    </button>
+                            (click)="patchSuggestValue(item)"
+                        class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div *ngFor="let listItem of item.list" class="form-field-array-item-container"
-                     [attr.index]="listItem.index"
-                     [attr.required]="item.required"
-                     [formGroup]="item.control"
+                <div *ngFor="let listItem of item.list" [attr.required]="item.required"
+                    [attr.index]="listItem.index"
+                     class="form-field-array-item-container"
+                    [formGroup]="item.control"
                 >
                     <div class="form-field-array-item">
                         <div class="form-field-value"
@@ -598,6 +601,7 @@
             <button
                 *ngIf="config.visible()"
                 (click)="config.fn()"
+                [disabled]="config.disabled()"
                 type="button"
                 class="guardian-button guardian-button-{{config.type}}">{{ config.text }}
             </button>

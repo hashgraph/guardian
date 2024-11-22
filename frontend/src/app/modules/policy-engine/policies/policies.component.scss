@@ -988,3 +988,8 @@
         color: var(--pc-wizard-color);
     }
 }
+
+.cell-description {
+    min-width: 150px;
+    max-width: calc(100vw - 970px);
+}
