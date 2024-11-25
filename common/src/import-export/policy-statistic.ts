@@ -1,6 +1,8 @@
 import JSZip from 'jszip';
-import { PolicyStatistic } from '../entity/index.js';
-import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData } from '@guardian/interfaces';
+import { Policy, PolicyStatistic, Schema as SchemaCollection } from '../entity/index.js';
+import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { DatabaseServer } from '../database-modules/index.js';
+import { PolicyImportExport } from './policy.js';
 
 /**
  * PolicyStatistic components
@@ -75,6 +77,71 @@ export class PolicyStatisticImportExport {
         const definitionString = await content.files[PolicyStatisticImportExport.policyStatisticFileName].async('string');
         const definition = JSON.parse(definitionString);
         return { definition };
+    }
+
+    /**
+     * Load policy schemas
+     * @param policy policy
+     * @returns policy schemas
+     */
+    public static async getPolicySchemas(policy: Policy): Promise<SchemaCollection[]> {
+        const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+        const systemSchemas = await DatabaseServer.getSchemas({
+            topicId: policy.topicId,
+            entity: { $in: [SchemaEntity.MINT_TOKEN, SchemaEntity.MINT_NFTOKEN] }
+        });
+
+        const all = []
+            .concat(schemas, toolSchemas, systemSchemas)
+            .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
+        return all;
+    }
+
+    /**
+     * Update schema uuid
+     * @param schemas policy schemas
+     * @param data config
+     * @returns new config
+     */
+    public static updateSchemas(schemas: SchemaCollection[], data?: IStatisticConfig): IStatisticConfig | undefined {
+        if (!data) {
+            return;
+        }
+
+        const fieldMap = new Map<string, string>();
+        const schemaObjects = schemas.map((s) => new Schema(s));
+        for (const schema of schemaObjects) {
+            const allFields = schema.getFields();
+            for (const field of allFields) {
+                const key = `${schema.name}|${field.path}|${field.description}|${field.type}|${field.isArray}|${field.isRef}`;
+                fieldMap.set(key, schema.iri);
+            }
+        }
+
+        const schemaMap = new Map<string, string>();
+        const variables = data.variables;
+        const rules = data.rules;
+
+        if (Array.isArray(variables)) {
+            for (const variable of variables) {
+                const key = `${variable.schemaName}|${variable.path}|${variable.fieldDescription}|${variable.fieldType}|${variable.fieldArray}|${variable.fieldRef}`;
+                schemaMap.set(variable.schemaId, fieldMap.get(key));
+            }
+        }
+
+        if (Array.isArray(variables)) {
+            for (const variable of variables) {
+                variable.schemaId = schemaMap.get(variable.schemaId);
+            }
+        }
+
+        if (Array.isArray(rules)) {
+            for (const rule of rules) {
+                rule.schemaId = schemaMap.get(rule.schemaId);
+            }
+        }
+
+        return data;
     }
 
     /**
