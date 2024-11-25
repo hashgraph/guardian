@@ -89,6 +89,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             this.setData(this.static);
             setTimeout(() => {
                 this.loading = false;
+                this.cdref.detectChanges();
             }, 500);
         } else {
             this.policyEngineService
