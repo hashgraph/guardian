@@ -665,6 +665,10 @@ export class SchemaFormComponent implements OnInit {
         return item.type === 'null';
     }
 
+    suggestIsObject(item: any): boolean {
+        return typeof item === 'object';
+    }
+
     public parseSuggest(item: any): string {
         return this.findString(item);
     }
