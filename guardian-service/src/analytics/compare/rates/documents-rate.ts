@@ -90,8 +90,12 @@ export class DocumentsRate extends Rate<DocumentModel> {
         const map: { [key: string]: IRateMap<PropertyModel<any>> } = {};
         if (document1) {
             for (const item of document1.getFieldsList()) {
-                map[item.key] = { left: item, right: null };
-                list.push(item.key);
+                if (map[item.key]) {
+                    map[item.key] = { left: item, right: null };
+                } else {
+                    map[item.key] = { left: item, right: null };
+                    list.push(item.key);
+                }
             }
         }
         if (document2) {
