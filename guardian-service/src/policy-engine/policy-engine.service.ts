@@ -1563,7 +1563,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    const topic = await DatabaseServer.getTopicByType(owner.creator, TopicType.UserTopic);
+                    const topic = await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic);
                     const newPrivateKey = PrivateKey.generate();
                     const newAccountId = new AccountId(Date.now());
 

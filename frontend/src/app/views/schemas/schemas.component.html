@@ -230,7 +230,7 @@
                         </td>
                         <td class="last-schema-grid-cell" style="min-width: 140px;">
                             <div class="operations-row-container">
-                                <div>
+                                <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                     <div
                                         (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
@@ -270,7 +270,7 @@
                         </td>
                         <td class="last-schema-grid-cell" style="min-width: 140px;">
                             <div class="operations-row-container">
-                                <div>
+                                <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                     <div
                                         (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
@@ -316,7 +316,7 @@
                         </td>
                         <td class="last-schema-grid-cell" style="min-width: 140px;">
                             <div class="operations-row-container">
-                                <div>
+                                <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                     <div
                                         (click)="onPublish(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
@@ -389,7 +389,7 @@
                         </td>
                         <td class="last-schema-grid-cell" style="min-width: 140px;">
                             <div class="operations-row-container">
-                                <div>
+                                <div *ngIf="user.SCHEMAS_SCHEMA_REVIEW">
                                     <div
                                         (click)="onPublishTagSchema(schema)"
                                         *ngIf="schema.status == 'DRAFT'"
