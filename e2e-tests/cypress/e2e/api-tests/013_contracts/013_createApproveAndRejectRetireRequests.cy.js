@@ -346,7 +346,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                         authorization,
                     },
                     qs: {
-                        contractId: contractIdR
+                        contractId: contractUuidR
                     }
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);

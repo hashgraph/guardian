@@ -8,7 +8,6 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     let contractIdW, contractIdR, contractIdW2, contractIdR2, idW, idR, idW2, idR2, hederaIdSR2, tokenId;
     const contractNameR = "FirstAPIContractR";
     const contractNameW = "FirstAPIContractW";
-
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -266,7 +265,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     // });
 
     it("Verify roles(wipe)", () => {
-        cy.wait(60000)
+        cy.wait(120000)
         console.log(idW2)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
@@ -283,7 +282,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Verify roles(retire)", () => {
-        cy.wait(60000)
+        cy.wait(120000)
         console.log(idR2)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
@@ -453,7 +452,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Verify roles(wipe)", () => {
-        cy.wait(150000)
+        cy.wait(200000)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
@@ -469,7 +468,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Verify roles(retire)", () => {
-        cy.wait(150000)
+        cy.wait(20000)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
