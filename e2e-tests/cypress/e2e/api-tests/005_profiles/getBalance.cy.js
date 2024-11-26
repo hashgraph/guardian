@@ -9,7 +9,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
     it('Get Hedera account balance', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             const options = {
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'profiles/' + SRUsername + '/balance',
                 headers: {
                     authorization

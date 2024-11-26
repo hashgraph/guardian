@@ -5,54 +5,31 @@ import * as Authorization from "../../../support/authorization";
 context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
-    let policyId1, policyId2
+    let moduleId1, moduleId2
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: {
-                    messageId: Cypress.env('policy_for_compare1'),//iRec 4
-                    metadata: {
-                        "tools": {}
-                    }
-                },
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfAllModules,
                 headers: {
                     authorization,
                 },
-                timeout: 360000
             }).then((response) => {
-                    policyId1 = response.body.at(-1).id;
-                    expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.PolicisImportMsg,
-                        body: {
-                            "messageId": Cypress.env('policy_for_compare2'),//iRec 5
-                            metadata: {
-                                "tools": {}
-                            }
-                        },
-                        headers: {
-                            authorization,
-                        },
-                        timeout: 360000
-                    }).then((response) => {
-                        expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                        policyId2 = response.body.at(-1).id;
-                    })
-                })
-        })
+                expect(response.status).eql(STATUS_CODE.OK);
+                moduleId1 = response.body.at(0).id;
+                moduleId2 = response.body.at(1).id;
+            });
+        });
     })
 
-    it("Compare policies", { tags: ['smoke'] }, () => {
+    it("Compare modules", { tags: ['smoke'] }, () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.PolicyCompare,
+                url: API.ApiServer + API.ModuleCompare,
                 body: {
-                    policyId1: policyId1,
-                    policyId2: policyId2,
+                    moduleId1: moduleId1,
+                    moduleId2: moduleId2,
                     eventsLvl: 1,
                     propLvl: 2,
                     childrenLvl: 2,
@@ -63,20 +40,20 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
                 }
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                expect(response.body.left.id).to.eq(policyId1);
-                expect(response.body.right.id).to.eq(policyId2);
+                expect(response.body.left.id).to.eq(moduleId1);
+                expect(response.body.right.id).to.eq(moduleId2);
                 expect(response.body.total).not.null;
             })
         })
     });
 
-    it("Compare policies without auth - Negative", () => {
+    it("Compare modules without auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare,
+            url: API.ApiServer + API.ModuleCompare,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,
@@ -90,13 +67,13 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies with empty auth - Negative", () => {
+    it("Compare modules with empty auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare,
+            url: API.ApiServer + API.ModuleCompare,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,
@@ -111,13 +88,13 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies with invalid auth - Negative", () => {
+    it("Compare modules with invalid auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare,
+            url: API.ApiServer + API.ModuleCompare,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,
@@ -132,14 +109,14 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies(Export)", () => {
+    it("Compare modules(Export)", () => {
         Authorization.getAccessTokenByRefreshToken().then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
+                url: API.ApiServer + API.ModuleCompare + API.ExportCSV,
                 body: {
-                    policyId1: policyId1,
-                    policyId2: policyId2,
+                    moduleId1: moduleId1,
+                    moduleId2: moduleId2,
                     eventsLvl: 1,
                     propLvl: 2,
                     childrenLvl: 2,
@@ -155,13 +132,13 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies(Export) without auth - Negative", () => {
+    it("Compare modules(Export) without auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
+            url: API.ApiServer + API.ModuleCompare + API.ExportCSV,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,
@@ -175,13 +152,13 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies(Export) with empty auth - Negative", () => {
+    it("Compare modules(Export) with empty auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
+            url: API.ApiServer + API.ModuleCompare + API.ExportCSV,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,
@@ -196,13 +173,13 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
         })
     });
 
-    it("Compare policies(Export) with invalid auth - Negative", () => {
+    it("Compare modules(Export) with invalid auth - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.PolicyCompare + API.ExportCSV,
+            url: API.ApiServer + API.ModuleCompare + API.ExportCSV,
             body: {
-                policyId1: "6419853a31fe4fd0e741b3a9",
-                policyId2: "641983a931fe4fd0e741b399",
+                moduleId1: "6419853a31fe4fd0e741b3a9",
+                moduleId2: "641983a931fe4fd0e741b399",
                 eventsLvl: 1,
                 propLvl: 2,
                 childrenLvl: 2,

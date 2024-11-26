@@ -11,7 +11,8 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsgPush,
-                body: { "messageId": "1707125414.999819805" },
+                body: { 
+                    "messageId": "1707126227.976010003" },
                 headers: {
                     authorization,
                 },

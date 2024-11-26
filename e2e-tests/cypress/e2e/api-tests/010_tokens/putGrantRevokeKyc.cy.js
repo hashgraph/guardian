@@ -10,7 +10,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             //grant kyc
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
                 headers: {
                     authorization

@@ -10,34 +10,30 @@ context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     let contractId;
 
     before(() => {
-        //create a contract for tag addition
+        //create a contract for tag synchronization
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
+                method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
                 headers: {
                     authorization,
                 },
-                body: {
-                    description: contactName,
-                    type: "RETIRE",
-                },
-                timeout: 200000
+                qs: {
+                    type: "RETIRE"
+                }
             }).then((response) => {
-                contractId = response.body.id;
-            });
+                contractId = response.body.at(0).id;
+            })
         })
     });
 
 
-    it("Create new tag(contract)", { tags: ['smoke'] }, () => {
+    it("Synchronization a tag", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.Tags,
+                url: API.ApiServer + API.Tags + "synchronization",
                 body: {
-                    name: tagName,
-                    description: tagName,
                     entity: "Contract",
                     target: contractId,
                 },
@@ -45,7 +41,7 @@ context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
                     authorization,
                 }
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                expect(response.status).to.eq(STATUS_CODE.OK);
             })
         })
     })

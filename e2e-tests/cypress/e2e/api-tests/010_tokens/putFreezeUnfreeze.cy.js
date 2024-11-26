@@ -10,13 +10,21 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
         //associate token
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
                 headers: {
                     authorization
                 }
-            }).then((response) => {
+            })
+            .then((response) => {
                 let tokenId = response.body.at(-1).tokenId
+                cy.request({
+                    method: 'PUT',
+                    url: API.ApiServer + 'tokens/' + tokenId + '/associate',
+                    headers: {
+                        authorization
+                    }
+                })
                 Authorization.getAccessToken(SRUsername).then((authorization) => {
                     cy.request({
                         method: METHOD.PUT,

@@ -8,7 +8,7 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
 
     it('Imports new policy and all associated artifacts from IPFS - async', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.fixture("exportedPolicy.policy", "binary")
+            cy.fixture("iRec5.policy", "binary")
                 .then((binary) => Cypress.Blob.binaryStringToBlob(binary))
                 .then((file) => {
                     cy.request({

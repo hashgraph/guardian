@@ -5,7 +5,7 @@ import * as Authorization from "../../../support/authorization";
 
 context("Tags", { tags: ['tags', 'thirdPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const tagName = "tagSchemaAPI" + Math.floor(Math.random() * 999999);
+    const tagName = "tagSchemaAPI";
     const tagId = "d0e99e70-3511-486668e-bf6f-10041e9a0cb7" + Math.floor(Math.random() * 999999);
     let schemaId, schemaCreator, schemaUuid;
 

@@ -26,7 +26,7 @@ context('Policies', { tags: ['policies', 'secondPool'] }, () => {
 	it('Get policy configuration for the specified policy ID', () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
-				method: 'GET',
+				method: METHOD.GET,
 				url: API.ApiServer + 'policies/' + policyId,
 				headers: {
 					authorization,

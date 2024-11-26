@@ -9,7 +9,7 @@ context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
     it('Set Hedera credentials for the Installer', () => {
         Authorization.getAccessToken(SR3Username).then((authorization) => {
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'accounts/standard-registries/aggregated',
                 headers: {
                     authorization

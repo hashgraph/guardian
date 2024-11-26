@@ -9,26 +9,16 @@ context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: {
-                    "messageId": Cypress.env('policy_for_compare1')//iRec 4
-                },
-                headers: {
-                    authorization,
-                },
-                timeout: 360000
-            })
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.PolicySchemas,
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
-                schemaId1 = response.body.at(1)._id
-                schemaId2 = response.body.at(0)._id
-            })
+            method: METHOD.GET,
+            url: API.ApiServer + API.Schemas,
+            headers: {
+                authorization,
+            },
+        }).then((response) => {
+            expect(response.status).to.eq(STATUS_CODE.OK)
+            schemaId1 = response.body.at(0).id;
+            schemaId2 = response.body.at(1).id;
+        });
         })
     })
 

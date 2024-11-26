@@ -5,51 +5,43 @@ import * as Authorization from "../../../support/authorization";
 context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
+    const tokenName = "FirstToken"
+    let contractIdR, contractUuidW, tokenId;
 
-    const contractNameR = Math.floor(Math.random() * 999) + "RCon4GetPoolsTests";
-    const contractNameW = Math.floor(Math.random() * 999) + "WCon4GetPoolsTests";
-    const tokenName = Math.floor(Math.random() * 999) + "TokenName";
-    let rConractId, tokenId, rConractUuid;
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
+                method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
                 headers: {
                     authorization,
                 },
-                body: {
-                    "description": contractNameR,
+                qs: {
                     "type": "RETIRE",
                 },
+                timeout: 180000
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                rConractUuid = response.body.id;
-                rConractId = response.body.contractId;
+                contractIdR = response.body.at(0).id;
                 cy.request({
-                    method: METHOD.POST,
+                    method: METHOD.GET,
                     url: API.ApiServer + API.ListOfContracts,
                     headers: {
                         authorization,
                     },
-                    body: {
-                        "description": contractNameW,
+                    qs: {
                         "type": "WIPE",
                     },
                 }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.SUCCESS);
-                    let wConractId = response.body.contractId;
+                    contractUuidW = response.body.at(0).contractId;
                     cy.request({
                         method: METHOD.POST,
                         url: API.ApiServer + API.ListOfTokens,
-                        headers: {
-                            authorization,
-                        },
+                        headers: { authorization },
                         body: {
                             draftToken: false,
                             tokenName: tokenName,
-                            tokenSymbol: "tn",
-                            tokenType: "fungible",
+                            tokenSymbol: "F",
+                            tokenType: "non-fungible",
                             decimals: "2",
                             initialSupply: "0",
                             enableAdmin: true,
@@ -57,34 +49,39 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                             enableFreeze: false,
                             enableKYC: false,
                             enableWipe: true,
-                            wipeContractId: wConractId,
-                            tokenId: null
+                            wipeContractId: contractUuidW,
+                            tokenId: null,
                         },
+                        timeout: 180000,
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.SUCCESS);
-                        cy.request({
-                            method: METHOD.GET,
-                            url: API.ApiServer + API.ListOfTokens,
-                            headers: {
-                                authorization,
-                            },
-                        }).then((response) => {
-                            expect(response.status).eql(STATUS_CODE.OK);
-                            tokenId = response.body.at(0).tokenId;
+                        response.body.forEach(element => {
+                            if (element.tokenName == tokenName) {
+                                tokenId = element.tokenId
+                            }
                         });
                     });
                 })
-            });
+            })
         })
     })
 
-    it("Sync retire contract pools", () => {
+    it("Set retire contract pool", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + rConractUuid + "/" + API.SyncPools,
+                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
                 headers: {
                     authorization,
+                },
+                body: {
+                    tokens: [
+                        {
+                            token: tokenId,
+                            count: 1
+                        }
+                    ],
+                    immediately: false
                 }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
@@ -92,51 +89,87 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
         })
     });
 
-    it("Sync retire contract pools without auth token - Negative", () => {
+    it("Set retire contract pool without auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + rConractUuid + "/" + API.SyncPools,
+            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
             failOnStatusCode: false,
+            body: {
+                tokens: [
+                    {
+                        token: tokenId,
+                        count: 1
+                    }
+                ],
+                immediately: false
+            }
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Sync retire contract pools with invalid auth token - Negative", () => {
+    it("Set retire contract pool with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + rConractUuid + "/" + API.SyncPools,
+            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
             headers: {
                 authorization: "Bearer wqe",
             },
             failOnStatusCode: false,
+            body: {
+                tokens: [
+                    {
+                        token: tokenId,
+                        count: 1
+                    }
+                ],
+                immediately: false
+            }
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Sync retire contract pools with empty auth token - Negative", () => {
+    it("Set retire contract pool with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.RetireContract + rConractUuid + "/" + API.SyncPools,
+            url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
             headers: {
                 authorization: "",
             },
             failOnStatusCode: false,
+            body: {
+                tokens: [
+                    {
+                        token: tokenId,
+                        count: 1
+                    }
+                ],
+                immediately: false
+            }
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
         });
     });
 
-    it("Sync retire contract pools as User - Negative", () => {
+    it("Set retire contract pool as User - Negative", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
-                url: API.ApiServer + API.RetireContract + rConractUuid + "/" + API.SyncPools,
+                url: API.ApiServer + API.RetireContract + contractIdR + "/" + API.PoolContract,
                 headers: {
                     authorization
                 },
                 failOnStatusCode: false,
+                body: {
+                    tokens: [
+                        {
+                            token: tokenId,
+                            count: 1
+                        }
+                    ],
+                    immediately: false
+                }
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.FORBIDDEN);
             });

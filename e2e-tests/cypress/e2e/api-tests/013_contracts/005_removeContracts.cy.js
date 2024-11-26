@@ -3,48 +3,45 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
-    const SRUsername = Cypress.env('SRUser');
+    const SR2Username = Cypress.env('SR2User');
     const UserUsername = Cypress.env('User');
 
-    let contractIdR, contractIdW
+    let contractIdR, contractIdW;
+    
     before(() => {
-        const contractNameR = Math.floor(Math.random() * 999) + "RCon4GetPerms";
-        const contractNameW = Math.floor(Math.random() * 999) + "WCon4GetPerms";
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
+                method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
                 headers: {
                     authorization,
                 },
-                body: {
-                    "description": contractNameR,
+                qs: {
                     "type": "RETIRE",
                 },
                 timeout: 180000
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                contractIdR = response.body.id;
+                expect(response.status).eql(STATUS_CODE.OK);
+                contractIdR = response.body.at(0).id;
             });
             cy.request({
-                method: METHOD.POST,
+                method: METHOD.GET,
                 url: API.ApiServer + API.ListOfContracts,
                 headers: {
                     authorization,
                 },
-                body: {
-                    "description": contractNameW,
+                qs: {
                     "type": "WIPE",
                 },
             }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.SUCCESS);
-                contractIdW = response.body.id;
+                expect(response.status).eql(STATUS_CODE.OK);
+                contractIdW = response.body.at(0).id;
             });
         })
     })
 
     it("Remove smart-contract(retire)", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.ListOfContracts + contractIdR,
@@ -73,7 +70,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Remove removed smart-contract(retire) - Negative", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.ListOfContracts + contractIdR,
@@ -139,7 +136,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Remove smart-contract(wipe)", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.ListOfContracts + contractIdW,
@@ -153,7 +150,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Remove removed smart-contract(wipe) - Negative", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.ListOfContracts + contractIdW,
@@ -224,7 +221,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 method: METHOD.DELETE,
                 url: API.ApiServer + API.ListOfContracts + contractIdW,
                 headers: {
-                    authorization: accessToken
+                    authorization,
                 },
                 failOnStatusCode: false,
             }).then((response) => {

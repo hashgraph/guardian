@@ -8,7 +8,7 @@ context('Settings', { tags: ['settings', 'thirdPool'] }, () => {
     it('Get current settings', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'settings',
                 headers: {
                     authorization,

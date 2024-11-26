@@ -232,7 +232,7 @@ before(() => {
         }).then((response) => {
             if (response.body.confirmed === false) {
                 cy.request({
-                    method: 'GET',
+                    method: METHOD.GET,
                     url: API.ApiServer + 'accounts/standard-registries/aggregated',
                     headers: {
                         authorization

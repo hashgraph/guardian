@@ -26,7 +26,7 @@ context(" Policies", { tags: ['policies', 'secondPool'] }, () => {
 	it("Validate the policy", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
-				method: 'GET',
+				method: METHOD.GET,
 				url: API.ApiServer + API.Policies + policyId,
 				headers: {
 					authorization,

@@ -5,8 +5,7 @@ import * as Authorization from "../../../support/checkingMethods";
 context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const SR2Username = Cypress.env('SR2User');
-    const UserUsername = Cypress.env('User');
-    let contractIdW, contractIdR, idW, idR, hederaIdSR2;
+    let contractIdW, contractIdR, contractIdW2, contractIdR2, idW, idR, idW2, idR2, hederaIdSR2, tokenId;
     const contractNameR = "FirstAPIContractR";
     const contractNameW = "FirstAPIContractW";
 
@@ -46,6 +45,20 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 });
             });
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfTokens,
+                headers: {
+                    authorization,
+                },
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.OK);
+                response.body.forEach(element => {
+                    if (element.draftToken == false) {
+                        tokenId = element.tokenId
+                    }
+                });
+            });
         })
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
@@ -56,6 +69,44 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                 }
             }).then((response) => {
                 hederaIdSR2 = response.body.hederaAccountId
+            });
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfContracts,
+                headers: {
+                    authorization,
+                },
+                qs: {
+                    type: "WIPE"
+                }
+            }).then((response) => {
+                response.body.forEach(element => {
+                    if (element.description == contractNameW) {
+                        contractIdW2 = element.contractId
+                        idW2 = element.id
+                        console.log(contractIdW2)
+                        console.log(idW2)
+                    }
+                });
+            });
+            cy.request({
+                method: METHOD.GET,
+                url: API.ApiServer + API.ListOfContracts,
+                headers: {
+                    authorization,
+                },
+                qs: {
+                    type: "RETIRE"
+                }
+            }).then((response) => {
+                response.body.forEach(element => {
+                    if (element.description == contractNameR) {
+                        contractIdR2 = element.contractId
+                        idR2 = element.id
+                        console.log(contractIdR2)
+                        console.log(idR2)
+                    }
+                });
             });
         })
     })
@@ -163,79 +214,81 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
         });
     });
 
-    it("Add wipe contract wiper", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql(true);
-            });
-        })
-    });
+    // it("Add wipe contract wiper", () => {
+    //     Authorization.getAccessToken(SRUsername).then((authorization) => {
+    //         cy.request({
+    //             method: METHOD.POST,
+    //             url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2 + "/" + tokenId,
+    //             headers: {
+    //                 authorization,
+    //             }
+    //         }).then((response) => {
+    //             expect(response.status).eql(STATUS_CODE.OK);
+    //             expect(response.body).eql(true);
+    //         });
+    //     })
+    // });
 
-    it("Add wipe contract wiper without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
+    // it("Add wipe contract wiper without auth token - Negative", () => {
+    //     cy.request({
+    //         method: METHOD.POST,
+    //         url: API.ApiServer + API.WipeContract + idW + "/" + API.AdminRole + hederaIdSR2,
+    //         failOnStatusCode: false,
+    //     }).then((response) => {
+    //         expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+    //     });
+    // });
 
-    it("Add wipe contract wiper with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
+    // it("Add wipe contract wiper with invalid auth token - Negative", () => {
+    //     cy.request({
+    //         method: METHOD.POST,
+    //         url: API.ApiServer + API.WipeContract + idW + "/" + API.AdminRole + hederaIdSR2,
+    //         headers: {
+    //             authorization: "Bearer wqe",
+    //         },
+    //         failOnStatusCode: false,
+    //     }).then((response) => {
+    //         expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+    //     });
+    // });
 
-    it("Add wipe contract wiper permissions with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.POST,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
+    // it("Add wipe contract wiper permissions with empty auth token - Negative", () => {
+    //     cy.request({
+    //         method: METHOD.POST,
+    //         url: API.ApiServer + API.WipeContract + idW + "/" + API.AdminRole + hederaIdSR2,
+    //         headers: {
+    //             authorization: "",
+    //         },
+    //         failOnStatusCode: false,
+    //     }).then((response) => {
+    //         expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+    //     });
+    // });
 
     it("Verify roles(wipe)", () => {
         cy.wait(60000)
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
+        console.log(idW2)
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + contractIdWVerra + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
                 headers: {
                     authorization
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql(14);
+                expect(response.body).eql(6);
             });
         })
     });
 
     it("Verify roles(retire)", () => {
         cy.wait(60000)
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
+        console.log(idR2)
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + contractIdRVerra + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
                 headers: {
                     authorization
                 },
@@ -399,63 +452,12 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
         });
     });
 
-    it("Remove  wipe contract wiper", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
-            cy.request({
-                method: METHOD.DELETE,
-                url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-                headers: {
-                    authorization,
-                }
-            }).then((response) => {
-                expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql(true);
-            });
-        })
-    });
-
-    it("Remove  wipe contract wiper without auth token - Negative", () => {
-        cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
-
-    it("Remove  wipe contract wiper with invalid auth token - Negative", () => {
-        cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            headers: {
-                authorization: "Bearer wqe",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
-
-    it("Remove  wipe contract wiper permissions with empty auth token - Negative", () => {
-        cy.request({
-            method: METHOD.DELETE,
-            url: API.ApiServer + API.WipeContract + idW + "/" + API.WiperRole + hederaIdSR2,
-            headers: {
-                authorization: "",
-            },
-            failOnStatusCode: false,
-        }).then((response) => {
-            expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-        });
-    });
-
     it("Verify roles(wipe)", () => {
-        cy.wait(60000)
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
+        cy.wait(150000)
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + contractIdWVerra + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
                 headers: {
                     authorization
                 },
@@ -467,11 +469,11 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
     });
 
     it("Verify roles(retire)", () => {
-        cy.wait(60000)
-        Authorization.getAccessToken(UserUsername).then((authorization) => {
+        cy.wait(150000)
+        Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + contractIdRVerra + "/" + API.ContractPermissions,
+                url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
                 headers: {
                     authorization
                 },

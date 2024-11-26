@@ -18,7 +18,11 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
-                policyId = response.body.at(0).id;
+                response.body.forEach(element => {
+                    if (element.description == "iRec Description") {
+                        policyId = element.id
+                    }
+                });
                 cy.request({
                     method: 'PUT',
                     url: API.ApiServer + 'policies/' + policyId + '/publish',
@@ -46,7 +50,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
     it("Associate and disassociate the user with the provided Hedera token", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
                 headers: {
                     authorization
