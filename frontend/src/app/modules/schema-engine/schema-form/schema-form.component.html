@@ -27,7 +27,8 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span class="suggestion-header">Suggestion:</span> {{ item.suggest }}
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                            class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
                     <button
                         (click)="patchSuggestValue(item)"
@@ -189,7 +190,7 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                             class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
                     <button
@@ -378,10 +379,9 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)"
-                             class="suggestion">
-                            <div class="suggestion-name"><span
-                                class="suggestion-header">Suggestion:</span> {{ item.suggest }}
+                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                                    class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                             </div>
                             <button
                                 (click)="patchSuggestValue(item)"
@@ -464,10 +464,9 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)"
-                             class="suggestion">
-                            <div class="suggestion-name"><span
-                                class="suggestion-header">Suggestion:</span> {{ item.suggest }}
+                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
+                                    class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                             </div>
                             <button
                                 (click)="patchSuggestValue(item)"

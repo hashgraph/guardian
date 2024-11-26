@@ -198,38 +198,30 @@ export class ProjectsAPI {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
+        const rowDocuments = await guardians.getVcDocuments({ id: ids });
+        let samePolicy: boolean = true;
+        const policyIds: string[] = [];
+        for (const id of ids) {
+            const doc = rowDocuments.find((e) => e.id === id);
+            if (doc) {
+                policyIds.push(doc.policyId);
+            } else {
+                policyIds.push(null);
+            }
+            if (policyIds.length > 1 && policyIds[policyIds.length - 2] !== policyIds[policyIds.length - 1]) {
+                samePolicy = false;
+            }
+        }
+
         const idLvl = 0;
         const eventsLvl = 0;
         const propLvl = 2;
         const childrenLvl = 0;
         const user = null;
-
-        let samePolicy: boolean = true;
-        const _data = await guardians.getVcDocuments({ id: ids });
-        for (let index = 1; index < _data.length; index++) {
-            if (_data[index - 1].policyId !== _data[index].policyId) {
-                samePolicy = false;
-                break;
-            }
-        }
-
-        const policyIds = _data.map((p: any) => p.policyId);
-
         const refLvl = samePolicy ? 'Revert' : 'Merge';
         const keyLvl = samePolicy ? 'Default' : 'Property';
 
         try {
-            const comparationVpArray = await guardians.compareVPDocuments(
-                user,
-                null,
-                policyIds,
-                '1',
-                '2',
-                '2',
-                '0',
-                0,
-                'Direct'
-            );
             const comparationVc = await guardians.compareDocuments(
                 user,
                 null,
@@ -240,6 +232,17 @@ export class ProjectsAPI {
                 idLvl,
                 keyLvl,
                 refLvl
+            );
+            const comparationVpArray = await guardians.compareVPDocuments(
+                user,
+                null,
+                policyIds,
+                '1',
+                '2',
+                '2',
+                '0',
+                0,
+                'Direct'
             );
             return {
                 projects: comparationVc,
