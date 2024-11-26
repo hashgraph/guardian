@@ -18,7 +18,7 @@ export class SynchronizationPolicy extends SynchronizationTask {
         super('policy', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
         const collection2 = em.getCollection<TokenCache>('token_cache');

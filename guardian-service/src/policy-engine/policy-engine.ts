@@ -160,18 +160,17 @@ export class PolicyEngine extends NatsService {
      */
     public async accessPolicyCode(policy: Policy, user: IOwner): Promise<number> {
         if (!policy) {
-            return 1
+            //Policy does not exist
+            return 1;
         }
         if (user.owner !== policy.owner) {
-            return 2
+            //Insufficient permissions
+            return 2;
         }
         if (user.creator === policy.creator) {
-            return 0
+            return 0;
         }
-        const published = (
-            policy.status === PolicyType.PUBLISH ||
-            policy.status === PolicyType.DISCONTINUED
-        );
+        const published = (policy.status === PolicyType.PUBLISH || policy.status === PolicyType.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
         switch (user.access) {
@@ -191,9 +190,11 @@ export class PolicyEngine extends NatsService {
                 return (published && assigned) ? 0 : 2;
             }
             case AccessType.NONE: {
+                //Insufficient permissions
                 return 2;
             }
             default: {
+                //Insufficient permissions
                 return 2;
             }
         }
@@ -369,20 +370,20 @@ export class PolicyEngine extends NatsService {
 
         let newTopic: Topic;
         notifier.completedAndStart('Resolve Hedera account');
-        const root = await this.users.getHederaAccount(user.creator);
+        const root = await this.users.getHederaAccount(user.owner);
         notifier.completed();
         if (!model.topicId) {
             notifier.start('Create topic');
             logger.info('Create Policy: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await TopicConfig.fromObject(
-                await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
+                await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
             );
             const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
             const topic = await topicHelper.create({
                 type: TopicType.PolicyTopic,
                 name: model.name || TopicType.PolicyTopic,
                 description: model.topicDescription || TopicType.PolicyTopic,
-                owner: user.creator,
+                owner: user.owner,
                 policyId: null,
                 policyUUID: null
             });
@@ -931,7 +932,7 @@ export class PolicyEngine extends NatsService {
         const databaseServer = new DatabaseServer(dryRunId);
 
         //Create Services
-        const root = await this.users.getHederaAccount(user.creator);
+        const root = await this.users.getHederaAccount(user.owner);
         const topic = await TopicConfig.fromObject(
             await DatabaseServer.getTopicById(model.topicId), !demo
         );
@@ -951,7 +952,7 @@ export class PolicyEngine extends NatsService {
             type: TopicType.InstancePolicyTopic,
             name: model.name || TopicType.InstancePolicyTopic,
             description: model.topicDescription || TopicType.InstancePolicyTopic,
-            owner: user.creator,
+            owner: user.owner,
             policyId: dryRunId,
             policyUUID: model.uuid
         });
@@ -997,11 +998,11 @@ export class PolicyEngine extends NatsService {
             credentialSubject = SchemaHelper.updateObjectContext(schemaObject, credentialSubject);
         }
         const vcHelper = new VcHelper();
-        const didDocument = await vcHelper.loadDidDocument(user.creator);
+        const didDocument = await vcHelper.loadDidDocument(user.owner);
         const vc = await vcHelper.createVerifiableCredential(credentialSubject, didDocument, null, null);
         await databaseServer.saveVC({
             hash: vc.toCredentialHash(),
-            owner: user.creator,
+            owner: user.owner,
             document: vc.toJsonTree(),
             type: SchemaEntity.POLICY,
             policyId: `${model.id}`

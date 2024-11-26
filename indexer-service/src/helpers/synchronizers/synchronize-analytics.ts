@@ -9,7 +9,7 @@ export class SynchronizationAnalytics extends SynchronizationTask {
         super('analytics', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
 
         const registries = await em.count(Message, {

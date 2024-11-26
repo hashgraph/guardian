@@ -26,7 +26,7 @@ Entities operating single cycle power plants can use ACM0007 to develop carbon o
 **Verification and Validation Body (VVB)** - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration. \
 **Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.
 ## Technical Aspects of the Project (Policy Guide):
-This policy can be imported to hedera guardian via the Github file(.policy) or IPSF timestamp(1706881469.628524368). \
+This policy can be imported to hedera guardian via the Github file(.policy) or IPFS timestamp(1706881469.628524368). \
 **Policy Workflow**:
 ![image](https://github.com/ankurgupta007/guardian/assets/98680735/ae68213a-d1a3-4b78-848b-1b69b0e215ec)
 

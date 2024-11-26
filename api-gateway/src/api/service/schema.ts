@@ -1720,7 +1720,7 @@ export class SchemaApi {
      */
     @Get('/:schemaId/export/message')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1774,7 +1774,7 @@ export class SchemaApi {
      */
     @Get('/:schemaId/export/file')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2266,7 +2266,7 @@ export class SchemaApi {
      */
     @Get('/:schemaId/export/xlsx')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -2489,7 +2489,7 @@ export class SchemaApi {
      */
     @Get('/export/template')
     @Auth(
-        Permissions.SCHEMAS_SCHEMA_CREATE,
+        Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

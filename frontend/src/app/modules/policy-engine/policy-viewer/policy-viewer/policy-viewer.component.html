@@ -50,25 +50,27 @@
 
             <div class="delimiter"></div>
 
-            <div
-                class="dry-run-action-btn record-btn"
-                (click)="startRecord()"
-                title="Start Record"
-                [attr.disabled]="recordingActive">
-                <mat-icon>radio_button_checked</mat-icon>
-                <span>Record</span>
-            </div>
+            <ng-container *ngIf="permissions.POLICIES_RECORD_ALL">
+                <div
+                    class="dry-run-action-btn record-btn"
+                    (click)="startRecord()"
+                    title="Start Record"
+                    [attr.disabled]="recordingActive">
+                    <mat-icon>radio_button_checked</mat-icon>
+                    <span>Record</span>
+                </div>
 
-            <div
-                class="dry-run-action-btn run-btn"
-                (click)="runRecord()"
-                title="Run Record"
-                [attr.disabled]="recordingActive">
-                <mat-icon>play_arrow</mat-icon>
-                <span>Run</span>
-            </div>
+                <div
+                    class="dry-run-action-btn run-btn"
+                    (click)="runRecord()"
+                    title="Run Record"
+                    [attr.disabled]="recordingActive">
+                    <mat-icon>play_arrow</mat-icon>
+                    <span>Run</span>
+                </div>
 
-            <div class="delimiter"></div>
+                <div class="delimiter"></div>
+            </ng-container>
 
             <div
                 (click)="onView('policy')"
@@ -270,7 +272,7 @@
     </ng-container>
 
     <app-record-controller
-        *ngIf="isDryRun"
+        *ngIf="isDryRun && permissions.POLICIES_RECORD_ALL"
         #recordController
         [policyId]="policyId"
         (update)="updatePolicy()"

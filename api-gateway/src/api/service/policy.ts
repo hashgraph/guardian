@@ -29,6 +29,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -95,6 +96,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -453,6 +455,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_READ,
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         Permissions.POLICIES_POLICY_AUDIT,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
@@ -880,6 +883,7 @@ export class PolicyApi {
     @Get('/:policyId/navigation')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -925,6 +929,7 @@ export class PolicyApi {
     @Get('/:policyId/groups')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1319,6 +1324,7 @@ export class PolicyApi {
     @Post('/:policyId/groups')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1371,6 +1377,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1417,6 +1424,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks/:uuid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1473,6 +1481,7 @@ export class PolicyApi {
     @Post('/:policyId/blocks/:uuid')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1538,6 +1547,7 @@ export class PolicyApi {
     @Post('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1603,6 +1613,7 @@ export class PolicyApi {
     @Get('/:policyId/tag/:tagName')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1654,6 +1665,7 @@ export class PolicyApi {
     @Get('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -1709,6 +1721,7 @@ export class PolicyApi {
     @Get('/:policyId/blocks/:uuid/parents')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -3057,6 +3070,7 @@ export class PolicyApi {
     @Get('/:policyId/multiple')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )
@@ -3099,6 +3113,7 @@ export class PolicyApi {
     @Post('/:policyId/multiple/')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.USER,
     )

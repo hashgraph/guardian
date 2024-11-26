@@ -71,13 +71,13 @@ export class StatisticAssessmentsComponent implements OnInit {
             id: 'target',
             title: 'Target',
             type: 'text',
-            size: '200',
+            size: '220',
             tooltip: false
         }, {
             id: 'messageId',
             title: 'Message ID',
             type: 'text',
-            size: '200',
+            size: '220',
             tooltip: false
         }, {
             id: 'options',

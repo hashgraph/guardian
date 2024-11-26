@@ -550,7 +550,7 @@ export class ToolsApi {
      */
     @Get('/:id/export/file')
     @Auth(
-        Permissions.TOOLS_TOOL_CREATE,
+        Permissions.TOOLS_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -597,7 +597,7 @@ export class ToolsApi {
      */
     @Get('/:id/export/message')
     @Auth(
-        Permissions.TOOLS_TOOL_CREATE,
+        Permissions.TOOLS_TOOL_READ,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({

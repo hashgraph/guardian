@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType } from '@guardian/interfaces';
+import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, interval, Subscription } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -51,6 +51,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     private subscription = new Subscription();
+    public permissions: UserPermissions;
 
     public get isDryRun(): boolean {
         return (
@@ -132,6 +133,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.recordingActive = false;
         this.profileService.getProfile().subscribe(
             (profile: IUser | null) => {
+                this.permissions = new UserPermissions(profile);
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
@@ -316,7 +318,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     public onPage(event: any): void {

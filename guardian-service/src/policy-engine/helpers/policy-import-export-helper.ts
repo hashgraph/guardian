@@ -124,7 +124,7 @@ export class PolicyImport {
     private async createPolicyTopic(policy: Policy, versionOfTopicId: string, user: IOwner) {
         this.notifier.completedAndStart('Resolve topic');
         this.parentTopic = await TopicConfig.fromObject(
-            await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
+            await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
         );
 
         if (this.demo) {
@@ -132,7 +132,7 @@ export class PolicyImport {
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
-                owner: user.creator,
+                owner: user.owner,
                 policyId: null,
                 policyUUID: null,
                 topicId: `0.0.${Date.now()}${(Math.random()*1000).toFixed(0)}`
@@ -156,7 +156,7 @@ export class PolicyImport {
                 type: TopicType.PolicyTopic,
                 name: policy.name || TopicType.PolicyTopic,
                 description: policy.topicDescription || TopicType.PolicyTopic,
-                owner: user.creator,
+                owner: user.owner,
                 policyId: null,
                 policyUUID: null
             });

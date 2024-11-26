@@ -51,6 +51,7 @@ enum ErrorArrayMessageByFieldType {
 class IButton {
     id: string;
     visible: () => boolean;
+    disabled: () => boolean;
     text: string;
     class: string;
     type: string;
@@ -144,6 +145,9 @@ export class SchemaFormComponent implements OnInit {
                 }
                 return this.currentIndex === 0 && !this.cancelHidden;
             },
+            disabled: () => {
+                return false;
+            },
             text: this.cancelText,
             class: 'p-button-outlined',
             type: 'secondary',
@@ -158,6 +162,9 @@ export class SchemaFormComponent implements OnInit {
                     return false;
                 }
                 return this.currentIndex !== 0;
+            },
+            disabled: () => {
+                return false;
             },
             text: 'Previous',
             class: 'p-button-outlined',
@@ -174,6 +181,9 @@ export class SchemaFormComponent implements OnInit {
                 }
                 return !this.isShown[this.fields.length - 1];
             },
+            disabled: () => {
+                return false;
+            },
             text: 'Next',
             class: 'p-button',
             type: 'primary',
@@ -188,6 +198,9 @@ export class SchemaFormComponent implements OnInit {
                     return false;
                 }
                 return !!this.isShown[this.fields.length - 1] && !this.submitHidden;
+            },
+            disabled: () => {
+                return false;
             },
             text: this.submitText,
             class: 'p-button',
@@ -650,6 +663,22 @@ export class SchemaFormComponent implements OnInit {
 
     public isHelpText(item: SchemaField): boolean {
         return item.type === 'null';
+    }
+
+    suggestIsObject(item: any): boolean {
+        return typeof item === 'object';
+    }
+
+    public parseSuggest(item: any): string {
+        return this.findString(item);
+    }
+
+    private findString(item: any): string {
+        if (typeof item === 'object') {
+            return this.findString(Object.values(item)[0]);
+        } else {
+            return item as string;
+        }
     }
 
     public isTime(item: SchemaField): boolean {

@@ -10,7 +10,7 @@ export class SynchronizationDid extends SynchronizationTask {
         super('dids', mask);
     }
 
-    protected override async sync(): Promise<void> {
+    public override async sync(): Promise<void> {
         const em = DataBaseHelper.getEntityManager();
         const collection = em.getCollection<Message>('message');
 

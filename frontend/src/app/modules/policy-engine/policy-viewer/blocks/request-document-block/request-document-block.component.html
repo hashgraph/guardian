@@ -25,7 +25,8 @@
                     <b>There is some data to restore. You can restore latest values:</b>
                     <button 
                         (click)="onRestoreClick()"
-                        class="guardian-button guardian-button-primary">
+                        class="guardian-button guardian-button-primary"
+                        type="button">
                         <div class="guardian-button-icon">
                             <svg-icon class="icon-btn svg-icon"
                                 src="/assets/images/icons/16/refresh.svg"
@@ -44,7 +45,8 @@
                     <b>There is dry run mode. You can fill document with test data:</b>
                     <button 
                         (click)="onDryRun()"
-                        class="guardian-button guardian-button-primary">
+                        class="guardian-button guardian-button-primary"
+                        type="button">
                         <div class="guardian-button-icon">
                             <svg-icon class="icon-btn svg-icon"
                                 src="/assets/images/icons/16/refresh.svg"
@@ -68,6 +70,7 @@
                     submitText="Create"
                     [rules]="rulesResults"
                     [paginationHidden]="false"
+                    (buttons)="onChangeButtons($event)"
                 >
                 </app-schema-form>
             </div>
