@@ -119,6 +119,7 @@ before(() => {
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
+                    timeout:600000
                 }).then((response) => {
                     cy.wait(3000)
                     let hederaAccountId = response.body.id
