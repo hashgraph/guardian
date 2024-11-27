@@ -26,9 +26,10 @@ export async function getProjectSchema(iri: string, schemas: Map<string, any>): 
     } else {
         const schema = await new DatabaseServer().getSchemaByIRI(iri);
         if (schema) {
-            const fieldCompanyName = (new Schema(schema)).searchFields((f) => f.title === CompanyNameField);
-            const fieldSectoralScope = (new Schema(schema)).searchFields((f) => f.title === SectoralScopeField);
-            const fieldTitle = (new Schema(schema)).searchFields((f) => f.title === ProjectTitleField);
+            const _schema = new Schema(schema);
+            const fieldCompanyName = _schema.searchFields((f) => f.property === CompanyNameField);
+            const fieldSectoralScope = _schema.searchFields((f) => f.property === SectoralScopeField);
+            const fieldTitle = _schema.searchFields((f) => f.property === ProjectTitleField);
             schemas.set(iri, {
                 fieldCompanyName,
                 fieldSectoralScope,
