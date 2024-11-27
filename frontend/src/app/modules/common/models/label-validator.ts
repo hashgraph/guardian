@@ -1,4 +1,16 @@
-import { IFormulaData, IGroupItemConfig, ILabelItemConfig, INavImportsConfig, INavItemConfig, IPolicyLabelConfig, IRulesItemConfig, IScoreData, IStatisticItemConfig, IVariableData, NavItemType } from "@guardian/interfaces";
+import {
+    IFormulaData,
+    IGroupItemConfig,
+    ILabelItemConfig,
+    INavImportsConfig,
+    INavItemConfig,
+    IPolicyLabelConfig,
+    IRulesItemConfig,
+    IScoreData,
+    IStatisticItemConfig,
+    IVariableData,
+    NavItemType
+} from "@guardian/interfaces";
 import { Formula } from "src/app/utils";
 import { FieldRuleResult, FormulaRuleValidator } from "./field-rule-validator";
 
@@ -96,6 +108,23 @@ class NodeValidator {
             valid: false,
             error: 'Unidentified item'
         };
+    }
+
+    public static calculateFormula(item: IFormulaData, scope: any): any {
+        let value: any;
+        try {
+            value = Formula.evaluate(item.formula, scope);
+        } catch (error) {
+            value = NaN;
+        }
+        if (value) {
+            if (item.type === 'string') {
+                value = String(value);
+            } else {
+                value = Number(value);
+            }
+        }
+        return value;
     }
 
     public static from(item: INavItemConfig): IValidator {
@@ -209,33 +238,10 @@ class RuleValidator {
         }
         for (const formula of this.formulas) {
             const scope = this.getScore();
-            const value = this.calcFormula(formula, scope);
+            const value = NodeValidator.calculateFormula(formula, scope);
             (formula as any).value = value;
             this.scope.setVariable(formula.id, value);
         }
-    }
-
-    private getScore(): any {
-        const namespace = this.namespaces.getNamespace();
-        const scope = this.scope.getScore();
-        return Object.assign(namespace, scope);
-    }
-
-    private calcFormula(item: IFormulaData, scope: any): any {
-        let value: any;
-        try {
-            value = Formula.evaluate(item.formula, scope);
-        } catch (error) {
-            value = NaN;
-        }
-        if (value) {
-            if (item.type === 'string') {
-                value = String(value);
-            } else {
-                value = Number(value);
-            }
-        }
-        return value;
     }
 
     public validate(): IValidateResult {
@@ -258,32 +264,11 @@ class RuleValidator {
 
         return result;
     }
-}
 
-class LabelValidator {
-    private readonly id: string;
-    private readonly name: string;
-
-    private namespaces: ValidateNamespace;
-    private scope: ValidateScore;
-
-    constructor(item: ILabelItemConfig) {
-        this.id = item.id;
-        this.name = item.name;
-    }
-
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
-    }
-
-    public validate(): IValidateResult {
-        const result: IValidateResult = {
-            id: this.id,
-            valid: true
-        };
-        const scope = this.namespaces.createScore(this.id);
-        return result;
+    private getScore(): any {
+        const namespace = this.namespaces.getNamespace();
+        const scope = this.scope.getScore();
+        return Object.assign(namespace, scope);
     }
 }
 
@@ -294,9 +279,16 @@ class StatisticValidator {
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
 
+    private variables: IVariableData[];
+    private scores: IScoreData[];
+    private formulas: IFormulaData[];
+
     constructor(item: IStatisticItemConfig) {
         this.id = item.id;
         this.name = item.name;
+        this.variables = item.config?.variables || [];
+        this.scores = item.config?.scores || [];
+        this.formulas = item.config?.formulas || [];
     }
 
     public setData(namespaces: ValidateNamespace) {
@@ -304,51 +296,91 @@ class StatisticValidator {
         this.scope = this.namespaces.createScore(this.id);
     }
 
+    public update() {
+        for (const variable of this.variables) {
+            const value = this.namespaces.getField(variable.schemaId, variable.path);
+            (variable as any).value = value;
+            this.scope.setVariable(variable.id, null); ``
+        }
+    }
+
+    public calculation() {
+        for (const score of this.scores) {
+            this.scope.setVariable(score.id, null);
+        }
+        for (const formula of this.formulas) {
+            const scope = this.getScore();
+            const value = NodeValidator.calculateFormula(formula, scope);
+            (formula as any).value = value;
+            this.scope.setVariable(formula.id, value);
+        }
+    }
+
     public validate(): IValidateResult {
         const result: any = {
             id: this.id,
             valid: true,
         };
-        const scope = this.namespaces.createScore(this.id);
-
-        // for (const field of this.preview) {
-        //     document[field.id] = field.value;
-        // }
-
-        // for (const score of this.scores) {
-        //     document[score.id] = score.value;
-        // }
-
-        // for (const formula of this.formulas) {
-        //     formula.value = this.calcFormula(formula, document);
-        //     if (formula.value) {
-        //         if (formula.type === 'string') {
-        //             formula.value = String(formula.value);
-        //         } else {
-        //             formula.value = Number(formula.value);
-        //         }
-        //         document[formula.id] = formula.value;
-        //     }
-        // }
-
         return result;
+    }
+
+    private getScore(): any {
+        const namespace = this.namespaces.getNamespace();
+        const scope = this.scope.getScore();
+        return Object.assign(namespace, scope);
+    }
+}
+
+class LabelValidator {
+    private readonly id: string;
+    private readonly name: string;
+
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
+
+    private imports: INavImportsConfig[];
+    private children: INavItemConfig[];
+    private root: GroupValidator;
+
+    constructor(item: ILabelItemConfig) {
+        this.id = item.id;
+        this.name = item.name;
+
+        const label: IPolicyLabelConfig = item.config || {};
+        this.imports = label.imports || [];
+        this.children = label.children || [];
+
+        this.root = new GroupValidator({
+            id: item.id,
+            type: NavItemType.Group,
+            name: item.name,
+            rule: 'every',
+            children: this.children
+        });
+    }
+
+    public setData(namespaces: ValidateNamespace) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
+        this.root.setData(namespaces);
+    }
+
+    public validate(): IValidateResult {
+        return this.root.validate();
     }
 }
 
 export class LabelValidators {
     private readonly imports: INavImportsConfig[];
     private readonly children: INavItemConfig[];
-    private readonly root: GroupValidator;
+    private readonly root: LabelValidator;
 
     constructor(label: IPolicyLabelConfig) {
-        this.imports = label.imports || [];
-        this.children = label.children || [];
-        this.root = new GroupValidator({
+        this.root = new LabelValidator({
             id: 'root',
-            type: NavItemType.Group,
+            type: NavItemType.Label,
             name: 'root',
-            rule: 'every',
-            children: this.children
+            config: label
         });
         debugger;
     }
