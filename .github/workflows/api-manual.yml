@@ -124,8 +124,8 @@ jobs:
                   CI: true
                   OPERATOR_ID: ${{ secrets.CI_HEDERA_ACCOUNT }}
                   OPERATOR_KEY: ${{ secrets.CI_HEDERA_PRIV_KEY }}
-                  JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-                  JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+                  JWT_PRIVATE_KEY: ${{ secrets.CI_JWT_PRIVATE_KEY }}
+                  JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
                   IPFS_NODE_ADDRESS: http://localhost:5001
                   IPFS_PROVIDER: local
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
