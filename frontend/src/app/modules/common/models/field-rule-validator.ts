@@ -5,6 +5,7 @@ import {
     IConditionRange,
     IConditionRuleData,
     IConditionText,
+    IFormulaData,
     IFormulaRuleData,
     IRangeRuleData,
     ISchemaRuleData,
@@ -12,12 +13,14 @@ import {
     IVCDocument
 } from '@guardian/interfaces';
 
-enum FieldRuleResult {
+export enum FieldRuleResult {
     None = 'None',
     Error = 'Error',
     Failure = 'Failure',
     Success = 'Success',
 }
+
+export type IRuleData = IFormulaRuleData | IConditionRuleData | IRangeRuleData | undefined;
 
 export interface SchemaRuleValidateResult {
     [path: string]: {
@@ -31,11 +34,9 @@ export interface SchemaRuleValidateResult {
     }
 }
 
-abstract class AbstractFieldRule {
+export class RuleValidator {
     public readonly id: string;
-    public readonly path: string;
-    public readonly schemaId: string;
-    public readonly rule: IFormulaRuleData | IConditionRuleData | IRangeRuleData | undefined;
+    public readonly rule: IRuleData;
 
     private type: 'formula' | 'range' | 'condition' | 'none';
     private formula: string;
@@ -45,15 +46,11 @@ abstract class AbstractFieldRule {
         then: string;
     }[];
 
-    constructor(rule: ISchemaRuleData) {
-        this.id = rule.id;
-        this.path = rule.path;
-        this.schemaId = rule.schemaId;
-        this.rule = rule.rule;
+    constructor(id: string, rule: IRuleData) {
+        this.id = id;
+        this.rule = rule;
         this.parse();
     }
-
-    abstract calculate(formula: string, scope: any): FieldRuleResult;
 
     private parse() {
         if (!this.rule) {
@@ -112,14 +109,6 @@ abstract class AbstractFieldRule {
         }
     }
 
-    public checkField(path: string, schema?: string): boolean {
-        if (schema) {
-            return this.path === path && this.schemaId === schema;
-        } else {
-            return this.path === path;
-        }
-    }
-
     public validate(scope: any): FieldRuleResult {
         if (this.type === 'none') {
             return FieldRuleResult.None;
@@ -151,10 +140,8 @@ abstract class AbstractFieldRule {
 
         return FieldRuleResult.None;
     }
-}
 
-export class FieldRuleValidator extends AbstractFieldRule {
-    public override calculate(formula: string, scope: any): FieldRuleResult {
+    private calculate(formula: string, scope: any): FieldRuleResult {
         try {
             if (!formula) {
                 return FieldRuleResult.None;
@@ -173,6 +160,31 @@ export class FieldRuleValidator extends AbstractFieldRule {
         } catch (error) {
             return FieldRuleResult.Error;
         }
+    }
+}
+
+export class FieldRuleValidator extends RuleValidator {
+    public readonly path: string;
+    public readonly schemaId: string;
+
+    constructor(rule: ISchemaRuleData) {
+        super(rule.id, rule.rule);
+        this.path = rule.path;
+        this.schemaId = rule.schemaId;
+    }
+
+    public checkField(path: string, schema?: string): boolean {
+        if (schema) {
+            return this.path === path && this.schemaId === schema;
+        } else {
+            return this.path === path;
+        }
+    }
+}
+
+export class FormulaRuleValidator extends RuleValidator {
+    constructor(formula: IFormulaData) {
+        super(formula.id, formula.rule);
     }
 }
 

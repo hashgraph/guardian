@@ -1,5 +1,6 @@
-import { IGroupItemConfig, ILabelItemConfig, INavImportsConfig, INavItemConfig, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType } from "@guardian/interfaces";
-
+import { IFormulaData, IGroupItemConfig, ILabelItemConfig, INavImportsConfig, INavItemConfig, IPolicyLabelConfig, IRulesItemConfig, IScoreData, IStatisticItemConfig, IVariableData, NavItemType } from "@guardian/interfaces";
+import { Formula } from "src/app/utils";
+import { FieldRuleResult, FormulaRuleValidator } from "./field-rule-validator";
 
 type IValidator = GroupValidator | LabelValidator | RuleValidator | StatisticValidator | NodeValidator;
 
@@ -10,32 +11,65 @@ interface IValidateResult {
     children?: IValidateResult[];
 }
 
-class ValidateNamespaces {
-    private readonly documents: any[];
-    private readonly namespaces: Map<string, any>;
-    private readonly children: ValidateNamespaces[];
+class ValidateScore {
+    public readonly name: string;
 
-    constructor(documents: any[]) {
+    private readonly score: any;
+
+    constructor(name: string) {
+        this.name = name;
+        this.score = {};
+    }
+
+    public setVariable(name: string, value: any) {
+        this.score[name] = value;
+    }
+
+    public getScore(): any {
+        return this.score;
+    }
+}
+
+class ValidateNamespace {
+    public readonly name: string;
+
+    private readonly documents: any[];
+    private readonly children: ValidateNamespace[];
+    private readonly scores: ValidateScore[];
+
+    constructor(name: string, documents: any[]) {
+        this.name = name;
         this.documents = documents;
-        this.namespaces = new Map<string, any>();
         this.children = [];
+        this.scores = [];
+    }
+
+    public createNamespaces(name: string): ValidateNamespace {
+        const namespace = new ValidateNamespace(name, this.documents);
+        this.children.push(namespace);
+        return namespace;
     }
 
     public createScore(name: string): any {
-        const score: any = {};
-        for (const [namespace, subScore] of this.namespaces.entries()) {
-            for (const fieldName of Object.keys(subScore)) {
-                score[`${namespace}.${fieldName}`] = subScore[fieldName];
-            }
-        }
-        this.namespaces.set(name, score);
+        const score = new ValidateScore(name);
+        this.scores.push(score);
         return score;
     }
 
-    public createNamespaces(name: string): ValidateNamespaces {
-        const namespace = new ValidateNamespaces(this.documents);
-        this.children.push(namespace);
+    public getNamespace(): any {
+        let namespace: any = {};
+        for (const item of this.scores) {
+            const values = item.getScore();
+            const keys = Object.keys(values);
+            for (const key of keys) {
+                namespace[`${item.name}.${key}`] = values[key];
+            }
+        }
         return namespace;
+    }
+
+    public getField(schema: string, path: string): any {
+
     }
 }
 
@@ -43,20 +77,20 @@ class NodeValidator {
     private readonly id: string;
     private readonly name: string;
 
-    private namespaces: ValidateNamespaces;
-    private scope: any;
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
 
     constructor(item: any) {
         this.id = item.id;
         this.name = item.name;
     }
 
-    public setData(namespaces: ValidateNamespaces) {
+    public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
         this.scope = this.namespaces.createScore(this.id);
     }
 
-    public validate(scope: ValidateNamespaces): IValidateResult {
+    public validate(): IValidateResult {
         return {
             id: this.id,
             valid: false,
@@ -100,8 +134,8 @@ class GroupValidator {
     private readonly name: string;
     private readonly children: IValidator[];
 
-    private namespaces: ValidateNamespaces;
-    private scope: any;
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
 
     constructor(item: IGroupItemConfig) {
         this.id = item.id;
@@ -109,7 +143,7 @@ class GroupValidator {
         this.children = NodeValidator.fromArray(item.children);
     }
 
-    public setData(namespaces: ValidateNamespaces) {
+    public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
         this.scope = this.namespaces.createScore(this.id);
         for (const child of this.children) {
@@ -117,18 +151,107 @@ class GroupValidator {
         }
     }
 
-    public validate(namespaces: ValidateNamespaces): IValidateResult {
+    public validate(): IValidateResult {
         const result: any = {
             id: this.id,
             valid: true,
             children: []
         };
 
-        const namespace = namespaces.createNamespaces(this.id);
         for (const child of this.children) {
-            const childResult = child.validate(namespace);
+            const childResult = child.validate();
             result.children.push(childResult);
             if (!childResult.valid) {
+                return result;
+            }
+        }
+
+        return result;
+    }
+}
+
+class RuleValidator {
+    private readonly id: string;
+    private readonly name: string;
+
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
+
+    private variables: IVariableData[];
+    private scores: IScoreData[];
+    private formulas: IFormulaData[];
+
+    constructor(item: IRulesItemConfig) {
+        this.id = item.id;
+        this.name = item.name;
+
+        this.variables = item.config?.variables || [];
+        this.scores = item.config?.scores || [];
+        this.formulas = item.config?.formulas || [];
+    }
+
+    public setData(namespaces: ValidateNamespace) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.id);
+    }
+
+    public update() {
+        for (const variable of this.variables) {
+            const value = this.namespaces.getField(variable.schemaId, variable.path);
+            (variable as any).value = value;
+            this.scope.setVariable(variable.id, null); ``
+        }
+    }
+
+    public calculation() {
+        for (const score of this.scores) {
+            this.scope.setVariable(score.id, null);
+        }
+        for (const formula of this.formulas) {
+            const scope = this.getScore();
+            const value = this.calcFormula(formula, scope);
+            (formula as any).value = value;
+            this.scope.setVariable(formula.id, value);
+        }
+    }
+
+    private getScore(): any {
+        const namespace = this.namespaces.getNamespace();
+        const scope = this.scope.getScore();
+        return Object.assign(namespace, scope);
+    }
+
+    private calcFormula(item: IFormulaData, scope: any): any {
+        let value: any;
+        try {
+            value = Formula.evaluate(item.formula, scope);
+        } catch (error) {
+            value = NaN;
+        }
+        if (value) {
+            if (item.type === 'string') {
+                value = String(value);
+            } else {
+                value = Number(value);
+            }
+        }
+        return value;
+    }
+
+    public validate(): IValidateResult {
+        const result: IValidateResult = {
+            id: this.id,
+            valid: true
+        };
+
+        const scope = this.getScore();
+        for (const formula of this.formulas) {
+            const validator = new FormulaRuleValidator(formula);
+            const status = validator.validate(scope);
+            (formula as any).status = status;
+            if (status === FieldRuleResult.Failure || status === FieldRuleResult.Error) {
+                result.valid = false;
+                result.error = 'Invalid condition'
                 return result;
             }
         }
@@ -141,53 +264,25 @@ class LabelValidator {
     private readonly id: string;
     private readonly name: string;
 
-    private namespaces: ValidateNamespaces;
-    private scope: any;
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
 
     constructor(item: ILabelItemConfig) {
         this.id = item.id;
         this.name = item.name;
     }
 
-    public setData(namespaces: ValidateNamespaces) {
+    public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
         this.scope = this.namespaces.createScore(this.id);
     }
 
-    public validate(namespaces: ValidateNamespaces): IValidateResult {
-        const result: any = {
+    public validate(): IValidateResult {
+        const result: IValidateResult = {
             id: this.id,
-            valid: true,
+            valid: true
         };
-        const scope = namespaces.createScore(this.id);
-        return result;
-    }
-}
-
-
-class RuleValidator {
-    private readonly id: string;
-    private readonly name: string;
-
-    private namespaces: ValidateNamespaces;
-    private scope: any;
-
-    constructor(item: IRulesItemConfig) {
-        this.id = item.id;
-        this.name = item.name;
-    }
-
-    public setData(namespaces: ValidateNamespaces) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
-    }
-
-    public validate(namespaces: ValidateNamespaces): IValidateResult {
-        const result: any = {
-            id: this.id,
-            valid: true,
-        };
-        const scope = namespaces.createScore(this.id);
+        const scope = this.namespaces.createScore(this.id);
         return result;
     }
 }
@@ -196,15 +291,15 @@ class StatisticValidator {
     private readonly id: string;
     private readonly name: string;
 
-    private namespaces: ValidateNamespaces;
-    private scope: any;
+    private namespaces: ValidateNamespace;
+    private scope: ValidateScore;
 
     constructor(item: IStatisticItemConfig) {
         this.id = item.id;
         this.name = item.name;
     }
 
-    public setData(namespaces: ValidateNamespaces) {
+    public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
         this.scope = this.namespaces.createScore(this.id);
     }
@@ -258,7 +353,9 @@ export class LabelValidators {
         debugger;
     }
 
-    public validate(scope: any): any {
-        return this.root.validate(scope);
+    public validate(documents: any[]): any {
+        const namespaces = new ValidateNamespace('root', documents);
+        this.root.setData(namespaces);
+        return this.root.validate();
     }
 }
