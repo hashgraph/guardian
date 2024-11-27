@@ -476,6 +476,15 @@ export class SchemaFormComponent implements OnInit {
         return listItem;
     }
 
+    parseDate(item: string, calendar: any): Date {
+        setTimeout(() => {
+            if (!calendar.el.nativeElement.querySelector('input').value) {
+                calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+            }
+        }, 200);
+        return new Date(item);
+    }
+
     public removeGroup(item: IFieldControl<any>, event: any) {
         if (event?.stopPropagation) {
             event.stopPropagation();
