@@ -61,7 +61,7 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar
+                        <p-calendar #cal
                             class="guardian-datepicker"
                             [formControl]="item.control"
                             [showIcon]="true"
@@ -69,6 +69,7 @@
                             [showSeconds]="true"
                             dateFormat="yy-mm-dd"
                             appendTo='body'/>
+                        <span style="display: none">{{ parseDate(item.control.value, cal) }}</span>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
@@ -182,7 +183,7 @@
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div *ngFor="let listItem of item.list" [attr.required]="item.required"
+                <div *ngFor="let listItem of item.list; index as i" [attr.required]="item.required"
                     [attr.index]="listItem.index"
                      class="form-field-array-item-container"
                     [formGroup]="item.control"
@@ -210,7 +211,7 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <p-calendar
+                                <p-calendar #cal
                                     class="guardian-datepicker"
                                     [formControl]="listItem.control"
                                     [showIcon]="true"
@@ -218,6 +219,7 @@
                                     [showSeconds]="true"
                                     dateFormat="yy-mm-dd"
                                     appendTo='body'/>
+                                <span style="display: none">{{ parseDate(item.control.value, cal, i) }}</span>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
