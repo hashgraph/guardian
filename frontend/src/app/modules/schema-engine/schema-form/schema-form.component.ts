@@ -480,13 +480,19 @@ export class SchemaFormComponent implements OnInit {
         console.log(item.control.value);
     }
 
-    parseDate(item: string, calendar: any): Date {
+    parseDate(item: string | string[], calendar: any, index?: number) {
         setTimeout(() => {
-            if (!calendar.el.nativeElement.querySelector('input').value && item) {
-                calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+            if (Array.isArray(item) && index) {
+                if (!calendar.el.nativeElement.querySelector('input').value && item[index]) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item[index]).format('YYYY-MM-DD HH:mm:ss');
+                }
+            } else {
+                if (!calendar.el.nativeElement.querySelector('input').value && item) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+                }
             }
         }, 200);
-        return new Date(item);
+
     }
 
     public removeGroup(item: IFieldControl<any>, event: any) {
