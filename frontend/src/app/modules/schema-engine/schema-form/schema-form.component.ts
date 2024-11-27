@@ -476,9 +476,13 @@ export class SchemaFormComponent implements OnInit {
         return listItem;
     }
 
+    consoleLog(item: any) {
+        console.log(item.control.value);
+    }
+
     parseDate(item: string, calendar: any): Date {
         setTimeout(() => {
-            if (!calendar.el.nativeElement.querySelector('input').value) {
+            if (!calendar.el.nativeElement.querySelector('input').value && item) {
                 calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
             }
         }, 200);
