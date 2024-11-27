@@ -3,7 +3,7 @@ import { UntypedFormBuilder, Validators } from '@angular/forms';
 // import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 // import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
-import * as moment from 'moment';
+import moment from 'moment';
 import { DialogService } from 'primeng/dynamicdialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import * as moment from 'moment';
+import moment from 'moment';
 // import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
 // import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 // import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';

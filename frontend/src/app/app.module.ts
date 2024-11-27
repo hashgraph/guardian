@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
@@ -130,8 +130,7 @@ import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
 
-@NgModule({
-    declarations: [
+@NgModule({ declarations: [
         AppComponent,
         UserProfileComponent,
         LoginComponent,
@@ -177,14 +176,13 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         UsersManagementDetailComponent,
         WorkerTasksComponent
     ],
-    imports: [
-        BrowserModule,
+    exports: [],
+    bootstrap: [AppComponent], imports: [BrowserModule,
         CommonModule,
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
@@ -193,7 +191,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
-        HttpClientJsonpModule,
         QRCodeModule,
         ButtonModule,
         InputTextModule,
@@ -219,10 +216,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()
-    ],
-    exports: [],
-    providers: [
+        AngularSvgIconModule.forRoot()], providers: [
         WebSocketService,
         AuthService,
         ProfileService,
@@ -274,8 +268,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi: true,
-        }
-    ],
-    bootstrap: [AppComponent],
-})
+        },
+        provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
+    ] })
 export class AppModule { }

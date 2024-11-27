@@ -4,7 +4,7 @@ import { TagsService } from 'src/app/services/tag.service';
 import { TagsHistory } from '../models/tags-history';
 import { TagMapItem } from '../models/tag-map-item';
 import { TagItem } from '../models/tag-item';
-import * as moment from 'moment';
+import moment from 'moment';
 import { VCViewerDialog } from '../../schema-engine/vc-dialog/vc-dialog.component';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { UserPermissions } from '@guardian/interfaces';

@@ -8,15 +8,13 @@
         "guardian": {
             "architect": {
                 "build": {
-                    "builder": "@angular-devkit/build-angular:browser",
+                    "builder": "@angular-devkit/build-angular:application",
                     "configurations": {
                         "development": {
-                            "buildOptimizer": false,
-                            "extractLicenses": false,
+                          "extractLicenses": false,
                             "namedChunks": true,
                             "optimization": false,
-                            "sourceMap": true,
-                            "vendorChunk": true
+                            "sourceMap": true
                         },
                         "production": {
                             "budgets": [
@@ -99,9 +97,12 @@
                         ],
                         "index": "src/index.html",
                         "inlineStyleLanguage": "scss",
-                        "main": "src/main.ts",
-                        "outputPath": "dist/guardian",
-                        "polyfills": "src/polyfills.ts",
+                        "outputPath": {
+                          "base": "dist/guardian"
+                        },
+                        "polyfills": [
+                          "src/polyfills.ts"
+                        ],
                         "scripts": [
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
@@ -112,7 +113,8 @@
                           "./node_modules/primeicons/primeicons.css",
                           "src/styles.scss"
                         ],
-                        "tsConfig": "tsconfig.app.json"
+                        "tsConfig": "tsconfig.app.json",
+                        "browser": "src/main.ts"
                     }
                 },
                 "extract-i18n": {

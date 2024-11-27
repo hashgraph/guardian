@@ -3,7 +3,7 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
 import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, UnitSystem, } from '@guardian/interfaces';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConditionControl } from '../condition-control';

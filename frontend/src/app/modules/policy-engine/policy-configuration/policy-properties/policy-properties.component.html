@@ -412,7 +412,7 @@
 
                                 <p-dropdown
                                     [(ngModel)]="item.creator"
-                                    [options]="policy?.policyRoles"
+                                    [options]="policy && policy.policyRoles"
                                     optionLabel="name"
                                     optionValue="name"
                                     [disabled]="readonly"
@@ -433,7 +433,7 @@
 
                                 <p-multiSelect
                                     [(ngModel)]="item.members"
-                                    [options]="policy?.policyRoles"
+                                    [options]="policy && policy.policyRoles"
                                     optionLabel="name"
                                     optionValue="name"
                                     [disabled]="readonly"
