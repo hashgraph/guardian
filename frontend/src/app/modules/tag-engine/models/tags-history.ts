@@ -2,7 +2,7 @@ import { TagItem } from './tag-item';
 import { TagMapItem } from './tag-map-item';
 import { TagOperation } from './tag-operation';
 import { TagStatus } from './tag-status';
-import * as moment from 'moment';
+import moment from 'moment';
 
 export class TagsHistory {
     public readonly entity: string;

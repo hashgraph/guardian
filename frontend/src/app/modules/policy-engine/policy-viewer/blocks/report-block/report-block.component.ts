@@ -19,7 +19,7 @@ import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {IconsArray} from './iconsArray';
 import {DialogService} from 'primeng/dynamicdialog';
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;

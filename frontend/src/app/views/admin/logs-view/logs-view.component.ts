@@ -4,7 +4,7 @@ import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
 // import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { saveAs } from 'file-saver';
 import { ILog } from '@guardian/interfaces';
-import * as moment from 'moment';
+import moment from 'moment';
 import { merge, of, Subscription } from 'rxjs';
 import { catchError, debounceTime, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';

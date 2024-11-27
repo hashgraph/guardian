@@ -3,7 +3,7 @@ import {UntypedFormBuilder, Validators} from '@angular/forms';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 import {PolicyHelper} from 'src/app/services/policy-helper.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'external-topic' type.
