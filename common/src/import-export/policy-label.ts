@@ -149,7 +149,8 @@ export class PolicyLabelImportExport {
             const child: IGroupItemConfig = {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Group,
-                name: PolicyLabelImportExport.validateString(data.name),
+                name: PolicyLabelImportExport.validateTag(data.name),
+                title: PolicyLabelImportExport.validateString(data.title),
                 rule: PolicyLabelImportExport.validateString(data.rule),
                 children: PolicyLabelImportExport.validateChildren(data.children),
             };
@@ -159,7 +160,8 @@ export class PolicyLabelImportExport {
             const child: ILabelItemConfig = {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Label,
-                name: PolicyLabelImportExport.validateString(data.name),
+                name: PolicyLabelImportExport.validateTag(data.name),
+                title: PolicyLabelImportExport.validateString(data.title),
                 description: PolicyLabelImportExport.validateString(data.description),
                 owner: PolicyLabelImportExport.validateString(data.owner),
                 messageId: PolicyLabelImportExport.validateString(data.messageId),
@@ -171,7 +173,8 @@ export class PolicyLabelImportExport {
             const child: IRulesItemConfig = {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Rules,
-                name: PolicyLabelImportExport.validateString(data.name),
+                name: PolicyLabelImportExport.validateTag(data.name),
+                title: PolicyLabelImportExport.validateString(data.title),
                 config: PolicyLabelImportExport.validateRulesConfig(data.config),
             };
             return child;
@@ -180,7 +183,8 @@ export class PolicyLabelImportExport {
             const child: IStatisticItemConfig = {
                 id: PolicyLabelImportExport.validateString(data.id),
                 type: NavItemType.Statistic,
-                name: PolicyLabelImportExport.validateString(data.name),
+                name: PolicyLabelImportExport.validateTag(data.name),
+                title: PolicyLabelImportExport.validateString(data.title),
                 description: PolicyLabelImportExport.validateString(data.description),
                 owner: PolicyLabelImportExport.validateString(data.owner),
                 messageId: PolicyLabelImportExport.validateString(data.messageId),
@@ -246,6 +250,19 @@ export class PolicyLabelImportExport {
     private static validateString(data: string): string {
         if (typeof data === 'string') {
             return data;
+        } else {
+            return '';
+        }
+    }
+
+    /**
+     * Validate Tag
+     *
+     * @param data String
+     */
+    private static validateTag(data: string): string {
+        if (typeof data === 'string') {
+            return data.trim().replace(/\s/ig, '_');
         } else {
             return '';
         }

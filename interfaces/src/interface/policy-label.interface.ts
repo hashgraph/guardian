@@ -11,6 +11,7 @@ export interface IGroupItemConfig {
     id: string;
     type: NavItemType.Group;
     name: string;
+    title?: string;
     description?: string;
     owner?: string;
     rule?: string;
@@ -21,6 +22,7 @@ export interface ILabelItemConfig {
     id: string;
     type: NavItemType.Label;
     name: string;
+    title?: string;
     description?: string;
     owner?: string;
     messageId?: string;
@@ -31,6 +33,7 @@ export interface IRulesItemConfig {
     id: string;
     type: NavItemType.Rules;
     name: string;
+    title?: string;
     description?: string;
     owner?: string;
     config?: IStatisticConfig;
@@ -40,6 +43,7 @@ export interface IStatisticItemConfig {
     id: string;
     type: NavItemType.Statistic;
     name: string;
+    title?: string;
     description?: string;
     messageId?: string;
     owner?: string;

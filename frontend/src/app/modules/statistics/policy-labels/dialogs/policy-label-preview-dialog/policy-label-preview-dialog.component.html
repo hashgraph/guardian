@@ -13,6 +13,83 @@
         </div>
         <div class="preview-container">
 
+            <div class="preview-menu">
+                <div 
+                    *ngFor="let item of menu" 
+                    class="menu-item"
+                    [attr.selected]="item.item === current?.item"
+                >
+                    {{item.name}}
+                </div>
+            </div>
+            <div class="preview-node-container">
+                <div class="preview-node-body">
+                    <ng-container *ngIf="current && current.type === 'variables'">
+                        <div class="preview-node-header">Variables</div>
+                        <div *ngFor="let variable of current.config" class="field-container">
+                            <div class="field-name">
+                                {{variable.fieldDescription}}
+                            </div>
+                            <div class="field-input">
+                                <input 
+                                    class="guardian-input"
+                                    [(ngModel)]="variable.value"
+                                    pInputText 
+                                    type="text"
+                                />
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="current && current.type === 'scores'">
+                        <div class="preview-node-header">Scores</div>
+                        <div *ngFor="let score of current.config" class="field-container">
+                            <div class="field-name">
+                                {{score.description}}
+                            </div>
+                            <div *ngIf="score.options" class="options-container">
+                                <div *ngFor="let option of score.options" class="option-container">
+                                    <div class="option-checkbox">
+                                        <p-radioButton 
+                                            class="guardian-radio-button radio-button-24"
+                                            [name]="score.id" 
+                                            [value]="option.value" 
+                                            [(ngModel)]="score.value"
+                                            [inputId]="option.id"
+                                        ></p-radioButton>
+                                    </div>
+                                    <label class="option-name" [for]="option.id">
+                                        {{option.description}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="current && current.type === 'formulas'">
+                        <div class="preview-node-header">Formulas</div>
+                        <div *ngFor="let formula of current.config" class="field-container">
+                            <div class="field-name">
+                                {{formula.description}}
+                            </div>
+                            <div class="field-value">
+                                {{formula.value}}
+                            </div>
+                        </div>
+                    </ng-container>
+
+
+                </div>
+                <div class="preview-node-actions">
+                    <button 
+                        [disabled]="!validator.isPrev()"
+                        (click)="onPrev()" 
+                        class="guardian-button guardian-button-primary">Prev</button>
+                    <button 
+                        [disabled]="!validator.isNext()"
+                        (click)="onNext()" 
+                        class="guardian-button guardian-button-primary">Next</button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

@@ -4,6 +4,7 @@ import {
     ILabelItemConfig,
     INavImportsConfig,
     INavItemConfig,
+    IPolicyLabel,
     IPolicyLabelConfig,
     IRulesItemConfig,
     IScoreData,
@@ -21,6 +22,22 @@ interface IValidateResult {
     valid: boolean;
     error?: any;
     children?: IValidateResult[];
+}
+
+export interface IValidatorNode {
+    name: string,
+    item: IValidator,
+    selectable: boolean,
+    children: IValidatorNode[]
+}
+
+export interface IValidatorStep {
+    name: string,
+    item: IValidator,
+    type: string,
+    config: any,
+    auto: boolean,
+    update: () => void;
 }
 
 class ValidateScore {
@@ -86,28 +103,50 @@ class ValidateNamespace {
 }
 
 class NodeValidator {
-    private readonly id: string;
-    private readonly name: string;
+    public readonly type: NavItemType | null = null;
+
+    public readonly id: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly steps: number = 0;
 
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
+    private valid: IValidateResult;
 
     constructor(item: any) {
         this.id = item.id;
         this.name = item.name;
+        this.title = item.title;
     }
 
     public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
+        this.scope = this.namespaces.createScore(this.name);
+    }
+
+    public get status(): boolean | undefined {
+        return this.valid ? this.valid.valid : undefined;
     }
 
     public validate(): IValidateResult {
-        return {
+        this.valid = {
             id: this.id,
             valid: false,
             error: 'Unidentified item'
         };
+        return this.valid;
+    }
+
+    public getSteps(): IValidatorStep[] {
+        return [{
+            item: this,
+            name: this.name,
+            auto: true,
+            type: 'validate',
+            config: null,
+            update: this.validate.bind(this)
+        }]
     }
 
     public static calculateFormula(item: IFormulaData, scope: any): any {
@@ -159,29 +198,39 @@ class NodeValidator {
 }
 
 class GroupValidator {
-    private readonly id: string;
-    private readonly name: string;
-    private readonly children: IValidator[];
+    public readonly type: NavItemType | null = NavItemType.Group;
+
+    public readonly id: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly children: IValidator[];
+    public readonly steps: number = 0;
 
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
+    private valid: IValidateResult;
 
     constructor(item: IGroupItemConfig) {
         this.id = item.id;
         this.name = item.name;
+        this.title = item.title || '';
         this.children = NodeValidator.fromArray(item.children);
+    }
+
+    public get status(): boolean | undefined {
+        return this.valid ? this.valid.valid : undefined;
     }
 
     public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
+        this.scope = this.namespaces.createScore(this.name);
         for (const child of this.children) {
             child.setData(namespaces);
         }
     }
 
     public validate(): IValidateResult {
-        const result: any = {
+        this.valid = {
             id: this.id,
             valid: true,
             children: []
@@ -189,22 +238,38 @@ class GroupValidator {
 
         for (const child of this.children) {
             const childResult = child.validate();
-            result.children.push(childResult);
+            this.valid.children?.push(childResult);
             if (!childResult.valid) {
-                return result;
+                return this.valid;
             }
         }
 
-        return result;
+        return this.valid;
+    }
+
+    public getSteps(): IValidatorStep[] {
+        return [{
+            item: this,
+            name: this.name,
+            auto: true,
+            type: 'validate',
+            config: null,
+            update: this.validate.bind(this)
+        }]
     }
 }
 
 class RuleValidator {
-    private readonly id: string;
-    private readonly name: string;
+    public readonly type: NavItemType | null = NavItemType.Rules;
+
+    public readonly id: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly steps: number = 3;
 
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
+    private valid: IValidateResult;
 
     private variables: IVariableData[];
     private scores: IScoreData[];
@@ -213,26 +278,35 @@ class RuleValidator {
     constructor(item: IRulesItemConfig) {
         this.id = item.id;
         this.name = item.name;
+        this.title = item.title || '';
 
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
         this.formulas = item.config?.formulas || [];
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
+    public get status(): boolean | undefined {
+        return this.valid ? this.valid.valid : undefined;
     }
 
-    public update() {
+    public setData(namespaces: ValidateNamespace) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.name);
+    }
+
+    public updateVariables() {
         for (const variable of this.variables) {
             const value = this.namespaces.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
-            this.scope.setVariable(variable.id, null); ``
+            this.scope.setVariable(variable.id, null);
         }
     }
 
-    public calculation() {
+    public updateScores() {
+        return;
+    }
+
+    public updateFormulas() {
         for (const score of this.scores) {
             this.scope.setVariable(score.id, null);
         }
@@ -245,7 +319,7 @@ class RuleValidator {
     }
 
     public validate(): IValidateResult {
-        const result: IValidateResult = {
+        this.valid = {
             id: this.id,
             valid: true
         };
@@ -256,13 +330,13 @@ class RuleValidator {
             const status = validator.validate(scope);
             (formula as any).status = status;
             if (status === FieldRuleResult.Failure || status === FieldRuleResult.Error) {
-                result.valid = false;
-                result.error = 'Invalid condition'
-                return result;
+                this.valid.valid = false;
+                this.valid.error = 'Invalid condition'
+                return this.valid;
             }
         }
 
-        return result;
+        return this.valid;
     }
 
     private getScore(): any {
@@ -270,14 +344,51 @@ class RuleValidator {
         const scope = this.scope.getScore();
         return Object.assign(namespace, scope);
     }
+
+    public getSteps(): IValidatorStep[] {
+        return [{
+            item: this,
+            name: 'Variables',
+            auto: false,
+            type: 'variables',
+            config: this.variables,
+            update: this.updateVariables.bind(this)
+        }, {
+            item: this,
+            name: 'Scores',
+            auto: false,
+            type: 'scores',
+            config: this.scores,
+            update: this.updateScores.bind(this)
+        }, {
+            item: this,
+            name: 'Formulas',
+            auto: false,
+            type: 'formulas',
+            config: this.formulas,
+            update: this.updateFormulas.bind(this)
+        }, {
+            item: this,
+            name: this.name,
+            auto: true,
+            type: 'validate',
+            config: null,
+            update: this.validate.bind(this)
+        }]
+    }
 }
 
 class StatisticValidator {
-    private readonly id: string;
-    private readonly name: string;
+    public readonly type: NavItemType | null = NavItemType.Statistic;
+
+    public readonly id: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly steps: number = 3;
 
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
+    private valid: IValidateResult;
 
     private variables: IVariableData[];
     private scores: IScoreData[];
@@ -286,17 +397,23 @@ class StatisticValidator {
     constructor(item: IStatisticItemConfig) {
         this.id = item.id;
         this.name = item.name;
+        this.title = item.title || '';
+
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
         this.formulas = item.config?.formulas || [];
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
+    public get status(): boolean | undefined {
+        return this.valid ? this.valid.valid : undefined;
     }
 
-    public update() {
+    public setData(namespaces: ValidateNamespace) {
+        this.namespaces = namespaces;
+        this.scope = this.namespaces.createScore(this.name);
+    }
+
+    public updateVariables() {
         for (const variable of this.variables) {
             const value = this.namespaces.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
@@ -304,7 +421,11 @@ class StatisticValidator {
         }
     }
 
-    public calculation() {
+    public updateScores() {
+        return;
+    }
+
+    public updateFormulas() {
         for (const score of this.scores) {
             this.scope.setVariable(score.id, null);
         }
@@ -317,11 +438,11 @@ class StatisticValidator {
     }
 
     public validate(): IValidateResult {
-        const result: any = {
+        this.valid = {
             id: this.id,
             valid: true,
         };
-        return result;
+        return this.valid;
     }
 
     private getScore(): any {
@@ -329,22 +450,60 @@ class StatisticValidator {
         const scope = this.scope.getScore();
         return Object.assign(namespace, scope);
     }
+
+    public getSteps(): IValidatorStep[] {
+        return [{
+            item: this,
+            name: 'Variables',
+            auto: false,
+            type: 'variables',
+            config: this.variables,
+            update: this.updateVariables.bind(this)
+        }, {
+            item: this,
+            name: 'Scores',
+            auto: false,
+            type: 'scores',
+            config: this.scores,
+            update: this.updateScores.bind(this)
+        }, {
+            item: this,
+            name: 'Formulas',
+            auto: false,
+            type: 'formulas',
+            config: this.formulas,
+            update: this.updateFormulas.bind(this)
+        }, {
+            item: this,
+            name: this.name,
+            auto: true,
+            type: 'validate',
+            config: null,
+            update: this.validate.bind(this)
+        }]
+    }
 }
 
 class LabelValidator {
-    private readonly id: string;
-    private readonly name: string;
+    public readonly type: NavItemType | null = NavItemType.Label;
+
+    public readonly id: string;
+    public readonly name: string;
+    public readonly title: string;
+    public readonly steps: number = 0;
+    public readonly root: GroupValidator;
 
     private namespaces: ValidateNamespace;
     private scope: ValidateScore;
+    private valid: IValidateResult;
 
     private imports: INavImportsConfig[];
     private children: INavItemConfig[];
-    private root: GroupValidator;
 
     constructor(item: ILabelItemConfig) {
         this.id = item.id;
         this.name = item.name;
+        this.title = item.title || '';
 
         const label: IPolicyLabelConfig = item.config || {};
         this.imports = label.imports || [];
@@ -359,14 +518,30 @@ class LabelValidator {
         });
     }
 
+    public get status(): boolean | undefined {
+        return this.valid ? this.valid.valid : undefined;
+    }
+
     public setData(namespaces: ValidateNamespace) {
         this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.id);
+        this.scope = this.namespaces.createScore(this.name);
         this.root.setData(namespaces);
     }
 
     public validate(): IValidateResult {
-        return this.root.validate();
+        this.valid = this.root.validate();
+        return this.valid;
+    }
+
+    public getSteps(): IValidatorStep[] {
+        return [{
+            item: this,
+            name: this.name,
+            auto: true,
+            type: 'validate',
+            config: null,
+            update: this.validate.bind(this)
+        }]
     }
 }
 
@@ -374,20 +549,129 @@ export class LabelValidators {
     private readonly imports: INavImportsConfig[];
     private readonly children: INavItemConfig[];
     private readonly root: LabelValidator;
+    private readonly steps: IValidatorStep[];
+    private readonly tree: IValidatorNode;
 
-    constructor(label: IPolicyLabelConfig) {
+    private index: number = 0;
+
+    constructor(label: IPolicyLabel) {
+        const config: IPolicyLabelConfig = label.config || {};
         this.root = new LabelValidator({
             id: 'root',
             type: NavItemType.Label,
             name: 'root',
-            config: label
+            title: label.name,
+            config
         });
-        debugger;
+        this.steps = this.createSteps(this.root, []);
+        this.tree = this.createTree(this.root);
     }
 
-    public validate(documents: any[]): any {
+    private createSteps(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
+        if (node.type === NavItemType.Rules) {
+            const steps = node.getSteps();
+            for (const step of steps) {
+                result.push(step);
+            }
+        } else if (node.type === NavItemType.Statistic) {
+            const steps = node.getSteps();
+            for (const step of steps) {
+                result.push(step);
+            }
+        } else if (node.type === NavItemType.Group) {
+            for (const child of (node as GroupValidator).children) {
+                this.createSteps(child, result);
+            }
+        } else if (node.type === NavItemType.Label) {
+            this.createSteps((node as LabelValidator).root, result);
+        }
+        return result;
+    }
+
+    private createTree(node: IValidator, prefix: string = ''): IValidatorNode {
+        const item: IValidatorNode = {
+            name: prefix ? `${prefix} ${node.title}` : node.title,
+            item: node,
+            selectable: node.type === NavItemType.Rules || node.type === NavItemType.Statistic,
+            children: []
+        }
+        if (node.type === NavItemType.Group) {
+            const childrenNode = (node as GroupValidator).children;
+            for (let i = 0; i < childrenNode.length; i++) {
+                const childNode = childrenNode[i];
+                const child = this.createTree(childNode, `${prefix}${i + 1}.`);
+                item.children.push(child);
+            }
+        } else if (node.type === NavItemType.Label) {
+            const childrenNode = (node as LabelValidator).root.children;
+            for (let i = 0; i < childrenNode.length; i++) {
+                const childNode = childrenNode[i];
+                const child = this.createTree(childNode, `${prefix}${i + 1}.`);
+                item.children.push(child);
+            }
+        }
+        return item;
+    }
+
+    public setData(documents: any[]) {
         const namespaces = new ValidateNamespace('root', documents);
         this.root.setData(namespaces);
+    }
+
+    public validate(): any {
         return this.root.validate();
+    }
+
+    public getTree(): IValidatorNode {
+        return this.tree;
+    }
+
+    public next(): IValidatorStep | null {
+        this.index++;
+        this.index = Math.max(Math.min(this.index, this.steps.length), -1);
+        const step = this.steps[this.index];
+        if (step) {
+            step.update();
+            if (step.auto) {
+                return this.next();
+            } else {
+                return step;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public prev(): IValidatorStep | null {
+        this.index--;
+        this.index = Math.max(Math.min(this.index, this.steps.length), -1);
+        const step = this.steps[this.index];
+        if (step) {
+            if (step.auto) {
+                return this.prev();
+            } else {
+                step.update();
+                return step;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    public current(): IValidatorStep | null {
+        return this.steps[this.index];
+    }
+
+    public isNext(): boolean {
+        return this.index < (this.steps.length - 1);
+    }
+
+    public isPrev(): boolean {
+        return this.index > 0;
+    }
+
+    public start(): IValidatorStep | null {
+        this.index = -1;
+        return this.next();
     }
 }

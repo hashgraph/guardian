@@ -322,6 +322,10 @@
                                     <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
                                 <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">* Title</label>
+                                    <input pInputText type="text" [(ngModel)]="config.title" [readonly]="selectedNavItem.freezed" />
+                                </div>
+                                <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Rule</label>
                                     <p-dropdown
                                         [(ngModel)]="config.rule"
@@ -342,11 +346,19 @@
                                     <label class="form-label" htmlFor="version">* Name</label>
                                     <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
                                 </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">* Title</label>
+                                    <input pInputText type="text" [(ngModel)]="config.title" [readonly]="selectedNavItem.freezed" />
+                                </div>
                             </ng-container>
                             <ng-container *ngIf="labelConfig.getLabelConfig(selectedNavItem) as config">
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
                                     <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">* Title</label>
+                                    <input pInputText type="text" [(ngModel)]="config.title" [readonly]="selectedNavItem.freezed" />
                                 </div>
 
                                 <div class="item-options-header">
@@ -373,6 +385,10 @@
                                 <div class="guardian-input-container">
                                     <label class="form-label" htmlFor="version">* Name</label>
                                     <input pInputText type="text" [(ngModel)]="config.name" [readonly]="selectedNavItem.freezed" />
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label" htmlFor="version">* Title</label>
+                                    <input pInputText type="text" [(ngModel)]="config.title" [readonly]="selectedNavItem.freezed" />
                                 </div>
 
                                 <div class="item-options-header">

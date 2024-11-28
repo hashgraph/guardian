@@ -39,7 +39,7 @@ export class NavItem implements TreeNode {
         return this.nodeType;
     }
     public get label(): string {
-        return this.prefix + this.config.name;
+        return this.prefix + this.config.title;
     }
     public get droppable(): boolean {
         return !this.freezed && this.config.type === NavItemType.Group;
@@ -60,7 +60,8 @@ export class NavItem implements TreeNode {
             this.config = {
                 id: GenerateUUIDv4(),
                 type: type,
-                name: type
+                name: type,
+                title: type
             }
         }
         if (!this.config.id) {
@@ -138,6 +139,7 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Group,
                     name: this.config.name,
+                    title: this.config.title,
                     rule: this.config.rule,
                     children
                 };
@@ -148,6 +150,7 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Label,
                     name: this.config.name,
+                    title: this.config.title,
                     description: this.config.description,
                     owner: this.config.owner,
                     messageId: this.config.messageId,
@@ -160,6 +163,7 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Rules,
                     name: this.config.name,
+                    title: this.config.title,
                     description: this.config.description,
                     owner: this.config.owner,
                     config: this.config.config,
@@ -171,6 +175,7 @@ export class NavItem implements TreeNode {
                     id: this.config.id,
                     type: NavItemType.Statistic,
                     name: this.config.name,
+                    title: this.config.title,
                     description: this.config.description,
                     owner: this.config.owner,
                     messageId: this.config.messageId,
@@ -208,7 +213,8 @@ export class NavItem implements TreeNode {
         const node = new NavItem(type, {
             id: GenerateUUIDv4(),
             type: type,
-            name: label
+            name: label,
+            title: label,
         });
         return node;
     }
@@ -228,6 +234,7 @@ export class NavItem implements TreeNode {
             id: item.id || GenerateUUIDv4(),
             type: NavItemType.Label,
             name: item.name || '',
+            title: item.name || '',
             description: item.description || '',
             owner: item.owner || '',
             messageId: item.messageId,
@@ -241,6 +248,7 @@ export class NavItem implements TreeNode {
             id: item.id || GenerateUUIDv4(),
             type: NavItemType.Statistic,
             name: item.name || '',
+            title: item.name || '',
             description: item.description || '',
             owner: item.owner || '',
             messageId: item.messageId,
@@ -255,6 +263,7 @@ export class NavItem implements TreeNode {
                 id: item.id || GenerateUUIDv4(),
                 type: NavItemType.Statistic,
                 name: item.name || '',
+                title: item.name || '',
                 description: item.description || '',
                 owner: item.owner || '',
                 messageId: item.messageId,
@@ -267,6 +276,7 @@ export class NavItem implements TreeNode {
                 id: item.id || GenerateUUIDv4(),
                 type: NavItemType.Label,
                 name: item.name || '',
+                title: item.name || '',
                 description: item.description || '',
                 owner: item.owner || '',
                 messageId: item.messageId,

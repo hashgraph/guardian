@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IPolicyLabelConfig } from '@guardian/interfaces';
-import { LabelValidators } from 'src/app/modules/common/models/label-validator';
+import { IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/label-validator';
 
 
 @Component({
@@ -13,6 +12,9 @@ export class PolicyLabelPreviewDialog {
     public loading = true;
     public item: any;
     public validator: LabelValidators;
+    public tree: any;
+    public current: IValidatorStep | null;
+    public menu: IValidatorNode[];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -20,8 +22,23 @@ export class PolicyLabelPreviewDialog {
         private dialogService: DialogService,
     ) {
         this.item = this.config.data?.item || {};
-        const configuration: IPolicyLabelConfig = this.item.config || {};
-        this.validator = new LabelValidators(configuration);
+        this.validator = new LabelValidators(this.item);
+        this.validator.setData([]);
+
+        this.tree = this.validator.getTree();
+        this.current = this.validator.start();
+        this.menu = []
+        for (const child of this.tree.children) {
+            this.createMenu(child, this.menu);
+        }
+    }
+
+    private createMenu(node: any, result: any[]) {
+        result.push(node);
+        for (const child of node.children) {
+            this.createMenu(child, result);
+        }
+        return result;
     }
 
     ngOnInit() {
@@ -31,12 +48,19 @@ export class PolicyLabelPreviewDialog {
     ngOnDestroy(): void {
     }
 
+    public onPrev(): void {
+        this.current = this.validator.prev();
+    }
+
+    public onNext(): void {
+        this.current = this.validator.next();
+    }
+
     public onClose(): void {
         this.ref.close(null);
     }
 
     public onSubmit() {
-        const document: any = {};
-        const result = this.validator.validate(document);
+        const result = this.validator.validate();
     }
 }

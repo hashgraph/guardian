@@ -74,10 +74,37 @@ form {
 
 .preview-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     overflow: auto;
     max-height: calc(100vh - 500px);
     padding-right: 16px;
+
+    .preview-menu {
+        min-width: 200px;
+        width: 200px;
+        max-width: 200px;
+
+        .menu-item {
+            &[selected="true"] {
+                color: var(--guardian-primary-color, #4169E2);
+            }
+        }
+    }
+
+    .preview-node-container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        .preview-node-body {
+            .preview-node-header {}
+        }
+
+        .preview-node-actions {}
+    }
+
+
 }
 
 .fields-container {
