@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 
 //types and interfaces
-import { IAuthUser } from '@guardian/common';
+import {IAuthUser} from '@guardian/common';
 
-export function getHash(user: IAuthUser | {}): string {
-  return crypto.createHash('md5').update(JSON.stringify(user)).digest('hex');
+export function getHash(user: IAuthUser | null): string {
+    return crypto.createHash('md5').update(JSON.stringify(user.id ?? 'anonymous')).digest('hex');
 }
