@@ -1,8 +1,9 @@
-import { Entity, Property } from '@mikro-orm/core';
+import { Entity, Index, Property } from '@mikro-orm/core';
 import { ITask, WorkerTaskType } from '@guardian/interfaces';
 import { BaseEntity } from '@guardian/common';
 
 @Entity()
+@Index({ name: 'task_entity_idx', properties: ['sent', 'done', 'processedTime', 'createDate'] })
 export class TaskEntity extends BaseEntity implements ITask{
     @Property({nullable: true})
     userId: string | null;
