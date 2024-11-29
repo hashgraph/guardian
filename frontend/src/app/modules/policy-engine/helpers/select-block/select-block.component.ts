@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Inject, Input, Output, SimpleChanges } from '@angular/core';
 import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlock, PolicyFolder } from '../../structures';
 
@@ -9,6 +9,7 @@ type ValueType = string | PolicyBlock | null | undefined;
  */
 @Component({
     selector: 'select-block',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './select-block.component.html',
     styleUrls: ['./select-block.component.scss']
 })
