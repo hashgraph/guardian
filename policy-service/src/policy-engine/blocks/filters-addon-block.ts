@@ -6,7 +6,7 @@ import { IPolicyAddonBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { PolicyUtils, QueryType } from '@policy-engine/helpers/utils.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
 
 /**
  * Filters addon
