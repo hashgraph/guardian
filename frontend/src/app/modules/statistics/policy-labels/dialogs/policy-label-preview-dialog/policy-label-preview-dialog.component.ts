@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/label-validator';
+import { IValidateResult, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/label-validator';
 
 
 @Component({
@@ -13,8 +13,10 @@ export class PolicyLabelPreviewDialog {
     public item: any;
     public validator: LabelValidators;
     public tree: any;
+    public steps: any[];
     public current: IValidatorStep | null;
     public menu: IValidatorNode[];
+    public result: IValidateResult | null;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -26,7 +28,25 @@ export class PolicyLabelPreviewDialog {
         this.validator.setData([]);
 
         this.tree = this.validator.getTree();
+        this.steps = this.validator.getSteps();
         this.current = this.validator.start();
+
+        this.tree.children.push({
+            name: 'Result',
+            item: this.validator,
+            selectable: true,
+            children: []
+        })
+
+        this.steps.push({
+            name: 'Result',
+            item: this.validator,
+            type: 'result',
+            config: this.validator,
+            auto: false,
+            update: this.update.bind(this)
+        })
+
         this.menu = []
         for (const child of this.tree.children) {
             this.createMenu(child, this.menu);
@@ -41,11 +61,23 @@ export class PolicyLabelPreviewDialog {
         return result;
     }
 
+    private update() {
+        this.result = this.validator.getResult();
+    }
+
     ngOnInit() {
         this.loading = false;
     }
 
     ngOnDestroy(): void {
+    }
+
+    public getVariableValue(value: any): any {
+        if (value === undefined) {
+            return 'N/A';
+        } else {
+            return value;
+        }
     }
 
     public onPrev(): void {
@@ -61,6 +93,7 @@ export class PolicyLabelPreviewDialog {
     }
 
     public onSubmit() {
-        const result = this.validator.validate();
+        const result = this.validator.getResult();
+        debugger;
     }
 }

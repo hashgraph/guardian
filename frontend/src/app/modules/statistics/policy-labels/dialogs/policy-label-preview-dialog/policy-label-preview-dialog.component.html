@@ -14,18 +14,39 @@
         <div class="preview-container">
 
             <div class="preview-menu">
-                <div 
-                    *ngFor="let item of menu" 
-                    class="menu-item"
-                    [attr.selected]="item.item === current?.item"
-                >
-                    {{item.name}}
+                <div class="guardian-stepper vertical-stepper">
+                    <div *ngFor="let item of menu" 
+                        class="guardian-step" 
+                        [attr.action]="item.item === current?.item" 
+                        [attr.highlighted]="item.item === current?.item"
+                    >
+                        <div class="guardian-step-template">
+                            <svg-icon
+                                *ngIf="item.item.status === true"
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg"
+                                svgClass="icon-color-success">
+                            </svg-icon>
+                            <svg-icon
+                                *ngIf="item.item.status === false"
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg"
+                                svgClass="icon-color-failure">
+                            </svg-icon>
+                            <svg-icon
+                                *ngIf="item.item.status === undefined"
+                                class="icon-btn svg-icon-16"
+                                src="/assets/images/icons/16/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-step-name">{{item.name}}</div>
+                    </div>
                 </div>
             </div>
             <div class="preview-node-container">
-                <div class="preview-node-body">
+                <div class="preview-node-body fields-container">
                     <ng-container *ngIf="current && current.type === 'variables'">
-                        <div class="preview-node-header">Variables</div>
+                        <div class="preview-node-header">Overview</div>
                         <div *ngFor="let variable of current.config" class="field-container">
                             <div class="field-name">
                                 {{variable.fieldDescription}}
@@ -43,11 +64,30 @@
                     <ng-container *ngIf="current && current.type === 'scores'">
                         <div class="preview-node-header">Scores</div>
                         <div *ngFor="let score of current.config" class="field-container">
+                            <div *ngIf="score.relationships" class="fields-container">
+                                <div *ngFor="let variable of score._relationships" class="field-container">
+                                    <div class="field-name">
+                                        {{variable.fieldDescription}}
+                                    </div>
+                                    <ng-container *ngIf="variable.isArray">
+                                        <div class="field-value-array">
+                                            <div *ngFor="let v of variable.value" class="field-value">
+                                                {{getVariableValue(v)}}
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngIf="!variable.isArray">
+                                        <div class="field-value">
+                                            {{getVariableValue(variable.value)}}
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
                             <div class="field-name">
                                 {{score.description}}
                             </div>
-                            <div *ngIf="score.options" class="options-container">
-                                <div *ngFor="let option of score.options" class="option-container">
+                            <div *ngIf="score._options" class="options-container">
+                                <div *ngFor="let option of score._options" class="option-container">
                                     <div class="option-checkbox">
                                         <p-radioButton 
                                             class="guardian-radio-button radio-button-24"
@@ -65,7 +105,7 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="current && current.type === 'formulas'">
-                        <div class="preview-node-header">Formulas</div>
+                        <div class="preview-node-header">Statistics</div>
                         <div *ngFor="let formula of current.config" class="field-container">
                             <div class="field-name">
                                 {{formula.description}}
@@ -75,18 +115,21 @@
                             </div>
                         </div>
                     </ng-container>
-
-
+                    <ng-container *ngIf="result && current && current.type === 'result'">
+                        <div class="preview-node-header">Result</div>
+                        <div class="field-name">
+                            {{result.valid}}
+                        </div>
+                        <div class="field-value">
+                            {{result.error}}
+                        </div>
+                    </ng-container> 
                 </div>
-                <div class="preview-node-actions">
-                    <button 
-                        [disabled]="!validator.isPrev()"
-                        (click)="onPrev()" 
-                        class="guardian-button guardian-button-primary">Prev</button>
-                    <button 
-                        [disabled]="!validator.isNext()"
-                        (click)="onNext()" 
-                        class="guardian-button guardian-button-primary">Next</button>
+                <div *ngIf="current && current.subIndexes" class="sub-indexes">
+                    <ng-container *ngFor="let item of current.subIndexes; let last = last">
+                        <div class="sub-index" [attr.action]="item"></div>
+                        <div *ngIf="!last" class="sub-index-separator"></div>
+                    </ng-container>
                 </div>
             </div>
 
@@ -102,8 +145,19 @@
         </div>
         <div class="dialog-button">
             <button 
+                (click)="onPrev()" 
+                [disabled]="!validator.isPrev()"
+                class="guardian-button guardian-button-secondary">Prev</button>
+        </div>
+        <div *ngIf="validator.isNext()" class="dialog-button">
+            <button 
+                (click)="onNext()" 
+                class="guardian-button guardian-button-primary">Next</button>
+        </div>
+        <div *ngIf="!validator.isNext()" class="dialog-button">
+            <button 
                 (click)="onSubmit()" 
-                class="guardian-button guardian-button-primary">Check</button>
+                class="guardian-button guardian-button-primary">Finish</button>
         </div>
     </div>
 </div>

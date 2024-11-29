@@ -930,7 +930,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '800px',
+            width: '80vw',
             styleClass: 'guardian-dialog',
             data: {
                 item

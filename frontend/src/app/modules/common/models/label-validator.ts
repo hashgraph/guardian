@@ -1,4 +1,5 @@
 import {
+    GenerateUUIDv4,
     IFormulaData,
     IGroupItemConfig,
     ILabelItemConfig,
@@ -17,7 +18,7 @@ import { FieldRuleResult, FormulaRuleValidator } from "./field-rule-validator";
 
 type IValidator = GroupValidator | LabelValidator | RuleValidator | StatisticValidator | NodeValidator;
 
-interface IValidateResult {
+export interface IValidateResult {
     id: string;
     valid: boolean;
     error?: any;
@@ -37,6 +38,7 @@ export interface IValidatorStep {
     type: string,
     config: any,
     auto: boolean,
+    subIndexes?: boolean[],
     update: () => void;
 }
 
@@ -149,6 +151,10 @@ class NodeValidator {
         }]
     }
 
+    public getResult(): IValidateResult {
+        return this.valid;
+    }
+
     public static calculateFormula(item: IFormulaData, scope: any): any {
         let value: any;
         try {
@@ -257,6 +263,10 @@ class GroupValidator {
             update: this.validate.bind(this)
         }]
     }
+
+    public getResult(): IValidateResult {
+        return this.valid;
+    }
 }
 
 class RuleValidator {
@@ -283,10 +293,27 @@ class RuleValidator {
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
         this.formulas = item.config?.formulas || [];
+
+        this.prepareData();
     }
 
     public get status(): boolean | undefined {
         return this.valid ? this.valid.valid : undefined;
+    }
+
+    private prepareData() {
+        for (const score of this.scores) {
+            (score as any)._relationships = score.relationships?.map((id) => {
+                return this.variables.find((v) => v.id === id)
+            });
+            (score as any)._options = score.options?.map((option) => {
+                return {
+                    id: GenerateUUIDv4(),
+                    description: option.description,
+                    value: option.value
+                }
+            });
+        }
     }
 
     public setData(namespaces: ValidateNamespace) {
@@ -352,6 +379,7 @@ class RuleValidator {
             auto: false,
             type: 'variables',
             config: this.variables,
+            subIndexes: [true, false, false],
             update: this.updateVariables.bind(this)
         }, {
             item: this,
@@ -359,6 +387,7 @@ class RuleValidator {
             auto: false,
             type: 'scores',
             config: this.scores,
+            subIndexes: [false, true, false],
             update: this.updateScores.bind(this)
         }, {
             item: this,
@@ -366,6 +395,7 @@ class RuleValidator {
             auto: false,
             type: 'formulas',
             config: this.formulas,
+            subIndexes: [false, false, true],
             update: this.updateFormulas.bind(this)
         }, {
             item: this,
@@ -375,6 +405,10 @@ class RuleValidator {
             config: null,
             update: this.validate.bind(this)
         }]
+    }
+
+    public getResult(): IValidateResult {
+        return this.valid;
     }
 }
 
@@ -402,10 +436,27 @@ class StatisticValidator {
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
         this.formulas = item.config?.formulas || [];
+
+        this.prepareData();
     }
 
     public get status(): boolean | undefined {
         return this.valid ? this.valid.valid : undefined;
+    }
+
+    private prepareData() {
+        for (const score of this.scores) {
+            (score as any)._relationships = score.relationships?.map((id) => {
+                return this.variables.find((v) => v.id === id)
+            });
+            (score as any)._options = score.options?.map((option) => {
+                return {
+                    id: GenerateUUIDv4(),
+                    description: option.description,
+                    value: option.value
+                }
+            });
+        }
     }
 
     public setData(namespaces: ValidateNamespace) {
@@ -458,6 +509,7 @@ class StatisticValidator {
             auto: false,
             type: 'variables',
             config: this.variables,
+            subIndexes: [true, false, false],
             update: this.updateVariables.bind(this)
         }, {
             item: this,
@@ -465,6 +517,7 @@ class StatisticValidator {
             auto: false,
             type: 'scores',
             config: this.scores,
+            subIndexes: [false, true, false],
             update: this.updateScores.bind(this)
         }, {
             item: this,
@@ -472,6 +525,7 @@ class StatisticValidator {
             auto: false,
             type: 'formulas',
             config: this.formulas,
+            subIndexes: [false, false, true],
             update: this.updateFormulas.bind(this)
         }, {
             item: this,
@@ -481,6 +535,10 @@ class StatisticValidator {
             config: null,
             update: this.validate.bind(this)
         }]
+    }
+
+    public getResult(): IValidateResult {
+        return this.valid;
     }
 }
 
@@ -543,6 +601,10 @@ class LabelValidator {
             update: this.validate.bind(this)
         }]
     }
+
+    public getResult(): IValidateResult {
+        return this.valid;
+    }
 }
 
 export class LabelValidators {
@@ -563,27 +625,31 @@ export class LabelValidators {
             title: label.name,
             config
         });
-        this.steps = this.createSteps(this.root, []);
         this.tree = this.createTree(this.root);
+        this.steps = this.createSteps(this.root, []);
     }
 
     private createSteps(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
         if (node.type === NavItemType.Rules) {
-            const steps = node.getSteps();
-            for (const step of steps) {
-                result.push(step);
-            }
+            this.addSteps(node, result);
         } else if (node.type === NavItemType.Statistic) {
-            const steps = node.getSteps();
-            for (const step of steps) {
-                result.push(step);
-            }
+            this.addSteps(node, result);
         } else if (node.type === NavItemType.Group) {
             for (const child of (node as GroupValidator).children) {
                 this.createSteps(child, result);
             }
+            this.addSteps(node, result);
         } else if (node.type === NavItemType.Label) {
             this.createSteps((node as LabelValidator).root, result);
+            this.addSteps(node, result);
+        }
+        return result;
+    }
+
+    private addSteps(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
+        const steps = node.getSteps();
+        for (const step of steps) {
+            result.push(step);
         }
         return result;
     }
@@ -618,12 +684,16 @@ export class LabelValidators {
         this.root.setData(namespaces);
     }
 
-    public validate(): any {
-        return this.root.validate();
+    public getResult(): IValidateResult {
+        return this.root.getResult();
     }
 
     public getTree(): IValidatorNode {
         return this.tree;
+    }
+
+    public getSteps(): IValidatorStep[] {
+        return this.steps;
     }
 
     public next(): IValidatorStep | null {

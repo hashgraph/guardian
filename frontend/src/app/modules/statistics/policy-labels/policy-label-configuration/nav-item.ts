@@ -52,6 +52,7 @@ export class NavItem implements TreeNode {
     }
     public children?: NavItem[] | undefined;
     public parent?: NavItem | undefined;
+    public expanded?: boolean;
 
     constructor(type: NavItemType, config?: INavItemConfig) {
         if (config) {
@@ -79,6 +80,7 @@ export class NavItem implements TreeNode {
         } else {
             this.readonly = false;
         }
+        this.expanded = true;
     }
 
     public setId(id: string) {
