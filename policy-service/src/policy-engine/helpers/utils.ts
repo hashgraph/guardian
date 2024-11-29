@@ -8,6 +8,18 @@ import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { FilterQuery } from '@mikro-orm/core';
 
+export enum QueryType {
+    eq = 'equal',
+    ne = 'not_equal',
+    in = 'in',
+    nin = 'not_in',
+    gt = 'gt',
+    gte = 'gte',
+    lt = 'lt',
+    lte = 'lte',
+    regex = 'regex'
+}
+
 /**
  * Policy engine utils
  */
@@ -1021,11 +1033,11 @@ export class PolicyUtils {
             let documentRef: any = null;
             if (typeof (refId) === 'string') {
                 documentRef = await ref.databaseServer.getVcDocument({
-                        'policyId': { $eq: policyId },
-                        $or: [
-                            {'document.credentialSubject.id': {$eq: refId}},
-                            {'document.credentialSubject.0.id': {$eq: refId}}
-                        ]
+                    'policyId': { $eq: policyId },
+                    $or: [
+                        { 'document.credentialSubject.id': { $eq: refId } },
+                        { 'document.credentialSubject.0.id': { $eq: refId } }
+                    ]
                 } as unknown as FilterQuery<VcDocumentCollection>);
             } else if (typeof (refId) === 'object') {
                 const objectId = refId.id || refId._id;
@@ -1315,5 +1327,114 @@ export class PolicyUtils {
      */
     public static getRoleTemplate<T>(ref: AnyBlockType, name: string): T {
         return ref.components.getRoleTemplate<T>(name);
+    }
+
+
+    public static parseQuery(type: string, value: string) {
+        let queryType: QueryType;
+        let queryValue: any;
+        if (type === 'user_defined') {
+            const [userType, userValue] = value?.split(':');
+            queryType = PolicyUtils.getQueryType(userType);
+            queryValue = PolicyUtils.getQueryValue(queryType, userValue);
+        } else {
+            queryType = type as QueryType;
+            queryValue = PolicyUtils.getQueryValue(queryType, value);
+        }
+        const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);
+        return {
+            type: queryType,
+            value: queryValue,
+            expression: queryExpression
+        }
+    }
+
+    public static getQueryType(userType: string): QueryType {
+        switch (userType) {
+            case 'eq': {
+                return QueryType.eq;
+            }
+            case 'ne': {
+                return QueryType.ne;
+            }
+            case 'in': {
+                return QueryType.in;
+            }
+            case 'nin': {
+                return QueryType.nin;
+            }
+            case 'gt': {
+                return QueryType.gt;
+            }
+            case 'gte': {
+                return QueryType.gte;
+            }
+            case 'lt': {
+                return QueryType.lt;
+            }
+            case 'lte': {
+                return QueryType.lte;
+            }
+            case 'regex': {
+                return QueryType.regex;
+            }
+        }
+        return null;
+    }
+
+    public static getQueryValue(queryType: QueryType, value: any): any {
+        if (typeof value !== 'string') {
+            return null;
+        }
+        switch (queryType) {
+            case QueryType.eq:
+                return value;
+            case QueryType.ne:
+                return value;
+            case QueryType.in:
+                return value.split(',');
+            case QueryType.nin:
+                return value.split(',');
+            case QueryType.gt:
+                return value;
+            case QueryType.gte:
+                return value;
+            case QueryType.lt:
+                return value;
+            case QueryType.lte:
+                return value;
+            case QueryType.regex:
+                return '.*' + value + '.*'
+            default:
+                return null;
+        }
+    }
+
+    public static getQueryExpression(queryType: QueryType, value: any): any {
+        if (!value) {
+            return null;
+        }
+        switch (queryType) {
+            case QueryType.eq:
+                return { $eq: value }
+            case QueryType.ne:
+                return { $ne: value }
+            case QueryType.in:
+                return { $in: value }
+            case QueryType.nin:
+                return { $nin: value }
+            case QueryType.gt:
+                return { $gt: value }
+            case QueryType.gte:
+                return { $gte: value }
+            case QueryType.lt:
+                return { $lt: value }
+            case QueryType.lte:
+                return { $lte: value }
+            case QueryType.regex:
+                return { $regex: value }
+            default:
+                return null;
+        }
     }
 }

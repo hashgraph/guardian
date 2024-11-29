@@ -27,6 +27,8 @@ export class FiltersAddonBlockComponent implements OnInit {
     target: any;
     filters: any;
     currentValue: any;
+    currentType: string = 'equal';
+    queryType: string = 'equal';
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -93,6 +95,13 @@ export class FiltersAddonBlockComponent implements OnInit {
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
             this.currentValue = data.filterValue;
+            this.queryType = data.queryType;
+
+            if (this.queryType === 'user_defined') {
+                this.currentType = 'equal';
+            } else {
+                this.currentType = this.queryType || 'equal';
+            }
 
             if (this.type == 'unelected') {
             }
@@ -120,6 +129,12 @@ export class FiltersAddonBlockComponent implements OnInit {
 
     onFilters() {
         this.loading = true;
+        const options: any = { filterValue: null };
+        if (this.queryType === 'user_defined') {
+            options.filterValue = this.currentType + ':' + this.currentValue;
+        } else {
+            options.filterValue = this.currentValue;
+        }
         this.policyEngineService
             .setBlockData(this.id, this.policyId, { filterValue: this.currentValue })
             .subscribe(() => {
