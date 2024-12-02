@@ -316,13 +316,7 @@ export class SchemaFormComponent implements OnInit {
         return new UntypedFormArray([]);
     }
 
-    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
-        if (item.customType === 'geo' || item.customType === 'sentinel') {
-            return new UntypedFormControl({})
-        } else {
-            return new UntypedFormGroup({});
-        }
-    }
+    private trigger = true;
 
     private updateButton() {
         this.buttons.emit(this.buttonsConfig);
@@ -1129,6 +1123,14 @@ export class SchemaFormComponent implements OnInit {
 
     public ifSimpleField(item: IFieldControl<any>): boolean {
         return !item.isArray && !item.isRef;
+    }
+
+    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        if (item.customType === 'geo') {
+            return new UntypedFormControl({})
+        } else {
+            return new UntypedFormGroup({});
+        }
     }
 
     public ifSubSchema(item: IFieldControl<any>): boolean {
