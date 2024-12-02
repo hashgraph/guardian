@@ -9,6 +9,11 @@ import * as moment from 'moment';
 })
 export class DateTimeComponent implements OnInit, AfterViewInit{
     @Input('control') control: UntypedFormControl;
+    @Input('showIcon') showIcon: boolean = true;
+    @Input('showSeconds') showSeconds: boolean = true;
+    @Input('showTime') showTime: boolean = true;
+    @Input('dateFormat') dateFormat: string = 'yy-mm-dd';
+
     @ViewChild('calendar') calendar: any
 
     constructor(
