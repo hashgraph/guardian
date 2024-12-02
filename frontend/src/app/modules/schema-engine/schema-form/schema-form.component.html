@@ -330,7 +330,8 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
+                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control?.value, item)"
+                             class="suggestion">
                             <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                                     class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                             </div>
