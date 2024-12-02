@@ -482,16 +482,20 @@ export class SchemaFormComponent implements OnInit {
 
     parseDate(item: string | string[], calendar: any, index?: number) {
         setTimeout(() => {
-            if (Array.isArray(item) && index) {
-                if (!calendar.el.nativeElement.querySelector('input').value && item[index]) {
+            if (calendar.dateParsed) {
+                return;
+            }
+            if (Array.isArray(item) && (index !== undefined) && item[index]) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
                     calendar.el.nativeElement.querySelector('input').value = moment(item[index]).format('YYYY-MM-DD HH:mm:ss');
                 }
-            } else {
-                if (!calendar.el.nativeElement.querySelector('input').value && item) {
+            } else if (item) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
                     calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
                 }
             }
-        }, 200);
+            calendar.dateParsed = true;
+        }, 50);
 
     }
 
