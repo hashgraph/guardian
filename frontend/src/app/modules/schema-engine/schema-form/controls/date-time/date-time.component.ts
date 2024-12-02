@@ -20,7 +20,6 @@ export class DateTimeComponent implements OnInit, AfterViewInit{
     }
 
     ngAfterViewInit() {
-        console.log(this);
         const value = this.calendar.value;
         if (value) {
             this.ngZone.runOutsideAngular(() => {
