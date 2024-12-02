@@ -61,14 +61,7 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar #cal
-                            class="guardian-datepicker"
-                            [formControl]="item.control"
-                            [showIcon]="true"
-                            [showTime]="true"
-                            [showSeconds]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time [control]="item.control"></date-time>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
