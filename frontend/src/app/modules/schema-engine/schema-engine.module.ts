@@ -42,6 +42,7 @@ import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
+import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 
 @NgModule({
     declarations: [
@@ -64,7 +65,8 @@ import { AccordionModule } from 'primeng/accordion';
         DeleteSchemaDialogComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,
-        SchemaFormDialog
+        SchemaFormDialog,
+        DateTimeComponent
     ],
     imports: [
         CommonModule,
@@ -102,7 +104,8 @@ import { AccordionModule } from 'primeng/accordion';
         VCViewerDialog,
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
-        SchemaFormDialog
+        SchemaFormDialog,
+        DateTimeComponent
     ],
 })
 export class SchemaEngineModule { }

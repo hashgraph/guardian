@@ -1,0 +1,31 @@
+import { AfterViewInit, Component, Input, NgZone, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
+import * as moment from 'moment';
+
+@Component({
+    selector: 'date-time',
+    templateUrl: './date-time.component.html',
+    styleUrls: ['./date-time.component.scss'],
+})
+export class DateTimeComponent implements OnInit, AfterViewInit{
+    @Input('control') control: UntypedFormControl;
+    @ViewChild('calendar') calendar: any
+
+    constructor(
+        private ngZone: NgZone,
+    ) {
+    }
+
+    ngOnInit() {
+    }
+
+    ngAfterViewInit() {
+        console.log(this);
+        const value = this.calendar.value;
+        if (value) {
+            this.ngZone.runOutsideAngular(() => {
+                this.calendar.el.nativeElement.querySelector('input').value = moment(value).format('YYYY-MM-DD HH:mm:ss');
+            });
+        }
+    }
+}
