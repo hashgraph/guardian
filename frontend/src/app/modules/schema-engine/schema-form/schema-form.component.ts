@@ -223,7 +223,6 @@ export class SchemaFormComponent implements OnInit {
 
 
     ngOnInit(): void {
-        console.log(this);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -948,6 +947,7 @@ export class SchemaFormComponent implements OnInit {
         }
         item.control?.patchValue(suggest);
         item.control?.markAsDirty();
+        (item as any).subject.next();
     }
 
     public isEmpty(value: any): boolean {
@@ -1111,6 +1111,7 @@ export class SchemaFormComponent implements OnInit {
                 item.control?.disable();
             });
         }
+        (item as any).subject = new Subject();
         return item;
     }
 
