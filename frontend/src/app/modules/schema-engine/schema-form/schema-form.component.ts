@@ -223,6 +223,7 @@ export class SchemaFormComponent implements OnInit {
 
 
     ngOnInit(): void {
+        console.log(this);
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -468,10 +469,6 @@ export class SchemaFormComponent implements OnInit {
         }
 
         return listItem;
-    }
-
-    consoleLog(item: any) {
-        console.log(item.control.value);
     }
 
     parseDate(item: string | string[], calendar: any, index?: number) {
