@@ -1,8 +1,9 @@
 <p-calendar #calendar
             [formControl]="control"
-            [showIcon]="true"
-            [showSeconds]="true"
-            [showTime]="true"
+            [dateFormat]="dateFormat"
+            [showIcon]="showIcon"
+            [showSeconds]="showSeconds"
+            [showTime]="showTime"
             appendTo='body'
             class="guardian-datepicker"
-            dateFormat="yy-mm-dd"/>
+            [timeOnly]="timeOnly"/>
