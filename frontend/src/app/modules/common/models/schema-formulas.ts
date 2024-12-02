@@ -107,6 +107,14 @@ export class SchemaFormulas {
         return name;
     }
 
+    public getNames(): string[] {
+        const names: Set<string> = new Set<string>();
+        for (const score of this.formulas) {
+            names.add(score.id);
+        }
+        return Array.from(names);
+    }
+
     public add() {
         const formula = new SchemaFormula();
         formula.id = this.getName();

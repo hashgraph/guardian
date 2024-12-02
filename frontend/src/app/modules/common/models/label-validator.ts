@@ -43,13 +43,17 @@ export interface IValidatorStep {
 }
 
 class ValidateScore {
+    public readonly id: string;
     public readonly name: string;
 
     private readonly score: any;
+    private readonly names: string[];
 
-    constructor(name: string) {
+    constructor(id: string, name: string) {
+        this.id = id;
         this.name = name;
         this.score = {};
+        this.names = [];
     }
 
     public setVariable(name: string, value: any) {
@@ -58,6 +62,14 @@ class ValidateScore {
 
     public getScore(): any {
         return this.score;
+    }
+
+    public setName(name: string): void {
+        this.names.push(name);
+    }
+
+    public getName(): string[] {
+        return this.names;
     }
 }
 
@@ -81,15 +93,18 @@ class ValidateNamespace {
         return namespace;
     }
 
-    public createScore(name: string): any {
-        const score = new ValidateScore(name);
+    public createScore(id: string, name: string): any {
+        const score = new ValidateScore(id, name);
         this.scores.push(score);
         return score;
     }
 
-    public getNamespace(): any {
+    public getNamespace(id?: string): any {
         let namespace: any = {};
         for (const item of this.scores) {
+            if (item.id === id) {
+                return namespace;
+            }
             const values = item.getScore();
             const keys = Object.keys(values);
             for (const key of keys) {
@@ -97,6 +112,20 @@ class ValidateNamespace {
             }
         }
         return namespace;
+    }
+
+    public getNames(id?: string): string[] {
+        let names = new Set<string>();
+        for (const item of this.scores) {
+            if (item.id === id) {
+                return Array.from(names);
+            }
+            const keys = item.getName();
+            for (const key of keys) {
+                names.add(`${item.name}.${key}`);
+            }
+        }
+        return Array.from(names);
     }
 
     public getField(schema: string, path: string): any {
@@ -112,7 +141,7 @@ class NodeValidator {
     public readonly title: string;
     public readonly steps: number = 0;
 
-    private namespaces: ValidateNamespace;
+    private namespace: ValidateNamespace;
     private scope: ValidateScore;
     private valid: IValidateResult;
 
@@ -122,9 +151,9 @@ class NodeValidator {
         this.title = item.title;
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.name);
+    public setData(namespace: ValidateNamespace) {
+        this.namespace = namespace;
+        this.scope = this.namespace.createScore(this.id, this.name);
     }
 
     public get status(): boolean | undefined {
@@ -153,6 +182,14 @@ class NodeValidator {
 
     public getResult(): IValidateResult {
         return this.valid;
+    }
+
+    public getNamespace(): ValidateNamespace {
+        return this.namespace;
+    }
+
+    public getScope(): ValidateScore {
+        return this.scope;
     }
 
     public static calculateFormula(item: IFormulaData, scope: any): any {
@@ -212,7 +249,7 @@ class GroupValidator {
     public readonly children: IValidator[];
     public readonly steps: number = 0;
 
-    private namespaces: ValidateNamespace;
+    private namespace: ValidateNamespace;
     private scope: ValidateScore;
     private valid: IValidateResult;
 
@@ -227,11 +264,11 @@ class GroupValidator {
         return this.valid ? this.valid.valid : undefined;
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.name);
+    public setData(namespace: ValidateNamespace) {
+        this.namespace = namespace;
+        this.scope = this.namespace.createScore(this.id, this.name);
         for (const child of this.children) {
-            child.setData(namespaces);
+            child.setData(namespace);
         }
     }
 
@@ -264,6 +301,14 @@ class GroupValidator {
         }]
     }
 
+    public getNamespace(): ValidateNamespace {
+        return this.namespace;
+    }
+
+    public getScope(): ValidateScore {
+        return this.scope;
+    }
+
     public getResult(): IValidateResult {
         return this.valid;
     }
@@ -277,7 +322,7 @@ class RuleValidator {
     public readonly title: string;
     public readonly steps: number = 3;
 
-    private namespaces: ValidateNamespace;
+    private namespace: ValidateNamespace;
     private scope: ValidateScore;
     private valid: IValidateResult;
 
@@ -316,14 +361,23 @@ class RuleValidator {
         }
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.name);
+    public setData(namespace: ValidateNamespace) {
+        this.namespace = namespace;
+        this.scope = this.namespace.createScore(this.id, this.name);
+        for (const item of this.variables) {
+            this.scope.setName(item.id);
+        }
+        for (const item of this.scores) {
+            this.scope.setName(item.id);
+        }
+        for (const item of this.formulas) {
+            this.scope.setName(item.id);
+        }
     }
 
     public updateVariables() {
         for (const variable of this.variables) {
-            const value = this.namespaces.getField(variable.schemaId, variable.path);
+            const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
             this.scope.setVariable(variable.id, null);
         }
@@ -367,7 +421,7 @@ class RuleValidator {
     }
 
     private getScore(): any {
-        const namespace = this.namespaces.getNamespace();
+        const namespace = this.namespace.getNamespace();
         const scope = this.scope.getScore();
         return Object.assign(namespace, scope);
     }
@@ -407,6 +461,14 @@ class RuleValidator {
         }]
     }
 
+    public getNamespace(): ValidateNamespace {
+        return this.namespace;
+    }
+
+    public getScope(): ValidateScore {
+        return this.scope;
+    }
+
     public getResult(): IValidateResult {
         return this.valid;
     }
@@ -420,7 +482,7 @@ class StatisticValidator {
     public readonly title: string;
     public readonly steps: number = 3;
 
-    private namespaces: ValidateNamespace;
+    private namespace: ValidateNamespace;
     private scope: ValidateScore;
     private valid: IValidateResult;
 
@@ -459,14 +521,23 @@ class StatisticValidator {
         }
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.name);
+    public setData(namespace: ValidateNamespace) {
+        this.namespace = namespace;
+        this.scope = this.namespace.createScore(this.id, this.name);
+        for (const item of this.variables) {
+            this.scope.setName(item.id);
+        }
+        for (const item of this.scores) {
+            this.scope.setName(item.id);
+        }
+        for (const item of this.formulas) {
+            this.scope.setName(item.id);
+        }
     }
 
     public updateVariables() {
         for (const variable of this.variables) {
-            const value = this.namespaces.getField(variable.schemaId, variable.path);
+            const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
             this.scope.setVariable(variable.id, null); ``
         }
@@ -497,7 +568,7 @@ class StatisticValidator {
     }
 
     private getScore(): any {
-        const namespace = this.namespaces.getNamespace();
+        const namespace = this.namespace.getNamespace();
         const scope = this.scope.getScore();
         return Object.assign(namespace, scope);
     }
@@ -537,6 +608,14 @@ class StatisticValidator {
         }]
     }
 
+    public getNamespace(): ValidateNamespace {
+        return this.namespace;
+    }
+
+    public getScope(): ValidateScore {
+        return this.scope;
+    }
+
     public getResult(): IValidateResult {
         return this.valid;
     }
@@ -551,7 +630,7 @@ class LabelValidator {
     public readonly steps: number = 0;
     public readonly root: GroupValidator;
 
-    private namespaces: ValidateNamespace;
+    private namespace: ValidateNamespace;
     private scope: ValidateScore;
     private valid: IValidateResult;
 
@@ -580,10 +659,10 @@ class LabelValidator {
         return this.valid ? this.valid.valid : undefined;
     }
 
-    public setData(namespaces: ValidateNamespace) {
-        this.namespaces = namespaces;
-        this.scope = this.namespaces.createScore(this.name);
-        this.root.setData(namespaces);
+    public setData(namespace: ValidateNamespace) {
+        this.namespace = namespace;
+        this.scope = this.namespace.createScore(this.id, this.name);
+        this.root.setData(namespace);
     }
 
     public validate(): IValidateResult {
@@ -602,6 +681,14 @@ class LabelValidator {
         }]
     }
 
+    public getNamespace(): ValidateNamespace {
+        return this.namespace;
+    }
+
+    public getScope(): ValidateScore {
+        return this.scope;
+    }
+
     public getResult(): IValidateResult {
         return this.valid;
     }
@@ -613,6 +700,7 @@ export class LabelValidators {
     private readonly root: LabelValidator;
     private readonly steps: IValidatorStep[];
     private readonly tree: IValidatorNode;
+    private readonly list: IValidator[];
 
     private index: number = 0;
 
@@ -627,6 +715,19 @@ export class LabelValidators {
         });
         this.tree = this.createTree(this.root);
         this.steps = this.createSteps(this.root, []);
+        this.list = this.createList(this.root, []);
+    }
+
+    private createList(node: IValidator, result: IValidator[]): IValidator[] {
+        result.push(node);
+        if (node.type === NavItemType.Group) {
+            for (const child of (node as GroupValidator).children) {
+                this.createList(child, result);
+            }
+        } else if (node.type === NavItemType.Label) {
+            this.createList((node as LabelValidator).root, result);
+        }
+        return result;
     }
 
     private createSteps(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
@@ -677,6 +778,10 @@ export class LabelValidators {
             }
         }
         return item;
+    }
+
+    public getValidator(id: string): IValidator | undefined {
+        return this.list.find((v) => v.id === id);
     }
 
     public setData(documents: any[]) {

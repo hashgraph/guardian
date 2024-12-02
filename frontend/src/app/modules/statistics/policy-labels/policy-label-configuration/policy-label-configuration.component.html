@@ -692,7 +692,8 @@
                                         id="formula.id" 
                                         pInputText 
                                         type="text"
-                                        [readonly]="rulesConfig.readonly"/>
+                                        [readonly]="rulesConfig.readonly"
+                                        (blur)="rulesConfig.onRename()"/>
                                     <div class="cell-focus"></div>
                                 </div>
                                 <div class="variables-grid-cell cell-300">
@@ -745,7 +746,8 @@
                                         id="formula.id" 
                                         pInputText 
                                         type="text"
-                                        [readonly]="rulesConfig.readonly"/>
+                                        [readonly]="rulesConfig.readonly"
+                                        (blur)="rulesConfig.onRename()"/>
                                     <div class="cell-focus"></div>
                                 </div>
                                 <!-- <div class="variables-grid-cell cell-200">
@@ -862,7 +864,8 @@
                                         id="formula.id" 
                                         pInputText 
                                         type="text"
-                                        [readonly]="rulesConfig.readonly"/>
+                                        [readonly]="rulesConfig.readonly"
+                                        (blur)="rulesConfig.onRename()"/>
                                     <div class="cell-focus"></div>
                                 </div>
                                 <div class="variables-grid-cell cell-200 cell-select">
@@ -891,7 +894,7 @@
                                     <ngx-codemirror 
                                         [attr.codemirror-readonly]="rulesConfig.readonly"
                                         [(ngModel)]="formula.formula" 
-                                        [options]="rulesConfig.codeMirrorOptions"
+                                        [options]="rulesConfig.getCodeMirrorOptions(formula.id)"
                                         [disabled]="rulesConfig.readonly"></ngx-codemirror>
                                 </div>
                                 <div class="variables-grid-cell cell-150 variables-grid-cell-transparent">
