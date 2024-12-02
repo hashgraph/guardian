@@ -69,7 +69,6 @@
                             [showSeconds]="true"
                             dateFormat="yy-mm-dd"
                             appendTo='body'/>
-                        <span style="display: none">{{ parseDate(item.control.value, cal) }}</span>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
@@ -219,7 +218,6 @@
                                     [showSeconds]="true"
                                     dateFormat="yy-mm-dd"
                                     appendTo='body'/>
-                                <span style="display: none">{{ parseDate(item.control.value, cal, i) }}</span>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">

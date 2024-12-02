@@ -718,7 +718,6 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public buildSchemaField(fieldConfig: FieldControl, data: any): SchemaField {
-        console.log(data, fieldConfig);
         const {
             key,
             title,
@@ -877,7 +876,6 @@ export class SchemaConfigurationComponent implements OnInit {
 
         schema.update(fields, conditions);
         schema.updateRefs(this.subSchemas);
-        console.log(schema);
         return schema;
     }
 
