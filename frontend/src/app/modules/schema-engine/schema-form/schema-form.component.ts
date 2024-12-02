@@ -476,6 +476,29 @@ export class SchemaFormComponent implements OnInit {
         return listItem;
     }
 
+    consoleLog(item: any) {
+        console.log(item.control.value);
+    }
+
+    parseDate(item: string | string[], calendar: any, index?: number) {
+        setTimeout(() => {
+            if (calendar.dateParsed) {
+                return;
+            }
+            if (Array.isArray(item) && (index !== undefined) && item[index]) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item[index]).format('YYYY-MM-DD HH:mm:ss');
+                }
+            } else if (item) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+                }
+            }
+            calendar.dateParsed = true;
+        }, 50);
+
+    }
+
     public removeGroup(item: IFieldControl<any>, event: any) {
         if (event?.stopPropagation) {
             event.stopPropagation();

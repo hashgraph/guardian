@@ -29,12 +29,12 @@ export class CacheInterceptor implements NestInterceptor {
         const isFastify = Reflect.getMetadata(META_DATA.FASTIFY, context.getHandler());
 
         const token = request.headers.authorization?.split(' ')[1];
-        let user = {};
+        let user = null;
 
         if (token) {
             const users: Users = new Users();
             try {
-                user = await users.getUserByToken(token);
+                user = await users.getUserByToken(token) ?? null;
             } catch (error) {
                 throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
             }
