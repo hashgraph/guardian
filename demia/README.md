@@ -25,7 +25,7 @@ Password: test
 ## Integration Steps
 1. [Create a new account on the Demia platform](DemiaSetup.md).
 2. [Create a new account on the Guardian platform](GuardianSetup.md).
-3. Integrate Guardian into Demia
+3. [Integrate Guardian into Demia](Integration.md).
 
 
 ## Expand on existing Policies
