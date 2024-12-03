@@ -111,7 +111,8 @@ export class FiltersAddonBlock {
             blockType: 'filtersAddon',
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-            canBeEmpty: ref.options.canBeEmpty
+            canBeEmpty: ref.options.canBeEmpty,
+            queryType: ref.options.queryType
         };
 
         const data: any[] = await ref.getSources(user, null);
@@ -206,9 +207,16 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value === value) : null;
+            let itemValue:any = value;
+            if (ref.options.queryType === 'user_defined') {
+                const [, userValue] = PolicyUtils.parseFilterValue(value);
+                itemValue = userValue;
+            }
+
+            // tslint:disable-next-line:triple-equals
+            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value == itemValue) : null;
             if (selectItem) {
-                this.addQuery(filter, selectItem.value);
+                this.addQuery(filter, value);
             } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }

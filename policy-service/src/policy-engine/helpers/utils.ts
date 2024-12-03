@@ -1329,13 +1329,12 @@ export class PolicyUtils {
         return ref.components.getRoleTemplate<T>(name);
     }
 
-
     public static parseQuery(type: string, value: string) {
         let queryType: QueryType;
         let queryValue: any;
         if (type === 'user_defined') {
-            const [userType, userValue] = value?.split(':');
-            queryType = PolicyUtils.getQueryType(userType);
+            const [userType, userValue] = PolicyUtils.parseFilterValue(value);
+            queryType = userType;
             queryValue = PolicyUtils.getQueryValue(queryType, userValue);
         } else {
             queryType = type as QueryType;
@@ -1349,40 +1348,43 @@ export class PolicyUtils {
         }
     }
 
-    public static getQueryType(userType: string): QueryType {
-        switch (userType) {
-            case 'eq': {
-                return QueryType.eq;
+    public static parseFilterValue(value: string): [QueryType, string] {
+        if (typeof value === 'string') {
+            if (value.startsWith('eq:')) {
+                return [QueryType.eq, value.substring('eq'.length + 1)];
             }
-            case 'ne': {
-                return QueryType.ne;
+            if (value.startsWith('ne:')) {
+                return [QueryType.ne, value.substring('ne'.length + 1)];
             }
-            case 'in': {
-                return QueryType.in;
+            if (value.startsWith('in:')) {
+                return [QueryType.in, value.substring('in'.length + 1)];
             }
-            case 'nin': {
-                return QueryType.nin;
+            if (value.startsWith('nin:')) {
+                return [QueryType.nin, value.substring('nin'.length + 1)];
             }
-            case 'gt': {
-                return QueryType.gt;
+            if (value.startsWith('gt:')) {
+                return [QueryType.gt, value.substring('gt'.length + 1)];
             }
-            case 'gte': {
-                return QueryType.gte;
+            if (value.startsWith('gte:')) {
+                return [QueryType.gte, value.substring('gte'.length + 1)];
             }
-            case 'lt': {
-                return QueryType.lt;
+            if (value.startsWith('lt:')) {
+                return [QueryType.lt, value.substring('lt'.length + 1)];
             }
-            case 'lte': {
-                return QueryType.lte;
+            if (value.startsWith('lte:')) {
+                return [QueryType.lte, value.substring('lte'.length + 1)];
             }
-            case 'regex': {
-                return QueryType.regex;
+            if (value.startsWith('regex:')) {
+                return [QueryType.regex, value.substring('regex'.length + 1)];
             }
         }
-        return null;
+        return [null, value];
     }
 
     public static getQueryValue(queryType: QueryType, value: any): any {
+        if(typeof value === 'number'){
+            value = String(value);
+        }
         if (typeof value !== 'string') {
             return null;
         }

@@ -517,7 +517,7 @@ a.open-vp {
 
 .active-multiple-document {
     transform: translate(0, 0);
-    z-index: 3;
+    z-index: 3 !important;
     border: 2px solid gray;
 }
 
@@ -525,7 +525,7 @@ a.open-vp {
     position: absolute;
     left: 0;
     bottom: 0;
-    z-index: 2;
+    z-index: 2 !important;
     transform: translate(-7px, -7px);
     border: 2px solid #9d9d9d;
 }
@@ -534,17 +534,17 @@ a.open-vp {
     position: absolute;
     left: 0;
     bottom: 0;
-    z-index: 1;
+    z-index: 1 !important;
     transform: translate(-14px, -14px);
     border: 2px solid #bfbfbf;
 }
 
 .single-multiple-document {
-    z-index: 1;
+    z-index: 1 !important;
 }
 
 .hide-multiple-document {
-    display: none;
+    display: none !important;
 }
 
 .multiple-documents-count {

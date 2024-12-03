@@ -24,6 +24,10 @@ export class FiltersAddonBlock {
                 switch (ref.options.type) {
                     case 'dropdown':
                         break;
+                    case 'datepicker':
+                        break;
+                    case 'input':
+                        break;
                     default:
                         validator.addError('Option "type" must be a "dropdown"');
                 }
