@@ -43,9 +43,9 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     }
 
     ngAfterViewInit() {
-        if (this.isMany) {
+        // if (this.isMany) {
             this.fillField();
-        }
+        // }
     }
 
     ngOnChanges() {
@@ -68,7 +68,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
         const input = this.calendar?.el.nativeElement.querySelector('input')
 
         setTimeout(() => {
-            if (input) {
+            if (input && value) {
                 if (this.timeOnly) {
                     const date = moment(value, 'hh-mm-ss').toDate();
                     this.control.setValue(date);
