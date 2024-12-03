@@ -65,6 +65,10 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngOnInit(): void {
+        if (!this.control) {
+            this.control = new UntypedFormGroup({});
+        }
+
         this.control.registerControl('layers', new UntypedFormControl('NATURAL-COLOR', Validators.required));
         this.control.registerControl('format', new UntypedFormControl('image/jpeg', Validators.required));
         this.control.registerControl('maxcc', new UntypedFormControl(30, Validators.required));
@@ -95,14 +99,18 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
 
     ngAfterViewInit(): void {
         if (this.presetDocument) {
-            this.control.patchValue(this.presetDocument);
-            const [from, to] = this.control.get('time')?.value?.split('/') || [];
-            this.datePicker.patchValue({from, to});
-            this.generateImageLink(this.control.value, true);
+            setTimeout(() => {
+                this.control.patchValue(this.presetDocument);
+                const [from, to] = this.control.get('time')?.value?.split('/') || [];
+                this.datePicker.patchValue({from, to});
+                this.generateImageLink(this.control.value, true);
+            }, 200);
+
         }
     }
 
     generateImageLink(value: any, skipValidation = false): void {
+        console.log(this.key, this)
         if (!this.key) {
             this.formattedImageLink = '';
             return;

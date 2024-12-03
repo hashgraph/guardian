@@ -316,13 +316,7 @@ export class SchemaFormComponent implements OnInit {
         return new UntypedFormArray([]);
     }
 
-    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
-        if (item.customType === 'geo' || item.customType === 'sentinel') {
-            return new UntypedFormControl({})
-        } else {
-            return new UntypedFormGroup({});
-        }
-    }
+    private trigger = true;
 
     private updateButton() {
         this.buttons.emit(this.buttonsConfig);
@@ -474,10 +468,6 @@ export class SchemaFormComponent implements OnInit {
         }
 
         return listItem;
-    }
-
-    consoleLog(item: any) {
-        console.log(item.control.value);
     }
 
     parseDate(item: string | string[], calendar: any, index?: number) {
@@ -957,6 +947,7 @@ export class SchemaFormComponent implements OnInit {
         }
         item.control?.patchValue(suggest);
         item.control?.markAsDirty();
+        (item as any).subject.next();
     }
 
     public isEmpty(value: any): boolean {
@@ -1120,6 +1111,7 @@ export class SchemaFormComponent implements OnInit {
                 item.control?.disable();
             });
         }
+        (item as any).subject = new Subject();
         return item;
     }
 
@@ -1129,6 +1121,14 @@ export class SchemaFormComponent implements OnInit {
 
     public ifSimpleField(item: IFieldControl<any>): boolean {
         return !item.isArray && !item.isRef;
+    }
+
+    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        if (item.customType === 'geo') {
+            return new UntypedFormControl({})
+        } else {
+            return new UntypedFormGroup({});
+        }
     }
 
     public ifSubSchema(item: IFieldControl<any>): boolean {
