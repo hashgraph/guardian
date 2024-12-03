@@ -95,3 +95,7 @@ And data retrieval based off of the VC’s on the guardian end
 
 
 These API’s also include the ability to add sites and sensors for those sites to your account. 
+
+
+## Tester Scripts
+Additionally, there is a suite of tester scripts available for testing within the Demia testnet ecosystem that you can try [here](demia_tester_scripts/README.md), although you will need to have an existing Demia account before you can properly use the `login`/`create_identity` scripts specifically. 
