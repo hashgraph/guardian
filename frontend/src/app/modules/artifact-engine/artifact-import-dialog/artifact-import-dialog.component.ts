@@ -28,7 +28,8 @@ export class ArtifactImportDialog {
         if (data) {
             this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
             const current = this.policies.find((policy: any) => policy.id === data.policyId);
-            this.policyId.patchValue(current?.id || '');
+            // this.policyId.patchValue(current?.id || '');
+            this.policyId.patchValue(current ? { label: current.name, value: current.id } : null);
         }
     }
 
@@ -36,7 +37,7 @@ export class ArtifactImportDialog {
         if (this.policyId.valid) {
             this.dialogRef.close({
                 files: event,
-                policyId: this.policyId.value
+                policyId: this.policyId.value?.value
             });
         }
     }
