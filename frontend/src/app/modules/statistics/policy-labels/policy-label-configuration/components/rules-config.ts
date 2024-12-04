@@ -186,17 +186,21 @@ export class RulesConfig {
 
         const map1 = this.variables.getMap();
         for (const root of this.source.roots) {
+            const rootView = root.fields;
+            const data = rootView.data;
             const map2 = map1.get(root.data.iri);
             if (map2) {
-                const rootView = root.fields;
-                const data = rootView.data;
                 for (const field of data.list) {
                     const path = field.path.map((e) => e.data.name).join('.');
                     field.selected = map2.has(path);
                 }
-                rootView.updateHidden();
-                rootView.updateSelected();
+            } else {
+                for (const field of data.list) {
+                    field.selected = false;
+                }
             }
+            rootView.updateHidden();
+            rootView.updateSelected();
         }
     }
 

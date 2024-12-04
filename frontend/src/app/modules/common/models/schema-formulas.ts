@@ -130,6 +130,7 @@ export class SchemaFormulas {
     }
 
     public fromData(data: IFormulaData[] | undefined) {
+        this.names.clear();
         this.formulas = [];
         if (data) {
             for (let index = 0; index < data.length; index++) {

@@ -10,8 +10,9 @@ export enum NavItemType {
 export interface IGroupItemConfig {
     id: string;
     type: NavItemType.Group;
-    name: string;
+    tag?: string;
     title?: string;
+    name?: string;
     description?: string;
     owner?: string;
     rule?: string;
@@ -21,8 +22,9 @@ export interface IGroupItemConfig {
 export interface ILabelItemConfig {
     id: string;
     type: NavItemType.Label;
-    name: string;
+    tag?: string;
     title?: string;
+    name?: string;
     description?: string;
     owner?: string;
     messageId?: string;
@@ -32,8 +34,9 @@ export interface ILabelItemConfig {
 export interface IRulesItemConfig {
     id: string;
     type: NavItemType.Rules;
-    name: string;
+    tag?: string;
     title?: string;
+    name?: string;
     description?: string;
     owner?: string;
     config?: IStatisticConfig;
@@ -42,8 +45,9 @@ export interface IRulesItemConfig {
 export interface IStatisticItemConfig {
     id: string;
     type: NavItemType.Statistic;
-    name: string;
+    tag?: string;
     title?: string;
+    name?: string;
     description?: string;
     messageId?: string;
     owner?: string;

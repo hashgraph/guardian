@@ -82,17 +82,91 @@ form {
     position: relative;
 
     .preview-menu {
-        min-width: 200px;
-        width: 200px;
-        max-width: 200px;
-        pointer-events: none;
+        min-width: 250px;
+        width: 250px;
+        max-width: 250px;
+        border: 1px solid #E1E7EF;
+        border-radius: 8px;
+        padding: 8px 0px;
+
+        .preview-menu-item {
+            width: 250px;
+            height: 56px;
+            display: flex;
+            flex-direction: row;
+            padding-left: 22px;
+            align-items: center;
+            position: relative;
+
+            &[highlighted="true"] {
+                background: #F0F3FC;
+
+                .preview-menu-item-name {
+                    color: #4169E2;
+                }
+            }
+
+            &[last="false"] {
+                margin-bottom: 24px;
+
+                &::after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    left: 53px;
+                    bottom: -22px;
+                    width: 3px;
+                    height: 20px;
+                    border-left: 2px solid #C4D0E1;
+                    pointer-events: none;
+                }
+            }
+
+            .preview-menu-item-status {
+                width: 8px;
+                height: 8px;
+                overflow: hidden;
+                border-radius: 50%;
+                background: #AAB7C4;
+                margin-right: 12px;
+
+                &[status="true"] {
+                    background: #19BE47;
+                }
+
+                &[status="false"] {
+                    background: #FF432A;
+                }
+            }
+
+            .preview-menu-item-icon {
+                width: 24px;
+                height: 24px;
+                overflow: hidden;
+                margin-right: 8px;
+            }
+
+            .preview-menu-item-name {
+                width: 160px;
+                overflow: hidden;
+                font-family: Inter;
+                font-size: 16px;
+                font-weight: 500;
+                line-height: 16px;
+                text-align: left;
+                color: #848FA9;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
     }
 
     .preview-node-container {
         display: flex;
         flex-direction: column;
         position: absolute;
-        left: 200px;
+        left: 250px;
         right: 0;
         top: 0;
         bottom: 0;
@@ -114,29 +188,67 @@ form {
 
         .sub-indexes {
             width: 100%;
-            height: 30px;
-            min-height: 30px;
-            max-height: 30px;
+            height: 48px;
+            min-height: 48px;
+            max-height: 48px;
             display: flex;
             flex-direction: row;
             justify-content: center;
             background: #fff;
             align-items: center;
+            margin-bottom: 16px;
 
             .sub-index {
-                width: 12px;
-                height: 12px;
+                width: 24px;
+                height: 24px;
+                min-width: 24px;
+                min-height: 24px;
                 background: var(--guardian-grey-color-3, #AAB7C4);
                 border-radius: 50%;
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 14px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: #fff;
 
                 &[action="true"] {
                     background: var(--guardian-primary-color, #4169E2);
                 }
             }
 
+            .sub-name {
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 14px;
+                text-align: left;
+                color: var(--guardian-grey-color-3, #AAB7C4);
+                padding-left: 8px;
+
+                &[action="true"] {
+                    color: var(--guardian-primary-color, #4169E2);
+                }
+            }
+
             .sub-index-separator {
-                width: 12px;
+                width: 100%;
                 height: 12px;
+                position: relative;
+
+                &::after {
+                    content: "";
+                    display: block;
+                    position: absolute;
+                    left: 15px;
+                    right: 16px;
+                    top: 5px;
+                    height: 3px;
+                    border-top: 1px solid #C4D0E1;
+                    pointer-events: none;
+                }
             }
         }
     }
@@ -185,7 +297,6 @@ form {
 
         .field-input {
             position: relative;
-            padding-right: 36px;
 
             .field-status {
                 position: absolute;

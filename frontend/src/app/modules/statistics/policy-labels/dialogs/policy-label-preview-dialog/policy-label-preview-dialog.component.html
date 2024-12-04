@@ -14,40 +14,40 @@
         <div class="preview-container">
 
             <div class="preview-menu">
-                <div class="guardian-stepper vertical-stepper">
-                    <div *ngFor="let item of menu" 
-                        class="guardian-step" 
-                        [attr.action]="item.item === current?.item" 
-                        [attr.highlighted]="item.item === current?.item"
-                    >
-                        <div class="guardian-step-template">
-                            <svg-icon
-                                *ngIf="item.item.status === true"
-                                class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/right-arrow.svg"
-                                svgClass="icon-color-success">
-                            </svg-icon>
-                            <svg-icon
-                                *ngIf="item.item.status === false"
-                                class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/right-arrow.svg"
-                                svgClass="icon-color-failure">
-                            </svg-icon>
-                            <svg-icon
-                                *ngIf="item.item.status === undefined"
-                                class="icon-btn svg-icon-16"
-                                src="/assets/images/icons/16/right-arrow.svg"
-                                svgClass="icon-color-disabled">
-                            </svg-icon>
-                        </div>
-                        <div class="guardian-step-name">{{item.name}}</div>
+                <div *ngFor="let item of menu; let last = last" 
+                    class="preview-menu-item" 
+                    [attr.highlighted]="isSelected(item)"
+                    [attr.last]="last"
+                >
+                    <div class="preview-menu-item-status" [attr.status]="item.item.status"></div>
+                    <div class="preview-menu-item-icon">
+                        <svg-icon
+                            *ngIf="!item.selectable"
+                            class="icon-btn"
+                            src="/assets/images/icons/folder.svg"
+                            [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
+                        </svg-icon>
+                        <svg-icon
+                            *ngIf="item.selectable"
+                            class="icon-btn"
+                            src="/assets/images/icons/file.svg"
+                            [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
+                        </svg-icon>
                     </div>
+                    <div class="preview-menu-item-name">{{item.name}}</div>
                 </div>
             </div>
             <div class="preview-node-container">
                 <div class="preview-node-body fields-container">
+                    <div *ngIf="current" class="preview-node-header">{{current.name}}</div>
+                    <div *ngIf="current && current.subIndexes && current.subIndexes.length > 1" class="sub-indexes">
+                        <ng-container *ngFor="let item of current.subIndexes; let last = last;">
+                            <div class="sub-index" [attr.action]="item.selected">{{item.index}}</div>
+                            <div class="sub-name" [attr.action]="item.selected">{{item.name}}</div>
+                            <div *ngIf="!last" class="sub-index-separator"></div>
+                        </ng-container>
+                    </div>
                     <ng-container *ngIf="current && current.type === 'variables'">
-                        <div class="preview-node-header">Overview</div>
                         <div *ngFor="let variable of current.config" class="field-container">
                             <div class="field-name">
                                 {{variable.fieldDescription}}
@@ -63,7 +63,6 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="current && current.type === 'scores'">
-                        <div class="preview-node-header">Scores</div>
                         <div *ngFor="let score of current.config" class="field-container">
                             <div *ngIf="score.relationships" class="fields-container">
                                 <div *ngFor="let variable of score._relationships" class="field-container">
@@ -106,7 +105,6 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="current && current.type === 'formulas'">
-                        <div class="preview-node-header">Statistics</div>
                         <div *ngFor="let formula of current.config" class="field-container">
                             <div class="field-name">
                                 {{formula.description}}
@@ -117,7 +115,6 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="result && current && current.type === 'result'">
-                        <div class="preview-node-header">Result</div>
                         <div class="field-name">
                             {{result.valid}}
                         </div>
@@ -125,12 +122,6 @@
                             {{result.error}}
                         </div>
                     </ng-container> 
-                </div>
-                <div *ngIf="current && current.subIndexes" class="sub-indexes">
-                    <ng-container *ngFor="let item of current.subIndexes; let last = last">
-                        <div class="sub-index" [attr.action]="item"></div>
-                        <div *ngIf="!last" class="sub-index-separator"></div>
-                    </ng-container>
                 </div>
             </div>
 

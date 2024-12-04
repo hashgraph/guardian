@@ -72,6 +72,10 @@ export class PolicyLabelPreviewDialog {
     ngOnDestroy(): void {
     }
 
+    public isSelected(menuItem:any): boolean {
+        return menuItem.item === this.current?.item;
+    }
+
     public getVariableValue(value: any): any {
         if (value === undefined) {
             return 'N/A';

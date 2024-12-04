@@ -144,6 +144,7 @@ export class SchemaVariables {
             }
         }
 
+        this.names.clear();
         this.variables = [];
         for (const item of map.values()) {
             this.variables.push(item);

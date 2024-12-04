@@ -32,14 +32,24 @@ export interface IValidatorNode {
     children: IValidatorNode[]
 }
 
+export interface ISubStep {
+    index: number,
+    name: string,
+    selected: boolean
+}
+
 export interface IValidatorStep {
     name: string,
     item: IValidator,
     type: string,
     config: any,
     auto: boolean,
-    subIndexes?: boolean[],
+    subIndexes?: ISubStep[],
     update: () => void;
+}
+
+function isObject(item: any): boolean {
+    return typeof item === 'object' && !Array.isArray(item) && item !== null;
 }
 
 class ValidateScore {
@@ -108,7 +118,10 @@ class ValidateNamespace {
             const values = item.getScore();
             const keys = Object.keys(values);
             for (const key of keys) {
-                namespace[`${item.name}.${key}`] = values[key];
+                if (!isObject(namespace[item.name])) {
+                    namespace[item.name] = {};
+                }
+                namespace[item.name][key] = values[key];
             }
         }
         return namespace;
@@ -139,6 +152,7 @@ class NodeValidator {
     public readonly id: string;
     public readonly name: string;
     public readonly title: string;
+    public readonly tag: string;
     public readonly steps: number = 0;
 
     private namespace: ValidateNamespace;
@@ -149,11 +163,12 @@ class NodeValidator {
         this.id = item.id;
         this.name = item.name;
         this.title = item.title;
+        this.tag = item.tag;
     }
 
     public setData(namespace: ValidateNamespace) {
         this.namespace = namespace;
-        this.scope = this.namespace.createScore(this.id, this.name);
+        this.scope = this.namespace.createScore(this.id, this.tag);
     }
 
     public get status(): boolean | undefined {
@@ -246,6 +261,7 @@ class GroupValidator {
     public readonly id: string;
     public readonly name: string;
     public readonly title: string;
+    public readonly tag: string;
     public readonly children: IValidator[];
     public readonly steps: number = 0;
 
@@ -255,8 +271,9 @@ class GroupValidator {
 
     constructor(item: IGroupItemConfig) {
         this.id = item.id;
-        this.name = item.name;
+        this.name = item.name || '';
         this.title = item.title || '';
+        this.tag = item.tag || '';
         this.children = NodeValidator.fromArray(item.children);
     }
 
@@ -266,7 +283,7 @@ class GroupValidator {
 
     public setData(namespace: ValidateNamespace) {
         this.namespace = namespace;
-        this.scope = this.namespace.createScore(this.id, this.name);
+        this.scope = this.namespace.createScore(this.id, this.tag);
         for (const child of this.children) {
             child.setData(namespace);
         }
@@ -283,7 +300,7 @@ class GroupValidator {
             const childResult = child.validate();
             this.valid.children?.push(childResult);
             if (!childResult.valid) {
-                return this.valid;
+                this.valid.valid = false;
             }
         }
 
@@ -293,7 +310,7 @@ class GroupValidator {
     public getSteps(): IValidatorStep[] {
         return [{
             item: this,
-            name: this.name,
+            name: this.title,
             auto: true,
             type: 'validate',
             config: null,
@@ -320,6 +337,7 @@ class RuleValidator {
     public readonly id: string;
     public readonly name: string;
     public readonly title: string;
+    public readonly tag: string;
     public readonly steps: number = 3;
 
     private namespace: ValidateNamespace;
@@ -332,8 +350,9 @@ class RuleValidator {
 
     constructor(item: IRulesItemConfig) {
         this.id = item.id;
-        this.name = item.name;
+        this.name = item.name || '';
         this.title = item.title || '';
+        this.tag = item.tag || '';
 
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
@@ -363,7 +382,7 @@ class RuleValidator {
 
     public setData(namespace: ValidateNamespace) {
         this.namespace = namespace;
-        this.scope = this.namespace.createScore(this.id, this.name);
+        this.scope = this.namespace.createScore(this.id, this.tag);
         for (const item of this.variables) {
             this.scope.setName(item.id);
         }
@@ -379,7 +398,7 @@ class RuleValidator {
         for (const variable of this.variables) {
             const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
-            this.scope.setVariable(variable.id, null);
+            this.scope.setVariable(variable.id, (variable as any).value);
         }
     }
 
@@ -389,7 +408,7 @@ class RuleValidator {
 
     public updateFormulas() {
         for (const score of this.scores) {
-            this.scope.setVariable(score.id, null);
+            this.scope.setVariable(score.id, (score as any).value);
         }
         for (const formula of this.formulas) {
             const scope = this.getScore();
@@ -427,38 +446,73 @@ class RuleValidator {
     }
 
     public getSteps(): IValidatorStep[] {
-        return [{
+        const steps: IValidatorStep[] = [];
+        const subIndex: ISubStep[] = [];
+
+        if (this.variables?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Overview',
+                selected: false
+            })
+        }
+        if (this.scores?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Scores',
+                selected: false
+            })
+        }
+        if (this.formulas?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Statistics',
+                selected: false
+            })
+        }
+
+        if (this.variables?.length) {
+            steps.push({
+                item: this,
+                name: 'Overview',
+                auto: false,
+                type: 'variables',
+                config: this.variables,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Overview' } }),
+                update: this.updateVariables.bind(this)
+            })
+        }
+        if (this.scores?.length) {
+            steps.push({
+                item: this,
+                name: 'Scores',
+                auto: false,
+                type: 'scores',
+                config: this.scores,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Scores' } }),
+                update: this.updateScores.bind(this)
+            })
+        }
+        if (this.formulas?.length) {
+            steps.push({
+                item: this,
+                name: 'Statistics',
+                auto: false,
+                type: 'formulas',
+                config: this.formulas,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Statistics' } }),
+                update: this.updateFormulas.bind(this)
+            })
+        }
+        steps.push({
             item: this,
-            name: 'Variables',
-            auto: false,
-            type: 'variables',
-            config: this.variables,
-            subIndexes: [true, false, false],
-            update: this.updateVariables.bind(this)
-        }, {
-            item: this,
-            name: 'Scores',
-            auto: false,
-            type: 'scores',
-            config: this.scores,
-            subIndexes: [false, true, false],
-            update: this.updateScores.bind(this)
-        }, {
-            item: this,
-            name: 'Formulas',
-            auto: false,
-            type: 'formulas',
-            config: this.formulas,
-            subIndexes: [false, false, true],
-            update: this.updateFormulas.bind(this)
-        }, {
-            item: this,
-            name: this.name,
+            name: this.title,
             auto: true,
             type: 'validate',
             config: null,
             update: this.validate.bind(this)
-        }]
+        })
+        return steps;
     }
 
     public getNamespace(): ValidateNamespace {
@@ -480,6 +534,7 @@ class StatisticValidator {
     public readonly id: string;
     public readonly name: string;
     public readonly title: string;
+    public readonly tag: string;
     public readonly steps: number = 3;
 
     private namespace: ValidateNamespace;
@@ -492,8 +547,9 @@ class StatisticValidator {
 
     constructor(item: IStatisticItemConfig) {
         this.id = item.id;
-        this.name = item.name;
+        this.name = item.name || '';
         this.title = item.title || '';
+        this.tag = item.tag || '';
 
         this.variables = item.config?.variables || [];
         this.scores = item.config?.scores || [];
@@ -523,7 +579,7 @@ class StatisticValidator {
 
     public setData(namespace: ValidateNamespace) {
         this.namespace = namespace;
-        this.scope = this.namespace.createScore(this.id, this.name);
+        this.scope = this.namespace.createScore(this.id, this.tag);
         for (const item of this.variables) {
             this.scope.setName(item.id);
         }
@@ -539,7 +595,7 @@ class StatisticValidator {
         for (const variable of this.variables) {
             const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
-            this.scope.setVariable(variable.id, null); ``
+            this.scope.setVariable(variable.id, (variable as any).value);
         }
     }
 
@@ -549,7 +605,7 @@ class StatisticValidator {
 
     public updateFormulas() {
         for (const score of this.scores) {
-            this.scope.setVariable(score.id, null);
+            this.scope.setVariable(score.id, (score as any).value);
         }
         for (const formula of this.formulas) {
             const scope = this.getScore();
@@ -574,38 +630,73 @@ class StatisticValidator {
     }
 
     public getSteps(): IValidatorStep[] {
-        return [{
+        const steps: IValidatorStep[] = [];
+        const subIndex: ISubStep[] = [];
+
+        if (this.variables?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Overview',
+                selected: false
+            })
+        }
+        if (this.scores?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Scores',
+                selected: false
+            })
+        }
+        if (this.formulas?.length) {
+            subIndex.push({
+                index: subIndex.length + 1,
+                name: 'Statistics',
+                selected: false
+            })
+        }
+
+        if (this.variables?.length) {
+            steps.push({
+                item: this,
+                name: 'Overview',
+                auto: false,
+                type: 'variables',
+                config: this.variables,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Overview' } }),
+                update: this.updateVariables.bind(this)
+            })
+        }
+        if (this.scores?.length) {
+            steps.push({
+                item: this,
+                name: 'Scores',
+                auto: false,
+                type: 'scores',
+                config: this.scores,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Scores' } }),
+                update: this.updateScores.bind(this)
+            })
+        }
+        if (this.formulas?.length) {
+            steps.push({
+                item: this,
+                name: 'Statistics',
+                auto: false,
+                type: 'formulas',
+                config: this.formulas,
+                subIndexes: subIndex.map(e => { return { ...e, selected: e.name === 'Statistics' } }),
+                update: this.updateFormulas.bind(this)
+            })
+        }
+        steps.push({
             item: this,
-            name: 'Variables',
-            auto: false,
-            type: 'variables',
-            config: this.variables,
-            subIndexes: [true, false, false],
-            update: this.updateVariables.bind(this)
-        }, {
-            item: this,
-            name: 'Scores',
-            auto: false,
-            type: 'scores',
-            config: this.scores,
-            subIndexes: [false, true, false],
-            update: this.updateScores.bind(this)
-        }, {
-            item: this,
-            name: 'Formulas',
-            auto: false,
-            type: 'formulas',
-            config: this.formulas,
-            subIndexes: [false, false, true],
-            update: this.updateFormulas.bind(this)
-        }, {
-            item: this,
-            name: this.name,
+            name: this.title,
             auto: true,
             type: 'validate',
             config: null,
             update: this.validate.bind(this)
-        }]
+        })
+        return steps;
     }
 
     public getNamespace(): ValidateNamespace {
@@ -627,6 +718,7 @@ class LabelValidator {
     public readonly id: string;
     public readonly name: string;
     public readonly title: string;
+    public readonly tag: string;
     public readonly steps: number = 0;
     public readonly root: GroupValidator;
 
@@ -639,8 +731,9 @@ class LabelValidator {
 
     constructor(item: ILabelItemConfig) {
         this.id = item.id;
-        this.name = item.name;
+        this.name = item.name || '';
         this.title = item.title || '';
+        this.tag = item.tag || '';
 
         const label: IPolicyLabelConfig = item.config || {};
         this.imports = label.imports || [];
@@ -661,7 +754,7 @@ class LabelValidator {
 
     public setData(namespace: ValidateNamespace) {
         this.namespace = namespace;
-        this.scope = this.namespace.createScore(this.id, this.name);
+        this.scope = this.namespace.createScore(this.id, this.tag);
         this.root.setData(namespace);
     }
 
@@ -673,7 +766,7 @@ class LabelValidator {
     public getSteps(): IValidatorStep[] {
         return [{
             item: this,
-            name: this.name,
+            name: this.title,
             auto: true,
             type: 'validate',
             config: null,

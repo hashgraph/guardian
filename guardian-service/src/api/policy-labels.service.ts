@@ -412,7 +412,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 const filter: any = { $and: [
                     {
-                        status: EntityStatus.DRAFT
+                        status: EntityStatus.PUBLISHED
                     }
                 ] };
                 if (options.text) {
