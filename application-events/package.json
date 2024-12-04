@@ -34,7 +34,7 @@
         "http-errors": "^2.0.0",
         "js-yaml": "^4.1.0",
         "mongodb": "6.5.0",
-        "mongoose": "^6.10.0",
+        "mongoose": "^8.8.3",
         "morgan": "^1.10.0",
         "nats": "^2.12.1",
         "reflect-metadata": "^0.1.13",
