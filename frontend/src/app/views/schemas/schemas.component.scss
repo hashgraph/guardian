@@ -586,3 +586,36 @@ a {
         border-top: 1px solid #ccc;
     }
 }
+
+::ng-deep .menu-container {
+    .menu-options {
+        .schema-menu-btn {
+            display: block;
+            line-height: 48px;
+            width: 100%
+        }
+
+        .schema-menu-btn button {
+            border: none;
+            overflow: hidden;
+            height: 48px;
+            font-size: 14px;
+            color: var( --color-grey-black-1);
+            width: 100%;
+            display: grid;
+            grid-template-columns: 40px 1fr;
+            padding: 12px;
+            column-gap: 5px;
+        }
+
+        .p-button-icon {
+            font-size: 20px;
+            color: var(--primary-color);
+        }
+
+        .p-button-label {
+            display: grid;
+            justify-self: start;
+        }
+    }
+}

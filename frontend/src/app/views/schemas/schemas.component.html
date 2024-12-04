@@ -451,7 +451,7 @@
                             <div>
                                 <div
                                     class="btn-settings"
-                                    (click)="schemaMenu.toggle($event)"
+                                    (click)="onMenuClick($event, schemaMenu, schema)"
                                     pTooltip="Menu"
                                     tooltipPosition="top"
                                 >
@@ -589,7 +589,7 @@
 <!--</mat-menu>-->
 
 <p-overlayPanel #schemaMenu>
-    <ng-template matMenuContent let-element="schema">
+    <div class="menu-container">
         <p-button
             (click)="ifCanExport(element) ? onExport(element) : null"
             [disabled]="!ifCanExport(element)"
@@ -638,41 +638,106 @@
 
         <!-- <div class="schema-menu-delimiter"></div> -->
 
-        <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">
-            <!--            <a>content_copy</mat-icon>-->
-            <i class="pi pi-copy"></i>
-            <span>Copy</span>
-        </button>
+<!--        <button *ngIf="ifCanCopy(element)" mat-menu-item (click)="onCopySchema(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <a>content_copy</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-copy"></i>-->
+<!--            <span>Copy</span>-->
+<!--        </button>-->
 
-        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
-            <!--            <mat-icon>settings</mat-icon>-->
-            <i class="pi pi-cog"></i>
-            <span>Configuration</span>
-        </button>
+<!--        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>settings</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-cog"></i>-->
+<!--            <span>Configuration</span>-->
+<!--        </button>-->
 
-        <button mat-menu-item (click)="onOpenForm(element, true)" class="schema-menu-btn">
-            <!--            <mat-icon>description</mat-icon>-->
-            <i class="pi pi-receipt"></i>
-            <span>Example</span>
-        </button>
+<!--        <button mat-menu-item (click)="onOpenForm(element, true)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>description</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-receipt"></i>-->
+<!--            <span>Example</span>-->
+<!--        </button>-->
 
-        <button mat-menu-item (click)="onOpenForm(element, false)" class="schema-menu-btn">
-            <!--            <mat-icon>visibility</mat-icon>-->
-            <i class="pi pi-eye"></i>
-            <span>Preview</span>
-        </button>
+<!--        <button mat-menu-item (click)="onOpenForm(element, false)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>visibility</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-eye"></i>-->
+<!--            <span>Preview</span>-->
+<!--        </button>-->
 
-        <button mat-menu-item (click)="onOpenDocument(element)" class="schema-menu-btn">
-            <!--            <mat-icon>segment</mat-icon>-->
-            <i class="pi pi-align-right"></i>
-            <span>Schema</span>
-        </button>
+<!--        <button mat-menu-item (click)="onOpenDocument(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>segment</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-align-right"></i>-->
+<!--            <span>Schema</span>-->
+<!--        </button>-->
 
-        <button mat-menu-item (click)="onViewSchemaTree(element)" class="schema-menu-btn">
-            <!--            <mat-icon>account_tree</mat-icon>-->
-            <i class="pi pi-sitemap"></i>
-            <span>Tree</span>
-        </button>
+<!--        <button mat-menu-item (click)="onViewSchemaTree(element)" class="schema-menu-btn">-->
+<!--            &lt;!&ndash;            <mat-icon>account_tree</mat-icon>&ndash;&gt;-->
+<!--            <i class="pi pi-sitemap"></i>-->
+<!--            <span>Tree</span>-->
+<!--        </button>-->
+
+        <div class="menu-options">
+        <p-button
+            *ngIf="ifCanCopy(element)"
+            (click)="onCopySchema(element)"
+            label="Copy"
+            icon="pi pi-copy"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'Copy schema'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        <p-button
+            *ngIf="ifCanEdit(element)"
+            (click)="onOpenConfig(element)"
+            label="Configuration"
+            icon="pi pi-cog"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'Edit configuration'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        <p-button
+            (click)="onOpenForm(element, true)"
+            label="Example"
+            icon="pi pi-receipt"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'View example'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        <p-button
+            (click)="onOpenForm(element, false)"
+            label="Preview"
+            icon="pi pi-eye"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'View preview'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        <p-button
+            (click)="onOpenDocument(element)"
+            label="Schema"
+            icon="pi pi-align-right"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'View schema details'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        <p-button
+            (click)="onViewSchemaTree(element)"
+            label="Tree"
+            icon="pi pi-sitemap"
+            class="schema-menu-btn"
+            [outlined]="true"
+            [pTooltip]="'View schema tree'"
+            tooltipPosition="bottom">
+        </p-button>
+
+        </div>
 
         <div class="schema-menu-delimiter"></div>
 
@@ -689,5 +754,5 @@
                 src="/assets/images/icons/delete.svg"
                 [svgClass]="ifCanDelete(element) ? 'accent-color-red' : 'disabled-color'"></svg-icon>
         </p-button>
-    </ng-template>
+    </div>
 </p-overlayPanel>

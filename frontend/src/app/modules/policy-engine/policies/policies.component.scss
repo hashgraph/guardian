@@ -993,3 +993,22 @@
     min-width: 150px;
     max-width: calc(100vw - 970px);
 }
+
+.submenu-arrow {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 5px solid #6c757d;
+    position: absolute;
+    right: 20px;
+    top: 16px;
+}
+
+::ng-deep .sub-menu-overlay-container .p-overlaypanel-content {
+    padding: 0;
+}
+
+::ng-deep .sub-menu-overlay-container .p-overlaypanel-content .sub-menu-container {
+    padding: 1rem;
+}

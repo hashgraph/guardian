@@ -123,6 +123,14 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'Tool Schemas', value: SchemaType.Tool },
     ];
 
+    public element: any = {};
+
+    public onMenuClick(event: MouseEvent, overlayPanel: any, menuData: any): void {
+        this.element = menuData;
+
+        overlayPanel.toggle(event)
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
