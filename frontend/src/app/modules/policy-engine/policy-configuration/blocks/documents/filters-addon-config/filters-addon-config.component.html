@@ -6,6 +6,25 @@
         <td class="propRowCell">
             <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
                 <mat-option value="dropdown">Dropdown</mat-option>
+                <mat-option value="datepicker">Datepicker</mat-option>
+                <mat-option value="input">Input</mat-option>
+            </mat-select>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Query Type</td>
+        <td class="propRowCell">
+            <mat-select [(value)]="properties.queryType" [disabled]="readonly" (change)="onSave()">
+                <mat-option value="equal">Equal</mat-option>
+                <mat-option value="not_equal">Not Equal</mat-option>
+                <mat-option value="in">In</mat-option>
+                <mat-option value="not_in">Not In</mat-option>
+                <mat-option value="gt">Greater Than</mat-option>
+                <mat-option value="gte">Greater Than or Equal</mat-option>
+                <mat-option value="lt">Less Than</mat-option>
+                <mat-option value="lte">Less Than or Equal</mat-option>
+                <mat-option value="user_defined">User Defined</mat-option>
             </mat-select>
         </td>
     </tr>
