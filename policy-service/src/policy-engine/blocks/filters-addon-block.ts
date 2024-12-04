@@ -6,6 +6,7 @@ import { IPolicyAddonBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
 
 /**
  * Filters addon
@@ -51,6 +52,16 @@ export class FiltersAddonBlock {
         lastValue: null
     };
 
+    private addQuery(filter: any, value: any) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        const query = PolicyUtils.parseQuery(ref.options.queryType || QueryType.eq, value);
+        if (query && query.expression) {
+            filter[ref.options.field] = query.expression;
+        } else {
+            throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+        }
+    }
+
     /**
      * Get filters
      * @param user
@@ -58,19 +69,32 @@ export class FiltersAddonBlock {
     public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.id] || {};
-        if (ref.options.type === 'dropdown') {
-            if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
+
+        if (!filters[ref.options.field] && !ref.options.canBeEmpty) {
+
+            let filterValue: any;
+            if (ref.options.type === 'dropdown') {
                 const data: any[] = await ref.getSources(user, null);
-                const filterValue = findOptions(data[0], ref.options.optionValue);
-                if (filterValue) {
-                    const blockState = this.state[user.id] || {};
-                    blockState.lastValue = filterValue;
-                    this.state[user.id] = blockState;
-                    filters[ref.options.field] = filterValue;
-                } else {
-                    filters[ref.options.field] = '';
-                }
+                filterValue = findOptions(data[0], ref.options.optionValue);
             }
+
+            if (ref.options.type === 'datepicker') {
+                filterValue = '';
+            }
+
+            if (ref.options.type === 'input') {
+                filterValue = '';
+            }
+
+            if (filterValue) {
+                const blockState = this.state[user.id] || {};
+                blockState.lastValue = filterValue;
+                this.state[user.id] = blockState;
+            } else {
+                filterValue = '';
+            }
+
+            this.addQuery(filters, filterValue)
         }
         return filters;
     }
@@ -87,7 +111,8 @@ export class FiltersAddonBlock {
             blockType: 'filtersAddon',
             type: ref.options.type,
             uiMetaData: ref.options.uiMetaData,
-            canBeEmpty: ref.options.canBeEmpty
+            canBeEmpty: ref.options.canBeEmpty,
+            queryType: ref.options.queryType
         };
 
         const data: any[] = await ref.getSources(user, null);
@@ -127,56 +152,93 @@ export class FiltersAddonBlock {
 
     async setFiltersStrict(user: PolicyUser, data: any) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        this.previousState[user.id] = {...this.state[user.id]};
+        this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
         }
+
+        const value = data.filterValue;
+        const blockState = this.state[user.id] || {};
         if (ref.options.type === 'dropdown') {
-            const value = data.filterValue;
-            const blockState = this.state[user.id] || {};
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-
             if (value) {
-                filter[ref.options.field] = value;
+                this.addQuery(filter, value);
             }
-
             if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
-            blockState.lastValue = value;
-            this.state[user.id] = blockState;
-
         }
-        this.previousFilters[user.id] = {...ref.filters[user.id]};
+        if (ref.options.type === 'datepicker') {
+            if (value) {
+                this.addQuery(filter, value);
+            }
+            if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+        }
+        if (ref.options.type === 'input') {
+            if (value) {
+                this.addQuery(filter, value);
+            }
+            if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+        }
+        blockState.lastValue = value;
+        this.state[user.id] = blockState;
+        this.previousFilters[user.id] = { ...ref.filters[user.id] };
         ref.setFilters(filter, user);
     }
 
     async setFilterState(user: PolicyUser, data: any): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
-        this.previousState[user.id] = {...this.state[user.id]};
+        this.previousState[user.id] = { ...this.state[user.id] };
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
         }
+
+        const value = data.filterValue;
+        const blockState = this.state[user.id] || {};
         if (ref.options.type === 'dropdown') {
-            const value = data.filterValue;
-            const blockState = this.state[user.id] || {};
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value === value) : null;
+            let itemValue:any = value;
+            if (ref.options.queryType === 'user_defined') {
+                const [, userValue] = PolicyUtils.parseFilterValue(value);
+                itemValue = userValue;
+            }
+
+            // tslint:disable-next-line:triple-equals
+            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value == itemValue) : null;
             if (selectItem) {
-                filter[ref.options.field] = selectItem.value;
+                this.addQuery(filter, value);
             } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
-            blockState.lastValue = value;
-            this.state[user.id] = blockState;
         }
-        this.previousFilters[user.id] = {...ref.filters[user.id]};
+        if (ref.options.type === 'datepicker') {
+            if (value) {
+                this.addQuery(filter, value);
+            } else if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+        }
+        if (ref.options.type === 'input') {
+            if (value) {
+                this.addQuery(filter, value);
+            } else if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+        }
+        blockState.lastValue = value;
+        this.state[user.id] = blockState;
+
+        this.previousFilters[user.id] = { ...ref.filters[user.id] };
         ref.setFilters(filter, user);
     }
 

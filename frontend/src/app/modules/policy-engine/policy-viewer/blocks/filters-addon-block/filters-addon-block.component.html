@@ -2,14 +2,32 @@
     <div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
 
-<div *ngIf="type == 'dropdown'" class="content">
+<div class="content">
     <div class="content-name">
         {{content}}:
     </div>
-    <div class="content-select">
+    <div *ngIf="queryType === 'user_defined'" class="content-type">
+        <mat-select [(value)]="currentType" (selectionChange)="onFilters()">
+            <mat-option value="eq">Equal</mat-option>
+            <mat-option value="ne">Not Equal</mat-option>
+            <mat-option value="in">In</mat-option>
+            <mat-option value="nin">Not In</mat-option>
+            <mat-option value="gt">Greater Than</mat-option>
+            <mat-option value="gte">Greater Than or Equal</mat-option>
+            <mat-option value="lt">Less Than</mat-option>
+            <mat-option value="lte">Less Than or Equal</mat-option>
+        </mat-select>
+    </div>
+    <div *ngIf="type == 'dropdown'" class="content-select">
         <mat-select [(value)]="currentValue" (selectionChange)="onFilters()">
             <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
         </mat-select>
+    </div>
+    <div *ngIf="type == 'datepicker'" class="content-select">
+        <p-calendar [(ngModel)]="currentValue" (change)="onFilters()" dateFormat="yy-mm-dd"></p-calendar>
+    </div>
+    <div *ngIf="type == 'input'" class="content-select">
+        <input [(ngModel)]="currentValue" (change)="onFilters()">
     </div>
 </div>
 

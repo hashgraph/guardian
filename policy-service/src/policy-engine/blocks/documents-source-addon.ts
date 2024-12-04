@@ -106,26 +106,13 @@ export class DocumentsSourceAddon {
         for (const filter of ref.options.filters) {
             const expr = filters[filter.field] || {};
 
-            switch (filter.type) {
-                case 'equal':
-                    Object.assign(expr, { $eq: filter.value })
-                    break;
-
-                case 'not_equal':
-                    Object.assign(expr, { $ne: filter.value });
-                    break;
-
-                case 'in':
-                    Object.assign(expr, { $in: filter.value.split(',') });
-                    break;
-
-                case 'not_in':
-                    Object.assign(expr, { $nin: filter.value.split(',') });
-                    break;
-
-                default:
-                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            const query = PolicyUtils.parseQuery(filter.type, filter.value);
+            if (query && query.expression) {
+                Object.assign(expr, query.expression)
+            } else {
+                throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
             }
+
             filters[filter.field] = expr;
         }
 
@@ -196,7 +183,7 @@ export class DocumentsSourceAddon {
                 throw new BlockActionError(`dataType "${ref.options.dataType}" is unknown`, ref.blockType, ref.uuid)
         }
 
-        if(!countResult) {
+        if (!countResult) {
             const selectiveAttributeBlock = ref.getSelectiveAttributes()[0];
             for (const dataItem of data as IPolicyDocument[]) {
                 if (selectiveAttributeBlock) {
