@@ -135,6 +135,11 @@ export class FiltersAddonBlock {
             this.state[user.id] = blockState;
         }
 
+        if (ref.options.type === 'datepicker' || ref.options.type === 'input') {
+            const blockState = this.state[user.id] || {};
+            block.filterValue = blockState.lastValue;
+        }
+
         return block;
     }
 

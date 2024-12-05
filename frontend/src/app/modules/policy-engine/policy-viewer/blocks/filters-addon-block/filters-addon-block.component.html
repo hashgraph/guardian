@@ -24,7 +24,7 @@
         </mat-select>
     </div>
     <div *ngIf="type == 'datepicker'" class="content-select">
-        <p-calendar [(ngModel)]="currentValue" (change)="onFilters()" dateFormat="yy-mm-dd"></p-calendar>
+        <p-calendar [(ngModel)]="currentValue" (onSelect)="onFilters()" dateFormat="yy-mm-dd"></p-calendar>
     </div>
     <div *ngIf="type == 'input'" class="content-select">
         <input [(ngModel)]="currentValue" (change)="onFilters()">

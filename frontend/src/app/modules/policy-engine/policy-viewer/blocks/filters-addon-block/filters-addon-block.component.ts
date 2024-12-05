@@ -3,6 +3,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import moment from 'moment';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -165,7 +166,12 @@ export class FiltersAddonBlockComponent implements OnInit {
     }
 
     onFilters() {
-        console.log('on filters');
+        if(!this.currentValue) return;
+
+        if(this.type === 'datepicker'){
+            this.currentValue = moment(this.currentValue).format('YYYY-MM-DD');
+        }
+
         this.loading = true;
         const options: any = { filterValue: null };
         if (this.queryType === 'user_defined') {
