@@ -2606,6 +2606,37 @@ export async function contractAPI(
                 );
             }
 
+            const workers = new Workers();
+            const tokenInfo = await workers.addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TOKEN_INFO,
+                    data: { tokenId: '0.0.5148481' },
+                },
+                10
+            );
+
+            
+            const mintTransactions = await new Workers().addRetryableTask(
+                {
+                    type: WorkerTaskType.GET_TRANSACTIONS,
+                    data: {
+                        accountId: '0.0.5148419', // test user account id
+                        transactiontype: 'TOKENMINT',
+                        timestamp: '2024-11-19T22:02:43.698Z',
+                        filter: {
+                            memo_base64: btoa('0.0.5148482'),
+                        },
+                        limit: 5,
+                    },
+                },
+                1,
+                10
+            );
+
+            console.log(tokenInfo);
+            console.log(mintTransactions);
+            
+
             return new MessageResponse(
                 await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
             );
