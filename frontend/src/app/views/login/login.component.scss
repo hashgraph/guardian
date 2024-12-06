@@ -159,16 +159,16 @@ form {
     }
 }
 
-//.primary-text-button {
-//    color: var(--color-primary, #4169E2);
-//    font-family: Inter, sans-serif;
-//    font-size: 14px;
-//    font-style: normal;
-//    font-weight: 500;
-//    line-height: 30px;
-//    /* 214.286% */
-//    cursor: pointer;
-//}
+.primary-text-button {
+    color: var(--color-primary, #4169E2);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+    /* 214.286% */
+    cursor: pointer;
+}
 
 .preloader {
     width: 16px;

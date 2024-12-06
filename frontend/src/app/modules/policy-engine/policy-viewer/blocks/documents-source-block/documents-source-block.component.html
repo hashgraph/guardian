@@ -182,42 +182,43 @@
             <!--                ></tr>-->
             <!--            </table>-->
 
-            <p-table [value]="documents" class="table" (sortFunction)="onSortChange($event)">
+            <p-table
+                [value]="documents"
+                class="table no-hover"
+                [rowHover]="false"
+                [selectionMode]="null"
+                [responsiveLayout]="'scroll'"
+            >
                 <ng-template pTemplate="header">
                     <tr>
-                        <th pSortableColumn="history">
+                        <th>
                             History
-                            <p-sortIcon field="history"></p-sortIcon>
                         </th>
-
                         <ng-container *ngFor="let field of fields">
-                            <ng-template [ngIf]="field.type === 'text' && field.name">
-                                <th pSortableColumn="{{ field.index }}">
-                                    {{ field.title }}
-                                    <p-sortIcon field="{{ field.index }}"></p-sortIcon>
-                                    <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
-                                </th>
-                            </ng-template>
-
-                            <ng-template [ngIf]="!(field.type === 'text' && field.name)">
-                                <th>
-                                    {{ field.title }}
-                                    <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
-                                </th>
-                            </ng-template>
+                            <th *ngIf="field.type === 'text' && field.name" pSortableColumn="{{ field.index }}">
+                                {{ field.title }}
+                                <!--                                <p-sortIcon field="{{ field.index }}"></p-sortIcon>-->
+                                <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
+                            </th>
+                            <th *ngIf="!(field.type === 'text' && field.name)">
+                                {{ field.title }}
+                                <help-icon *ngIf="field.tooltip" [text]="field.tooltip"></help-icon>
+                            </th>
                         </ng-container>
-
-                        <th>Status Details</th>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-element>
-                    <tr [ngClass]="{'has-history-row': element.history, revoked: element.option?.status === 'Revoked'}"
-                        (click)="statusDetailed = statusDetailed === element ? null : element">
-
+                    <tr
+                        [ngClass]="{
+                            'has-history-row': element.history,
+                            revoked: element.option?.status === 'Revoked'
+                        }"
+                        (click)="statusDetailed = statusDetailed === element ? null : element"
+                    >
                         <td>
                             <div *ngIf="element.history && element.history.length">
-                                <i [ngClass]="statusDetailed === element ? 'pi pi-caret-down' : 'pi pi-caret-right'"></i>
+                                <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
                             </div>
                         </td>
 
@@ -225,35 +226,40 @@
                             <td>
                                 <div [style.width]="field.width">
                                     <ng-container *ngIf="getGroup(element, field) as option">
-                            <span *ngIf="option.type == 'text'" [title]="getText(element, option)" class="text">
-                                {{ getText(element, option) }}
-                            </span>
+                                        <span *ngIf="option.type == 'text'" [title]="getText(element, option)"
+                                              class="text">
+                                            {{ getText(element, option) }}
+                                        </span>
                                         <span *ngIf="option.type == 'issuer'" [title]="getText(element, option)"
                                               class="text">
-                                {{ getIssuer(element, option) }}
-                            </span>
+                                            {{ getIssuer(element, option) }}
+                                        </span>
                                         <span *ngIf="option.type == 'array'" [title]="getText(element, option)"
                                               class="text array">
-                                {{ getText(element, option) }}
+                                            {{ getText(element, option) }}
                                             <i class="pi pi-caret-down" (click)="onArray($event, element, option)"></i>
-                            </span>
+                                        </span>
                                         <span *ngIf="option.type == 'serials' && getArray(element, option)"
                                               [title]="getText(element, option)" class="text serials">
-                                <hedera-explorer
-                                    *ngFor="let serial of getArray(element, option)"
-                                    [params]="serial.tokenId"
-                                    [subParams]="serial.serial"
-                                    subType="serials"
-                                    type="tokens"
-                                >{{ serial.serial }}</hedera-explorer>
-                                <i class="pi pi-caret-down" (click)="onSerials($event, element, option)"></i>
-                            </span>
+                                            <hedera-explorer
+                                                *ngFor="let serial of getArray(element, option)"
+                                                [params]="serial.tokenId"
+                                                [subParams]="serial.serial"
+                                                subType="serials"
+                                                type="tokens"
+                                            >
+                                                {{ serial.serial }}
+                                            </hedera-explorer>
+                                            <i class="pi pi-caret-down"
+                                               (click)="onSerials($event, element, option)"></i>
+                                        </span>
                                         <span *ngIf="option.type == 'button'" class="col-btn"
                                               (click)="$event.stopImmediatePropagation()">
-                                <div (click)="onButton($event, element, option)" class="btn-field {{ option.uiClass }}">
-                                    {{ getText(element, option) }}
-                                </div>
-                            </span>
+                                            <div (click)="onButton($event, element, option)"
+                                                 class="btn-field {{ option.uiClass }}">
+                                                {{ getText(element, option) }}
+                                            </div>
+                                        </span>
                                         <div *ngIf="option.type == 'block'" class="col-btn"
                                              (click)="$event.stopImmediatePropagation()">
                                             <render-block
@@ -261,7 +267,8 @@
                                                 [dryRun]="dryRun"
                                                 [policyId]="policyId"
                                                 [static]="getConfig(element, option, option._block)"
-                                            ></render-block>
+                                            >
+                                            </render-block>
                                         </div>
                                         <div *ngIf="option.type == 'blocks'" class="col-btn col-blocks"
                                              (click)="$event.stopImmediatePropagation()">
@@ -271,15 +278,17 @@
                                                 [dryRun]="dryRun"
                                                 [policyId]="policyId"
                                                 [static]="getConfig(element, option, block)"
-                                            ></render-block>
+                                            >
+                                            </render-block>
                                         </div>
                                     </ng-container>
                                 </div>
                             </td>
                         </ng-container>
+                    </tr>
 
-                        <td [attr.colspan]="fields.length + 1" *ngIf="statusDetailed === element"
-                            class="expanded-detail">
+                    <tr *ngIf="statusDetailed === element">
+                        <td [attr.colspan]="fields.length + 1" class="expanded-detail">
                             <div class="timeline-container">
                                 <div *ngFor="let historyElem of element.history" [attr.date-is]="historyElem.created"
                                      class="timeline-item">

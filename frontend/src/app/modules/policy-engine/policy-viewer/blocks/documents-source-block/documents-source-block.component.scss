@@ -328,3 +328,19 @@ tr.revoked td:not(.mat-column-history) {
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+::ng-deep .table.no-hover th,
+::ng-deep .p-datatable .p-sortable-column.p-highlight:hover {
+    background-color: transparent;
+    cursor: default;
+    color: var(--color-grey-5, #495057);
+}
+
+::ng-deep .p-datatable-thead {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+::ng-deep .p-datatable-tbody .pi {
+    font-size: 0.75rem;
+}
