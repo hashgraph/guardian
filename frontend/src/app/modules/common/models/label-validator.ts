@@ -1,5 +1,6 @@
 import {
     GenerateUUIDv4,
+    GroupType,
     IFormulaData,
     IGroupItemConfig,
     ILabelItemConfig,
@@ -40,6 +41,7 @@ export interface ISubStep {
 
 export interface IValidatorStep {
     name: string,
+    title: string,
     item: IValidator,
     type: string,
     config: any,
@@ -188,6 +190,7 @@ class NodeValidator {
         return [{
             item: this,
             name: this.name,
+            title: this.title,
             auto: true,
             type: 'validate',
             config: null,
@@ -264,6 +267,7 @@ class GroupValidator {
     public readonly tag: string;
     public readonly children: IValidator[];
     public readonly steps: number = 0;
+    public readonly rule: GroupType;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;
@@ -274,6 +278,7 @@ class GroupValidator {
         this.name = item.name || '';
         this.title = item.title || '';
         this.tag = item.tag || '';
+        this.rule = item.rule || GroupType.Every;
         this.children = NodeValidator.fromArray(item.children);
     }
 
@@ -296,12 +301,23 @@ class GroupValidator {
             children: []
         };
 
+        if (!this.children.length) {
+            return this.valid;
+        }
+
+        let count: number = 0;
         for (const child of this.children) {
             const childResult = child.validate();
             this.valid.children?.push(childResult);
-            if (!childResult.valid) {
-                this.valid.valid = false;
+            if (childResult.valid) {
+                count++;
             }
+        }
+
+        if (this.rule === GroupType.Every) {
+            this.valid.valid = this.children.length === count;
+        } else {
+            this.valid.valid = count > 0;
         }
 
         return this.valid;
@@ -311,6 +327,7 @@ class GroupValidator {
         return [{
             item: this,
             name: this.title,
+            title: this.title,
             auto: true,
             type: 'validate',
             config: null,
@@ -475,6 +492,7 @@ class RuleValidator {
             steps.push({
                 item: this,
                 name: 'Overview',
+                title: this.title,
                 auto: false,
                 type: 'variables',
                 config: this.variables,
@@ -486,6 +504,7 @@ class RuleValidator {
             steps.push({
                 item: this,
                 name: 'Scores',
+                title: this.title,
                 auto: false,
                 type: 'scores',
                 config: this.scores,
@@ -497,6 +516,7 @@ class RuleValidator {
             steps.push({
                 item: this,
                 name: 'Statistics',
+                title: this.title,
                 auto: false,
                 type: 'formulas',
                 config: this.formulas,
@@ -507,6 +527,7 @@ class RuleValidator {
         steps.push({
             item: this,
             name: this.title,
+            title: this.title,
             auto: true,
             type: 'validate',
             config: null,
@@ -659,6 +680,7 @@ class StatisticValidator {
             steps.push({
                 item: this,
                 name: 'Overview',
+                title: this.title,
                 auto: false,
                 type: 'variables',
                 config: this.variables,
@@ -670,6 +692,7 @@ class StatisticValidator {
             steps.push({
                 item: this,
                 name: 'Scores',
+                title: this.title,
                 auto: false,
                 type: 'scores',
                 config: this.scores,
@@ -681,6 +704,7 @@ class StatisticValidator {
             steps.push({
                 item: this,
                 name: 'Statistics',
+                title: this.title,
                 auto: false,
                 type: 'formulas',
                 config: this.formulas,
@@ -691,6 +715,7 @@ class StatisticValidator {
         steps.push({
             item: this,
             name: this.title,
+            title: this.title,
             auto: true,
             type: 'validate',
             config: null,
@@ -743,7 +768,7 @@ class LabelValidator {
             id: item.id,
             type: NavItemType.Group,
             name: item.name,
-            rule: 'every',
+            rule: GroupType.Every,
             children: this.children
         });
     }
@@ -767,6 +792,7 @@ class LabelValidator {
         return [{
             item: this,
             name: this.title,
+            title: this.title,
             auto: true,
             type: 'validate',
             config: null,

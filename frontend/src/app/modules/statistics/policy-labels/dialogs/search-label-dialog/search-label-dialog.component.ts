@@ -42,13 +42,14 @@ export class SearchLabelDialog {
     public count: number = 0;
     public filtersCount: number = 0;
     public error: string | null = null;
+    public ids: string[];
 
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private policyLabelsService: PolicyLabelsService
     ) {
-
+        this.ids = this.config.data?.ids || [];
     }
 
     ngOnInit() {
@@ -74,7 +75,7 @@ export class SearchLabelDialog {
         }
         if (filters.components) {
             options.components = filters.components;
-            if(filters.components !== 'all') {
+            if (filters.components !== 'all') {
                 this.filtersCount++;
             }
         }
@@ -102,9 +103,12 @@ export class SearchLabelDialog {
                         this.list.push(item);
                     }
                 }
+                for (const item of this.list ) {
+                    if(item.messageId && this.ids.includes(item.messageId)) {
+                        item._select = true;
+                    }
+                }
 
-                this.list.forEach((_i)=>_i.messageId = Math.random())
-                
                 this.loading = false;
                 this.select();
             }, (error) => {

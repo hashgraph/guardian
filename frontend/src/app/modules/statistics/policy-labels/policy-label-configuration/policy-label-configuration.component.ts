@@ -13,6 +13,7 @@ import { SearchLabelDialog } from '../dialogs/search-label-dialog/search-label-d
 import { PolicyLabelPreviewDialog } from '../dialogs/policy-label-preview-dialog/policy-label-preview-dialog.component';
 import { LabelConfig } from './components/label-config';
 import { RulesConfig } from './components/rules-config';
+import { CustomCustomDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 @Component({
     selector: 'app-policy-label-configuration',
@@ -35,6 +36,13 @@ export class PolicyLabelConfigurationComponent implements OnInit {
 
     public readonly labelConfig: LabelConfig;
     public readonly rulesConfig: RulesConfig;
+    public readonly statusMenuItems = [{
+        label: 'Publish',
+        icon: 'publish',
+        callback: ($event: any) => {
+            this.publish();
+        }
+    }]
 
     @ViewChild('fieldTree', { static: false }) fieldTree: ElementRef;
     @ViewChild('treeTabs', { static: false }) treeTabs: ElementRef;
@@ -129,7 +137,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             this.policyLabelsService.getRelationships(this.labelId),
         ]).subscribe(([properties, item, relationships]) => {
             this.item = item;
-            this.readonly = this.item?.status === EntityStatus.ACTIVE;
+            this.readonly = this.item?.status === EntityStatus.PUBLISHED;
             this.policy = relationships?.policy || {};
 
             this.rulesConfig.setPolicy(relationships);
@@ -185,7 +193,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         const dialogRef = this.dialogService.open(PolicyLabelPreviewDialog, {
             showHeader: false,
             header: 'Preview',
-            width: '80vw',
+            width: '1100px',
             styleClass: 'guardian-dialog',
             data: {
                 item
@@ -199,7 +207,9 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             showHeader: false,
             width: '1100px',
             styleClass: 'guardian-dialog',
-            data: {},
+            data: {
+                ids: this.labelConfig.menu.getIds()
+            },
         });
         dialogRef.onClose.subscribe((result: any[]) => {
             if (result) {
@@ -251,5 +261,36 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                 this.loading = false;
             })
         }, 100);
+    }
+
+    private publish() {
+        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Publish Label',
+                text: `Are you sure want to publish label (${this.item.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Publish',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Publish') {
+                this.loading = true;
+                this.policyLabelsService
+                    .publish(this.item)
+                    .subscribe((response) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
     }
 }

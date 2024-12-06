@@ -39,7 +39,8 @@
             </div>
             <div class="preview-node-container">
                 <div class="preview-node-body fields-container">
-                    <div *ngIf="current" class="preview-node-header">{{current.name}}</div>
+                    <div *ngIf="current" class="preview-node-header">{{current.title}}</div>
+
                     <div *ngIf="current && current.subIndexes && current.subIndexes.length > 1" class="sub-indexes">
                         <ng-container *ngFor="let item of current.subIndexes; let last = last;">
                             <div class="sub-index" [attr.action]="item.selected">{{item.index}}</div>
@@ -47,6 +48,7 @@
                             <div *ngIf="!last" class="sub-index-separator"></div>
                         </ng-container>
                     </div>
+
                     <ng-container *ngIf="current && current.type === 'variables'">
                         <div *ngFor="let variable of current.config" class="field-container">
                             <div class="field-name">
@@ -62,6 +64,7 @@
                             </div>
                         </div>
                     </ng-container>
+
                     <ng-container *ngIf="current && current.type === 'scores'">
                         <div *ngFor="let score of current.config" class="field-container">
                             <div *ngIf="score.relationships" class="fields-container">
@@ -115,11 +118,27 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="result && current && current.type === 'result'">
-                        <div class="field-name">
-                            {{result.valid}}
-                        </div>
-                        <div class="field-value">
-                            {{result.error}}
+                        <div class="preview-result">
+                            <div *ngIf="result.valid" class="preview-result-item">
+                                <div class="preview-result-icon">
+                                    <svg-icon 
+                                        class="svg-icon-32" 
+                                        src="/assets/images/icons/32/list.svg" 
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div class="preview-result-text">Label created successfully.</div>
+                            </div>
+                            <div *ngIf="!result.valid" class="preview-result-item">
+                                <div class="preview-result-icon">
+                                    <svg-icon 
+                                        class="svg-icon-32" 
+                                        src="/assets/images/icons/32/list.svg" 
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div class="preview-result-text">Sorry, but your document does not meet the requirements.</div>
+                            </div>
                         </div>
                     </ng-container> 
                 </div>

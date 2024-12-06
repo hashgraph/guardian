@@ -22,6 +22,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DragDropModule } from 'primeng/dragdrop';
 import { TreeModule } from 'primeng/tree';
 import { TreeDragDropService } from 'primeng/api';
+import { TieredMenuModule } from 'primeng/tieredmenu';
 import { StatisticAssessmentConfigurationComponent } from './policy-statistics/statistic-assessment-configuration/statistic-assessment-configuration.component';
 import { StatisticAssessmentViewComponent } from './policy-statistics/statistic-assessment-view/statistic-assessment-view.component';
 import { StatisticAssessmentsComponent } from './policy-statistics/statistic-assessments/statistic-assessments.component';
@@ -83,6 +84,7 @@ import { SearchLabelDialog } from './policy-labels/dialogs/search-label-dialog/s
         OverlayPanelModule,
         DragDropModule,
         TreeModule,
+        TieredMenuModule,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

@@ -40,6 +40,7 @@ export class PolicyLabelPreviewDialog {
 
         this.steps.push({
             name: 'Result',
+            title: 'Result',
             item: this.validator,
             type: 'result',
             config: this.validator,
@@ -98,6 +99,6 @@ export class PolicyLabelPreviewDialog {
 
     public onSubmit() {
         const result = this.validator.getResult();
-        debugger;
+        this.ref.close(null);
     }
 }

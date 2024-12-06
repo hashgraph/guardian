@@ -7,55 +7,47 @@ export enum NavItemType {
     Statistic = 'statistic',
 }
 
-export interface IGroupItemConfig {
+export enum GroupType {
+    One = 'one',
+    Every = 'every',
+}
+
+//children
+export interface IItemConfig {
     id: string;
-    type: NavItemType.Group;
     tag?: string;
     title?: string;
     name?: string;
     description?: string;
     owner?: string;
-    rule?: string;
+}
+
+export interface IGroupItemConfig extends IItemConfig {
+    type: NavItemType.Group;
+    rule?: GroupType;
     children?: INavItemConfig[];
 }
 
-export interface ILabelItemConfig {
-    id: string;
+export interface ILabelItemConfig extends IItemConfig {
     type: NavItemType.Label;
-    tag?: string;
-    title?: string;
-    name?: string;
-    description?: string;
-    owner?: string;
     messageId?: string;
     config?: IPolicyLabelConfig;
 }
 
-export interface IRulesItemConfig {
-    id: string;
+export interface IRulesItemConfig extends IItemConfig {
     type: NavItemType.Rules;
-    tag?: string;
-    title?: string;
-    name?: string;
-    description?: string;
-    owner?: string;
     config?: IStatisticConfig;
 }
 
-export interface IStatisticItemConfig {
-    id: string;
+export interface IStatisticItemConfig extends IItemConfig {
     type: NavItemType.Statistic;
-    tag?: string;
-    title?: string;
-    name?: string;
-    description?: string;
     messageId?: string;
-    owner?: string;
     config?: IStatisticConfig;
 }
 
 export type INavItemConfig = IGroupItemConfig | IRulesItemConfig | ILabelItemConfig | IStatisticItemConfig;
 
+//imports
 export interface INavStatisticImportConfig {
     id: string;
     type: NavItemType.Statistic;

@@ -37,6 +37,7 @@ export class RulesConfig {
     public scores: SchemaScores = new SchemaScores();
 
     public name: string;
+    public type: string;
 
     private _selectTimeout1: any;
     private _selectTimeout2: any;
@@ -176,6 +177,7 @@ export class RulesConfig {
 
         this.readonly = clone.readonly || clone.freezed;
         this.name = clone.label;
+        this.type = clone.blockType === 'statistic' ? 'Statistic' : 'Rule';
 
         this.variables.fromData(config?.variables);
         this.scores.fromData(config?.scores);

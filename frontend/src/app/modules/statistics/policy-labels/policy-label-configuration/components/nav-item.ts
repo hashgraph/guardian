@@ -444,6 +444,10 @@ export class NavMenu {
         this.map.delete(item.messageId);
     }
 
+    public getIds(): string[] {
+        return this.imports.map((item) => item.messageId || '');
+    }
+
     public toJson(): INavImportsConfig[] {
         const imports: INavImportsConfig[] = [];
         for (const item of this.imports) {
