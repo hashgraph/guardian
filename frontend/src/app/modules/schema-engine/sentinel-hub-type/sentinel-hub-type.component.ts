@@ -111,9 +111,10 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
                 if (!/(\d+)-(\d+)-(\d+)/.test(from)) {
                     from = moment(from).format('YYYY-MM-DD');
                 }
-                if (!/(\d+)-(\d+)-(\d+)/.test(from)) {
-                    from = moment(from).format('YYYY-MM-DD');
+                if (!/(\d+)-(\d+)-(\d+)/.test(to)) {
+                    from = moment(to).format('YYYY-MM-DD');
                 }
+                console.log({from, to});
                 this.datePicker.patchValue({from, to});
                 this.generateImageLink(this.control.value, true);
             }, 200);
