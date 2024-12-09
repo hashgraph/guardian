@@ -4,6 +4,11 @@ icon: computer
 
 # Defining Schema Rules using UI
 
+1. [Step By Step Process](defining-schema-rules-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](defining-schema-rules-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## **Schema rules**
 
 Schema rules have been created to enable authorised policy users to offer assistance to other users (and/or themselves) with data input and/or data evaluation. Schema rules define acceptable values and their ranges for schema fields (and correspondingly input fields in Guardian forms). They are activated in the UI whenever the form is viewed by users, and re-evaluated every time any of the values on the form is changed. Rules can contain mathematical formulas and logical if-then-else flow, and source data from any field in the current schema as well as any other schemas/documents that are present in the corresponding policy. When rules are evaluated they produce a binary ‘pass/fail’ output, which is displayed in the UI as green and amber field highlights correspondingly.
@@ -56,7 +61,7 @@ Clicking on a schema box opens the side menu which lists all the fields availabl
 ![](../../../../.gitbook/assets/7.png)
 
 \
-_Note: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
+&#xNAN;_&#x4E;ote: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
 
 **1.3.2.3 Properties**
 
@@ -174,79 +179,6 @@ Schema rules can be exported to and imported from files.
 
 When importing the rules they effectively become the rules of the importing Guardian instance with no dependency or relations to the instances that originally produced and exported the rules.
 
-1. **API**
+## 2. Demo Video
 
-Post _/api/v1/schema-rules/_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Creation of the new schema rule
-
-Get _/api/v1/schema-rules/_
-
-Permissions: SCHEMAS\_RULE\_READ
-
-Retrieve the schema rules.
-
-Get _/api/v1/schema-rules/:ruleId_
-
-Permissions: SCHEMAS\_RULE\_READ
-
-Retrieve the configuration of the rule by its ID
-
-Put _/api/v1/schema-rules/:ruleId_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Update the configuration of the rule with the corresponding ID
-
-Delete _/api/v1/schema-rules/:ruleId_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Delete the rule by its ID
-
-Put _/api/v1/schema-rules/:ruleId/activate_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Activate the rule with the specified ID
-
-\
-Put _/api/v1/schema-rules/:ruleId/inactivate_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Deactivate the rule with the specified ID\
-
-
-Get _/api/v1/schema-rules/:ruleId/relationships_
-
-Permissions: SCHEMAS\_RULE\_READ
-
-List all the schemas and policy relevant to the rule with the specified ID
-
-Post _/api/v1/schema-rules/data_
-
-Permissions: SCHEMAS\_RULE\_EXECUTE
-
-Retrieve all the data needed for evaluating the rules
-
-Post _/api/v1/schema-rules/:policyId/import/file_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Create a new rule from the file
-
-\
-Post _/api/v1/schema-rules/import/file/preview_
-
-Permissions: SCHEMAS\_RULE\_CREATE
-
-Load the file and return its preview
-
-Get _/api/v1/policy-statistics/:ruleId/export/file_
-
-Permissions: SCHEMAS\_RULE\_READ
-
-Export the selected rule (by ID) into the file
+[Youtube](https://youtu.be/RQYxEh_cmSU?si=MJUlII3Tl4KTXfd0\&t=91)
