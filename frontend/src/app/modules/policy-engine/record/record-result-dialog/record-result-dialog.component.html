@@ -51,9 +51,23 @@
                         </div>
                     </div>
                 </div>
+<!--                <div class="dialog-actions">-->
+<!--                    <button mat-raised-button color="primary" (click)="onDetails()">Details</button>-->
+<!--                    <button mat-button type="button" (click)="onFinish()">Finish</button>-->
+<!--                </div>-->
                 <div class="dialog-actions">
-                    <button mat-raised-button color="primary" (click)="onDetails()">Details</button>
-                    <button mat-button type="button" (click)="onFinish()">Finish</button>
+                    <p-button
+                        class="mat-raised-button"
+                        label="Details"
+                        (click)="onDetails()"
+                        styleClass="mat-raised-button mat-primary"
+                    ></p-button>
+                    <p-button
+                        class="mat-button"
+                        label="Finish"
+                        (click)="onFinish()"
+                        styleClass="mat-button"
+                    ></p-button>
                 </div>
             </div>
         </div>
