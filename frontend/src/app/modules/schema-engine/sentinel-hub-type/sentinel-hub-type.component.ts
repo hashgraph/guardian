@@ -4,6 +4,7 @@ import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { Subscription } from 'rxjs';
 import { MapService } from '../../../services/map.service';
+import * as moment from 'moment';
 
 const MY_FORMATS = {
     parse: {
@@ -101,10 +102,18 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     ngAfterViewInit(): void {
+        console.log(this.presetDocument);
         if (this.presetDocument) {
             setTimeout(() => {
                 this.control.patchValue(this.presetDocument);
-                const [from, to] = this.control.get('time')?.value?.split('/') || [];
+                let [from, to] = this.control.get('time')?.value?.split('/') || [];
+                console.log({from, to});
+                if (!/(\d+)-(\d+)-(\d+)/.test(from)) {
+                    from = moment(from).format('YYYY-MM-DD');
+                }
+                if (!/(\d+)-(\d+)-(\d+)/.test(from)) {
+                    from = moment(from).format('YYYY-MM-DD');
+                }
                 this.datePicker.patchValue({from, to});
                 this.generateImageLink(this.control.value, true);
             }, 200);
