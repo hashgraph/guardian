@@ -21,7 +21,7 @@ export class RetirePoolsDialogComponent implements OnInit {
     tokens: Token[] = [];
     selectedTokens: any = [];
 
-    contract: any
+    contract: any = {}
 
     constructor(
         // public dialogRef: MatDialogRef<RetirePoolsDialogComponent>,
@@ -31,7 +31,7 @@ export class RetirePoolsDialogComponent implements OnInit {
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
     ) {
-        this.contract = this.config.data.contract;
+        this.contract = this.config.data ?? {};
 
         if (this.contract) {
             this.syncDate = this.contract.syncPoolsDate;

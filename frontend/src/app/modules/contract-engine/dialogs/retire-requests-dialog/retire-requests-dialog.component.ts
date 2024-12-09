@@ -22,7 +22,7 @@ export class RetireRequestsDialogComponent implements OnInit {
     tokens: Token[] = [];
     selectedTokens: any = [];
 
-    contract: any
+    contract: any = {}
 
     constructor(
         // public dialogRef: MatDialogRef<RetireRequestsDialogComponent>,
@@ -32,7 +32,7 @@ export class RetireRequestsDialogComponent implements OnInit {
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {
-        this.contract = this.config.data.contract;
+        this.contract = this.config.data ?? {};
 
         this.syncDate = this.contract.syncRequestsDate;
         this.contractId = this.contract.contractId;

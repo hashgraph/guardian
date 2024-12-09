@@ -79,8 +79,20 @@ export class SetPoolDialogComponent {
         this.dialogRef.close(null);
     }
 
+    get transformedFormValue() {
+        const formValue = this.form.value;
+
+        return  {
+            ...formValue,
+            tokens: formValue.tokens.map((item: any) => ({
+                ...item,
+                token: item.token.tokenId,
+            })),
+        };
+    }
+
     onCreate() {
-        this.dialogRef.close(this.form.value);
+        this.dialogRef.close(this.transformedFormValue);
     }
 
     addToken() {
@@ -129,5 +141,9 @@ export class SetPoolDialogComponent {
             }
             return null;
         };
+    }
+
+    get selectedToken(): string | null {
+        return this.form.get('token')?.value || null;
     }
 }

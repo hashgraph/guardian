@@ -90,3 +90,22 @@
         background-color: gray;
     }
 }
+
+.dropdown-container ::ng-deep p-overlay {
+    position: absolute;
+    top: -40px;
+    left: 100px;
+}
+
+::ng-deep p-dropdown .p-placeholder {
+    font-size: 14px;
+}
+
+.content__tokens.tokens .token-card svg {
+    width: 24px;
+}
+
+.content__tokens.tokens .token-card__token,
+.content__tokens.tokens .token-card__count{
+    gap: 0;
+}
