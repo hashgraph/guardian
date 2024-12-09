@@ -58,9 +58,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     fillField() {
         const comment = this.item?.field?.comment && JSON.parse(this.item.field.comment);
         let value: any = null;
-        if (this.value) {
-            value = this.value;
-        } else if (this.timeOnly && this.type && comment && comment[this.type]) {
+        if (this.timeOnly && this.type && comment && comment[this.type]) {
             value = comment.suggest;
         } else if (this.calendar?.value) {
             value = this.calendar?.value;
@@ -77,6 +75,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                     this.control.setValue(date);
                     input.value = moment(value, 'hh-mm-ss').format('HH:mm:ss');
                 } else {
+                    this.control.setValue(moment(value).toDate())
                     input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
                 }
             }
