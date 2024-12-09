@@ -88,7 +88,10 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
 
         this.subscription.add(
             this.datePicker.valueChanges.subscribe(value => {
-                this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'))
+                if ((typeof value.from?.format === 'function') && (value.to?.format === 'function')) {
+                    this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'));
+                }
+                this.getControlByName('time').setValue((value.from + '/' + value.to));
             })
         );
 
@@ -110,7 +113,6 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     }
 
     generateImageLink(value: any, skipValidation = false): void {
-        console.log(this.key, this)
         if (!this.key) {
             this.formattedImageLink = '';
             return;

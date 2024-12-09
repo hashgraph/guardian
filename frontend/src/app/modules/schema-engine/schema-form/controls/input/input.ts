@@ -3,14 +3,12 @@ import { UntypedFormControl } from '@angular/forms';
 import * as moment from 'moment';
 import { Subject, Subscription } from 'rxjs';
 
-type InputType = 'default' | 'test' | 'suggest';
-
 @Component({
-    selector: 'date-time-control',
-    templateUrl: './date-time.component.html',
-    styleUrls: ['./date-time.component.scss'],
+    selector: 'input-control',
+    templateUrl: './input.html',
+    styleUrls: ['./input.scss'],
 })
-export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy{
+export class InputComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy{
     @Input('control') control: UntypedFormControl;
     @Input('showIcon') showIcon: boolean = true;
     @Input('showSeconds') showSeconds: boolean = true;
@@ -22,7 +20,6 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     @Input('index') isDisabled?: number;
     @Input('update') update?: Subject<any>;
     @Input('value') value?: string;
-    @Input('type') type?: InputType;
 
     @ViewChild('calendar') calendar: any
 
@@ -47,7 +44,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
 
     ngAfterViewInit() {
         // if (this.isMany) {
-            this.fillField();
+        this.fillField();
         // }
     }
 
@@ -60,7 +57,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
         let value: any = null;
         if (this.value) {
             value = this.value;
-        } else if (this.timeOnly && this.type && comment && comment[this.type]) {
+        } else if (this.timeOnly && comment?.suggest) {
             value = comment.suggest;
         } else if (this.calendar?.value) {
             value = this.calendar?.value;
@@ -75,7 +72,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                 if (this.timeOnly) {
                     const date = moment(value, 'hh-mm-ss').toDate();
                     this.control.setValue(date);
-                    input.value = moment(value, 'hh-mm-ss').format('HH:mm:ss');
+                    input.value = value;
                 } else {
                     input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
                 }
