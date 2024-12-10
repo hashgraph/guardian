@@ -31,7 +31,19 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     public key: string;
     subscription = new Subscription();
     @Input('formGroup') control: UntypedFormGroup;
-    public formattedImageLink = ''
+
+    public get formattedImageLink(): string {
+        if (!this.key) {
+            return '';
+        }
+
+        if (this.control.valid) {
+            const value = this.control.value;
+            return `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
+        }
+
+        return '';
+    }
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
     public datePicker = new UntypedFormGroup({
@@ -65,8 +77,6 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         this.subscription.unsubscribe();
     }
 
-    private iteration = 0;
-
     ngOnInit(): void {
         if (!this.control) {
             this.control = new UntypedFormGroup({});
@@ -83,9 +93,9 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
                     this.key = value;
-                    if (this.presetDocument) {
-                        this.generateImageLink(this.control.value, true);
-                    }
+                // if (this.presetDocument) {
+                //     this.generateImageLink(this.control.value, true);
+                // }
                 }
             )
         )
@@ -121,29 +131,12 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
             })
         );
 
-        this.subscription.add(
-            this.control.valueChanges.subscribe(value => this.generateImageLink(value))
-        );
+        // this.subscription.add(
+        //     this.control.valueChanges.subscribe(value => this.generateImageLink(value))
+        // );
     }
 
     ngAfterViewInit(): void {
-        this.generateImageLink(this.control.value, true);
-    }
-
-    generateImageLink(value: any, skipValidation = false): void {
-        if (!this.key) {
-            this.formattedImageLink = '';
-            if (this.iteration < 10) {
-                setTimeout(() => {
-                    this.iteration += 1;
-                    this.generateImageLink(value, skipValidation);
-                });
-            }
-            return;
-        }
-
-        if (skipValidation || this.control.valid) {
-            this.formattedImageLink = `https://services.sentinel-hub.com/ogc/wms/${this.key}?REQUEST=GetMap&BBOX=${value.bbox}&FORMAT=${value.format}&LAYERS=${value.layers}&MAXCC=${value.maxcc}&WIDTH=${value.width}&HEIGHT=${value.height}&TIME=${value.time}`
-        }
+        // this.generateImageLink(this.control.value, true);
     }
 }
