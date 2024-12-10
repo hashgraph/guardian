@@ -3344,4 +3344,40 @@ export class Guardians extends NatsService {
     public async searchComponents(options: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS, { options, owner });
     }
+
+    /**
+     * Return documents
+     *
+     * @param labelId
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getPolicyLabelDocuments(
+        labelId: string,
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENTS, { labelId, owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Return documents
+     *
+     * @param documentId
+     * @param labelId
+     * @param owner
+     *
+     * @returns {any}
+     */
+    public async getPolicyLabelDocument(
+        documentId: string,
+        labelId: string,
+        owner: IOwner,
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT, { documentId, labelId, owner });
+    }
 }

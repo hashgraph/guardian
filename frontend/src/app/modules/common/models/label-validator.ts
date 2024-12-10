@@ -46,6 +46,7 @@ export interface IValidatorStep {
     type: string,
     config: any,
     auto: boolean,
+    disabled?: boolean,
     subIndexes?: ISubStep[],
     update: () => void;
 }
@@ -144,7 +145,27 @@ class ValidateNamespace {
     }
 
     public getField(schema: string, path: string): any {
+        const fullPath = [...(path || '').split('.')];
+        const document = this.documents?.find((doc) => doc.schema === schema);
+        if (!document) {
+            return undefined;
+        }
+        return this.getFieldValue(document, fullPath);
+    }
 
+    private getFieldValue(document: any, fullPath: string[]): any {
+        let value: any = document?.document?.credentialSubject;
+        if (Array.isArray(value)) {
+            value = value[0];
+        }
+        for (let i = 0; i < fullPath.length; i++) {
+            if (value) {
+                value = value[fullPath[i]]
+            } else {
+                return undefined;
+            }
+        }
+        return value;
     }
 }
 
@@ -415,6 +436,7 @@ class RuleValidator {
         for (const variable of this.variables) {
             const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
+            (variable as any).isArray = Array.isArray(value);
             this.scope.setVariable(variable.id, (variable as any).value);
         }
     }
@@ -616,6 +638,7 @@ class StatisticValidator {
         for (const variable of this.variables) {
             const value = this.namespace.getField(variable.schemaId, variable.path);
             (variable as any).value = value;
+            (variable as any).isArray = Array.isArray(value);
             this.scope.setVariable(variable.id, (variable as any).value);
         }
     }

@@ -1,7 +1,7 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { generateSchema, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
+import { findRelationships, generateSchema, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { publishSchema } from './helpers/index.js';
 
 /**
@@ -410,11 +410,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { options } = msg;
 
-                const filter: any = { $and: [
-                    {
-                        status: EntityStatus.PUBLISHED
-                    }
-                ] };
+                const filter: any = {
+                    $and: [
+                        {
+                            status: EntityStatus.PUBLISHED
+                        }
+                    ]
+                };
                 if (options.text) {
                     const keywords = options.text.split(' ');
                     for (const keyword of keywords) {
@@ -445,6 +447,115 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 } else {
                     return new MessageResponse({ labels: [], statistics: [] });
                 }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+
+    /**
+     * Get documents
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - documents
+     */
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENTS,
+        async (msg: {
+            labelId: string,
+            owner: IOwner,
+            pageIndex?: string,
+            pageSize?: string
+        }) => {
+            try {
+
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { labelId, owner, pageIndex, pageSize } = msg;
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                    otherOptions.offset = 0;
+                }
+
+                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const policyId: string = item.policyId;
+
+                const vps = await DatabaseServer.getVPs({
+                    type: "mint",
+                    policyId,
+                    owner: owner.creator,
+                }, otherOptions);
+
+                return new MessageResponse({
+                    items: vps,
+                    count: vps.length
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+
+    /**
+     * Get documents
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - documents
+     */
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENT,
+        async (msg: {
+            documentId: string,
+            labelId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { documentId, labelId, owner } = msg;
+
+                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const policyId: string = item.policyId;
+
+                const vp = await DatabaseServer.getVP({
+                    id: documentId,
+                    type: "mint",
+                    policyId,
+                    owner: owner.creator,
+                });
+
+                if (!vp) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const relationships = await findRelationships(vp);
+
+                return new MessageResponse({
+                    targetDocument: vp,
+                    relatedDocuments: relationships,
+                    unrelatedDocuments: []
+                });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

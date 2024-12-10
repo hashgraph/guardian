@@ -145,6 +145,20 @@
                                             </svg-icon>
                                         </div>
                                     </ng-container>
+                                    <ng-container *ngSwitchCase="'options'">
+                                        <button 
+                                            [disabled]="row.status !== 'PUBLISHED'"
+                                            (click)="onCreateInstance(row)" 
+                                            class="guardian-button guardian-button-secondary grid-btn">
+                                            Create
+                                        </button>
+                                        <button 
+                                            [disabled]="row.status !== 'PUBLISHED'"
+                                            (click)="onOpenInstances(row)" 
+                                            class="guardian-button guardian-button-secondary grid-btn">
+                                            Open
+                                        </button>
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 
                                             [attr.disabled]="row.status === 'ACTIVE'"

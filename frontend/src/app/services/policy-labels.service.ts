@@ -98,4 +98,24 @@ export class PolicyLabelsService {
     public searchComponents(options: any): Observable<any> {
         return this.http.post<any>(`${this.url}/components`, options);
     }
+
+    public getDocuments(
+        labelId: string,
+        pageIndex?: number,
+        pageSize?: number,
+    ): Observable<HttpResponse<any[]>> {
+        const params = PolicyLabelsService.getOptions({}, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${labelId}/documents`, { observe: 'response', params });
+    }
+
+    public getDocument(
+        documentId: string,
+        labelId: string,
+    ): Observable<any> {
+        return this.http.get<any>(`${this.url}/${labelId}/documents/${documentId}`);
+    }
+
+    public createAssessment(labelId: string, item: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${labelId}/assessment`, item);
+    }
 }

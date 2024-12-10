@@ -54,6 +54,9 @@ import { StatisticDefinitionConfigurationComponent } from './modules/statistics/
 import { StatisticDefinitionsComponent } from './modules/statistics/policy-statistics/statistic-definitions/statistic-definitions.component';
 import { SchemaRuleConfigurationComponent } from './modules/statistics/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
 import { SchemaRulesComponent } from './modules/statistics/schema-rules/schema-rules/schema-rules.component';
+import { PolicyLabelAssessmentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-assessment-configuration/policy-label-assessment-configuration.component';
+import { PolicyLabelAssessmentsComponent } from './modules/statistics/policy-labels/policy-label-assessments/policy-label-assessments.component';
+import { PolicyLabelAssessmentViewComponent } from './modules/statistics/policy-labels/policy-label-assessment-view/policy-label-assessment-view.component';
 
 @Injectable({
     providedIn: 'root'
@@ -630,6 +633,50 @@ const routes: Routes = [
             ]
         }
     },
+    {
+        path: 'policy-label/:labelId/assessment',
+        component: PolicyLabelAssessmentConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-label/:labelId/assessments',
+        component: PolicyLabelAssessmentsComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+    {
+        path: 'policy-label/:labelId/assessment/:assessmentId',
+        component: PolicyLabelAssessmentViewComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.STATISTICS_LABEL_READ
+            ]
+        }
+    },
+
+
 
 
     { path: '', component: HomeComponent },

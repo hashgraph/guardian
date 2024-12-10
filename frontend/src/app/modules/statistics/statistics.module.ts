@@ -39,6 +39,9 @@ import { SchemaRuleConfigurationComponent } from './schema-rules/schema-rule-con
 import { SchemaRulesPreviewDialog } from './schema-rules/dialogs/schema-rules-preview-dialog/schema-rules-preview-dialog.component';
 import { SchemaRuleConfigDialog } from './schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
 import { SearchLabelDialog } from './policy-labels/dialogs/search-label-dialog/search-label-dialog.component';
+import { PolicyLabelAssessmentsComponent } from './policy-labels/policy-label-assessments/policy-label-assessments.component';
+import { PolicyLabelAssessmentViewComponent } from './policy-labels/policy-label-assessment-view/policy-label-assessment-view.component';
+import { PolicyLabelAssessmentConfigurationComponent } from './policy-labels/policy-label-assessment-configuration/policy-label-assessment-configuration.component';
 
 @NgModule({
     declarations: [
@@ -54,6 +57,9 @@ import { SearchLabelDialog } from './policy-labels/dialogs/search-label-dialog/s
         //policy-labels
         PolicyLabelsComponent,
         PolicyLabelConfigurationComponent,
+        PolicyLabelAssessmentsComponent,
+        PolicyLabelAssessmentConfigurationComponent,
+        PolicyLabelAssessmentViewComponent,
         NewPolicyLabelDialog,
         PolicyLabelPreviewDialog,
         SearchLabelDialog,

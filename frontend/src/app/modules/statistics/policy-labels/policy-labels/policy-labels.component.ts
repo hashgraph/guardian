@@ -106,6 +106,12 @@ export class PolicyLabelsComponent implements OnInit {
             size: '56',
             tooltip: false
         }, {
+            id: 'options',
+            title: '',
+            type: 'text',
+            size: '210',
+            tooltip: false
+        }, {
             id: 'delete',
             title: '',
             type: 'text',
@@ -380,5 +386,19 @@ export class PolicyLabelsComponent implements OnInit {
                     });
             }
         });
+    }
+
+    public onCreateInstance(item: any): void {
+        if (item.status !== 'PUBLISHED') {
+            return;
+        }
+        this.router.navigate(['/policy-label', item.id, 'assessment']);
+    }
+
+    public onOpenInstances(item: any): void {
+        if (item.status !== 'PUBLISHED') {
+            return;
+        }
+        this.router.navigate(['/policy-label', item.id, 'assessments']);
     }
 }

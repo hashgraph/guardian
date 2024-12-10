@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -486,6 +486,115 @@ export class PolicyLabelsApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
             return await guardian.searchComponents(body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get documents
+     */
+    @Get('/:labelId/documents')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Return a list of all documents.',
+        description: 'Returns all documents.',
+    })
+    @ApiParam({
+        name: 'labelId',
+        type: String,
+        description: 'policy label Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: VcDocumentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyLabelDocuments(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('labelId') labelId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<VcDocumentDTO[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const { items, count } = await guardians.getPolicyLabelDocuments(labelId, owner, pageIndex, pageSize);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+
+    /**
+     * Get document
+     */
+    @Get('/:labelId/documents/:documentId')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Return a list of all documents.',
+        description: 'Returns all documents.',
+    })
+    @ApiParam({
+        name: 'labelId',
+        type: String,
+        description: 'policy label Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: VcDocumentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyLabelDocument(
+        @AuthUser() user: IAuthUser,
+        @Param('labelId') labelId: string,
+        @Param('documentId') documentId: string,
+    ): Promise<VcDocumentDTO[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.getPolicyLabelDocument(documentId, labelId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

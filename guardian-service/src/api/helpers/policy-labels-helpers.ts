@@ -1,4 +1,4 @@
-import { DatabaseServer, PolicyLabel, SchemaConverterUtils, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { DatabaseServer, PolicyLabel, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VpDocument } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IPolicyLabelConfig, PolicyType, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
 
@@ -97,4 +97,43 @@ export async function generateSchema(config: PolicyLabel, owner: IOwner) {
     SchemaHelper.setVersion(schemaObject, '1.0.0', null);
     SchemaHelper.updateIRI(schemaObject);
     return schemaObject;
+}
+
+export async function findRelationships(target: VcDocument | VpDocument): Promise<VcDocument[]> {
+    if (!target) {
+        return [];
+    }
+
+    const messageIds = new Set<string>();
+    messageIds.add(target.messageId);
+
+    const result: VcDocument[] = [];
+    if (Array.isArray(target.relationships)) {
+        for (const relationship of target.relationships) {
+            await findRelationshipsById(relationship, messageIds, result);
+        }
+    }
+
+    return result;
+}
+
+export async function findRelationshipsById(
+    messageId: string | undefined,
+    map: Set<string>,
+    result: VcDocument[]
+): Promise<VcDocument[]> {
+    if (!messageId || map.has(messageId)) {
+        return result;
+    }
+    map.add(messageId);
+    const doc = await DatabaseServer.getStatisticDocument({ messageId });
+    if (doc) {
+        result.push(doc);
+        if (Array.isArray(doc.relationships)) {
+            for (const relationship of doc.relationships) {
+                await findRelationshipsById(relationship, map, result);
+            }
+        }
+    }
+    return result;
 }
