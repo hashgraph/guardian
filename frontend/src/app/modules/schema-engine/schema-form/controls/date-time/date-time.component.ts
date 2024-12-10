@@ -36,7 +36,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     ngOnInit() {
         if (this.item.subject) {
             this.item.subject.subscribe(() => {
-                this.fillField();
+                // this.fillField();
             })
         }
     }
@@ -59,26 +59,30 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
         const comment = this.item?.field?.comment && JSON.parse(this.item.field.comment);
         let value: any = null;
         if (this.timeOnly && this.type && comment && comment[this.type]) {
-            value = comment.suggest;
+            value = comment[this.type];
         } else if (this.calendar?.value) {
             value = this.calendar?.value;
         } else if (this.item.value) {
             value = this.item.value;
         }
-
-        const input = this.calendar?.el.nativeElement.querySelector('input')
+        console.log('fill', value, this.item);
 
         setTimeout(() => {
+            const input = this.calendar?.el.nativeElement.querySelector('input');
             if (input && value) {
                 if (this.timeOnly) {
-                    const date = moment(value, 'hh-mm-ss').toDate();
+                    if (/^(\d+)-(\d+)-(\d+)$/.test(value)) {
+
+                    }
+                    console.log(value instanceof Date, value, moment(value, 'hh:mm:ss').format('HH:mm:ss'), input);
+                    const date = moment(value, 'hh:mm:ss').toDate();
                     this.control.setValue(date);
-                    input.value = moment(value, 'hh-mm-ss').format('HH:mm:ss');
+                    input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
                 } else {
                     this.control.setValue(moment(value).toDate())
                     input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
                 }
             }
-        })
+        }, 100)
     }
 }

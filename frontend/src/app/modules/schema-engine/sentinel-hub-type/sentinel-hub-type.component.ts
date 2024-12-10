@@ -93,9 +93,6 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
                     this.key = value;
-                // if (this.presetDocument) {
-                //     this.generateImageLink(this.control.value, true);
-                // }
                 }
             )
         )
@@ -113,7 +110,7 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
                 to = moment(_to, 'YYYY-MM-DD');
             }
             if (/(\d+)/.test(_from)) {
-                from = moment(parseInt(_from, 10));
+                from = moment(_from);
             }
             if (/(\d+)/.test(_to)) {
                 to = moment(_to);
