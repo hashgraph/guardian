@@ -940,7 +940,7 @@ export class SchemaFormComponent implements OnInit {
             item.list = [];
             let count = suggest.length;
             while (count-- > 0) {
-                const control = this.createListControl(item);
+                const control = this.createListControl(item, Array.isArray(suggest) ? suggest[count] : undefined);
                 item.list.push(control);
                 (item.control as UntypedFormArray).push(control.control);
             }

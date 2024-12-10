@@ -64,8 +64,9 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
             value = this.calendar?.value;
         } else if (this.item.value) {
             value = this.item.value;
+        } else if (this.item.preset) {
+            value = this.item.preset;
         }
-        console.log('fill', value, this.item);
 
         setTimeout(() => {
             const input = this.calendar?.el.nativeElement.querySelector('input');
@@ -74,7 +75,6 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                     if (/^(\d+)-(\d+)-(\d+)$/.test(value)) {
 
                     }
-                    console.log(value instanceof Date, value, moment(value, 'hh:mm:ss').format('HH:mm:ss'), input);
                     const date = moment(value, 'hh:mm:ss').toDate();
                     this.control.setValue(date);
                     input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
