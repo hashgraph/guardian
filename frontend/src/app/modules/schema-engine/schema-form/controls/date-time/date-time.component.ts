@@ -14,7 +14,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     @Input('control') control: UntypedFormControl;
     @Input('showIcon') showIcon: boolean = true;
     @Input('showSeconds') showSeconds: boolean = true;
-    @Input('showTime') showTime: boolean = true;
+    @Input('showTime') showTime: boolean;
     @Input('timeOnly') timeOnly: boolean = false;
     @Input('dateFormat') dateFormat: string = 'yy-mm-dd';
     @Input('item') item: any;
@@ -69,6 +69,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
         }
 
         setTimeout(() => {
+            console.log(this.showTime);
             const input = this.calendar?.el.nativeElement.querySelector('input');
             if (input && value) {
                 if (this.timeOnly) {
@@ -78,6 +79,10 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
                     const date = moment(value, 'hh:mm:ss').toDate();
                     this.control.setValue(date);
                     input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
+                } else if (!this.showTime) {
+                    const date = moment(value, 'YYYY-MM-DD').toDate();
+                    this.control.setValue(date);
+                    input.value = moment(value, 'YYYY-MM-DD').format('YYYY-MM-DD');
                 } else {
                     this.control.setValue(moment(value).toDate())
                     input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
