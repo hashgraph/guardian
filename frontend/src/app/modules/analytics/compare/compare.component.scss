@@ -243,3 +243,18 @@
         min-width: 0px;
     }
 }
+
+.p-fluid {
+    position: relative;
+    padding: 8px 0
+}
+
+.dropdown-border-label {
+    background: var(--color-grey-white);
+    position: absolute;
+    z-index: 10;
+    font-size: 11px;
+    top: 3px;
+    left: 18px;
+    color: var(--color-grey-5);
+}

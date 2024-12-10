@@ -27,13 +27,14 @@
                 <!--                </mat-form-field>-->
 
                 <div class="p-fluid">
-                    <label for="eventsDropdown">Events:</label>
+                    <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
                     <p-dropdown
                         id="eventsDropdown"
-                        [(ngModel)]="eventsLvl"
+                        [(ngModel)]="eventsLvl.value"
                         [options]="eventOptions"
-                        placeholder="Select Event Level"
-                        (onChange)="onFilterChange()">
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </div>
             </div>
@@ -48,13 +49,15 @@
                 <!--                </mat-form-field>-->
 
                 <div class="p-fluid">
-                    <label for="propertiesDropdown">Properties:</label>
+                    <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
                     <p-dropdown
                         id="propertiesDropdown"
-                        [(ngModel)]="propLvl"
+                        [(ngModel)]="propLvl.value"
                         [options]="propertyOptions"
                         placeholder="Select Property Level"
-                        (onChange)="onFilterChange()">
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </div>
             </div>
@@ -69,14 +72,16 @@
                 <!--                </mat-form-field>-->
 
                 <div class="p-fluid">
-                    <label for="childrenDropdown">Children:</label>
+                    <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
                     <p-dropdown
                         id="childrenDropdown"
                         [(ngModel)]="childrenLvl"
                         [options]="childrenOptions"
                         optionLabel="label"
                         placeholder="Select Children Level"
-                        (onChange)="onFilterChange()">
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </div>
             </div>
@@ -90,14 +95,16 @@
                 <!--                </mat-form-field>-->
 
                 <div class="p-fluid">
-                    <label for="uuidDropdown">UUID:</label>
+                    <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
                     <p-dropdown
                         id="uuidDropdown"
                         [(ngModel)]="idLvl"
                         [options]="uuidOptions"
                         optionLabel="label"
                         placeholder="Select UUID Level"
-                        (onChange)="onFilterChange()">
+                        (onChange)="onFilterChange()"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </div>
             </div>
@@ -129,13 +136,14 @@
                 <!--                </mat-form-field>-->
 
                 <div class="p-fluid">
-                    <label for="typeDropdown">Type:</label>
+                    <label for="typeDropdown" class="dropdown-border-label">Type:</label>
                     <p-dropdown
                         id="typeDropdown"
                         [(ngModel)]="visibleType"
                         [options]="typeOptions"
                         optionLabel="label"
-                        placeholder="Select Type">
+                        placeholder="Select Type"
+                        [appendTo]="'body'">
                     </p-dropdown>
                 </div>
             </div>
@@ -144,63 +152,63 @@
 
     <div *ngIf="isPolicies" class="content-result">
         <app-compare-policy
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
+            [childrenLvl]="childrenLvl.value"
+            [eventsLvl]="eventsLvl.value"
+            [idLvl]="idLvl.value"
+            [propLvl]="propLvl.value"
+            [type]="visibleType.value"
             [value]="result"
             (change)="onChange($event)"></app-compare-policy>
     </div>
 
     <div *ngIf="isSchemas" class="content-result">
         <app-compare-schema
-            [type]="visibleType"
+            [type]="visibleType.value"
             [value]="result"
-            [idLvl]="idLvl"
+            [idLvl]="idLvl.value"
             (change)="onChange($event)"></app-compare-schema>
     </div>
 
     <div *ngIf="isModules" class="content-result">
         <app-compare-module
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
+            [childrenLvl]="childrenLvl.value"
+            [eventsLvl]="eventsLvl.value"
+            [idLvl]="idLvl.value"
+            [propLvl]="propLvl.value"
+            [type]="visibleType.value"
             [value]="result"
             (change)="onChange($event)"></app-compare-module>
     </div>
 
     <div *ngIf="isMultiPolicies" class="content-result">
         <app-multi-compare-policy
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
+            [childrenLvl]="childrenLvl.value"
+            [eventsLvl]="eventsLvl.value"
+            [idLvl]="idLvl.value"
+            [propLvl]="propLvl.value"
+            [type]="visibleType.value"
             [value]="result"
             (change)="onChange($event)"></app-multi-compare-policy>
     </div>
 
     <div *ngIf="isDocuments" class="content-result">
         <app-compare-document
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
+            [childrenLvl]="childrenLvl.value"
+            [eventsLvl]="eventsLvl.value"
+            [idLvl]="idLvl.value"
+            [propLvl]="propLvl.value"
+            [type]="visibleType.value"
             [value]="result"
             (change)="onChange($event)"></app-compare-document>
     </div>
 
     <div *ngIf="isTools" class="content-result">
         <app-compare-tool
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
+            [childrenLvl]="childrenLvl.value"
+            [eventsLvl]="eventsLvl.value"
+            [idLvl]="idLvl.value"
+            [propLvl]="propLvl.value"
+            [type]="visibleType.value"
             [value]="result"
             (change)="onChange($event)"></app-compare-tool>
     </div>

@@ -780,3 +780,30 @@
     }
 }
 
+.middle-tree {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 35px;
+    height: 100%;
+    position: relative;
+    background-color: white;
+}
+
+.compare-btn i,
+.compare-btn svg {
+    font-size: 16px;
+    position: absolute;
+    left: 4px;
+    top: 4px;
+}
+
+.report-collapse i,
+.report-collapse svg {
+    position: absolute;
+    pointer-events: none;
+    top: 2px;
+    font-size: 10px;
+    display: none;
+    left: 2px;
+}
