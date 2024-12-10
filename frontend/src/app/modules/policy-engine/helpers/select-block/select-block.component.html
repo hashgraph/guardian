@@ -23,13 +23,92 @@
 <!--    </mat-option>-->
 <!--</mat-select>-->
 
+<!--<p-multiSelect-->
+<!--    [(ngModel)]="value"-->
+<!--    [options]="searchData"-->
+<!--    [disabled]="readonly"-->
+<!--    [filter]="false"-->
+<!--    [displaySelectedLabel]="false"-->
+<!--    (onChange)="onChange()"-->
+<!--    [appendTo]="'body'"-->
+<!--&gt;-->
+<!--    <ng-template pTemplate="header">-->
+<!--        <div class="components-search">-->
+<!--            <input-->
+<!--                type="text"-->
+<!--                placeholder="Search"-->
+<!--                [(ngModel)]="search"-->
+<!--                (input)="onSearch($event)"-->
+<!--            />-->
+<!--            <i class="pi pi-search components-search-icon"></i>-->
+<!--        </div>-->
+<!--    </ng-template>-->
+<!--    <ng-template let-item pTemplate="item">-->
+<!--        <div class="block-name" [attr.root]="item.root">-->
+<!--            <div *ngIf="item.svg" class="block-icon">-->
+<!--                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>-->
+<!--            </div>-->
+<!--            <div *ngIf="!item.svg" class="block-icon">-->
+<!--                <i [ngClass]="'pi pi-' + item.icon"></i>-->
+<!--            </div>-->
+<!--            {{ item.name }}-->
+<!--        </div>-->
+<!--    </ng-template>-->
+<!--    <ng-template pTemplate="selectedItems">-->
+<!--        <span class="custom">{{ text }}</span>-->
+<!--    </ng-template>-->
+<!--</p-multiSelect>-->
+
+<p-dropdown
+    *ngIf="!multiple"
+    [(ngModel)]="value"
+    [options]="searchData"
+    [disabled]="readonly"
+    [filter]="false"
+    filterPlaceholder="Search..."
+    placeholder="Select"
+    (onChange)="onChange()"
+    [appendTo]="'body'"
+>
+    <ng-template pTemplate="selectedItem" let-item>
+        <span class="custom">{{ item ? item.name : 'Select' }}</span>
+    </ng-template>
+    <ng-template pTemplate="header">
+        <div class="components-search">
+            <input
+                type="text"
+                placeholder="Search"
+                [(ngModel)]="search"
+                (input)="onSearch($event)"
+                style="height: 32px;"
+            />
+            <i class="pi pi-search components-search-icon"></i>
+        </div>
+    </ng-template>
+    <ng-template let-item pTemplate="item">
+        <div class="block-name" [ngClass]="{'empty-option': !item.value}" [attr.root]="item.root">
+            <div *ngIf="item.svg && item.name" class="block-icon">
+                <i [ngClass]="'pi pi-' + item.icon" class="svg-icon"></i>
+            </div>
+            <div *ngIf="!item.svg && item.icon && item.name" class="block-icon">
+                <i [ngClass]="'pi pi-' + item.icon"></i>
+            </div>
+            {{ item.name || '' }}
+        </div>
+    </ng-template>
+</p-dropdown>
+
 <p-multiSelect
+    *ngIf="multiple"
     [(ngModel)]="value"
     [options]="searchData"
     [disabled]="readonly"
     [filter]="false"
     [displaySelectedLabel]="false"
-    (onChange)="onChange()">
+    placeholder="Select"
+    (onChange)="onChange()"
+    [appendTo]="'body'"
+>
     <ng-template pTemplate="header">
         <div class="components-search">
             <input
