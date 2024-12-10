@@ -23,7 +23,7 @@
                         <p-dropdown
                             id="tokenDropdown"
                             formControlName="token"
-                            [options]="getTokenList(selectedToken ?? '')"
+                            [options]="getTokenList(selectedTokenId ?? '')"
                             optionLabel="tokenSymbol"
                             placeholder="Token"
                             [required]="true"

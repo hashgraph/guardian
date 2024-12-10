@@ -82,7 +82,7 @@ export class SetPoolDialogComponent {
     get transformedFormValue() {
         const formValue = this.form.value;
 
-        return  {
+        return {
             ...formValue,
             tokens: formValue.tokens.map((item: any) => ({
                 ...item,
@@ -112,11 +112,13 @@ export class SetPoolDialogComponent {
     }
 
     getTokenList(tokenId: string) {
-        const tokens =
+        const chosenTokens =
             this.tokens.value
                 ?.filter((item: { token: string }) => item.token !== tokenId)
                 .map((item: { token: any }) => item.token) || [];
-        return this._tokenList.filter((item) => !tokens.includes(item.tokenId));
+
+        return  this._tokenList.filter((tokenFromList) =>
+            !chosenTokens.find((chosenToken: Token) => chosenToken.tokenId === tokenFromList.tokenId))
     }
 
     moreThanTokensZeroValidator(): ValidatorFn {
@@ -143,7 +145,7 @@ export class SetPoolDialogComponent {
         };
     }
 
-    get selectedToken(): string | null {
+    get selectedTokenId(): string | null {
         return this.form.get('token')?.value || null;
     }
 }
