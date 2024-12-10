@@ -65,6 +65,8 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
         this.subscription.unsubscribe();
     }
 
+    private iteration = 0;
+
     ngOnInit(): void {
         if (!this.control) {
             this.control = new UntypedFormGroup({});
@@ -72,59 +74,71 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
 
         this.control.registerControl('layers', new UntypedFormControl('NATURAL-COLOR', Validators.required));
         this.control.registerControl('format', new UntypedFormControl('image/jpeg', Validators.required));
-        this.control.registerControl('maxcc', new UntypedFormControl(30, Validators.required));
-        this.control.registerControl('width', new UntypedFormControl(512, Validators.required));
-        this.control.registerControl('height', new UntypedFormControl(512, Validators.required));
+        this.control.registerControl('maxcc', new UntypedFormControl(undefined, Validators.required));
+        this.control.registerControl('width', new UntypedFormControl(undefined, Validators.required));
+        this.control.registerControl('height', new UntypedFormControl(undefined, Validators.required));
         this.control.registerControl('bbox', new UntypedFormControl('', Validators.required));
         this.control.registerControl('time', new UntypedFormControl(undefined, Validators.required));
 
         this.subscription.add(
             this.mapService.getSentinelKey().subscribe(value => {
-                this.key = value;
-                if (this.presetDocument) {
-                    this.generateImageLink(this.control.value, true);
+                    this.key = value;
+                    if (this.presetDocument) {
+                        this.generateImageLink(this.control.value, true);
+                    }
                 }
-            })
+            )
         )
+
+        if (this.presetDocument) {
+            this.control.patchValue(this.presetDocument);
+            let [from, to] = this.control.get('time')?.value?.split('/') || [];
+
+            const _from = from;
+            const _to = to;
+            if (!/(\d+)-(\d+)-(\d+)/.test(_from)) {
+                from = moment(_from, 'YYYY-MM-DD');
+            }
+            if (!/(\d+)-(\d+)-(\d+)/.test(_to)) {
+                to = moment(_to, 'YYYY-MM-DD');
+            }
+            if (/(\d+)/.test(_from)) {
+                from = moment(parseInt(_from, 10));
+            }
+            if (/(\d+)/.test(_to)) {
+                to = moment(_to);
+            }
+            this.datePicker.patchValue({from, to});
+
+        }
 
         this.subscription.add(
             this.datePicker.valueChanges.subscribe(value => {
-                if ((typeof value.from?.format === 'function') && (value.to?.format === 'function')) {
-                    this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'));
+                if (!value.from || !value.to) {
+                    return;
                 }
-                this.getControlByName('time').setValue((value.from + '/' + value.to));
+                this.getControlByName('time').setValue(value.from?.format('YYYY-MM-DD') + '/' + value.to?.format('YYYY-MM-DD'));
             })
         );
 
         this.subscription.add(
             this.control.valueChanges.subscribe(value => this.generateImageLink(value))
-        )
+        );
     }
 
     ngAfterViewInit(): void {
-        console.log(this.presetDocument);
-        if (this.presetDocument) {
-            setTimeout(() => {
-                this.control.patchValue(this.presetDocument);
-                let [from, to] = this.control.get('time')?.value?.split('/') || [];
-                console.log({from, to});
-                if (!/(\d+)-(\d+)-(\d+)/.test(from)) {
-                    from = moment(from).format('YYYY-MM-DD');
-                }
-                if (!/(\d+)-(\d+)-(\d+)/.test(to)) {
-                    from = moment(to).format('YYYY-MM-DD');
-                }
-                console.log({from, to});
-                this.datePicker.patchValue({from, to});
-                this.generateImageLink(this.control.value, true);
-            }, 200);
-
-        }
+        this.generateImageLink(this.control.value, true);
     }
 
     generateImageLink(value: any, skipValidation = false): void {
         if (!this.key) {
             this.formattedImageLink = '';
+            if (this.iteration < 10) {
+                setTimeout(() => {
+                    this.iteration += 1;
+                    this.generateImageLink(value, skipValidation);
+                });
+            }
             return;
         }
 
