@@ -1329,6 +1329,15 @@ export class PolicyUtils {
         return ref.components.getRoleTemplate<T>(name);
     }
 
+    public static getQueryFilter(key: string, value: any) {
+        if(typeof value === 'object') {
+            const [op, val] = Object.entries(value)[0];
+            return { [`${op}`]: [`\$${key}`, val]};
+        } else {
+            return { $eq: [value, `\$${key}`] };
+        }
+    }
+
     public static parseQuery(type: string, value: string) {
         let queryType: QueryType;
         let queryValue: any;

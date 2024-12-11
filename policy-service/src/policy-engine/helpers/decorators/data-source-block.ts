@@ -3,6 +3,7 @@ import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
 import { PolicyUser } from '../../policy-user.js';
 import { BlockActionError } from '../../errors/index.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Datasource block decorator
@@ -184,7 +185,8 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
                         for (const [key, value] of Object.entries(await child.getFilters(user))) {
-                            dynFilters.push({ $eq: [value, `\$${key}`] });
+                            const formattedKey = key.toString().replace('document.credentialSubject.0', 'firstDoc');
+                            dynFilters.push(PolicyUtils.getQueryFilter(formattedKey, value));
                         }
                     }
                 }
@@ -208,14 +210,28 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 dataType: number
             }> {
                 const filters = [];
+                filters.push({
+                    $set: {
+                        firstDoc: {
+                            $arrayElemAt: [
+                                "$document.credentialSubject",
+                                0
+                            ]
+                        }
+                    },
+                });
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
                 for (const addon of sourceAddons) {
                     const blockFilter = await addon.getFromSourceFilters(user, globalFilters);
                     if (!blockFilter) {
                         continue;
                     }
+
                     filters.push(blockFilter);
                 }
+                filters.push({
+                    $unset: "firstDoc"
+                });
                 return { filters, dataType: sourceAddons[0].options.dataType };
             }
 

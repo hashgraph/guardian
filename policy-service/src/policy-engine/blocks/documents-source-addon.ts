@@ -254,15 +254,31 @@ export class DocumentsSourceAddon {
                     filters.push({ $nin: [`\$${filter.field}`, filter.value.split(',')] });
                     break;
 
+                case 'gt':
+                    filters.push({ $gt: [`\$${filter.field}`, filter.value] });
+                    break;
+
+                case 'gte':
+                    filters.push({ $gte: [`\$${filter.field}`, filter.value] });
+                    break;
+
+                case 'lt':
+                    filters.push({ $lt: [`\$${filter.field}`, filter.value] });
+                    break;
+
+                case 'lte':
+                    filters.push({ $lte: [`\$${filter.field}`, filter.value] });
+                    break;
                 default:
                     throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
             }
         }
 
         for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            filters.push({ $eq: [value, `\$${key}`] });
+            const formattedKey = key.replace('document.credentialSubject.0', 'firstDoc');
+            filters.push(PolicyUtils.getQueryFilter(formattedKey, value));
         }
-
+        
         if (globalFilters) {
             filters.push(...globalFilters);
         }
@@ -292,7 +308,7 @@ export class DocumentsSourceAddon {
                 }
             }
         };
-
+        
         const selectiveAttibuteBlock = ref.getSelectiveAttributes()[0];
         if (selectiveAttibuteBlock) {
             blockFilter.$set.newOption = {
