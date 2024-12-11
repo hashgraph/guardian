@@ -1330,11 +1330,12 @@ export class PolicyUtils {
     }
 
     public static getQueryFilter(key: string, value: any) {
-        if(typeof value === 'object') {
+        const formattedKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        if (typeof value === 'object') {
             const [op, val] = Object.entries(value)[0];
-            return { [`${op}`]: [`\$${key}`, val]};
+            return { [`${op}`]: [`\$${formattedKey}`, val] };
         } else {
-            return { $eq: [value, `\$${key}`] };
+            return { $eq: [value, `\$${formattedKey}`] };
         }
     }
 
@@ -1391,7 +1392,7 @@ export class PolicyUtils {
     }
 
     public static getQueryValue(queryType: QueryType, value: any): any {
-        if(typeof value === 'number'){
+        if (typeof value === 'number') {
             value = String(value);
         }
         if (typeof value !== 'string') {

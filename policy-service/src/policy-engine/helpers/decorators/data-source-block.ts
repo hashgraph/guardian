@@ -185,8 +185,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
                         for (const [key, value] of Object.entries(await child.getFilters(user))) {
-                            const formattedKey = key.toString().replace('document.credentialSubject.0', 'firstDoc');
-                            dynFilters.push(PolicyUtils.getQueryFilter(formattedKey, value));
+                            dynFilters.push(PolicyUtils.getQueryFilter(key, value));
                         }
                     }
                 }
@@ -209,18 +208,18 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                  */
                 dataType: number
             }> {
+                const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
                 const filters = [];
                 filters.push({
                     $set: {
-                        firstDoc: {
-                            $arrayElemAt: [
-                                "$document.credentialSubject",
-                                0
-                            ]
+                        firstCredentialSubject: {
+                            $ifNull: [{
+                                $arrayElemAt: ["$document.credentialSubject", 0]
+                            }, null]
                         }
-                    },
+                    }
                 });
-                const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
+
                 for (const addon of sourceAddons) {
                     const blockFilter = await addon.getFromSourceFilters(user, globalFilters);
                     if (!blockFilter) {
@@ -230,7 +229,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     filters.push(blockFilter);
                 }
                 filters.push({
-                    $unset: "firstDoc"
+                    $unset: 'firstCredentialSubject'
                 });
                 return { filters, dataType: sourceAddons[0].options.dataType };
             }

@@ -171,24 +171,21 @@ export class FiltersAddonBlock {
             }
             if (value) {
                 this.addQuery(filter, value);
-            }
-            if (!ref.options.canBeEmpty) {
+            } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
         if (ref.options.type === 'datepicker') {
             if (value) {
                 this.addQuery(filter, value);
-            }
-            if (!ref.options.canBeEmpty) {
+            } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
         if (ref.options.type === 'input') {
             if (value) {
                 this.addQuery(filter, value);
-            }
-            if (!ref.options.canBeEmpty) {
+            } else if (!ref.options.canBeEmpty) {
                 throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
             }
         }
@@ -212,7 +209,7 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            let itemValue:any = value;
+            let itemValue: any = value;
             if (ref.options.queryType === 'user_defined') {
                 const [, userValue] = PolicyUtils.parseFilterValue(value);
                 itemValue = userValue;

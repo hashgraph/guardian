@@ -275,10 +275,9 @@ export class DocumentsSourceAddon {
         }
 
         for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            const formattedKey = key.replace('document.credentialSubject.0', 'firstDoc');
-            filters.push(PolicyUtils.getQueryFilter(formattedKey, value));
+            filters.push(PolicyUtils.getQueryFilter(key, value));
         }
-        
+
         if (globalFilters) {
             filters.push(...globalFilters);
         }
@@ -308,7 +307,7 @@ export class DocumentsSourceAddon {
                 }
             }
         };
-        
+
         const selectiveAttibuteBlock = ref.getSelectiveAttributes()[0];
         if (selectiveAttibuteBlock) {
             blockFilter.$set.newOption = {
