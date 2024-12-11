@@ -944,3 +944,22 @@ mat-radio-button {
     fill: var(--color-primary, #0681ee);
     color: var(--color-primary, #0681ee);
 }
+
+.example-full-width {
+    margin-top: 20px
+}
+
+.example-full-width textarea {
+   width: 100%;
+    &:focus {
+        border: none
+    }
+}
+
+.boolean-option-group div:last-child {
+    margin-top: 10px
+}
+
+.boolean-option-group label {
+    padding-left: 8px;
+}

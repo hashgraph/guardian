@@ -59,3 +59,7 @@ textarea[readonly] {
     color: var(--color-grey-6);
     font-family: 'Roboto', sans-serif;
 }
+
+::ng-deep .policy-configuration .tab-header {
+    display: inline-block !important
+}

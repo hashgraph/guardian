@@ -298,13 +298,15 @@
                     <!--                    </mat-form-field>-->
 
                     <div class="form-group example-full-width" [attr.active-field]="didDocumentType.value">
-                        <label for="didDocumentTextarea" class="form-label">DID Document:</label>
+<!--                        <label for="didDocumentTextarea" class="form-label">DID Document:</label>-->
                         <textarea
                             pInputTextarea
                             id="didDocumentTextarea"
                             [formControl]="didDocumentForm"
                             style="height: 150px; width: 100%;"
-                            class="full-width">
+                            class="full-width"
+                            placeholder="DID Document: *"
+                        >
                         </textarea>
                         <small *ngIf="didDocumentForm.hasError('incorrect')" class="p-error">
                             Invalid DID Document.

@@ -338,12 +338,13 @@
 
                                     <div class="form-group example-full-width"
                                          [attr.active-field]="didDocumentType.value">
-                                        <label for="didDocumentTextarea" class="form-label">DID Document:</label>
+<!--                                        <label for="didDocumentTextarea" class="form-label">DID Document:</label>-->
                                         <textarea
                                             pInputTextarea
                                             id="didDocumentTextarea"
                                             [formControl]="didDocumentForm"
                                             class="full-width"
+                                            placeholder="DID Document: *"
                                             style="height: 150px">
     </textarea>
                                         <small *ngIf="didDocumentForm.hasError('incorrect')" class="p-error">
