@@ -31,6 +31,17 @@ export class FiltersAddonBlockComponent implements OnInit {
     currentType: string = 'eq';
     queryType: string = 'equal';
 
+    userDefinedOptions = [
+        { name: 'Equal', value: 'eq' },
+        { name: 'Not Equal', value: 'ne' },
+        { name: 'In', value: 'in' },
+        { name: 'Not In', value: 'nin' },
+        { name: 'Greater Than', value: 'gt' },
+        { name: 'Greater Than or Equal', value: 'gte' },
+        { name: 'Less Than', value: 'lt' },
+        { name: 'Less Than or Equal', value: 'lte' }
+      ];
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -146,7 +157,7 @@ export class FiltersAddonBlockComponent implements OnInit {
                 this.options = [];
                 if (data.canBeEmpty) {
                     this.options.push({
-                        name: "",
+                        name: "Not selected",
                         value: null,
                     });
                 }
@@ -165,7 +176,7 @@ export class FiltersAddonBlockComponent implements OnInit {
         }
     }
 
-    onFilters() {
+    onFilters(event: any) {
         if(!this.currentValue) return;
 
         if(this.type === 'datepicker'){
