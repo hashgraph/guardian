@@ -46,6 +46,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     }
 
     ngAfterViewInit() {
+        (this.calendar?.el.nativeElement.querySelector('input') as HTMLInputElement).readOnly = true;
         // if (this.isMany) {
             this.fillField();
         // }
