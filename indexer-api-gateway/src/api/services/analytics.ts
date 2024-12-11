@@ -11,8 +11,10 @@ import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
+    RawMessageDTO,
     SearchPolicyParamsDTO,
     SearchPolicyResultDTO,
+    VCDetailsDTO,
 } from '#dto';
 
 @Controller('analytics')
@@ -42,6 +44,34 @@ export class AnalyticsApi extends ApiClient {
     async search(@Body() body: SearchPolicyParamsDTO) {
         return await this.send(
             IndexerMessageAPI.GET_ANALYTICS_SEARCH_POLICY,
+            body
+        );
+    }
+    
+    @ApiOperation({
+        summary: 'Search contract retirements',
+        description: 'Returns contract retirements result',
+    })
+    @ApiBody({
+        description: 'Search policy parameters',
+        type: RawMessageDTO,
+    })
+    @ApiOkResponse({
+        description: 'Search policy result',
+        type: [VCDetailsDTO],
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity',
+    })
+    @Post('/search/retire')
+    @HttpCode(HttpStatus.OK)
+    async getRetireDocuments(@Body() body: RawMessageDTO) {
+        return await this.send(
+            IndexerMessageAPI.GET_RETIRE_DOCUMENTS,
             body
         );
     }

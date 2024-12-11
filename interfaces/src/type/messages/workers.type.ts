@@ -38,6 +38,7 @@ export enum WorkerTaskType {
     GET_CONTRACT_EVENTS = 'get-contract-events',
     GET_TRANSACTIONS = 'get-transaction',
     ANALYTICS_SEARCH_POLICIES= 'analytics-search-policies',
+    ANALYTICS_GET_RETIRE_DOCUMENTS= 'analytics-get-retire-documents',
 }
 
 /**

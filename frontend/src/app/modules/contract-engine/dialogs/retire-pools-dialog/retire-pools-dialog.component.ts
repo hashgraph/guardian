@@ -39,6 +39,7 @@ export class RetirePoolsDialogComponent implements OnInit {
 
     loadPools() {
         this.loading = true;
+
         this.contractService
             .getRetirePools({
                 contractId: this.contract.contractId,
@@ -69,6 +70,10 @@ export class RetirePoolsDialogComponent implements OnInit {
                 },
                 () => (this.loading = false)
             );
+
+        // this.contractService.getIndexerData('0.0.5148441').subscribe((data: any) =>{
+        //     console.log(data);
+        // });
     }
 
     onPage(event: any) {

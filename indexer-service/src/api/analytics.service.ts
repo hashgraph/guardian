@@ -9,7 +9,7 @@ import {
     AnyResponse
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
-import { MessageAction, MessageType, SearchPolicyParams, SearchPolicyResult } from '@indexer/interfaces';
+import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
 @Controller()
@@ -118,6 +118,53 @@ export class AnalyticsService {
                 } as SearchPolicyResult
             }).slice(0, 100);
             return new MessageResponse<SearchPolicyResult[]>(results);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_RETIRE_DOCUMENTS)
+    async getRetireDocuments(
+        @Payload()
+        msg: RawMessage
+    ): Promise<AnyResponse<VCDetails[]>> {
+        try {
+            const { topicId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+
+            const retirements = [];
+
+            const [messages, count] = (await em.findAndCount(
+                Message,
+                {
+                    topicId,
+                    action: MessageAction.CreateVC,
+                } as any
+            )) as any;
+
+            console.log(messages);
+            console.log(count);
+            
+            let VCdocuments: VCDetails[] = [];
+            for (const result of messages) {
+                console.log(result.files);
+                
+                for (const fileName of result.files) {
+                    try {
+                        const file = await DataBaseHelper.loadFile(fileName);
+                        VCdocuments.push(JSON.parse(file) as VCDetails);
+                    } catch (error) {
+                        VCdocuments.push(null);
+                    }
+                }
+            }
+            console.log(VCdocuments);
+            console.log(topicId);
+            console.log("YEEEE!!!");
+
+            const results = [];
+
+            return new MessageResponse<VCDetails[]>(VCdocuments);
         } catch (error) {
             return new MessageError(error);
         }

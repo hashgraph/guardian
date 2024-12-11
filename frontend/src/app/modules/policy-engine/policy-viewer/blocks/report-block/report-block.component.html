@@ -310,6 +310,8 @@
                                     *ngFor="let document of item.document"
                                     style="display: inline-block;"
                                 >
+                                <h1>{{document.index}}</h1>
+                                <h1>{{item.document.length}}</h1>
                                     <div [ngStyle]="{
                                             opacity:
                                                 document.index === 0 &&
@@ -445,6 +447,159 @@
                                 </div>
                             </ng-template>
                         </div>
+                    </ng-container>
+                    
+                    <ng-container
+                    *ngIf="retirementDocuments && retirementDocuments.length > 0">
+                        <ng-container
+                        *ngFor="let item of retirementDocuments">
+                            <div class="multiple-documents-container">
+                                <ng-container
+                                    *ngIf="
+                                        !item.notFoundDocuments;
+                                        else documentsNotFound
+                                    ">
+                                    <div
+                                        (click)="onMultipleDocumentClick(document, item)"
+                                        *ngFor="let document of item.document"
+                                        style="display: inline-block;"
+                                    >
+                                        <div [ngStyle]="{
+                                                opacity:
+                                                    document.index === 0 &&
+                                                    item.dynamicFilters.length &&
+                                                    item.document.length > 1 ? 1 : 0,
+                                                transform:
+                                                    document.index === 0 &&
+                                                    item.dynamicFilters.length &&
+                                                    item.document.length > 1
+                                                        ? 'scale(1, 1) translate(0, 0)'
+                                                        : 'scale(1, 0) translate(20px, 0)'
+                                            }"
+                                            class="item-relationships-delimiter"
+                                        ></div>
+                                        <mat-icon
+                                            *ngIf="
+                                            document.index === 0 &&
+                                            item.dynamicFilters.length &&
+                                            item.document.length > 1"
+                                            class="item-relationships-icon material-icons-outlined">
+                                            account_tree
+                                        </mat-icon>
+                                        <div
+                                            [ngClass]="{
+                                                'active-multiple-document':
+                                                    document.index === 0 &&
+                                                    item.document.length > 1,
+                                                'second-multiple-document':
+                                                    document.index === 1,
+                                                'third-multiple-document':
+                                                    document.index === 2,
+                                                'hide-multiple-document':
+                                                    item.multiple &&
+                                                    (document.index === undefined ||
+                                                        document.index === null),
+                                                'single-multiple-document':
+                                                    item.document.length === 1
+                                            }"
+                                            class="chain-item item-type-{{item.type}}"
+                                        >
+                                            <div class="chain-title">
+                                                <ng-container
+                                                    *ngIf="item.icon"
+                                                    [ngSwitch]="item.iconType"
+                                                >
+                                                    <mat-icon *ngSwitchCase="'common'">{{ item.icon }}</mat-icon>
+                                                    <img
+                                                        *ngSwitchCase="'custom'"
+                                                        [src]="item.icon"
+                                                        class="item-image"
+                                                    />
+                                                </ng-container>
+                                                {{ item.title }}
+                                            </div>
+                                            <div
+                                                *ngIf="
+                                                    document.document &&
+                                                    document.document.comment
+                                                "
+                                                class="revoke-container"
+                                            >
+                                                <mat-icon class="revoke-icon">warning</mat-icon>
+                                                <b>Revoked with reason: "{{document.document.comment}}"</b>
+                                            </div>
+                                            <div class="chain-id">
+                                                {{ item.description }}
+                                            </div>
+                                            <div
+                                                *ngIf="document.username"
+                                                class="parties"
+                                            >
+                                                <div class="parties-label">
+                                                    Parties:
+                                                </div>
+                                                <div class="parties-value">
+                                                    <div class="partie">
+                                                        {{ document.username }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="nested-documents">
+                                                <ng-container *ngFor="let link of item.documents">
+                                                    <a (click)="openVCDocument(link)"
+                                                        [title]="link.description"
+                                                        class="nested-documents-value"
+                                                    >
+                                                        {{ link.title }}
+                                                    </a>
+                                                </ng-container>
+                                            </div>
+                                            <div
+                                                *ngIf="document.document"
+                                                class="chain-document"
+                                            >
+                                                <a (click)="openVCDocument(item,document.document.document)">VC File</a>
+                                            </div>
+                                            <div
+                                                *ngIf="
+                                                    item.activeDocumentIndex &&
+                                                    item.document &&
+                                                    item.document.length > 1
+                                                "
+                                                class="multiple-documents-count"
+                                            >
+                                                <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left</mat-icon>
+
+                                                {{ item.activeDocumentIndex }} in {{ item.document.length }}
+
+                                                <mat-icon (click)="onNextDocumentClick($event,item,document)">chevron_right</mat-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-template #documentsNotFound>
+                                    <div
+                                        *ngIf="
+                                            item.notFoundDocuments;
+                                            displayDocuments
+                                        "
+                                        style="display: inline-block;"
+                                    >
+                                        <div class="chain-item empty-documents">
+                                            <div class="chain-title">
+                                                {{ item.title }}
+                                            </div>
+                                            <div class="empty-documents-description">
+                                                <mat-icon>search</mat-icon>
+                                                <div class="chain-id">
+                                                    Documents Not Found
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </div>
+                        </ng-container>
                     </ng-container>
                     <div class="multiple-documents-container">
                         <ng-container

@@ -9,6 +9,7 @@ import {
 } from '@indexer/common';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import { Page, SearchItem } from '@indexer/interfaces';
+import { loadFiles } from 'helpers/load-files.js';
 
 @Controller()
 export class SearchService {
@@ -23,17 +24,47 @@ export class SearchService {
             }
             const options = parsePageParams(msg);
             const { search } = msg;
+            
 
             const em = DataBaseHelper.getEntityManager();
+            // const [results, count] = (await em.findAndCount(
+            //     Message,
+            //     {
+            //         $text: {
+            //             $search: search,
+            //         },
+            //     } as any,
+            //     options
+            // )) as any as [SearchItem[], number];
+
+            const retirements = [];
+
             const [results, count] = (await em.findAndCount(
                 Message,
                 {
-                    $text: {
-                        $search: search,
-                    },
+                    "topicId": "0.0.5148441", // memo from contract or topicId
+                    "action": "create-vc-document"
                 } as any,
                 options
-            )) as any as [SearchItem[], number];
+            )) as any;
+
+            let VCdocuments = [];
+            for (const result of results) {
+                console.log(result.files);
+                
+                for (const fileName of result.files) {
+                    try {
+                        const file = await DataBaseHelper.loadFile(fileName);
+                        VCdocuments.push(file);
+                    } catch (error) {
+                        VCdocuments.push(null);
+                    }
+                }
+            }
+
+            console.log(VCdocuments);
+            
+
 
             const result = {
                 items: results,

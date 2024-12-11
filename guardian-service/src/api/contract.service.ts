@@ -1161,7 +1161,7 @@ async function saveRetireVC(
     userHederaAccountId: string,
     tokens: (RetireTokenRequest & { decimals: number })[]
 ) {
-    const contract = await dataBaseServer.findOne(Contract, {
+    const contract = await dataBaseServer.findOne(Contract, { // Get retirement and save or maybe create new one
         contractId,
         owner: owner.creator,
     });
@@ -2606,36 +2606,33 @@ export async function contractAPI(
                 );
             }
 
-            const workers = new Workers();
-            const tokenInfo = await workers.addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TOKEN_INFO,
-                    data: { tokenId: '0.0.5148481' },
-                },
-                10
-            );
+
+
+
+            console.log("____________retirements");
+            const retirements = await new Workers().addNonRetryableTask({
+                type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
+                data: {
+                    payload: { options: { topicId: '0.0.5148441' } }
+                }
+            }, 2);
+            console.log(JSON.stringify(retirements, null, 4));
+            
+
+            const filtersOld: any = {
+                owner: owner.owner,
+                type: SchemaEntity.RETIRE_TOKEN,
+            };
+            if (user.role === UserRole.USER) {
+                filters['document.credentialSubject.user'] =
+                    user.hederaAccountId;
+            }
+
+            const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
 
             
-            const mintTransactions = await new Workers().addRetryableTask(
-                {
-                    type: WorkerTaskType.GET_TRANSACTIONS,
-                    data: {
-                        accountId: '0.0.5148419', // test user account id
-                        transactiontype: 'TOKENMINT',
-                        timestamp: '2024-11-19T22:02:43.698Z',
-                        filter: {
-                            memo_base64: btoa('0.0.5148482'),
-                        },
-                        limit: 5,
-                    },
-                },
-                1,
-                10
-            );
+            console.log(JSON.stringify(oldRetirements, null, 4));
 
-            console.log(tokenInfo);
-            console.log(mintTransactions);
-            
 
             return new MessageResponse(
                 await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
@@ -3432,7 +3429,7 @@ export async function contractAPI(
             }
 
             return new MessageResponse(
-                await dataBaseServer.findAndCount(VcDocument, filters, otherOptions)
+                await dataBaseServer.findAndCount(VcDocument, filters, otherOptions) // find Retirement VCs
             );
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);
