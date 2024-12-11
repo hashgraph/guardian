@@ -742,7 +742,7 @@ export class SchemaFormComponent implements OnInit {
                         valueToSet = "";
                     }
                 } else if (format === 'time') {
-                    const momentDate = moment(val);
+                    const momentDate = moment(val, 'hh:mm:ss');
                     if (momentDate.isValid()) {
                         momentDate.milliseconds(0);
                         valueToSet = momentDate.format('HH:mm:ss');

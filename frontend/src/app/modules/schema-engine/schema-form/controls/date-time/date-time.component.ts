@@ -34,11 +34,13 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     }
 
     ngOnInit() {
-        if (this.item.subject) {
-            this.item.subject.subscribe(() => {
-                // this.fillField();
+        // if (this.item.subject) {
+        this.subscription.add(
+            this.control.valueChanges.subscribe(() => {
+                this.fillField();
             })
-        }
+        );
+        // }
     }
 
     ngOnDestroy() {
@@ -70,23 +72,29 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
         }
 
         setTimeout(() => {
-            console.log(this.showTime);
             const input = this.calendar?.el.nativeElement.querySelector('input');
             if (input && value) {
                 if (this.timeOnly) {
-                    if (/^(\d+)-(\d+)-(\d+)$/.test(value)) {
-
-                    }
-                    const date = moment(value, 'hh:mm:ss').toDate();
-                    this.control.setValue(date);
+                    const date = moment(value, 'hh:mm:ss');
+                    this.control.setValue(date.format('HH:mm:ss'), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
                     input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
                 } else if (!this.showTime) {
-                    const date = moment(value, 'YYYY-MM-DD').toDate();
-                    this.control.setValue(date);
+                    const date = moment(value, 'YYYY-MM-DD');
+                    this.control.setValue(date.format('YYYY-MM-DD'), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
                     input.value = moment(value, 'YYYY-MM-DD').format('YYYY-MM-DD');
                 } else {
-                    this.control.setValue(moment(value).toDate())
-                    input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
+                    const date = moment(value);
+                    this.control.setValue(date.toISOString(), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    })
+                    input.value = moment(value).toISOString();
                 }
             }
         }, 100)
