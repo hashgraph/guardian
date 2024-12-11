@@ -92,7 +92,9 @@
                                 optionValue="value"
                                 [disabled]="!policySchemas"
                                 placeholder="Select a schema"
-                                (onChange)="setProjectSchema($event.value)">
+                                (onChange)="setProjectSchema($event.value)"
+                                [appendTo]="'body'"
+                            >
                             </p-dropdown>
                         </td>
                     </tr>
@@ -128,7 +130,9 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select a sectoral scope"
-                                (onChange)="onCategoriesChanged()">
+                                (onChange)="onCategoriesChanged()"
+                                [appendTo]="'body'"
+                            >
                             </p-dropdown>
                         </td>
                     </tr>
@@ -152,7 +156,9 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select a sectoral scope"
-                                (onChange)="onCategoriesChanged()">
+                                (onChange)="onCategoriesChanged()"
+                                [appendTo]="'body'"
+                            >
                             </p-dropdown>
                         </td>
                     </tr>
@@ -176,7 +182,9 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select a technology type"
-                                (onChange)="onCategoriesChanged()">
+                                (onChange)="onCategoriesChanged()"
+                                [appendTo]="'body'"
+                            >
                             </p-dropdown>
                         </td>
                     </tr>
@@ -201,7 +209,9 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select migration activity types"
-                                (onChange)="onCategoriesChanged()">
+                                (onChange)="onCategoriesChanged()"
+                                [appendTo]="'body'"
+                            >
                             </p-multiSelect>
                         </td>
                     </tr>
@@ -226,7 +236,9 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select migration activity types"
-                                (onChange)="onCategoriesChanged()">
+                                (onChange)="onCategoriesChanged()"
+                                [appendTo]="'body'"
+                            >
                             </p-multiSelect>
                         </td>
                     </tr>
@@ -372,7 +384,6 @@
                     </ng-container>
                 </ng-container>
                 <ng-container *ngIf="type == 'Groups'">
-                    <!-- Groups  -->
                     <ng-container *ngFor="let item of policyGroups; let i=index">
                         <tr class="propHeader">
                             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.groupsGroup, i)"
@@ -416,7 +427,9 @@
                                     optionLabel="name"
                                     optionValue="name"
                                     [disabled]="readonly"
-                                    (onChange)="onEditGroup(item)">
+                                    (onChange)="onEditGroup(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -437,8 +450,9 @@
                                     optionLabel="name"
                                     optionValue="name"
                                     [disabled]="readonly"
-                                    placeholder="Select members"
-                                    (onChange)="onEditGroup(item)">
+                                    (onChange)="onEditGroup(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-multiSelect>
                             </td>
                         </tr>
@@ -459,7 +473,9 @@
                                     optionValue="value"
                                     [disabled]="readonly"
                                     placeholder="Select relationship type"
-                                    (onChange)="onEditGroup(item)">
+                                    (onChange)="onEditGroup(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -480,7 +496,9 @@
                                     optionValue="value"
                                     [disabled]="readonly"
                                     placeholder="Select access type"
-                                    (onChange)="onEditGroup(item)">
+                                    (onChange)="onEditGroup(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -549,7 +567,9 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     [disabled]="readonly"
-                                    placeholder="Select type">
+                                    placeholder="Select type"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -576,7 +596,9 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     [disabled]="readonly"
-                                    placeholder="Select memo object">
+                                    placeholder="Select memo object"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -664,7 +686,9 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     [disabled]="readonly"
-                                    (onChange)="onTokenTypeChange(item)">
+                                    (onChange)="onTokenTypeChange(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -694,7 +718,9 @@
                                     [options]="enableAdminOptions"
                                     optionLabel="label"
                                     optionValue="value"
-                                    [disabled]="readonly">
+                                    [disabled]="readonly"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -715,7 +741,9 @@
                                     [options]="enableFreezeOptions"
                                     optionLabel="label"
                                     optionValue="value"
-                                    [disabled]="readonly">
+                                    [disabled]="readonly"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -736,7 +764,9 @@
                                     [options]="enableKYCOptions"
                                     optionLabel="label"
                                     optionValue="value"
-                                    [disabled]="readonly">
+                                    [disabled]="readonly"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>
@@ -759,7 +789,9 @@
                                     optionLabel="label"
                                     optionValue="value"
                                     [disabled]="readonly"
-                                    (onChange)="onEnableWipeChange(item)">
+                                    (onChange)="onEnableWipeChange(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
 
                             </td>
@@ -784,7 +816,9 @@
                                     [options]="getWipeContractOptions()"
                                     optionLabel="label"
                                     optionValue="value"
-                                    [disabled]="readonly">
+                                    [disabled]="readonly"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>

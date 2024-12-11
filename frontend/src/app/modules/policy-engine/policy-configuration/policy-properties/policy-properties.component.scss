@@ -47,3 +47,12 @@ textarea[readonly] {
 .remove-prop[readonly="true"] {
     display: none;
 } */
+
+::ng-deep p-dropdown .p-dropdown,
+::ng-deep p-multiselect .p-multiselect {
+    width: 100% !important;
+}
+
+::ng-deep input {
+    height: 38px !important;
+}
