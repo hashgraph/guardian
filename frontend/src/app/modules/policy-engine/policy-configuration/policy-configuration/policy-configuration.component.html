@@ -118,8 +118,8 @@
                     <span>Go</span>
                 </div>
 
-                    <div class="delimiter"></div>
-                </ng-container>
+                <div class="delimiter"></div>
+            </ng-container>
 
 
             <ng-container *ngIf="rootType === 'Module'">
@@ -223,15 +223,15 @@
 
                 <div class="delimiter"></div>
 
-<!--                <div-->
-<!--                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"-->
-<!--                    class="top-toolbar-group all-status"-->
-<!--                    [matMenuTriggerFor]="publishMenu3">-->
+                <!--                <div-->
+                <!--                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"-->
+                <!--                    class="top-toolbar-group all-status"-->
+                <!--                    [matMenuTriggerFor]="publishMenu3">-->
 
-                    <div
-                        *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
-                        class="top-toolbar-group all-status"
-                        (click)="publishMenu3.toggle($event)">
+                <div
+                    *ngIf="toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW"
+                    class="top-toolbar-group all-status"
+                    (click)="publishMenu3.toggle($event)">
 
                     <!--                    <mat-icon class="edit-color">edit</mat-icon>-->
                     <i class="pi pi-pencil edit-color"></i>
@@ -355,17 +355,20 @@
                 </ng-container>
             </ng-container>
 
-<!--            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
+            <!--            <div [matMenuTriggerFor]="viewMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
 
-                <div (click)="viewMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
+            <div (click)="viewMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
 
                 <!--                <mat-icon *ngIf="currentView == 'blocks'">view_agenda</mat-icon>-->
-                <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
+                <svg-icon *ngIf="currentView == 'blocks'"
+                          src="/assets/images/icons/view_agenda.svg"
+                          svgClass="icon-style-view_agenda"></svg-icon
+                >
                 <!--                <mat-icon *ngIf="currentView == 'json'">code</mat-icon>-->
                 <i *ngIf="currentView == 'json'" class="pi pi-code"></i>
                 <!--                <mat-icon *ngIf="currentView == 'yaml'">segment</mat-icon>-->
                 <i *ngIf="currentView == 'yaml'" class="pi pi-list"></i>
-                <i *ngIf="currentView == 'yaml'" class="pi pi-list"></i>
+                <!--                <i *ngIf="currentView == 'yaml'" class="pi pi-list"></i>-->
                 <span *ngIf="currentView == 'blocks'">Tree</span>
                 <span *ngIf="currentView == 'json'">JSON</span>
                 <span *ngIf="currentView == 'yaml'">YAML</span>
@@ -390,11 +393,11 @@
             </ng-container>
 
             <ng-container *ngIf="isTree">
-<!--                <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"-->
-<!--                     style="width: 80px">-->
+                <!--                <div class="top-toolbar-group all-status event-color" [matMenuTriggerFor]="eventMenu"-->
+                <!--                     style="width: 80px">-->
 
-                    <div class="top-toolbar-group all-status event-color" (click)="eventMenu.toggle($event)"
-                         style="width: 80px">
+                <div class="top-toolbar-group all-status event-color" (click)="eventMenu.toggle($event)"
+                     style="width: 80px">
 
                     <!--                    <mat-icon *ngIf="eventVisible =='All'" class="event-color">flash_on</mat-icon>-->
                     <svg-icon *ngIf="eventVisible =='All'" src="/assets/images/icons/flash_on.svg"
@@ -429,9 +432,10 @@
             </ng-container>
 
 
-<!--            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
+            <!--            <div [matMenuTriggerFor]="themesMenu" class="top-toolbar-group all-status event-color" style="width: 80px">-->
 
-                <div (click)="themesMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
+            <div (click)="themesMenu.toggle($event)" class="top-toolbar-group all-status event-color"
+                 style="width: 80px">
                 <!--                <mat-icon>palette</mat-icon>-->
 
                 <i class="pi pi-palette"></i>
@@ -1414,7 +1418,7 @@
     <div
         *ngIf="user.POLICIES_POLICY_REVIEW"
         class="toolbar-menu all-status publish-color"
-        (click)="tryPublishPolicy()"
+        (click)="tryPublishPolicy(); publishMenu.hide()"
         title="Release version into public domain."
     >
         <!--        <mat-icon class="publish-color">public</mat-icon>-->
@@ -1422,7 +1426,7 @@
         <span class="publish-color">Publish</span>
     </div>
 
-    <div class="toolbar-menu all-status dry-run-color" (click)="tryRunPolicy()"
+    <div class="toolbar-menu all-status dry-run-color" (click)="tryRunPolicy(); publishMenu.hide()"
          title="Run without making any persistent changes or executing transaction.">
         <!--        <mat-icon class="dry-run-color">build</mat-icon>-->
         <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
@@ -1433,7 +1437,7 @@
 <p-overlayPanel #publishMenu2>
     <div
         class="toolbar-menu all-status publish-color"
-        (click)="tryPublishModule()"
+        (click)="tryPublishModule(); publishMenu2.hide()"
         title="Release version into public domain.">
         <!--        <mat-icon class="publish-color">public</mat-icon>-->
         <i class="pi pi-globe publish-color"></i>
@@ -1444,7 +1448,7 @@
 <p-overlayPanel #publishMenu3>
     <div
         class="toolbar-menu all-status publish-color"
-        (click)="tryPublishTool()"
+        (click)="tryPublishTool(); publishMenu3.hide()"
         title="Release version into public domain.">
         <!--        <mat-icon class="publish-color">public</mat-icon>-->
         <i class="pi pi-globe publish-color"></i>
@@ -1453,14 +1457,15 @@
 </p-overlayPanel>
 
 <p-overlayPanel #dryRunMenu>
-    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy()"
+    <div class="toolbar-menu all-status publish-color" (click)="tryPublishPolicy(); dryRunMenu.hide()"
          title="Release version into public domain.">
         <!--        <mat-icon class="publish-color">public</mat-icon>-->
         <i class="pi pi-globe publish-color"></i>
         <span class="publish-color">Publish</span>
     </div>
 
-    <div class="toolbar-menu all-status edit-color" (click)="draftPolicy()" title="Return to editing.">
+    <div class="toolbar-menu all-status edit-color" (click)="draftPolicy(); dryRunMenu.hide()"
+         title="Return to editing.">
         <!--        <mat-icon class="edit-color">edit</mat-icon>-->
         <i class="pi pi-pencil edit-color"></i>
         <span class="edit-color">Stop</span>
@@ -1468,13 +1473,13 @@
 </p-overlayPanel>
 
 <p-overlayPanel #eventMenu>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All')">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('All'); eventMenu.hide()">
         <!--        <mat-icon class="event-color">flash_on</mat-icon>-->
         <svg-icon src="/assets/images/icons/flash_on.svg" svgClass="icon-style-flash_on event-color"
                   class="icon-style-flash_on event-color"></svg-icon>
         <span class="action-color">Show All Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action')">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Action'); eventMenu.hide()">
         <!--        <mat-icon class="event-color">-->
         <!--            <div class="action-event-icon"></div>-->
         <!--        </mat-icon>-->
@@ -1483,7 +1488,7 @@
         </div>
         <span class="action-color">Show Action Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh')">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('Refresh'); eventMenu.hide()">
         <!--        <mat-icon class="event-color">-->
         <!--            <div class="refresh-event-icon"></div>-->
         <!--        </mat-icon>-->
@@ -1492,7 +1497,7 @@
         </div>
         <span class="action-color">Show Refresh Events</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None')">
+    <div class="toolbar-menu all-status event-color" (click)="onShowEvent('None'); eventMenu.hide()">
         <!--        <mat-icon class="event-color">flash_off</mat-icon>-->
         <svg-icon src="/assets/images/icons/flash_off.svg" svgClass="icon-style-flash_on event-color"
                   class="icon-style-flash_on event-color"></svg-icon>
@@ -1501,19 +1506,19 @@
 </p-overlayPanel>
 
 <p-overlayPanel #viewMenu>
-    <div class="toolbar-menu all-status event-color" (click)="onView('blocks')">
+    <div class="toolbar-menu all-status event-color" (click)="onView('blocks'); viewMenu.hide()">
         <!--        <mat-icon class="action-color">view_agenda</mat-icon>-->
         <svg-icon src="/assets/images/icons/view_agenda.svg" svgClass="icon-style-view_agenda"></svg-icon>
         <!--        <svg-icon src="/assets/images/icons/action-color.svg" class="action-color"></svg-icon>-->
         <span class="action-color">Tree</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onView('json')">
+    <div class="toolbar-menu all-status event-color" (click)="onView('json'); viewMenu.hide()">
         <!--        <mat-icon class="action-color">code</mat-icon>-->
 
         <i class="pi pi-copy action-color"></i>
         <span class="action-color">JSON</span>
     </div>
-    <div class="toolbar-menu all-status event-color" (click)="onView('yaml')">
+    <div class="toolbar-menu all-status event-color" (click)="onView('yaml'); viewMenu.hide()">
         <!--        <mat-icon class="action-color">segment</mat-icon>-->
         <i class="pi pi-align-right action-color"></i>
         <span class="action-color">YAML</span>
@@ -1521,7 +1526,7 @@
 </p-overlayPanel>
 
 <p-overlayPanel #themesMenu>
-    <div class="toolbar-menu all-status" *ngFor="let t of themes" (click)="setTheme(t)">
+    <div class="toolbar-menu all-status" *ngFor="let t of themes" (click)="setTheme(t); themesMenu.hide()">
         <!--        <mat-icon [class]="t === theme ? 'action-color' : 'no-action-color'">palette</mat-icon>-->
         <i [ngClass]="t === theme ? 'pi pi-palette action-color' : 'pi pi-palette no-action-color'"></i>
         <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{ t.name }}</span>
