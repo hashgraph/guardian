@@ -41,6 +41,8 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public menu: IValidatorNode[];
     public result: IValidateResult | null;
 
+    public status: boolean | undefined = undefined;
+
     public defaultColumns: IColumn[] = [{
         id: 'checkbox',
         title: '',
@@ -191,6 +193,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
             name: 'Target',
             item: this,
             selectable: true,
+            type: 'target',
             children: []
         })
         this.steps.unshift({
@@ -208,6 +211,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
             name: 'Result',
             item: this.validator,
             selectable: true,
+            type: 'result',
             children: []
         })
         this.steps.push({
@@ -221,7 +225,20 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
         })
     }
 
-    private createMenu(node: any, result: any[]) {
+    private createMenu(node: IValidatorNode, result: any[]) {
+        if (node.type === 'group') {
+            node.icon = 'folder';
+        } else if (node.type === 'rules') {
+            node.icon = 'file';
+        } else if (node.type === 'label') {
+            node.icon = 'folder';
+        } else if (node.type === 'statistic') {
+            node.icon = 'file';
+        } else if (node.type === 'target') {
+            node.icon = 'list';
+        } else if (node.type === 'result') {
+            node.icon = 'publish';
+        }
         result.push(node);
         for (const child of node.children) {
             this.createMenu(child, result);
@@ -274,6 +291,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public onSelectDocument(item: IDocument) {
         this.document = item;
         this.steps[0].disabled = !this.document;
+        this.status = this.document ? true : undefined;
     }
 
     public onPage(event: any): void {

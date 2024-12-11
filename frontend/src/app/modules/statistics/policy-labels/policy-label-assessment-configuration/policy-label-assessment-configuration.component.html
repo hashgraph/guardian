@@ -34,34 +34,35 @@
 
     <div class="body-container">
 
-
-        <div class="preview-menu">
-            <div *ngFor="let item of menu; let last = last" 
-                class="preview-menu-item" 
-                [attr.highlighted]="isSelected(item)"
-                [attr.last]="last"
-            >
-                <div class="preview-menu-item-status" [attr.status]="item.item.status"></div>
-                <div class="preview-menu-item-icon">
-                    <svg-icon
-                        *ngIf="!item.selectable"
-                        class="icon-btn"
-                        src="/assets/images/icons/folder.svg"
-                        [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
-                    </svg-icon>
-                    <svg-icon
-                        *ngIf="item.selectable"
-                        class="icon-btn"
-                        src="/assets/images/icons/file.svg"
-                        [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
-                    </svg-icon>
+        <div class="left-side">
+            <div class="config-menu">
+                <div *ngFor="let item of menu; let last = last" 
+                    class="config-menu-item" 
+                    [attr.highlighted]="isSelected(item)"
+                    [attr.last]="last"
+                >
+                    <div 
+                        class="config-menu-item-status" 
+                        [attr.status]="item.item.status"
+                    ></div>
+                    <div class="config-menu-item-icon">
+                        <svg-icon
+                            *ngIf="item.icon"
+                            class="icon-btn"
+                            src="/assets/images/icons/{{item.icon}}.svg"
+                            [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
+                        </svg-icon>
+                    </div>
+                    <div class="config-menu-item-name">{{item.name}}</div>
                 </div>
-                <div class="preview-menu-item-name">{{item.name}}</div>
             </div>
         </div>
-        <div class="preview-node-container">
-            <div class="preview-node-body fields-container">
-                <div *ngIf="current" class="preview-node-header">{{current.title}}</div>
+        <div class="config-node-container">
+            <div class="config-node-body fields-container">
+                <div *ngIf="current" class="config-node-header">
+                    <span *ngIf="current.prefix" class="config-node-prefix">{{current.prefix}}</span>
+                    <span>{{current.title}}</span>
+                </div>
 
                 <div *ngIf="current && current.subIndexes && current.subIndexes.length > 1" class="sub-indexes">
                     <ng-container *ngFor="let item of current.subIndexes; let last = last;">
@@ -209,7 +210,7 @@
                 </ng-container>
 
                 <ng-container *ngIf="current && current.type === 'scores'">
-                    <div *ngFor="let score of current.config" class="field-container">
+                    <div *ngFor="let score of current.config" class="score-container">
                         <div *ngIf="score.relationships" class="fields-container">
                             <div *ngFor="let variable of score._relationships" class="field-container">
                                 <div class="field-name">
@@ -229,7 +230,7 @@
                                 </ng-container>
                             </div>
                         </div>
-                        <div class="field-name">
+                        <div class="score-name">
                             {{score.description}}
                         </div>
                         <div *ngIf="score._options" class="options-container">
@@ -265,34 +266,37 @@
 
                 <ng-container *ngIf="current && current.type === 'result'">
 
-                    <div class="preview-result">
-                        <div *ngIf="result?.valid" class="preview-result-item">
-                            <div class="preview-result-icon">
+                    <div *ngIf="result?.valid" class="config-result config-result-valid">
+                        <div class="config-result-item">
+                            <div class="config-result-icon">
                                 <svg-icon 
                                     class="svg-icon-32" 
-                                    src="/assets/images/icons/32/list.svg" 
-                                    svgClass="icon-color-disabled">
+                                    src="/assets/images/icons/32/circle-check.svg" 
+                                    svgClass="icon-color-success">
                                 </svg-icon>
                             </div>
-                            <div class="preview-result-text">Label created successfully.</div>
-                        </div>
-                        <div *ngIf="!result?.valid" class="preview-result-item">
-                            <div class="preview-result-icon">
-                                <svg-icon 
-                                    class="svg-icon-32" 
-                                    src="/assets/images/icons/32/list.svg" 
-                                    svgClass="icon-color-disabled">
-                                </svg-icon>
+                            <div class="config-result-text">
+                                Label created successfully.
                             </div>
-                            <div class="preview-result-text">Sorry, but your document does not meet the requirements.</div>
                         </div>
                     </div>
-
-
+                    <div *ngIf="!result?.valid" class="config-result config-result-invalid">
+                        <div class="config-result-item">
+                            <div class="config-result-icon">
+                                <svg-icon 
+                                    class="svg-icon-32" 
+                                    src="/assets/images/icons/32/list.svg" 
+                                    svgClass="icon-color-failure">
+                                </svg-icon>
+                            </div>
+                            <div class="config-result-text">
+                                Sorry, but your document does not meet the requirements.
+                            </div>
+                        </div>
+                    </div>
                 </ng-container>
             </div>
         </div>
-
 
     </div>
     <div *ngIf="current && validator" class="actions-container">
@@ -308,6 +312,6 @@
         <button
             *ngIf="!validator.isNext()" 
             (click)="onSubmit()" 
-            class="guardian-button guardian-button-primary">Finish</button>
+            class="guardian-button guardian-button-primary">Publish</button>
     </div>
 </div>

@@ -30,6 +30,8 @@ export interface IValidatorNode {
     name: string,
     item: IValidator,
     selectable: boolean,
+    type: string | null,
+    icon?: string,
     children: IValidatorNode[]
 }
 
@@ -42,6 +44,7 @@ export interface ISubStep {
 export interface IValidatorStep {
     name: string,
     title: string,
+    prefix?: string,
     item: IValidator,
     type: string,
     config: any,
@@ -182,6 +185,8 @@ class NodeValidator {
     private scope: ValidateScore;
     private valid: IValidateResult;
 
+    public prefix: string;
+
     constructor(item: any) {
         this.id = item.id;
         this.name = item.name;
@@ -212,6 +217,7 @@ class NodeValidator {
             item: this,
             name: this.name,
             title: this.title,
+            prefix: this.prefix,
             auto: true,
             type: 'validate',
             config: null,
@@ -294,6 +300,8 @@ class GroupValidator {
     private scope: ValidateScore;
     private valid: IValidateResult;
 
+    public prefix: string;
+
     constructor(item: IGroupItemConfig) {
         this.id = item.id;
         this.name = item.name || '';
@@ -349,6 +357,7 @@ class GroupValidator {
             item: this,
             name: this.title,
             title: this.title,
+            prefix: this.prefix,
             auto: true,
             type: 'validate',
             config: null,
@@ -385,6 +394,8 @@ class RuleValidator {
     private variables: IVariableData[];
     private scores: IScoreData[];
     private formulas: IFormulaData[];
+
+    public prefix: string;
 
     constructor(item: IRulesItemConfig) {
         this.id = item.id;
@@ -515,6 +526,7 @@ class RuleValidator {
                 item: this,
                 name: 'Overview',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'variables',
                 config: this.variables,
@@ -527,6 +539,7 @@ class RuleValidator {
                 item: this,
                 name: 'Scores',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'scores',
                 config: this.scores,
@@ -539,6 +552,7 @@ class RuleValidator {
                 item: this,
                 name: 'Statistics',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'formulas',
                 config: this.formulas,
@@ -550,6 +564,7 @@ class RuleValidator {
             item: this,
             name: this.title,
             title: this.title,
+            prefix: this.prefix,
             auto: true,
             type: 'validate',
             config: null,
@@ -587,6 +602,8 @@ class StatisticValidator {
     private variables: IVariableData[];
     private scores: IScoreData[];
     private formulas: IFormulaData[];
+
+    public prefix: string;
 
     constructor(item: IStatisticItemConfig) {
         this.id = item.id;
@@ -704,6 +721,7 @@ class StatisticValidator {
                 item: this,
                 name: 'Overview',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'variables',
                 config: this.variables,
@@ -716,6 +734,7 @@ class StatisticValidator {
                 item: this,
                 name: 'Scores',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'scores',
                 config: this.scores,
@@ -728,6 +747,7 @@ class StatisticValidator {
                 item: this,
                 name: 'Statistics',
                 title: this.title,
+                prefix: this.prefix,
                 auto: false,
                 type: 'formulas',
                 config: this.formulas,
@@ -739,6 +759,7 @@ class StatisticValidator {
             item: this,
             name: this.title,
             title: this.title,
+            prefix: this.prefix,
             auto: true,
             type: 'validate',
             config: null,
@@ -776,6 +797,8 @@ class LabelValidator {
 
     private imports: INavImportsConfig[];
     private children: INavItemConfig[];
+
+    public prefix: string;
 
     constructor(item: ILabelItemConfig) {
         this.id = item.id;
@@ -816,6 +839,7 @@ class LabelValidator {
             item: this,
             name: this.title,
             title: this.title,
+            prefix: this.prefix,
             auto: true,
             type: 'validate',
             config: null,
@@ -860,6 +884,10 @@ export class LabelValidators {
         this.list = this.createList(this.root, []);
     }
 
+    public get status(): boolean | undefined {
+        return this.root ? this.root.status : undefined;
+    }
+
     private createList(node: IValidator, result: IValidator[]): IValidator[] {
         result.push(node);
         if (node.type === NavItemType.Group) {
@@ -901,9 +929,14 @@ export class LabelValidators {
         const item: IValidatorNode = {
             name: prefix ? `${prefix} ${node.title}` : node.title,
             item: node,
-            selectable: node.type === NavItemType.Rules || node.type === NavItemType.Statistic,
+            type: node.type,
+            selectable: (
+                node.type === NavItemType.Rules ||
+                node.type === NavItemType.Statistic
+            ),
             children: []
         }
+        node.prefix = prefix;
         if (node.type === NavItemType.Group) {
             const childrenNode = (node as GroupValidator).children;
             for (let i = 0; i < childrenNode.length; i++) {
