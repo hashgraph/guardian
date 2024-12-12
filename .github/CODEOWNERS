@@ -23,9 +23,9 @@
 /.github/workflows/                             @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/guardian-committers
 
 # NodeJS project files
-package.json                                    @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @guardian-committers
-package-lock.json                               @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @guardian-committers
-jest.config.mjs                                 @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @guardian-committers
+package.json                                    @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @hashgraph/guardian-committers
+package-lock.json                               @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @hashgraph/guardian-committers
+jest.config.mjs                                 @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @hashgraph/guardian-committers
 
 # Codacy Tool Configurations
 /config/                                        @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
