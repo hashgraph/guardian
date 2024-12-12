@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyDocument } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { PolicyUtils } from '../helpers/utils.js';
+import { PolicyUtils, QueryType } from '../helpers/utils.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
 
@@ -237,40 +237,13 @@ export class DocumentsSourceAddon {
         }
 
         for (const filter of ref.options.filters) {
-            switch (filter.type) {
-                case 'equal':
-                    filters.push({ $eq: [filter.value, `\$${filter.field}`] });
-                    break;
-
-                case 'not_equal':
-                    filters.push({ $ne: [filter.value, `\$${filter.field}`] });
-                    break;
-
-                case 'in':
-                    filters.push({ $in: [`\$${filter.field}`, filter.value.split(',')] });
-                    break;
-
-                case 'not_in':
-                    filters.push({ $nin: [`\$${filter.field}`, filter.value.split(',')] });
-                    break;
-
-                case 'gt':
-                    filters.push({ $gt: [`\$${filter.field}`, filter.value] });
-                    break;
-
-                case 'gte':
-                    filters.push({ $gte: [`\$${filter.field}`, filter.value] });
-                    break;
-
-                case 'lt':
-                    filters.push({ $lt: [`\$${filter.field}`, filter.value] });
-                    break;
-
-                case 'lte':
-                    filters.push({ $lte: [`\$${filter.field}`, filter.value] });
-                    break;
-                default:
-                    throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
+            const queryType = filter.type as QueryType;
+            const queryValue = PolicyUtils.getQueryValue(queryType, filter.value);
+            const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);
+            if (queryExpression) {
+                filters.push(PolicyUtils.getQueryFilter(filter.field, queryExpression));
+            } else {
+                throw new BlockActionError(`Unknown filter type: ${filter.type}`, ref.blockType, ref.uuid);
             }
         }
 
@@ -291,15 +264,17 @@ export class DocumentsSourceAddon {
                 __sourceTag__: {
                     $cond: {
                         if: {
-                            $and: [
-                                ...filters,
-                                {
-                                    $or: [
-                                        { $eq: [null, '$__sourceTag__'] },
-                                        { $not: '$__sourceTag__' }
-                                    ]
-                                }
-                            ]
+                            $expr: {
+                                $and: [
+                                    ...filters,
+                                    {
+                                        $or: [
+                                            { $eq: [null, '$__sourceTag__'] },
+                                            { $not: '$__sourceTag__' }
+                                        ]
+                                    }
+                                ]
+                            }
                         },
                         then: ref.tag,
                         else: '$__sourceTag__'
