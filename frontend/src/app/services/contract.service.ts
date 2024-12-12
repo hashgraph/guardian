@@ -322,5 +322,18 @@ export class ContractService {
         });
     }
 
+    public getRetireVCsFromIndexer(
+        pageIndex?: number,
+        pageSize?: number
+    ) {
+        let url = `${this.url}/retireIndexer`;
+        if (pageIndex && pageSize) {
+            url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`
+        }
+        return this.http.get<any>(url, {
+            observe: 'response',
+        });
+    }
+
     //#endregion
 }

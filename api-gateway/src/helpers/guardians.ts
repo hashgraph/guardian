@@ -1846,6 +1846,25 @@ export class Guardians extends NatsService {
         });
     }
 
+    /**
+     * Get retire VCs from Indexer
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     * @returns Retire VCs from Indexer and count
+     */
+    public async getRetireVCsFromIndexer(
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    ): Promise<[IVCDocument, number]> {
+        return await this.sendMessage(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, {
+            owner,
+            pageIndex,
+            pageSize,
+        });
+    }
+
     //#endregion
 
     /**

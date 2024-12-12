@@ -2606,34 +2606,6 @@ export async function contractAPI(
                 );
             }
 
-
-
-
-            console.log("____________retirements");
-            const retirements = await new Workers().addNonRetryableTask({
-                type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
-                data: {
-                    payload: { options: { topicId: '0.0.5148441' } }
-                }
-            }, 2);
-            console.log(JSON.stringify(retirements, null, 4));
-            
-
-            const filtersOld: any = {
-                owner: owner.owner,
-                type: SchemaEntity.RETIRE_TOKEN,
-            };
-            if (user.role === UserRole.USER) {
-                filters['document.credentialSubject.user'] =
-                    user.hederaAccountId;
-            }
-
-            const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
-
-            
-            console.log(JSON.stringify(oldRetirements, null, 4));
-
-
             return new MessageResponse(
                 await dataBaseServer.findAndCount(RetirePool, filters, otherOptions)
             );
@@ -2986,7 +2958,7 @@ export async function contractAPI(
             }
         });
 
-    ApiResponse(ContractAPI.RETIRE, async (msg: {
+    ApiResponse(ContractAPI.RETIRE, async (msg: { // Tokens Retire here
         owner: IOwner,
         poolId: string,
         tokens: RetireTokenRequest[]
@@ -3436,4 +3408,130 @@ export async function contractAPI(
             return new MessageError(error);
         }
     });
+
+    ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
+        owner: IOwner,
+        pageIndex?: any,
+        pageSize?: any
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get contract parameters');
+            }
+
+            const { pageIndex, pageSize, owner } = msg;
+
+            if (!owner.creator) {
+                throw new Error('Owner is required');
+            }
+
+            const otherOptions: any = {};
+            const _pageSize = parseInt(pageSize, 10);
+            const _pageIndex = parseInt(pageIndex, 10);
+            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = Math.min(100, _pageSize);
+                otherOptions.offset = _pageIndex * _pageSize;
+            } else {
+                otherOptions.orderBy = { createDate: 'DESC' };
+                otherOptions.limit = 100;
+            }
+
+            const users = new Users();
+            const user = await users.getUserById(owner.creator);
+
+            const filters: any = {
+                owner: owner.owner,
+                type: SchemaEntity.RETIRE_TOKEN,
+            };
+            if (user.role === UserRole.USER) {
+                filters['document.credentialSubject.user'] =
+                    user.hederaAccountId;
+            }
+
+
+
+
+
+
+
+
+
+
+            console.log("____________retirements");
+            const retirements = await new Workers().addNonRetryableTask({
+                type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
+                data: {
+                    payload: { options: { topicId: '0.0.5148441' } }
+                }
+            }, 2);
+            console.log(JSON.stringify(retirements, null, 4));
+
+            
+
+            const filtersOld: any = {
+                owner: owner.owner,
+                type: SchemaEntity.RETIRE_TOKEN,
+            };
+            if (user.role === UserRole.USER) {
+                filters['document.credentialSubject.user'] =
+                    user.hederaAccountId;
+            }
+
+            const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
+
+            
+            console.log(JSON.stringify(oldRetirements, null, 4));
+
+            retirements.forEach(retirement => {
+                oldRetirements.forEach(oldRetirement => {
+                    
+                });
+
+                console.log(retirement);
+                
+            });
+
+            const vcMessage = new VCMessage(MessageAction.CreateVC);
+            console.log(vcMessage.hash);
+            
+            // vcMessage.setDocument(vcObject);
+            
+            // await dataBaseServer.save(VcDocumentCollection, {
+            //     hash: vcMessage.hash,
+            //     owner: owner.creator,
+            //     document: vcMessage.document,
+            //     type: schemaObject?.entity,
+            //     documentFields: ['credentialSubject.0.user'],
+            // });
+
+            // await saveRetireVC(
+            //     // contractRepository,
+            //     dataBaseServer,
+            //     pool.contractId,
+            //     srUser,
+            //     sr.hederaAccountId,
+            //     srKey,
+            //     root.hederaAccountId,
+            //     tokens.map((token) => {
+            //         const newToken: any = {
+            //             ...token,
+            //         };
+            //         const poolToken = pool.tokens.find(
+            //             // tslint:disable-next-line:no-shadowed-variable
+            //             (poolToken) => (poolToken.token = token.token)
+            //         );
+            //         newToken.decimals = poolToken.decimals;
+            //         return newToken;
+            //     })
+            // );
+
+
+            return new MessageResponse(retirements);
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
 }

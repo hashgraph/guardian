@@ -121,6 +121,11 @@ export class ReportBlockComponent implements OnInit {
                     this.loading = false;
                 }
             );
+
+        this.contractService.getRetireVCsFromIndexer().subscribe((indexerData) => {
+            console.log(indexerData);
+            
+        })
     }
     // ...
 
