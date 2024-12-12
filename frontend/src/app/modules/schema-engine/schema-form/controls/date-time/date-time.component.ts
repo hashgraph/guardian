@@ -3,8 +3,10 @@ import { UntypedFormControl } from '@angular/forms';
 import * as moment from 'moment';
 import { Subject, Subscription } from 'rxjs';
 
+type InputType = 'default' | 'test' | 'suggest';
+
 @Component({
-    selector: 'date-time',
+    selector: 'date-time-control',
     templateUrl: './date-time.component.html',
     styleUrls: ['./date-time.component.scss'],
 })
@@ -12,7 +14,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     @Input('control') control: UntypedFormControl;
     @Input('showIcon') showIcon: boolean = true;
     @Input('showSeconds') showSeconds: boolean = true;
-    @Input('showTime') showTime: boolean = true;
+    @Input('showTime') showTime: boolean;
     @Input('timeOnly') timeOnly: boolean = false;
     @Input('dateFormat') dateFormat: string = 'yy-mm-dd';
     @Input('item') item: any;
@@ -20,6 +22,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     @Input('index') isDisabled?: number;
     @Input('update') update?: Subject<any>;
     @Input('value') value?: string;
+    @Input('type') type?: InputType;
 
     @ViewChild('calendar') calendar: any
 
@@ -31,11 +34,13 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     }
 
     ngOnInit() {
-        if (this.item.subject) {
-            this.item.subject.subscribe(() => {
+        // if (this.item.subject) {
+        this.subscription.add(
+            this.control.valueChanges.subscribe(() => {
                 this.fillField();
             })
-        }
+        );
+        // }
     }
 
     ngOnDestroy() {
@@ -43,6 +48,7 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     }
 
     ngAfterViewInit() {
+        (this.calendar?.el.nativeElement.querySelector('input') as HTMLInputElement).readOnly = true;
         // if (this.isMany) {
             this.fillField();
         // }
@@ -55,28 +61,42 @@ export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDe
     fillField() {
         const comment = this.item?.field?.comment && JSON.parse(this.item.field.comment);
         let value: any = null;
-        if (this.value) {
-            value = this.value;
-        } else if (this.timeOnly && comment?.suggest) {
-            value = comment.suggest;
+        if (this.timeOnly && this.type && comment && comment[this.type]) {
+            value = comment[this.type];
         } else if (this.calendar?.value) {
             value = this.calendar?.value;
         } else if (this.item.value) {
             value = this.item.value;
+        } else if (this.item.preset) {
+            value = this.item.preset;
         }
 
-        const input = this.calendar?.el.nativeElement.querySelector('input')
-
         setTimeout(() => {
+            const input = this.calendar?.el.nativeElement.querySelector('input');
             if (input && value) {
                 if (this.timeOnly) {
-                    const date = moment(value, 'hh-mm-ss').toDate();
-                    this.control.setValue(date);
-                    input.value = value;
+                    const date = moment(value, 'hh:mm:ss');
+                    this.control.setValue(date.format('HH:mm:ss'), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
+                    input.value = moment(value, 'hh:mm:ss').format('HH:mm:ss');
+                } else if (!this.showTime) {
+                    const date = moment(value, 'YYYY-MM-DD');
+                    this.control.setValue(date.format('YYYY-MM-DD'), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    });
+                    input.value = moment(value, 'YYYY-MM-DD').format('YYYY-MM-DD');
                 } else {
-                    input.value = moment(value).format('YYYY-MM-DD HH:mm:ss');
+                    const date = moment(value);
+                    this.control.setValue(date.toISOString(), {
+                        emitEvent: false,
+                        emitModelToViewChange: false
+                    })
+                    input.value = moment(value).toISOString();
                 }
             }
-        })
+        }, 100)
     }
 }
