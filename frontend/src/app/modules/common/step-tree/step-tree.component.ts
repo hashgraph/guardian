@@ -21,7 +21,7 @@ interface TreeNode {
 export class StepTreeComponent {
     treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
     // dataSource = new MatTreeNestedDataSource<TreeNode>();
-    dataSource: any
+    dataSource: { data: TreeNode[] } = { data: [] }
 
     @Input('treeData') treeData!: any;
     @Input('currentNode') currentNode!: any;

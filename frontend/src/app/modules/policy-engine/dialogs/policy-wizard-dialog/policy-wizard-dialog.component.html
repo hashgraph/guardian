@@ -50,6 +50,9 @@
                     optionValue="id"
                     placeholder="Not selected"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
@@ -63,6 +66,9 @@
                     optionValue="id"
                     placeholder="Not selected"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
@@ -118,6 +124,9 @@
                     optionValue="id"
                     placeholder="Not selected"
             >
+                <ng-template pTemplate="selectedItem" let-selectedItem>
+                    {{ selectedItem ? selectedItem.name : 'Not selected' }}
+                </ng-template>
             </p-dropdown>
         </div>
         <div class="form-input-container">
