@@ -967,6 +967,9 @@ export class SchemaFormComponent implements OnInit {
         if (field.customType === 'geo') {
             return Object.keys(value).length === 0;
         }
+        if (field.customType === 'sentinel') {
+            return JSON.stringify(value) === '{"layers":"NATURAL-COLOR","format":"image/jpeg","maxcc":null,"width":null,"height":null,"bbox":"","time":null}';
+        }
         if (field.fields) {
             for (const _field of field.fields) {
                 if (_field.isRef && !this.isEmptyRef(value[_field.name], _field)) {
