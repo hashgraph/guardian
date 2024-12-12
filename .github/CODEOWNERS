@@ -8,8 +8,8 @@
 #####  Project Files  ######
 ############################
 
-*/src/**                                         @guardian-committers @guardian-maintainers
-*/tests/**                                       @guardian-committers @guardian-maintainers
+*/src/**                                         @hashgraph/guardian-committers @hashgraph/guardian-maintainers
+*/tests/**                                       @hashgraph/guardian-committers @hashgraph/guardian-maintainers
 
 
 #########################
