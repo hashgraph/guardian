@@ -38,7 +38,7 @@ jest.config.mjs                                 @hashgraph/devops-ci @hashgraph/
 /CODEOWNERS                                     @hashgraph/release-engineering-managers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers @guardian-maintainers
+/README.md                                      @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers @hashgraph/guardian-maintainers
 **/LICENSE                                      @hashgraph/release-engineering-managers
 
 # CodeCov configuration
