@@ -43,14 +43,22 @@
                     <!--                    </mat-form-field>-->
 
                     <div class="p-fluid">
-                        <label for="themeDropdown">Theme</label>
+                        <label for="themeDropdown" class="dropdown-label">Theme</label>
                         <p-dropdown
                             [(ngModel)]="theme"
                             [options]="themes"
                             optionLabel="name"
+                            [appendTo]="'body'"
                             (onChange)="onSelectTheme()"
-                            placeholder="Выберите тему"
-                            id="themeDropdown">
+                            id="themeDropdown"
+                            [style]="{ 'outline': 'none', 'box-shadow': 'none' }"
+                        >
+                            <ng-template let-option pTemplate="selectedItem">
+                                {{ option.name }}
+                            </ng-template>
+                            <ng-template let-option pTemplate="item">
+                                {{ option.name }}
+                            </ng-template>
                         </p-dropdown>
                     </div>
 

@@ -22,7 +22,7 @@ export class PolicySettingsComponent implements OnInit {
 
     public isSyntax: boolean = false;
     public settingsTab: number = 0;
-    public themes!: Theme[];
+    public _themes!: Theme[];
     public theme!: Theme;
     public allBlocks!: any[];
     public roles: string[];
@@ -106,6 +106,18 @@ export class PolicySettingsComponent implements OnInit {
         for (let i = 0; i < 20; i++) {
             this.roles.push(String(i));
         }
+    }
+
+    get themes(): any[] {
+        return this._themes ?? []
+    }
+
+    set themes(value: any[]) {
+        this._themes = value.map(theme => {
+            theme.value = theme.id;
+            theme.name = theme._name
+            return theme;
+        });
     }
 
     ngOnInit(): void {

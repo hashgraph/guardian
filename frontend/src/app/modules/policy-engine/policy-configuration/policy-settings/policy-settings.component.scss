@@ -674,3 +674,27 @@
     width: 180px;
     height: 32px;
 }
+
+.settings-select,
+.settings-select ::ng-deep p-dropdown .p-dropdown{
+    height: 38px !important;
+}
+
+.settings-select .p-fluid{
+    position: relative;
+    line-height: 0.2;
+}
+
+.settings-select .dropdown-label {
+    position: absolute;
+    z-index: 1000;
+    width: 36px;
+    font-size: 10px;
+    background: white;
+    height: 5px;
+    left: 10px;
+}
+
+.settings-select ::ng-deep p-dropdown .p-dropdown-label {
+    padding: 18px;
+}
