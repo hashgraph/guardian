@@ -20,7 +20,7 @@
 
 # Protection Rules for Github Configuration Files and Actions Workflows
 /.github/                                       @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers
-/.github/workflows/                             @hashgraph/devops-ci @hashgraph/devops-ci-committers @guardian-committers
+/.github/workflows/                             @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/guardian-committers
 
 # NodeJS project files
 package.json                                    @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates @guardian-committers
