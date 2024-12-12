@@ -12,6 +12,7 @@ import {
     ITokenReport,
     IVCReport,
     IVPReport,
+    ContractType,
 } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -122,10 +123,39 @@ export class ReportBlockComponent implements OnInit {
                 }
             );
 
-        this.contractService.getRetireVCsFromIndexer().subscribe((indexerData) => {
-            console.log(indexerData);
-            
-        })
+        const retirementsFromIndexer: any[] = [];
+
+        this.contractService
+            .getContracts({
+                type: ContractType.RETIRE
+            })
+            .subscribe(
+                (policiesResponse) => {
+                    const contracts = policiesResponse.body || [];
+                    const tokenContractTopicIds: string[] = [];
+
+                    if (contracts && contracts.length > 0) {
+                        contracts.forEach(contract => {
+                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
+                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
+                                    tokenContractTopicIds.push(contract.topicId);
+                            }
+                        });
+                    }
+
+                    if (tokenContractTopicIds.length > 0) {
+                        tokenContractTopicIds.forEach(id => {
+                            this.contractService.getRetireVCsFromIndexer(id).subscribe((indexerData) => {
+                                console.log(id);
+                                console.log(indexerData);
+                            })
+                        })
+                    }
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
     }
     // ...
 

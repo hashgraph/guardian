@@ -1734,6 +1734,13 @@ export class ContractsApi {
         description: 'Returns all retire vcs from Indexer.',
     })
     @ApiQuery({
+        name: 'contractTopicId',
+        type: String,
+        description: 'The topic id of contract',
+        required: true,
+        example: '0.0.0000000',
+    })
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
@@ -1766,13 +1773,14 @@ export class ContractsApi {
     async getRetireVCsFromIndexer(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
+        @Query('contractTopicId') contractTopicId: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
     ): Promise<any[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, pageIndex, pageSize);
+            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, contractTopicId, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             await InternalException(error, this.logger);

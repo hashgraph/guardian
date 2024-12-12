@@ -3411,6 +3411,7 @@ export async function contractAPI(
 
     ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
         owner: IOwner,
+        contractTopicId: string,
         pageIndex?: any,
         pageSize?: any
     }) => {
@@ -3419,7 +3420,7 @@ export async function contractAPI(
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { pageIndex, pageSize, owner } = msg;
+            const { owner, contractTopicId, pageIndex, pageSize } = msg;
 
             if (!owner.creator) {
                 throw new Error('Owner is required');
@@ -3456,78 +3457,72 @@ export async function contractAPI(
 
 
 
-
-
-            console.log("____________retirements");
+            // Get Retirements from Indexer
             const retirements = await new Workers().addNonRetryableTask({
                 type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
                 data: {
-                    payload: { options: { topicId: '0.0.5148441' } }
+                    payload: { options: { topicId: contractTopicId } }
                 }
             }, 2);
-            console.log(JSON.stringify(retirements, null, 4));
-
             
+            // Save to Guardian DB
+                // const filtersOld: any = {
+                //     owner: owner.owner,
+                //     type: SchemaEntity.RETIRE_TOKEN,
+                // };
+                // if (user.role === UserRole.USER) {
+                //     filters['document.credentialSubject.user'] =
+                //         user.hederaAccountId;
+                // }
 
-            const filtersOld: any = {
-                owner: owner.owner,
-                type: SchemaEntity.RETIRE_TOKEN,
-            };
-            if (user.role === UserRole.USER) {
-                filters['document.credentialSubject.user'] =
-                    user.hederaAccountId;
-            }
+                // const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
+                // console.log(JSON.stringify(oldRetirements, null, 4));
 
-            const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
+                // retirements.forEach(retirement => {
+                //     oldRetirements.forEach(oldRetirement => {
+                        
+                //     });
 
-            
-            console.log(JSON.stringify(oldRetirements, null, 4));
-
-            retirements.forEach(retirement => {
-                oldRetirements.forEach(oldRetirement => {
+                //     console.log(retirement);
                     
-                });
+                // });
 
-                console.log(retirement);
+                // const vcMessage = new VCMessage(MessageAction.CreateVC);
+                // console.log(vcMessage.hash);
                 
-            });
+                // vcMessage.setDocument(vcObject);
+                
+                // await dataBaseServer.save(VcDocumentCollection, {
+                //     hash: vcMessage.hash,
+                //     owner: owner.creator,
+                //     document: vcMessage.document,
+                //     type: schemaObject?.entity,
+                //     documentFields: ['credentialSubject.0.user'],
+                // });
 
-            const vcMessage = new VCMessage(MessageAction.CreateVC);
-            console.log(vcMessage.hash);
-            
-            // vcMessage.setDocument(vcObject);
-            
-            // await dataBaseServer.save(VcDocumentCollection, {
-            //     hash: vcMessage.hash,
-            //     owner: owner.creator,
-            //     document: vcMessage.document,
-            //     type: schemaObject?.entity,
-            //     documentFields: ['credentialSubject.0.user'],
-            // });
+                // await saveRetireVC(
+                //     // contractRepository,
+                //     dataBaseServer,
+                //     pool.contractId,
+                //     srUser,
+                //     sr.hederaAccountId,
+                //     srKey,
+                //     root.hederaAccountId,
+                //     tokens.map((token) => {
+                //         const newToken: any = {
+                //             ...token,
+                //         };
+                //         const poolToken = pool.tokens.find(
+                //             // tslint:disable-next-line:no-shadowed-variable
+                //             (poolToken) => (poolToken.token = token.token)
+                //         );
+                //         newToken.decimals = poolToken.decimals;
+                //         return newToken;
+                //     })
+                // );
+            // ...
 
-            // await saveRetireVC(
-            //     // contractRepository,
-            //     dataBaseServer,
-            //     pool.contractId,
-            //     srUser,
-            //     sr.hederaAccountId,
-            //     srKey,
-            //     root.hederaAccountId,
-            //     tokens.map((token) => {
-            //         const newToken: any = {
-            //             ...token,
-            //         };
-            //         const poolToken = pool.tokens.find(
-            //             // tslint:disable-next-line:no-shadowed-variable
-            //             (poolToken) => (poolToken.token = token.token)
-            //         );
-            //         newToken.decimals = poolToken.decimals;
-            //         return newToken;
-            //     })
-            // );
-
-
-            return new MessageResponse(retirements);
+            return new MessageResponse([retirements, retirements.length]);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

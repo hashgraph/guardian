@@ -17,6 +17,7 @@ import {
     IToken,
     ITokenInfo,
     IUser,
+    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -1855,11 +1856,13 @@ export class Guardians extends NatsService {
      */
     public async getRetireVCsFromIndexer(
         owner: IOwner,
+        contractTopicId: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<[IVCDocument, number]> {
+    ): Promise<[IVC[], number]> {
         return await this.sendMessage(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, {
             owner,
+            contractTopicId,
             pageIndex,
             pageSize,
         });

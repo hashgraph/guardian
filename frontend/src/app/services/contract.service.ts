@@ -323,10 +323,11 @@ export class ContractService {
     }
 
     public getRetireVCsFromIndexer(
+        contractTopicId: string,
         pageIndex?: number,
         pageSize?: number
     ) {
-        let url = `${this.url}/retireIndexer`;
+        let url = `${this.url}/retireIndexer?contractTopicId=${contractTopicId}`;
         if (pageIndex && pageSize) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`
         }
