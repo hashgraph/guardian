@@ -61,17 +61,17 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <date-time [control]="item.control" [item]="item" [value]="item.suggest"></date-time>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <date-time [control]="item.control" [item]="item" [showSeconds]="false"
-                                   [showTime]="false"></date-time>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="false"
+                                           [showSeconds]="false"></date-time-control>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <date-time [control]="item.control" [item]="item" [showSeconds]="true" [showTime]="true"
-                                   [timeOnly]="true"></date-time>
+                        <date-time-control [control]="item.control" [item]="item" [showSeconds]="true" [showTime]="true"
+                                           [timeOnly]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
@@ -193,18 +193,21 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <date-time [control]="listItem.control" [index]="i" [isMany]="true" [item]="item"
-                                           [value]="item.suggest"></date-time>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem" [showTime]="true"
+                                                   [value]="item.suggest"></date-time-control>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <date-time [control]="listItem.control" [isMany]="true" [item]="listItem"
-                                           [showSeconds]="false" [showTime]="false"></date-time>
+                                <date-time-control [control]="listItem.control" [isMany]="true" [item]="listItem"
+                                                   [showSeconds]="false" [showTime]="false"></date-time-control>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <date-time [control]="listItem.control" [index]="i" [isMany]="true" [item]="item"
-                                           [showSeconds]="true" [showTime]="true" [timeOnly]="true"></date-time>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem"
+                                                   [showSeconds]="true" [showTime]="true"
+                                                   [timeOnly]="true"></date-time-control>
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
