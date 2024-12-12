@@ -264,17 +264,15 @@ export class DocumentsSourceAddon {
                 __sourceTag__: {
                     $cond: {
                         if: {
-                            $expr: {
-                                $and: [
-                                    ...filters,
-                                    {
-                                        $or: [
-                                            { $eq: [null, '$__sourceTag__'] },
-                                            { $not: '$__sourceTag__' }
-                                        ]
-                                    }
-                                ]
-                            }
+                            $and: [
+                                ...filters,
+                                {
+                                    $or: [
+                                        { $eq: [null, '$__sourceTag__'] },
+                                        { $not: '$__sourceTag__' }
+                                    ]
+                                }
+                            ]
                         },
                         then: ref.tag,
                         else: '$__sourceTag__'
