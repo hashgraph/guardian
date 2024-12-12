@@ -177,18 +177,18 @@ export class FiltersAddonBlockComponent implements OnInit {
     }
 
     onFilters(event: any) {
-        if(!this.currentValue) return;
-
         if(this.type === 'datepicker'){
             this.currentValue = moment(this.currentValue).format('YYYY-MM-DD');
         }
 
         this.loading = true;
         const options: any = { filterValue: null };
-        if (this.queryType === 'user_defined') {
-            options.filterValue = this.currentType + ':' + this.currentValue;
-        } else {
-            options.filterValue = this.currentValue;
+        if(this.currentValue) {
+            if (this.queryType === 'user_defined') {
+                options.filterValue = this.currentType + ':' + this.currentValue;
+            } else {
+                options.filterValue = this.currentValue;
+            }
         }
         this.policyEngineService
             .setBlockData(this.id, this.policyId, options)

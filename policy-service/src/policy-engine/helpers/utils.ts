@@ -1330,12 +1330,59 @@ export class PolicyUtils {
     }
 
     public static getQueryFilter(key: string, value: any) {
-        const formattedKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        const queryKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        let queryOperation: string = '$eq';
+        let queryValue: any = value;
         if (typeof value === 'object') {
-            const [op, val] = Object.entries(value)[0];
-            return { [`${op}`]: [`\$${formattedKey}`, val] };
+            [queryOperation, queryValue] = Object.entries(value)[0];
+        }
+
+        //Check number value
+        const numberValue = PolicyUtils.parseQueryNumberValue(queryValue);
+        if (numberValue) {
+            if (queryOperation === '$ne' || queryOperation === '$nin') {
+                return {
+                    $and: [
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[0]] },
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[1]] }
+                    ]
+                }
+            } else {
+                return {
+                    $or: [
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[0]] },
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[1]] }
+                    ]
+                }
+            }
         } else {
-            return { $eq: [value, `\$${formattedKey}`] };
+            return { [`${queryOperation}`]: [`\$${queryKey}`, queryValue] };
+        }
+    }
+
+    public static parseQueryNumberValue(value: any) {
+        if (Array.isArray(value)) {
+            if (value.length) {
+                const stringValue: string[] = [];
+                const numberValue: number[] = [];
+                for (const v of value) {
+                    if (isNaN(v)) {
+                        return null;
+                    } else {
+                        stringValue.push(String(value));
+                        numberValue.push(Number(value));
+                    }
+                }
+                return [stringValue, numberValue];
+            } else {
+                return null;
+            }
+        } else {
+            if (isNaN(value)) {
+                return null;
+            } else {
+                return [String(value), Number(value)];
+            }
         }
     }
 
