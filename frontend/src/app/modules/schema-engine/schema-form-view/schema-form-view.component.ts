@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, S
 import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
-import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
+import { SchemaRuleValidateResult } from '../../common/models/validators/rule-validator/interfaces/validate-result';
 
 interface IFieldControl extends SchemaField {
     fullPath: string;

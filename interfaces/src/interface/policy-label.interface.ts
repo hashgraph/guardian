@@ -36,11 +36,13 @@ export interface ILabelItemConfig extends IItemConfig {
 
 export interface IRulesItemConfig extends IItemConfig {
     type: NavItemType.Rules;
+    schemaId?:string;
     config?: IStatisticConfig;
 }
 
 export interface IStatisticItemConfig extends IItemConfig {
     type: NavItemType.Statistic;
+    schemaId?:string;
     messageId?: string;
     config?: IStatisticConfig;
 }

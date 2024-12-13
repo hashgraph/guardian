@@ -285,7 +285,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
 
-                const schema = await generateSchema(item, owner);
+                const schema = await generateSchema(item.topicId, item.config, owner);
                 await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
                 await DatabaseServer.createAndSaveSchema(schema);
 

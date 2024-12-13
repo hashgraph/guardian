@@ -58,11 +58,15 @@ export async function findRelationships(
     return subDocs.filter((doc) => prevRelationships.has(doc.messageId) || nextRelationships.has(doc.messageId));
 }
 
-export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
+export async function generateSchema(
+    topicId: string, 
+    config: IStatisticConfig, 
+    owner: IOwner
+) {
     const uuid = GenerateUUIDv4();
-    const variables = config.config?.variables || [];
-    const scores = config.config?.scores || [];
-    const formulas = config.config?.formulas || [];
+    const variables = config?.variables || [];
+    const scores = config?.scores || [];
+    const formulas = config?.formulas || [];
     const properties: any = {}
     for (const variable of variables) {
         properties[variable.id] = {
@@ -162,7 +166,7 @@ export async function generateSchema(config: PolicyStatistic, owner: IOwner) {
     newSchema.codeVersion = SchemaConverterUtils.VERSION;
     newSchema.documentURL = `schema:${uuid}`;
     newSchema.contextURL = `schema:${uuid}`;
-    newSchema.topicId = config.topicId;
+    newSchema.topicId = topicId;
     newSchema.creator = owner.creator;
     newSchema.owner = owner.owner;
     const schemaObject = DatabaseServer.createSchema(newSchema);

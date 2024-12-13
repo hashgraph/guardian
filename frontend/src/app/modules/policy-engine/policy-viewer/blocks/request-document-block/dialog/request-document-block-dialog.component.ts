@@ -4,7 +4,7 @@ import { RequestDocumentBlockComponent } from '../request-document-block.compone
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { DocumentValidators } from 'src/app/modules/common/models/validators/rule-validator/document-validators';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
@@ -32,7 +32,7 @@ export class RequestDocumentBlockDialog {
     public get docRef() { return this.parent?.ref; }
 
     public buttons: any = [];
-    public rules: SchemaRuleValidators;
+    public rules: DocumentValidators;
     public dataForm: UntypedFormGroup;
     public destroy$: Subject<boolean> = new Subject<boolean>();
     public rulesResults: any;
@@ -80,7 +80,7 @@ export class RequestDocumentBlockDialog {
                 parentId: this.docRef?.id
             })
             .subscribe((rules: any[]) => {
-                this.rules = new SchemaRuleValidators(rules);
+                this.rules = new DocumentValidators(rules);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);

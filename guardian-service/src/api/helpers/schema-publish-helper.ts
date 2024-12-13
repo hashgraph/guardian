@@ -112,6 +112,26 @@ export async function publishSchema(
 }
 
 /**
+ * Publish system schemas
+ * @param systemSchemas
+ * @param messageServer
+ * @param user
+ * @param notifier
+ */
+export async function publishSchemas(
+    schemas: SchemaCollection[],
+    user: IOwner,
+    messageServer: MessageServer,
+    type: MessageAction
+): Promise<SchemaCollection[]> {
+    const tasks = [];
+    for (const schema of schemas) {
+        tasks.push(publishSchema(schema, user, messageServer, type));
+    }
+    return await Promise.all(tasks);
+}
+
+/**
  * Publishing schemas in defs
  * @param defs Definitions
  * @param user

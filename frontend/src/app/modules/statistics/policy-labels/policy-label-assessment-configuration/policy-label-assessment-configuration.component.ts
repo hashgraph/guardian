@@ -1,16 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
+import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
-import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Formula } from 'src/app/utils';
-import { IDocument, IFormula, IOption, IScore, IVariable } from '../../../common/models/assessment';
+import { IDocument } from '../../../common/models/assessment';
 import { IColumn } from '../../../common/models/grid';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
-import { IValidateResult, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/label-validator';
+import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/validators';
 
 @Component({
     selector: 'app-policy-label-assessment-configuration',
@@ -39,7 +37,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public steps: any[];
     public current: IValidatorStep | null;
     public menu: IValidatorNode[];
-    public result: IValidateResult | null;
+    public result: IValidateStatus | null;
 
     public status: boolean | undefined = undefined;
 
@@ -251,7 +249,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     }
 
     private onResult() {
-        this.result = this.validator.getResult();
+        this.result = this.validator.getStatus();
     }
 
     public isSelected(menuItem: any): boolean {
@@ -284,7 +282,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     }
 
     public onSubmit() {
-        const result = this.validator.getResult();
+        const result = this.validator.getStatus();
         debugger;
     }
 

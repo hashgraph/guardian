@@ -152,7 +152,7 @@ export class PolicyLabelImportExport {
                 name: PolicyLabelImportExport.validateString(data.name),
                 title: PolicyLabelImportExport.validateString(data.title),
                 tag: PolicyLabelImportExport.validateTag(data.tag),
-                rule: PolicyLabelImportExport.validateString(data.rule),
+                rule: PolicyLabelImportExport.validateString(data.rule) as any,
                 children: PolicyLabelImportExport.validateChildren(data.children),
             };
             return child;
@@ -178,6 +178,7 @@ export class PolicyLabelImportExport {
                 name: PolicyLabelImportExport.validateString(data.name),
                 title: PolicyLabelImportExport.validateString(data.title),
                 tag: PolicyLabelImportExport.validateTag(data.tag),
+                schemaId: PolicyLabelImportExport.validateString(data.schemaId),
                 config: PolicyLabelImportExport.validateRulesConfig(data.config),
             };
             return child;
@@ -192,6 +193,7 @@ export class PolicyLabelImportExport {
                 description: PolicyLabelImportExport.validateString(data.description),
                 owner: PolicyLabelImportExport.validateString(data.owner),
                 messageId: PolicyLabelImportExport.validateString(data.messageId),
+                schemaId: PolicyLabelImportExport.validateString(data.schemaId),
                 config: PolicyStatisticImportExport.validateConfig(data.config),
             };
             return child;

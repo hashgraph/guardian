@@ -10,7 +10,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
+import { DocumentValidators } from 'src/app/modules/common/models/validators/rule-validator/document-validators';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -73,7 +73,7 @@ export class RequestDocumentBlockComponent
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
-    public rules: SchemaRuleValidators;
+    public rules: DocumentValidators;
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -194,7 +194,7 @@ export class RequestDocumentBlockComponent
                 parentId: this.ref?.id
             })
             .subscribe((rules) => {
-                this.rules = new SchemaRuleValidators(rules);
+                this.rules = new DocumentValidators(rules);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);

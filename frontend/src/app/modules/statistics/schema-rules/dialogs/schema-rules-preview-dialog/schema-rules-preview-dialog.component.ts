@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ISchemaRuleData } from '@guardian/interfaces';
-import { FieldRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
-
+import { DocumentFieldValidators } from 'src/app/modules/common/models/validators/rule-validator/document-field-validators';
 
 @Component({
     selector: 'schema-rules-preview-dialog',
@@ -13,7 +12,7 @@ export class SchemaRulesPreviewDialog {
     public loading = true;
     public item: any;
     public preview: any[];
-    public rules: FieldRuleValidators;
+    public rules: DocumentFieldValidators;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -35,7 +34,7 @@ export class SchemaRulesPreviewDialog {
             });
         }
 
-        this.rules = new FieldRuleValidators(variables);
+        this.rules = new DocumentFieldValidators(variables);
     }
 
     ngOnInit() {

@@ -11,7 +11,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
-import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
+import { SchemaRuleValidateResult } from '../../common/models/validators/rule-validator/interfaces/validate-result';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",

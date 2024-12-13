@@ -17,7 +17,7 @@ import { ScoreDialog } from "../../../policy-statistics/dialogs/score-dialog/sco
 import { EnumValue, SchemaRuleConfigDialog } from "../../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component";
 import { NavItem } from "./nav-item";
 import { PolicyLabelConfigurationComponent } from "../policy-label-configuration.component";
-import { LabelValidators } from "src/app/modules/common/models/label-validator";
+import { LabelValidators } from "src/app/modules/common/models/validators";
 
 export class RulesConfig {
     public show: boolean = false;

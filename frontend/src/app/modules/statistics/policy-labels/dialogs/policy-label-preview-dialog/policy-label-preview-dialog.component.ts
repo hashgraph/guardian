@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IValidateResult, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/label-validator';
-
+import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/validators';
 
 @Component({
     selector: 'policy-label-preview-dialog',
@@ -16,7 +15,7 @@ export class PolicyLabelPreviewDialog {
     public steps: any[];
     public current: IValidatorStep | null;
     public menu: IValidatorNode[];
-    public result: IValidateResult | null;
+    public result: IValidateStatus | null;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -63,7 +62,7 @@ export class PolicyLabelPreviewDialog {
     }
 
     private update() {
-        this.result = this.validator.getResult();
+        this.result = this.validator.getStatus();
     }
 
     ngOnInit() {
@@ -73,7 +72,7 @@ export class PolicyLabelPreviewDialog {
     ngOnDestroy(): void {
     }
 
-    public isSelected(menuItem:any): boolean {
+    public isSelected(menuItem: any): boolean {
         return menuItem.item === this.current?.item;
     }
 
@@ -98,7 +97,7 @@ export class PolicyLabelPreviewDialog {
     }
 
     public onSubmit() {
-        const result = this.validator.getResult();
+        const result = this.validator.getStatus();
         this.ref.close(null);
     }
 }

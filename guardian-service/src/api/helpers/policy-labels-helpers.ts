@@ -1,6 +1,7 @@
-import { DatabaseServer, PolicyLabel, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VpDocument } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IPolicyLabelConfig, PolicyType, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { DatabaseServer, PolicyLabel, Schema, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VpDocument } from '@guardian/common';
+import { GenerateUUIDv4, INavItemConfig, IOwner, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType, PolicyType, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { generateSchemaContext } from './schema-publish-helper.js';
+import { generateSchema as generateStatisticSchema } from './policy-statistics-helpers.js';
 
 export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
     return data;
@@ -37,66 +38,45 @@ export async function getOrCreateTopic(item: PolicyLabel): Promise<TopicConfig> 
     return topic;
 }
 
-export async function generateSchema(config: PolicyLabel, owner: IOwner) {
-    const uuid = GenerateUUIDv4();
-    const properties: any = {}
-    const document: any = {
-        $id: `#${uuid}`,
-        $comment: `{ "term": "${uuid}", "@id": "#${uuid}" }`,
-        title: `${uuid}`,
-        description: `${uuid}`,
-        type: 'object',
-        properties: {
-            '@context': {
-                oneOf: [{
-                    type: 'string'
-                }, {
-                    type: 'array',
-                    items: {
-                        type: 'string'
-                    }
-                }],
-                readOnly: true
-            },
-            type: {
-                oneOf: [{
-                    type: 'string'
-                }, {
-                    type: 'array',
-                    items: {
-                        type: 'string'
-                    }
-                }],
-                readOnly: true
-            },
-            id: {
-                type: 'string',
-                readOnly: true
-            },
-            ...properties
-        },
-        required: [],
-        additionalProperties: false
+export async function generateSchema(
+    topicId: string,
+    config: IPolicyLabelConfig,
+    owner: IOwner
+): Promise<{
+    node: any,
+    schema: Schema
+}[]> {
+    console.log('generateSchema')
+    const items = convertConfigToList([], config?.children);
+    console.log('items', items.length);
+    const nodes = items
+        .filter((e) => e.type === NavItemType.Statistic || e.type === NavItemType.Rules) as (IRulesItemConfig | IStatisticItemConfig)[];
+    console.log('nodes', nodes.length);
+    const schemas: any[] = [];
+    for (const node of nodes) {
+        const schema = await generateStatisticSchema(topicId, node.config, owner);
+        schemas.push({ node, schema });
     }
-    const newSchema: any = {};
-    newSchema.category = SchemaCategory.LABEL;
-    newSchema.readonly = true;
-    newSchema.system = false;
-    newSchema.uuid = uuid
-    newSchema.status = SchemaStatus.PUBLISHED;
-    newSchema.document = document;
-    newSchema.context = generateSchemaContext(newSchema);
-    newSchema.iri = `${uuid}`;
-    newSchema.codeVersion = SchemaConverterUtils.VERSION;
-    newSchema.documentURL = `schema:${uuid}`;
-    newSchema.contextURL = `schema:${uuid}`;
-    newSchema.topicId = config.topicId;
-    newSchema.creator = owner.creator;
-    newSchema.owner = owner.owner;
-    const schemaObject = DatabaseServer.createSchema(newSchema);
-    SchemaHelper.setVersion(schemaObject, '1.0.0', null);
-    SchemaHelper.updateIRI(schemaObject);
-    return schemaObject;
+    console.log('schemas', schemas.length);
+    return schemas;
+}
+
+function convertConfigToList(
+    result: INavItemConfig[],
+    items?: INavItemConfig[]
+): INavItemConfig[] {
+    if (Array.isArray(items)) {
+        for (const item of items) {
+            result.push(item);
+            if (item.type === NavItemType.Group) {
+                convertConfigToList(result, item.children);
+            }
+            if (item.type === NavItemType.Label) {
+                convertConfigToList(result, item.config?.children);
+            }
+        }
+    }
+    return result;
 }
 
 export async function findRelationships(target: VcDocument | VpDocument): Promise<VcDocument[]> {

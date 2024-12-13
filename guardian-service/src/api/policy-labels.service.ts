@@ -2,7 +2,7 @@ import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { publishSchema } from './helpers/index.js';
+import { publishSchema, publishSchemas } from './helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -259,32 +259,29 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 item.config = PolicyLabelImportExport.validateConfig(item.config);
                 item.config = publishLabelConfig(item.config);
 
-
-
-
-
-                const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
-                statMessage.setDocument(item);
-
                 const topic = await getOrCreateTopic(item);
                 const user = await (new Users()).getHederaAccount(owner.creator);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                messageServer.setTopicObject(topic);
+
+                const schemas = await generateSchema(topic.topicId, item.config, owner);
+                const tasks = [];
+                for (const { schema } of schemas) {
+                    tasks.push(publishSchema(schema, owner, messageServer, MessageAction.PublishSchema));
+                }
+                await Promise.all(tasks);
+                for (const { node, schema } of schemas) {
+                    await DatabaseServer.createAndSaveSchema(schema);
+                    node.schemaId = schema.iri;
+                }
+
+                const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
+                statMessage.setDocument(item);
                 const statMessageResult = await messageServer
-                    .setTopicObject(topic)
                     .sendMessage(statMessage);
 
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
-
-                const schema = await generateSchema(item, owner);
-                await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
-                await DatabaseServer.createAndSaveSchema(schema);
-
-
-
-
-
-
 
                 const result = await DatabaseServer.updatePolicyLabel(item);
                 return new MessageResponse(result);
@@ -561,4 +558,81 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+
+
+    /**
+     * Create label assessment
+     *
+     * @param payload - label assessment
+     *
+     * @returns {any} new label assessment
+     */
+    ApiResponse(MessageAPI.CREATE_LABEL_ASSESSMENT,
+        async (msg: {
+            definitionId: string,
+            assessment: {
+                document: any,
+                target: string,
+                relationships: string[]
+            },
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters');
+                }
+                const { definitionId, assessment, owner } = msg;
+
+                if (!assessment || !assessment.document) {
+                    return new MessageError('Invalid object.');
+                }
+                const item = await DatabaseServer.getStatisticById(definitionId);
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is not published.');
+                }
+
+
+
+
+                // const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
+                // const schemaObject = new Schema(schema);
+                // const vcObject = await generateVcDocument(assessment.document, schemaObject, owner);
+
+                // const topic = await getOrCreateTopic(item);
+                // const user = await (new Users()).getHederaAccount(owner.creator);
+                // const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+
+                // const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
+                // vcMessage.setDefinition(item);
+                // vcMessage.setDocument(vcObject);
+                // vcMessage.setTarget(assessment.target);
+                // vcMessage.setRelationships(assessment.relationships);
+                // const vcMessageResult = await messageServer
+                //     .setTopicObject(topic)
+                //     .sendMessage(vcMessage);
+
+                // const row = await DatabaseServer.createStatisticAssessment({
+                //     definitionId: item.id,
+                //     policyId: item.policyId,
+                //     policyTopicId: item.policyTopicId,
+                //     policyInstanceTopicId: item.policyInstanceTopicId,
+                //     creator: owner.creator,
+                //     owner: owner.owner,
+                //     messageId: vcMessageResult.getId(),
+                //     topicId: vcMessageResult.getTopicId(),
+                //     target: vcMessageResult.getTarget(),
+                //     relationships: vcMessageResult.getRelationships(),
+                //     document: vcMessageResult.getDocument()
+                // });
+                return new MessageResponse(null);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
 }
