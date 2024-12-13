@@ -1,10 +1,11 @@
 import axios from 'axios';
-import { create } from 'ipfs-client'
+import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
 import { CarReader } from '@ipld/car';
 import * as Delegation from '@ucanto/core/delegation';
 import * as Signer from '@ucanto/principal/ed25519';
 import * as Client from '@web3-storage/w3up-client';
+import * as url from 'url';
 import { StoreMemory } from '@web3-storage/access'
 
 /**
@@ -96,8 +97,11 @@ export class IpfsClientClass {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
+                const {protocol, hostname, port} = url.parse(this.options.nodeAddress);
                 client = create({
-                    http: this.options.nodeAddress
+                    protocol,
+                    host: hostname,
+                    port: parseInt(port, 10),
                 });
 
                 break;
