@@ -26,6 +26,8 @@ This tool is applicable under the following conditions:
 3. Perform a **barriers analysis** to identify any significant obstacles preventing the implementation of the proposed project activity.  
 4. Undertake a **common practice analysis** to evaluate whether the proposed project activity deviates from typical practices in the region or sector.
 
+![Screenshot 2024-12-14 043729](https://github.com/user-attachments/assets/a4bddce2-9970-44d1-b05e-d53d7a50d185)
+
 ## Importance in Verra Projects
 
 The Verra Tool for demonstrating additionality is a critical component of Verra projects, particularly within the Agriculture, Forestry, and Other Land Use (AFOLU) sector. It ensures that project activities go beyond "business as usual" scenarios, delivering genuine and measurable greenhouse gas (GHG) emission reductions or removals. By standardizing the additionality assessment, the tool enhances the credibility, transparency, and environmental integrity of Verra projects.  
