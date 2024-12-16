@@ -75,7 +75,7 @@ export class AnalyticsService {
         return this.http.post<any>(`${this.url}/search/blocks`, options);
     }
 
-    public checkIndexer(): Observable<any> {
+    public checkIndexer(): Observable<boolean> {
         return this.http.get<any>(`${this.url}/checkIndexer`);
     }
 }

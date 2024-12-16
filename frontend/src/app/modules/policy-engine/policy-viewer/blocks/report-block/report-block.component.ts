@@ -13,7 +13,6 @@ import {
     IVCReport,
     IVPReport,
     ContractType,
-    ContractType,
 } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -23,6 +22,7 @@ import { IconsArray } from './iconsArray';
 import { DialogService } from 'primeng/dynamicdialog';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ContractService } from 'src/app/services/contract.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;

@@ -10,7 +10,6 @@ import {
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
-import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
 @Controller()
