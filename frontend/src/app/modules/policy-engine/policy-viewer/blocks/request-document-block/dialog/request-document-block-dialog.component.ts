@@ -4,11 +4,11 @@ import { RequestDocumentBlockComponent } from '../request-document-block.compone
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { RequestDocumentBlockAddonComponent } from '../../request-document-block-addon/request-document-block-addon.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { DocumentValidators } from 'src/app/modules/common/models/validators/rule-validator/document-validators';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
+import { DocumentValidators } from '@guardian/interfaces';
 
 @Component({
     selector: 'request-document-block-dialog',

@@ -1,12 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { Schema } from '@guardian/interfaces';
+import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { SchemaRuleValidateResult } from '../../common/models/validators/rule-validator/interfaces/validate-result';
-import { DocumentValidators } from '../../common/models/validators/rule-validator/document-validators';
 
 /**
  * View document

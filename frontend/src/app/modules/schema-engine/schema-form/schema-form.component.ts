@@ -2,7 +2,7 @@ import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-compo
 import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import * as moment from 'moment';
 import { Subject } from 'rxjs';
@@ -11,7 +11,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
-import { SchemaRuleValidateResult } from '../../common/models/validators/rule-validator/interfaces/validate-result';
+
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",

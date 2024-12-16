@@ -1,4 +1,4 @@
-import { Schema, SchemaField, IRulesItemConfig, IStatisticItemConfig } from "@guardian/interfaces";
+import { Schema, SchemaField, IRulesItemConfig, IStatisticItemConfig, LabelValidators } from "@guardian/interfaces";
 import { DialogService } from "primeng/dynamicdialog";
 import { Subject } from "rxjs";
 import { CustomCustomDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
@@ -17,7 +17,7 @@ import { ScoreDialog } from "../../../policy-statistics/dialogs/score-dialog/sco
 import { EnumValue, SchemaRuleConfigDialog } from "../../../schema-rules/dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component";
 import { NavItem } from "./nav-item";
 import { PolicyLabelConfigurationComponent } from "../policy-label-configuration.component";
-import { LabelValidators } from "src/app/modules/common/models/validators";
+
 
 export class RulesConfig {
     public show: boolean = false;

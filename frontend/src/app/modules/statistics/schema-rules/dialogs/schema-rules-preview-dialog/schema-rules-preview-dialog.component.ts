@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ISchemaRuleData } from '@guardian/interfaces';
-import { DocumentFieldValidators } from 'src/app/modules/common/models/validators/rule-validator/document-field-validators';
+import { DocumentFieldValidators, ISchemaRuleData } from '@guardian/interfaces';
+
 
 @Component({
     selector: 'schema-rules-preview-dialog',

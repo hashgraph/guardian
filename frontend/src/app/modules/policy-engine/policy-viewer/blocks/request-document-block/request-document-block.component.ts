@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, ISchema, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, DocumentValidators, ISchema, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -10,7 +10,6 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { DocumentValidators } from 'src/app/modules/common/models/validators/rule-validator/document-validators';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';

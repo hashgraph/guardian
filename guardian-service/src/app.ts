@@ -113,6 +113,7 @@ import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
 import { policyLabelsAPI } from './api/policy-labels.service.js';
+import { initMathjs } from './utils/formula.js';
 
 export const obj = {};
 
@@ -492,6 +493,8 @@ Promise.all([
         logger
     );
     clearPolicyCache.start(true);
+
+    initMathjs();
 
     startMetricsServer();
 }, (reason) => {

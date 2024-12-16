@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
+import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators } from '@guardian/interfaces';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/validators';
+
 
 @Component({
     selector: 'policy-label-preview-dialog',
@@ -15,7 +16,7 @@ export class PolicyLabelPreviewDialog {
     public steps: any[];
     public current: IValidatorStep | null;
     public menu: IValidatorNode[];
-    public result: IValidateStatus | null;
+    public result: IValidateStatus | undefined;
 
     constructor(
         public ref: DynamicDialogRef,

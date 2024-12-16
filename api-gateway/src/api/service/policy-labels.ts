@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, PolicyLabelAssessmentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -495,7 +495,7 @@ export class PolicyLabelsApi {
      * Get documents
      */
     @Get('/:labelId/documents')
-    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Return a list of all documents.',
         description: 'Returns all documents.',
@@ -555,7 +555,7 @@ export class PolicyLabelsApi {
      * Get document
      */
     @Get('/:labelId/documents/:documentId')
-    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Return a list of all documents.',
         description: 'Returns all documents.',
@@ -595,6 +595,57 @@ export class PolicyLabelsApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.getPolicyLabelDocument(documentId, labelId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Creates a new label assessment
+     */
+    @Post('/:labelId/assessment')
+    @Auth(Permissions.STATISTICS_LABEL_CREATE)
+    @ApiOperation({
+        summary: 'Creates a new statistic assessment.',
+        description: 'Creates a new statistic assessment.',
+    })
+    @ApiParam({
+        name: 'labelId',
+        type: String,
+        description: 'policy label Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiBody({
+        description: 'Configuration.',
+        type: PolicyLabelAssessmentDTO,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyLabelAssessmentDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyLabelAssessmentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async createStatisticAssessment(
+        @AuthUser() user: IAuthUser,
+        @Param('labelId') labelId: string,
+        @Body() assessment: PolicyLabelAssessmentDTO
+    ): Promise<PolicyLabelAssessmentDTO> {
+        try {
+            if (!labelId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            if (!assessment) {
+                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.createLabelAssessment(labelId, assessment, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

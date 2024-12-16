@@ -1,6 +1,29 @@
-import { DatabaseServer, PolicyLabel, Schema, SchemaConverterUtils, TopicConfig, TopicHelper, Users, VcDocument, VpDocument } from '@guardian/common';
-import { GenerateUUIDv4, INavItemConfig, IOwner, IPolicyLabelConfig, IRulesItemConfig, IStatisticItemConfig, NavItemType, PolicyType, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import { generateSchemaContext } from './schema-publish-helper.js';
+import {
+    DatabaseServer,
+    HederaDidDocument,
+    PolicyLabel,
+    VcHelper,
+    TopicConfig,
+    TopicHelper,
+    Users,
+    Schema as SchemaCollection,
+    VcDocument as VcDocumentCollection,
+    VpDocument as VpDocumentCollection,
+} from '@guardian/common';
+import {
+    GenerateUUIDv4,
+    INavItemConfig,
+    IOwner,
+    IPolicyLabelConfig,
+    IRulesItemConfig,
+    IStatisticItemConfig,
+    IStepDocument,
+    NavItemType,
+    PolicyType,
+    Schema,
+    SchemaHelper,
+    TopicType
+} from '@guardian/interfaces';
 import { generateSchema as generateStatisticSchema } from './policy-statistics-helpers.js';
 
 export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
@@ -44,7 +67,7 @@ export async function generateSchema(
     owner: IOwner
 ): Promise<{
     node: any,
-    schema: Schema
+    schema: SchemaCollection
 }[]> {
     console.log('generateSchema')
     const items = convertConfigToList([], config?.children);
@@ -79,7 +102,9 @@ function convertConfigToList(
     return result;
 }
 
-export async function findRelationships(target: VcDocument | VpDocument): Promise<VcDocument[]> {
+export async function findRelationships(
+    target: VcDocumentCollection | VpDocumentCollection
+): Promise<VcDocumentCollection[]> {
     if (!target) {
         return [];
     }
@@ -87,7 +112,7 @@ export async function findRelationships(target: VcDocument | VpDocument): Promis
     const messageIds = new Set<string>();
     messageIds.add(target.messageId);
 
-    const result: VcDocument[] = [];
+    const result: VcDocumentCollection[] = [];
     if (Array.isArray(target.relationships)) {
         for (const relationship of target.relationships) {
             await findRelationshipsById(relationship, messageIds, result);
@@ -100,8 +125,8 @@ export async function findRelationships(target: VcDocument | VpDocument): Promis
 export async function findRelationshipsById(
     messageId: string | undefined,
     map: Set<string>,
-    result: VcDocument[]
-): Promise<VcDocument[]> {
+    result: VcDocumentCollection[]
+): Promise<VcDocumentCollection[]> {
     if (!messageId || map.has(messageId)) {
         return result;
     }
@@ -116,4 +141,49 @@ export async function findRelationshipsById(
         }
     }
     return result;
+}
+
+export async function generateVpDocument(
+    documents: IStepDocument[],
+    schemas: Schema[],
+    owner: IOwner
+) {
+    const uuid = GenerateUUIDv4();
+    const vcHelper = new VcHelper();
+    const didDocument = await vcHelper.loadDidDocument(owner.creator);
+
+    const vcObjects: any[] = [];
+    for (const vc of documents) {
+        const schemaObject = schemas.find((s) => s.iri === vc.schema);
+        const vcObject = await generateVcDocument(vc.document, schemaObject, didDocument, vcHelper);
+        vcObjects.push(vcObject);
+    }
+
+    const vpObject = await vcHelper.createVerifiablePresentation(
+        vcObjects,
+        didDocument,
+        null,
+        { uuid }
+    );
+    return vpObject;
+}
+
+export async function generateVcDocument(
+    document: any,
+    schema: Schema,
+    didDocument: HederaDidDocument,
+    vcHelper: VcHelper
+) {
+    document.id = GenerateUUIDv4();
+    if (schema) {
+        document = SchemaHelper.updateObjectContext(schema, document);
+    }
+
+    const res = await vcHelper.verifySubject(document);
+    if (!res.ok) {
+        throw Error(JSON.stringify(res.error));
+    }
+
+    const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
+    return vcObject;
 }

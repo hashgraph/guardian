@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IFormula, IVariable } from '../../../../common/models/assessment';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-import { Formula } from 'src/app/utils';
+import { FormulaEngine, GenerateUUIDv4 } from '@guardian/interfaces';
 
 @Component({
     selector: 'statistic-preview-dialog',
@@ -105,7 +104,7 @@ export class StatisticPreviewDialog {
 
     private calcFormula(item: IFormula, scope: any): any {
         try {
-            return Formula.evaluate(item.formula, scope);
+            return FormulaEngine.evaluate(item.formula, scope);
         } catch (error) {
             return NaN;
         }

@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
+import { FormulaEngine, GenerateUUIDv4, IStatistic, IVCDocument, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { Formula } from 'src/app/utils';
 import { IDocument, IFormula, IOption, IScore, IVariable } from '../../../common/models/assessment';
 import { IColumn } from '../../../common/models/grid';
 
@@ -431,7 +430,7 @@ export class StatisticAssessmentConfigurationComponent implements OnInit {
 
     private calcFormula(item: IFormula, scope: any): any {
         try {
-            return Formula.evaluate(item.formula, scope);
+            return FormulaEngine.evaluate(item.formula, scope);
         } catch (error) {
             return NaN;
         }

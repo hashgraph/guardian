@@ -42,7 +42,8 @@ import {
     SchemaRuleDTO,
     SchemaRuleRelationshipsDTO,
     SchemaRuleDataDTO,
-    PolicyLabelDTO
+    PolicyLabelDTO,
+    PolicyLabelAssessmentDTO
 } from '#middlewares';
 
 /**
@@ -3379,5 +3380,22 @@ export class Guardians extends NatsService {
         owner: IOwner,
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT, { documentId, labelId, owner });
+    }
+
+    /**
+     * Create label assessment
+     *
+     * @param labelId
+     * @param assessment
+     * @param owner
+     *
+     * @returns report
+     */
+    public async createLabelAssessment(
+        labelId: string,
+        assessment: PolicyLabelAssessmentDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelAssessmentDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_POLICY_LABEL_ASSESSMENT, { labelId, assessment, owner });
     }
 }

@@ -1,8 +1,9 @@
 import { ApiResponse } from './helpers/api-response.js';
 import { BinaryMessageResponse, DatabaseServer, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { findRelationships, generateSchema, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
+import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
+import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { publishSchema, publishSchemas } from './helpers/index.js';
+import { generateVcDocument } from './helpers/policy-statistics-helpers.js';
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -568,13 +569,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} new label assessment
      */
-    ApiResponse(MessageAPI.CREATE_LABEL_ASSESSMENT,
+    ApiResponse(MessageAPI.CREATE_POLICY_LABEL_ASSESSMENT,
         async (msg: {
-            definitionId: string,
+            labelId: string,
             assessment: {
-                document: any,
-                target: string,
-                relationships: string[]
+                documents: any[],
+                target: string
             },
             owner: IOwner
         }) => {
@@ -582,12 +582,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters');
                 }
-                const { definitionId, assessment, owner } = msg;
+                const { labelId, assessment, owner } = msg;
 
-                if (!assessment || !assessment.document) {
+                if (!assessment || !Array.isArray(assessment.documents)) {
                     return new MessageError('Invalid object.');
                 }
-                const item = await DatabaseServer.getStatisticById(definitionId);
+                const item = await DatabaseServer.getPolicyLabelById(labelId);
                 if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
@@ -595,16 +595,41 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item is not published.');
                 }
 
+                const vp = await DatabaseServer.getVP({
+                    id: assessment.target,
+                    type: "mint",
+                    policyId: item.policyId,
+                    owner: owner.creator,
+                });
+                if (!vp) {
+                    return new MessageError('Target does not exist.');
+                }
+
+                const relationships = await findRelationships(vp);
+
+                const schemas = await DatabaseServer.getSchemas({ topicId: item.topicId });
+                const schemaObjects = schemas.map((schema) => new Schema(schema));
+
+                const validator = new LabelValidators(item);
+                validator.setData(relationships);
+                validator.setResult(assessment.documents);
+                const status = validator.validate();
+
+                if (!status.valid) {
+                    console.log(JSON.stringify(status, null, 4))
+                    return new MessageError('Invalid item.');
+                }
+
+                const vcs = validator.getVCs();
+                const result = await generateVpDocument(vcs, schemaObjects, owner);
 
 
+                
 
-                // const schema = await DatabaseServer.getSchema({ topicId: item.topicId });
-                // const schemaObject = new Schema(schema);
-                // const vcObject = await generateVcDocument(assessment.document, schemaObject, owner);
 
-                // const topic = await getOrCreateTopic(item);
-                // const user = await (new Users()).getHederaAccount(owner.creator);
-                // const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+                const topic = await getOrCreateTopic(item);
+                const user = await (new Users()).getHederaAccount(owner.creator);
+                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
 
                 // const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
                 // vcMessage.setDefinition(item);
@@ -628,7 +653,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 //     relationships: vcMessageResult.getRelationships(),
                 //     document: vcMessageResult.getDocument()
                 // });
-                return new MessageResponse(null);
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

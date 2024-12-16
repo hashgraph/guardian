@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -8,7 +8,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { IDocument } from '../../../common/models/assessment';
 import { IColumn } from '../../../common/models/grid';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
-import { IValidateStatus, IValidatorNode, IValidatorStep, LabelValidators } from 'src/app/modules/common/models/validators';
+
 
 @Component({
     selector: 'app-policy-label-assessment-configuration',
@@ -27,8 +27,9 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public item: any;
 
     public documents: any[];
-    public document: any | null;
     public documentsCount: number;
+    public document: any | null;
+    public relationships: any;
     public pageIndex: number;
     public pageSize: number;
 
@@ -37,7 +38,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public steps: any[];
     public current: IValidatorStep | null;
     public menu: IValidatorNode[];
-    public result: IValidateStatus | null;
+    public result: IValidateStatus | undefined;
 
     public status: boolean | undefined = undefined;
 
@@ -202,7 +203,8 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
             config: null,
             auto: false,
             disabled: true,
-            update: this.onTarget.bind(this)
+            update: this.onTarget.bind(this),
+            validate: this.onTarget.bind(this),
         })
 
         this.tree.children.push({
@@ -219,7 +221,8 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
             type: 'result',
             config: this.validator,
             auto: false,
-            update: this.onResult.bind(this)
+            update: this.onResult.bind(this),
+            validate: this.onResult.bind(this),
         })
     }
 
@@ -267,6 +270,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
             this.policyLabelsService
                 .getDocument(this.document.id, this.labelId)
                 .subscribe((documents) => {
+                    this.relationships = documents?.relatedDocuments || [];
                     this.validator.setData(documents?.relatedDocuments || []);
                     this.current = this.validator.next();
                     setTimeout(() => {
@@ -282,8 +286,22 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     }
 
     public onSubmit() {
-        const result = this.validator.getStatus();
-        debugger;
+        const result = this.validator.getResult();
+        const item = {
+            target: this.document.id,
+            documents: result
+        }
+        this.loading = true;
+        this.policyLabelsService
+            .createAssessment(this.labelId, item)
+            .subscribe((vp) => {
+                debugger;
+                setTimeout(() => {
+                    this.loading = false;
+                }, 1000);
+            }, (e) => {
+                this.loading = false;
+            });
     }
 
     public onSelectDocument(item: IDocument) {

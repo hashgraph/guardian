@@ -123,3 +123,7 @@ export class PolicyLabelDTO {
 export class PolicyLabelRelationshipsDTO {
 
 }
+
+export class PolicyLabelAssessmentDTO {
+
+}
