@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Body, Post } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Body, Post, Get } from '@nestjs/common';
 import {
     ApiBody,
     ApiInternalServerErrorResponse,
@@ -12,8 +12,10 @@ import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
     RawMessageDTO,
+    RawMessageDTO,
     SearchPolicyParamsDTO,
     SearchPolicyResultDTO,
+    VCDetailsDTO,
     VCDetailsDTO,
 } from '#dto';
 
@@ -74,5 +76,23 @@ export class AnalyticsApi extends ApiClient {
             IndexerMessageAPI.GET_RETIRE_DOCUMENTS,
             body
         );
+    }
+    
+    @Get('/checkAvailability')
+    @ApiOperation({
+        summary: 'Get indexer availability',
+        description: 'Returns indexer availability',
+    })
+    @ApiOkResponse({
+        description: 'Indexer availability result',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getIndexerAvailability(): Promise<boolean> {
+        return await this.send(IndexerMessageAPI.GET_INDEXER_AVAILABILITY, {});
     }
 }

@@ -13,6 +13,7 @@ import {
     IVCReport,
     IVPReport,
     ContractType,
+    ContractType,
 } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -67,6 +68,7 @@ export class ReportBlockComponent implements OnInit {
         sanitizer: DomSanitizer,
         private ipfs: IPFSService,
         private contractService: ContractService,
+        private analyticsService: AnalyticsService
     ) {
         for (let i = 0; i < IconsArray.length; i++) {
             const element = IconsArray[i];
@@ -102,6 +104,9 @@ export class ReportBlockComponent implements OnInit {
     mintTokenId: string;
     mintTokenSerials: string[] = [];
     retirementDocuments: any = [];
+    indexerAvailable: boolean = false;
+    currentRetirementDocument: any;
+    currentRetirementIndex: number = 0;
     private loadRetireData() {
         this.loading = true;
         this.contractService
@@ -116,6 +121,11 @@ export class ReportBlockComponent implements OnInit {
                                     && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
                                     ))));
 
+                    this.currentRetirementIndex = 0;
+                    this.currentRetirementDocument = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.retirementDocuments[this.currentRetirementIndex] : null;
+
+                    console.log(this.retirementDocuments);
+
                     this.loading = false;
                 },
                 (e) => {
@@ -125,38 +135,59 @@ export class ReportBlockComponent implements OnInit {
 
         const retirementsFromIndexer: any[] = [];
 
-        this.contractService
-            .getContracts({
-                type: ContractType.RETIRE
-            })
-            .subscribe(
-                (policiesResponse) => {
-                    const contracts = policiesResponse.body || [];
-                    const tokenContractTopicIds: string[] = [];
+        this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
+            this.indexerAvailable = indexerAvailable;
+            if (indexerAvailable) {
 
-                    if (contracts && contracts.length > 0) {
-                        contracts.forEach(contract => {
-                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
-                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
-                                    tokenContractTopicIds.push(contract.topicId);
+                this.contractService
+                    .getContracts({
+                        type: ContractType.RETIRE
+                    })
+                    .subscribe(
+                        (policiesResponse) => {
+                            const contracts = policiesResponse.body || [];
+                            const tokenContractTopicIds: string[] = [];
+
+                            if (contracts && contracts.length > 0) {
+                                contracts.forEach(contract => {
+                                    if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
+                                        contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
+                                        tokenContractTopicIds.push(contract.topicId);
+                                    }
+                                });
                             }
-                        });
-                    }
 
-                    if (tokenContractTopicIds.length > 0) {
-                        tokenContractTopicIds.forEach(id => {
-                            this.contractService.getRetireVCsFromIndexer(id).subscribe((indexerData) => {
-                                console.log(id);
-                                console.log(indexerData);
-                            })
-                        })
-                    }
-                },
-                (e) => {
-                    this.loading = false;
-                }
-            );
+                            if (tokenContractTopicIds.length > 0) {
+                                tokenContractTopicIds.forEach(id => {
+                                    this.contractService.getRetireVCsFromIndexer(id).subscribe((indexerData) => {
+                                        console.log(id);
+                                        console.log(indexerData);
+                                    })
+                                })
+                            }
+                        },
+                        (e) => {
+                            this.loading = false;
+                        }
+                    );
+            }
+        })
     }
+
+    onNextRetirementClick(event: any) {
+        event.stopPropagation();
+
+        this.currentRetirementIndex = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.currentRetirementIndex + 1 : 0;
+        this.currentRetirementDocument = this.retirementDocuments[this.currentRetirementIndex];
+    }
+
+    onPrevRetirementClick(event: any) {
+        event.stopPropagation();
+
+        this.currentRetirementIndex = (this.currentRetirementIndex - 1) >= 0 ? (this.currentRetirementIndex - 1) : (this.retirementDocuments.length - 1);
+        this.currentRetirementDocument = this.retirementDocuments[this.currentRetirementIndex];
+    }
+
     // ...
 
     loadData() {

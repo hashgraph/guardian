@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiBody, ApiOkResponse, ApiOperation, ApiTags, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
 import { EntityOwner, Permissions } from '@guardian/interfaces';
 import { FilterDocumentsDTO, FilterModulesDTO, FilterPoliciesDTO, FilterSchemasDTO, FilterSearchPoliciesDTO, InternalServerErrorDTO, CompareDocumentsDTO, CompareModulesDTO, ComparePoliciesDTO, CompareSchemasDTO, SearchPoliciesDTO, FilterToolsDTO, CompareToolsDTO, FilterSearchBlocksDTO, SearchBlocksDTO, Examples } from '#middlewares';
@@ -943,6 +943,37 @@ export class AnalyticsApi {
         }
         try {
             return await guardians.searchBlocks(config, id, user);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get Indexer availability
+     */
+    @Get('/checkIndexer')
+    @Auth(
+        Permissions.ANALYTIC_POLICY_READ,
+    )
+    @ApiOperation({
+        summary: 'Get Indexer Availability.',
+        description: 'Returns Indexer Availability (true/false).',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @HttpCode(HttpStatus.OK)
+    async checkIndexerAvailability(
+        @AuthUser() user: IAuthUser
+    ): Promise<boolean> {
+        const guardians = new Guardians();
+        try {
+            return await guardians.getIndexerAvailability();
         } catch (error) {
             await InternalException(error, this.logger);
         }

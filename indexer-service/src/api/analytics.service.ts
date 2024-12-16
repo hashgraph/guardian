@@ -10,6 +10,7 @@ import {
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
+import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
 @Controller()
@@ -160,7 +161,6 @@ export class AnalyticsService {
             }
             console.log(VCdocuments);
             console.log(topicId);
-            console.log("YEEEE!!!");
 
             const results = [];
 
@@ -168,5 +168,13 @@ export class AnalyticsService {
         } catch (error) {
             return new MessageError(error);
         }
+    }
+
+    /**
+     * Get Indexer availability
+     */
+    @MessagePattern(IndexerMessageAPI.GET_INDEXER_AVAILABILITY)
+    async checkAvailability(): Promise<AnyResponse<boolean>> {
+        return new MessageResponse<boolean>(true);
     }
 }

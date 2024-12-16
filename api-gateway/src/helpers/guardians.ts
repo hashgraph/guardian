@@ -18,6 +18,7 @@ import {
     ITokenInfo,
     IUser,
     IVC,
+    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI,

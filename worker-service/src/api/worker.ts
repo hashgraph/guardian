@@ -347,6 +347,22 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY: {
+                    try {
+                        const response = await axios.get(
+                            `${this.analyticsService}/analytics/checkAvailability`
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
+                    break;
+                }
+
                 case WorkerTaskType.HTTP_REQUEST: {
                     const { method, url, headers, body } = task.data.payload;
                     const response = await axios({
