@@ -742,7 +742,7 @@ export class SchemaFormComponent implements OnInit {
                         valueToSet = "";
                     }
                 } else if (format === 'time') {
-                    const momentDate = moment(val);
+                    const momentDate = moment(val, 'hh:mm:ss');
                     if (momentDate.isValid()) {
                         momentDate.milliseconds(0);
                         valueToSet = momentDate.format('HH:mm:ss');
@@ -940,7 +940,7 @@ export class SchemaFormComponent implements OnInit {
             item.list = [];
             let count = suggest.length;
             while (count-- > 0) {
-                const control = this.createListControl(item);
+                const control = this.createListControl(item, Array.isArray(suggest) ? suggest[count] : undefined);
                 item.list.push(control);
                 (item.control as UntypedFormArray).push(control.control);
             }
@@ -966,6 +966,9 @@ export class SchemaFormComponent implements OnInit {
         }
         if (field.customType === 'geo') {
             return Object.keys(value).length === 0;
+        }
+        if (field.customType === 'sentinel') {
+            return JSON.stringify(value) === '{"layers":"NATURAL-COLOR","format":"image/jpeg","maxcc":null,"width":null,"height":null,"bbox":"","time":null}';
         }
         if (field.fields) {
             for (const _field of field.fields) {

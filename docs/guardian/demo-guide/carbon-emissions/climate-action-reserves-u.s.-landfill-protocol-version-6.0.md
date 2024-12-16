@@ -91,7 +91,7 @@ This policy is available for import via GitHub or IPFS timestamp.
 * **Attestation of Regulatory Compliance:** This attestation confirms that the project complies with all applicable federal, state, and local laws and regulations (e.g., environmental, safety). The Project Developer must disclose any instances of non-compliance to the verifier, who assesses the impact on credit issuance.
 * **Environmental Safeguards:** This schema ensures that project activities align with environmental best practices, minimizing unintended impacts on local ecosystems, air, water, and soil quality. The Project Developer must document steps taken to prevent adverse environmental effects, such as controlling potential pollutants, managing resource use, and protecting nearby habitats. This schema may also include periodic environmental impact assessments as part of ongoing compliance and verification.
 
-## **Token (**Climate Reserve Tonnes - CRTs**)** <a href="#toc182312054" id="toc182312054"></a>
+## **Token (**&#x43;limate Reserve Tonnes - CRT&#x73;**)** <a href="#toc182312054" id="toc182312054"></a>
 
 Each CRT represents one metric tonne of carbon dioxide equivalent (tCO₂e) reduced or avoided through the approved project activities.
 
