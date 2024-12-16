@@ -22,6 +22,7 @@ export class StepTreeComponent {
     treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
     // dataSource = new MatTreeNestedDataSource<TreeNode>();
     dataSource: { data: TreeNode[] } = { data: [] }
+    expandedKeys: { [key: string]: boolean } = {};
 
     @Input('treeData') treeData!: any;
     @Input('currentNode') currentNode!: any;
@@ -65,5 +66,47 @@ export class StepTreeComponent {
         this.dataSource.data = data;
         this.treeControl.dataNodes = data;
         this.treeControl.expand(this.currentNode);
+    }
+
+    addKeysToNodes(nodes: TreeNode[], parentKey: string = ''): TreeNode[] {
+        return nodes.map((node, index) => {
+            const key = `${parentKey}${index}`;
+            return {
+                ...node,
+                key,
+                children: node.children
+                    ? this.addKeysToNodes(node.children, `${key}-`)
+                    : [],
+            };
+        });
+    }
+
+    expandParents(node: TreeNode) {
+        let current: any = node;
+        while (current) {
+            this.expandedKeys[current.key] = true;
+            current = this.findParentNode(this.treeData, current);
+        }
+    }
+
+    findParentNode(nodes: TreeNode[], target: TreeNode): TreeNode | null {
+        for (const node of nodes) {
+            if (node.children?.includes(target)) {
+                return node;
+            } else if (node.children) {
+                const parent = this.findParentNode(node.children, target);
+                if (parent) return parent;
+            }
+        }
+        return null;
+    }
+
+    setExpandedNodes(nodes: any[]) {
+        nodes.forEach((node) => {
+            node.expanded = true;
+            if (node.children) {
+                this.setExpandedNodes(node.children);
+            }
+        });
     }
 }

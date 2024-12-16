@@ -136,3 +136,72 @@
 .current-node .node-id {
     color: #3f51b5;
 }
+
+.tree {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.tree ul {
+    list-style: none;
+    margin: 0;
+    padding-left: 20px;
+}
+
+.tree-node {
+    margin: 4px 0;
+    position: relative;
+}
+
+.node {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+
+.node:hover {
+    background-color: #f4f4f4;
+}
+
+.current-node {
+    background-color: #e0f3ff;
+    color: #007ad9;
+    font-weight: bold;
+}
+
+.tree-toggle-icon {
+    margin-right: 5px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.tree-children {
+    padding-left: 15px;
+    border-left: 1px solid #ccc;
+}
+
+.tree {
+    width: 220px;
+}
+
+.tree > ul {
+    padding-left: 0;
+}
+
+.tree ul {
+    border: none;
+}
+
+.tree li .node {
+    padding-left: 20px;
+}
+
+.node-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}

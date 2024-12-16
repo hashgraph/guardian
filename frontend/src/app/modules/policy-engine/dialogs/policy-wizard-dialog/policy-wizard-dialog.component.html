@@ -352,14 +352,21 @@
             <!--                    >-->
             <!--                </mat-select>-->
             <!--            </mat-form-field>-->
-            <button
-                    (click)="op.toggle($event)"
-                    class="info-btn"
-                    color="primary"
-                    mat-mini-fab
-            >
-                i
-            </button>
+<!--            <button-->
+<!--                    (click)="op.toggle($event)"-->
+<!--                    class="info-btn"-->
+<!--                    color="primary"-->
+<!--                    mat-mini-fab-->
+<!--            >-->
+<!--                i-->
+<!--            </button>-->
+
+            <p-button
+                icon="pi pi-info"
+                class="info-btn"
+                styleClass="p-button-rounded p-button-primary"
+                (click)="op.toggle($event)">
+            </p-button>
             <p-overlayPanel #op>
                 <img [src]="'/assets/produced-schema.gif'" class="help-img"/>
             </p-overlayPanel>
@@ -418,14 +425,20 @@
             <!--                    >-->
             <!--                </mat-select>-->
             <!--            </mat-form-field>-->
-            <button
-                    (click)="initialStepGif.toggle($event)"
-                    class="info-btn"
-                    color="primary"
-                    mat-mini-fab
-            >
-                i
-            </button>
+<!--            <button-->
+<!--                    (click)="initialStepGif.toggle($event)"-->
+<!--                    class="info-btn"-->
+<!--                    color="primary"-->
+<!--                    mat-mini-fab-->
+<!--            >-->
+<!--                i-->
+<!--            </button>-->
+            <p-button
+                icon="pi pi-info"
+                class="info-btn"
+                styleClass="p-button-rounded p-button-primary"
+                (click)="initialStepGif.toggle($event)">
+            </p-button>
             <p-overlayPanel #initialStepGif>
                 <img [src]="'/assets/initial-step.gif'" class="help-img"/>
             </p-overlayPanel>
@@ -746,13 +759,21 @@
             <p-inputSwitch [formControl]="formControl"></p-inputSwitch>
             <span class="input-switch-label">{{ title }}</span>
         </div>
-        <button
-            (click)="someHelpGif.toggle($event)"
-            [disabled]="!helpSrc"
+<!--        <button-->
+<!--            (click)="someHelpGif.toggle($event)"-->
+<!--            [disabled]="!helpSrc"-->
+<!--            class="info-btn"-->
+<!--            color="primary"-->
+<!--            mat-mini-fab-->
+<!--        >i</button>-->
+
+        <p-button
+            icon="pi pi-info"
             class="info-btn"
-            color="primary"
-            mat-mini-fab
-        >i</button>
+            styleClass="p-button-rounded p-button-primary"
+            [disabled]="!helpSrc"
+            (click)="someHelpGif.toggle($event)">
+        </p-button>
         <p-overlayPanel #someHelpGif>
             <img [src]="helpSrc" class="help-img"/>
         </p-overlayPanel>

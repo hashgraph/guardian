@@ -17,26 +17,58 @@
 <!--    </mat-nested-tree-node>-->
 <!--</mat-tree>-->
 
-<p-tree
-    [value]="dataSource.data"
-    [selectionMode]="'single'"
-    [(selection)]="currentNode"
-    class="tree">
-    <ng-template let-node pTemplate="default">
-        <div [class.mat-tree-node-no-children]="!node.children || node.children.length === 0">
-            <ng-container *ngTemplateOutlet="nodeTemplate; context: { node }"></ng-container>
-        </div>
-    </ng-template>
-</p-tree>
+<!--<p-tree-->
+<!--    [value]="dataSource.data"-->
+<!--    [selectionMode]="'single'"-->
+<!--    [(selection)]="currentNode"-->
+<!--    class="tree">-->
+<!--    <ng-template let-node pTemplate="default">-->
+<!--        <div [class.mat-tree-node-no-children]="!hasChild">-->
+<!--            <ng-container *ngTemplateOutlet="nodeTemplate; context: { node }"></ng-container>-->
+<!--        </div>-->
+<!--    </ng-template>-->
+<!--</p-tree>-->
 
-<ng-template #nodeTemplate let-node="node">
-    <div (click)="onNodeClick(node)" class="node" [ngClass]="{
-        'current-node': currentNode === node
-    }">
-        <i class="pi pi-angle-right"></i>
-        <p>{{ node.name }}</p>
-        <!--        <span class="node-id">{{node.id}}</span>{{node.name}}-->
+<!--<ng-template #nodeTemplate let-node="node">-->
+<!--    <div (click)="onNodeClick(node)" class="node" [ngClass]="{-->
+<!--        'current-node': currentNode === node-->
+<!--    }">-->
+<!--        <ng-template let-node pTemplate="default">-->
+<!--            <div [class.mat-tree-node-no-children]="hasChild">-->
+<!--                <ng-container *ngTemplateOutlet="nodeTemplate; context: { node }"></ng-container>-->
+<!--            </div>-->
+<!--        </ng-template>-->
 
+<!--        <i class="pi pi-angle-right"></i>-->
+<!--        <p>{{ node.name }}</p>-->
+<!--        &lt;!&ndash;        <span class="node-id">{{node.id}}</span>{{node.name}}&ndash;&gt;-->
+<!--    </div>-->
+<!--</ng-template>-->
 
-    </div>
-</ng-template>
+<div class="tree">
+    <ul>
+        <li *ngFor="let node of dataSource.data" class="tree-node">
+            <div class="node" [ngClass]="{ 'current-node': currentNode === node }" (click)="onNodeClick(node)">
+                <i class="pi pi-angle-right"></i>
+                <span class="node-text">{{ node.name }}</span>
+            </div>
+            <ul *ngIf="node.children?.length" class="tree-children">
+                <li *ngFor="let child of node.children" class="tree-node">
+                    <div class="node" [ngClass]="{ 'current-node': currentNode === child }" (click)="onNodeClick(child)">
+                        <i class="pi pi-angle-right"></i>
+                        <span class="node-text">{{ child.name }}</span>
+                    </div>
+                    <ul *ngIf="child.children?.length" class="tree-children">
+                        <li *ngFor="let grandChild of child.children" class="tree-node">
+                            <div class="node" [ngClass]="{ 'current-node': currentNode === grandChild }"
+                                 (click)="onNodeClick(grandChild)">
+                                <i class="pi pi-angle-right"></i>
+                                <span class="node-text">{{ grandChild.name }}</span>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</div>
