@@ -9,4 +9,5 @@ export const PREFIXES = {
     CONTRACTS: '/contracts/',
     TAGS: '/tags/',
     IPFS: 'ipfs',
+    PROFILES: 'profiles'
 };

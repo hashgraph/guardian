@@ -481,18 +481,12 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                     $match: {
                         sent: true,
                         done: { $ne: true },
-                    },
-                },
-                {
-                    $addFields: {
-                        timeDifference: {
-                            $subtract: ['$processedTime', '$createDate'],
+                        $expr: {
+                            $gt: [
+                                { $subtract: ['$processedTime', '$createDate'] },
+                                processTimeout
+                            ]
                         },
-                    },
-                },
-                {
-                    $match: {
-                        timeDifference: { $gt: processTimeout },
                     },
                 },
             ],

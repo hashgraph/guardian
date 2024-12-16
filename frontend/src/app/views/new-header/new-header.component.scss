@@ -58,6 +58,7 @@
         // left: calc(var(--header-width-expand) - 23px);
     }
 }
+
 #remoteButton.collapse-button,
 .collapse-button {
     left: calc(var(--header-width-collapse) - 1px) !important;
@@ -114,8 +115,8 @@
 }
 
 #menuBar {
-    max-height: calc(100vh - 24px - 32px - 42px - 128px - 48px);
-    height: calc(100vh - 24px - 32px - 42px - 128px - 48px);
+    max-height: calc(100vh - 80px - 18px - 18px - 289px);
+    height: calc(100vh - 80px - 18px - 18px - 289px);
     min-height: 150px;
     overflow-y: auto;
 
@@ -125,9 +126,9 @@
 }
 
 #footerBar {
-    margin-top: 40px;
-    max-height: calc(128px + 26px);
-    height: calc(128px + 26px);
+    margin-top: 18px;
+    max-height: 289px;
+    height: 289px;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -245,6 +246,22 @@
 .border-item {
     border: 2px solid rgba(255, 255, 255, 0.15);
 }
+
+.balance-item {
+    &>span {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    &.collapsed-item {
+        div,
+        span {
+            display: none;
+        }
+    }
+}
+
 
 .boundary-box {
     height: 78px;

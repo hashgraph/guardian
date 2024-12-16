@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Artifact, Policy, PolicyCategory, PolicyTest, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { Artifact, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';

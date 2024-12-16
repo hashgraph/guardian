@@ -27,7 +27,7 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                             class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
                     <button
@@ -61,34 +61,17 @@
                     </div>
 
                     <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar
-                            class="guardian-datepicker"
-                            [formControl]="item.control"
-                            [showIcon]="true"
-                            [showTime]="true"
-                            [showSeconds]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                        <p-calendar
-                            class="guardian-datepicker"
-                            [formControl]="item.control"
-                            [showIcon]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showTime]="false"
+                                           [showSeconds]="false"></date-time-control>
                     </div>
 
                     <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                        <p-calendar
-                            class="guardian-datepicker"
-                            [formControl]="item.control"
-                            [showIcon]="true"
-                            [timeOnly]="true"
-                            [showSeconds]="true"
-                            dateFormat="yy-mm-dd"
-                            appendTo='body'/>
+                        <date-time-control [control]="item.control" [item]="item" [showSeconds]="true" [showTime]="true"
+                                           [timeOnly]="true"></date-time-control>
                     </div>
 
                     <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
@@ -174,7 +157,7 @@
                 </div>
 
                 <div *ngIf="!isFormForFinishSetup && item.suggest && isEmpty(item.control.value)" class="suggestion">
-                    <div class="suggestion-name"><span
+                    <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                             class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                     </div>
                     <button
@@ -182,7 +165,7 @@
                         class="guardian-button guardian-button-secondary">Fill the field with suggestion</button>
                 </div>
 
-                <div *ngFor="let listItem of item.list" [attr.required]="item.required"
+                <div *ngFor="let listItem of item.list; index as i" [attr.required]="item.required"
                     [attr.index]="listItem.index"
                      class="form-field-array-item-container"
                     [formGroup]="item.control"
@@ -210,34 +193,21 @@
                             </div>
 
                             <div *ngIf="isDateTime(item)" class="form-field-input guardian-input-container">
-                                <p-calendar
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control"
-                                    [showIcon]="true"
-                                    [showTime]="true"
-                                    [showSeconds]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem" [showTime]="true"
+                                                   [value]="item.suggest"></date-time-control>
                             </div>
 
                             <div *ngIf="isDate(item)" class="form-field-input guardian-input-container">
-                                <p-calendar
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control"
-                                    [showIcon]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [isMany]="true" [item]="listItem"
+                                                   [showSeconds]="false" [showTime]="false"></date-time-control>
                             </div>
 
                             <div *ngIf="isTime(item)" class="form-field-input guardian-input-container">
-                                <p-calendar
-                                    class="guardian-datepicker"
-                                    [formControl]="listItem.control"
-                                    [showIcon]="true"
-                                    [timeOnly]="true"
-                                    [showSeconds]="true"
-                                    dateFormat="yy-mm-dd"
-                                    appendTo='body'/>
+                                <date-time-control [control]="listItem.control" [index]="i" [isMany]="true"
+                                                   [item]="listItem"
+                                                   [showSeconds]="true" [showTime]="true"
+                                                   [timeOnly]="true"></date-time-control>
                             </div>
 
                             <div *ngIf="isBoolean(item)" class="form-field-boolean guardian-input-container">
@@ -344,8 +314,9 @@
                             </div>
                         </ng-template>
 
-                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
-                            <div class="suggestion-name"><span
+                        <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control?.value, item)"
+                             class="suggestion">
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                                     class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                             </div>
                             <button
@@ -422,7 +393,7 @@
                         </ng-template>
 
                         <div *ngIf="!isFormForFinishSetup && item.suggest && isEmptyRef(item.control.value, item)" class="suggestion">
-                            <div class="suggestion-name"><span
+                            <div *ngIf="!suggestIsObject(item.suggest)" class="suggestion-name"><span
                                     class="suggestion-header">Suggestion:</span> {{ parseSuggest(item.suggest) }}
                             </div>
                             <button
