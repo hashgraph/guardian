@@ -377,10 +377,10 @@
                                                 <div class="retire-info">
                                                     <p>Token ID <span>{{ mintTokenId }}</span></p>
                                                     <p>ContractID <span>{{
-                                                            currentRetirementDocument.document.credentialSubject[0].contractId
+                                                            currentRetirementDocument.contractId
                                                             }}</span></p>
                                                     <p>UserID <span>{{
-                                                            currentRetirementDocument.document.credentialSubject[0].user
+                                                            currentRetirementDocument.user
                                                             }}</span></p>
                                                 </div>
                                                 <div *ngIf="!indexerAvailable" class="retire-no-indexer-info">

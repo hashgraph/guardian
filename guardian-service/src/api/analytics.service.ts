@@ -724,15 +724,11 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
 
     ApiResponse(MessageAPI.GET_INDEXER_AVAILABILITY,
         async () => {
-            console.log(123);
             try {
                 const result = await new Workers().addNonRetryableTask({
                     type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
                     data: {}
                 }, 2);
-
-                console.log(result);
-                
 
                 return new MessageResponse(result);
             } catch (error) {

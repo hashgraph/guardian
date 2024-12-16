@@ -12,10 +12,8 @@ import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
     RawMessageDTO,
-    RawMessageDTO,
     SearchPolicyParamsDTO,
     SearchPolicyResultDTO,
-    VCDetailsDTO,
     VCDetailsDTO,
 } from '#dto';
 

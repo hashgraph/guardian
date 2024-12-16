@@ -20,9 +20,10 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
 import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ContractService } from 'src/app/services/contract.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
+import { forkJoin, Observable } from 'rxjs';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -109,69 +110,73 @@ export class ReportBlockComponent implements OnInit {
     currentRetirementIndex: number = 0;
     private loadRetireData() {
         this.loading = true;
+
+        const retirementsFromIndexer: any[] = [];
+
         this.contractService
-            .getRetireVCs()
+            .getContracts({
+                type: ContractType.RETIRE
+            })
             .subscribe(
                 (policiesResponse) => {
-                    this.retirementDocuments = (policiesResponse.body || [])
-                        .filter((item: any) => item.type == 'RETIRE'
-                            && item.document.credentialSubject.some((subject: any) =>
-                                subject.tokens.some((token: any) =>
-                                    token.tokenId === this.mintTokenId
-                                    && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                    ))));
+                    const contracts = policiesResponse.body || [];
+                    const tokenContractTopicIds: string[] = [];
 
-                    this.currentRetirementIndex = 0;
-                    this.currentRetirementDocument = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.retirementDocuments[this.currentRetirementIndex] : null;
+                    if (contracts && contracts.length > 0) {
+                        contracts.forEach(contract => {
+                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
+                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
+                                tokenContractTopicIds.push(contract.topicId);
+                            }
+                        });
+                    }
 
-                    console.log(this.retirementDocuments);
+                    this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
+                        this.indexerAvailable = indexerAvailable;
+                        if (indexerAvailable) {
+                            if (tokenContractTopicIds.length > 0) {
+                                const indexerCalls: Observable<HttpResponse<any>>[] = [];
+                                tokenContractTopicIds.forEach(id => {
+                                    indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
+                                })
 
-                    this.loading = false;
+                                forkJoin([this.contractService.getRetireVCs(), ...indexerCalls]).subscribe((results: any) => {
+                                    const retires = results.map((item: any) => item.body)
+                                    console.log(retires);
+                                    this.retirementDocuments = retires[0];
+                                })
+                            }
+                        } else {
+                            this.contractService
+                                .getRetireVCs()
+                                .subscribe(
+                                    (policiesResponse) => {
+                                        this.retirementDocuments = (policiesResponse.body || [])
+                                            .filter((item: any) => item.type == 'RETIRE'
+                                                && item.document.credentialSubject.some((subject: any) =>
+                                                    subject.tokens.some((token: any) =>
+                                                        token.tokenId === this.mintTokenId
+                                                        && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                                        )))).map((vc: any) => vc.document);
+
+                                        this.currentRetirementIndex = 0;
+                                        this.currentRetirementDocument = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.retirementDocuments[this.currentRetirementIndex] : null;
+
+                                        console.log(this.retirementDocuments);
+
+                                        this.loading = false;
+                                    },
+                                    (e) => {
+                                        this.loading = false;
+                                    }
+                                );
+                        }
+                    })
                 },
                 (e) => {
                     this.loading = false;
                 }
             );
-
-        const retirementsFromIndexer: any[] = [];
-
-        this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
-            this.indexerAvailable = indexerAvailable;
-            if (indexerAvailable) {
-
-                this.contractService
-                    .getContracts({
-                        type: ContractType.RETIRE
-                    })
-                    .subscribe(
-                        (policiesResponse) => {
-                            const contracts = policiesResponse.body || [];
-                            const tokenContractTopicIds: string[] = [];
-
-                            if (contracts && contracts.length > 0) {
-                                contracts.forEach(contract => {
-                                    if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
-                                        contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
-                                        tokenContractTopicIds.push(contract.topicId);
-                                    }
-                                });
-                            }
-
-                            if (tokenContractTopicIds.length > 0) {
-                                tokenContractTopicIds.forEach(id => {
-                                    this.contractService.getRetireVCsFromIndexer(id).subscribe((indexerData) => {
-                                        console.log(id);
-                                        console.log(indexerData);
-                                    })
-                                })
-                            }
-                        },
-                        (e) => {
-                            this.loading = false;
-                        }
-                    );
-            }
-        })
     }
 
     onNextRetirementClick(event: any) {

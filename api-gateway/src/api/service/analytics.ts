@@ -953,7 +953,7 @@ export class AnalyticsApi {
      */
     @Get('/checkIndexer')
     @Auth(
-        Permissions.ANALYTIC_POLICY_READ,
+        Permissions.POLICIES_POLICY_EXECUTE,
     )
     @ApiOperation({
         summary: 'Get Indexer Availability.',
