@@ -1752,10 +1752,10 @@
     normalize-path "^2.0.1"
     through2 "^2.0.3"
 
-"@hashgraph/cryptography@1.4.8-beta.9":
-  version "1.4.8-beta.9"
-  resolved "https://registry.yarnpkg.com/@hashgraph/cryptography/-/cryptography-1.4.8-beta.9.tgz#d3fe929abf57382ffda3c691f9dc9ab1813991b6"
-  integrity sha512-U6XeX2TsTg7XT6tDRJOfVTO17ltvjcfMtoK42OCUbN28UPBHuxO7ZOy7z0qVqtjX8knOwbURTjrt9bIrU96AsQ==
+"@hashgraph/cryptography@1.4.8-beta.10":
+  version "1.4.8-beta.10"
+  resolved "https://registry.yarnpkg.com/@hashgraph/cryptography/-/cryptography-1.4.8-beta.10.tgz#e12c8319e7f5872e957319e74d97b990429bc262"
+  integrity sha512-ctDbjue5Zq3Z0Sbvs5AgmdsbBRmxBhgKOkIGd1wSun1uiGYIvuV4aIVSKV0Rw+TGh1c8kWsMXZCNynPctcSQMg==
   dependencies:
     asn1js "^3.0.5"
     bignumber.js "^9.1.1"
@@ -1769,32 +1769,32 @@
     tweetnacl "^1.0.3"
     utf8 "^3.0.0"
 
-"@hashgraph/proto@2.15.0-beta.4":
-  version "2.15.0-beta.4"
-  resolved "https://registry.yarnpkg.com/@hashgraph/proto/-/proto-2.15.0-beta.4.tgz#bfd1a1aa8c25ac79701b10ff21a4953dd7e19b31"
-  integrity sha512-da51j1RCHm+uXpQNM0KJ7qbhUJLTp6Avw8GdL+PQCbZ4lBwKAo8jjJ5rRjf1odsN1+zKl+JF7SMmKZB8PY229Q==
+"@hashgraph/proto@2.16.0-beta.3":
+  version "2.16.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@hashgraph/proto/-/proto-2.16.0-beta.3.tgz#1f7493a0621a6905e6c5e7d2d6d88f5a0f2fd0d3"
+  integrity sha512-gbnE8MXi8N7CGqKXt6FFOFYeEvmcQczRkNICiBEhRLO3YmYWuHyE7MU8cWuSt1KnB8kahw90TbxOYAlCxa317g==
   dependencies:
-    long "^4.0.0"
-    protobufjs "^7.2.5"
+    long "^5.2.3"
+    protobufjs "7.2.5"
 
-"@hashgraph/sdk@2.52.0":
-  version "2.52.0"
-  resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.52.0.tgz#601812f8b6fa1501d1438ca863d335bf0ea8cd17"
-  integrity sha512-Gv/U9bM744lPGwctKFl27iaQogEq3jWcTRKoGkBC9HYJwsiKnEGxjwGaI4sM/4+Y24tyhDTngLa4nV/QxbjbaA==
+"@hashgraph/sdk@2.55.1":
+  version "2.55.1"
+  resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.55.1.tgz#97b864165c511a787381b4ee28f172b87e811c84"
+  integrity sha512-fiY+V2jVk+vOtIScvtF7gGfsFeSBej2+ESzWDzNT8XklB8bAdKtDeI4w7iNLtxXdP7lkoHRJaxbB9ZHU3dPv/Q==
   dependencies:
     "@ethersproject/abi" "^5.7.0"
     "@ethersproject/bignumber" "^5.7.0"
     "@ethersproject/bytes" "^5.7.0"
     "@ethersproject/rlp" "^5.7.0"
     "@grpc/grpc-js" "1.8.2"
-    "@hashgraph/cryptography" "1.4.8-beta.9"
-    "@hashgraph/proto" "2.15.0-beta.4"
+    "@hashgraph/cryptography" "1.4.8-beta.10"
+    "@hashgraph/proto" "2.16.0-beta.3"
     axios "^1.6.4"
     bignumber.js "^9.1.1"
     bn.js "^5.1.1"
     crypto-js "^4.2.0"
     js-base64 "^3.7.4"
-    long "^4.0.0"
+    long "^5.2.3"
     pino "^8.14.1"
     pino-pretty "^10.0.0"
     protobufjs "7.2.5"
@@ -10935,7 +10935,7 @@ long@^4.0.0:
   resolved "https://registry.yarnpkg.com/long/-/long-4.0.0.tgz#9a7b71cfb7d361a194ea555241c92f7468d5bf28"
   integrity sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA==
 
-long@^5.0.0:
+long@^5.0.0, long@^5.2.3:
   version "5.2.3"
   resolved "https://registry.yarnpkg.com/long/-/long-5.2.3.tgz#a3ba97f3877cf1d778eccbcb048525ebb77499e1"
   integrity sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q==
@@ -13036,7 +13036,7 @@ protobufjs@^6.10.2:
     "@types/node" ">=13.7.0"
     long "^4.0.0"
 
-protobufjs@^7.0.0, protobufjs@^7.1.2, protobufjs@^7.2.4, protobufjs@^7.2.5:
+protobufjs@^7.0.0, protobufjs@^7.1.2, protobufjs@^7.2.4:
   version "7.3.0"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-7.3.0.tgz#a32ec0422c039798c41a0700306a6e305b9cb32c"
   integrity sha512-YWD03n3shzV9ImZRX3ccbjqLxj7NokGN0V/ESiBV5xWqrommYHYiihuIyavq03pWSGqlyvYUFmfoMKd+1rPA/g==
@@ -14524,7 +14524,7 @@ string-argv@~0.3.1:
   resolved "https://registry.yarnpkg.com/string-argv/-/string-argv-0.3.2.tgz#2b6d0ef24b656274d957d54e0a4bbf6153dc02b6"
   integrity sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==
 
-"string-width-cjs@npm:string-width@^4.2.0", "string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+"string-width-cjs@npm:string-width@^4.2.0":
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -14541,6 +14541,15 @@ string-width@^1.0.1, string-width@^1.0.2:
     code-point-at "^1.0.0"
     is-fullwidth-code-point "^1.0.0"
     strip-ansi "^3.0.0"
+
+"string-width@^1.0.2 || 2 || 3 || 4", string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
+  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
+  dependencies:
+    emoji-regex "^8.0.0"
+    is-fullwidth-code-point "^3.0.0"
+    strip-ansi "^6.0.1"
 
 string-width@^5.0.1, string-width@^5.1.2:
   version "5.1.2"
@@ -14597,7 +14606,7 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -14610,6 +14619,13 @@ strip-ansi@^3.0.0, strip-ansi@^3.0.1:
   integrity sha512-VhumSSbBqDTP8p2ZLKj40UjBCV4+v8bUSEpUb4KjRgWk9pbqGF4REFj6KEagidb2f/M6AzC0EmFyDNGaw9OCzg==
   dependencies:
     ansi-regex "^2.0.0"
+
+strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
 
 strip-ansi@^7.0.1:
   version "7.1.0"
@@ -15380,6 +15396,11 @@ undici@^5.12.0:
   dependencies:
     "@fastify/busboy" "^2.0.0"
 
+undici@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.1.0.tgz#38efe485eef81f02d2a112121284ab15d5c5b905"
+  integrity sha512-3+mdX2R31khuLCm2mKExSlMdJsfol7bJkIMH80tdXA74W34rT1jKemUTlYR7WY3TqsV4wfOgpatWmmB2Jl1+5g==
+
 union-value@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/union-value/-/union-value-1.0.1.tgz#0b6fe7b835aecda61c6ea4d4f02c14221e109847"
@@ -15827,7 +15848,7 @@ workerpool@6.2.0:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.2.0.tgz#827d93c9ba23ee2019c3ffaff5c27fccea289e8b"
   integrity sha512-Rsk5qQHJ9eowMH28Jwhe8HEbmdYDX4lwoMWshiCXugjtHqMD9ZbiqSDLxcsfdqsETPzVUtX5s1Z5kStiIM6l4A==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
@@ -15843,6 +15864,15 @@ wrap-ansi@^2.0.0:
   dependencies:
     string-width "^1.0.1"
     strip-ansi "^3.0.1"
+
+wrap-ansi@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
 
 wrap-ansi@^8.1.0:
   version "8.1.0"
