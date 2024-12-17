@@ -131,9 +131,6 @@ export class AnalyticsService {
         try {
             const { topicId } = msg;
             const em = DataBaseHelper.getEntityManager();
-
-            const retirements = [];
-
             const [messages, count] = (await em.findAndCount(
                 Message,
                 {
@@ -141,14 +138,9 @@ export class AnalyticsService {
                     action: MessageAction.CreateVC,
                 } as any
             )) as any;
-
-            console.log(messages);
-            console.log(count);
             
             let VCdocuments: VCDetails[] = [];
             for (const result of messages) {
-                console.log(result.files);
-                
                 for (const fileName of result.files) {
                     try {
                         const file = await DataBaseHelper.loadFile(fileName);
@@ -158,10 +150,6 @@ export class AnalyticsService {
                     }
                 }
             }
-            console.log(VCdocuments);
-            console.log(topicId);
-
-            const results = [];
 
             return new MessageResponse<VCDetails[]>(VCdocuments);
         } catch (error) {
@@ -169,9 +157,6 @@ export class AnalyticsService {
         }
     }
 
-    /**
-     * Get Indexer availability
-     */
     @MessagePattern(IndexerMessageAPI.GET_INDEXER_AVAILABILITY)
     async checkAvailability(): Promise<AnyResponse<boolean>> {
         return new MessageResponse<boolean>(true);

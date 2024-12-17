@@ -52,7 +52,6 @@ export class UserRetirePoolsDialogComponent implements OnInit {
 
     loadPools() {
         this.loading = true;
-        console.log(123);
         
         this.contractService
             .getRetirePools({

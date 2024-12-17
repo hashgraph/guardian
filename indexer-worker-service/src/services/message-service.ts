@@ -50,9 +50,6 @@ export class MessageService {
                 $or: [
                     { status: 'LOADING', lastUpdate: { $lt: delay } },
                     { status: 'COMPRESSED' }
-                ],
-                $and: [
-                    { topicId: "0.0.5148441" }
                 ]
             },
             {

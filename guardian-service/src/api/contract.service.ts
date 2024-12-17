@@ -1161,7 +1161,7 @@ async function saveRetireVC(
     userHederaAccountId: string,
     tokens: (RetireTokenRequest & { decimals: number })[]
 ) {
-    const contract = await dataBaseServer.findOne(Contract, { // Get retirement and save or maybe create new one
+    const contract = await dataBaseServer.findOne(Contract, {
         contractId,
         owner: owner.creator,
     });
@@ -2958,7 +2958,7 @@ export async function contractAPI(
             }
         });
 
-    ApiResponse(ContractAPI.RETIRE, async (msg: { // Tokens Retire here
+    ApiResponse(ContractAPI.RETIRE, async (msg: {
         owner: IOwner,
         poolId: string,
         tokens: RetireTokenRequest[]
@@ -3401,7 +3401,7 @@ export async function contractAPI(
             }
 
             return new MessageResponse(
-                await dataBaseServer.findAndCount(VcDocument, filters, otherOptions) // find Retirement VCs
+                await dataBaseServer.findAndCount(VcDocument, filters, otherOptions)
             );
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -3449,13 +3449,6 @@ export async function contractAPI(
                 filters['document.credentialSubject.user'] =
                     user.hederaAccountId;
             }
-
-
-
-
-
-
-
 
             // Get Retirements from Indexer
             const retirements = await new Workers().addNonRetryableTask({

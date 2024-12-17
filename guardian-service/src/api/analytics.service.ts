@@ -732,7 +732,6 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse(result);
             } catch (error) {
-                console.log(321);
                 return new MessageResponse(false);
             }
         });

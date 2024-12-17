@@ -224,10 +224,6 @@ export class ContractService {
         });
     }
 
-    public getIndexerData(contractId: string,) {
-
-    }
-
     public clearRetireRequests(contractId: string) {
         return this.http.delete<any>(
             `${this.url}/retire/${contractId}/requests`
