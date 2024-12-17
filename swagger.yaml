@@ -1120,6 +1120,40 @@ paths:
       tags: *ref_3
       security:
         - bearer: []
+  /contracts/{contractId}/transactions:
+    get:
+      operationId: ContractsApi_getSchemaTransactions
+      summary: Return all transactions for contract.
+      description: Return all transactions for contract.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: []
   /contracts/{contractId}/permissions:
     get:
       operationId: ContractsApi_contractPermissions
@@ -4738,6 +4772,40 @@ paths:
       tags: *ref_11
       security:
         - bearer: []
+  /policies/{policyId}/transactions:
+    get:
+      operationId: PolicyApi_getSchemaTransactions
+      summary: Return all transactions for policy.
+      description: Return all transactions for policy.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
   /policies/{policyId}:
     get:
       operationId: PolicyApi_getPolicy
@@ -7165,6 +7233,40 @@ paths:
         - schema
       security:
         - bearer: []
+  /schema/{schemaId}/transactions:
+    get:
+      operationId: SingleSchemaApi_getSchemaTransactions
+      summary: Return all transactions for schema.
+      description: Return all transactions for schema.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_12
+      security:
+        - bearer: []
   /schema/{schemaId}/parents:
     get:
       operationId: SingleSchemaApi_getSchemaParents
@@ -9366,6 +9468,40 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/TokenDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_16
+      security:
+        - bearer: []
+  /tokens/{tokenId}/transactions:
+    get:
+      operationId: TokensApi_getSchemaTransactions
+      summary: Return all transactions for policy.
+      description: Return all transactions for policy.
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -14250,6 +14386,13 @@ components:
       required:
         - type
         - description
+    TransactionDTO:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - type
     WiperRequestDTO:
       type: object
       properties:
