@@ -1,4 +1,4 @@
-import { BaseEntity } from '../models/index.js';
+import { MetadataEntity } from '../models/index.js';
 import { GenerateUUIDv4, PolicyCategoryExport, PolicyType } from '@guardian/interfaces';
 import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
@@ -9,7 +9,7 @@ import { ObjectId } from '@mikro-orm/mongodb';
  */
 @Entity()
 @Unique({ properties: ['policyTag'], options: { partialFilterExpression: { policyTag: { $type: 'string' } } } })
-export class Policy extends BaseEntity {
+export class Policy extends MetadataEntity{
 
     /**
      * Policy UUID

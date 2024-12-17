@@ -1,10 +1,10 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
-import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
-import { AuthUser, Auth } from '#auth';
-import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags, } from '@nestjs/swagger';
+import { ContractConfigDTO, ContractDTO, InternalServerErrorDTO, pageHeader, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, TransactionDTO, WiperRequestDTO } from '#middlewares';
+import { Auth, AuthUser } from '#auth';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
 
 /**
  * Contracts api
@@ -174,6 +174,52 @@ export class ContractsApi {
             const { contractId, description } = body;
             const guardians = new Guardians();
             return await guardians.importContract(owner, contractId, description);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Return all transactions for schema
+     * @param user
+     * @param contractId
+     */
+    @Get('/:contractId/transactions')
+    @Auth(
+        Permissions.CONTRACTS_CONTRACT_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Return all transactions for contract.',
+        description: 'Return all transactions for contract.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: TransactionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TransactionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaTransactions(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+    ): Promise<TransactionDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            return await guardians.getTransactions(contractId, 'contract', owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

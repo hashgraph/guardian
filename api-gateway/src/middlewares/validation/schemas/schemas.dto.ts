@@ -3,6 +3,21 @@ import { IsIn, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validato
 import { SchemaCategory, SchemaEntity, SchemaStatus, UserRole } from '@guardian/interfaces';
 import { Examples } from '../examples.js';
 
+export class TransactionDTO{
+    @ApiProperty({
+        type: 'string',
+    })
+    @IsString()
+    type: string;
+
+    // @ApiProperty({
+    //     type: 'object',
+    // })
+    // @IsOptional()
+    // @IsString()
+    [key: string]: any;
+}
+
 export class SchemaDTO {
     @ApiProperty({
         type: 'string',

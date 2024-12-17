@@ -32,6 +32,7 @@ import { NewImportFileDialog } from '../dialogs/new-import-file-dialog/new-impor
 import { PublishPolicyDialog } from '../dialogs/publish-policy-dialog/publish-policy-dialog.component';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import { TransactionDialogComponent } from '../../common/transaction-dialog/transaction-dialog';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -413,6 +414,19 @@ export class PoliciesComponent implements OnInit {
                         tooltip: 'Compare policies',
                         icon: 'compare',
                         click: () => this.comparePolicy(policy)
+                    })
+                ]
+            }, {
+                tooltip: 'Transactions',
+                group: false,
+                visible: true,
+                buttons: [
+                    new MenuButton({
+                        visible: true,
+                        disabled: false,
+                        tooltip: 'Show transactions',
+                        icon: 'search',
+                        click: () => this.onShowTransactions(policy)
                     })
                 ]
             }, {
@@ -1442,5 +1456,20 @@ export class PoliciesComponent implements OnInit {
         test.date = event.date;
         test.progress = event.progress;
         test.status = event.status;
+    }
+
+    public onShowTransactions(element: any): void {
+        this.policyEngineService.getPolicyTransactions(element.id).subscribe((res) => {
+            const dialogRef = this.dialogService.open(TransactionDialogComponent, {
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    transactions: res
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
+        });
     }
 }

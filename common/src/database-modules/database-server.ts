@@ -2,7 +2,9 @@ import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
+    Artifact,
     ArtifactChunk as ArtifactChunkCollection,
+    AssignEntity,
     BlockCache,
     BlockState,
     Contract as ContractCollection,
@@ -17,12 +19,19 @@ import {
     MultiPolicy,
     MultiPolicyTransaction,
     Policy,
+    PolicyCache,
+    PolicyCacheData,
     PolicyCategory,
     PolicyInvitations,
     PolicyModule,
     PolicyRoles as PolicyRolesCollection,
+    PolicyStatistic,
+    PolicyStatisticDocument,
+    PolicyTest,
     Record,
+    RetirePool,
     Schema as SchemaCollection,
+    SchemaRule,
     SplitDocuments,
     SuggestionsConfig,
     Tag,
@@ -31,29 +40,10 @@ import {
     Topic as TopicCollection,
     VcDocument as VcDocumentCollection,
     VpDocument,
-    VpDocument as VpDocumentCollection,
-    PolicyCache,
-    PolicyCacheData,
-    RetirePool,
-    AssignEntity,
-    PolicyTest,
-    Artifact,
-    PolicyStatistic,
-    PolicyStatisticDocument,
-    SchemaRule
+    VpDocument as VpDocumentCollection
 } from '../entity/index.js';
 import { Binary } from 'bson';
-import {
-    AssignedEntityType,
-    GenerateUUIDv4,
-    IVC,
-    MintTransactionStatus,
-    PolicyTestStatus,
-    PolicyType,
-    SchemaEntity,
-    TokenType,
-    TopicType,
-} from '@guardian/interfaces';
+import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyType, SchemaEntity, TokenType, TopicType, } from '@guardian/interfaces';
 import { BaseEntity } from '../models/index.js';
 import { DataBaseHelper, MAP_TRANSACTION_SERIALS_AGGREGATION_FILTERS } from '../helpers/index.js';
 import { Theme } from '../entity/theme.js';
@@ -64,7 +54,7 @@ import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
 import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { TopicId } from '@hashgraph/sdk';
-import { Message } from '../hedera-modules/index.js'
+import { IMetadata, Message } from '../hedera-modules/index.js'
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
 
 /**
@@ -1863,12 +1853,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Create tag
-     * @param tag
+     * Get schemas
+     * @param filters
+     * @param options
      */
-    public async createTag(tag: Tag): Promise<Tag> {
-        const item = this.create(Tag, tag);
-        return await this.save(Tag, item);
+    public static async getSchema(filters?: FilterObject<SchemaCollection> | string, options?: unknown): Promise<SchemaCollection | null> {
+        return await new DataBaseHelper(SchemaCollection).findOne(filters, options);
     }
 
     /**
@@ -2375,11 +2365,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get schemas
-     * @param filters
+     * Create tag
+     * @param tag
+     * @param metadata
      */
-    public static async getSchema(filters?: FilterObject<SchemaCollection> | string): Promise<SchemaCollection | null> {
-        return await new DataBaseHelper(SchemaCollection).findOne(filters);
+    public static async createTag(tag: FilterObject<Tag>, metadata?: IMetadata): Promise<Tag> {
+        const item = new DataBaseHelper(Tag).create(tag);
+        if (metadata) {
+            item.addMetadata(metadata)
+        }
+        return await new DataBaseHelper(Tag).save(item);
     }
 
     /**
@@ -3335,9 +3330,12 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Create tag
      * @param tag
      */
-    public static async createTag(tag: FilterObject<Tag>): Promise<Tag> {
-        const item = new DataBaseHelper(Tag).create(tag);
-        return await new DataBaseHelper(Tag).save(item);
+    public async createTag(tag: Tag, metadata?: IMetadata): Promise<Tag> {
+        const item = this.create(Tag, tag);
+        if (metadata) {
+            item.addMetadata(metadata);
+        }
+        return await this.save(Tag, item);
     }
 
     /**

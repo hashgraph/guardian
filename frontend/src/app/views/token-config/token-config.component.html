@@ -79,6 +79,13 @@
                                             [svgClass]="token.enableAdmin ? 'primary-color' : 'disabled-color'"></svg-icon>
 
                                         <svg-icon
+                                                (click)="onShowTransactions(token)"
+                                                *ngIf="user.TOKENS_TOKEN_READ"
+                                                [svgClass]="'primary-color'"
+                                                class="opacity-icon"
+                                                src="/assets/images/icons/search.svg"></svg-icon>
+
+                                        <svg-icon
                                             *ngIf="user.TOKENS_TOKEN_DELETE"
                                             (click)="token.canDelete ? questToDeleteToken(token) : null"
                                             class="opacity-icon"

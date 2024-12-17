@@ -1174,11 +1174,12 @@ async function saveRetireVC(
     const messageServer = new MessageServer(hederaAccountId, hederaAccountKey);
     messageServer.setTopicObject(topicConfig);
 
+    const userTopicDb = await dataBaseServer.findOne(Topic, {
+        owner: owner.creator,
+        type: TopicType.UserTopic,
+    })
     const userTopic = await TopicConfig.fromObject(
-        await dataBaseServer.findOne(Topic, {
-            owner: owner.creator,
-            type: TopicType.UserTopic,
-        }),
+        userTopicDb,
         true
     );
 
@@ -1233,8 +1234,11 @@ async function saveRetireVC(
 
     const vcMessage = new VCMessage(MessageAction.CreateVC);
     vcMessage.setDocument(vcObject);
-    await messageServer.sendMessage(vcMessage);
+    const hederaMessage = await messageServer.sendMessage(vcMessage);
 
+    userTopicDb.addMetadata(hederaMessage.getMetadata())
+
+    await dataBaseServer.save(Topic, userTopicDb);
     await dataBaseServer.save(VcDocumentCollection, {
         hash: vcMessage.hash,
         owner: owner.creator,
@@ -1338,7 +1342,7 @@ export async function contractAPI(
                 }
             );
 
-            const [contractId, log] = await createContract(
+            const contractResult = await createContract(
                 ContractAPI.CREATE_CONTRACT,
                 workers,
                 type,
@@ -1346,6 +1350,7 @@ export async function contractAPI(
                 rootKey,
                 topic.topicId
             );
+            const [contractId, log] = contractResult.data;
 
             await topic.saveKeys();
             await DatabaseServer.saveTopic(topic.toObject());
@@ -1379,6 +1384,7 @@ export async function contractAPI(
             const contractMessageResult = await messageServer
                 .setTopicObject(topic)
                 .sendMessage(contractMessage);
+            contract.addMetadata(contractMessageResult.getMetadata());
             const userTopic = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(owner.owner, TopicType.UserTopic),
                 true

@@ -15396,6 +15396,11 @@ undici@^5.12.0:
   dependencies:
     "@fastify/busboy" "^2.0.0"
 
+undici@^7.1.0:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-7.1.1.tgz#f11eceeaaaa34ff8a28da31b68b0b4a8d75562f0"
+  integrity sha512-WZkQ6eH9f5ZT93gaIffsbUaDpBwjbpvmMbfaEhOnbdUneurTESeRxwPGwjI28mRFESH3W3e8Togijh37ptOQqA==
+
 union-value@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/union-value/-/union-value-1.0.1.tgz#0b6fe7b835aecda61c6ea4d4f02c14221e109847"

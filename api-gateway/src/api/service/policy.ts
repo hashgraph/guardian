@@ -3,8 +3,8 @@ import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { DocumentType, Permissions, PolicyHelper, TaskAction, UserRole } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, UseInterceptors, Version } from '@nestjs/common';
 import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from '@nestjs/swagger';
-import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO } from '#middlewares';
-import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
+import { BlockDTO, Examples, ExportMessageDTO, ImportMessageDTO, InternalServerErrorDTO, MigrationConfigDTO, pageHeader, PoliciesValidationDTO, PolicyCategoryDTO, PolicyDTO, PolicyPreviewDTO, PolicyTestDTO, PolicyValidationDTO, RunningDetailsDTO, ServiceUnavailableErrorDTO, TaskDTO, TransactionDTO } from '#middlewares';
+import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache } from '#helpers';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 
 async function getOldResult(user: IAuthUser): Promise<PolicyDTO[]> {
@@ -396,6 +396,52 @@ export class PolicyApi {
         await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
         return task;
+    }
+
+    /**
+     * Return all transactions for schema
+     * @param user
+     * @param policyId
+     */
+    @Get('/:policyId/transactions')
+    @Auth(
+        Permissions.POLICIES_POLICY_REVIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Return all transactions for policy.',
+        description: 'Return all transactions for policy.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: TransactionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TransactionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaTransactions(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<TransactionDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            return await guardians.getTransactions(policyId, 'policy', owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
     }
 
     /**

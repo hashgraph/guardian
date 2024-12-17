@@ -21,3 +21,5 @@ export { GuardianRoleMessage } from './guardian-role-message.js';
 export { UserPermissionsMessage } from './user-permissions-message.js';
 export { StatisticMessage } from './statistic-message.js';
 export { StatisticAssessmentMessage } from './statistic-assessment-message.js';
+export { IMetadataItem, IMetadata, TransactionTypes, IResultWithMetadata } from './message-metadata-type.js';
+export { MetadataClass } from './metadata-class.js';

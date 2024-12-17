@@ -27,22 +27,9 @@ import {
     SchemaNode,
     SuggestionsOrderPriority
 } from '@guardian/interfaces';
-import { IAuthUser, NatsService } from '@guardian/common';
+import { IAuthUser, IMetadataItem, NatsService } from '@guardian/common';
 import { NewTask } from './task-manager.js';
-import {
-    ModuleDTO,
-    TagDTO,
-    ThemeDTO,
-    TokenDTO,
-    ToolDTO,
-    StatisticDefinitionDTO,
-    StatisticAssessmentDTO,
-    StatisticAssessmentRelationshipsDTO,
-    StatisticDefinitionRelationshipsDTO,
-    SchemaRuleDTO,
-    SchemaRuleRelationshipsDTO,
-    SchemaRuleDataDTO
-} from '#middlewares';
+import { ModuleDTO, SchemaRuleDataDTO, SchemaRuleDTO, SchemaRuleRelationshipsDTO, StatisticAssessmentDTO, StatisticAssessmentRelationshipsDTO, StatisticDefinitionDTO, StatisticDefinitionRelationshipsDTO, TagDTO, ThemeDTO, TokenDTO, ToolDTO } from '#middlewares';
 
 /**
  * Filters type
@@ -618,6 +605,17 @@ export class Guardians extends NatsService {
      */
     public async getSchemaParents(id: string, owner: IOwner): Promise<ISchema[]> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_PARENTS, { id, owner });
+    }
+
+    /**
+     * Get schema transactions
+     * @param id Schema identifier
+     * @param type
+     * @param owner
+     * @returns Schemas
+     */
+    public async getTransactions(id: string, type: string, owner: IOwner): Promise<IMetadataItem[]> {
+        return await this.sendMessage(MessageAPI.GET_TRANSACTIONS, {id, owner, type});
     }
 
     /**

@@ -1,12 +1,12 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { MetadataEntity } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 
 /**
  * Tags collection
  */
 @Entity()
-export class Tag extends BaseEntity {
+export class Tag extends MetadataEntity{
     /**
      * Tag id
      */

@@ -39,6 +39,7 @@ import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-b
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TabViewModule } from 'primeng/tabview';
+import { TransactionDialogComponent } from './transaction-dialog/transaction-dialog';
 
 @NgModule({
     declarations: [
@@ -66,7 +67,8 @@ import { TabViewModule } from 'primeng/tabview';
         CustomCustomDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
-        ImportEntityDialog
+        ImportEntityDialog,
+        TransactionDialogComponent
     ],
     imports: [
         CommonModule,

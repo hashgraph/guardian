@@ -105,6 +105,7 @@ export async function publishSchema(
     item.messageId = messageId;
     item.topicId = topicId;
     item.sourceVersion = '';
+    item.addMetadata(message.getMetadata());
 
     SchemaHelper.updateIRI(item);
 
