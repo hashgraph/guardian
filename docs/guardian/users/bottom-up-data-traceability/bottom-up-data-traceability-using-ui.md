@@ -4,6 +4,11 @@ icon: chart-line-up
 
 # Bottom Up Data Traceability using UI
 
+1. [Step By Step Process](bottom-up-data-traceability-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](bottom-up-data-traceability-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## Statistics Terminology
 
 * Statistics **Definition** – a template which specifies schema/document fields, rules and formulas for creation of the Statistics.
@@ -143,7 +148,7 @@ To enable the use of **Definitions** for creating **Assessments** of real data, 
 
 #### **3.1 Creation**
 
-Published **Definitions** can be used for creating an **Assessment** by pressing the **Create** button for the corresponding Statistics **Definition** which launches the **Assessment** wizard**.**
+Published **Definitions** can be used for creating an **Assessment** by pressing the **Create** button for the corresponding Statistics **Definition** which launches the **Assessment** wizar&#x64;**.**
 
 ![](<../../../.gitbook/assets/16 (13).png>)
 
@@ -240,3 +245,7 @@ Example Hedera message on the publication of a new Statistics **Assessment**
 "uri": "ipfs://bafkreigrylqfyzqifhloklsftmcw7obtqidx64vhti4hfmbnpbrnathuty"
 }
 ```
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/tYLsr4rxw58?si=XNRvpap7aosnwuhh\&t=107)

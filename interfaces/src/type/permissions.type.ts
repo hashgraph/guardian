@@ -349,7 +349,7 @@ export const PermissionsArray: {
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.MANAGE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.CONTRACTS_CONTRACT_READ,
                 Permissions.CONTRACTS_CONTRACT_CREATE,

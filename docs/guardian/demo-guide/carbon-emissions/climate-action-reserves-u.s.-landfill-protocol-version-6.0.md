@@ -69,6 +69,8 @@ This protocol applies to projects that aim to reduce methane emissions from U.S.
 
 The policy workflow replicates the procedural steps required for landfill gas projects, covering project registration, additionality demonstration, and the submission of monitoring reports to claim carbon credits.
 
+<figure><img src="../../../.gitbook/assets/Climate Action Reserve Workflow (3).png" alt=""><figcaption></figcaption></figure>
+
 ## **Policy Import** <a href="#toc182312051" id="toc182312051"></a>
 
 This policy is available for import via GitHub or IPFS timestamp.
@@ -89,10 +91,114 @@ This policy is available for import via GitHub or IPFS timestamp.
 * **Attestation of Regulatory Compliance:** This attestation confirms that the project complies with all applicable federal, state, and local laws and regulations (e.g., environmental, safety). The Project Developer must disclose any instances of non-compliance to the verifier, who assesses the impact on credit issuance.
 * **Environmental Safeguards:** This schema ensures that project activities align with environmental best practices, minimizing unintended impacts on local ecosystems, air, water, and soil quality. The Project Developer must document steps taken to prevent adverse environmental effects, such as controlling potential pollutants, managing resource use, and protecting nearby habitats. This schema may also include periodic environmental impact assessments as part of ongoing compliance and verification.
 
-## **Token (**Climate Reserve Tonnes - CRTs**)** <a href="#toc182312054" id="toc182312054"></a>
+## **Token (**&#x43;limate Reserve Tonnes - CRT&#x73;**)** <a href="#toc182312054" id="toc182312054"></a>
 
 Each CRT represents one metric tonne of carbon dioxide equivalent (tCO₂e) reduced or avoided through the approved project activities.
 
 ## **Step By Step** <a href="#toc182312055" id="toc182312055"></a>
 
-Coming Soon
+1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
+
+<figure><img src="../../../.gitbook/assets/image (696).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (697).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (698).png" alt=""><figcaption></figcaption></figure>
+
+2. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.
+
+<figure><img src="../../../.gitbook/assets/image (699).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (700).png" alt=""><figcaption></figcaption></figure>
+
+3. Create a new user account and assign their role as the Project Developer.
+
+<figure><img src="../../../.gitbook/assets/image (701).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (702).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (703).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (704).png" alt=""><figcaption></figcaption></figure>
+
+4. Log in to the administrator account to review and approve the Project Developer account.
+
+<figure><img src="../../../.gitbook/assets/image (705).png" alt=""><figcaption></figcaption></figure>
+
+5. The Project Developer can click 'Create Project' to submit the Project Submission Form.
+
+<figure><img src="../../../.gitbook/assets/image (706).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (707).png" alt=""><figcaption></figcaption></figure>
+
+6. The Project Developer can also submit a Project Diagram.
+
+<figure><img src="../../../.gitbook/assets/image (708).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (709).png" alt=""><figcaption></figcaption></figure>
+
+7. Return to the administrator account to review the Project Submission Form and the Project Diagram for completeness and approve both submissions.
+
+<figure><img src="../../../.gitbook/assets/image (710).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (711).png" alt=""><figcaption></figcaption></figure>
+
+8. Now, we will create a new user to add a verifier account.
+
+<figure><img src="../../../.gitbook/assets/image (712).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (713).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (714).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (715).png" alt=""><figcaption></figcaption></figure>
+
+9. Log in to the Administrator account to review and approve the Verifier account.
+
+<figure><img src="../../../.gitbook/assets/image (716).png" alt=""><figcaption></figcaption></figure>
+
+10. The Verifier must complete a NOVA/COI form and submit it to the Administrator.
+
+<figure><img src="../../../.gitbook/assets/image (717).png" alt=""><figcaption></figcaption></figure>
+
+11. Log in to the Administrator account and approve the NOVA/COI form. This policy also allows the Administrator to identify a conflict of interest (COI) as outlined in the workflow above.
+
+<figure><img src="../../../.gitbook/assets/image (718).png" alt=""><figcaption></figcaption></figure>
+
+12. Once the NOVA/COI form has been approved with no COIs identified you can log in to the Project Developer account and assign a Verifier to the project. This will allow the verifier to see the project submission form.
+
+<figure><img src="../../../.gitbook/assets/image (719).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (722).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (723).png" alt=""><figcaption></figcaption></figure>
+
+13. The Project Developer can submit all the forms outlined in the project documents tab, assigning the third-party verifier to each form.
+
+<figure><img src="../../../.gitbook/assets/image (724).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (725).png" alt=""><figcaption></figcaption></figure>
+
+14. Using the assigned Verifier account, they can now review and approve all the project documents. Once approved they can complete and submit the Verification Report.
+
+<figure><img src="../../../.gitbook/assets/image (726).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (727).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (728).png" alt=""><figcaption></figcaption></figure>
+
+15. The Administrator must review the report for completeness and choose to approve or reject.
+
+<figure><img src="../../../.gitbook/assets/image (729).png" alt=""><figcaption></figcaption></figure>
+
+16. The final step before issuing credits would be to approve the Emission Reductions from the Administrators account.
+
+<figure><img src="../../../.gitbook/assets/image (730).png" alt=""><figcaption></figcaption></figure>
+
+17. The project owner and administrator will have access to the Verifiable Presentation (VP) and Trust Chain.
+
+<figure><img src="../../../.gitbook/assets/image (731).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (732).png" alt=""><figcaption></figcaption></figure>
+
+<figure><img src="../../../.gitbook/assets/image (733).png" alt=""><figcaption></figcaption></figure>

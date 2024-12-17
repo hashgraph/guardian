@@ -20,7 +20,7 @@ jobs:
                     - 6379:6379
         strategy:
             matrix:
-                node-version: [ 20.x ]
+                node-version: [ 20.18.1 ]
                 mongodb-version: [ 7.0.5 ]
         steps:
             - name: Harden Runner

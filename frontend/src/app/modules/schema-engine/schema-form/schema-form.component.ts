@@ -51,6 +51,7 @@ enum ErrorArrayMessageByFieldType {
 class IButton {
     id: string;
     visible: () => boolean;
+    disabled: () => boolean;
     text: string;
     class: string;
     type: string;
@@ -144,6 +145,9 @@ export class SchemaFormComponent implements OnInit {
                 }
                 return this.currentIndex === 0 && !this.cancelHidden;
             },
+            disabled: () => {
+                return false;
+            },
             text: this.cancelText,
             class: 'p-button-outlined',
             type: 'secondary',
@@ -158,6 +162,9 @@ export class SchemaFormComponent implements OnInit {
                     return false;
                 }
                 return this.currentIndex !== 0;
+            },
+            disabled: () => {
+                return false;
             },
             text: 'Previous',
             class: 'p-button-outlined',
@@ -174,6 +181,9 @@ export class SchemaFormComponent implements OnInit {
                 }
                 return !this.isShown[this.fields.length - 1];
             },
+            disabled: () => {
+                return false;
+            },
             text: 'Next',
             class: 'p-button',
             type: 'primary',
@@ -188,6 +198,9 @@ export class SchemaFormComponent implements OnInit {
                     return false;
                 }
                 return !!this.isShown[this.fields.length - 1] && !this.submitHidden;
+            },
+            disabled: () => {
+                return false;
             },
             text: this.submitText,
             class: 'p-button',
@@ -303,13 +316,7 @@ export class SchemaFormComponent implements OnInit {
         return new UntypedFormArray([]);
     }
 
-    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
-        if (item.customType === 'geo' || item.customType === 'sentinel') {
-            return new UntypedFormControl({})
-        } else {
-            return new UntypedFormGroup({});
-        }
-    }
+    private trigger = true;
 
     private updateButton() {
         this.buttons.emit(this.buttonsConfig);
@@ -461,6 +468,25 @@ export class SchemaFormComponent implements OnInit {
         }
 
         return listItem;
+    }
+
+    parseDate(item: string | string[], calendar: any, index?: number) {
+        setTimeout(() => {
+            if (calendar.dateParsed) {
+                return;
+            }
+            if (Array.isArray(item) && (index !== undefined) && item[index]) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item[index]).format('YYYY-MM-DD HH:mm:ss');
+                }
+            } else if (item) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+                }
+            }
+            calendar.dateParsed = true;
+        }, 50);
+
     }
 
     public removeGroup(item: IFieldControl<any>, event: any) {
@@ -652,6 +678,22 @@ export class SchemaFormComponent implements OnInit {
         return item.type === 'null';
     }
 
+    suggestIsObject(item: any): boolean {
+        return typeof item === 'object';
+    }
+
+    public parseSuggest(item: any): string {
+        return this.findString(item);
+    }
+
+    private findString(item: any): string {
+        if (typeof item === 'object') {
+            return this.findString(Object.values(item)[0]);
+        } else {
+            return item as string;
+        }
+    }
+
     public isTime(item: SchemaField): boolean {
         return item.type === 'string' && item.format === 'time';
     }
@@ -700,7 +742,7 @@ export class SchemaFormComponent implements OnInit {
                         valueToSet = "";
                     }
                 } else if (format === 'time') {
-                    const momentDate = moment(val);
+                    const momentDate = moment(val, 'hh:mm:ss');
                     if (momentDate.isValid()) {
                         momentDate.milliseconds(0);
                         valueToSet = momentDate.format('HH:mm:ss');
@@ -898,13 +940,14 @@ export class SchemaFormComponent implements OnInit {
             item.list = [];
             let count = suggest.length;
             while (count-- > 0) {
-                const control = this.createListControl(item);
+                const control = this.createListControl(item, Array.isArray(suggest) ? suggest[count] : undefined);
                 item.list.push(control);
                 (item.control as UntypedFormArray).push(control.control);
             }
         }
         item.control?.patchValue(suggest);
         item.control?.markAsDirty();
+        (item as any).subject.next();
     }
 
     public isEmpty(value: any): boolean {
@@ -923,6 +966,9 @@ export class SchemaFormComponent implements OnInit {
         }
         if (field.customType === 'geo') {
             return Object.keys(value).length === 0;
+        }
+        if (field.customType === 'sentinel') {
+            return JSON.stringify(value) === '{"layers":"NATURAL-COLOR","format":"image/jpeg","maxcc":null,"width":null,"height":null,"bbox":"","time":null}';
         }
         if (field.fields) {
             for (const _field of field.fields) {
@@ -1068,6 +1114,7 @@ export class SchemaFormComponent implements OnInit {
                 item.control?.disable();
             });
         }
+        (item as any).subject = new Subject();
         return item;
     }
 
@@ -1077,6 +1124,14 @@ export class SchemaFormComponent implements OnInit {
 
     public ifSimpleField(item: IFieldControl<any>): boolean {
         return !item.isArray && !item.isRef;
+    }
+
+    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        if (item.customType === 'geo') {
+            return new UntypedFormControl({})
+        } else {
+            return new UntypedFormGroup({});
+        }
     }
 
     public ifSubSchema(item: IFieldControl<any>): boolean {

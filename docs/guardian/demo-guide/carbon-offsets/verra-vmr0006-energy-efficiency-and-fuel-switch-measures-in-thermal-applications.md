@@ -62,7 +62,7 @@ Various methodologies are used to quantify emissions reductions in cookstove pro
 
 ### Policy Import <a href="#toc402141281" id="toc402141281"></a>
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.
 
 ### Available Roles <a href="#toc2047000743" id="toc2047000743"></a>
 

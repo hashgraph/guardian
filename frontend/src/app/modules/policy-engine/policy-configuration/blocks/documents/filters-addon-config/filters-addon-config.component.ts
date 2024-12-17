@@ -49,7 +49,7 @@ export class FiltersAddonConfigComponent implements OnInit {
         this.properties = block.properties;
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.options = this.properties.uiMetaData.options || [];
-        this.properties.type = 'dropdown';
+        this.properties.type = this.properties.type || 'dropdown';
     }
 
     onHide(item: any, prop: any) {
