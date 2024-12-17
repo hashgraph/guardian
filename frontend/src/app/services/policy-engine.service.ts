@@ -365,4 +365,8 @@ export class PolicyEngineService {
         }
         return this.http.post<any[]>(`${this.url}/${policyId}/test/`, formData);
     }
+
+    getPolicyTransactions(id: string) {
+        return this.http.get<any[]>(`${this.url}/${id}/transactions`);
+    }
 }

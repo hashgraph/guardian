@@ -1,11 +1,12 @@
 import { Topic } from '../entity/index.js';
 import { TopicType } from '@guardian/interfaces';
 import { KeyType, Wallet } from '../helpers/index.js';
+import { MetadataClass } from './message/index.js';
 
 /**
  * Topic Config
  */
-export class TopicConfig {
+export class TopicConfig extends MetadataClass{
     /**
      * Topic ID
      */
@@ -93,6 +94,7 @@ export class TopicConfig {
          */
         targetUUID?: string,
     }, adminKey?: string, submitKey?: string) {
+        super();
         this.topicId = topic.topicId;
         this.name = topic.name;
         this.description = topic.description;
@@ -143,6 +145,7 @@ export class TopicConfig {
             policyUUID: this.policyUUID,
             targetId: this.targetId,
             targetUUID: this.targetUUID,
+            metadata: [this.getMetadata()]
         }
     }
 

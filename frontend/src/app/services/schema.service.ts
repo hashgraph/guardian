@@ -195,6 +195,10 @@ export class SchemaService {
         return this.http.get<ISchema[]>(`${this.singleSchemaUrl}/${id}/parents`);
     }
 
+    public getSchemaTransactions(id: string): Observable<any[]> {
+        return this.http.get<any[]>(`${this.singleSchemaUrl}/${id}/transactions`);
+    }
+
     public getSchemaTree(id: string): Observable<SchemaNode> {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
     }

@@ -191,6 +191,73 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
+     * Return parent schemas
+     *
+     * @param {Object} [msg] - payload
+     *
+     * @returns {ISchema[]} - Parent schemas
+     */
+    ApiResponse(MessageAPI.GET_TRANSACTIONS,
+        async (msg: { id: string, owner: IOwner, type: string }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid load schema parameter');
+                }
+
+                const {id, owner, type} = msg;
+                if (!id) {
+                    return new MessageError('Invalid schema id');
+                }
+                if (!owner) {
+                    return new MessageError('Invalid schema owner');
+                }
+                if (!type) {
+                    return new MessageError('Invalid schema type');
+                }
+
+                switch (type) {
+                    case 'schema': {
+                        const schema = await DatabaseServer.getSchema({
+                            id,
+                            owner: owner.owner
+                        });
+                        return new MessageResponse(schema.metadata);
+                    }
+
+                    case 'policy': {
+                        const policy = await DatabaseServer.getPolicy({
+                            id,
+                            owner: owner.owner
+                        });
+                        return new MessageResponse(policy.metadata);
+                    }
+
+                    case 'topic': {
+                        const topic = await DatabaseServer.getTopicById(id);
+                        return new MessageResponse(topic.metadata);
+                    }
+
+                    case 'token': {
+                        const token = await DatabaseServer.getTokenById(id);
+                        return new MessageResponse(token.metadata);
+                    }
+
+                    case 'contract': {
+                        const contract = await DatabaseServer.getContractById(id);
+                        return new MessageResponse(contract.metadata);
+                    }
+
+                    default: {
+                        throw new Error('Unknown entity type ' + type);
+                    }
+                }
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
      * Return schema tree
      *
      * @param {Object} [msg] - payload

@@ -1,10 +1,10 @@
-import { Guardians, PolicyEngine, TaskManager, ServiceError, InternalException, ONLY_SR, parseInteger, EntityOwner, getCacheKey, CacheService } from '#helpers';
+import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, parseInteger, PolicyEngine, ServiceError, TaskManager } from '#helpers';
 import { IOwner, IToken, Permissions, TaskAction, UserPermissions } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
-import { AuthUser, Auth } from '#auth';
-import { ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiExtraModels, ApiTags, ApiParam, ApiBody, ApiQuery } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, TaskDTO, TokenDTO, TokenInfoDTO, pageHeader } from '#middlewares';
+import { Auth, AuthUser } from '#auth';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, pageHeader, TaskDTO, TokenDTO, TokenInfoDTO, TransactionDTO } from '#middlewares';
 import { TOKEN_REQUIRED_PROPS } from '#constants';
 
 /**
@@ -301,6 +301,52 @@ export class TokensApi {
             const [tokenByIdWithPolicies] = setTokensPolicies([dynamicTokenById], map, policyId, false);
 
             return tokenByIdWithPolicies;
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Return all transactions for token
+     * @param user
+     * @param tokenId
+     */
+    @Get('/:tokenId/transactions')
+    @Auth(
+        Permissions.POLICIES_POLICY_REVIEW,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.AUDITOR ?,
+        // UserRole.USER ?
+    )
+    @ApiOperation({
+        summary: 'Return all transactions for policy.',
+        description: 'Return all transactions for policy.',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Policy identifier',
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        type: TransactionDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TransactionDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaTransactions(
+        @AuthUser() user: IAuthUser,
+        @Param('tokenId') tokenId: string,
+    ): Promise<TransactionDTO[]> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            return await guardians.getTransactions(tokenId, 'token', owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

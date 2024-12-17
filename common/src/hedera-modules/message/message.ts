@@ -5,6 +5,7 @@ import { MessageType } from './message-type.js';
 import { MessageBody } from './message-body.interface.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Hashing } from '../hashing.js';
+import { MetadataClass } from './metadata-class.js';
 
 /**
  * Message status
@@ -27,7 +28,7 @@ export enum RevokeReason {
 /**
  * Message
  */
-export abstract class Message {
+export abstract class Message extends MetadataClass{
     /**
      * Id
      */
@@ -100,7 +101,8 @@ export abstract class Message {
         return this._responseType;
     }
 
-    constructor(action: MessageAction, type: MessageType) {
+    protected constructor(action: MessageAction, type: MessageType) {
+        super();
         this.type = type;
         this.lang = 'en-US';
         this._action = action;
@@ -134,12 +136,13 @@ export abstract class Message {
 
     /**
      * Set URLs
-     * @param url
+     * @param iurls
      */
-    public setUrls(url: IURL[]): void {
-        this.urls = url?.filter(u => {
+    public setUrls(iurls: IURL[]): void {
+        this.urls = iurls?.filter(u => {
             return !!u.cid
         });
+        this.setMetadata({urls: this.urls.map(url => url.cid)});
     }
 
     /**

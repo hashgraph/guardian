@@ -51,13 +51,13 @@ import {
     PolicyRoles,
     PolicyStatistic,
     PolicyStatisticDocument,
-    SchemaRule,
     PolicyTest,
     PolicyTool,
     Record,
     RetirePool,
     RetireRequest,
     Schema,
+    SchemaRule,
     SecretManager,
     Settings,
     SplitDocuments,
@@ -361,7 +361,7 @@ Promise.all([
     let policyEngine: PolicyEngine;
     validator.setValidAction(async () => {
         if (!process.env.INITIALIZATION_TOPIC_ID && process.env.HEDERA_NET === 'localnode') {
-            process.env.INITIALIZATION_TOPIC_ID = await workersHelper.addRetryableTask({
+            const data = await workersHelper.addRetryableTask({
                 type: WorkerTaskType.NEW_TOPIC,
                 data: {
                     hederaAccountId: OPERATOR_ID,
@@ -370,6 +370,7 @@ Promise.all([
                     topicMemo: TopicMemo.getGlobalTopicMemo()
                 }
             }, 10);
+            process.env.INITIALIZATION_TOPIC_ID = data.data;
         }
 
         state.updateState(ApplicationStates.INITIALIZING);

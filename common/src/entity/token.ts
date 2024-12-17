@@ -1,13 +1,13 @@
 import { IToken, TokenType } from '@guardian/interfaces';
 import { Entity, Property, Unique } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { MetadataEntity } from '../models/index.js';
 
 /**
  * Tokens collection
  */
 @Entity()
 @Unique({ properties: ['tokenId'], options: { partialFilterExpression: { tokenId: { $type: 'string' } } } })
-export class Token extends BaseEntity implements IToken {
+export class Token extends MetadataEntity implements IToken{
     /**
      * Token id
      */

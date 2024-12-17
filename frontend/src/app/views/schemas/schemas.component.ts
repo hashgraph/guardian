@@ -26,6 +26,7 @@ import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog
 import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import { TransactionDialogComponent } from '../../modules/common/transaction-dialog/transaction-dialog';
 
 enum SchemaType {
     System = 'system',
@@ -1316,5 +1317,21 @@ export class SchemaConfigComponent implements OnInit {
             }, (error) => {
                 this.loading = false;
             });
+    }
+
+    onShowTransactions(element: Schema): void {
+        this.schemaService.getSchemaTransactions(element.id).subscribe((res) => {
+            const dialogRef = this.dialogService.open(TransactionDialogComponent, {
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    transactions: res
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
+        });
+
     }
 }
