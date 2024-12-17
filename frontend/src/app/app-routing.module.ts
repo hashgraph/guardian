@@ -54,9 +54,9 @@ import { StatisticDefinitionConfigurationComponent } from './modules/statistics/
 import { StatisticDefinitionsComponent } from './modules/statistics/policy-statistics/statistic-definitions/statistic-definitions.component';
 import { SchemaRuleConfigurationComponent } from './modules/statistics/schema-rules/schema-rule-configuration/schema-rule-configuration.component';
 import { SchemaRulesComponent } from './modules/statistics/schema-rules/schema-rules/schema-rules.component';
-import { PolicyLabelAssessmentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-assessment-configuration/policy-label-assessment-configuration.component';
-import { PolicyLabelAssessmentsComponent } from './modules/statistics/policy-labels/policy-label-assessments/policy-label-assessments.component';
-import { PolicyLabelAssessmentViewComponent } from './modules/statistics/policy-labels/policy-label-assessment-view/policy-label-assessment-view.component';
+import { PolicyLabelDocumentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-document-configuration/policy-label-document-configuration.component';
+import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-labels/policy-label-documents/policy-label-documents.component';
+import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
 
 @Injectable({
     providedIn: 'root'
@@ -620,7 +620,7 @@ const routes: Routes = [
         }
     },
     {
-        path: 'policy-label/:labelId',
+        path: 'policy-labels/:definitionId',
         component: PolicyLabelConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
@@ -634,8 +634,8 @@ const routes: Routes = [
         }
     },
     {
-        path: 'policy-label/:labelId/assessment',
-        component: PolicyLabelAssessmentConfigurationComponent,
+        path: 'policy-labels/:definitionId/document',
+        component: PolicyLabelDocumentConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [
@@ -648,8 +648,8 @@ const routes: Routes = [
         }
     },
     {
-        path: 'policy-label/:labelId/assessments',
-        component: PolicyLabelAssessmentsComponent,
+        path: 'policy-labels/:definitionId/documents',
+        component: PolicyLabelDocumentsComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [
@@ -662,8 +662,8 @@ const routes: Routes = [
         }
     },
     {
-        path: 'policy-label/:labelId/assessment/:assessmentId',
-        component: PolicyLabelAssessmentViewComponent,
+        path: 'policy-labels/:definitionId/documents/:documentId',
+        component: PolicyLabelDocumentViewComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [

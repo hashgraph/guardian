@@ -117,7 +117,7 @@ export class RulesConfig {
     }
 
     public setSchemas(relationships: any) {
-        const schemas = relationships.schemas || [];
+        const schemas = relationships.policySchemas || [];
 
         this.nodes = [];
         this.schemas = [];

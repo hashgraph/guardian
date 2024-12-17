@@ -671,3 +671,33 @@ export interface StatisticAssessmentMessageBody extends MessageBody {
      */
     definition: string;
 }
+
+/**
+ * Label Assessment message body
+ */
+export interface LabelDocumentMessageBody extends MessageBody {
+    /**
+     * Issuer
+     */
+    issuer: string;
+    /**
+     * CID
+     */
+    cid: string;
+    /**
+     * URI
+     */
+    uri: string;
+    /**
+     * Relationships
+     */
+    relationships: string[];
+    /**
+     * Target
+     */
+    target: string;
+    /**
+     * Definition
+     */
+    definition: string;
+}

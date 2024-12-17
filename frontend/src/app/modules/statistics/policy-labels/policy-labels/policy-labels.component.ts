@@ -219,7 +219,7 @@ export class PolicyLabelsComponent implements OnInit {
         }
         this.pageIndex = 0;
         const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/policy-label'], { queryParams: { topic } });
+        this.router.navigate(['/policy-labels'], { queryParams: { topic } });
         this.loadData();
     }
 
@@ -250,7 +250,7 @@ export class PolicyLabelsComponent implements OnInit {
     }
 
     public onEdit(item: any) {
-        this.router.navigate(['/policy-label', item.id]);
+        this.router.navigate(['/policy-labels', item.id]);
     }
 
     public onImport() {
@@ -392,13 +392,13 @@ export class PolicyLabelsComponent implements OnInit {
         if (item.status !== 'PUBLISHED') {
             return;
         }
-        this.router.navigate(['/policy-label', item.id, 'assessment']);
+        this.router.navigate(['/policy-labels', item.id, 'document']);
     }
 
     public onOpenInstances(item: any): void {
         if (item.status !== 'PUBLISHED') {
             return;
         }
-        this.router.navigate(['/policy-label', item.id, 'assessments']);
+        this.router.navigate(['/policy-labels', item.id, 'documents']);
     }
 }

@@ -124,6 +124,10 @@ export class PolicyLabelRelationshipsDTO {
 
 }
 
-export class PolicyLabelAssessmentDTO {
+export class PolicyLabelDocumentDTO {
+
+}
+
+export class PolicyLabelDocumentRelationshipsDTO {
 
 }

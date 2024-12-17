@@ -2,10 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 
 interface IColumn {
     id: string;
@@ -18,12 +16,12 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-policy-label-assessments',
-    templateUrl: './policy-label-assessments.component.html',
-    styleUrls: ['./policy-label-assessments.component.scss'],
+    selector: 'app-policy-label-documents',
+    templateUrl: './policy-label-documents.component.html',
+    styleUrls: ['./policy-label-documents.component.scss'],
 })
-export class PolicyLabelAssessmentsComponent implements OnInit {
-    public readonly title: string = 'Assessments';
+export class PolicyLabelDocumentsComponent implements OnInit {
+    public readonly title: string = 'Documents';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -37,19 +35,16 @@ export class PolicyLabelAssessmentsComponent implements OnInit {
     public definition: any;
     public columns: IColumn[];
     public policy: any;
-    public schemas: any[];
 
     private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
-        private policyStatisticsService: PolicyStatisticsService,
-        private policyEngineService: PolicyEngineService,
-        private dialogService: DialogService,
+        private policyLabelsService: PolicyLabelsService,
         private router: Router,
         private route: ActivatedRoute
     ) {
-        this.columns = [ {
+        this.columns = [{
             id: 'definition',
             title: 'Definition',
             type: 'text',
@@ -110,15 +105,14 @@ export class PolicyLabelAssessmentsComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.profileService.getProfile(),
-            this.policyStatisticsService.getDefinition(this.definitionId),
-            this.policyStatisticsService.getRelationships(this.definitionId)
+            this.policyLabelsService.getLabel(this.definitionId),
+            this.policyLabelsService.getRelationships(this.definitionId)
         ]).subscribe(([profile, definition, relationships]) => {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.definition = definition;
             this.policy = relationships?.policy || {};
-            this.schemas = relationships?.schemas || [];
             if (this.isConfirmed) {
                 this.loadData();
             } else {
@@ -134,15 +128,15 @@ export class PolicyLabelAssessmentsComponent implements OnInit {
     private loadData() {
         const filters: any = {};
         this.loading = true;
-        this.policyStatisticsService
-            .getAssessments(
+        this.policyLabelsService
+            .getLabelDocuments(
                 this.definitionId,
                 this.pageIndex,
                 this.pageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.policyStatisticsService.parsePage(response);
+                const { page, count } = this.policyLabelsService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
                 for (const item of this.page) {
@@ -169,14 +163,14 @@ export class PolicyLabelAssessmentsComponent implements OnInit {
     }
 
     public onBack() {
-        this.router.navigate(['/policy-statistics']);
+        this.router.navigate(['/policy-labels']);
     }
 
     public onOpen(row: any) {
         this.router.navigate([
-            '/policy-statistics',
+            '/policy-labels',
             this.definitionId,
-            'assessment',
+            'documents',
             row.id
         ]);
     }

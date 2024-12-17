@@ -76,6 +76,7 @@ export class DocumentNode extends TreeNode<any> {
         const clone = new DocumentNode(this.id, this.type, this.data);
         clone.type = this.type;
         clone.data = this.data;
+        clone.entity = this.entity;
         clone.childIds = new Set(this.childIds);
         return clone;
     }

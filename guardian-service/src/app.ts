@@ -77,7 +77,8 @@ import {
     VpDocument,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    PolicyLabelDocument
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -165,7 +166,8 @@ const necessaryEntity = [
     PolicyStatistic,
     PolicyStatisticDocument,
     SchemaRule,
-    PolicyLabel
+    PolicyLabel,
+    PolicyLabelDocument
 ]
 
 Promise.all([

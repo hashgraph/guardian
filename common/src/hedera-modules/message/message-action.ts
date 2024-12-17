@@ -37,5 +37,6 @@ export enum MessageAction {
     SetRole = 'set-role',
     PublishPolicyStatistic = 'publish-policy-statistic',
     CreateStatisticAssessment = 'create-assessment-document',
-    PublishPolicyLabel = 'publish-policy-label'
+    PublishPolicyLabel = 'publish-policy-label',
+    CreateLabelDocument = 'create-label-document',
 }

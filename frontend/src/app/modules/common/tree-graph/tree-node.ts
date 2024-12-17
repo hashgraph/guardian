@@ -21,6 +21,7 @@ export class TreeNode<T> {
     public lines: Line[];
     public selected: SelectType;
     public parent: TreeNode<T> | null;
+    public entity: string;
 
     constructor(
         id: string | null | undefined,
@@ -44,6 +45,7 @@ export class TreeNode<T> {
         this.lines = [];
         this.selected = SelectType.NONE;
         this.parent = null;
+        this.entity = 'default';
     }
 
     public addId(id: string): void {
@@ -59,6 +61,7 @@ export class TreeNode<T> {
         const clone = new TreeNode<T>(this.id, this.type, this.data);
         clone.type = this.type;
         clone.data = this.data;
+        clone.entity = this.entity;
         clone.childIds = new Set(this.childIds);
         return clone;
     }
@@ -105,6 +108,6 @@ export class TreeNode<T> {
     }
 
     public update(): void {
-        
+
     }
 }

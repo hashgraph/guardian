@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
-import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { IFormula, IOption, IScore, IVariable } from '../../../common/models/assessment';
@@ -11,14 +10,15 @@ import { TreeGraphComponent } from '../../../common/tree-graph/tree-graph.compon
 import { DocumentNode, SchemaData } from '../../../common/models/schema-node';
 import { TreeNode } from '../../../common/tree-graph/tree-node';
 import { VCViewerDialog } from '../../../schema-engine/vc-dialog/vc-dialog.component';
+import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 
 @Component({
-    selector: 'app-policy-label-assessment-view',
-    templateUrl: './policy-label-assessment-view.component.html',
-    styleUrls: ['./policy-label-assessment-view.component.scss'],
+    selector: 'app-policy-label-document-view',
+    templateUrl: './policy-label-document-view.component.html',
+    styleUrls: ['./policy-label-document-view.component.scss'],
 })
-export class PolicyLabelAssessmentViewComponent implements OnInit {
-    public readonly title: string = 'Assessment';
+export class PolicyLabelDocumentViewComponent implements OnInit {
+    public readonly title: string = 'Document';
 
     public loading: boolean = true;
     public navLoading: boolean = false;
@@ -27,16 +27,18 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public definitionId: string;
-    public assessmentId: string;
+    public documentId: string;
     public definition: any;
     public policy: any;
-    public schemas: any[];
-    public schema: any;
-    public assessment: any;
+    public policySchemas: any[];
+    public documentsSchemas: any[];
+    public document: any;
     public target: any;
     public relationships: any;
     public schemasMap: Map<string, Schema>;
     public stepper = [true, false, false];
+
+    public token: any;
 
     public preview: IVariable[];
     public scores: IScore[];
@@ -59,7 +61,7 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
 
     constructor(
         private profileService: ProfileService,
-        private policyStatisticsService: PolicyStatisticsService,
+        private policyLabelsService: PolicyLabelsService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -103,28 +105,27 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
 
     private loadData() {
         this.definitionId = this.route.snapshot.params['definitionId'];
-        this.assessmentId = this.route.snapshot.params['assessmentId'];
+        this.documentId = this.route.snapshot.params['documentId'];
         this.loading = true;
         forkJoin([
-            this.policyStatisticsService.getDefinition(this.definitionId),
-            this.policyStatisticsService.getRelationships(this.definitionId),
-            this.policyStatisticsService.getAssessment(this.definitionId, this.assessmentId),
-            this.policyStatisticsService.getAssessmentRelationships(this.definitionId, this.assessmentId),
+            this.policyLabelsService.getLabel(this.definitionId),
+            this.policyLabelsService.getRelationships(this.definitionId),
+            this.policyLabelsService.getLabelDocument(this.definitionId, this.documentId),
+            this.policyLabelsService.getLabelDocumentRelationships(this.definitionId, this.documentId)
         ]).subscribe(([
             definition,
             definitionRelationships,
-            assessment,
-            assessmentRelationships
+            document,
+            documentRelationships
         ]) => {
             this.definition = definition;
             this.policy = definitionRelationships?.policy || {};
-            this.schemas = definitionRelationships?.schemas || [];
-            this.schema = definitionRelationships?.schema;
-            this.assessment = assessment || {};
-            this.target = assessmentRelationships?.target || {};
-            this.relationships = assessmentRelationships?.relationships || [];
+            this.policySchemas = definitionRelationships?.policySchemas || [];
+            this.documentsSchemas = definitionRelationships?.documentsSchemas || [];
+            this.document = document || {};
+            this.target = documentRelationships?.target || {};
+            this.relationships = documentRelationships?.relationships || [];
             this.updateMetadata();
-
             setTimeout(() => {
                 this.loading = false;
             }, 500);
@@ -135,89 +136,99 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
 
     public onBack() {
         this.router.navigate([
-            '/policy-statistics',
+            '/policy-labels',
             this.definitionId,
-            'assessments'
+            'documents'
         ]);
     }
 
     private updateMetadata() {
-        const config = this.definition.config || {};
-        const variables = config.variables || [];
-        const formulas = config.formulas || [];
-        const scores = config.scores || [];
-        const preview = new Map<string, IVariable>();
+        this.token = this.getMintVc();
 
-        this.preview = [];
-        this.scores = [];
-        this.formulas = [];
+        //     const config = this.definition.config || {};
+        //     const variables = config.variables || [];
+        //     const formulas = config.formulas || [];
+        //     const scores = config.scores || [];
+        //     const preview = new Map<string, IVariable>();
 
-        let document: any = this.assessment?.document?.credentialSubject;
-        if (Array(document)) {
-            document = document[0];
-        }
-        if (!document) {
-            document = {};
-        }
+        //     this.preview = [];
+        //     this.scores = [];
+        //     this.formulas = [];
 
-        for (const variable of variables) {
-            const path = [...(variable.path || '').split('.')];
-            const fullPath = [variable.schemaId, ...path];
-            const field: IVariable = {
-                id: variable.id,
-                description: variable.fieldDescription || '',
-                schemaId: variable.schemaId,
-                path: path,
-                fullPath: fullPath,
-                value: document[variable.id],
-                isArray: false
-            }
-            this.preview.push(field);
-            preview.set(variable.id, field);
-        }
+        //     let document: any = this.document?.document?.credentialSubject;
+        //     if (Array(document)) {
+        //         document = document[0];
+        //     }
+        //     if (!document) {
+        //         document = {};
+        //     }
 
-        for (const score of scores) {
-            const relationships: IVariable[] = [];
-            if (score.relationships) {
-                for (const ref of score.relationships) {
-                    const field = preview.get(ref);
-                    if (field) {
-                        relationships.push(field);
-                    }
-                }
-            }
-            const options: IOption[] = [];
-            if (score.options) {
-                for (const option of score.options) {
-                    options.push({
-                        id: GenerateUUIDv4(),
-                        description: option.description,
-                        value: option.description //this is not a typo.
-                    });
-                }
-            }
-            this.scores.push({
-                id: score.id,
-                description: score.description,
-                value: document[score.id],
-                relationships,
-                options
-            });
-        }
+        //     for (const variable of variables) {
+        //         const path = [...(variable.path || '').split('.')];
+        //         const fullPath = [variable.schemaId, ...path];
+        //         const field: IVariable = {
+        //             id: variable.id,
+        //             description: variable.fieldDescription || '',
+        //             schemaId: variable.schemaId,
+        //             path: path,
+        //             fullPath: fullPath,
+        //             value: document[variable.id],
+        //             isArray: false
+        //         }
+        //         this.preview.push(field);
+        //         preview.set(variable.id, field);
+        //     }
 
-        for (const formula of formulas) {
-            this.formulas.push({
-                id: formula.id,
-                description: formula.description,
-                value: document[formula.id],
-                formula: formula.formula,
-                type: formula.type
-            });
-        }
+        //     for (const score of scores) {
+        //         const relationships: IVariable[] = [];
+        //         if (score.relationships) {
+        //             for (const ref of score.relationships) {
+        //                 const field = preview.get(ref);
+        //                 if (field) {
+        //                     relationships.push(field);
+        //                 }
+        //             }
+        //         }
+        //         const options: IOption[] = [];
+        //         if (score.options) {
+        //             for (const option of score.options) {
+        //                 options.push({
+        //                     id: GenerateUUIDv4(),
+        //                     description: option.description,
+        //                     value: option.description //this is not a typo.
+        //                 });
+        //             }
+        //         }
+        //         this.scores.push({
+        //             id: score.id,
+        //             description: score.description,
+        //             value: document[score.id],
+        //             relationships,
+        //             options
+        //         });
+        //     }
+
+        //     for (const formula of formulas) {
+        //         this.formulas.push({
+        //             id: formula.id,
+        //             description: formula.description,
+        //             value: document[formula.id],
+        //             formula: formula.formula,
+        //             type: formula.type
+        //         });
+        //     }
 
         //
         this.schemasMap = new Map<string, Schema>();
-        for (const schema of this.schemas) {
+        for (const schema of this.policySchemas) {
+            try {
+                const item = new Schema(schema);
+                this.schemasMap.set(item.iri || item.id, item)
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        for (const schema of this.documentsSchemas) {
             try {
                 const item = new Schema(schema);
                 this.schemasMap.set(item.iri || item.id, item)
@@ -231,14 +242,16 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
         let target: DocumentNode | null = null;
         this.nodes = [];
 
-        if (this.assessment) {
-            this.assessment.schemaName = 'Assessment';
-            root = DocumentNode.from(this.assessment, 'root');
+        if (this.document) {
+            this.document.schemaName = 'Label';
+            root = DocumentNode.from(this.document, 'root');
             this.nodes.push(root);
         }
         if (root && this.target) {
-            this.target.schemaName = this.schemasMap.get(this.target.schema)?.name || this.target.schema;
+            this.target.schemaName = 'Token'
+            this.target.document.issuer = this.target.document?.proof?.verificationMethod?.split('#')?.[0];
             target = DocumentNode.from(this.target, 'sub');
+            target.entity = 'vp';
             this.nodes.push(target);
             root.addId(target.id);
         }
@@ -257,6 +270,18 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
             this.tree.setData(this.source);
             this.tree.move(18, 46);
         }
+    }
+
+    private getMintVc() {
+        let data: any = this.target?.document?.verifiableCredential;
+        if (Array.isArray(data)) {
+            data = data[data.length - 1];
+        }
+        data = data?.credentialSubject;
+        if (Array.isArray(data)) {
+            data = data[0];
+        }
+        return data
     }
 
     public onStep(index: number) {
@@ -319,9 +344,28 @@ export class PolicyLabelAssessmentViewComponent implements OnInit {
                 title: document.schemaName || 'VC Document',
                 type: 'VC',
                 viewDocument: true,
-                schema: this.schema
+                // schema: this.schema
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public openVPDocument(document: any) {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                id: document.id,
+                row: document,
+                dryRun: false,
+                document: document.document,
+                title: 'VP Document',
+                type: 'VP',
+                viewDocument: true,
+                // schema: this.schema
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 }

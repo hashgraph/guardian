@@ -41,7 +41,8 @@ import {
     PolicyStatistic,
     PolicyStatisticDocument,
     SchemaRule,
-    PolicyLabel
+    PolicyLabel,
+    PolicyLabelDocument
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -4002,7 +4003,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
 
     /**
-     * Create PolicyLabel
+     * Create Policy Label
      * @param label
      */
     public static async createPolicyLabel(
@@ -4013,7 +4014,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get PolicyLabel
+     * Get Policy Label
      * @param filters
      * @param options
      */
@@ -4025,7 +4026,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get PolicyLabel
+     * Get Policy Label
      * @param filters
      * @param options
      */
@@ -4037,7 +4038,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Get PolicyLabel By ID
+     * Get Policy Label By ID
      * @param id
      */
     public static async getPolicyLabelById(id: string): Promise<PolicyLabel | null> {
@@ -4045,7 +4046,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Update PolicyLabel
+     * Update Policy Label
      * @param label
      */
     public static async updatePolicyLabel(label: PolicyLabel): Promise<PolicyLabel> {
@@ -4053,10 +4054,43 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Delete PolicyLabel
+     * Delete Policy Label
      * @param label
      */
     public static async removePolicyLabel(label: PolicyLabel): Promise<void> {
         return await new DataBaseHelper(PolicyLabel).remove(label);
+    }
+
+    /**
+     * Create Label Document
+     * @param document
+     */
+    public static async createLabelDocument(
+        document: FilterObject<PolicyLabelDocument>
+    ): Promise<PolicyLabelDocument> {
+        const item = new DataBaseHelper(PolicyLabelDocument).create(document);
+        return await new DataBaseHelper(PolicyLabelDocument).save(item);
+    }
+
+    /**
+     * Get statistic assessments
+     * @param filters
+     * @param options
+     */
+    public static async getLabelDocumentsAndCount(
+        filters?: FilterObject<PolicyLabelDocument>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyLabelDocument[], number]> {
+        return await new DataBaseHelper(PolicyLabelDocument).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic assessment
+     * @param filters
+     */
+    public static async getLabelDocument(
+        filters: FilterQuery<PolicyLabelDocument>
+    ): Promise<PolicyLabelDocument | null> {
+        return await new DataBaseHelper(PolicyLabelDocument).findOne(filters);
     }
 }

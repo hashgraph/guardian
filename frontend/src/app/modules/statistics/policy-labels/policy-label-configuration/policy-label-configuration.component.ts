@@ -27,7 +27,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     public isConfirmed: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public owner: string;
-    public labelId: string;
+    public definitionId: string;
     public item: any | undefined;
     public policy: any;
     public readonly: boolean = false;
@@ -129,12 +129,12 @@ export class PolicyLabelConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.labelId = this.route.snapshot.params['labelId'];
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         forkJoin([
             this.schemaService.properties(),
-            this.policyLabelsService.getLabel(this.labelId),
-            this.policyLabelsService.getRelationships(this.labelId),
+            this.policyLabelsService.getLabel(this.definitionId),
+            this.policyLabelsService.getRelationships(this.definitionId),
         ]).subscribe(([properties, item, relationships]) => {
             this.item = item;
             this.readonly = this.item?.status === EntityStatus.PUBLISHED;

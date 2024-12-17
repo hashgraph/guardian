@@ -9,13 +9,12 @@ import { IDocument } from '../../../common/models/assessment';
 import { IColumn } from '../../../common/models/grid';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 
-
 @Component({
-    selector: 'app-policy-label-assessment-configuration',
-    templateUrl: './policy-label-assessment-configuration.component.html',
-    styleUrls: ['./policy-label-assessment-configuration.component.scss'],
+    selector: 'app-policy-label-document-configuration',
+    templateUrl: './policy-label-document-configuration.component.html',
+    styleUrls: ['./policy-label-document-configuration.component.scss'],
 })
-export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
+export class PolicyLabelDocumentConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
     public loading: boolean = true;
@@ -23,7 +22,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public owner: string;
     public policy: any;
-    public labelId: string;
+    public definitionId: string;
     public item: any;
 
     public documents: any[];
@@ -87,8 +86,6 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     constructor(
         private profileService: ProfileService,
         private policyLabelsService: PolicyLabelsService,
-        private schemaService: SchemaService,
-        private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
     ) {
@@ -133,11 +130,11 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.labelId = this.route.snapshot.params['labelId'];
+        this.definitionId = this.route.snapshot.params['definitionId'];
         this.loading = true;
         forkJoin([
-            this.policyLabelsService.getLabel(this.labelId),
-            this.policyLabelsService.getRelationships(this.labelId),
+            this.policyLabelsService.getLabel(this.definitionId),
+            this.policyLabelsService.getRelationships(this.definitionId),
         ]).subscribe(([item, relationships]) => {
             this.item = item;
             this.policy = relationships?.policy || {};
@@ -150,7 +147,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     private loadDocuments() {
         this.loading = true;
         this.policyLabelsService
-            .getDocuments(this.labelId)
+            .getTokens(this.definitionId)
             .subscribe((documents) => {
                 const { page, count } = this.policyLabelsService.parsePage(documents);
                 this.documents = page;
@@ -268,7 +265,7 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
         if (this.current?.type === 'target') {
             this.loading = true;
             this.policyLabelsService
-                .getDocument(this.document.id, this.labelId)
+                .getTokenDocuments(this.document.id, this.definitionId)
                 .subscribe((documents) => {
                     this.relationships = documents?.relatedDocuments || [];
                     this.validator.setData(documents?.relatedDocuments || []);
@@ -293,9 +290,14 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
         }
         this.loading = true;
         this.policyLabelsService
-            .createAssessment(this.labelId, item)
-            .subscribe((vp) => {
-                debugger;
+            .createLabelDocument(this.definitionId, item)
+            .subscribe((row) => {
+                this.router.navigate([
+                    '/policy-labels',
+                    this.definitionId,
+                    'documents',
+                    row.id
+                ]);
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
@@ -380,127 +382,6 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
         }
     }
 
-
-    // public onCreate() {
-    //     const report = this.generateVcDocument();
-    //     this.loading = true;
-    //     this.policyLabelsService
-    //         .createAssessment(this.labelId, report)
-    //         .subscribe((assessment) => {
-    //             this.router.navigate([
-    //                 '/policy-label',
-    //                 this.labelId,
-    //                 'assessment',
-    //                 assessment.id
-    //             ]);
-    //         }, (e) => {
-    //             this.loading = false;
-    //         });
-    // }
-
-    // public onPage(event: any): void {
-    //     if (this.pageSize != event.pageSize) {
-    //         this.pageIndex = 0;
-    //         this.pageSize = event.pageSize;
-    //     } else {
-    //         this.pageIndex = event.pageIndex;
-    //         this.pageSize = event.pageSize;
-    //     }
-    //     this.loadDocuments();
-    // }
-
-    // public getCellValue(row: IDocument, column: IColumn): any {
-    //     if (row.__cols.has(column)) {
-    //         return row.__cols.get(column);
-    //     } else {
-    //         let value: any = (typeof column.id === 'string') ?
-    //             ((row.targetDocument as any)[column.id]) :
-    //             (this.getFieldValue(row, column.id));
-    //         if (Array.isArray(value)) {
-    //             value = `[${value.join(',')}]`;
-    //         }
-    //         row.__cols.set(column, value);
-    //         return value;
-    //     }
-    // }
-
-    // private getFieldValue(document: IDocument, fullPath: string[]): any {
-    //     if (!document) {
-    //         return null;
-    //     }
-    //     const schemaId = fullPath[0];
-    //     if (document.targetDocument.schema === schemaId) {
-    //         return this.getFieldValueByPath(document.targetDocument, fullPath);
-    //     }
-    //     const result: any[] = [];
-    //     for (const doc of document.relatedDocuments) {
-    //         if (doc.schema === schemaId) {
-    //             result.push(this.getFieldValueByPath(doc, fullPath))
-    //         }
-    //     }
-    //     for (const doc of document.unrelatedDocuments) {
-    //         if (doc.schema === schemaId) {
-    //             result.push(this.getFieldValueByPath(doc, fullPath))
-    //         }
-    //     }
-    //     if (result.length > 1) {
-    //         return result;
-    //     } else if (result.length === 1) {
-    //         return result[0];
-    //     } else {
-    //         return undefined;
-    //     }
-    // }
-
-    // private getFieldValueByPath(document: IVCDocument, path: string[]): any {
-    //     if (document.schema === path[0]) {
-    //         let value: any = document?.document?.credentialSubject;
-    //         if (Array.isArray(value)) {
-    //             value = value[0];
-    //         }
-    //         for (let i = 1; i < path.length; i++) {
-    //             if (value) {
-    //                 value = value[path[i]]
-    //             } else {
-    //                 return undefined;
-    //             }
-    //         }
-    //         return value;
-    //     } else {
-    //         return undefined;
-    //     }
-    // }
-
-    // public changeCol(col: any) {
-    //     col.selected = !col.selected;
-    //     this.columns = [
-    //         ...this.userColumns.filter((c) => c.selected)
-    //     ];
-    // }
-
-    // private generateVcDocument() {
-    //     if (!this.document) {
-    //         return null;
-    //     }
-    //     const document: any = {};
-    //     const target = this.document.targetDocument.messageId;
-    //     const relationships = new Set<string>();
-    //     const report = {
-    //         document,
-    //         target,
-    //         relationships: Array.from(relationships)
-    //     };
-    //     return report;
-    // }
-
-    // public getVariableValue(value: any): any {
-    //     if (value === undefined) {
-    //         return 'N/A';
-    //     } else {
-    //         return value;
-    //     }
-    // }
-
     public getVariableValue(value: any): any {
         if (value === undefined) {
             return 'N/A';
@@ -510,6 +391,6 @@ export class PolicyLabelAssessmentConfigurationComponent implements OnInit {
     }
 
     public onBack() {
-        this.router.navigate(['/policy-statistics']);
+        this.router.navigate(['/policy-labels']);
     }
 }

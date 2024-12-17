@@ -19,7 +19,7 @@
                         svgClass="icon-color-secondary">
                     </svg-icon>
                 </div>
-                <div class="guardian-button-label">Back to Assessments</div>
+                <div class="guardian-button-label">Back to Labels</div>
             </button>
         </div>
     
@@ -91,77 +91,67 @@
                     </div>
                     <div class="field-container">
                         <div class="field-name">Policy Topic ID</div>
-                        <div class="field-value">{{assessment.policyInstanceTopicId}}</div>
+                        <div class="field-value">{{document.policyInstanceTopicId}}</div>
                     </div>
                     <div class="field-container">
                         <div class="field-name">Topic ID</div>
-                        <div class="field-value">{{assessment.topicId}}</div>
+                        <div class="field-value">{{document.topicId}}</div>
                     </div>
                     <div class="field-container">
                         <div class="field-name">Message ID</div>
-                        <div class="field-value">{{assessment.messageId}}</div>
+                        <div class="field-value">{{document.messageId}}</div>
                     </div>
                     <div class="field-container">
                         <div class="field-name">Target Document</div>
-                        <div class="field-value">{{assessment.target}}</div>
+                        <div class="field-value">{{document.target}}</div>
                     </div>
+                    <ng-container *ngIf="token">
+                        <div class="field-container">
+                            <div class="field-name">Token Id</div>
+                            <div class="field-value">{{token.tokenId}}</div>
+                        </div>
+                        <div class="field-container">
+                            <div class="field-name">Amount</div>
+                            <div class="field-value">{{token.amount}}</div>
+                        </div>
+                    </ng-container>
                 </div>
             </div>
         </div>
+
         <div *ngIf="stepper[1]" class="nav-body-container">
             <div class="step-body-container">
-                <div *ngIf="preview" class="fields-container">
-                    <div *ngFor="let variable of preview" class="field-container">
-                        <div class="field-name">
-                            {{variable.description}}
-                        </div>
-                        <ng-container *ngIf="variable.isArray">
-                            <div class="field-value-array">
-                                <div *ngFor="let v of variable.value" class="field-value">
-                                    {{v}}
-                                </div>
-                            </div>
-                        </ng-container>
-                        <ng-container *ngIf="!variable.isArray">
-                            <div class="field-value">
-                                {{variable.value}}
-                            </div>
-                        </ng-container>
-                    </div>
-                </div>
-                <div *ngIf="formulas" class="fields-container">
-                    <div *ngFor="let score of scores" class="field-container">
-                        <div class="field-name">
-                            {{score.description}}
-                        </div>
-                        <div *ngIf="score.options" class="options-container">
-                            <div *ngFor="let option of score.options" class="option-container" disabled="true">
-                                <div class="option-checkbox">
-                                    <p-radioButton 
-                                        class="guardian-radio-button radio-button-24"
-                                        [name]="score.id" 
-                                        [value]="option.value" 
-                                        [ngModel]="score.value"
-                                        [disabled]="true"
-                                    ></p-radioButton>
-                                </div>
-                                <label class="option-name">
-                                    {{option.description}}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div *ngIf="formulas" class="fields-container">
-                    <div *ngFor="let formula of formulas" class="field-container">
-                        <div class="field-name">
-                            {{formula.description}}
-                        </div>
-                        <div class="field-value">
-                            {{formula.value}}
-                        </div>
-                    </div>
-                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
         </div>
         <div *ngIf="stepper[2]" class="nav-body-container">
@@ -235,9 +225,7 @@
                                 svgClass="icon-color-close"></svg-icon>
                         </div>
                     </div>
-                    <div class="schema-config">
-
-
+                    <div *ngIf="selectedNode.entity === 'vp'" class="schema-config">
                         <div class="fields-container">
                             <div class="field-container">
                                 <div class="field-name">Message ID</div>
@@ -248,7 +236,29 @@
                                 <div class="field-value">{{selectedNode.data?.document?.issuer}}</div>
                             </div>
                         </div>
-
+                        <button 
+                            (click)="openVPDocument(selectedNode.data)" 
+                            class="guardian-button guardian-button-secondary">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon"
+                                    src="/assets/images/icons/document.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">View document</div>
+                        </button>
+                    </div>
+                    <div *ngIf="selectedNode.entity !== 'vp'" class="schema-config">
+                        <div class="fields-container">
+                            <div class="field-container">
+                                <div class="field-name">Message ID</div>
+                                <div class="field-value">{{selectedNode.data?.messageId}}</div>
+                            </div>
+                            <div class="field-container">
+                                <div class="field-name">Issuer</div>
+                                <div class="field-value">{{selectedNode.data?.document?.issuer}}</div>
+                            </div>
+                        </div>
                         <button 
                             (click)="openVCDocument(selectedNode.data)" 
                             class="guardian-button guardian-button-secondary">
@@ -260,8 +270,8 @@
                             </div>
                             <div class="guardian-button-label">View document</div>
                         </button>
-
                     </div>
+                    
                 </div>
             </div>
 

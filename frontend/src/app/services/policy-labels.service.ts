@@ -53,12 +53,12 @@ export class PolicyLabelsService {
         return this.http.post<any>(`${this.url}/`, item);
     }
 
-    public getLabel(labelId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${labelId}`);
+    public getLabel(definitionId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}`);
     }
 
-    public deleteLabel(labelId: any): Observable<any> {
-        return this.http.delete<boolean>(`${this.url}/${labelId}`);
+    public deleteLabel(definitionId: any): Observable<any> {
+        return this.http.delete<boolean>(`${this.url}/${definitionId}`);
     }
 
     public updateLabel(item: any): Observable<any> {
@@ -69,12 +69,16 @@ export class PolicyLabelsService {
         return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
     }
 
-    public getRelationships(labelId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${labelId}/relationships`);
+    public getRelationships(definitionId: string): Observable<{
+        policy: any,
+        policySchemas: any[],
+        documentsSchemas: any[]
+    }> {
+        return this.http.get<any>(`${this.url}/${definitionId}/relationships`);
     }
 
-    public export(labelId: string): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/${labelId}/export/file`, {
+    public export(definitionId: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${definitionId}/export/file`, {
             responseType: 'arraybuffer'
         });
     }
@@ -99,23 +103,41 @@ export class PolicyLabelsService {
         return this.http.post<any>(`${this.url}/components`, options);
     }
 
-    public getDocuments(
-        labelId: string,
+    public getTokens(
+        definitionId: string,
         pageIndex?: number,
         pageSize?: number,
     ): Observable<HttpResponse<any[]>> {
         const params = PolicyLabelsService.getOptions({}, pageIndex, pageSize);
-        return this.http.get<any>(`${this.url}/${labelId}/documents`, { observe: 'response', params });
+        return this.http.get<any>(`${this.url}/${definitionId}/tokens`, { observe: 'response', params });
     }
 
-    public getDocument(
+    public getTokenDocuments(
         documentId: string,
-        labelId: string,
+        definitionId: string,
     ): Observable<any> {
-        return this.http.get<any>(`${this.url}/${labelId}/documents/${documentId}`);
+        return this.http.get<any>(`${this.url}/${definitionId}/tokens/${documentId}`);
     }
 
-    public createAssessment(labelId: string, item: any): Observable<any> {
-        return this.http.post<any>(`${this.url}/${labelId}/assessment`, item);
+    public createLabelDocument(definitionId: string, item: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/${definitionId}/documents`, item);
+    }
+
+    public getLabelDocuments(
+        definitionId: string,
+        pageIndex?: number,
+        pageSize?: number,
+        filters?: any
+    ): Observable<HttpResponse<any[]>> {
+        const params = PolicyLabelsService.getOptions(filters, pageIndex, pageSize);
+        return this.http.get<any>(`${this.url}/${definitionId}/documents`, { observe: 'response', params });
+    }
+
+    public getLabelDocument(definitionId: string, documentId: any): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}/documents/${documentId}`);
+    }
+
+    public getLabelDocumentRelationships(definitionId: string, documentId: any): Observable<any> {
+        return this.http.get<any>(`${this.url}/${definitionId}/documents/${documentId}/relationships`);
     }
 }

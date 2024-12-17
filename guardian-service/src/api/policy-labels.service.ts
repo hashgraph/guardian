@@ -1,9 +1,8 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, LabelDocumentMessage, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { publishSchema, publishSchemas } from './helpers/index.js';
-import { generateVcDocument } from './helpers/policy-statistics-helpers.js';
+import { publishSchema } from './helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -111,13 +110,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy label
      */
     ApiResponse(MessageAPI.GET_POLICY_LABEL,
-        async (msg: { labelId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, owner } = msg;
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -136,13 +135,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - relationships
      */
     ApiResponse(MessageAPI.GET_POLICY_LABEL_RELATIONSHIPS,
-        async (msg: { labelId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, owner } = msg;
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -158,7 +157,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 return new MessageResponse({
                     policy,
-                    schemas: all,
+                    policySchemas: all,
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -175,7 +174,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      */
     ApiResponse(MessageAPI.UPDATE_POLICY_LABEL,
         async (msg: {
-            labelId: string,
+            definitionId: string,
             label: PolicyLabel,
             owner: IOwner
         }) => {
@@ -183,9 +182,9 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, label, owner } = msg;
+                const { definitionId, label, owner } = msg;
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
@@ -212,13 +211,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {boolean} - Operation success
      */
     ApiResponse(MessageAPI.DELETE_POLICY_LABEL,
-        async (msg: { labelId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, owner } = msg;
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const { definitionId, owner } = msg;
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
@@ -241,14 +240,14 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - policy label
      */
     ApiResponse(MessageAPI.PUBLISH_POLICY_LABEL,
-        async (msg: { labelId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, owner } = msg;
+                const { definitionId, owner } = msg;
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
@@ -301,14 +300,14 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      * @returns {any} - zip file
      */
     ApiResponse(MessageAPI.EXPORT_POLICY_LABEL_FILE,
-        async (msg: { labelId: string, owner: IOwner }) => {
+        async (msg: { definitionId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
                 }
-                const { labelId, owner } = msg;
+                const { definitionId, owner } = msg;
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -459,9 +458,9 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} - documents
      */
-    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENTS,
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_TOKENS,
         async (msg: {
-            labelId: string,
+            definitionId: string,
             owner: IOwner,
             pageIndex?: string,
             pageSize?: string
@@ -471,7 +470,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { labelId, owner, pageIndex, pageSize } = msg;
+                const { definitionId, owner, pageIndex, pageSize } = msg;
 
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
@@ -486,7 +485,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     otherOptions.offset = 0;
                 }
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
@@ -517,19 +516,19 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
      *
      * @returns {any} - documents
      */
-    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENT,
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_TOKEN_DOCUMENTS,
         async (msg: {
             documentId: string,
-            labelId: string,
+            definitionId: string,
             owner: IOwner
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { documentId, labelId, owner } = msg;
+                const { documentId, definitionId, owner } = msg;
 
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
@@ -560,21 +559,19 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
-
     /**
-     * Create label assessment
+     * Create label document
      *
-     * @param payload - label assessment
+     * @param payload - label document
      *
-     * @returns {any} new label assessment
+     * @returns {any} new label document
      */
-    ApiResponse(MessageAPI.CREATE_POLICY_LABEL_ASSESSMENT,
+    ApiResponse(MessageAPI.CREATE_POLICY_LABEL_DOCUMENT,
         async (msg: {
-            labelId: string,
-            assessment: {
-                documents: any[],
-                target: string
+            definitionId: string,
+            data: {
+                target: string,
+                documents: any[]
             },
             owner: IOwner
         }) => {
@@ -582,12 +579,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!msg) {
                     return new MessageError('Invalid parameters');
                 }
-                const { labelId, assessment, owner } = msg;
+                const { definitionId, data, owner } = msg;
 
-                if (!assessment || !Array.isArray(assessment.documents)) {
+                if (!data || !Array.isArray(data.documents)) {
                     return new MessageError('Invalid object.');
                 }
-                const item = await DatabaseServer.getPolicyLabelById(labelId);
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
                 if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
                     return new MessageError('Item does not exist.');
                 }
@@ -596,7 +593,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const vp = await DatabaseServer.getVP({
-                    id: assessment.target,
+                    id: data.target,
                     type: "mint",
                     policyId: item.policyId,
                     owner: owner.creator,
@@ -606,13 +603,14 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const relationships = await findRelationships(vp);
+                const ids = relationships.map((doc) => doc.messageId);
 
                 const schemas = await DatabaseServer.getSchemas({ topicId: item.topicId });
                 const schemaObjects = schemas.map((schema) => new Schema(schema));
 
                 const validator = new LabelValidators(item);
                 validator.setData(relationships);
-                validator.setResult(assessment.documents);
+                validator.setResult(data.documents);
                 const status = validator.validate();
 
                 if (!status.valid) {
@@ -621,43 +619,183 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const vcs = validator.getVCs();
-                const result = await generateVpDocument(vcs, schemaObjects, owner);
-
-
-                
-
+                const vpObject = await generateVpDocument(vcs, schemaObjects, owner);
 
                 const topic = await getOrCreateTopic(item);
                 const user = await (new Users()).getHederaAccount(owner.creator);
                 const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
 
-                // const vcMessage = new StatisticAssessmentMessage(MessageAction.CreateStatisticAssessment);
-                // vcMessage.setDefinition(item);
-                // vcMessage.setDocument(vcObject);
-                // vcMessage.setTarget(assessment.target);
-                // vcMessage.setRelationships(assessment.relationships);
-                // const vcMessageResult = await messageServer
-                //     .setTopicObject(topic)
-                //     .sendMessage(vcMessage);
+                const vpMessage = new LabelDocumentMessage(MessageAction.CreateLabelDocument);
+                vpMessage.setDefinition(item);
+                vpMessage.setDocument(vpObject);
+                vpMessage.setTarget(vp.messageId);
+                vpMessage.setRelationships(ids);
+                const vpMessageResult = await messageServer
+                    .setTopicObject(topic)
+                    .sendMessage(vpMessage);
 
-                // const row = await DatabaseServer.createStatisticAssessment({
-                //     definitionId: item.id,
-                //     policyId: item.policyId,
-                //     policyTopicId: item.policyTopicId,
-                //     policyInstanceTopicId: item.policyInstanceTopicId,
-                //     creator: owner.creator,
-                //     owner: owner.owner,
-                //     messageId: vcMessageResult.getId(),
-                //     topicId: vcMessageResult.getTopicId(),
-                //     target: vcMessageResult.getTarget(),
-                //     relationships: vcMessageResult.getRelationships(),
-                //     document: vcMessageResult.getDocument()
-                // });
-                return new MessageResponse(result);
+                const row = await DatabaseServer.createLabelDocument({
+                    definitionId: item.id,
+                    policyId: item.policyId,
+                    policyTopicId: item.policyTopicId,
+                    policyInstanceTopicId: item.policyInstanceTopicId,
+                    creator: owner.creator,
+                    owner: owner.owner,
+                    messageId: vpMessageResult.getId(),
+                    topicId: vpMessageResult.getTopicId(),
+                    target: vpMessageResult.getTarget(),
+                    relationships: vpMessageResult.getRelationships(),
+                    document: vpMessageResult.getDocument()
+                });
+                return new MessageResponse(row);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
 
+    /**
+     * Get label document
+     *
+     * @param {any} msg - filters
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENTS,
+        async (msg: {
+            definitionId: string,
+            filters: any,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, filters, owner } = msg;
+                const { pageIndex, pageSize } = filters;
+
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
+                if (!(item && (item.creator === owner.creator || item.status === EntityStatus.PUBLISHED))) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status !== EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is not published.');
+                }
+
+                const otherOptions: any = {};
+                const _pageSize = parseInt(pageSize, 10);
+                const _pageIndex = parseInt(pageIndex, 10);
+                if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = _pageSize;
+                    otherOptions.offset = _pageIndex * _pageSize;
+                } else {
+                    otherOptions.orderBy = { createDate: 'DESC' };
+                    otherOptions.limit = 100;
+                }
+                otherOptions.fields = [
+                    'id',
+                    'definitionId',
+                    'policyId',
+                    'creator',
+                    'owner',
+                    'target',
+                    'relationships',
+                    'topicId',
+                    'messageId',
+                    'document'
+                ];
+
+                const [items, count] = await DatabaseServer.getLabelDocumentsAndCount(
+                    {
+                        definitionId
+                    },
+                    otherOptions
+                );
+
+                return new MessageResponse({ items, count });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get label document
+     *
+     * @param {any} msg - label id
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENT,
+        async (msg: {
+            definitionId: string,
+            documentId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, documentId, owner } = msg;
+                const document = await DatabaseServer.getLabelDocument({
+                    id: documentId,
+                    definitionId,
+                    owner: owner.owner
+                });
+                if (!document) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                return new MessageResponse(document);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param {any} msg - statistic id
+     *
+     * @returns {any} - Operation success
+     */
+    ApiResponse(MessageAPI.GET_POLICY_LABEL_DOCUMENT_RELATIONSHIPS,
+        async (msg: {
+            definitionId: string,
+            documentId: string,
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, documentId, owner } = msg;
+                const document = await DatabaseServer.getLabelDocument({
+                    id: documentId,
+                    definitionId,
+                    owner: owner.owner
+                });
+                if (!document) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const relationships = await DatabaseServer.getStatisticDocuments({
+                    messageId: { $in: document?.relationships }
+                });
+
+                const target = await DatabaseServer.getVP({
+                    messageId: document?.target
+                });
+
+                return new MessageResponse({
+                    target,
+                    relationships
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

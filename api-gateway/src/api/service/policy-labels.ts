@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelAssessmentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -115,14 +115,14 @@ export class PolicyLabelsApi {
     /**
      * Get policy label by id
      */
-    @Get('/:labelId')
+    @Get('/:definitionId')
     @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Retrieves policy label.',
         description: 'Retrieves policy label for the specified ID.'
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -140,15 +140,15 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyLabelById(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string
+        @Param('definitionId') definitionId: string
     ): Promise<PolicyLabelDTO> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.getPolicyLabelById(labelId, owner);
+            return await guardian.getPolicyLabelById(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -157,14 +157,14 @@ export class PolicyLabelsApi {
     /**
      * Update policy label
      */
-    @Put('/:labelId')
+    @Put('/:definitionId')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
         summary: 'Updates policy label.',
         description: 'Updates policy label configuration for the specified label ID.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: 'string',
         required: true,
         description: 'policy label Identifier',
@@ -187,20 +187,20 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async updatePolicyLabel(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string,
+        @Param('definitionId') definitionId: string,
         @Body() item: PolicyLabelDTO
     ): Promise<PolicyLabelDTO> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const oldItem = await guardians.getPolicyLabelById(labelId, owner);
+            const oldItem = await guardians.getPolicyLabelById(definitionId, owner);
             if (!oldItem) {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
-            return await guardians.updatePolicyLabel(labelId, item, owner);
+            return await guardians.updatePolicyLabel(definitionId, item, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -209,14 +209,14 @@ export class PolicyLabelsApi {
     /**
      * Delete policy label
      */
-    @Delete('/:labelId')
+    @Delete('/:definitionId')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
         summary: 'Deletes the policy label.',
         description: 'Deletes the policy label with the provided ID.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: 'string',
         required: true,
         description: 'policy label Identifier',
@@ -234,15 +234,15 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async deletePolicyLabel(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string
+        @Param('definitionId') definitionId: string
     ): Promise<boolean> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY)
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.deletePolicyLabel(labelId, owner);
+            return await guardians.deletePolicyLabel(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -251,14 +251,14 @@ export class PolicyLabelsApi {
     /**
      * Activate policy label
      */
-    @Put('/:labelId/publish')
+    @Put('/:definitionId/publish')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
         summary: 'Publishes policy label.',
         description: 'Publishes policy label for the specified label ID.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: 'string',
         required: true,
         description: 'policy label Identifier',
@@ -276,19 +276,19 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async publishPolicyLabel(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string
+        @Param('definitionId') definitionId: string
     ): Promise<PolicyLabelDTO> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const oldItem = await guardians.getPolicyLabelById(labelId, owner);
+            const oldItem = await guardians.getPolicyLabelById(definitionId, owner);
             if (!oldItem) {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
-            return await guardians.publishPolicyLabel(labelId, owner);
+            return await guardians.publishPolicyLabel(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -297,14 +297,14 @@ export class PolicyLabelsApi {
     /**
      * Get relationships by id
      */
-    @Get('/:labelId/relationships')
+    @Get('/:definitionId/relationships')
     @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Retrieves policy label relationships.',
         description: 'Retrieves policy label relationships for the specified ID.'
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -322,15 +322,15 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyLabelRelationships(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string
+        @Param('definitionId') definitionId: string
     ): Promise<PolicyLabelRelationshipsDTO> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.getPolicyLabelRelationships(labelId, owner);
+            return await guardian.getPolicyLabelRelationships(definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
@@ -383,14 +383,14 @@ export class PolicyLabelsApi {
     /**
      * Export labels
      */
-    @Get('/:labelId/export/file')
+    @Get('/:definitionId/export/file')
     @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Returns a zip file containing labels.',
         description: 'Returns a zip file containing labels.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -407,13 +407,13 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async exportPolicyLabel(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string,
+        @Param('definitionId') definitionId: string,
         @Response() res: any
     ): Promise<any> {
         const guardian = new Guardians();
         try {
             const owner = new EntityOwner(user);
-            const file: any = await guardian.exportPolicyLabel(labelId, owner);
+            const file: any = await guardian.exportPolicyLabel(definitionId, owner);
             res.header('Content-disposition', `attachment; filename=theme_${Date.now()}`);
             res.header('Content-type', 'application/zip');
             return res.send(file);
@@ -494,14 +494,14 @@ export class PolicyLabelsApi {
     /**
      * Get documents
      */
-    @Get('/:labelId/documents')
+    @Get('/:definitionId/tokens')
     @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Return a list of all documents.',
         description: 'Returns all documents.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -533,35 +533,34 @@ export class PolicyLabelsApi {
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getPolicyLabelDocuments(
+    async getPolicyLabelTokens(
         @AuthUser() user: IAuthUser,
         @Response() res: any,
-        @Param('labelId') labelId: string,
+        @Param('definitionId') definitionId: string,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
     ): Promise<VcDocumentDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const { items, count } = await guardians.getPolicyLabelDocuments(labelId, owner, pageIndex, pageSize);
+            const { items, count } = await guardians.getPolicyLabelTokens(definitionId, owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger);
         }
     }
 
-
     /**
      * Get document
      */
-    @Get('/:labelId/documents/:documentId')
+    @Get('/:definitionId/tokens/:documentId')
     @Auth(Permissions.STATISTICS_LABEL_READ)
     @ApiOperation({
         summary: 'Return a list of all documents.',
         description: 'Returns all documents.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -588,29 +587,29 @@ export class PolicyLabelsApi {
     @HttpCode(HttpStatus.OK)
     async getPolicyLabelDocument(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string,
+        @Param('definitionId') definitionId: string,
         @Param('documentId') documentId: string,
     ): Promise<VcDocumentDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            return await guardians.getPolicyLabelDocument(documentId, labelId, owner);
+            return await guardians.getPolicyLabelTokenDocuments(documentId, definitionId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
     }
 
     /**
-     * Creates a new label assessment
+     * Creates a new label document
      */
-    @Post('/:labelId/assessment')
+    @Post('/:definitionId/documents')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
-        summary: 'Creates a new statistic assessment.',
-        description: 'Creates a new statistic assessment.',
+        summary: 'Creates a new label document.',
+        description: 'Creates a new label document.',
     })
     @ApiParam({
-        name: 'labelId',
+        name: 'definitionId',
         type: String,
         description: 'policy label Identifier',
         required: true,
@@ -618,34 +617,196 @@ export class PolicyLabelsApi {
     })
     @ApiBody({
         description: 'Configuration.',
-        type: PolicyLabelAssessmentDTO,
+        type: PolicyLabelDocumentDTO,
         required: true
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelAssessmentDTO,
+        type: PolicyLabelDocumentDTO,
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyLabelAssessmentDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
-    async createStatisticAssessment(
+    async createStatisticDocument(
         @AuthUser() user: IAuthUser,
-        @Param('labelId') labelId: string,
-        @Body() assessment: PolicyLabelAssessmentDTO
-    ): Promise<PolicyLabelAssessmentDTO> {
+        @Param('definitionId') definitionId: string,
+        @Body() document: PolicyLabelDocumentDTO
+    ): Promise<PolicyLabelDocumentDTO> {
         try {
-            if (!labelId) {
+            if (!definitionId) {
                 throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (!assessment) {
+            if (!document) {
                 throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
-            return await guardian.createLabelAssessment(labelId, assessment, owner);
+            return await guardian.createLabelDocument(definitionId, document, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get page
+     */
+    @Get('/:definitionId/documents')
+    @Auth(Permissions.STATISTICS_LABEL_READ)
+    @ApiOperation({
+        summary: 'Return a list of all label documents.',
+        description: 'Returns all label documents.',
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: String,
+        description: 'policy label Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: PolicyLabelDocumentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getLabelDocuments(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Param('definitionId') definitionId: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<PolicyLabelDocumentDTO[]> {
+        try {
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const { items, count } = await guardians.getLabelDocuments(definitionId, { pageIndex, pageSize }, owner);
+            return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get label document by id
+     */
+    @Get('/:definitionId/documents/:documentId')
+    @Auth(Permissions.STATISTICS_LABEL_READ)
+    @ApiOperation({
+        summary: 'Retrieves label document.',
+        description: 'Retrieves label document for the specified ID.'
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: String,
+        description: 'Label Definition Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Label Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyLabelDocumentDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getLabelDocument(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string,
+        @Param('documentId') documentId: string
+    ): Promise<PolicyLabelDocumentDTO> {
+        try {
+            if (!definitionId || !documentId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getLabelDocument(definitionId, documentId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get label document relationships
+     */
+    @Get('/:definitionId/documents/:documentId/relationships')
+    @Auth(Permissions.STATISTICS_STATISTIC_READ)
+    @ApiOperation({
+        summary: 'Retrieves documents relationships.',
+        description: 'Retrieves documents relationships for the specified ID.'
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: String,
+        description: 'Statistic Definition Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'documentId',
+        type: String,
+        description: 'Label Document Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyLabelDocumentRelationshipsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getStatisticAssessmentRelationships(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string,
+        @Param('documentId') documentId: string
+    ): Promise<PolicyLabelDocumentRelationshipsDTO> {
+        try {
+            if (!definitionId || !documentId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getLabelDocumentRelationships(definitionId, documentId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }
