@@ -9,7 +9,12 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { ContractType, IRetirementMessage, IVC } from '@guardian/interfaces';
+import { Observable, forkJoin } from 'rxjs';
+import { ContractService } from 'src/app/services/contract.service';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { DatePipe } from '@angular/common';
 
 /**
  * Dashboard Type
@@ -268,7 +273,10 @@ export class MessagesReportBlockComponent implements OnInit {
         private dialog: MatDialog,
         private dialogService: DialogService,
         private iconRegistry: MatIconRegistry,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private contractService: ContractService,
+        private analyticsService: AnalyticsService,
+        private datePipe: DatePipe
     ) {
         iconRegistry.addSvgIconLiteral('token', sanitizer.bypassSecurityTrustHtml(`
             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
@@ -365,6 +373,11 @@ export class MessagesReportBlockComponent implements OnInit {
         }, 100);
     }
 
+    mintTokenId: string;
+    mintTokenSerials: string[] = [];
+    groupedByContractRetirements: any = [];
+    indexerAvailable: boolean = false;
+    retirementMessages: any[] = [];
     private createSmallReport() {
         for (const topic of this._topics1) {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
@@ -381,6 +394,98 @@ export class MessagesReportBlockComponent implements OnInit {
                 this._messages2.push(message);
             }
         }
+
+        this._messages2.forEach(message => {
+            if (message.__ifMintMessage) {
+                this.mintTokenId = message.__tokenId;
+
+                // this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
+            }
+        });
+
+
+        this.contractService
+            .getContracts({
+                type: ContractType.RETIRE
+            })
+            .subscribe(
+                (policiesResponse) => {
+                    const contracts = policiesResponse.body || [];
+                    const tokenContractTopicIds: string[] = [];
+
+                    if (contracts && contracts.length > 0) {
+                        contracts.forEach(contract => {
+                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
+                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
+                                tokenContractTopicIds.push(contract.topicId);
+                            }
+                        });
+                    }
+
+                    this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
+                        this.indexerAvailable = indexerAvailable;
+                        if (indexerAvailable && tokenContractTopicIds.length > 0) {
+                            const indexerCalls: Observable<HttpResponse<any>>[] = [];
+                            tokenContractTopicIds.forEach(id => {
+                                indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
+                            })
+
+                            this.loading = true;
+                            forkJoin(indexerCalls).subscribe((results: any) => {
+                                this.loading = false;
+                                const retires = results.map((item: any) => item.body)
+
+                                const tokenRetires = retires.map((retirements: IRetirementMessage[]) => {
+                                    const ret = retirements.filter((item: IRetirementMessage) => item.documents[0].credentialSubject.some((subject: any) =>
+                                        subject.tokens.some((token: any) =>
+                                            token.tokenId === this.mintTokenId
+                                            && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                            ))));
+                                    return ret
+                                });
+
+                                const allRetireMessages: any = [];
+                                retires.forEach((retirements: IRetirementMessage[]) => {
+                                    retirements.forEach((item: IRetirementMessage) => {
+                                        if (item.documents[0].credentialSubject[0].tokens.some((token: any) => token.tokenId === this.mintTokenId)) {
+                                            item.id == item.consensusTimestamp;
+                                            allRetireMessages.push(item);
+                                        }
+                                    });
+                                });
+
+                                console.log(this.mintTokenSerials);
+
+                                this.groupedByContractRetirements = Array.from(
+                                    new Map(allRetireMessages
+                                        .map((item: any) => [item.documents[0].credentialSubject[0].contractId, []])
+                                    )).map(([contractId, documents]) => ({
+                                        contractId,
+                                        selectedItemIndex: 0,
+                                        __ifRetireMessage: true,
+                                        documents: allRetireMessages.filter((item: any) => item.documents[0].credentialSubject[0].contractId === contractId)
+                                    }))
+
+                                allRetireMessages.forEach((element: any) => {
+                                    element.__ifRetireMessage = true;
+                                    element.__timestamp = this.datePipe.transform(new Date(element.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
+                                    this._messages2.push(element);
+                                    this._topics2[0].messages.push(element);
+                                    console.log(this._messages2);
+                                });
+
+                                this.retirementMessages = [...allRetireMessages];
+
+                                this._gridTemplateColumns2 = 'repeat(' + (gridSize + this.retirementMessages.length) + ', 230px)';
+                            })
+                        }
+                    })
+                },
+                (e) => {
+                    this.loading = false;
+                }
+            );
+
         let gridSize = 0;
         this._messages2.sort((a, b) => a.__order > b.__order ? 1 : -1);
         for (let index = 0; index < this._messages2.length; index++) {
@@ -802,7 +907,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     row: null,
-                    document: message.document,
+                    document: message.document || message.documents[0],
                     title: 'VC Document',
                     type: 'VC',
                     viewDocument: true,

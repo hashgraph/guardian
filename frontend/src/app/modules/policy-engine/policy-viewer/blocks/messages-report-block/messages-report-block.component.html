@@ -184,6 +184,21 @@
                                         <div class="message-owner">{{message.__issuer}}</div>
                                     </div>
                                 </ng-container>
+
+                                <ng-container *ngIf="message.__ifRetireMessage">
+                                    <div class="message-header">
+                                        <mat-icon>receipt</mat-icon>
+                                        Retirement
+                                    </div>
+                                    <div class="message-data">
+                                        <div *ngIf="message.documents[0]?.credentialSubject[0]?.contractId" class="message-name">
+                                            Contract ID: <span>{{message.documents[0].credentialSubject[0].contractId}}</span>
+                                        </div>
+                                        <div *ngIf="message.documents[0]?.credentialSubject[0]?.user" class="message-name">
+                                            User ID: <span>{{message.documents[0].credentialSubject[0].user}}</span>
+                                        </div>
+                                    </div>
+                                </ng-container>
                             </div>
                         </div>
                     </div>
@@ -727,6 +742,75 @@
                             <div class="field-value">
                                 <hedera-explorer type="accounts"
                                     [params]="selected.payer">{{selected.payer}}</hedera-explorer>
+                            </div>
+                        </div>
+                    </ng-container>
+                    
+                    <ng-container *ngIf="selected.__ifRetireMessage">
+                        <div class="document-header">
+                            <mat-icon>receipt</mat-icon>
+                            Retirement message
+                        </div>
+
+                        <div class="field-delimiter" data-label="Document"></div>
+
+                        <div class="field" *ngIf="selected.documents">
+                            <div class="field-name">Document artifact:</div>
+                            <div class="field-value">
+                                <span class="field-link" (click)="onOpenDocument(selected)">Open document</span>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Retirement Information"></div>
+                        <div class="field">
+                            <div class="field-name">Contract ID:</div>
+                            <div class="field-value">{{selected.documents[0].credentialSubject[0].contractId}}</div>
+                        </div>
+                        <div class="field" *ngIf="selected.owner">
+                            <div class="field-name">User ID:</div>
+                            <div class="field-value">{{selected.documents[0].credentialSubject[0].user}}</div>
+                        </div>
+                        <div *ngFor="let token of selected.documents[0].credentialSubject[0]?.tokens">
+                            <div class="field-delimiter"></div>
+                            <div class="field">
+                                <div class="field-name">Token ID:</div>
+                                <div class="field-value">{{token.tokenId}}</div>
+                            </div>
+                            <div class="field" *ngIf="token.serials && token.serials.length > 0">
+                                <div class="field-name">Instance ID:</div>
+                                <div class="field-value">{{token.serials.join(', ')}}</div>
+                            </div>
+                            <div class="field" *ngIf="!token.serials || token.serials.length <= 0">
+                                <div class="field-name">Amount:</div>
+                                <div class="field-value">{{token.count}}</div>
+                            </div>
+                            <div class="field" *ngIf="selected.owner">
+                                <div class="field-name">Transaction:</div>
+                                <div class="field-value">{{selected.consensusTimestamp}}</div>
+                            </div>
+                        </div>
+
+                        <div class="field-delimiter" data-label="Hedera Information"></div>
+
+                        <div class="field">
+                            <div class="field-name">Topic ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics"
+                                    [params]="selected.topicId">{{selected.topicId}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Message ID:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
+                                    [subParams]="selected.index">{{selected.consensusTimestamp}}</hedera-explorer>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="field-name">Owner:</div>
+                            <div class="field-value">
+                                <hedera-explorer type="accounts"
+                                    [params]="selected.payer">{{selected.owner}}</hedera-explorer>
                             </div>
                         </div>
                     </ng-container>

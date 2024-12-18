@@ -131,62 +131,54 @@ export class ReportBlockComponent implements OnInit {
 
                     this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
                         this.indexerAvailable = indexerAvailable;
-                        if (indexerAvailable) {
+                        if (indexerAvailable && tokenContractTopicIds.length > 0) {
+                            const indexerCalls: Observable<HttpResponse<any>>[] = [];
+                            tokenContractTopicIds.forEach(id => {
+                                indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
+                            })
+
                             this.loading = true;
-                            if (tokenContractTopicIds.length > 0) {
-                                const indexerCalls: Observable<HttpResponse<any>>[] = [];
-                                tokenContractTopicIds.forEach(id => {
-                                    indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
-                                })
+                            forkJoin([this.contractService.getRetireVCs(), ...indexerCalls]).subscribe((results: any) => {
+                                this.loading = false;
+                                const retires = results.map((item: any) => item.body)
 
-                                forkJoin([this.contractService.getRetireVCs(), ...indexerCalls]).subscribe((results: any) => {
-                                    this.loading = false;
-                                    const retires = results.map((item: any) => item.body)
-
-                                    const [retiresDb, ...retiresIndexer] = retires;
-                                    const retiresDbMapped = retiresDb
-                                        .filter((item: any) => item.type == 'RETIRE')
-                                        .map((item: any) => item.document);
-
-                                    console.log(retiresIndexer);
-                                    
-                                    const combinedRetirements = [...retiresDbMapped];
-                                    retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
-                                        retirements.forEach((item: IRetirementMessage) => {
-                                            const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
-                                            console.log(existInGuardianDocument);
-                                            if (!existInGuardianDocument) {
-                                                item.documents[0].timestamp = item.consensusTimestamp;
-                                                item.documents[0].owner = item.owner;
-                                                combinedRetirements.push(item.documents[0]);
-                                            }
-                                            else {
-                                                existInGuardianDocument.timestamp = item.consensusTimestamp;
-                                                existInGuardianDocument.owner = item.owner;
-                                            }
-                                        });
+                                const [retiresDb, ...retiresIndexer] = retires;
+                                const retiresDbMapped = retiresDb
+                                    .filter((item: any) => item.type == 'RETIRE')
+                                    .map((item: any) => item.document);
+                                
+                                const combinedRetirements = [...retiresDbMapped];
+                                retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
+                                    retirements.forEach((item: IRetirementMessage) => {
+                                        const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
+                                        if (!existInGuardianDocument) {
+                                            item.documents[0].timestamp = item.consensusTimestamp;
+                                            item.documents[0].owner = item.owner;
+                                            combinedRetirements.push(item.documents[0]);
+                                        }
+                                        else {
+                                            existInGuardianDocument.timestamp = item.consensusTimestamp;
+                                            existInGuardianDocument.owner = item.owner;
+                                        }
                                     });
+                                });
 
-                                    const tokenRetirementDocuments = combinedRetirements
-                                    .filter((item: any) => item.credentialSubject.some((subject: any) =>
-                                            subject.tokens.some((token: any) =>
-                                                token.tokenId === this.mintTokenId
-                                                && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                                ))));
+                                const tokenRetirementDocuments = combinedRetirements
+                                .filter((item: any) => item.credentialSubject.some((subject: any) =>
+                                        subject.tokens.some((token: any) =>
+                                            token.tokenId === this.mintTokenId
+                                            && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                            ))));
 
-                                    console.log(tokenRetirementDocuments);
-
-                                    this.groupedByContractRetirements = Array.from(
-                                        new Map(tokenRetirementDocuments
-                                            .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                    )).map(([contractId, documents]) => ({
-                                        contractId,
-                                        selectedItemIndex: 0,
-                                        documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                    }))
-                                    console.log(this.groupedByContractRetirements);
-                                })
-                            }
+                                this.groupedByContractRetirements = Array.from(
+                                    new Map(tokenRetirementDocuments
+                                        .map((item: any) => [item.credentialSubject[0].contractId, []])
+                                )).map(([contractId, documents]) => ({
+                                    contractId,
+                                    selectedItemIndex: 0,
+                                    documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                }))
+                            })
                         } else {
                             this.contractService
                                 .getRetireVCs()
@@ -197,7 +189,7 @@ export class ReportBlockComponent implements OnInit {
                                                 && item.document.credentialSubject.some((subject: any) =>
                                                     subject.tokens.some((token: any) =>
                                                         token.tokenId === this.mintTokenId
-                                                        && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                                        && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
                                                         )))).map((vc: any) => vc.document);
 
                                         console.log(tokenRetirementDocuments);
@@ -301,7 +293,8 @@ export class ReportBlockComponent implements OnInit {
         this.documents = report.documents || [];
 
 
-
+        console.log(report.vpDocument);
+        
         // Testing
         this.mintTokenId = report.mintDocument?.tokenId || '';
         this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
