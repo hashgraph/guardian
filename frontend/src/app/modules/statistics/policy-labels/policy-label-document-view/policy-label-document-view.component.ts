@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GenerateUUIDv4, Schema, UserPermissions } from '@guardian/interfaces';
+import { GenerateUUIDv4, IValidatorStep, LabelValidators, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -49,6 +49,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
     public source: TreeSource<DocumentNode>;
     public selectedNode: DocumentNode;
 
+    public steps: IValidatorStep[];
+
     private subscription = new Subscription();
 
     public get zoom(): number {
@@ -58,6 +60,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
             return 100;
         }
     }
+
+    private validator: LabelValidators;
 
     constructor(
         private profileService: ProfileService,
@@ -145,78 +149,10 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
     private updateMetadata() {
         this.token = this.getMintVc();
 
-        //     const config = this.definition.config || {};
-        //     const variables = config.variables || [];
-        //     const formulas = config.formulas || [];
-        //     const scores = config.scores || [];
-        //     const preview = new Map<string, IVariable>();
-
-        //     this.preview = [];
-        //     this.scores = [];
-        //     this.formulas = [];
-
-        //     let document: any = this.document?.document?.credentialSubject;
-        //     if (Array(document)) {
-        //         document = document[0];
-        //     }
-        //     if (!document) {
-        //         document = {};
-        //     }
-
-        //     for (const variable of variables) {
-        //         const path = [...(variable.path || '').split('.')];
-        //         const fullPath = [variable.schemaId, ...path];
-        //         const field: IVariable = {
-        //             id: variable.id,
-        //             description: variable.fieldDescription || '',
-        //             schemaId: variable.schemaId,
-        //             path: path,
-        //             fullPath: fullPath,
-        //             value: document[variable.id],
-        //             isArray: false
-        //         }
-        //         this.preview.push(field);
-        //         preview.set(variable.id, field);
-        //     }
-
-        //     for (const score of scores) {
-        //         const relationships: IVariable[] = [];
-        //         if (score.relationships) {
-        //             for (const ref of score.relationships) {
-        //                 const field = preview.get(ref);
-        //                 if (field) {
-        //                     relationships.push(field);
-        //                 }
-        //             }
-        //         }
-        //         const options: IOption[] = [];
-        //         if (score.options) {
-        //             for (const option of score.options) {
-        //                 options.push({
-        //                     id: GenerateUUIDv4(),
-        //                     description: option.description,
-        //                     value: option.description //this is not a typo.
-        //                 });
-        //             }
-        //         }
-        //         this.scores.push({
-        //             id: score.id,
-        //             description: score.description,
-        //             value: document[score.id],
-        //             relationships,
-        //             options
-        //         });
-        //     }
-
-        //     for (const formula of formulas) {
-        //         this.formulas.push({
-        //             id: formula.id,
-        //             description: formula.description,
-        //             value: document[formula.id],
-        //             formula: formula.formula,
-        //             type: formula.type
-        //         });
-        //     }
+        this.validator = new LabelValidators(this.definition);
+        this.steps = this.validator.getDocument();
+        this.validator.setData(this.relationships);
+        this.validator.setVp(this.document);
 
         //
         this.schemasMap = new Map<string, Schema>();
@@ -244,7 +180,9 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
 
         if (this.document) {
             this.document.schemaName = 'Label';
+            this.document.document.issuer = this.document.document?.proof?.verificationMethod?.split('#')?.[0];
             root = DocumentNode.from(this.document, 'root');
+            root.entity = 'vp';
             this.nodes.push(root);
         }
         if (root && this.target) {
@@ -269,6 +207,14 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         if (this.tree) {
             this.tree.setData(this.source);
             this.tree.move(18, 46);
+        }
+    }
+
+    public getVariableValue(value: any): any {
+        if (value === undefined) {
+            return 'N/A';
+        } else {
+            return value;
         }
     }
 

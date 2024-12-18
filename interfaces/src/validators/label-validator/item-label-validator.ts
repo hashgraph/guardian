@@ -104,4 +104,8 @@ export class LabelItemValidator {
     public getVC(): IStepDocument | null {
         return null;
     }
+
+    public setVC(vc: any): boolean {
+        return false;
+    }
 }

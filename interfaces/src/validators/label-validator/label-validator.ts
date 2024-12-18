@@ -6,7 +6,7 @@ import { IValidatorStep } from './interfaces/step.js';
 import { IValidatorNode } from './interfaces/node.js';
 import { IValidateStatus } from './interfaces/status.js';
 import { IValidator } from './interfaces/validator.js';
-import { INavImportsConfig, INavItemConfig, IPolicyLabel, IPolicyLabelConfig, NavItemType } from '../../interface/index.js';
+import { INavImportsConfig, INavItemConfig, IPolicyLabel, IPolicyLabelConfig, IVPDocument, NavItemType } from '../../interface/index.js';
 import { IStepDocument } from './interfaces/step-document.js';
 
 export class LabelValidators {
@@ -18,6 +18,7 @@ export class LabelValidators {
     private readonly steps: IValidatorStep[];
     private readonly tree: IValidatorNode;
     private readonly list: IValidator[];
+    private readonly document: IValidatorStep[];
 
     private index: number = 0;
 
@@ -33,6 +34,7 @@ export class LabelValidators {
         this.tree = this.createTree(this.root);
         this.steps = this.createSteps(this.root, []);
         this.list = this.createList(this.root, []);
+        this.document = this.createDocument(this.root, []);
     }
 
     public get status(): boolean | undefined {
@@ -70,6 +72,32 @@ export class LabelValidators {
 
     private addSteps(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
         const steps = node.getSteps();
+        for (const step of steps) {
+            result.push(step);
+        }
+        return result;
+    }
+
+    private createDocument(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
+        if (node.type === NavItemType.Rules) {
+            this.addDocument(node, result);
+        } else if (node.type === NavItemType.Statistic) {
+            this.addDocument(node, result);
+        } else if (node.type === NavItemType.Group) {
+            this.addDocument(node, result);
+            for (const child of (node as GroupItemValidator).children) {
+                this.createDocument(child, result);
+            }
+        } else if (node.type === NavItemType.Label) {
+            this.addDocument(node, result);
+            this.createDocument((node as LabelItemValidator).root, result);
+        }
+        return result;
+    }
+
+    private addDocument(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
+        const steps = node.getSteps();
+        steps.unshift(steps.pop());
         for (const step of steps) {
             result.push(step);
         }
@@ -125,6 +153,10 @@ export class LabelValidators {
 
     public getSteps(): IValidatorStep[] {
         return this.steps;
+    }
+
+    public getDocument(): IValidatorStep[] {
+        return this.document;
     }
 
     public next(): IValidatorStep | null {
@@ -214,5 +246,26 @@ export class LabelValidators {
             }
         }
         return vcs;
+    }
+
+    public setVp(vp: IVPDocument): void {
+        const result: any[] = [];
+        const vcs: any = vp.document.verifiableCredential;
+        if (Array.isArray(vcs)) {
+            for (const vc of vcs) {
+                let cs = vc?.credentialSubject;
+                if (Array.isArray(cs)) {
+                    cs = cs[0];
+                }
+                result.push(cs);
+            }
+        }
+
+        let index = 0;
+        for (const node of this.list) {
+            if (node.setVC(result[index])) {
+                index++;
+            }
+        }
     }
 }

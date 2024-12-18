@@ -64,7 +64,7 @@ export class NodeItemValidator {
             validate: this.validate.bind(this)
         }];
     }
-
+    
     public getStatus(): IValidateStatus | undefined {
         return this.valid;
     }
@@ -133,5 +133,9 @@ export class NodeItemValidator {
 
     public getVC(): IStepDocument | null {
         return null;
+    }
+
+    public setVC(vc: any): boolean {
+        return false;
     }
 }

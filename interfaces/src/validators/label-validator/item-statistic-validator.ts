@@ -314,4 +314,9 @@ export class StatisticItemValidator {
             document: this.getResult()
         };
     }
+
+    public setVC(vc: any): boolean {
+        this.setResult(vc);
+        return true;
+    }
 }

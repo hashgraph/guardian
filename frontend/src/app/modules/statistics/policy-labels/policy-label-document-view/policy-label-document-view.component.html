@@ -128,7 +128,96 @@
 
 
 
+                <div class="node-container" *ngFor="let current of steps">
+                    <div *ngIf="current.type === 'validate'" class="node-header">
+                        <span *ngIf="current.prefix" class="node-prefix">{{current.prefix}}</span>
+                        <span>{{current.title}}</span>
+                    </div>
 
+                    <div *ngIf="current.type !== 'validate'" class="node-body">
+                        <div class="node-sub-header">
+                            <span *ngIf="current.prefix" class="node-prefix">{{current.name}}</span>
+                        </div>
+
+                        <ng-container *ngIf="current.type === 'variables'">
+                            <div *ngFor="let variable of current.config" class="field-container">
+                                <div class="field-name">
+                                    {{variable.fieldDescription}}
+                                </div>
+                                <ng-container *ngIf="variable.isArray">
+                                    <div class="field-value-array">
+                                        <div *ngFor="let v of variable.value" class="field-value">
+                                            {{getVariableValue(v)}}
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="!variable.isArray">
+                                    <div class="field-value">
+                                        {{getVariableValue(variable.value)}}
+                                    </div>
+                                </ng-container>
+        
+                            </div>
+                        </ng-container>
+        
+                        <ng-container *ngIf="current.type === 'scores'">
+                            <div *ngFor="let score of current.config" class="score-container">
+                                <div *ngIf="score.relationships" class="fields-container">
+                                    <div *ngFor="let variable of score._relationships" class="field-container">
+                                        <div class="field-name">
+                                            {{variable.fieldDescription}}
+                                        </div>
+                                        <ng-container *ngIf="variable.isArray">
+                                            <div class="field-value-array">
+                                                <div *ngFor="let v of variable.value" class="field-value">
+                                                    {{getVariableValue(v)}}
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngIf="!variable.isArray">
+                                            <div class="field-value">
+                                                {{getVariableValue(variable.value)}}
+                                            </div>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                                <div class="score-name">
+                                    {{score.description}}
+                                </div>
+                                <div *ngIf="score._options" class="options-container">
+                                    <div *ngFor="let option of score._options" class="option-container">
+                                        <div class="option-checkbox">
+                                            <p-radioButton 
+                                                class="guardian-radio-button radio-button-24"
+                                                [name]="score.id" 
+                                                [value]="option.value" 
+                                                [(ngModel)]="score.value"
+                                                [inputId]="option.id"
+                                                readonly="true"
+                                            ></p-radioButton>
+                                        </div>
+                                        <label class="option-name" [for]="option.id">
+                                            {{option.description}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+        
+                        <ng-container *ngIf="current.type === 'formulas'">
+                            <div *ngFor="let formula of current.config" class="field-container">
+                                <div class="field-name">
+                                    {{formula.description}}
+                                </div>
+                                <div class="field-value">
+                                    {{formula.value}}
+                                </div>
+                            </div>
+                        </ng-container>
+
+                    </div>
+
+                </div>
 
 
 

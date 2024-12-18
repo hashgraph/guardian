@@ -117,4 +117,8 @@ export class GroupItemValidator {
     public getVC(): IStepDocument | null {
         return null;
     }
+
+    public setVC(vc: any): boolean {
+        return false;
+    }
 }
