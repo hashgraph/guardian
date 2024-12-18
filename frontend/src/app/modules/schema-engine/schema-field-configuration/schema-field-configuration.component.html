@@ -195,7 +195,7 @@
                 </div>
 
                 <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <p-checkbox [formControl]="field.controlArray"></p-checkbox>
+                    <p-checkbox [formControl]="field.controlArray" [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
                 </div>
 

@@ -187,7 +187,7 @@ export class CompareComponent implements OnInit {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
         if (!options.documentIds || options.documentIds.length < 2) {
@@ -213,7 +213,7 @@ export class CompareComponent implements OnInit {
             eventsLvl: this.eventsLvl,
             propLvl: this.propLvl,
             childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             documentIds: this.getIds()
         }
         if (!options.documentIds || options.documentIds.length < 2) {
@@ -261,10 +261,10 @@ export class CompareComponent implements OnInit {
     private downloadPolicy() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             policies: this.getItems()
         }
         if (!options.policies || options.policies.length < 2) {
@@ -292,7 +292,7 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             schemas: ids
         }
         this.analyticsService.compareSchema(options).subscribe((value) => {
@@ -316,7 +316,7 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            idLvl: this.idLvl,
+            idLvl: this.idLvl.value,
             schemas: ids
         }
         this.analyticsService.compareSchemaFile(options, 'csv').subscribe((data) => {
@@ -339,10 +339,10 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value.value,
             moduleId1: ids[0],
             moduleId2: ids[1]
         }
@@ -367,10 +367,10 @@ export class CompareComponent implements OnInit {
             return;
         }
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             moduleId1: ids[0],
             moduleId2: ids[1]
         }
@@ -388,10 +388,10 @@ export class CompareComponent implements OnInit {
     private loadTool() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             toolIds: this.getIds()
         }
         if (!options.toolIds || options.toolIds.length < 2) {
@@ -414,10 +414,10 @@ export class CompareComponent implements OnInit {
     private downloadTools() {
         this.error = null;
         const options = {
-            eventsLvl: this.eventsLvl,
-            propLvl: this.propLvl,
-            childrenLvl: this.childrenLvl,
-            idLvl: this.idLvl,
+            eventsLvl: this.eventsLvl.value,
+            propLvl: this.propLvl.value,
+            childrenLvl: this.childrenLvl.value,
+            idLvl: this.idLvl.value,
             toolIds: this.getIds()
         }
         if (!options.toolIds || options.toolIds.length < 2) {

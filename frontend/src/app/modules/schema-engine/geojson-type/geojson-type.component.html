@@ -81,8 +81,23 @@
     <!--            (change)="coordinatesChanged()" [disabled]="isDisabled"></textarea>-->
     <!--    </mat-form-field>-->
 
+<!--    <div class="form-group type-selector">-->
+<!--        <label for="coordinatesInput" class="form-label">Coordinates</label>-->
+<!--        <textarea-->
+<!--            pInputTextarea-->
+<!--            id="coordinatesInput"-->
+<!--            [placeholder]="coordinatesPlaceholder"-->
+<!--            required-->
+<!--            [(ngModel)]="coordinates"-->
+<!--            (ngModelChange)="coordinatesChanged()"-->
+<!--            [disabled]="isDisabled"-->
+<!--            class="full-width">-->
+<!--    </textarea>-->
+<!--        <small *ngIf="!coordinates" class="p-error">Coordinates are required.</small>-->
+<!--    </div>-->
+
     <div class="form-group type-selector">
-        <label for="coordinatesInput" class="form-label">Coordinates</label>
+        <label for="coordinatesInput" class="form-label">Coordinates:</label>
         <textarea
             pInputTextarea
             id="coordinatesInput"
@@ -91,8 +106,9 @@
             [(ngModel)]="coordinates"
             (ngModelChange)="coordinatesChanged()"
             [disabled]="isDisabled"
-            class="full-width">
-    </textarea>
-        <small *ngIf="!coordinates" class="p-error">Coordinates are required.</small>
+            class="full-width"
+        ></textarea>
+<!--        <small *ngIf="!coordinates" class="p-error">Coordinates are required.</small>-->
     </div>
+
 </ng-template>

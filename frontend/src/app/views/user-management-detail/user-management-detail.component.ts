@@ -324,9 +324,10 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         this.loadData();
     }
 
-    public assignPolicy(policy: any) {
+    public assignPolicy(policy: any, checked: boolean) {
         const ids = [policy.id];
-        const assign = !policy.assigned;
+        // const assign = !policy.assigned;
+        const assign = checked;
         if (this.user.PERMISSIONS_ROLE_MANAGE) {
             this.loading = true;
             this.permissionsService.assignPolicy(this.username, ids, assign).subscribe((response) => {
@@ -394,7 +395,7 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public assignAllPolicy() {
         const ids: string[] = [];
-        const assign = !this.allPolicy;
+        const assign = this.allPolicy;
         for (const policy of this.policyPage) {
             if (policy.assigned !== assign && policy._canAssign) {
                 ids.push(policy.id);

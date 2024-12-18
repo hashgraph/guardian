@@ -39,7 +39,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     commonOptions: google.maps.MarkerOptions &
         google.maps.PolygonOptions &
         google.maps.PolylineOptions = {
-        animation: google.maps.Animation.DROP,
+            animation: null,
             clickable: false,
         };
     type: GeoJsonType = GeoJsonType.POINT;
@@ -85,6 +85,10 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.commonOptions = {
+
+        }
+
         this.onTypeChange(false);
         this.control?.setValidators(
             ajvSchemaValidator(new ajv().compile(GeoJsonSchema))

@@ -392,10 +392,14 @@
                             <th>Status</th>
                             <th>Version</th>
                             <th>
-                                <p-checkbox [(ngModel)]="allPolicy"
-                                            [binary]="true"
-                                            (onChange)="assignAllPolicy()">
-                                </p-checkbox>
+                                <label>
+                                    <p-checkbox
+                                        [(ngModel)]="allPolicy"
+                                        [binary]="true"
+                                        (onChange)="assignAllPolicy()">
+                                    </p-checkbox>
+                                    Assign All Policy
+                                </label>
                             </th>
                         </tr>
                         </thead>
@@ -412,8 +416,7 @@
                             <td>
                                 <p-checkbox [(ngModel)]="row.assigned"
                                             [binary]="true"
-                                            [disabled]="!row._canAssign"
-                                            (onChange)="assignPolicy(row)">
+                                            (onChange)="assignPolicy(row, $event.checked)">
                                 </p-checkbox>
                             </td>
                         </tr>
