@@ -1888,7 +1888,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/VCDetailsDTO'
+                  $ref: '#/components/schemas/MessageDTO'
         '422':
           description: Unprocessable entity
         '500':
