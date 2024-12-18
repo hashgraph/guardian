@@ -312,6 +312,7 @@
         <button
             *ngIf="!validator.isNext()" 
             (click)="onSubmit()" 
+            [disabled]="!result?.valid"
             class="guardian-button guardian-button-primary">Publish</button>
     </div>
 </div>

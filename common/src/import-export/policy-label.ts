@@ -243,7 +243,7 @@ export class PolicyLabelImportExport {
         const config: IStatisticConfig = {
             variables: PolicyStatisticImportExport.validateVariables(data?.variables),
             scores: PolicyStatisticImportExport.validateScores(data?.scores),
-            formulas: PolicyStatisticImportExport.validateFormulas(data?.formulas)
+            formulas: PolicyStatisticImportExport.validateFormulasWithRule(data?.formulas)
         }
         return config;
     }

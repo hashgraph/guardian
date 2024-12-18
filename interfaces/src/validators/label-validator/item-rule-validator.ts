@@ -75,10 +75,15 @@ export class RuleItemValidator {
     }
 
     public updateScores() {
-        return;
+        for (const variable of this.variables) {
+            this.scope.setVariable(variable.id, variable.value);
+        }
     }
 
     public updateFormulas() {
+        for (const variable of this.variables) {
+            this.scope.setVariable(variable.id, variable.value);
+        }
         for (const score of this.scores) {
             this.scope.setVariable(score.id, score.value);
         }
