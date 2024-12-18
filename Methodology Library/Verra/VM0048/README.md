@@ -2,7 +2,6 @@
 <!-- TOC -->
 - Policy Description
 - Workflow Description
-- Demo Video
 - Policy Guide
 - Token (VCU)
 <!-- End of TOC -->
