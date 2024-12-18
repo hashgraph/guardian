@@ -20,7 +20,8 @@ The introduction of VM0048 and its module for Avoiding Unplanned Deforestation (
 
 ## Workflow Description
 
-![Workflow]()
+![Workflow Diagram](https://github.com/user-attachments/assets/4e1ac2bb-e171-40ba-9761-f8f8014453c0)
+
 
 1. **Project Proponent Submission**: The project proponent begins by submitting the Project Description to Verra. This document includes ex-ante estimates of monitoring parameters and detailed project information demonstrating compliance with VCS program requirements.
 
