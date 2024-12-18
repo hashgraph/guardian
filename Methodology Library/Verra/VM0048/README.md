@@ -54,7 +54,7 @@ This policy can be imported via Github (.policy file) or IPFS timestamp.
 
 | Version | IPFS Timestamp | Policy File Link | Version Differences |
 |---|---|---|---:|
-| VM0048 2.0.0  |  | [Link]() | Verra Methodology |
+| VM0048 2.0.0  | 1734561802.996119000 | [Link](https://github.com/hashgraph/guardian/tree/main/Methodology%20Library/Verra/VM0048) | Verra Methodology |
 
 ### Available Roles
 - Project Proponent - The project proponent is responsible for executing the emission reduction project. The project proponent must adhere to the requirements outlined by Verra’s VCS program and provide evidence of the emission reductions achieved. Upon successful verification, the project proponent receives Verified Carbon Units (VCU) as an incentive sfor their emission reductions.
