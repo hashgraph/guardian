@@ -46,9 +46,6 @@ The introduction of VM0048 and its module for Avoiding Unplanned Deforestation (
 7. **Ongoing Validation and Verification**:
     - Engage with a VVB for periodic validation and verification as per Verra’s requirements and the project's monitoring plan to ensure ongoing compliance and to validate the emission reductions achieved over time.
 
-## Demo Video
-[Demo Video of Guardian Policy and Schemas]()
-
 ## Policy Guide
 This policy can be imported via Github (.policy file) or IPFS timestamp.
 
