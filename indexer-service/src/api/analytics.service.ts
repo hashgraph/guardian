@@ -127,7 +127,7 @@ export class AnalyticsService {
     async getRetireDocuments(
         @Payload()
         msg: RawMessage
-    ): Promise<AnyResponse<VCDetails[]>> {
+    ): Promise<AnyResponse<Message[]>> {
         try {
             const { topicId } = msg;
             const em = DataBaseHelper.getEntityManager();
@@ -139,9 +139,9 @@ export class AnalyticsService {
                 } as any
             )) as any;
             
-            let VCdocuments: VCDetails[] = [];
-            for (const result of messages) {
-                for (const fileName of result.files) {
+            for (const message of messages) {
+                let VCdocuments: VCDetails[] = [];
+                for (const fileName of message.files) {
                     try {
                         const file = await DataBaseHelper.loadFile(fileName);
                         VCdocuments.push(JSON.parse(file) as VCDetails);
@@ -149,9 +149,11 @@ export class AnalyticsService {
                         VCdocuments.push(null);
                     }
                 }
+                
+                message.documents = VCdocuments;
             }
 
-            return new MessageResponse<VCDetails[]>(VCdocuments);
+            return new MessageResponse<Message[]>(messages);
         } catch (error) {
             return new MessageError(error);
         }

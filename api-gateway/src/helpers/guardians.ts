@@ -11,6 +11,7 @@ import {
     IContract,
     IDidObject,
     IOwner,
+    IRetirementMessage,
     IRetirePool,
     IRetireRequest,
     ISchema,
@@ -1859,7 +1860,7 @@ export class Guardians extends NatsService {
         contractTopicId: string,
         pageIndex?: any,
         pageSize?: any
-    ): Promise<[IVC[], number]> {
+    ): Promise<[IRetirementMessage[], number]> {
         return await this.sendMessage(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, {
             owner,
             contractTopicId,

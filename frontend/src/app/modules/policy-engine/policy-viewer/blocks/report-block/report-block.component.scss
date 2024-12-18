@@ -799,6 +799,12 @@ h3 {
     .chain-title {
         margin-top: 0;
     }
+
+    &.multiple-tokens {
+        margin: 6px 16px 6px 8px;
+        width: 450px;
+        height: 182px;
+    }
 }
 
 .retirement-container {
@@ -857,6 +863,23 @@ h3 {
     }
 }
 
+.retire-multiple-card-1 {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+}
+
+.retire-multiple-card-2 {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+}
+
+.retire-multiple-tokens {
+    display: flex;
+    justify-content: space-between;
+}
+
 .retire-info {
     p {
         margin-bottom: 8px;
@@ -873,6 +896,12 @@ h3 {
             font-weight: 500;
             line-height: 14px;
             color: #000000;
+        }
+    }
+
+    &.second-token {
+        p {
+            text-align: left;
         }
     }
 }

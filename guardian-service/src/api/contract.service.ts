@@ -3451,7 +3451,7 @@ export async function contractAPI(
             }
 
             // Get Retirements from Indexer
-            const retirements = await new Workers().addNonRetryableTask({
+            const messages = await new Workers().addNonRetryableTask({
                 type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
                 data: {
                     payload: { options: { topicId: contractTopicId } }
@@ -3515,7 +3515,7 @@ export async function contractAPI(
                 // );
             // ...
 
-            return new MessageResponse([retirements, retirements.length]);
+            return new MessageResponse([messages, messages.length]);
         } catch (error) {
             await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);

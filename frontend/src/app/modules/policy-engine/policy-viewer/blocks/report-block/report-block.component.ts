@@ -13,6 +13,8 @@ import {
     IVCReport,
     IVPReport,
     ContractType,
+    IRetirementMessage,
+    IVC,
 } from '@guardian/interfaces';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -104,14 +106,10 @@ export class ReportBlockComponent implements OnInit {
     // Testing
     mintTokenId: string;
     mintTokenSerials: string[] = [];
-    retirementDocuments: any = [];
+    groupedByContractRetirements: any = [];
     indexerAvailable: boolean = false;
-    currentRetirementDocument: any;
-    currentRetirementIndex: number = 0;
     private loadRetireData() {
         this.loading = true;
-
-        const retirementsFromIndexer: any[] = [];
 
         this.contractService
             .getContracts({
@@ -134,6 +132,7 @@ export class ReportBlockComponent implements OnInit {
                     this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
                         this.indexerAvailable = indexerAvailable;
                         if (indexerAvailable) {
+                            this.loading = true;
                             if (tokenContractTopicIds.length > 0) {
                                 const indexerCalls: Observable<HttpResponse<any>>[] = [];
                                 tokenContractTopicIds.forEach(id => {
@@ -141,9 +140,51 @@ export class ReportBlockComponent implements OnInit {
                                 })
 
                                 forkJoin([this.contractService.getRetireVCs(), ...indexerCalls]).subscribe((results: any) => {
+                                    this.loading = false;
                                     const retires = results.map((item: any) => item.body)
-                                    console.log(retires);
-                                    this.retirementDocuments = retires[0];
+
+                                    const [retiresDb, ...retiresIndexer] = retires;
+                                    const retiresDbMapped = retiresDb
+                                        .filter((item: any) => item.type == 'RETIRE')
+                                        .map((item: any) => item.document);
+
+                                    console.log(retiresIndexer);
+                                    
+                                    const combinedRetirements = [...retiresDbMapped];
+                                    retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
+                                        retirements.forEach((item: IRetirementMessage) => {
+                                            const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
+                                            console.log(existInGuardianDocument);
+                                            if (!existInGuardianDocument) {
+                                                item.documents[0].timestamp = item.consensusTimestamp;
+                                                item.documents[0].owner = item.owner;
+                                                combinedRetirements.push(item.documents[0]);
+                                            }
+                                            else {
+                                                existInGuardianDocument.timestamp = item.consensusTimestamp;
+                                                existInGuardianDocument.owner = item.owner;
+                                            }
+                                        });
+                                    });
+
+                                    const tokenRetirementDocuments = combinedRetirements
+                                    .filter((item: any) => item.credentialSubject.some((subject: any) =>
+                                            subject.tokens.some((token: any) =>
+                                                token.tokenId === this.mintTokenId
+                                                && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                                ))));
+
+                                    console.log(tokenRetirementDocuments);
+
+                                    this.groupedByContractRetirements = Array.from(
+                                        new Map(tokenRetirementDocuments
+                                            .map((item: any) => [item.credentialSubject[0].contractId, []])
+                                    )).map(([contractId, documents]) => ({
+                                        contractId,
+                                        selectedItemIndex: 0,
+                                        documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                    }))
+                                    console.log(this.groupedByContractRetirements);
                                 })
                             }
                         } else {
@@ -151,7 +192,7 @@ export class ReportBlockComponent implements OnInit {
                                 .getRetireVCs()
                                 .subscribe(
                                     (policiesResponse) => {
-                                        this.retirementDocuments = (policiesResponse.body || [])
+                                        const tokenRetirementDocuments = (policiesResponse.body || [])
                                             .filter((item: any) => item.type == 'RETIRE'
                                                 && item.document.credentialSubject.some((subject: any) =>
                                                     subject.tokens.some((token: any) =>
@@ -159,10 +200,17 @@ export class ReportBlockComponent implements OnInit {
                                                         && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
                                                         )))).map((vc: any) => vc.document);
 
-                                        this.currentRetirementIndex = 0;
-                                        this.currentRetirementDocument = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.retirementDocuments[this.currentRetirementIndex] : null;
+                                        console.log(tokenRetirementDocuments);
 
-                                        console.log(this.retirementDocuments);
+                                        this.groupedByContractRetirements = Array.from(
+                                            new Map(tokenRetirementDocuments
+                                                .map((item: any) => [item.credentialSubject[0].contractId, []])
+                                        )).map(([contractId, documents]) => ({
+                                            contractId,
+                                            selectedItemIndex: 0,
+                                            documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                        }))
+                                        console.log(this.groupedByContractRetirements);
 
                                         this.loading = false;
                                     },
@@ -179,18 +227,20 @@ export class ReportBlockComponent implements OnInit {
             );
     }
 
-    onNextRetirementClick(event: any) {
-        event.stopPropagation();
-
-        this.currentRetirementIndex = this.retirementDocuments.length > (this.currentRetirementIndex + 1) ? this.currentRetirementIndex + 1 : 0;
-        this.currentRetirementDocument = this.retirementDocuments[this.currentRetirementIndex];
+    getRetirementGroupVC(group: any): any {
+        return group.documents[group.selectedItemIndex];
     }
 
-    onPrevRetirementClick(event: any) {
+    onNextRetirementClick(event: any, group: any) {
         event.stopPropagation();
 
-        this.currentRetirementIndex = (this.currentRetirementIndex - 1) >= 0 ? (this.currentRetirementIndex - 1) : (this.retirementDocuments.length - 1);
-        this.currentRetirementDocument = this.retirementDocuments[this.currentRetirementIndex];
+        group.selectedItemIndex = group.documents.length > (group.selectedItemIndex + 1) ? group.selectedItemIndex + 1 : 0;
+    }
+
+    onPrevRetirementClick(event: any, group: any) {
+        event.stopPropagation();
+
+        group.selectedItemIndex = (group.selectedItemIndex - 1) >= 0 ? (group.selectedItemIndex - 1) : (group.documents.length - 1);
     }
 
     // ...
@@ -392,6 +442,27 @@ export class ReportBlockComponent implements OnInit {
                 document: item.document.document,
                 title: title,
                 type: 'JSON',
+            }
+        });
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    openRetireVCDocument(
+        item: any,
+        document?: any
+    ) {
+        const title = `Retire Document`;
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                id: item.id,
+                row: item,
+                viewDocument: true,
+                document: item,
+                title: title,
+                type: 'VC',
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });

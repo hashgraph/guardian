@@ -7,14 +7,14 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { IndexerMessageAPI } from '@indexer/common';
+import { IndexerMessageAPI, Message } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
     RawMessageDTO,
     SearchPolicyParamsDTO,
     SearchPolicyResultDTO,
-    VCDetailsDTO,
+    MessageDTO,
 } from '#dto';
 
 @Controller('analytics')
@@ -58,7 +58,7 @@ export class AnalyticsApi extends ApiClient {
     })
     @ApiOkResponse({
         description: 'Search policy result',
-        type: [VCDetailsDTO],
+        type: [MessageDTO],
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',

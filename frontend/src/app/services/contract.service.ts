@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import {
     ContractType,
+    IRetirementMessage,
     RetireTokenPool,
     RetireTokenRequest,
 } from '@guardian/interfaces';
@@ -322,7 +323,7 @@ export class ContractService {
         contractTopicId: string,
         pageIndex?: number,
         pageSize?: number
-    ) {
+    ): Observable<HttpResponse<IRetirementMessage[]>> {
         let url = `${this.url}/retireIndexer?contractTopicId=${contractTopicId}`;
         if (pageIndex && pageSize) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`
