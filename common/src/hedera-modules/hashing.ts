@@ -13,8 +13,8 @@ export class Hashing {
         encode: (data: Uint8Array): string => {
             return bs58.encode(data);
         },
-        decode: (data: string): Uint8Array => {
-            return bs58.decode(data);
+        decode: (data: string): Buffer => {
+            return Buffer.from(bs58.decode(data));
         }
     }
     /**
