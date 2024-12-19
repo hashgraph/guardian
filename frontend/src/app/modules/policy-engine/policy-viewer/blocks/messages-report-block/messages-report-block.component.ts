@@ -364,6 +364,7 @@ export class MessagesReportBlockComponent implements OnInit {
             if (this.report) {
                 this.createReport(this.report);
                 this.createSmallReport();
+                this.loadRetirementMessages();
             }
         }
         this.removeLines();
@@ -373,37 +374,16 @@ export class MessagesReportBlockComponent implements OnInit {
         }, 100);
     }
 
+
+    gridSize: number = 0;
+
     mintTokenId: string;
     mintTokenSerials: string[] = [];
     groupedByContractRetirements: any = [];
     indexerAvailable: boolean = false;
     retirementMessages: any[] = [];
-    private createSmallReport() {
-        for (const topic of this._topics1) {
-            if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
-                const t = { ...topic };
-                t.__parent = null;
-                t.__offset = 20;
-                t.__order = this._topics2.length + 1;
-                t.messages = this.getAllMessages(topic, []);
-                this._topics2.push(t);
-            }
-        }
-        for (const topic of this._topics2) {
-            for (const message of topic.messages) {
-                this._messages2.push(message);
-            }
-        }
 
-        this._messages2.forEach(message => {
-            if (message.__ifMintMessage) {
-                this.mintTokenId = message.__tokenId;
-
-                // this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
-            }
-        });
-
-
+    private loadRetirementMessages() {
         this.contractService
             .getContracts({
                 type: ContractType.RETIRE
@@ -435,14 +415,14 @@ export class MessagesReportBlockComponent implements OnInit {
                                 this.loading = false;
                                 const retires = results.map((item: any) => item.body)
 
-                                const tokenRetires = retires.map((retirements: IRetirementMessage[]) => {
-                                    const ret = retirements.filter((item: IRetirementMessage) => item.documents[0].credentialSubject.some((subject: any) =>
-                                        subject.tokens.some((token: any) =>
-                                            token.tokenId === this.mintTokenId
-                                            && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                            ))));
-                                    return ret
-                                });
+                                // const tokenRetires = retires.map((retirements: IRetirementMessage[]) => {
+                                //     const ret = retirements.filter((item: IRetirementMessage) => item.documents[0].credentialSubject.some((subject: any) =>
+                                //         subject.tokens.some((token: any) =>
+                                //             token.tokenId === this.mintTokenId
+                                //             && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                //             ))));
+                                //     return ret
+                                // });
 
                                 const allRetireMessages: any = [];
                                 retires.forEach((retirements: IRetirementMessage[]) => {
@@ -464,16 +444,38 @@ export class MessagesReportBlockComponent implements OnInit {
                                         documents: allRetireMessages.filter((item: any) => item.documents[0].credentialSubject[0].contractId === contractId)
                                     }))
 
+                                let lastOrderMessageTopic1 = this._topics1?.[this._topics1.length - 1]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
                                 allRetireMessages.forEach((element: any) => {
-                                    element.__ifRetireMessage = true;
-                                    element.__timestamp = this.datePipe.transform(new Date(element.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
-                                    this._messages2.push(element);
-                                    this._topics2[0].messages.push(element);
+                                    var newElement = {...element, __order: lastOrderMessageTopic1}
+                                    newElement.__ifRetireMessage = true;
+                                    newElement.__timestamp = this.datePipe.transform(new Date(newElement.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
+
+                                    this._messages1.push(newElement);
+                                    this._topics1[this._topics1.length - 1].messages.push(newElement);
+
+                                    lastOrderMessageTopic1++;
                                 });
+
+
+                                let lastOrderMessageTopic2 = this._topics2?.[0]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
+                                allRetireMessages.forEach((element: any) => {
+                                    var newElement = {...element, __order: lastOrderMessageTopic2}
+                                    newElement.__ifRetireMessage = true;
+                                    newElement.__timestamp = this.datePipe.transform(new Date(newElement.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
+
+                                    this._messages2.push(newElement);
+                                    this._topics2[0].messages.push(newElement);
+
+                                    lastOrderMessageTopic2++;
+                                });
+
+                                console.log(this._topics1);
+                                console.log(this._topics2);
 
                                 this.retirementMessages = [...allRetireMessages];
 
-                                this._gridTemplateColumns2 = 'repeat(' + (gridSize + this.retirementMessages.length) + ', 230px)';
+                                this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', 230px)';
+                                this._gridTemplateColumns2 = 'repeat(' + (this.gridSize + this.retirementMessages.length) + ', 230px)';
                             })
                         }
                     })
@@ -482,15 +484,43 @@ export class MessagesReportBlockComponent implements OnInit {
                     this.loading = false;
                 }
             );
+    }
 
-        let gridSize = 0;
+
+
+    private createSmallReport() {
+        for (const topic of this._topics1) {
+            if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
+                const t = { ...topic };
+                t.__parent = null;
+                t.__offset = 20;
+                t.__order = this._topics2.length + 1;
+                t.messages = this.getAllMessages(topic, []);
+                this._topics2.push(t);
+            }
+        }
+        for (const topic of this._topics2) {
+            for (const message of topic.messages) {
+                this._messages2.push(message);
+            }
+        }
+
+        this._messages2.forEach(message => {
+            if (message.__ifMintMessage) {
+                this.mintTokenId = message.__tokenId;
+
+                // this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
+            }
+        });
+
+        this.gridSize = 0;
         this._messages2.sort((a, b) => a.__order > b.__order ? 1 : -1);
         for (let index = 0; index < this._messages2.length; index++) {
             const message = this._messages2[index];
             message.__order = index + 1;
-            gridSize = Math.max(gridSize, message.__order);
+            this.gridSize = Math.max(this.gridSize, message.__order);
         }
-        this._gridTemplateColumns2 = 'repeat(' + gridSize + ', 230px)';
+        this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', 230px)';
         this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', 100px) 30px';
     }
 
@@ -536,7 +566,7 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private parseMessages() {
-        let gridSize = 0;
+        this.gridSize = 0;
         for (const topic of this._topics1) {
             if (topic.message) {
                 this.parseMessage(topic, topic.message);
@@ -544,7 +574,7 @@ export class MessagesReportBlockComponent implements OnInit {
             for (const message of topic.messages) {
                 this.parseMessage(topic, message);
                 this._messages1.push(message);
-                gridSize = Math.max(gridSize, message.__order);
+                this.gridSize = Math.max(this.gridSize, message.__order);
             }
             if (topic.__parent) {
                 topic.__start = 100 * topic.__parent.__order;
@@ -567,7 +597,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 topic.message.__rationale = topic.__rationale;
             }
         }
-        this._gridTemplateColumns1 = 'repeat(' + gridSize + ', 230px)';
+        this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', 230px)';
         this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
     }
 
