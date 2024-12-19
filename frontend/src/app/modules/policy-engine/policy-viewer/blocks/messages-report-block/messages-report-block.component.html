@@ -770,6 +770,10 @@
                             <div class="field-name">User ID:</div>
                             <div class="field-value">{{selected.documents[0].credentialSubject[0].user}}</div>
                         </div>
+                        <div class="field" *ngIf="selected.owner">
+                            <div class="field-name">Transaction:</div>
+                            <div class="field-value">{{selected.consensusTimestamp}}</div>
+                        </div>
                         <div *ngFor="let token of selected.documents[0].credentialSubject[0]?.tokens">
                             <div class="field-delimiter"></div>
                             <div class="field">
@@ -783,10 +787,6 @@
                             <div class="field" *ngIf="!token.serials || token.serials.length <= 0">
                                 <div class="field-name">Amount:</div>
                                 <div class="field-value">{{token.count}}</div>
-                            </div>
-                            <div class="field" *ngIf="selected.owner">
-                                <div class="field-name">Transaction:</div>
-                                <div class="field-value">{{selected.consensusTimestamp}}</div>
                             </div>
                         </div>
 
@@ -803,7 +803,7 @@
                             <div class="field-name">Message ID:</div>
                             <div class="field-value">
                                 <hedera-explorer type="topics" [params]="selected.topicId" subType="messages"
-                                    [subParams]="selected.index">{{selected.consensusTimestamp}}</hedera-explorer>
+                                    [subParams]="selected.sequenceNumber">{{selected.consensusTimestamp}}</hedera-explorer>
                             </div>
                         </div>
                         <div class="field">

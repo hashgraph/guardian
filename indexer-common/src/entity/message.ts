@@ -90,4 +90,7 @@ export class Message implements IMessage {
 
     @Property({ nullable: true })
     tokens: string[];
+
+    @Property({ nullable: true })
+    sequenceNumber?: number;
 }

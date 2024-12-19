@@ -6,7 +6,8 @@ import {
     MessageError,
     DataBaseHelper,
     Message,
-    AnyResponse
+    AnyResponse,
+    MessageCache
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
 import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
@@ -138,7 +139,14 @@ export class AnalyticsService {
                     action: MessageAction.CreateVC,
                 } as any
             )) as any;
-            
+
+            const [messagesCache] = (await em.findAndCount(
+                MessageCache,
+                {
+                    topicId,
+                } as any
+            )) as any;
+
             for (const message of messages) {
                 let VCdocuments: VCDetails[] = [];
                 for (const fileName of message.files) {
@@ -146,13 +154,16 @@ export class AnalyticsService {
                         const file = await DataBaseHelper.loadFile(fileName);
                         VCdocuments.push(JSON.parse(file) as VCDetails);
                     } catch (error) {
-                        VCdocuments.push(null);
                     }
                 }
-                
                 message.documents = VCdocuments;
-            }
 
+                var messageCache = messagesCache.find((cache: MessageCache) => cache.consensusTimestamp == message.consensusTimestamp);
+                if (messageCache) {
+                    message.sequenceNumber = messageCache.sequenceNumber;
+                }
+            }
+            
             return new MessageResponse<Message[]>(messages);
         } catch (error) {
             return new MessageError(error);

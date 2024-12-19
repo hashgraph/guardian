@@ -77,4 +77,8 @@ export interface Message<O = any, A = any> {
      * Tokens
      */
     tokens: string[];
+    /**
+     * Sequence number
+     */
+    sequenceNumber?: number;
 }

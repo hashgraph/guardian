@@ -454,8 +454,6 @@ export class MessagesReportBlockComponent implements OnInit {
                                     });
                                 });
 
-                                console.log(this.mintTokenSerials);
-
                                 this.groupedByContractRetirements = Array.from(
                                     new Map(allRetireMessages
                                         .map((item: any) => [item.documents[0].credentialSubject[0].contractId, []])
@@ -471,7 +469,6 @@ export class MessagesReportBlockComponent implements OnInit {
                                     element.__timestamp = this.datePipe.transform(new Date(element.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
                                     this._messages2.push(element);
                                     this._topics2[0].messages.push(element);
-                                    console.log(this._messages2);
                                 });
 
                                 this.retirementMessages = [...allRetireMessages];

@@ -104,6 +104,7 @@ export class ReportBlockComponent implements OnInit {
     }
 
     // Testing
+    vpDocument: any;
     mintTokenId: string;
     mintTokenSerials: string[] = [];
     groupedByContractRetirements: any = [];
@@ -146,7 +147,7 @@ export class ReportBlockComponent implements OnInit {
                                 const retiresDbMapped = retiresDb
                                     .filter((item: any) => item.type == 'RETIRE')
                                     .map((item: any) => item.document);
-                                
+
                                 const combinedRetirements = [...retiresDbMapped];
                                 retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
                                     retirements.forEach((item: IRetirementMessage) => {
@@ -164,8 +165,9 @@ export class ReportBlockComponent implements OnInit {
                                 });
 
                                 const tokenRetirementDocuments = combinedRetirements
-                                .filter((item: any) => item.credentialSubject.some((subject: any) =>
-                                        subject.tokens.some((token: any) =>
+                                    .filter((item: any) => item.credentialSubject.some((subject: any) =>
+                                        subject.user === this.vpDocument.document.target
+                                        && subject.tokens.some((token: any) =>
                                             token.tokenId === this.mintTokenId
                                             && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
                                             ))));
@@ -173,11 +175,11 @@ export class ReportBlockComponent implements OnInit {
                                 this.groupedByContractRetirements = Array.from(
                                     new Map(tokenRetirementDocuments
                                         .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                )).map(([contractId, documents]) => ({
-                                    contractId,
-                                    selectedItemIndex: 0,
-                                    documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                }))
+                                    )).map(([contractId, documents]) => ({
+                                        contractId,
+                                        selectedItemIndex: 0,
+                                        documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                    }))
                             })
                         } else {
                             this.contractService
@@ -187,22 +189,20 @@ export class ReportBlockComponent implements OnInit {
                                         const tokenRetirementDocuments = (policiesResponse.body || [])
                                             .filter((item: any) => item.type == 'RETIRE'
                                                 && item.document.credentialSubject.some((subject: any) =>
-                                                    subject.tokens.some((token: any) =>
+                                                    subject.user === this.vpDocument.document.target
+                                                    && subject.tokens.some((token: any) =>
                                                         token.tokenId === this.mintTokenId
                                                         && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
                                                         )))).map((vc: any) => vc.document);
 
-                                        console.log(tokenRetirementDocuments);
-
                                         this.groupedByContractRetirements = Array.from(
                                             new Map(tokenRetirementDocuments
                                                 .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                        )).map(([contractId, documents]) => ({
-                                            contractId,
-                                            selectedItemIndex: 0,
-                                            documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                        }))
-                                        console.log(this.groupedByContractRetirements);
+                                            )).map(([contractId, documents]) => ({
+                                                contractId,
+                                                selectedItemIndex: 0,
+                                                documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                            }))
 
                                         this.loading = false;
                                     },
@@ -293,11 +293,11 @@ export class ReportBlockComponent implements OnInit {
         this.documents = report.documents || [];
 
 
-        console.log(report.vpDocument);
-        
+
         // Testing
         this.mintTokenId = report.mintDocument?.tokenId || '';
         this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
+        this.vpDocument = report.vpDocument;
         this.loadRetireData();
         // ...
 
