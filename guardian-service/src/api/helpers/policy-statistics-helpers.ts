@@ -119,8 +119,11 @@ export async function generateSchema(
     }
     if (rules) {
         properties.status = {
+            $comment: `{"term": "status", "@id": "https://www.schema.org/text"}`,
+            title: 'status',
+            description: 'Status',
             type: 'boolean',
-            readOnly: true
+            readOnly: false
         }
     }
     const document: any = {

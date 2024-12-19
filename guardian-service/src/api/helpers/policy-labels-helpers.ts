@@ -239,8 +239,11 @@ export async function generateGroupSchema(topicId: string, type: string, owner: 
                 readOnly: true
             },
             status: {
+                $comment: `{"term": "status", "@id": "https://www.schema.org/text"}`,
+                title: 'status',
+                description: 'Status',
                 type: 'boolean',
-                readOnly: true
+                readOnly: false
             }
         },
         required: [],
