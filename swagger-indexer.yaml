@@ -2087,6 +2087,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2161,6 +2165,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2387,6 +2392,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2461,6 +2470,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2525,6 +2535,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2607,6 +2621,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2841,6 +2856,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2915,6 +2934,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3074,6 +3094,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3148,6 +3172,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3287,6 +3312,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3361,6 +3390,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3493,6 +3523,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3565,6 +3599,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3669,6 +3704,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3756,6 +3795,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4024,6 +4064,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4098,6 +4142,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4220,6 +4265,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4294,6 +4343,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4358,6 +4408,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4440,6 +4494,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4530,6 +4585,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
       required:
         - id
         - topicId
@@ -4544,6 +4603,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
     RelationshipDTO:
       type: object
       properties:
@@ -4720,6 +4780,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4792,6 +4856,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4884,6 +4949,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4966,6 +5035,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5106,6 +5176,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5180,6 +5254,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5244,6 +5319,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5326,6 +5405,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5595,6 +5675,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5669,6 +5753,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5884,6 +5969,10 @@ components:
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5958,6 +6047,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
