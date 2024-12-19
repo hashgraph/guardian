@@ -9,6 +9,7 @@ import {
     Schema as SchemaCollection,
     VcDocument as VcDocumentCollection,
     VpDocument as VpDocumentCollection,
+    SchemaConverterUtils,
 } from '@guardian/common';
 import {
     GenerateUUIDv4,
@@ -21,10 +22,13 @@ import {
     NavItemType,
     PolicyType,
     Schema,
+    SchemaCategory,
     SchemaHelper,
+    SchemaStatus,
     TopicType
 } from '@guardian/interfaces';
 import { generateSchema as generateStatisticSchema } from './policy-statistics-helpers.js';
+import { generateSchemaContext } from './schema-publish-helper.js';
 
 export function publishLabelConfig(data?: IPolicyLabelConfig): IPolicyLabelConfig {
     return data;
@@ -69,18 +73,29 @@ export async function generateSchema(
     node: any,
     schema: SchemaCollection
 }[]> {
-    console.log('generateSchema')
-    const items = convertConfigToList([], config?.children);
-    console.log('items', items.length);
-    const nodes = items
-        .filter((e) => e.type === NavItemType.Statistic || e.type === NavItemType.Rules) as (IRulesItemConfig | IStatisticItemConfig)[];
-    console.log('nodes', nodes.length);
-    const schemas: any[] = [];
-    for (const node of nodes) {
-        const schema = await generateStatisticSchema(topicId, node.config, owner);
-        schemas.push({ node, schema });
+    if (!config) {
+        return [];
     }
-    console.log('schemas', schemas.length);
+    const items = convertConfigToList([], config.children);
+    const schemas: any[] = [];
+    const groupSchema = await generateGroupSchema(topicId, 'Group', owner);
+    schemas.push({ node: config, schema: groupSchema });
+    for (const node of items) {
+        if (node.type === NavItemType.Statistic) {
+            const schema = await generateStatisticSchema(topicId, node.config, owner, false);
+            schemas.push({ node, schema });
+        }
+        if (node.type === NavItemType.Rules) {
+            const schema = await generateStatisticSchema(topicId, node.config, owner, true);
+            schemas.push({ node, schema });
+        }
+        if (node.type === NavItemType.Group) {
+            schemas.push({ node, schema: groupSchema });
+        }
+        if (node.type === NavItemType.Label) {
+            schemas.push({ node, schema: groupSchema });
+        }
+    }
     return schemas;
 }
 
@@ -186,4 +201,68 @@ export async function generateVcDocument(
 
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
     return vcObject;
+}
+
+export async function generateGroupSchema(topicId: string, type: string, owner: IOwner) {
+    const uuid = type;
+    const document: any = {
+        $id: `#${uuid}`,
+        $comment: `{ "term": "${uuid}", "@id": "#${uuid}" }`,
+        title: `${uuid}`,
+        description: `${uuid}`,
+        type: 'object',
+        properties: {
+            '@context': {
+                oneOf: [{
+                    type: 'string'
+                }, {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }],
+                readOnly: true
+            },
+            type: {
+                oneOf: [{
+                    type: 'string'
+                }, {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    }
+                }],
+                readOnly: true
+            },
+            id: {
+                type: 'string',
+                readOnly: true
+            },
+            status: {
+                type: 'boolean',
+                readOnly: true
+            }
+        },
+        required: [],
+        additionalProperties: false
+    }
+    const newSchema: any = {};
+    newSchema.category = SchemaCategory.STATISTIC;
+    newSchema.readonly = true;
+    newSchema.system = false;
+    newSchema.uuid = uuid
+    newSchema.status = SchemaStatus.PUBLISHED;
+    newSchema.document = document;
+    newSchema.context = generateSchemaContext(newSchema);
+    newSchema.iri = `${uuid}`;
+    newSchema.codeVersion = SchemaConverterUtils.VERSION;
+    newSchema.documentURL = `schema:${uuid}`;
+    newSchema.contextURL = `schema:${uuid}`;
+    newSchema.topicId = topicId;
+    newSchema.creator = owner.creator;
+    newSchema.owner = owner.owner;
+    const schemaObject = DatabaseServer.createSchema(newSchema);
+    SchemaHelper.setVersion(schemaObject, '1.0.0', null);
+    SchemaHelper.updateIRI(schemaObject);
+    return schemaObject;
 }

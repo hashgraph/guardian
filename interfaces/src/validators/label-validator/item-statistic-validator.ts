@@ -19,6 +19,7 @@ export class StatisticItemValidator {
     public readonly tag: string;
     public readonly steps: number = 3;
     public readonly schema: string;
+    public readonly isRoot: boolean = false;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;
@@ -297,6 +298,14 @@ export class StatisticItemValidator {
     }
 
     public setResult(document: any): void {
+        if (!document) {
+            this.valid = {
+                id: this.id,
+                valid: false,
+                error: 'Invalid document'
+            };
+            return;
+        }
         for (const field of this.variables) {
             field.setValue(document[field.id]);
         }
@@ -306,6 +315,10 @@ export class StatisticItemValidator {
         for (const formula of this.formulas) {
             formula.setValue(document[formula.id]);
         }
+        this.valid = {
+            id: this.id,
+            valid: true,
+        };
     }
 
     public clear(): void {

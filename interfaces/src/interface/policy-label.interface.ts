@@ -20,6 +20,7 @@ export interface IItemConfig {
     name?: string;
     description?: string;
     owner?: string;
+    schemaId?:string;
 }
 
 export interface IGroupItemConfig extends IItemConfig {
@@ -36,13 +37,11 @@ export interface ILabelItemConfig extends IItemConfig {
 
 export interface IRulesItemConfig extends IItemConfig {
     type: NavItemType.Rules;
-    schemaId?:string;
     config?: IStatisticConfig;
 }
 
 export interface IStatisticItemConfig extends IItemConfig {
     type: NavItemType.Statistic;
-    schemaId?:string;
     messageId?: string;
     config?: IStatisticConfig;
 }
@@ -73,6 +72,7 @@ export interface INavLabelImportConfig {
 export type INavImportsConfig = INavStatisticImportConfig | INavLabelImportConfig
 
 export interface IPolicyLabelConfig {
+    schemaId?:string;
     imports?: INavImportsConfig[];
     children?: INavItemConfig[];
 }

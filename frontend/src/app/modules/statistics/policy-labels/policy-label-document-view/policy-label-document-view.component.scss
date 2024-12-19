@@ -113,6 +113,24 @@
             margin-bottom: 4px;
         }
 
+        .node-status {
+            width: 8px;
+            height: 8px;
+            overflow: hidden;
+            border-radius: 50%;
+            background: #AAB7C4;
+            display: inline-block;
+            margin: 3px 12px 3px 0px;
+
+            &[status="true"] {
+                background: #19BE47;
+            }
+
+            &[status="false"] {
+                background: #FF432A;
+            }
+        }
+
         .node-body {
             padding-top: 12px;
             padding-bottom: 16px;

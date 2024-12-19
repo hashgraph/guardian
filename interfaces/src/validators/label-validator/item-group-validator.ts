@@ -17,6 +17,9 @@ export class GroupItemValidator {
     public readonly children: IValidator[];
     public readonly steps: number = 0;
     public readonly rule: GroupType;
+    public readonly schema: string;
+
+    public isRoot: boolean;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;
@@ -29,8 +32,10 @@ export class GroupItemValidator {
         this.name = item.name || '';
         this.title = item.title || '';
         this.tag = item.tag || '';
+        this.schema = item.schemaId || '';
         this.rule = item.rule || GroupType.Every;
         this.children = NodeItemValidator.fromArray(item.children);
+        this.isRoot = false;
     }
 
     public get status(): boolean | undefined {
@@ -106,8 +111,19 @@ export class GroupItemValidator {
         }
     }
 
-    public setResult(result: any): void {
-        return;
+    public setResult(document: any): void {
+        if (!document) {
+            this.valid = {
+                id: this.id,
+                valid: false,
+                error: 'Invalid document'
+            };
+            return;
+        }
+        this.valid = {
+            id: this.id,
+            valid: !!document.status
+        };
     }
 
     public clear(): void {
@@ -115,10 +131,15 @@ export class GroupItemValidator {
     }
 
     public getVC(): IStepDocument | null {
-        return null;
+        return {
+            id: this.id,
+            schema: this.schema,
+            document: this.getResult()
+        };
     }
 
     public setVC(vc: any): boolean {
-        return false;
+        this.setResult(vc);
+        return true;
     }
 }

@@ -153,6 +153,8 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
         this.steps = this.validator.getDocument();
         this.validator.setData(this.relationships);
         this.validator.setVp(this.document);
+        // this.steps.shift();
+        console.log( this.steps )
 
         //
         this.schemasMap = new Map<string, Schema>();

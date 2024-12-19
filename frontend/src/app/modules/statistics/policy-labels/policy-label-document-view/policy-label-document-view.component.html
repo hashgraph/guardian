@@ -130,6 +130,7 @@
 
                 <div class="node-container" *ngFor="let current of steps">
                     <div *ngIf="current.type === 'validate'" class="node-header">
+                        <span class="node-status" [attr.status]="current.item.status"></span>
                         <span *ngIf="current.prefix" class="node-prefix">{{current.prefix}}</span>
                         <span>{{current.title}}</span>
                     </div>

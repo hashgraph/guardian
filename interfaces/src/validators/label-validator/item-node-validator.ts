@@ -19,6 +19,7 @@ export class NodeItemValidator {
     public readonly title: string;
     public readonly tag: string;
     public readonly steps: number = 0;
+    public readonly isRoot: boolean = false;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;

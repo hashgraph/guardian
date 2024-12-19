@@ -15,6 +15,9 @@ export class LabelItemValidator {
     public readonly tag: string;
     public readonly steps: number = 0;
     public readonly root: GroupItemValidator;
+    public readonly schema: string;
+
+    public isRoot: boolean;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;
@@ -32,18 +35,22 @@ export class LabelItemValidator {
         this.name = item.name || '';
         this.title = item.title || '';
         this.tag = item.tag || '';
+        this.isRoot = false;
 
         const label: IPolicyLabelConfig = item.config || {};
         this.imports = label.imports || [];
         this.children = label.children || [];
+        this.schema = item.schemaId || label.schemaId || '';
 
         this.root = new GroupItemValidator({
             id: item.id,
             type: NavItemType.Group,
             name: item.name,
+            schemaId: this.schema,
             rule: GroupType.Every,
             children: this.children
         });
+        this.root.isRoot = true;
     }
 
     public get status(): boolean | undefined {
@@ -93,8 +100,17 @@ export class LabelItemValidator {
         }
     }
 
-    public setResult(result: any): void {
-        return;
+    public setResult(document: any): void {
+        if (!document) {
+            this.valid = {
+                id: this.id,
+                valid: false,
+                error: 'Invalid document'
+            };
+            return;
+        }
+        this.root.setResult(document);
+        this.valid = this.root.getStatus();
     }
 
     public clear(): void {
@@ -102,10 +118,15 @@ export class LabelItemValidator {
     }
 
     public getVC(): IStepDocument | null {
-        return null;
+        return {
+            id: this.id,
+            schema: this.schema,
+            document: this.getResult()
+        };
     }
 
     public setVC(vc: any): boolean {
-        return false;
+        this.setResult(vc);
+        return true;
     }
 }

@@ -112,23 +112,38 @@ export async function publishSchema(
 }
 
 /**
- * Publish system schemas
- * @param systemSchemas
+ * Publish schemas
+ * @param schemas
  * @param messageServer
- * @param user
+ * @param owner
  * @param notifier
  */
 export async function publishSchemas(
-    schemas: SchemaCollection[],
-    user: IOwner,
+    schemas: Iterable<SchemaCollection>,
+    owner: IOwner,
     messageServer: MessageServer,
     type: MessageAction
-): Promise<SchemaCollection[]> {
+): Promise<void> {
     const tasks = [];
     for (const schema of schemas) {
-        tasks.push(publishSchema(schema, user, messageServer, type));
+        tasks.push(publishSchema(schema, owner, messageServer, type));
     }
-    return await Promise.all(tasks);
+    await Promise.all(tasks);
+}
+
+/**
+ * Save schemas
+ * @param schemas
+ * @param messageServer
+ * @param owner
+ * @param notifier
+ */
+export async function saveSchemas(
+    schemas: Iterable<SchemaCollection>
+): Promise<void> {
+    for (const schema of schemas) {
+        await DatabaseServer.createAndSaveSchema(schema);
+    }
 }
 
 /**

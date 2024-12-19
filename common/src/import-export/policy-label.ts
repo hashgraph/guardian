@@ -99,6 +99,7 @@ export class PolicyLabelImportExport {
         const config: IPolicyLabelConfig = {
             imports: PolicyLabelImportExport.validateImports(data?.imports),
             children: PolicyLabelImportExport.validateChildren(data?.children),
+            schemaId: PolicyLabelImportExport.validateString(data?.schemaId),
         }
         return config;
     }
@@ -153,6 +154,7 @@ export class PolicyLabelImportExport {
                 title: PolicyLabelImportExport.validateString(data.title),
                 tag: PolicyLabelImportExport.validateTag(data.tag),
                 rule: PolicyLabelImportExport.validateString(data.rule) as any,
+                schemaId: PolicyLabelImportExport.validateString(data.schemaId),
                 children: PolicyLabelImportExport.validateChildren(data.children),
             };
             return child;
@@ -166,6 +168,7 @@ export class PolicyLabelImportExport {
                 tag: PolicyLabelImportExport.validateTag(data.tag),
                 description: PolicyLabelImportExport.validateString(data.description),
                 owner: PolicyLabelImportExport.validateString(data.owner),
+                schemaId: PolicyLabelImportExport.validateString(data.schemaId),
                 messageId: PolicyLabelImportExport.validateString(data.messageId),
                 config: PolicyLabelImportExport.validateConfig(data.config),
             };

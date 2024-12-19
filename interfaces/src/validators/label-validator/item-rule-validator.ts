@@ -21,6 +21,7 @@ export class RuleItemValidator {
     public readonly tag: string;
     public readonly steps: number = 3;
     public readonly schema: string;
+    public readonly isRoot: boolean = false;
 
     private namespace: ValidateNamespace;
     private scope: ValidateScore;
@@ -300,7 +301,9 @@ export class RuleItemValidator {
     }
 
     public getResult(): any {
-        const document: any = {};
+        const document: any = {
+            status: this.status
+        };
         for (const field of this.variables) {
             if (field.value !== undefined) {
                 document[field.id] = field.getValue();
@@ -316,6 +319,14 @@ export class RuleItemValidator {
     }
 
     public setResult(document: any): void {
+        if(!document) {
+            this.valid = {
+                id: this.id,
+                valid: false,
+                error: 'Invalid document'
+            };
+            return;
+        }
         for (const field of this.variables) {
             field.setValue(document[field.id]);
         }
@@ -325,6 +336,10 @@ export class RuleItemValidator {
         for (const formula of this.formulas) {
             formula.setValue(document[formula.id]);
         }
+        this.valid = {
+            id: this.id,
+            valid: !!document.status
+        };
     }
 
     public clear(): void {

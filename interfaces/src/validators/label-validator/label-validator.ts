@@ -31,6 +31,7 @@ export class LabelValidators {
             title: label.name,
             config
         });
+        this.root.isRoot = true;
         this.tree = this.createTree(this.root);
         this.steps = this.createSteps(this.root, []);
         this.list = this.createList(this.root, []);
@@ -96,6 +97,9 @@ export class LabelValidators {
     }
 
     private addDocument(node: IValidator, result: IValidatorStep[]): IValidatorStep[] {
+        if (node.isRoot) {
+            return result;
+        }
         const steps = node.getSteps();
         steps.unshift(steps.pop());
         for (const step of steps) {

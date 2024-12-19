@@ -59,9 +59,10 @@ export async function findRelationships(
 }
 
 export async function generateSchema(
-    topicId: string, 
-    config: IStatisticConfig, 
-    owner: IOwner
+    topicId: string,
+    config: IStatisticConfig,
+    owner: IOwner,
+    rules: boolean = false
 ) {
     const uuid = GenerateUUIDv4();
     const variables = config?.variables || [];
@@ -114,6 +115,12 @@ export async function generateSchema(
                 }
             }],
             readOnly: false
+        }
+    }
+    if (rules) {
+        properties.status = {
+            type: 'boolean',
+            readOnly: true
         }
     }
     const document: any = {

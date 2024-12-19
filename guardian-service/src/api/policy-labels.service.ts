@@ -1,8 +1,23 @@
 import { ApiResponse } from './helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, LabelDocumentMessage, LabelMessage, MessageAction, MessageError, MessageResponse, MessageServer, PinoLogger, PolicyImportExport, PolicyLabel, PolicyLabelImportExport, Users } from '@guardian/common';
+import {
+    BinaryMessageResponse,
+    DatabaseServer,
+    LabelDocumentMessage,
+    LabelMessage,
+    MessageAction,
+    MessageError,
+    MessageResponse,
+    MessageServer,
+    PinoLogger,
+    PolicyImportExport,
+    PolicyLabel,
+    PolicyLabelImportExport,
+    Users,
+    Schema as SchemaCollection,
+} from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
-import { publishSchema } from './helpers/index.js';
+import { publishSchemas, saveSchemas } from './helpers/index.js';
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -155,9 +170,12 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     .concat(schemas, toolSchemas)
                     .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
 
+                const documentsSchemas = await DatabaseServer.getSchemas({ topicId: item.topicId });
+
                 return new MessageResponse({
                     policy,
                     policySchemas: all,
+                    documentsSchemas
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -265,13 +283,13 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 messageServer.setTopicObject(topic);
 
                 const schemas = await generateSchema(topic.topicId, item.config, owner);
-                const tasks = [];
+                const schemaList = new Set<SchemaCollection>();
                 for (const { schema } of schemas) {
-                    tasks.push(publishSchema(schema, owner, messageServer, MessageAction.PublishSchema));
+                    schemaList.add(schema);
                 }
-                await Promise.all(tasks);
+                await publishSchemas(schemaList, owner, messageServer, MessageAction.PublishSchema);
+                await saveSchemas(schemaList);
                 for (const { node, schema } of schemas) {
-                    await DatabaseServer.createAndSaveSchema(schema);
                     node.schemaId = schema.iri;
                 }
 
@@ -614,7 +632,6 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const status = validator.validate();
 
                 if (!status.valid) {
-                    console.log(JSON.stringify(status, null, 4))
                     return new MessageError('Invalid item.');
                 }
 
