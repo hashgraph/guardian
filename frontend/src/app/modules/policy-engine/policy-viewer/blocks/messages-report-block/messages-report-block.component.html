@@ -770,7 +770,7 @@
                             <div class="field-name">User ID:</div>
                             <div class="field-value">{{selected.documents[0].credentialSubject[0].user}}</div>
                         </div>
-                        <div class="field" *ngIf="selected.owner">
+                        <div class="field" *ngIf="selected.consensusTimestamp">
                             <div class="field-name">Transaction:</div>
                             <div class="field-value">{{selected.consensusTimestamp}}</div>
                         </div>
@@ -810,7 +810,7 @@
                             <div class="field-name">Owner:</div>
                             <div class="field-value">
                                 <hedera-explorer type="accounts"
-                                    [params]="selected.payer">{{selected.owner}}</hedera-explorer>
+                                    [params]="selected.owner">{{selected.owner}}</hedera-explorer>
                             </div>
                         </div>
                     </ng-container>

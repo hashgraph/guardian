@@ -414,16 +414,22 @@
                                                 </div>
                                                 <div class="retire-multiple-tokens">
                                                     <div class="retire-info">
+                                                        <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].tokenId }}</span></p>
                                                         <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.length > 0">Instance ID <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.join(', ') }}</span></p>
                                                         <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.length <= 0">Amount <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].count }}</span></p>
-                                                        <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].tokenId }}</span></p>
-                                                        <p>Transaction <span>{{ getRetirementGroupVC(group).timestamp || '-'}}</span></p>
+                                                        
+                                                        <p *ngIf="getRetirementGroupVC(group).timestamp">Transaction
+                                                            <hedera-explorer type="topics" [params]="getRetirementGroupVC(group).topicId" subType="messages"
+                                                            [subParams]="getRetirementGroupVC(group).sequenceNumber">{{getRetirementGroupVC(group).timestamp}}</hedera-explorer>
+                                                        </p>
+                                                        <p *ngIf="!getRetirementGroupVC(group).timestamp">Transaction <span>-</span></p>
+                                                        
                                                         <p>User ID <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.user }}</span></p>
                                                     </div>
                                                     <div class="retire-info second-token">
+                                                        <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].tokenId }}</span></p>
                                                         <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].serials.length > 0">Instance ID <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].serials.join(', ') }}</span></p>
                                                         <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].serials.length <= 0">Amount <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].count }}</span></p>
-                                                        <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[1].tokenId }}</span></p>
                                                     </div>
                                                 </div>
                 
@@ -456,9 +462,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="retire-info">
+                                                    <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].tokenId }}</span></p>
                                                     <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.length > 0">Instance ID <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.join(', ') }}</span></p>
                                                     <p *ngIf="getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials && getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].serials.length <= 0">Amount <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].count }}</span></p>
-                                                    <p>Token <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.tokens[0].tokenId }}</span></p>
                                                     <p>Transaction <span>{{ getRetirementGroupVC(group).timestamp }}</span></p>
                                                     <p>User ID <span>{{ getRetirementGroupVC(group).credentialSubject[0]?.user }}</span></p>
                                                 </div>

@@ -153,12 +153,16 @@ export class ReportBlockComponent implements OnInit {
                                     retirements.forEach((item: IRetirementMessage) => {
                                         const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
                                         if (!existInGuardianDocument) {
+                                            item.documents[0].topicId = item.topicId;
                                             item.documents[0].timestamp = item.consensusTimestamp;
+                                            item.documents[0].sequenceNumber = item.sequenceNumber;
                                             item.documents[0].owner = item.owner;
                                             combinedRetirements.push(item.documents[0]);
                                         }
                                         else {
+                                            existInGuardianDocument.topicId = item.topicId;
                                             existInGuardianDocument.timestamp = item.consensusTimestamp;
+                                            existInGuardianDocument.sequenceNumber = item.sequenceNumber;
                                             existInGuardianDocument.owner = item.owner;
                                         }
                                     });

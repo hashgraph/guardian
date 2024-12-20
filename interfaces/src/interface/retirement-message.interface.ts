@@ -66,4 +66,8 @@ export class IRetirementMessage {
      * Tokens
      */
     tokens: string[];
+    /**
+     * Sequence number
+     */
+    sequenceNumber: string;
 }
