@@ -29,7 +29,7 @@ export class RequestDocumentBlockDialog {
     public get presetReadonlyFields() { return this.parent?.presetReadonlyFields; }
     public get policyId() { return this.parent?.policyId; }
     public get disabled() { return this.parent?.disabled; }
-    public get docRef() { return this.parent?.ref; }
+    public get docRef() { return this.parent?.getRef(); }
 
     public buttons: any = [];
     public rules: DocumentValidators;
