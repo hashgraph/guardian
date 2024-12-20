@@ -13397,8 +13397,8 @@ paths:
   /policy-labels/components:
     post:
       operationId: PolicyLabelsApi_searchComponents
-      summary: .
-      description: .
+      summary: Search labels ans statistics.
+      description: Return a list of other labels ans statistics.
       parameters: []
       requestBody:
         required: true
@@ -13406,10 +13406,10 @@ paths:
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/PolicyLabelFiltersDTO'
       responses:
         '200':
-          description: .
+          description: A list of labels ans statistics.
         '401':
           description: Unauthorized.
         '403':
@@ -17230,13 +17230,99 @@ components:
         - name
     PolicyLabelRelationshipsDTO:
       type: object
-      properties: {}
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        policySchemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        documentsSchemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    PolicyLabelFiltersDTO:
+      type: object
+      properties:
+        text:
+          type: string
+          example: Name
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        components:
+          type: string
+          description: Component type
+          enum:
+            - all
+            - label
+            - statistic
+          example: all
+    PolicyLabelComponentsDTO:
+      type: object
+      properties:
+        statistics:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticDefinitionDTO'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyLabelDTO'
     PolicyLabelDocumentDTO:
       type: object
-      properties: {}
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        definitionId:
+          type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        target:
+          type: string
+          example: '0000000000.000000001'
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+        document:
+          type: object
+          nullable: true
     PolicyLabelDocumentRelationshipsDTO:
       type: object
-      properties: {}
+      properties:
+        target:
+          $ref: '#/components/schemas/VpDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
     WorkersTasksDTO:
       type: object
       properties:
