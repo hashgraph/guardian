@@ -9,20 +9,11 @@
     </div>
 
     <div class="header-container">
-        <div class="guardian-user-back-button">
-            <button 
-                (click)="onBack()" 
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/left-arrow.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Back to Policies</div>
-            </button>
+        <div class="guardian-user-page-path">
+            <span class="path-link" (click)="onBack()">Statistics</span>
+            <span>></span>
+            <span class="path-link">{{item?.name || 'Statistic'}}</span>
         </div>
-    
         <div class="guardian-user-page-header">
             <span>{{item?.name}}</span>
             <div *ngIf="policy" class="policy-name">
@@ -31,33 +22,89 @@
             </div>
         </div>
     </div>
-    <div class="step-container">
+
+    <div class="guardian-menu-container">
+        <div class="guardian-menu-separator"></div>
+
+        <div class="guardian-menu-button" (click)="onBack()">
+            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/back.svg"></svg-icon>
+            <div class="guardian-menu-name">Back</div>
+        </div>
+
+        <div class="guardian-menu-separator"></div>
+
+        <div class="guardian-menu-button" (click)="onSave()" [attr.disabled]="readonly">
+            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/save.svg"></svg-icon>
+            <div class="guardian-menu-name">Save</div>
+        </div>
+
+        <div class="guardian-menu-separator"></div>
+
+        <div class="guardian-menu-button" (click)="onPreview()">
+            <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/preview.svg"></svg-icon>
+            <div class="guardian-menu-name">Preview</div>
+        </div>
+
+        <div class="guardian-menu-separator"></div>
+
+        <ng-container *ngIf="readonly">
+            <div class="guardian-menu-label success-color">
+                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/publish.svg"></svg-icon>
+                <div class="guardian-menu-name">Published</div>
+            </div>
+            <div class="guardian-menu-separator"></div>
+        </ng-container>
+        <ng-container *ngIf="!readonly"> 
+            <div 
+                class="guardian-menu-button guardian-menu-select" 
+                (click)="statusMenu.toggle($event)"
+                [attr.open]="statusMenu.visible">
+                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/edit.svg"></svg-icon>
+                <div class="guardian-menu-name">Draft</div>
+                <div class="guardian-menu-select-icon"></div>
+            </div>
+            <p-tieredMenu 
+                #statusMenu 
+                [model]="statusMenuItems" 
+                [popup]="true"
+                appendTo="body"
+                styleClass="guardian-menu-popup">
+                <ng-template pTemplate="item" let-item>
+                    <div class="guardian-menu-button success-color" (click)="item.callback($event)">
+                        <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/{{item.icon}}.svg"></svg-icon>
+                        <div class="guardian-menu-name">{{item.label}}</div>
+                    </div>
+                </ng-template>
+            </p-tieredMenu>
+            <div class="guardian-menu-separator guardian-menu-separator-last"></div>
+        </ng-container>
+    </div>
+
+    <div class="tab-container">
         <div class="guardian-step-container">
             <div class="guardian-stepper horizontal-stepper">
-                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                <div class="guardian-step" [attr.action]="isActionStep(0)"
+                    (click)="onStep(0)">
                     <div class="guardian-step-icon">
-                        <svg-icon
-                            class="icon-btn svg-icon-16"
+                        <svg-icon class="icon-btn svg-icon-16"
                             src="/assets/images/icons/16/file-fill.svg">
                         </svg-icon>
                     </div>
                     <div class="guardian-step-name">Overview</div>
                 </div>
-                <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                <div class="guardian-step" [attr.action]="isActionStep(1)"
+                    (click)="onStep(1)">
                     <div class="guardian-step-icon">
-                        <svg-icon
-                            class="icon-btn svg-icon-16"
+                        <svg-icon class="icon-btn svg-icon-16" 
                             src="/assets/images/icons/16/tree.svg">
                         </svg-icon>
                     </div>
                     <div class="guardian-step-name">Select Schemas</div>
                 </div>
-                <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                <div class="guardian-step" [attr.action]="isActionStep(2)"
+                    (click)="onStep(2)">
                     <div class="guardian-step-icon">
-                        <svg-icon
-                            class="icon-btn svg-icon-16"
+                        <svg-icon class="icon-btn svg-icon-16" 
                             src="/assets/images/icons/16/table.svg">
                         </svg-icon>
                     </div>
@@ -66,6 +113,7 @@
             </div>
         </div>
     </div>
+
     <div class="body-container">
         <div *ngIf="stepper[0]" class="overview-viewer">
             <form [formGroup]="overviewForm">
@@ -684,10 +732,5 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div *ngIf="!readonly" class="actions-container">
-        <button *ngIf="stepper[2]" (click)="onPreview()" class="guardian-button guardian-button-secondary">Preview</button>
-        <button (click)="onSave()" class="guardian-button guardian-button-primary">Apply Changes</button>
     </div>
 </div>

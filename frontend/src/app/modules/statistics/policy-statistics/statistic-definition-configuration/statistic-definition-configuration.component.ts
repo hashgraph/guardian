@@ -72,6 +72,14 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         policy: new FormControl<string>('', Validators.required),
     });
 
+    public readonly statusMenuItems = [{
+        label: 'Publish',
+        icon: 'publish',
+        callback: ($event: any) => {
+            this.publish();
+        }
+    }]
+
     public schemaFilterType: number = 1;
 
     // public methods: any[] = [{
@@ -642,5 +650,59 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
             }
         });
         dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    private publish() {
+        const rules = this.item?.config?.rules || [];
+        const main = rules.find((r) => r.type === 'main');
+        if (!main) {
+            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Publish Statistic',
+                    text: 'Statistics cannot be published. Please select main schema.',
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result) => { });
+        } else {
+            const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+                showHeader: false,
+                width: '640px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    header: 'Publish Statistic',
+                    text: `Are you sure want to publish statistic (${this.item?.name})?`,
+                    buttons: [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Publish',
+                        class: 'primary'
+                    }]
+                },
+            });
+            dialogRef.onClose.subscribe((result: string) => {
+                if (result === 'Publish') {
+                    this.loading = true;
+                    this.policyStatisticsService
+                        .publishDefinition(this.item)
+                        .subscribe((response) => {
+                            this.loadData();
+                        }, (e) => {
+                            this.loading = false;
+                        });
+                }
+            });
+        }
+    }
+
+    public isActionStep(index: number): boolean {
+        return this.stepper[index];
     }
 }

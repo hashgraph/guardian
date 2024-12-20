@@ -122,8 +122,9 @@
                 color: #848FA9;
             }
 
-            &:hover {
-                background: #f0f3fc;
+            &:hover,
+            &[action="true"]:hover {
+                background: #f8f9fb !important;
             }
 
             &[action="true"] {

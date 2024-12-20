@@ -4,14 +4,46 @@
     user-select: none;
 
     .header-container {
-        padding: 56px 48px 10px 48px;
+        padding: 0px 48px 0px 48px;
         background: var(--guardian-primary-color, #4169E2);
-        min-height: 178px;
-        height: 178px;
+        min-height: 132px;
+        height: 132px;
 
-        .guardian-user-back-button {
-            button {
-                border-color: var(--guardian-background, #FFFFFF);
+        .guardian-user-page-header {
+            font-size: 32px;
+            font-weight: 600;
+            height: 40px;
+            padding: 0;
+            position: relative;
+            color: var(--guardian-header-color, #000);
+            margin-bottom: 32px;
+
+            span {
+                line-height: 40px;
+            }
+        }
+
+        .guardian-user-page-path {
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 12px;
+            text-align: left;
+            color: var(--guardian-background, #FFFFFF);
+            margin-top: 36px;
+            margin-bottom: 8px;
+            height: 16px;
+
+            span {
+                padding-right: 8px;
+            }
+
+            .path-link {
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
 
@@ -19,18 +51,53 @@
             color: var(--guardian-background, #FFFFFF);
         }
 
-
         .policy-name {
             color: var(--guardian-background, #FFFFFF);
             font-size: 14px;
             font-weight: 500;
             line-height: 16px;
             position: absolute;
-            top: 34px;
+            top: 12px;
             right: 0;
 
             .policy-version {
                 padding-left: 16px;
+            }
+        }
+    }
+
+    .tab-container {
+        height: 40px;
+        min-height: 40px;
+        width: 100%;
+        background: #E1E7EF;
+        border-bottom: 1px solid #C4D0E1;
+        padding: 0px 12px;
+
+        .guardian-step {
+            margin-right: 8px;
+            margin-bottom: 0px;
+            background: #EFF3F7;
+            border: 1px solid #C4D0E1;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom-width: 0;
+
+            .guardian-step-name {
+                color: #848FA9;
+            }
+
+            &:hover,
+            &[action="true"]:hover {
+                background: #f8f9fb !important;
+            }
+
+            &[action="true"] {
+                background: #fff !important;
+
+                .guardian-step-name {
+                    color: var(--guardian-primary-color, #4169E2) !important;
+                }
             }
         }
     }
