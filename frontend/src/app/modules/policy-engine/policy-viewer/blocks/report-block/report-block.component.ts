@@ -296,16 +296,10 @@ export class ReportBlockComponent implements OnInit {
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
 
-
-
-        // Testing
         this.mintTokenId = report.mintDocument?.tokenId || '';
-        this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
+        this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial);
         this.vpDocument = report.vpDocument;
         this.loadRetireData();
-        // ...
-
-
 
         const mainDocument = this.createAdditionalDocument(report);
         if (mainDocument) {

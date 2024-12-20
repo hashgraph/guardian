@@ -424,53 +424,46 @@ export class MessagesReportBlockComponent implements OnInit {
                                 //     return ret
                                 // });
 
-                                const allRetireMessages: any = [];
-                                retires.forEach((retirements: IRetirementMessage[]) => {
-                                    retirements.forEach((item: IRetirementMessage) => {
+                                // this.groupedByContractRetirements = Array.from(
+                                //     new Map(allRetireMessages
+                                //         .map((item: any) => [item.documents[0].credentialSubject[0].contractId, []])
+                                //     )).map(([contractId, documents]) => ({
+                                //         contractId,
+                                //         selectedItemIndex: 0,
+                                //         __ifRetireMessage: true,
+                                //         documents: allRetireMessages.filter((item: any) => item.documents[0].credentialSubject[0].contractId === contractId)
+                                //     }))
+
+                                let allRetireMessages: any = [];
+                                retires.forEach((retirements: any[]) => {
+                                    retirements.forEach((item: any) => {
                                         if (item.documents[0].credentialSubject[0].tokens.some((token: any) => token.tokenId === this.mintTokenId)) {
-                                            item.id == item.consensusTimestamp;
+                                            item.id = item.consensusTimestamp;
+                                            item.__ifRetireMessage = true;
+                                            item.__timestamp = this.datePipe.transform(new Date(item.documents[0].issuanceDate), 'yyyy-MM-dd, hh:mm:ss');
                                             allRetireMessages.push(item);
                                         }
                                     });
                                 });
-
-                                this.groupedByContractRetirements = Array.from(
-                                    new Map(allRetireMessages
-                                        .map((item: any) => [item.documents[0].credentialSubject[0].contractId, []])
-                                    )).map(([contractId, documents]) => ({
-                                        contractId,
-                                        selectedItemIndex: 0,
-                                        __ifRetireMessage: true,
-                                        documents: allRetireMessages.filter((item: any) => item.documents[0].credentialSubject[0].contractId === contractId)
-                                    }))
-
+                                
+                                allRetireMessages.sort((a: any, b: any) => new Date(a.documents[0].issuanceDate).getTime() - new Date(b.documents[0].issuanceDate).getTime());
+                                
+                                // For different topics different ordering
                                 let lastOrderMessageTopic1 = this._topics1?.[this._topics1.length - 1]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
                                 allRetireMessages.forEach((element: any) => {
                                     var newElement = {...element, __order: lastOrderMessageTopic1}
-                                    newElement.__ifRetireMessage = true;
-                                    newElement.__timestamp = this.datePipe.transform(new Date(newElement.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
-
                                     this._messages1.push(newElement);
                                     this._topics1[this._topics1.length - 1].messages.push(newElement);
 
                                     lastOrderMessageTopic1++;
                                 });
-
-
                                 let lastOrderMessageTopic2 = this._topics2?.[0]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
                                 allRetireMessages.forEach((element: any) => {
                                     var newElement = {...element, __order: lastOrderMessageTopic2}
-                                    newElement.__ifRetireMessage = true;
-                                    newElement.__timestamp = this.datePipe.transform(new Date(newElement.documents[0].issuanceDate), 'yyyy-MM-dd, mm:hh:ss');
-
                                     this._messages2.push(newElement);
                                     this._topics2[0].messages.push(newElement);
-
                                     lastOrderMessageTopic2++;
                                 });
-
-                                console.log(this._topics1);
-                                console.log(this._topics2);
 
                                 this.retirementMessages = [...allRetireMessages];
 
@@ -508,8 +501,6 @@ export class MessagesReportBlockComponent implements OnInit {
         this._messages2.forEach(message => {
             if (message.__ifMintMessage) {
                 this.mintTokenId = message.__tokenId;
-
-                // this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial); // Fix
             }
         });
 
