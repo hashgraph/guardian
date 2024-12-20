@@ -163,7 +163,7 @@ export class RequestVcDocumentBlockAddon {
         await parent.onAddonEvent(
             user,
             ref.tag,
-            _data.ref.id,
+            _data.ref,
             async (documentRef: any) => {
                 if (!user.did) {
                     throw new BlockActionError(

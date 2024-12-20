@@ -263,6 +263,10 @@ export class RequestDocumentBlockComponent
         this.changeDetectorRef.detectChanges();
     }
 
+    public getRef() {
+        return this.ref;
+    }
+
     public onDialog() {
         if (this.needPreset && this.rowDocument) {
             this.preset(this.rowDocument);
