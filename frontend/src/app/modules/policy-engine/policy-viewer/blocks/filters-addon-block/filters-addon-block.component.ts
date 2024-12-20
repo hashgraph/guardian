@@ -92,7 +92,6 @@ export class FiltersAddonBlockComponent implements OnInit {
             this.target = data.targetBlock;
             this.content = data.uiMetaData.content;
             this.filters = data.filters;
-            this.currentValue = data.filterValue;
 
             if (this.type == 'unelected') {
             }
@@ -113,6 +112,8 @@ export class FiltersAddonBlockComponent implements OnInit {
                     }
                 }
             }
+            this.currentValue = this.options.find((option: {value: string, name: string}) =>
+                option.value === data.filterValue)
         } else {
             this.data = null;
         }
@@ -121,7 +122,7 @@ export class FiltersAddonBlockComponent implements OnInit {
     onFilters() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, { filterValue: this.currentValue })
+            .setBlockData(this.id, this.policyId, { filterValue: this.currentValue.value })
             .subscribe(() => {
                 this.loading = false;
             }, (e) => {

@@ -30,7 +30,7 @@ export class WipeRequestsDialogComponent implements OnInit {
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {
-        this.contract = this.config.data.contract;
+        this.contract = this.config.data ?? {};
 
         this.contractId = this.contract.contractId;
         this.version = this.contract.version;

@@ -26,17 +26,28 @@
 .content {
     box-shadow: 0px 3px 6px #00000020;
     background: #e5e5e5;
-    display: inline-block;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-content: center;
     margin: 7px;
-    padding: 10px 10px 6px 10px;
+    padding: 6px 10px 6px 10px;
+    height: 48px;
+    width: 270px
 }
 
 .content-name {
-    display: inline-block;
+    display: grid;
     margin-right: 10px;
+    align-content: center;
 }
 
 .content-select {
-    display: inline-block;
+    display: grid;
     width: 190px;
+    align-content: center;
+
+    ::ng-deep .p-dropdown {
+        height: 36px;
+        width: 190px;
+    }
 }
