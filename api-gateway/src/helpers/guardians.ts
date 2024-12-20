@@ -43,7 +43,11 @@ import {
     SchemaRuleRelationshipsDTO,
     SchemaRuleDataDTO,
     PolicyLabelDTO,
-    PolicyLabelDocumentDTO
+    PolicyLabelDocumentDTO,
+    PolicyLabelRelationshipsDTO,
+    PolicyLabelDocumentRelationshipsDTO,
+    PolicyLabelComponentsDTO,
+    PolicyLabelFiltersDTO
 } from '#middlewares';
 
 /**
@@ -3200,28 +3204,6 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Create policy label
      *
@@ -3264,7 +3246,7 @@ export class Guardians extends NatsService {
      *
      * @returns Relationships
      */
-    public async getPolicyLabelRelationships(definitionId: string, owner: IOwner): Promise<SchemaRuleRelationshipsDTO> {
+    public async getPolicyLabelRelationships(definitionId: string, owner: IOwner): Promise<PolicyLabelRelationshipsDTO> {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_RELATIONSHIPS, { definitionId, owner });
     }
 
@@ -3333,16 +3315,19 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async previewPolicyLabel(zip: any, owner: IOwner) {
+    public async previewPolicyLabel(zip: any, owner: IOwner):Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.PREVIEW_POLICY_LABEL_FILE, { zip, owner });
     }
 
     /**
-     * 
+     * Search labels and statistics
      * @param options
      * @param owner
      */
-    public async searchComponents(options: any, owner: IOwner) {
+    public async searchComponents(
+        options: PolicyLabelFiltersDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelComponentsDTO> {
         return await this.sendMessage(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS, { options, owner });
     }
 
@@ -3413,7 +3398,7 @@ export class Guardians extends NatsService {
         filters: IFilter,
         owner: IOwner
     ): Promise<ResponseAndCount<PolicyLabelDocumentDTO>> {
-        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENTS, 
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENTS,
             { definitionId, filters, owner }
         );
     }
@@ -3432,7 +3417,7 @@ export class Guardians extends NatsService {
         documentId: string,
         owner: IOwner
     ): Promise<PolicyLabelDocumentDTO> {
-        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT, 
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT,
             { definitionId, documentId, owner }
         );
     }
@@ -3450,7 +3435,7 @@ export class Guardians extends NatsService {
         definitionId: string,
         documentId: string,
         owner: IOwner
-    ): Promise<StatisticAssessmentRelationshipsDTO> {
+    ): Promise<PolicyLabelDocumentRelationshipsDTO> {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT_RELATIONSHIPS,
             { definitionId, documentId, owner }
         );

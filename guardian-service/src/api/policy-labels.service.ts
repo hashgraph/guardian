@@ -412,16 +412,21 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
     /**
      * Get components
      *
-     * @param {any} msg - zip file
+     * @param {any} msg - filters
      *
-     * @returns {any} Preview
+     * @returns {any} components
      */
     ApiResponse(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS,
-        async (msg: { options: any, owner: IOwner }) => {
+        async (msg: {
+            options: {
+                text?: string,
+                owner?: string,
+                components?: string,
+            }, owner: IOwner
+        }) => {
             try {
                 const { options } = msg;
 
@@ -468,7 +473,6 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
-
     /**
      * Get documents
      *
@@ -511,7 +515,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 const policyId: string = item.policyId;
 
                 const vps = await DatabaseServer.getVPs({
-                    type: "mint",
+                    type: 'mint',
                     policyId,
                     owner: owner.creator,
                 }, otherOptions);
@@ -525,7 +529,6 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
-
 
     /**
      * Get documents
@@ -555,7 +558,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 const vp = await DatabaseServer.getVP({
                     id: documentId,
-                    type: "mint",
+                    type: 'mint',
                     policyId,
                     owner: owner.creator,
                 });
@@ -612,7 +615,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
 
                 const vp = await DatabaseServer.getVP({
                     id: data.target,
-                    type: "mint",
+                    type: 'mint',
                     policyId: item.policyId,
                     owner: owner.creator,
                 });

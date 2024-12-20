@@ -3985,23 +3985,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(SchemaRule).remove(rule);
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     /**
      * Create Policy Label
      * @param label

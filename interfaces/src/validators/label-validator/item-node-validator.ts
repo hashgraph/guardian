@@ -65,7 +65,7 @@ export class NodeItemValidator {
             validate: this.validate.bind(this)
         }];
     }
-    
+
     public getStatus(): IValidateStatus | undefined {
         return this.valid;
     }

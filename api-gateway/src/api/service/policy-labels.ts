@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO } from '#middlewares';
+import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -447,7 +447,7 @@ export class PolicyLabelsApi {
     async previewPolicyLabel(
         @AuthUser() user: IAuthUser,
         @Body() body: any
-    ): Promise<any> {
+    ): Promise<PolicyLabelDTO> {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
@@ -458,30 +458,32 @@ export class PolicyLabelsApi {
     }
 
     /**
-     * Preview policy label
+     * Search other labels ans statistics
      */
     @Post('/components')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
     @ApiOperation({
-        summary: '.',
-        description: '.',
+        summary: 'Search labels ans statistics.',
+        description: 'Return a list of other labels ans statistics.',
     })
     @ApiBody({
         description: 'Filters.',
+        required: true,
+        type: PolicyLabelFiltersDTO
     })
     @ApiOkResponse({
-        description: '.',
+        description: 'A list of labels ans statistics.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
+    @ApiExtraModels(PolicyLabelFiltersDTO, PolicyLabelComponentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async searchComponents(
         @AuthUser() user: IAuthUser,
-        @Body() body: any
-    ): Promise<any> {
+        @Body() body: PolicyLabelFiltersDTO
+    ): Promise<PolicyLabelComponentsDTO> {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();

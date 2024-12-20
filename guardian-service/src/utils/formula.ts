@@ -9,6 +9,7 @@ export function initMathjs() {
         const customFunctions: ImportObject = {};
         for (const [name, f] of Object.entries(formulajs)) {
             if (typeof f === 'function' && !exclude.has(name)) {
+                // tslint:disable-next-line:only-arrow-functions
                 customFunctions[name] = function (...args: any) {
                     return (f as any).apply(null, args);
                 }
@@ -16,6 +17,7 @@ export function initMathjs() {
         }
         mathjs.import(customFunctions);
         mathjs.import({
+            // tslint:disable-next-line:only-arrow-functions object-literal-shorthand triple-equals
             equal: function (a: any, b: any) { return a == b }
         }, { override: true })
         return mathjs;

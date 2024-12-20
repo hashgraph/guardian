@@ -16,8 +16,6 @@ import {
     INavItemConfig,
     IOwner,
     IPolicyLabelConfig,
-    IRulesItemConfig,
-    IStatisticItemConfig,
     IStepDocument,
     NavItemType,
     PolicyType,
