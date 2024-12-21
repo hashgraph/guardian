@@ -229,13 +229,11 @@ export class ReportBlockComponent implements OnInit {
 
     onNextRetirementClick(event: any, group: any) {
         event.stopPropagation();
-
         group.selectedItemIndex = group.documents.length > (group.selectedItemIndex + 1) ? group.selectedItemIndex + 1 : 0;
     }
 
     onPrevRetirementClick(event: any, group: any) {
         event.stopPropagation();
-
         group.selectedItemIndex = (group.selectedItemIndex - 1) >= 0 ? (group.selectedItemIndex - 1) : (group.documents.length - 1);
     }
 
