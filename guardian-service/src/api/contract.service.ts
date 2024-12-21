@@ -3411,109 +3411,25 @@ export async function contractAPI(
 
     ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
         owner: IOwner,
-        contractTopicId: string,
-        pageIndex?: any,
-        pageSize?: any
+        contractTopicId: string
     }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid get contract parameters');
             }
 
-            const { owner, contractTopicId, pageIndex, pageSize } = msg;
+            const { owner, contractTopicId } = msg;
 
             if (!owner.creator) {
                 throw new Error('Owner is required');
             }
 
-            const otherOptions: any = {};
-            const _pageSize = parseInt(pageSize, 10);
-            const _pageIndex = parseInt(pageIndex, 10);
-            if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = Math.min(100, _pageSize);
-                otherOptions.offset = _pageIndex * _pageSize;
-            } else {
-                otherOptions.orderBy = { createDate: 'DESC' };
-                otherOptions.limit = 100;
-            }
-
-            const users = new Users();
-            const user = await users.getUserById(owner.creator);
-
-            const filters: any = {
-                owner: owner.owner,
-                type: SchemaEntity.RETIRE_TOKEN,
-            };
-            if (user.role === UserRole.USER) {
-                filters['document.credentialSubject.user'] =
-                    user.hederaAccountId;
-            }
-
-            // Get Retirements from Indexer
             const messages = await new Workers().addNonRetryableTask({
                 type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
                 data: {
                     payload: { options: { topicId: contractTopicId } }
                 }
             }, 2);
-            
-            // Save to Guardian DB
-                // const filtersOld: any = {
-                //     owner: owner.owner,
-                //     type: SchemaEntity.RETIRE_TOKEN,
-                // };
-                // if (user.role === UserRole.USER) {
-                //     filters['document.credentialSubject.user'] =
-                //         user.hederaAccountId;
-                // }
-
-                // const oldRetirements = await dataBaseServer.findAndCount(VcDocument, filtersOld) // find old Retirement VCs
-                // console.log(JSON.stringify(oldRetirements, null, 4));
-
-                // retirements.forEach(retirement => {
-                //     oldRetirements.forEach(oldRetirement => {
-                        
-                //     });
-
-                //     console.log(retirement);
-                    
-                // });
-
-                // const vcMessage = new VCMessage(MessageAction.CreateVC);
-                // console.log(vcMessage.hash);
-                
-                // vcMessage.setDocument(vcObject);
-                
-                // await dataBaseServer.save(VcDocumentCollection, {
-                //     hash: vcMessage.hash,
-                //     owner: owner.creator,
-                //     document: vcMessage.document,
-                //     type: schemaObject?.entity,
-                //     documentFields: ['credentialSubject.0.user'],
-                // });
-
-                // await saveRetireVC(
-                //     // contractRepository,
-                //     dataBaseServer,
-                //     pool.contractId,
-                //     srUser,
-                //     sr.hederaAccountId,
-                //     srKey,
-                //     root.hederaAccountId,
-                //     tokens.map((token) => {
-                //         const newToken: any = {
-                //             ...token,
-                //         };
-                //         const poolToken = pool.tokens.find(
-                //             // tslint:disable-next-line:no-shadowed-variable
-                //             (poolToken) => (poolToken.token = token.token)
-                //         );
-                //         newToken.decimals = poolToken.decimals;
-                //         return newToken;
-                //     })
-                // );
-            // ...
 
             return new MessageResponse([messages, messages.length]);
         } catch (error) {

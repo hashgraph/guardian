@@ -1740,19 +1740,6 @@ export class ContractsApi {
         required: true,
         example: '0.0.0000000',
     })
-    @ApiQuery({
-        name: 'pageIndex',
-        type: Number,
-        description: 'The number of pages to skip before starting to collect the result set',
-        required: false,
-        example: 0,
-    })
-    @ApiQuery({
-        name: 'pageSize',
-        type: Number,
-        description: 'The numbers of items to return',
-        example: 20,
-    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
@@ -1774,13 +1761,11 @@ export class ContractsApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('contractTopicId') contractTopicId: string,
-        @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number,
     ): Promise<any[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
-            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, contractTopicId, pageIndex, pageSize);
+            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, contractTopicId);
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
             await InternalException(error, this.logger);

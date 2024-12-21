@@ -264,6 +264,14 @@ export class MessagesReportBlockComponent implements OnInit {
     );
     private lines!: Line[] | null;
 
+    gridSize: number = 0;
+
+    mintTokenId: string;
+    mintTokenSerials: string[] = [];
+    groupedByContractRetirements: any = [];
+    indexerAvailable: boolean = false;
+    retirementMessages: any[] = [];
+
     constructor(
         private element: ElementRef,
         private fb: UntypedFormBuilder,
@@ -374,16 +382,13 @@ export class MessagesReportBlockComponent implements OnInit {
         }, 100);
     }
 
-
-    gridSize: number = 0;
-
-    mintTokenId: string;
-    mintTokenSerials: string[] = [];
-    groupedByContractRetirements: any = [];
-    indexerAvailable: boolean = false;
-    retirementMessages: any[] = [];
-
     private loadRetirementMessages() {
+        this._messages2.forEach(message => {
+            if (message.__ifMintMessage) {
+                this.mintTokenId = message.__tokenId;
+            }
+        });
+        
         this.contractService
             .getContracts({
                 type: ContractType.RETIRE
@@ -414,25 +419,6 @@ export class MessagesReportBlockComponent implements OnInit {
                             forkJoin(indexerCalls).subscribe((results: any) => {
                                 this.loading = false;
                                 const retires = results.map((item: any) => item.body)
-
-                                // const tokenRetires = retires.map((retirements: IRetirementMessage[]) => {
-                                //     const ret = retirements.filter((item: IRetirementMessage) => item.documents[0].credentialSubject.some((subject: any) =>
-                                //         subject.tokens.some((token: any) =>
-                                //             token.tokenId === this.mintTokenId
-                                //             && token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                //             ))));
-                                //     return ret
-                                // });
-
-                                // this.groupedByContractRetirements = Array.from(
-                                //     new Map(allRetireMessages
-                                //         .map((item: any) => [item.documents[0].credentialSubject[0].contractId, []])
-                                //     )).map(([contractId, documents]) => ({
-                                //         contractId,
-                                //         selectedItemIndex: 0,
-                                //         __ifRetireMessage: true,
-                                //         documents: allRetireMessages.filter((item: any) => item.documents[0].credentialSubject[0].contractId === contractId)
-                                //     }))
 
                                 let allRetireMessages: any = [];
                                 retires.forEach((retirements: any[]) => {
@@ -465,6 +451,7 @@ export class MessagesReportBlockComponent implements OnInit {
                                     lastOrderMessageTopic2++;
                                 });
 
+                                // Todo: Need filtration by serials and token user
                                 this.retirementMessages = [...allRetireMessages];
 
                                 this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', 230px)';
@@ -497,12 +484,6 @@ export class MessagesReportBlockComponent implements OnInit {
                 this._messages2.push(message);
             }
         }
-
-        this._messages2.forEach(message => {
-            if (message.__ifMintMessage) {
-                this.mintTokenId = message.__tokenId;
-            }
-        });
 
         this.gridSize = 0;
         this._messages2.sort((a, b) => a.__order > b.__order ? 1 : -1);
@@ -925,7 +906,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     row: null,
-                    document: message.document || message.documents[0],
+                    document: message.document || message.documents?.[0],
                     title: 'VC Document',
                     type: 'VC',
                     viewDocument: true,

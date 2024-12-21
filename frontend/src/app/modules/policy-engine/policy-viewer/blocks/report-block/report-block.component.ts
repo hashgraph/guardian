@@ -61,6 +61,12 @@ export class ReportBlockComponent implements OnInit {
         value: ['', Validators.required],
     });
 
+    vpDocument: any;
+    mintTokenId: string;
+    mintTokenSerials: string[] = [];
+    groupedByContractRetirements: any = [];
+    indexerAvailable: boolean = false;
+
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
@@ -103,13 +109,7 @@ export class ReportBlockComponent implements OnInit {
         }
     }
 
-    // Testing
-    vpDocument: any;
-    mintTokenId: string;
-    mintTokenSerials: string[] = [];
-    groupedByContractRetirements: any = [];
-    indexerAvailable: boolean = false;
-    private loadRetireData() {
+    loadRetireData() {
         this.loading = true;
 
         this.contractService
@@ -179,7 +179,7 @@ export class ReportBlockComponent implements OnInit {
                                 this.groupedByContractRetirements = Array.from(
                                     new Map(tokenRetirementDocuments
                                         .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                    )).map(([contractId, documents]) => ({
+                                    )).map(([contractId]) => ({
                                         contractId,
                                         selectedItemIndex: 0,
                                         documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
@@ -202,7 +202,7 @@ export class ReportBlockComponent implements OnInit {
                                         this.groupedByContractRetirements = Array.from(
                                             new Map(tokenRetirementDocuments
                                                 .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                            )).map(([contractId, documents]) => ({
+                                            )).map(([contractId]) => ({
                                                 contractId,
                                                 selectedItemIndex: 0,
                                                 documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
@@ -223,7 +223,7 @@ export class ReportBlockComponent implements OnInit {
             );
     }
 
-    getRetirementGroupVC(group: any): any {
+    getSelectedRetirementVC(group: any): any {
         return group.documents[group.selectedItemIndex];
     }
 
@@ -238,8 +238,6 @@ export class ReportBlockComponent implements OnInit {
 
         group.selectedItemIndex = (group.selectedItemIndex - 1) >= 0 ? (group.selectedItemIndex - 1) : (group.documents.length - 1);
     }
-
-    // ...
 
     loadData() {
         this.loading = true;

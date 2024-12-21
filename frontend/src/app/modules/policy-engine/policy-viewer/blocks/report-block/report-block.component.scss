@@ -784,10 +784,6 @@ h3 {
     column-gap: 16px
 }
 
-
-
-
-
 .item-type-RETIRE {
     .chain-top-block {
         padding-bottom: 14px;
@@ -806,31 +802,6 @@ h3 {
         height: 182px;
     }
 }
-
-.retirement-container {
-    padding: 24px;
-    border-radius: 8px;
-    border: 1px solid var(--grey-grey-3, #E1E7EF);
-    background: var(--grey-white, #FFF);
-}
-
-.retirement-items-wrapper {
-    display: flex;
-    gap: 16px;
-}
-
-.retirement-item {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    column-gap: 8px;
-    max-width: 320px;
-    margin-top: 16px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid var(--grey-grey-3, #E1E7EF);
-    background: var(--grey-white, #FFF);
-}
-
 
 .retirements-container {
     position: relative;
