@@ -176,7 +176,8 @@
     border-radius: 4px;
 }
 
-.synchronization-update mat-icon {
+.synchronization-update i,
+.synchronization-update svg {
     position: absolute;
     pointer-events: none;
     font-size: 22px;

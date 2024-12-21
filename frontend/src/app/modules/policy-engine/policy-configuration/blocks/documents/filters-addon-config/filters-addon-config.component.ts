@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceSelector' type.
@@ -30,6 +30,24 @@ export class FiltersAddonConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public typeOptions = [
+        { label: 'Dropdown', value: 'dropdown' },
+        { label: 'Datepicker', value: 'datepicker' },
+        { label: 'Input', value: 'input' }
+    ];
+
+    public queryTypeOptions = [
+        { label: 'Equal', value: 'equal' },
+        { label: 'Not Equal', value: 'not_equal' },
+        { label: 'In', value: 'in' },
+        { label: 'Not In', value: 'not_in' },
+        { label: 'Greater Than', value: 'gt' },
+        { label: 'Greater Than or Equal', value: 'gte' },
+        { label: 'Less Than', value: 'lt' },
+        { label: 'Less Than or Equal', value: 'lte' },
+        { label: 'User Defined', value: 'user_defined' }
+    ];
 
     constructor() {
     }

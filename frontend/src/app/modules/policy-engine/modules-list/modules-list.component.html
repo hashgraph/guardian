@@ -24,25 +24,26 @@
         </span>
         <div class="module-actions-buttons-container">
             <p-button
-                    *ngIf="user.MODULES_MODULE_CREATE"
-                    (click)="newModules()"
-                    class="toolbar-btn">
-                <mat-icon class="toolbar-icons">add</mat-icon>
+                *ngIf="user.MODULES_MODULE_CREATE"
+                (click)="newModules()"
+                class="toolbar-btn">
+                <i class="pi pi-plus toolbar-icons"></i>
                 <span>Create a Module</span>
             </p-button>
             <p-button
-                    *ngIf="user.MODULES_MODULE_CREATE"
-                    (click)="importModules()"
-                    class="toolbar-btn">
-                <mat-icon class="toolbar-icons">file_open</mat-icon>
+                *ngIf="user.MODULES_MODULE_CREATE"
+                (click)="importModules()"
+                class="toolbar-btn">
+                <i class="pi pi-file-import toolbar-icons"></i>
                 <span>Import</span>
             </p-button>
             <p-button
-                    *ngIf="user.ANALYTIC_MODULE_READ"
-                    (click)="compareModules()"
-                    class="toolbar-btn compare-button"
-                    [outlined]=true>
-                <mat-icon class="toolbar-icons">compare</mat-icon>
+                *ngIf="user.ANALYTIC_MODULE_READ"
+                (click)="compareModules()"
+                class="toolbar-btn compare-button"
+                [outlined]=true>
+                <svg-icon src="/assets/images/icons/compare.svg" svgClass="icon-style-compare toolbar-icons"
+                          class="icon-style-compare toolbar-icons"></svg-icon>
                 <span>Compare</span>
             </p-button>
         </div>
@@ -67,14 +68,14 @@
                         <td>{{ module.description }}</td>
                         <td>
                             <tags-explorer
-                                    *ngIf="user.TAGS_TAG_READ"
-                                    [user]="user"
-                                    [data]="module._tags"
-                                    [entity]="tagEntity"
-                                    [owner]="owner"
-                                    [schemas]="tagSchemas"
-                                    [service]="tagsService"
-                                    [target]="module.id"></tags-explorer>
+                                *ngIf="user.TAGS_TAG_READ"
+                                [user]="user"
+                                [data]="module._tags"
+                                [entity]="tagEntity"
+                                [owner]="owner"
+                                [schemas]="tagSchemas"
+                                [service]="tagsService"
+                                [target]="module.id"></tags-explorer>
                         </td>
                         <td>
                             <div *ngIf="module.status === 'DRAFT'" class="p-tag p-tag-grey">Draft</div>
@@ -83,11 +84,12 @@
                         <td>
                             <div class="flex flex-sb-c">
                                 <button
-                                        *ngIf="user.MODULES_MODULE_REVIEW"
-                                        (click)="publishModule(module)"
-                                        [disabled]="module.status === 'PUBLISHED'"
-                                        class="button height-28"
-                                        pButton>Publish</button>
+                                    *ngIf="user.MODULES_MODULE_REVIEW"
+                                    (click)="publishModule(module)"
+                                    [disabled]="module.status === 'PUBLISHED'"
+                                    class="button height-28"
+                                    pButton>Publish
+                                </button>
                                 <div class="flex flex-column-gap-20">
                                     <svg-icon
                                         *ngIf="user.MODULES_MODULE_READ"
@@ -99,8 +101,8 @@
                                         [queryParams]="{ moduleId: module.uuid }"
                                         [routerLink]="['/module-configuration']">
                                         <svg-icon class="opacity-icon"
-                                            src="/assets/images/icons/edit.svg"
-                                            svgClass="primary-color"></svg-icon>
+                                                  src="/assets/images/icons/edit.svg"
+                                                  svgClass="primary-color"></svg-icon>
                                     </div>
                                     <svg-icon
                                         *ngIf="user.MODULES_MODULE_DELETE"
@@ -155,123 +157,3 @@
                 type="button"></button>
     </ng-template>
 </p-dialog>
-<!--<div class="content">
-    <div *ngIf="loading && !taskId" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
-    </div>
-
-    &lt;!&ndash; <div *ngIf="loading && taskId" class="loading">
-        <async-progress class="loading-progress" [taskId]="taskId" [expected]="expectedTaskMessages"
-            (error)="onAsyncError($event)" (completed)="onAsyncCompleted()"></async-progress>
-    </div> &ndash;&gt;
-
-    <ng-container *ngIf="!isConfirmed">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
-    </ng-container>
-
-    <ng-container *ngIf="isConfirmed && modules">
-        <div class="actions-container">
-            <button mat-raised-button color="primary" (click)="newModules()" class="toolbar-btn add">
-                <mat-icon>add</mat-icon>
-                <span>Create New</span>
-            </button>
-            <button mat-raised-button color="primary" (click)="importModules()" class="toolbar-btn">
-                <mat-icon>file_open</mat-icon>
-                <span>Import</span>
-            </button>
-            <button (click)="compareModules()" class="toolbar-btn" color="primary" mat-raised-button>
-                <mat-icon>compare</mat-icon>
-                <span>Compare</span>
-            </button>
-        </div>
-        <div class="table-container">
-            <table mat-table [dataSource]="modules" class="table">
-                <ng-container matColumnDef="uuid">
-                    <th mat-header-cell *matHeaderCellDef> UUID</th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.uuid }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Name</th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.name }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Description</th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.description }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Status</th>
-                    <td mat-cell *matCellDef="let element">
-                        <span [ngSwitch]="element.status">
-                            <div *ngSwitchCase="'DRAFT'">
-                                <span class="module-status status-DRAFT">Draft</span>
-                            </div>
-                            <div *ngSwitchCase="'PUBLISHED'">
-                                <span class="module-status status-PUBLISHED">Published</span>
-                            </div>
-                            <div *ngSwitchDefault>
-                                <span class="module-status">{{element.status}}</span>
-                            </div>
-                        </span>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="tags">
-                    <th mat-header-cell *matHeaderCellDef> Tags</th>
-                    <td mat-cell *matCellDef="let element">
-                        <tags-explorer [data]="element._tags" [owner]="owner" [target]="element.id"
-                                       [schemas]="tagSchemas" [entity]="tagEntity"
-                                       [service]="tagsService"></tags-explorer>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="operation">
-                    <th mat-header-cell *matHeaderCellDef> Operations</th>
-                    <td mat-cell *matCellDef="let element">
-                        <div *ngIf="element.status =='DRAFT'" class="btn-publish" (click)="publishModule(element)">
-                            Publish
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="operations">
-                    <th mat-header-cell *matHeaderCellDef></th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="commands-line">
-                            <div class="btn-icon-import" (click)="exportModules(element)" matTooltip="Export"
-                                 matTooltipClass="guardian-tooltip" matTooltipPosition="above">
-                                <mat-icon>import_export</mat-icon>
-                            </div>
-                            <div [queryParams]="{ moduleId: element.uuid }"
-                                 [routerLink]="['/policy-configuration']"
-                                 class="btn-icon-edit" matTooltip="Edit" matTooltipClass="guardian-tooltip"
-                                 matTooltipPosition="above">
-                                <mat-icon>edit</mat-icon>
-                            </div>
-                            <div *ngIf="element.status =='DRAFT'" class="btn-icon-delete"
-                                 (click)="deleteModule(element)" matTooltip="Delete" matTooltipClass="guardian-tooltip"
-                                 matTooltipPosition="above">
-                                <mat-icon>delete</mat-icon>
-                            </div>
-                            <div *ngIf="element.status !='DRAFT'" class="btn-icon-delete-des">
-                                <mat-icon>delete</mat-icon>
-                            </div>
-                        </div>
-                    </td>
-                </ng-container>
-
-                <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-            </table>
-        </div>
-        <div class="table-paginator">
-            <mat-paginator [length]="modulesCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                           [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-            </mat-paginator>
-        </div>
-    </ng-container>
-</div>-->

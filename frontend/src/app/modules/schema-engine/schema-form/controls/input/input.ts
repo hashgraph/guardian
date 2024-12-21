@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, Input, NgZone, OnChanges, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Subject, Subscription } from 'rxjs';
 
 @Component({

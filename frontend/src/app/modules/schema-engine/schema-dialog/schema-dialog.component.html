@@ -1,18 +1,5 @@
 <div class="dialog-body">
     <div class="g-dialog-header">
-        <!--        <div class="restore-data">-->
-        <!--            <button-->
-        <!--                class="restore-data-button"-->
-        <!--                *ngIf="restoreData && restoreData.id == scheme?.id"-->
-        <!--                mat-raised-button-->
-        <!--                aria-label="Restore Values"-->
-        <!--                type="button"-->
-        <!--                (click)="onRestoreClick()"-->
-        <!--            >-->
-        <!--                Restore Values<mat-icon>restore</mat-icon>-->
-        <!--            </button>-->
-        <!--        </div>-->
-
         <p-tabView>
             <p-tabPanel *ngFor="let tab of items; let i = index">
                 <ng-template pTemplate="header">

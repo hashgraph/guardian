@@ -131,7 +131,8 @@
 
 }
 
-.export-btn mat-icon {
+.export-btn i,
+.export-btn svg {
     position: absolute;
     left: 10px;
     top: 8px;
@@ -156,7 +157,8 @@
     pointer-events: none;
 }
 
-.merge-back>div mat-icon {
+.merge-back>div i,
+.merge-back>div svg{
     color: #707070;
     position: absolute;
     top: 3px;
@@ -240,4 +242,19 @@
     .content-result {
         min-width: 0px;
     }
+}
+
+.p-fluid {
+    position: relative;
+    padding: 8px 0
+}
+
+.dropdown-border-label {
+    background: var(--color-grey-white);
+    position: absolute;
+    z-index: 10;
+    font-size: 11px;
+    top: 3px;
+    left: 18px;
+    color: var(--color-grey-5);
 }

@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceContainerBlock' and 'interfaceStepBlock' types.
@@ -23,6 +23,11 @@ export class ContainerConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    public uiMetaDataTypeOptions = [
+        {label: 'BLANK', value: 'blank'},
+        {label: 'TABS', value: 'tabs'}
+    ];
 
     constructor() {
     }

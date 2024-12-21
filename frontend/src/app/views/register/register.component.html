@@ -1,71 +1,77 @@
 <div class="content login">
     <div class="overlay"></div>
-    <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()" *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
+    <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()"
+          *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
         <div class="login-header">
             <button class="login-header__back-button" (click)="setRole('')">
-                <mat-icon>chevron_left</mat-icon>
+                <i class="pi pi-chevron-left"></i>
                 <span>Back</span>
             </button>
             <span class="login-header__title">Create Account</span>
         </div>
 
         <div class="login-content">
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>Username:</mat-label>
-                <input matInput formControlName="login" (input)="onInput()">
+            <div class="form-group example-full-width">
+                <label for="usernameInput" class="form-label">Username:</label>
+                <input
+                    pInputText
+                    id="usernameInput"
+                    formControlName="login"
+                    (input)="onInput()"
+                    class="full-width">
 
-                <span *ngIf="error" class="field-error">{{error}}</span>
-                <span *ngIf="shouldShowRequiredError('login')" class="field-error">
-                    Value is required
-                </span>
-            </mat-form-field>
+                <small *ngIf="error" class="p-error">{{ error }}</small>
+                <small *ngIf="shouldShowRequiredError('login')" class="p-error">Value is required</small>
+            </div>
 
             <div class="password-control">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Password:</mat-label>
-                    <input matInput formControlName="password" [type]="passFieldType">
+                <div class="form-group example-full-width">
+                    <label for="passwordInput" class="form-label">Password:</label>
+                    <input
+                        pInputText
+                        id="passwordInput"
+                        formControlName="password"
+                        [type]="passFieldType"
+                        class="full-width">
 
-                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">
+                    <small *ngIf="shouldShowRequiredError('password')" class="p-error">
                         Value is required
-                    </span>
-                </mat-form-field>
-
-                <mat-icon
+                    </small>
+                </div>
+                <i
                     *ngIf="showPasswordValue; else hidePassBtn"
-                    class="eye-icon"
+                    class="pi pi-eye eye-icon"
                     (click)="togglePasswordShow()"
-                >
-                    visibility_on
-                </mat-icon>
-
+                ></i>
                 <ng-template #hidePassBtn>
-                    <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>
+                    <i class="pi pi-eye-slash eye-icon" (click)="togglePasswordShow()"></i>
                 </ng-template>
             </div>
 
             <div class="password-control">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Confirm Password:</mat-label>
-                    <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">
+                <div class="form-group example-full-width">
+                    <label for="confirmPasswordInput" class="form-label">Confirm Password:</label>
+                    <input
+                        pInputText
+                        id="confirmPasswordInput"
+                        formControlName="confirmPassword"
+                        [type]="confirmPassFieldType"
+                        class="full-width">
 
-                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">
+                    <small *ngIf="shouldShowRequiredError('confirmPassword')" class="p-error">
                         Value is required
-                    </span>
-                    <span *ngIf="showPassMismatchError" class="field-error">
+                    </small>
+                    <small *ngIf="showPassMismatchError" class="p-error">
                         The entered passwords do not match
-                    </span>
-                </mat-form-field>
-
-                <mat-icon
+                    </small>
+                </div>
+                <i
                     *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"
-                    class="eye-icon"
+                    class="pi pi-eye eye-icon"
                     (click)="toggleConfirmPasswordShow()"
-                >
-                    visibility_on
-                </mat-icon>
-
+                ></i>
                 <ng-template #hideConfirmPassBtn>
-                    <mat-icon class="eye-icon" (click)="toggleConfirmPasswordShow()">visibility_off</mat-icon>
+                    <i class="pi pi-eye-slash eye-icon" (click)="toggleConfirmPasswordShow()"></i>
                 </ng-template>
             </div>
         </div>
@@ -90,7 +96,7 @@
             </button>
 
             <button mat-icon-button class="close-button" type="button" (click)="goBack()">
-                <mat-icon>clear</mat-icon>
+                <i class="pi pi-times"></i>
             </button>
         </div>
     </ng-template>

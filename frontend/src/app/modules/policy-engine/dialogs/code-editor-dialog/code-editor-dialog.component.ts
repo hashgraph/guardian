@@ -1,5 +1,5 @@
-import { AfterContentInit, Component, Inject, OnInit } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {AfterContentInit, Component, Inject, OnInit} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Export schema dialog.
@@ -31,10 +31,13 @@ export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
 
     initDialog = false;
 
+    data: any
+
     constructor(
-        public dialogRef: MatDialogRef<CodeEditorDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
+        this.data = this.config.data
     }
 
     ngOnInit() {

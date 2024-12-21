@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation, } from '@angular/core';
-import { RegisteredService } from '../../services/registered.service';
-import { PolicyBlock, RoleVariables, SchemaVariables, } from '../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation,} from '@angular/core';
+import {RegisteredService} from '../../services/registered.service';
+import {PolicyBlock, RoleVariables, SchemaVariables,} from '../../structures';
 
 /**
  * common property
@@ -178,5 +178,12 @@ export class CommonPropertyComponent implements OnInit {
                 ...Object.values(this.data)
             )
         );
+    }
+
+    getSelectedItemsDisplay(selectedItems: any[]): string {
+        if (!selectedItems || selectedItems.length === 0) {
+            return 'No blocks selected';
+        }
+        return selectedItems.map(selected => selected.name).join(', ');
     }
 }

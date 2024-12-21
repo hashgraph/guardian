@@ -15,7 +15,7 @@
 
         color: rgb(71, 71, 71);
 
-        mat-icon {
+        i, svg {
             color: #3f51b5;
         }
 
@@ -27,7 +27,7 @@
             font-weight: bold;
             height: 50px;
 
-            mat-icon {
+            i, svg {
                 font-size: 30px;
                 width: 30px;
                 height: 30px;
@@ -35,7 +35,7 @@
         }
 
         &__count {
-            mat-icon {
+            i, svg {
                 transform: translateX(-2px);
             }
         }
@@ -56,7 +56,7 @@
         color: var(--primary-color);
         cursor: pointer;
 
-        mat-icon {
+        i, svg {
             font-size: 50px;
             height: 50px;
             width: 50px;
@@ -89,4 +89,23 @@
         width: 2px;
         background-color: gray;
     }
+}
+
+.dropdown-container ::ng-deep p-overlay {
+    position: absolute;
+    top: -40px;
+    left: 100px;
+}
+
+::ng-deep p-dropdown .p-placeholder {
+    font-size: 14px;
+}
+
+.content__tokens.tokens .token-card svg {
+    width: 24px;
+}
+
+.content__tokens.tokens .token-card__token,
+.content__tokens.tokens .token-card__count{
+    gap: 0;
 }

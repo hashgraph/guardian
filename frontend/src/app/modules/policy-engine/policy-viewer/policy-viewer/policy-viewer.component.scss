@@ -56,7 +56,8 @@ a.go-back-link {
     text-overflow: ellipsis;
 }
 
-a.go-back-link mat-icon {
+a.go-back-link i,
+a.go-back-link svg {
     color: #707070;
     position: absolute;
     top: 12px;
@@ -241,8 +242,10 @@ a.go-back-link mat-icon {
     color: #fff;
 }
 
-.content[status="DEMO"] .go-back-link mat-icon,
-.content[status="DRY-RUN"] .go-back-link mat-icon {
+.content[status="DEMO"] .go-back-link i,
+.content[status="DRY-RUN"] .go-back-link i,
+.content[status="DEMO"] .go-back-link svg,
+.content[status="DRY-RUN"] .go-back-link svg {
     color: #fff;
 }
 
@@ -302,6 +305,10 @@ a.go-back-link mat-icon {
     background: rgb(252 252 252);
     border: 1px solid rgb(220 220 220);
     box-sizing: border-box;
+
+    .icon-style-restart_alt {
+        fill: #3f51b5;
+    }
 }
 
 .dry-run-group-btn span,
@@ -356,11 +363,12 @@ a.go-back-link mat-icon {
     border-left: 1px solid rgb(220 220 220);
 }
 
-.dry-run-group-btn .expand-group mat-icon {
+.dry-run-group-btn .expand-group i,
+.dry-run-group-btn .expand-group svg {
     position: absolute;
-    top: 2px;
-    font-size: 27px;
-    left: -5px;
+    top: 9px;
+    font-size: 14px;
+    left: 2px;
 }
 
 .record-btn {
@@ -479,7 +487,8 @@ a.go-back-link mat-icon {
     text-decoration: underline;
 }
 
-.btn-settings mat-icon {
+.btn-settings i,
+.btn-settings svg {
     position: absolute;
     left: 0px;
     top: 2px;

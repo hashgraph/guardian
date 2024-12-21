@@ -1,16 +1,19 @@
-import { Component, OnInit } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { IUser } from '@guardian/interfaces';
-import { ProfileService } from 'src/app/services/profile.service';
-import { TokenService } from 'src/app/services/token.service';
-import { ContractService } from 'src/app/services/contract.service';
-import { TagsService } from 'src/app/services/tag.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import {Component, OnInit} from '@angular/core';
+import {IUser} from '@guardian/interfaces';
+import {ProfileService} from 'src/app/services/profile.service';
+import {TokenService} from 'src/app/services/token.service';
+import {ContractService} from 'src/app/services/contract.service';
+import {TagsService} from 'src/app/services/tag.service';
+import {ActivatedRoute, Router} from '@angular/router';
 
-import { UserRetireRequestsDialogComponent } from '../../dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { UserRetirePoolsDialogComponent } from '../../dialogs/user-retire-pools-dialog/user-retire-pools-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
+import {
+    UserRetireRequestsDialogComponent
+} from '../../dialogs/user-retire-requests-dialog/user-retire-requests-dialog.component';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {
+    UserRetirePoolsDialogComponent
+} from '../../dialogs/user-retire-pools-dialog/user-retire-pools-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Component for operating with Contracts
@@ -40,7 +43,7 @@ export class UserContractConfigComponent implements OnInit {
         private profileService: ProfileService,
         private contractService: ContractService,
         private tokenService: TokenService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -74,6 +77,7 @@ export class UserContractConfigComponent implements OnInit {
                 }
             );
     }
+
     ngOnInit() {
         this.loadContracts();
     }
@@ -120,11 +124,11 @@ export class UserContractConfigComponent implements OnInit {
     openRetirePoolsDialog() {
         const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }
@@ -145,9 +149,9 @@ export class UserContractConfigComponent implements OnInit {
     openRetireRequestsDialog() {
         this.dialog.open(UserRetireRequestsDialogComponent, {
             width: '800px',
-            panelClass: 'g-dialog',
-            disableClose: true,
-            autoFocus: false,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
     }
 
@@ -167,6 +171,7 @@ export class UserContractConfigComponent implements OnInit {
                 type: 'VC',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 }

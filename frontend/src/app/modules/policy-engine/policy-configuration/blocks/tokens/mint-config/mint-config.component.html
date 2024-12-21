@@ -2,7 +2,7 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
         <td class="propHeaderCell"></td>
@@ -12,29 +12,35 @@
         <td class="propRowCell cellName">Use Template</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" (change)="onUseTemplateChange()"
-                [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
+                   [(ngModel)]="properties.useTemplate" [readonly]="readonly" (blur)="onSave()">
         </td>
     </tr>
     <tr *ngIf="!properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.tokenId" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let token of tokens" [value]="token.value">
-                    {{token.name}}
-                </mat-option>
-            </mat-select>
+            <p-dropdown [(ngModel)]="properties.tokenId"
+                        [options]="tokens"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select Token"
+                        optionLabel="name"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
     <tr *ngIf="properties.useTemplate" class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">
-                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">
-                    {{token.name}}
-                </mat-option>
-            </mat-select>
+            <p-dropdown [(ngModel)]="properties.template"
+                        [options]="tokenTemplate"
+                        [disabled]="readonly"
+                        (onChange)="onSave()"
+                        placeholder="Select Template"
+                        optionLabel="name"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -48,12 +54,14 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.accountType" [disabled]="readonly"
-                (selectionChange)="changeAccountType()">
-                <mat-option value="default">Default</mat-option>
-                <mat-option value="custom">Custom Account Field</mat-option>
-                <mat-option value="custom-value">Custom Account Value</mat-option>
-            </mat-select>
+            <p-dropdown [(ngModel)]="properties.accountType"
+                        [options]="accountTypeOptions"
+                        [disabled]="readonly"
+                        (onChange)="changeAccountType()"
+                        placeholder="Select Account Type"
+                        optionLabel="label"
+                        optionValue="value">
+            </p-dropdown>
         </td>
     </tr>
     <tr *ngIf="properties.accountType==='custom'" class="propRow" [attr.collapse]="propHidden.main">
@@ -76,7 +84,7 @@
         <td class="propRowCell">
             <span class="mint-memo-prefix" matTooltip="VP message identifier">**********.*********</span>
             <input class="prop-input" class="mint-memo-input" [(ngModel)]="properties.memo" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
 </table>

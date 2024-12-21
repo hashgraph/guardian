@@ -4,22 +4,27 @@
     </h1>
     <div mat-dialog-content>
         <form>
-            <mat-form-field class="example-full-width" appearance="outline">
-                <mat-label>Policy Identifier</mat-label>
-                <mat-select [formControl]="policyId">
-                    <ng-container *ngFor="let policy of policies">
-                        <mat-option value="{{policy.id}}">{{policy.name}}</mat-option>
-                    </ng-container>
-                </mat-select>
-            </mat-form-field>
-            <app-file-drag-n-drop fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
-                dropZoneLabel="Import Artifacts"></app-file-drag-n-drop>
+
+            <div class="p-fluid">
+                <label for="policyDropdown">Policy Identifier</label>
+                <p-dropdown
+                    id="policyDropdown"
+                    [formControl]="policyId"
+                    [options]="getPolicyOptions()"
+                    optionLabel="label"
+                    placeholder="Select a Policy">
+                </p-dropdown>
+            </div>
+            <app-file-drag-n-drop
+                fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
+                dropZoneLabel="Import Artifacts"></app-file-drag-n-drop
+            >
             <div mat-dialog-actions>
                 <div class="cancel-button">
                     <p-button
-                            (click)="onNoClick()"
-                            label="Cancel"
-                            [outlined]=true
+                        (click)="onNoClick()"
+                        label="Cancel"
+                        [outlined]=true
                     ></p-button>
                 </div>
             </div>

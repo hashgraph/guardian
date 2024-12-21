@@ -55,7 +55,8 @@
     cursor: pointer;
 }
 
-.remove-prop mat-icon {
+.remove-prop i,
+.remove-prop svg {
     font-size: 30px;
 }
 

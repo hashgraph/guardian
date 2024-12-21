@@ -105,7 +105,9 @@ export class ActionBlockComponent implements OnInit {
             if (this.type == 'dropdown') {
                 this.field = data.field;
                 this.options = data.options || [];
-                this.currentValue = this.getObjectValue(this.data, this.field);
+                const currentValue = this.getObjectValue(this.data, this.field);
+                this.currentValue = this.options.find((option: {name: string, value: string}) =>
+                    option.value === currentValue);
             }
         } else {
             this.data = null;
@@ -200,14 +202,15 @@ export class ActionBlockComponent implements OnInit {
     }
 
     onDropdown() {
-        if (this.getObjectValue(this.data, this.field) == this.currentValue) {
+        if (this.getObjectValue(this.data, this.field) == this.currentValue.value) {
             return;
         }
-        this.setObjectValue(this.data, this.field, this.currentValue);
+
+        this.setObjectValue(this.data, this.field, this.currentValue.value);
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, this.data)
             .subscribe(() => {
-
             }, (e) => {
                 console.error(e.error);
                 this.loading = false;

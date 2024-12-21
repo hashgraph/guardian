@@ -1,6 +1,6 @@
 <div class="content">
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <p-progressSpinner></p-progressSpinner>
     </div>
 
     <ng-container *ngIf="!isConfirmed">
@@ -13,52 +13,59 @@
         <div class="actions">
             <div style="text-align: end">
                 <button mat-raised-button color="primary" class="toolbar-btn add" (click)="openRetirePoolsDialog()">
-                    <mat-icon>visibility</mat-icon>
+                    <i class="pi pi-eye"></i>
                     <span>Retire</span>
                 </button>
                 <button (click)="openRetireRequestsDialog()" class="toolbar-btn" color="primary"
                         mat-raised-button>
-                    <mat-icon>visibility</mat-icon>
+                    <i class="pi pi-eye"></i>
                     <span>Requests</span>
                 </button>
             </div>
         </div>
         <div class="table-container">
             <ng-container>
-                <table mat-table [dataSource]="contractRequests" class="retire-table">
-                    <ng-container matColumnDef="contractId">
-                        <th mat-header-cell *matHeaderCellDef> Contract Id </th>
-                        <td mat-cell *matCellDef="let element">
-                            <hedera-explorer type="accounts"
-                                [params]="element.document.credentialSubject[0].contractId">{{element.document.credentialSubject[0].contractId}}</hedera-explorer>
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="date">
-                        <th mat-header-cell *matHeaderCellDef> Date </th>
-                        <td mat-cell *matCellDef="let element">
-                            {{ getDate(element.document.issuanceDate)}}
-                        </td>
-                    </ng-container>
-                    <ng-container matColumnDef="operation">
-                        <th mat-header-cell *matHeaderCellDef> Operations </th>
-                        <td mat-cell *matCellDef="let element">
-                            <div class="view-action-btn"
-                                (click)="viewRetireRequest(element)">
-                                <span>View Details</span>
-                                <mat-icon>visibility</mat-icon>
-                            </div>
-                        </td>
-                    </ng-container>
-                    <tr mat-header-row *matHeaderRowDef="displayedColumnsContractRequests"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumnsContractRequests;"></tr>
-                </table>
+                <p-table [value]="contractRequests" class="retire-table">
+                    <ng-template pTemplate="header">
+                        <tr class="header">
+                            <th class="mat-header-cell">Contract Id</th>
+                            <th class="mat-header-cell">Date</th>
+                            <th class="mat-header-cell">Operations</th>
+                        </tr>
+                    </ng-template>
+
+                    <ng-template pTemplate="body" let-element>
+                        <tr class="body">
+                            <td class="mat-cell">
+                                <hedera-explorer type="accounts"
+                                                 [params]="element.document.credentialSubject[0].contractId">
+                                    {{ element.document.credentialSubject[0].contractId }}
+                                </hedera-explorer>
+                            </td>
+
+                            <td class="mat-cell">
+                                {{ getDate(element.document.issuanceDate) }}
+                            </td>
+
+                            <td class="mat-cell">
+                                <div class="view-action-btn" (click)="viewRetireRequest(element)">
+                                    <span>View Details</span>
+                                    <i class="pi pi-eye"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
 
             </ng-container>
         </div>
         <div class="table-paginator">
-            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-            </mat-paginator>
+            <app-paginator
+                [length]="contractsCount"
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                (page)="onPage($event)">
+            </app-paginator>
         </div>
     </ng-container>
 </div>

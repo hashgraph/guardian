@@ -20,7 +20,8 @@
     color: #6166ff;
 }
 
-.mat-option-link mat-icon {
+.mat-option-link i,
+.mat-option-link svg,{
     margin-right: 2px;
     top: -2px;
     left: -4px;
@@ -44,7 +45,8 @@
     top: 4px;
 }
 
-.prop-input-event mat-icon {
+.prop-input-event i,
+.prop-input-event svg {
     position: relative !important;
     font-size: 20px !important;
     height: 20px;
@@ -65,7 +67,8 @@
     top: 4px;
 }
 
-.prop-output-icon mat-icon {
+.prop-output-icon i,
+.prop-output-icon svg {
     position: relative !important;
     font-size: 20px !important;
     height: 20px;

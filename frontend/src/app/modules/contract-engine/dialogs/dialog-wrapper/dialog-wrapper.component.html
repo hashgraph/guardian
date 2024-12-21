@@ -2,20 +2,20 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="cancel.emit()">
-                <mat-icon>close</mat-icon>
+                <i class="pi pi-times"></i>
             </div>
         </div>
         <div class="g-dialog-title">
-            {{title}}
+            {{ title }}
         </div>
         <div class="g-dialog-actions">
             <div class="sync" *ngIf="syncVisible">
-                <span class="sync__date">Last sync: {{(syncDate ? (syncDate | date:'medium') : 'Never')}}</span>
+                <span class="sync__date">Last sync: {{ (syncDate ? (syncDate | date:'medium') : 'Never') }}</span>
                 <app-refresh-btn (refresh)="sync.emit($event)"></app-refresh-btn>
             </div>
             <div class="g-dialog-actions-btn" *ngIf="confirmVisible" (click)="confirm.emit()"
-                [attr.disabled]="confirmDisabled">
-                {{confirmBtnLabel || 'Confirm'}}
+                 [attr.disabled]="confirmDisabled">
+                {{ confirmBtnLabel || 'Confirm' }}
             </div>
         </div>
     </div>
@@ -23,10 +23,14 @@
         <ng-content *ngIf="!loading; else spinner"></ng-content>
         <ng-template #spinner>
             <div class="loading">
-                <mat-spinner></mat-spinner>
+                <p-progressSpinner></p-progressSpinner>
             </div>
         </ng-template>
-        <mat-paginator *ngIf="paginatorVisible && length && length > 0" [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10]"
-            (page)="page.emit($event)"></mat-paginator>
+        <app-paginator
+            *ngIf="paginatorVisible && length && length > 0"
+            [length]="length"
+            [pageSize]="pageSize"
+            (page)="page.emit($event)">
+        </app-paginator>
     </div>
 </div>

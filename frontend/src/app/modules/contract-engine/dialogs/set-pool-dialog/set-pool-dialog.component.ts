@@ -1,5 +1,4 @@
-import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, Inject} from '@angular/core';
 import {
     AbstractControl,
     UntypedFormArray,
@@ -9,10 +8,11 @@ import {
     ValidatorFn,
     Validators,
 } from '@angular/forms';
-import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
-import { MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/legacy-radio';
-import { Token } from '@guardian/interfaces';
-import { TokenService } from 'src/app/services/token.service';
+import {moreThanZeroValidator} from 'src/app/validators/more-than-zero.validator';
+import {Token} from '@guardian/interfaces';
+import {TokenService} from 'src/app/services/token.service';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
+
 /**
  * Dialog for creating pair.
  */
@@ -20,12 +20,7 @@ import { TokenService } from 'src/app/services/token.service';
     selector: 'set-pool-dialog',
     templateUrl: './set-pool-dialog.component.html',
     styleUrls: ['./set-pool-dialog.component.scss'],
-    providers: [
-        {
-            provide: MAT_RADIO_DEFAULT_OPTIONS,
-            useValue: { color: 'primary' },
-        },
-    ],
+    providers: [],
 })
 export class SetPoolDialogComponent {
     loading: boolean = false;
@@ -40,10 +35,10 @@ export class SetPoolDialogComponent {
     }
 
     constructor(
-        public dialogRef: MatDialogRef<SetPoolDialogComponent>,
         public tokenService: TokenService,
-        @Inject(MAT_DIALOG_DATA) public data: any
-    ) {}
+        private dialogRef: DynamicDialogRef,
+    ) {
+    }
 
     ngOnInit() {
         this.loading = true;
@@ -75,8 +70,20 @@ export class SetPoolDialogComponent {
         this.dialogRef.close(null);
     }
 
+    get transformedFormValue() {
+        const formValue = this.form.value;
+
+        return {
+            ...formValue,
+            tokens: formValue.tokens.map((item: any) => ({
+                ...item,
+                token: item.token.tokenId,
+            })),
+        };
+    }
+
     onCreate() {
-        this.dialogRef.close(this.form.value);
+        this.dialogRef.close(this.transformedFormValue);
     }
 
     addToken() {
@@ -96,11 +103,13 @@ export class SetPoolDialogComponent {
     }
 
     getTokenList(tokenId: string) {
-        const tokens =
+        const chosenTokens =
             this.tokens.value
                 ?.filter((item: { token: string }) => item.token !== tokenId)
                 .map((item: { token: any }) => item.token) || [];
-        return this._tokenList.filter((item) => !tokens.includes(item.tokenId));
+
+        return this._tokenList.filter((tokenFromList) =>
+            !chosenTokens.find((chosenToken: Token) => chosenToken.tokenId === tokenFromList.tokenId))
     }
 
     moreThanTokensZeroValidator(): ValidatorFn {
@@ -113,7 +122,7 @@ export class SetPoolDialogComponent {
                 if (
                     Math.floor(
                         token.count *
-                            Math.pow(10, Number(tokenConfig?.decimals))
+                        Math.pow(10, Number(tokenConfig?.decimals))
                     ) <= 0
                 ) {
                     return {
@@ -125,5 +134,9 @@ export class SetPoolDialogComponent {
             }
             return null;
         };
+    }
+
+    get selectedTokenId(): string | null {
+        return this.form.get('token')?.value || null;
     }
 }

@@ -28,12 +28,14 @@
     position: relative;
 }
 
-.select-menu mat-icon {
+.select-menu i,
+.select-menu svg {
     position: absolute;
     right: 4px;
-    top: 5px;
+    height: 22px;
+    padding: 6px;
+    font-size: 12px;
     border-left: 1px solid #fff;
-    padding-left: 2px;
     pointer-events: none;
 }
 

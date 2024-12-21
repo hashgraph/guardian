@@ -704,7 +704,7 @@ a[disabled="true"] {
     height: 56px;
     padding: 8px 24px;
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -731,7 +731,7 @@ a[disabled="true"] {
 .step-item.active {
     background: rgba(6, 129, 238, 0.08);
 
-    i {
+    i, svg {
         padding: 4px;
         margin-right: 8px;
         width: 24px;
@@ -943,4 +943,23 @@ mat-radio-button {
 .primary-color {
     fill: var(--color-primary, #0681ee);
     color: var(--color-primary, #0681ee);
+}
+
+.example-full-width {
+    margin-top: 20px
+}
+
+.example-full-width textarea {
+   width: 100%;
+    &:focus {
+        border: none
+    }
+}
+
+.boolean-option-group div:last-child {
+    margin-top: 10px
+}
+
+.boolean-option-group label {
+    padding-left: 8px;
 }

@@ -22,6 +22,10 @@
     display: flex;
     margin-left: 18px;
     padding-bottom: 6px;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: Roboto, sans-serif;
+    letter-spacing: .017em;
 
     .results-info-header {
         padding-right: 16px;
@@ -44,6 +48,10 @@
     display: grid;
     grid-template-columns: 30px auto 50px 130px;
     padding-bottom: 6px;
+    font-size: 14px;
+    line-height: 20px;
+    font-family: Roboto, sans-serif;
+    letter-spacing: .017em;
 }
 
 .document-type {
@@ -96,4 +104,52 @@
     &[value="-"] {
         color: #e70000;
     }
+}
+
+.g-dialog-header {
+    padding-top: 30px;
+}
+
+::ng-deep .g-dialog .g-dialog-header .g-dialog-cancel-btn {
+    width: 28px;
+    height: 28px;
+    padding-top: 2px;
+}
+
+.g-dialog-cancel-btn i {
+    font-size: 20px;
+}
+
+::ng-deep .p-dialog {
+    border-radius: 18px !important;
+}
+
+::ng-deep .p-dialog-header {
+    display: none;
+}
+
+.dialog-actions {
+    column-gap: 8px;
+}
+
+::ng-deep .mat-raised-button,
+::ng-deep .mat-button {
+    border: none;
+    width: 138px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-grey-black-1);
+    background: var(--color-grey-white);
+}
+
+::ng-deep .mat-raised-button {
+    border: none;
+    width: 138px;
+    color: var(--color-grey-white);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+::ng-deep .p-dialog-content {
+    border-radius: 18px !important;
 }

@@ -1,16 +1,29 @@
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, } from '@angular/core';
-import { AbstractControl, UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators, } from '@angular/forms';
-import { FieldTypesDictionary, Schema, SchemaCategory, SchemaCondition, SchemaEntity, SchemaField, UnitSystem, } from '@guardian/interfaces';
-import * as moment from 'moment';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { ConditionControl } from '../condition-control';
-import { FieldControl } from '../field-control';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { SchemaService } from 'src/app/services/schema.service';
-import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges,} from '@angular/core';
+import {
+    AbstractControl,
+    UntypedFormBuilder,
+    UntypedFormControl,
+    UntypedFormGroup,
+    ValidationErrors,
+    ValidatorFn,
+    Validators,
+} from '@angular/forms';
+import {
+    FieldTypesDictionary,
+    Schema,
+    SchemaCategory,
+    SchemaCondition,
+    SchemaEntity,
+    SchemaField,
+    UnitSystem,
+} from '@guardian/interfaces';
+import moment from 'moment';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {ConditionControl} from '../condition-control';
+import {FieldControl} from '../field-control';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {SchemaService} from 'src/app/services/schema.service';
 
 enum SchemaType {
     System = 'system',
@@ -31,10 +44,6 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
     selector: 'app-schema-configuration',
     templateUrl: './schema-configuration.component.html',
     styleUrls: ['./schema-configuration.component.scss'],
-    providers: [
-        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        {provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT}
-    ]
 })
 export class SchemaConfigurationComponent implements OnInit {
     @Input('value') value!: Schema;
@@ -74,13 +83,13 @@ export class SchemaConfigurationComponent implements OnInit {
         integer: /^-?\d*$/
     };
     public systemEntityOptions: { label: string; value: string }[] = [
-        { label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY' },
-        { label: 'USER', value: 'USER' },
+        {label: 'STANDARD REGISTRY', value: 'STANDARD_REGISTRY'},
+        {label: 'USER', value: 'USER'},
     ];
     public policyModuleEntityOptions: { label: string; value: string }[] = [
-        { label: 'Default', value: 'NONE' },
-        { label: 'Verifiable Credential', value: 'VC' },
-        { label: 'Encrypted Verifiable Credential', value: 'EVC' },
+        {label: 'Default', value: 'NONE'},
+        {label: 'Verifiable Credential', value: 'VC'},
+        {label: 'Encrypted Verifiable Credential', value: 'EVC'},
     ];
 
     public get isSystem(): boolean {
@@ -143,8 +152,8 @@ export class SchemaConfigurationComponent implements OnInit {
         this.schemaTypeMap = {};
         for (const type of FieldTypesDictionary.FieldTypes) {
             const value = this.getId('default');
-            this.types.push({ name: type.name, value: value });
-            this.schemaTypeMap[value] = { ...type };
+            this.types.push({name: type.name, value: value});
+            this.schemaTypeMap[value] = {...type};
         }
         this.schemaTypeMap[UnitSystem.Postfix] = {
             name: UnitSystem.Postfix,
@@ -1145,7 +1154,7 @@ export class SchemaConfigurationComponent implements OnInit {
             let error = null;
             for (const control of all) {
                 if (map[control.value] > 1) {
-                    error = { unique: true };
+                    error = {unique: true};
                     control.setErrors(error);
                 } else if (control.errors) {
                     delete control.errors.unique;

@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'requestVcDocument' type.
@@ -30,8 +30,19 @@ export class RequestConfigComponent implements OnInit {
 
     presetMap: any;
 
-    constructor(
-    ) {
+    public idTypeOptions = [
+        {label: 'None', value: ''},
+        {label: 'DID (New DID)', value: 'DID'},
+        {label: 'UUID (New UUID)', value: 'UUID'},
+        {label: 'Owner (Owner DID)', value: 'OWNER'}
+    ];
+
+    public uiMetaDataTypeOptions = [
+        {label: 'PAGE', value: 'page'},
+        {label: 'DIALOG', value: 'dialog'}
+    ];
+
+    constructor() {
         this.presetMap = [];
     }
 
@@ -120,5 +131,13 @@ export class RequestConfigComponent implements OnInit {
 
     onSave() {
         this.item.changed = true;
+    }
+
+    getPresetOptions() {
+        return this.presetMap.map((item: any) => ({
+            label: item.title,
+            value: item.name,
+            title: item.title
+        }));
     }
 }
