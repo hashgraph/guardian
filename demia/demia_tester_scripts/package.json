@@ -1,0 +1,15 @@
+{
+  "name": "tester_scripts",
+  "version": "1.0.0",
+  "description": "Testing Scripts for API",
+  "main": "testAll.js",
+  "scripts": {
+    "start": "node testAll.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.7"
+  }
+}
