@@ -2430,22 +2430,6 @@ paths:
           example: 0.0.0000000
           schema:
             type: string
-        - name: pageIndex
-          required: false
-          in: query
-          description: >-
-            The number of pages to skip before starting to collect the result
-            set
-          example: 0
-          schema:
-            type: number
-        - name: pageSize
-          required: true
-          in: query
-          description: The numbers of items to return
-          example: 20
-          schema:
-            type: number
       responses:
         '200':
           description: Successful operation.
