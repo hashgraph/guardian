@@ -11,3 +11,4 @@ export * from './relationships.dto.js';
 export * from './schema-tree.dto.js';
 export * from './internal-server-error.dto.js';
 export * from './search-policy.dto.js';
+export * from './message.dto.js';

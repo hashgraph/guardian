@@ -163,8 +163,8 @@
                 },
                 "contractId": {
                     "$comment": "{\"term\": \"user\", \"@id\": \"https://www.schema.org/text\"}",
-                    "title": "user",
-                    "description": "user",
+                    "title": "contract",
+                    "description": "contract",
                     "type": "string",
                     "readOnly": false
                 },

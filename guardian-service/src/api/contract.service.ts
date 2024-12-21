@@ -3408,4 +3408,34 @@ export async function contractAPI(
             return new MessageError(error);
         }
     });
+
+    ApiResponse(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, async (msg: {
+        owner: IOwner,
+        contractTopicId: string
+    }) => {
+        try {
+            if (!msg) {
+                return new MessageError('Invalid get contract parameters');
+            }
+
+            const { owner, contractTopicId } = msg;
+
+            if (!owner.creator) {
+                throw new Error('Owner is required');
+            }
+
+            const messages = await new Workers().addNonRetryableTask({
+                type: WorkerTaskType.ANALYTICS_GET_RETIRE_DOCUMENTS,
+                data: {
+                    payload: { options: { topicId: contractTopicId } }
+                }
+            }, 2);
+
+            return new MessageResponse([messages, messages.length]);
+        } catch (error) {
+            await logger.error(error, ['GUARDIAN_SERVICE']);
+            return new MessageError(error);
+        }
+    });
+
 }

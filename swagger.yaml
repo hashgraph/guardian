@@ -822,6 +822,32 @@ paths:
       tags: *ref_1
       security:
         - bearer: []
+  /analytics/checkIndexer:
+    get:
+      operationId: AnalyticsApi_checkIndexerAvailability
+      summary: Get Indexer Availability.
+      description: Returns Indexer Availability (true/false).
+      parameters: []
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+      security:
+        - bearer: []
   /artifacts:
     get:
       operationId: ArtifactApi_getArtifactsV2
@@ -2364,6 +2390,46 @@ paths:
           example: 20
           schema:
             type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: []
+  /contracts/retireIndexer:
+    get:
+      operationId: ContractsApi_getRetireVCsFromIndexer
+      summary: Return a list of all retire vcs from Indexer.
+      description: Returns all retire vcs from Indexer.
+      parameters:
+        - name: contractTopicId
+          required: true
+          in: query
+          description: The topic id of contract
+          example: 0.0.0000000
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation.

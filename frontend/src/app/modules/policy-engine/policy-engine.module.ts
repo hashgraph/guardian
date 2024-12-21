@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MaterialModule } from 'src/app/modules/common/material.module';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -295,6 +295,7 @@ import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-docum
         WizardService,
         DialogService,
         PolicyProgressService,
+        DatePipe,
         {
             provide: CONFIGURATION_ERRORS,
             useValue: new Map()

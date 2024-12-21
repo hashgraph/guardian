@@ -731,6 +731,20 @@ export async function analyticsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    ApiResponse(MessageAPI.GET_INDEXER_AVAILABILITY,
+        async () => {
+            try {
+                const result = await new Workers().addNonRetryableTask({
+                    type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
+                    data: {}
+                }, 2);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageResponse(false);
+            }
+        });
 }
 
 @Module({

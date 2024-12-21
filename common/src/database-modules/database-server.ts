@@ -2063,7 +2063,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
             wasTransferNeeded: boolean,
             transferSerials: number[],
             transferAmount: number,
-            tokenIds: string[]
+            tokenIds: string[],
+            target: string
         ]
     > {
         const mintRequests = await this.getMintRequests({
@@ -2098,7 +2099,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         if (vpDocument.tokenId) {
             tokenIds.add(vpDocument.tokenId);
         }
-
+        const target = mintRequests?.[0]?.target;
         for (const mintRequest of mintRequests) {
             if (mintRequest.error) {
                 errors.push(mintRequest.error);
@@ -2170,6 +2171,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
             transferSerials,
             transferAmount,
             [...tokenIds],
+            target,
         ];
     }
 

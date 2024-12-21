@@ -389,7 +389,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
         for (let i = (currentStepIndex - 1); i >= 0; i--) {
             const step = this.steps[i];
-            if (!step.blockId) {
+            if (!step || !step.blockId) {
                 continue;
             }
             const hasAction = this.policyProgressService.stepHasAction(step.blockId);

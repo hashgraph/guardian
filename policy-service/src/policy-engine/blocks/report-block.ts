@@ -426,7 +426,7 @@ export class ReportBlock {
 
             const vp: any = await ref.databaseServer.getVpDocument({ hash, policyId: ref.policyId });
             if (vp) {
-                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds] = await ref.databaseServer.getVPMintInformation(vp);
+                [vp.serials, vp.amount, vp.error, vp.wasTransferNeeded, vp.transferSerials, vp.transferAmount, vp.tokenIds, vp.target] = await ref.databaseServer.getVPMintInformation(vp);
                 report = await this.addReportByVP(report, variables, vp, true);
             } else {
                 const vc = await ref.databaseServer.getVcDocument({ hash, policyId: ref.policyId })
