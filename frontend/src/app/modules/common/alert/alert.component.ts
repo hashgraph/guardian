@@ -1,5 +1,4 @@
 import { Component, Inject, OnInit } from '@angular/core';
-// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 
@@ -21,8 +20,6 @@ export class AlertComponent implements OnInit {
     isVisible: boolean = true;
 
     constructor(
-        // public dialogRef: MatDialogRef<AlertComponent>,
-        // @Inject(MAT_DIALOG_DATA) public data: any
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {
@@ -34,19 +31,6 @@ export class AlertComponent implements OnInit {
     }
 
     ngOnInit(): void {}
-
-    // private getIconByType(type?: AlertType) {
-    //     switch (type) {
-    //         case AlertType.ERROR:
-    //             return 'error';
-    //         case AlertType.WARN:
-    //             return 'warning';
-    //         case AlertType.INFO:
-    //             return 'info';
-    //         default:
-    //             return;
-    //     }
-    // }
 
     private getIconByType(type?: AlertType) {
         switch (type) {

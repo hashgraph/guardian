@@ -1,28 +1,3 @@
-<!--<div class="content">-->
-<!--    <h1 mat-dialog-title>-->
-<!--        {{title}}-->
-<!--    </h1>-->
-<!--    <div mat-dialog-content>-->
-<!--        <form [formGroup]="dataForm">-->
-<!--            <mat-form-field *ngFor="let field of fieldsConfig" appearance="outline">-->
-<!--                <mat-label>-->
-<!--                    <span *ngIf="field.required">*</span>-->
-<!--                    {{field.label}}-->
-<!--                </mat-label>-->
-<!--                <input matInput type="text" placeholder={{field.placeholder}} [formControlName]="field.name">-->
-<!--            </mat-form-field>-->
-<!--            <div mat-dialog-actions>-->
-<!--                <button mat-raised-button color="primary" [mat-dialog-close]="dataForm.value"-->
-<!--                    [disabled]="!dataForm.valid">Ok</button>-->
-<!--                <button mat-button type="button" (click)="onNoClick()">Cancel</button>-->
-<!--            </div>-->
-<!--        </form>-->
-<!--    </div>-->
-
-<!--    <div *ngIf="loading" class="loading">-->
-<!--        <mat-spinner></mat-spinner>-->
-<!--    </div>-->
-<!--</div>-->
 <p-dialog [(visible)]="isVisible" [header]="title" [modal]="true" [closable]="false" (onHide)="onNoClick()"
           [draggable]="false" class="p-dialog dialog">
     <ng-template pTemplate="header">
@@ -33,19 +8,12 @@
             <div *ngFor="let field of fieldsConfig" class="form-field">
                 <div class="custom-form-field"
                      [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}">
-                    <!--                    <label class="custom-label"-->
-                    <!--                           [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}">-->
-                    <!--                        <span *ngIf="field.required">*</span>-->
-                    <!--                        {{ field.label }}-->
-                    <!--                    </label>-->
                     <input pInputText type="text"
                            [placeholder]="field.placeholder"
                            [formControlName]="field.name"
                            class="custom-input"/>
                 </div>
             </div>
-
-
             <div class="dialog-actions">
                 <p-button label="Ok" icon="pi pi-check" (onClick)="dialogRef.close(dataForm.value)"
                           [disabled]="!dataForm.valid" styleClass="p-button-ok p-button-primary"></p-button>
@@ -54,11 +22,6 @@
             </div>
         </form>
     </div>
-
-    <!--    <div *ngIf="loading" class="loading">-->
-    <!--        <mat-spinner></mat-spinner>-->
-    <!--    </div>-->
-
     <div *ngIf="loading" class="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>

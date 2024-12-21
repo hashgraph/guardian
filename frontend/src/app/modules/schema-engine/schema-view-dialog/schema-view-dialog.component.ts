@@ -1,8 +1,6 @@
 import {Component, Inject} from '@angular/core';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-
 /**
  * Dialog for preview schema.
  */
@@ -22,8 +20,6 @@ export class SchemaViewDialog {
     schemaType: string;
 
     constructor(
-        // public dialogRef: MatDialogRef<SchemaViewDialog>,
-        // @Inject(MAT_DIALOG_DATA) public data: any
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {

@@ -11,15 +11,11 @@
 
     <tr class="propHeader" [attr.collapse]="propHidden.metaData">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'buttonsGroup')">
-            <!--            <mat-icon *ngIf="properties.uiMetaData.buttons.length">arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down" *ngIf="properties.uiMetaData.buttons.length"></i>
         </td>
         <td class="propHeaderCell cellName">Buttons</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addButton()">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus"></i>
                 <span>Add Button</span>
             </div>
@@ -29,16 +25,12 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'collapse')"
                 [attr.collapse]="propHidden.buttons[i].collapse">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Button {{ i }}</td>
             <td class="propRowCell not-editable-text">
                 <span>{{ button.name }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveButton(i)">
-<!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </span>
             </td>
@@ -48,11 +40,6 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <!--                <mat-select [(value)]="button.type" [disabled]="readonly" (change)="onSave()">-->
-                <!--                    <mat-option value="selector">Selector</mat-option>-->
-                <!--                    <mat-option value="selector-dialog">Selector Dialog</mat-option>-->
-                <!--                </mat-select>-->
-
                 <p-dropdown [(ngModel)]="button.type"
                             [options]="buttonTypeOptions"
                             [disabled]="readonly"
@@ -128,15 +115,11 @@
         <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
                 [attr.collapse]="propHidden.buttons[i].filtersGroup">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Filters Option {{ i }}</td>
             <td class="propRowCell">
                 <div class="propAdd" (click)="addFilter(button)">
-                    <!--                    <mat-icon>add</mat-icon>-->
-
                     <i class="pi pi-plus"></i>
                     <span>Add Filter</span>
                 </div>
@@ -148,8 +131,6 @@
                 [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
                 <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], j)"
                     [attr.collapse]="propHidden.buttons[i][j]">
-                    <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
-
                     <i class="pi pi-caret-down"></i>
                 </td>
                 <td class="propRowCell cellName">Filter {{ j }}</td>
@@ -158,8 +139,6 @@
                         {{ filter.field }} {{ filter.type }} {{ filter.value }}
                     </span>
                     <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(button, j)">
-<!--                        <mat-icon>delete</mat-icon>-->
-
                         <i class="pi pi-trash"></i>
                     </span>
                 </td>
@@ -169,13 +148,6 @@
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Type</td>
                 <td class="propRowCell">
-                    <!--                    <mat-select [(value)]="filter.type" [disabled]="readonly" (change)="onSave()">-->
-                    <!--                        <mat-option value="equal">Equal</mat-option>-->
-                    <!--                        <mat-option value="not_equal">Not Equal</mat-option>-->
-                    <!--                        <mat-option value="in">In</mat-option>-->
-                    <!--                        <mat-option value="not_in">Not In</mat-option>-->
-                    <!--                    </mat-select>-->
-
                     <p-dropdown [(ngModel)]="filter.type"
                                 [options]="filterTypeOptions"
                                 [disabled]="readonly"

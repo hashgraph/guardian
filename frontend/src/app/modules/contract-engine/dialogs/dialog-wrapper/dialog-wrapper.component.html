@@ -2,8 +2,6 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="cancel.emit()">
-                <!--                <mat-icon>close</mat-icon>-->
-
                 <i class="pi pi-times"></i>
             </div>
         </div>
@@ -23,22 +21,11 @@
     </div>
     <div class="g-dialog-body content">
         <ng-content *ngIf="!loading; else spinner"></ng-content>
-        <!--        <ng-template #spinner>-->
-        <!--            <div class="loading">-->
-        <!--                <mat-spinner></mat-spinner>-->
-        <!--            </div>-->
-        <!--            -->
-        <!--        </ng-template>-->
-
         <ng-template #spinner>
             <div class="loading">
                 <p-progressSpinner></p-progressSpinner>
             </div>
         </ng-template>
-        <!--        <mat-paginator *ngIf="paginatorVisible && length && length > 0" [length]="length" [pageSize]="pageSize"-->
-        <!--                       [pageSizeOptions]="[5, 10]"-->
-        <!--                       (page)="page.emit($event)"></mat-paginator>-->
-
         <app-paginator
             *ngIf="paginatorVisible && length && length > 0"
             [length]="length"

@@ -1,5 +1,4 @@
-// import { MatLegacyDialogConfig as MatDialogConfig } from "@angular/material/legacy-dialog";
-import { DynamicDialogConfig } from 'primeng/dynamicdialog';
+import {DynamicDialogConfig} from 'primeng/dynamicdialog';
 
 export function mobileDialog<T>(
     config: DynamicDialogConfig<T>

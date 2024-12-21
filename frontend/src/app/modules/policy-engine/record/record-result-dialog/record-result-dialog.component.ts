@@ -1,5 +1,4 @@
 import {Component, Inject} from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import {RecordService} from 'src/app/services/record.service';
 import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -24,10 +23,7 @@ export class RecordResultDialog {
     public info: any;
 
     constructor(
-        // public dialog: MatDialog,
-        // public dialogRef: MatDialogRef<RecordResultDialog>,
         private recordService: RecordService,
-        // @Inject(MAT_DIALOG_DATA) public data: any
         public dialogService: DialogService,
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig
@@ -86,8 +82,6 @@ export class RecordResultDialog {
                 title: title,
                 type: 'JSON',
             }
-        });
-        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 

@@ -54,8 +54,6 @@
                         <div *ngIf="isIPFS(item)">
                             <div class="file-upload">
                                 <ng-container [ngSwitch]="item.fileUploading">
-<!--                                    <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>-->
-
                                     <p-progressSpinner
                                         *ngSwitchCase="true"
                                         [style]="{ width: '38px', height: '38px' }">
@@ -63,7 +61,6 @@
 
                                     <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
                                             (click)="uploadFile(item)">
-                                        <!--                                        <mat-icon>attach_file</mat-icon>-->
                                         <i class="pi pi-paperclip"></i>
                                     </button>
                                 </ng-container>
@@ -219,15 +216,12 @@
                                 <div *ngIf="isIPFS(item)">
                                     <div class="file-upload">
                                         <ng-container [ngSwitch]="listItem.fileUploading">
-<!--                                            <mat-spinner *ngSwitchCase="true" [diameter]="38"></mat-spinner>-->
-
                                             <p-progressSpinner
                                                 *ngSwitchCase="true"
                                                 [style]="{ width: '38px', height: '38px' }">
                                             </p-progressSpinner>
                                             <button mat-icon-button *ngSwitchCase="false" class="upload-btn"
                                                     (click)="uploadFile(listItem)">
-                                                <!--                                                <mat-icon>attach_file</mat-icon>-->
                                                 <i class="pi pi-paperclip"></i>
                                             </button>
                                         </ng-container>

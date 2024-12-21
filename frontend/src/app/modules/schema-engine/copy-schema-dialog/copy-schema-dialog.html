@@ -2,7 +2,6 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div (click)="onClose()" class="g-dialog-cancel-btn">
-                <!--                <mat-icon>close</mat-icon>-->
                 <i class="pi pi-times"></i>
             </div>
         </div>
@@ -21,11 +20,6 @@
     <div class="g-dialog-body">
         <div class="context">
             <form [formGroup]="dataForm">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>* Schema Name</mat-label>-->
-                <!--                    <input formControlName="name" matInput placeholder="Schema Name" type="text">-->
-                <!--                </mat-form-field>-->
-
                 <div class="form-group">
                     <label for="schemaName" class="form-label">* Schema Name</label>
                     <input
@@ -36,28 +30,6 @@
                         type="text"
                         class="full-width">
                 </div>
-
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>Schema type</mat-label>-->
-                <!--                    <mat-select tabindex='-1' formControlName="schemaType" (selectionChange)="onChangeType($event)">-->
-                <!--                        <mat-option [value]="'system'">System</mat-option>-->
-                <!--                        <mat-option [value]="'policy'">Policy</mat-option>-->
-                <!--                        <mat-option [value]="'tag'">Tag</mat-option>-->
-                <!--                        <mat-option [value]="'tool'">Tool</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
-                <!--                <mat-form-field *ngIf="isPolicy" appearance="outline">-->
-                <!--                    <mat-label>* Policy</mat-label>-->
-                <!--                    <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>-->
-                <!--                        <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>-->
-                <!--                        <mat-option *ngFor="let policy of policies" [value]="policy.topicId">-->
-                <!--                            {{ policy.name }}-->
-                <!--                        </mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
-                <
                 <div *ngIf="isPolicy" class="form-group">
                     <label for="policyDropdown" class="form-label">* Policy</label>
                     <p-dropdown
@@ -71,17 +43,6 @@
                         class="full-width">
                     </p-dropdown>
                 </div>
-
-                <!--                <mat-form-field *ngIf="isTool" appearance="outline">-->
-                <!--                    <mat-label>* Tool</mat-label>-->
-                <!--                    <mat-select (selectionChange)="onFilter($event)" formControlName="topicId" tabindex='-1'>-->
-                <!--                        <mat-option [value]="'draft'" class="draft-topic-option">No binding</mat-option>-->
-                <!--                        <mat-option *ngFor="let tool of tools" [value]="tool.topicId">-->
-                <!--                            {{ tool.name }}-->
-                <!--                        </mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div *ngIf="isTool" class="form-group">
                     <label for="toolDropdown" class="form-label">* Tool</label>
                     <p-dropdown
@@ -95,16 +56,6 @@
                         class="full-width">
                     </p-dropdown>
                 </div>
-
-
-                <!--                <mat-form-field *ngIf="isSystem" appearance="outline">-->
-                <!--                    <mat-label>For (Entity)</mat-label>-->
-                <!--                    <mat-select formControlName="entity" tabindex='-1'>-->
-                <!--                        <mat-option value="STANDARD_REGISTRY">STANDARD REGISTRY</mat-option>-->
-                <!--                        <mat-option value="USER">USER</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div *ngIf="isSystem" class="form-group">
                     <label for="entityDropdown" class="form-label">For (Entity)</label>
                     <p-dropdown
@@ -117,7 +68,6 @@
                         class="full-width">
                     </p-dropdown>
                 </div>
-
             </form>
         </div>
     </div>

@@ -2,8 +2,6 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -27,15 +25,11 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
             [attr.collapse]="propHidden.fieldsGroup">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Fields</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addField()">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus"></i>
                 <span>Add Field</span>
             </div>
@@ -45,16 +39,12 @@
         <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
                 [attr.collapse]="propHidden.fields[i]">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
             <td class="propRowCell not-editable-text">
                 <span>{{ field.name }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
-<!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </span>
             </td>
@@ -70,16 +60,6 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <!--                <mat-select [(value)]="field.type" (selectionChange)="onSelectFieldType(field)" [disabled]="readonly">-->
-                <!--                    <mat-option value="text">Text</mat-option>-->
-                <!--                    <mat-option value="issuer">Issuer</mat-option>-->
-                <!--                    <mat-option value="button">Button</mat-option>-->
-                <!--                    <mat-option value="block">Block</mat-option>-->
-                <!--                    <mat-option value="blocks">Blocks</mat-option>-->
-                <!--                    <mat-option value="array">Array</mat-option>-->
-                <!--                    <mat-option value="serials">Serials</mat-option>-->
-                <!--                </mat-select>-->
-
                 <p-dropdown
                     [(ngModel)]="field.type"
                     (onChange)="onSelectFieldType(field)"
@@ -127,8 +107,6 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
-                <!--                <mat-icon class="icon-link">add_link</mat-icon> Bind Group-->
-
                 <i class="pi pi-link icon-link"></i> Bind Group
             </td>
             <td class="propRowCell">
@@ -140,20 +118,10 @@
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <!--                    <mat-icon class="icon-event">-->
-                    <!--                        flash_on-->
-                    <!--                    </mat-icon>-->
-
                     <i class="pi pi-bolt icon-event"></i>
                     Action
                 </td>
                 <td class="propRowCell">
-                    <!--                    <mat-select [(value)]="field.action" [disabled]="readonly" (change)="onSave()">-->
-                    <!--                        <mat-option value="link">LINK</mat-option>-->
-                    <!--                        <mat-option value="dialog">DIALOG</mat-option>-->
-                    <!--                        <mat-option value="download">DOWNLOAD</mat-option>-->
-                    <!--                    </mat-select>-->
-
                     <p-dropdown
                         [(ngModel)]="field.action"
                         [disabled]="readonly"
@@ -167,10 +135,6 @@
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">
-                        <!--                        <mat-icon class="icon-link">-->
-                        <!--                            add_link-->
-                        <!--                        </mat-icon>-->
-
                         <i class="pi pi-link icon-link"></i>
                         Bind Block
                     </td>
@@ -208,10 +172,6 @@
                 <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                     <td class="propRowCol"></td>
                     <td class="propRowCell cellName">
-                        <!--                        <mat-icon class="icon-link">-->
-                        <!--                            add_link-->
-                        <!--                        </mat-icon>-->
-
                         <i class="pi pi-link icon-link"></i>
                         Bind Block
                     </td>
@@ -226,10 +186,6 @@
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <!--                    <mat-icon class="icon-link">-->
-                    <!--                        add_link-->
-                    <!--                    </mat-icon>-->
-
                     <i class="pi pi-link icon-link"></i>
                     Bind Block
                 </td>
@@ -243,10 +199,6 @@
             <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
-                    <!--                    <mat-icon class="icon-link">-->
-                    <!--                        add_link-->
-                    <!--                    </mat-icon>-->
-
                     <i class="pi pi-link icon-link"></i>
                     Bind Blocks
                 </td>

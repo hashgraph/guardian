@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
@@ -33,11 +32,6 @@ export class AggregateConfigComponent implements OnInit {
         {label: 'Period', value: 'period'},
         {label: 'Cumulative Dimension', value: 'cumulative'}
     ];
-
-    constructor(
-        // private dialog: MatDialog
-    ) {
-    }
 
     ngOnInit(): void {
         this.onInit.emit(this);

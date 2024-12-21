@@ -6,7 +6,6 @@ import {
     ElementRef,
     HostListener,
 } from '@angular/core';
-// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { SchemaService } from 'src/app/services/schema.service';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
@@ -38,14 +37,8 @@ export class SchemaTreeComponent implements OnInit {
     schema: { id: string; name: string }
 
     constructor(
-        // public dialogRef: MatDialogRef<SchemaTreeComponent>,
-        // @Inject(MAT_DIALOG_DATA)
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        // public schema: {
-        //     id: string;
-        //     name: string;
-        // },
         private schemaService: SchemaService
     ) {
         this.schema = this.config.data;

@@ -1,5 +1,4 @@
 import {Component, Inject} from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {UntypedFormBuilder, Validators} from '@angular/forms';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
@@ -21,9 +20,7 @@ export class NewThemeDialog {
     theme: any;
 
     constructor(
-        // public dialogRef: MatDialogRef<NewThemeDialog>,
         private fb: UntypedFormBuilder,
-        // @Inject(MAT_DIALOG_DATA) public data: any
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {

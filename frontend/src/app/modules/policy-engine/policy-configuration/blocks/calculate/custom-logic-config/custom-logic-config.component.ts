@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Inject, Input, OnInit, Output, ViewEncapsulation} from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
 import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
@@ -39,7 +38,6 @@ export class CustomLogicConfigComponent implements OnInit {
     ];
 
     constructor(
-        // private dialog: MatDialog
         private dialog: DialogService,
     ) {
 
@@ -65,13 +63,10 @@ export class CustomLogicConfigComponent implements OnInit {
     editExpression($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             width: '80%',
-            // panelClass: 'g-dialog',
             data: {
                 expression: this.properties.expression,
                 readonly: this.readonly
             },
-            // autoFocus: true,
-            // disableClose: true,
             styleClass: 'g-dialog',
             modal: true,
             closable: false,

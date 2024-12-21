@@ -1,16 +1,24 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
-import { AbstractControl, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { SchemaField, UnitSystem } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
-import { IPFS_SCHEMA } from 'src/app/services/api';
-import { IPFSService } from 'src/app/services/ipfs.service';
-import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
-import { FieldControl } from '../field-control';
-import { DialogService } from 'primeng/dynamicdialog';
-import { Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-import { CodeEditorDialogComponent } from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import {
+    ChangeDetectorRef,
+    Component,
+    EventEmitter,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    SimpleChanges
+} from '@angular/core';
+import {AbstractControl, UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
+import {SchemaField, UnitSystem} from '@guardian/interfaces';
+import {ToastrService} from 'ngx-toastr';
+import {IPFS_SCHEMA} from 'src/app/services/api';
+import {IPFSService} from 'src/app/services/ipfs.service';
+import {EnumEditorDialog} from '../enum-editor-dialog/enum-editor-dialog.component';
+import {FieldControl} from '../field-control';
+import {DialogService} from 'primeng/dynamicdialog';
+import {Subject, Subscription} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
+import {CodeEditorDialogComponent} from '../../policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 /**
  * Schemas constructor
@@ -53,20 +61,20 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             label: 'Units of measure',
             value: 'uom',
             items: [
-                { label: 'Prefix', value: 'prefix' },
-                { label: 'Postfix', value: 'postfix' },
+                {label: 'Prefix', value: 'prefix'},
+                {label: 'Postfix', value: 'postfix'},
             ],
         },
         {
             label: 'Hedera',
             value: 'h',
-            items: [{ label: 'Account', value: 'hederaAccount' }],
+            items: [{label: 'Account', value: 'hederaAccount'}],
         },
     ];
     public fieldTypes: any = [
-        { label: 'None', value: 'none' },
-        { label: 'Hidden', value: 'hidden' },
-        { label: 'Required', value: 'required' },
+        {label: 'None', value: 'none'},
+        {label: 'Hidden', value: 'hidden'},
+        {label: 'Required', value: 'required'},
         {label: 'Auto Calculate', value: 'autocalculate'},
 
     ];
@@ -148,7 +156,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                             examples: null,
                         }),
                     ];
-                } catch (error) { console.warn(error) }
+                } catch (error) {
+                    console.warn(error)
+                }
             };
             onFieldChange(this.fieldsForm?.value);
 
@@ -159,7 +169,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     oldField?.fieldType !== newField?.fieldType ||
                     oldField?.fieldArray !== newField?.fieldArray ||
                     JSON.stringify(oldField?.controlEnum) !==
-                        JSON.stringify(newField?.controlEnum)
+                    JSON.stringify(newField?.controlEnum)
                 ) {
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
@@ -241,7 +251,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes?.types?.firstChange && this.types) {
             const newSimpleTypes = this.types.map((type: any) => {
-                return { label: type.name, value: type.value };
+                return {label: type.name, value: type.value};
             });
             this.groupedFieldTypes.unshift({
                 label: 'Simple Types',
@@ -447,14 +457,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     onEditExpression() {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             width: '80%',
-            // panelClass: 'g-dialog',
             data: {
                 mode: 'json',
                 expression: this.field.expression.value,
                 readonly: this.readonly
             },
-            // autoFocus: true,
-            // disableClose: true
             styleClass: 'g-dialog',
             modal: true,
             closable: false,

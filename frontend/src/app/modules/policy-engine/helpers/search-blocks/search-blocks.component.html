@@ -1,15 +1,10 @@
 <div class="search-result">
-<!--    <div *ngIf="loading" class="loading">-->
-<!--        <mat-spinner></mat-spinner>-->
-<!--    </div>-->
-
     <div *ngIf="loading" class="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
 
     <div class="search-result-header">
         <div class="search-result-header__icon">
-            <!--            <mat-icon>{{icon}}</mat-icon>-->
             <i [ngClass]="'pi pi-' + icon"></i>
         </div>
         <div class="search-result-header__path">
@@ -24,9 +19,6 @@
     <div class="search-result-body">
 
         <div *ngFor="let group of groups" class="search-result-group">
-            <!-- <div class="search-result-group__details">
-                {{group.name}}
-            </div> -->
             <div class="search-result-chains">
                 <div
                     *ngFor="let groupItem of group.items"
@@ -35,7 +27,6 @@
                 >
                     <div class="search-result-chain__details">
                         <div class="details-expand" (click)="onCollapse(groupItem)">
-                            <!--                            <mat-icon>arrow_drop_down</mat-icon>-->
                             <i class="pi pi-caret-down"></i>
                         </div>
                         <div class="details-delimiter"></div>
@@ -63,7 +54,6 @@
                                 theme-all
                             >
                                 <div class="block-item-icon">
-                                    <!--                                    <mat-icon theme-text>{{block.icon}}</mat-icon>-->
                                     <i [ngClass]="'pi pi-' + block.icon" class="theme-text"></i>
                                 </div>
                                 <div class="block-item-name" theme-text>

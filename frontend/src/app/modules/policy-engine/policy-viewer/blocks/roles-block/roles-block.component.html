@@ -16,57 +16,6 @@
                     >
                     </p-dropdown>
                 </div>
-
-                <!--                <mat-radio-group *ngIf="isGroup" aria-label="Select an option" [value]="type">-->
-                <!--                    <div>-->
-                <!--                        <div class="group-name">-->
-                <!--                            <mat-radio-button value="new" color="primary" (change)="onChange($event)">Create new group-->
-                <!--                            </mat-radio-button>-->
-                <!--                        </div>-->
-                <!--                        <div class="group-value" [attr.disabled]="type!=='new'">-->
-                <!--                            <mat-form-field appearance="outline">-->
-                <!--                                <mat-label>Group Template</mat-label>-->
-                <!--                                <mat-select formControlName="roleOrGroup">-->
-                <!--                                    <mat-option *ngFor="let group of groups" [value]="group">{{group}}</mat-option>-->
-                <!--                                </mat-select>-->
-                <!--                            </mat-form-field>-->
-                <!--                            <mat-form-field *ngIf="ifPrivateGroup()" appearance="outline">-->
-                <!--                                <mat-label>Group Label</mat-label>-->
-                <!--                                <input matInput formControlName="groupLabel">-->
-                <!--                            </mat-form-field>-->
-                <!--                        </div>-->
-                <!--                    </div>-->
-                <!--                    <div>-->
-                <!--                        <div class="group-name">-->
-                <!--                            <mat-radio-button value="invite" color="primary" (change)="onChange($event)">-->
-                <!--                                Accept invitation-->
-                <!--                            </mat-radio-button>-->
-                <!--                        </div>-->
-                <!--                        <div class="group-value" [attr.disabled]="type!=='invite'">-->
-                <!--                            <div *ngIf="policyName" style="margin-bottom: 15px;color: #707070">-->
-                <!--                                <span>Policy: </span>-->
-                <!--                                <span>{{policyName}}</span>-->
-                <!--                            </div>-->
-                <!--                            <div *ngIf="groupName" style="margin-bottom: 15px;color: #707070">-->
-                <!--                                <span>Group: </span>-->
-                <!--                                <span>{{groupName}}</span>-->
-                <!--                            </div>-->
-                <!--                            <div *ngIf="groupLabel" style="margin-bottom: 15px;color: #707070">-->
-                <!--                                <span>Label: </span>-->
-                <!--                                <span>{{groupLabel}}</span>-->
-                <!--                            </div>-->
-                <!--                            <div *ngIf="inviteRole" style="margin-bottom: 15px;color: #707070">-->
-                <!--                                <span>Role: </span>-->
-                <!--                                <span>{{inviteRole}}</span>-->
-                <!--                            </div>-->
-                <!--                            <mat-form-field appearance="outline">-->
-                <!--                                <mat-label>Invite</mat-label>-->
-                <!--                                <input matInput formControlName="invitation" (ngModelChange)="onParse($event)">-->
-                <!--                            </mat-form-field>-->
-                <!--                        </div>-->
-                <!--                    </div>-->
-                <!--                </mat-radio-group>-->
-
                 <div *ngIf="isGroup" aria-label="Select an option">
                     <div>
                         <div class="group-name">
@@ -79,13 +28,6 @@
                             <label>Create new group</label>
                         </div>
                         <div class="group-value" [ngClass]="{'disabled': type !== 'new'}">
-                            <!--                            <mat-form-field appearance="outline">-->
-                            <!--                                <mat-label>Group Template</mat-label>-->
-                            <!--                                <mat-select formControlName="roleOrGroup">-->
-                            <!--                                    <mat-option *ngFor="let group of groups" [value]="group">{{ group }}</mat-option>-->
-                            <!--                                </mat-select>-->
-                            <!--                            </mat-form-field>-->
-
                             <div class="form-group">
                                 <label for="groupDropdown" class="form-label">Group Template</label>
                                 <p-dropdown
@@ -98,12 +40,6 @@
                                     class="full-width">
                                 </p-dropdown>
                             </div>
-
-                            <!--                            <mat-form-field *ngIf="ifPrivateGroup()" appearance="outline">-->
-                            <!--                                <mat-label>Group Label</mat-label>-->
-                            <!--                                <input matInput formControlName="groupLabel">-->
-                            <!--                            </mat-form-field>-->
-
                             <div *ngIf="ifPrivateGroup()" class="form-group">
                                 <label for="groupLabelInput" class="form-label">Group Label</label>
                                 <input
@@ -142,11 +78,6 @@
                                 <span>Role: </span>
                                 <span>{{ inviteRole }}</span>
                             </div>
-                            <!--                            <mat-form-field appearance="outline">-->
-                            <!--                                <mat-label>Invite</mat-label>-->
-                            <!--                                <input matInput formControlName="invitation" (ngModelChange)="onParse($event)">-->
-                            <!--                            </mat-form-field>-->
-
                             <div class="form-group">
                                 <label for="invitationInput" class="form-label">Invite</label>
                                 <input

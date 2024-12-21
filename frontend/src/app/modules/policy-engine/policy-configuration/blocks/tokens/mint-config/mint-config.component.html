@@ -2,7 +2,6 @@
 <table class="properties" [attr.readonly]="readonly" *ngIf="properties">
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Properties</td>
@@ -20,12 +19,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.tokenId" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option *ngFor="let token of tokens" [value]="token.value">-->
-            <!--                    {{ token.name }}-->
-            <!--                </mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown [(ngModel)]="properties.tokenId"
                         [options]="tokens"
                         [disabled]="readonly"
@@ -40,12 +33,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Token Template</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.template" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option *ngFor="let token of tokenTemplate" [value]="token.value">-->
-            <!--                    {{ token.name }}-->
-            <!--                </mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown [(ngModel)]="properties.template"
                         [options]="tokenTemplate"
                         [disabled]="readonly"
@@ -67,13 +54,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.accountType" [disabled]="readonly"-->
-            <!--                        (selectionChange)="changeAccountType()">-->
-            <!--                <mat-option value="default">Default</mat-option>-->
-            <!--                <mat-option value="custom">Custom Account Field</mat-option>-->
-            <!--                <mat-option value="custom-value">Custom Account Value</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown [(ngModel)]="properties.accountType"
                         [options]="accountTypeOptions"
                         [disabled]="readonly"

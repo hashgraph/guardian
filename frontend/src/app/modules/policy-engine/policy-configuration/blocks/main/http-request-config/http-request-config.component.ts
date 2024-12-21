@@ -1,6 +1,5 @@
 import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
 import {CodeEditorDialogComponent} from '../../../../dialogs/code-editor-dialog/code-editor-dialog.component';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
 
@@ -39,7 +38,6 @@ export class HttpRequestConfigComponent implements OnInit {
     ];
 
     constructor(
-        // private dialog: MatDialog
         private dialog: DialogService,
     ) {
     }
@@ -80,14 +78,11 @@ export class HttpRequestConfigComponent implements OnInit {
     editBody($event: MouseEvent) {
         const dialogRef = this.dialog.open(CodeEditorDialogComponent, {
             width: '80%',
-            // panelClass: 'g-dialog',
             data: {
                 mode: 'json',
                 expression: this.properties.messageBody,
                 readonly: this.readonly
             },
-            // autoFocus: true,
-            // disableClose: true
             styleClass: 'g-dialog',
             modal: true,
             closable: false,

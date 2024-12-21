@@ -1,22 +1,16 @@
 <div mat-dialog-title class="header">
     <span class="header-title">Icon Preview</span>
-    <!--  <mat-icon class="close-icon" (click)="onClose()">close</mat-icon>-->
-
     <i class="pi pi-times close-icon" (click)="onClose()"></i>
 </div>
 
 <div mat-dialog-content class="content-container">
     <ng-container [ngSwitch]="iconType">
         <div *ngSwitchCase="'custom'">
-            <!--            <mat-spinner *ngIf="loading" class="loading"></mat-spinner>-->
-
             <div *ngIf="loading" class="loading">
                 <p-progressSpinner></p-progressSpinner>
             </div>
             <img [hidden]="loading" [src]="icon" class="image-container" alt="Icon not found"/>
         </div>
-        <!--        <mat-icon *ngSwitchCase="'common'" class="icon-container" style="font-size: 250px;">{{icon}}</mat-icon>-->
-
         <i *ngSwitchCase="'common'" class="pi icon-container" [ngClass]="'pi-' + icon" style="font-size: 250px;"></i>
     </ng-container>
 </div>

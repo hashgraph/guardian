@@ -172,11 +172,6 @@
                 <div class="category-permission">
                     <div *ngFor="let entity of selectedCategory.entities" class="entity">
                         <div *ngIf="entity.canAll" class="entity-all" (click)="onAll(entity)">
-                            <!--                            <mat-checkbox-->
-                            <!--                                color="primary"-->
-                            <!--                                [checked]="entity.all"-->
-                            <!--                            ></mat-checkbox>-->
-
                             <p-checkbox
                                 [(ngModel)]="entity.all"
                                 [binary]="true"
@@ -189,13 +184,6 @@
                         <div class="permissions">
                             <ng-container *ngIf="entity.type ==='all'">
                                 <div *ngFor="let action of entity.actions;" class="all-permission">
-                                    <!--                                    <mat-checkbox-->
-                                    <!--                                        *ngIf="action"-->
-                                    <!--                                        color="primary"-->
-                                    <!--                                        (change)="onCheckAll(entity)"-->
-                                    <!--                                        [formControl]="action.control">-->
-                                    <!--                                    </mat-checkbox>-->
-
                                     <p-checkbox
                                         *ngIf="action"
                                         [binary]="true"
@@ -207,13 +195,6 @@
                             </ng-container>
                             <ng-container *ngIf="entity.type ==='checkbox'">
                                 <div *ngFor="let action of entity.actions; let i=index" class="permission perm-{{i}}">
-                                    <!--                                    <mat-checkbox-->
-                                    <!--                                        *ngIf="action"-->
-                                    <!--                                        color="primary"-->
-                                    <!--                                        (change)="onCheckAll(entity)"-->
-                                    <!--                                        [formControl]="action.control">-->
-                                    <!--                                    </mat-checkbox>-->
-
                                     <p-checkbox
                                         *ngIf="action"
                                         [binary]="true"
@@ -243,14 +224,6 @@
                         <div class="entity-name" (click)="onAll(entity)">
                             {{ entity.name }}
                         </div>
-                        <!--                        <div class="permissions">-->
-                        <!--                            <mat-radio-group  [formControl]="entity.control">-->
-                        <!--                                <div *ngFor="let action of entity.actions; let i=index" class="permission big perm-{{i}}">-->
-                        <!--                                    <mat-radio-button color="primary" [value]="action.permission"></mat-radio-button>-->
-                        <!--                                </div>-->
-                        <!--                            </mat-radio-group>-->
-                        <!--                        </div>-->
-
                         <div class="permissions">
                             <div *ngFor="let action of entity.actions; let i = index" class="permission big perm-{{i}}">
                                 <p-radioButton

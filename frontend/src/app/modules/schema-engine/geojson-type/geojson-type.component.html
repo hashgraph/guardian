@@ -3,12 +3,6 @@
                    (valueChange)="onViewTypeChange(!isDisabled && this.control?.value)"></switch-button>
 </div>
 <ng-container *ngIf="isJSON; else form">
-    <!--    <mat-form-field class="type-selector" appearance="outline">-->
-    <!--        <mat-label>GeoJSON</mat-label>-->
-    <!--        <textarea matInput placeholder="{}" [disabled]="isDisabled" required [(ngModel)]="jsonInput"-->
-    <!--            (change)="jsonChanged()"></textarea>-->
-    <!--    </mat-form-field>-->
-
     <div class="form-group type-selector">
         <label for="geoJsonInput" class="form-label">GeoJSON</label>
         <textarea
@@ -24,19 +18,6 @@
     </div>
 </ng-container>
 <ng-template #form>
-    <!--    <mat-form-field class="type-selector" appearance="outline">-->
-    <!--        <mat-label>Type</mat-label>-->
-    <!--        <mat-select required (selectionChange)="onTypeChange()" [(ngModel)]="type" [disabled]="isDisabled">-->
-    <!--            <mat-option>None</mat-option>-->
-    <!--            <mat-option value="Point">Point</mat-option>-->
-    <!--            <mat-option value="Polygon">Polygon</mat-option>-->
-    <!--            <mat-option value="LineString">LineString</mat-option>-->
-    <!--            <mat-option value="MultiPoint">MultiPoint</mat-option>-->
-    <!--            <mat-option value="MultiPolygon">MultiPolygon</mat-option>-->
-    <!--            <mat-option value="MultiLineString">MultiLineString</mat-option>-->
-    <!--        </mat-select>-->
-    <!--    </mat-form-field>-->
-
     <div class="form-group type-selector">
         <label for="typeDropdown" class="form-label">Type</label>
         <p-dropdown
@@ -74,28 +55,6 @@
             </ng-container>
         </google-map>
     </div>
-
-    <!--    <mat-form-field class="type-selector" appearance="outline">-->
-    <!--        <mat-label>Coordinates</mat-label>-->
-    <!--        <textarea matInput [placeholder]="coordinatesPlaceholder" required [(ngModel)]="coordinates"-->
-    <!--            (change)="coordinatesChanged()" [disabled]="isDisabled"></textarea>-->
-    <!--    </mat-form-field>-->
-
-<!--    <div class="form-group type-selector">-->
-<!--        <label for="coordinatesInput" class="form-label">Coordinates</label>-->
-<!--        <textarea-->
-<!--            pInputTextarea-->
-<!--            id="coordinatesInput"-->
-<!--            [placeholder]="coordinatesPlaceholder"-->
-<!--            required-->
-<!--            [(ngModel)]="coordinates"-->
-<!--            (ngModelChange)="coordinatesChanged()"-->
-<!--            [disabled]="isDisabled"-->
-<!--            class="full-width">-->
-<!--    </textarea>-->
-<!--        <small *ngIf="!coordinates" class="p-error">Coordinates are required.</small>-->
-<!--    </div>-->
-
     <div class="form-group type-selector">
         <label for="coordinatesInput" class="form-label">Coordinates:</label>
         <textarea
@@ -108,7 +67,6 @@
             [disabled]="isDisabled"
             class="full-width"
         ></textarea>
-<!--        <small *ngIf="!coordinates" class="p-error">Coordinates are required.</small>-->
     </div>
 
 </ng-template>

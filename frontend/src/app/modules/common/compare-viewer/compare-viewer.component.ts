@@ -1,8 +1,7 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { CompareStorage } from '../../../services/compare-storage.service';
-import { Subscription } from 'rxjs';
-import { Router } from '@angular/router';
-// import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
+import {Component, Input, OnInit, ViewChild} from '@angular/core';
+import {CompareStorage} from '../../../services/compare-storage.service';
+import {Subscription} from 'rxjs';
+import {Router} from '@angular/router';
 
 @Component({
     selector: 'app-compare-viewer',
@@ -12,8 +11,6 @@ import { Router } from '@angular/router';
 export class CompareViewerComponent implements OnInit {
     @Input() active: boolean = false;
     @Input() collapsed: boolean = false;
-
-    // @ViewChild(MatMenuTrigger) compareMenu: MatMenuTrigger;
 
     public count: number = 0;
     public ids: string[];
@@ -74,9 +71,6 @@ export class CompareViewerComponent implements OnInit {
     }
 
     public onCompare(): void {
-        // if (this.compareMenu) {
-        //     this.compareMenu.closeMenu();
-        // }
         if (this.selectedCount > 1) {
             const ids = this.ids.filter(id => this.selected[id]);
             const items = btoa(JSON.stringify({

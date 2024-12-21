@@ -1,5 +1,4 @@
 import {Component, Inject, OnInit} from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {RetireTokenPool, Token} from '@guardian/interfaces';
 import {ContractService} from 'src/app/services/contract.service';
 import {TokenService} from 'src/app/services/token.service';
@@ -24,10 +23,8 @@ export class RetirePoolsDialogComponent implements OnInit {
     contract: any = {}
 
     constructor(
-        // public dialogRef: MatDialogRef<RetirePoolsDialogComponent>,
         public contractService: ContractService,
         public tokenService: TokenService,
-        // @Inject(MAT_DIALOG_DATA) public contract: any
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
     ) {

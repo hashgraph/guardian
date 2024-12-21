@@ -2,7 +2,6 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <!--                <mat-icon>close</mat-icon>-->
                 <i class="pi pi-times"></i>
             </div>
         </div>
@@ -12,14 +11,9 @@
     </div>
     <div class="g-dialog-body">
         <div class="context">
-<!--            <div *ngIf="loading" class="loading">-->
-<!--                <mat-spinner></mat-spinner>-->
-<!--            </div>-->
-
             <div *ngIf="loading" class="loading">
                 <p-progressSpinner></p-progressSpinner>
             </div>
-            <!-- <div class="header">{{text}}</div> -->
             <div *ngIf="results" class="results">
                 <div class="results-header">
                     Common
@@ -51,10 +45,6 @@
                         </div>
                     </div>
                 </div>
-<!--                <div class="dialog-actions">-->
-<!--                    <button mat-raised-button color="primary" (click)="onDetails()">Details</button>-->
-<!--                    <button mat-button type="button" (click)="onFinish()">Finish</button>-->
-<!--                </div>-->
                 <div class="dialog-actions">
                     <p-button
                         class="mat-raised-button"

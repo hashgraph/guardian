@@ -1,5 +1,4 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -18,8 +17,6 @@ export class QrCodeDialogComponent implements OnDestroy {
     isMobile: boolean = window.innerWidth <= 810;
 
     constructor(
-        // @Inject(MAT_DIALOG_DATA) private data: any,
-        // private dialogRef: MatDialogRef<QrCodeDialogComponent>,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
         private toastr: ToastrService,

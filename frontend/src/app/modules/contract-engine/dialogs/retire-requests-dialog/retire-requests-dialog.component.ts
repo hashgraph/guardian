@@ -1,8 +1,7 @@
-import { Component, Inject, OnInit } from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { Token } from '@guardian/interfaces';
-import { ContractService } from 'src/app/services/contract.service';
-import { TokenService } from 'src/app/services/token.service';
+import {Component, Inject, OnInit} from '@angular/core';
+import {Token} from '@guardian/interfaces';
+import {ContractService} from 'src/app/services/contract.service';
+import {TokenService} from 'src/app/services/token.service';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
@@ -25,10 +24,8 @@ export class RetireRequestsDialogComponent implements OnInit {
     contract: any = {}
 
     constructor(
-        // public dialogRef: MatDialogRef<RetireRequestsDialogComponent>,
         public contractService: ContractService,
         public tokenService: TokenService,
-        // @Inject(MAT_DIALOG_DATA) public contract: any,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {

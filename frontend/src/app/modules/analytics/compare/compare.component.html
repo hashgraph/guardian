@@ -10,22 +10,12 @@
     <div *ngIf="result" class="merge-options">
         <div class="merge-back">
             <div *ngIf="parent" (click)="onBack()">
-                <!--                <mat-icon>chevron_left</mat-icon>-->
-
                 <i class="pi pi-chevron-left"></i>
                 <span>Back</span>
             </div>
         </div>
         <div class="merge-lvl">
             <div *ngIf="isEventsLvl" class="f1">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>Events:</mat-label>-->
-                <!--                    <mat-select [(value)]="eventsLvl" (selectionChange)="onFilterChange()">-->
-                <!--                        <mat-option value="0">Don't compare</mat-option>-->
-                <!--                        <mat-option value="1">All events</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div class="p-fluid">
                     <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
                     <p-dropdown
@@ -39,15 +29,6 @@
                 </div>
             </div>
             <div *ngIf="isPropertiesLvl" class="f1">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>Properties:</mat-label>-->
-                <!--                    <mat-select [(value)]="propLvl" (selectionChange)="onFilterChange()">-->
-                <!--                        <mat-option value="0">Don't compare</mat-option>-->
-                <!--                        <mat-option value="1">Only simple properties</mat-option>-->
-                <!--                        <mat-option value="2">All properties</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div class="p-fluid">
                     <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
                     <p-dropdown
@@ -62,15 +43,6 @@
                 </div>
             </div>
             <div *ngIf="isChildrenLvl" class="f1">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>Children:</mat-label>-->
-                <!--                    <mat-select [(value)]="childrenLvl" (selectionChange)="onFilterChange()">-->
-                <!--                        <mat-option value="0">Don't compare</mat-option>-->
-                <!--                        <mat-option value="1">Only child blocks of the first level</mat-option>-->
-                <!--                        <mat-option value="2">All children</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div class="p-fluid">
                     <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
                     <p-dropdown
@@ -86,14 +58,6 @@
                 </div>
             </div>
             <div *ngIf="isUUIDLvl" class="f1">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>UUID:</mat-label>-->
-                <!--                    <mat-select [(value)]="idLvl" (selectionChange)="onFilterChange()">-->
-                <!--                        <mat-option value="0">Don't compare</mat-option>-->
-                <!--                        <mat-option value="1">All UUID</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div class="p-fluid">
                     <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
                     <p-dropdown
@@ -119,22 +83,12 @@
         </div>
         <div>
             <div class="export-btn" (click)="onExport()">
-                <!--                <mat-icon>download</mat-icon>-->
-
                 <i class="pi pi-download"></i>
                 Export
             </div>
         </div>
         <div class="merge-type">
             <div class="f2">
-                <!--                <mat-form-field appearance="outline">-->
-                <!--                    <mat-label>Type:</mat-label>-->
-                <!--                    <mat-select [(value)]="visibleType">-->
-                <!--                        <mat-option value="tree">Tree</mat-option>-->
-                <!--                        <mat-option value="table">Table</mat-option>-->
-                <!--                    </mat-select>-->
-                <!--                </mat-form-field>-->
-
                 <div class="p-fluid">
                     <label for="typeDropdown" class="dropdown-border-label">Type:</label>
                     <p-dropdown

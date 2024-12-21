@@ -4,14 +4,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Data Type (deprecated)</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.dataType" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option value=""></mat-option>-->
-            <!--                <mat-option value="vc-documents">Collection (VC)</mat-option>-->
-            <!--                <mat-option value="did-documents">Collection (DID)</mat-option>-->
-            <!--                <mat-option value="approve">Collection (Approve)</mat-option>-->
-            <!--                <mat-option value="hedera">Hedera (Topic)</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown
                 [(ngModel)]="properties.dataType"
                 [disabled]="readonly"
@@ -29,13 +21,6 @@
             Data Source
         </td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.dataSource" [disabled]="readonly"-->
-            <!--                        (selectionChange)="onDataSource($event)">-->
-            <!--                <mat-option value="auto">Auto</mat-option>-->
-            <!--                <mat-option value="database">Database</mat-option>-->
-            <!--                <mat-option value="hedera">Hedera Topic</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown
                 [(ngModel)]="properties.dataType"
                 [disabled]="readonly"
@@ -51,22 +36,6 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Hedera Topic</td>
             <td class="propRowCell">
-                <!--                <mat-select [(value)]="properties.topic" [disabled]="readonly" (selectionChange)="selectTopic($event)">-->
-                <!--                    <mat-option *ngFor="let topic of topics" [value]="topic.name" [matTooltip]="topic.description"-->
-                <!--                                matTooltipPosition="above" matTooltipClass="guardian-tooltip small-guardian-tooltip">-->
-                <!--                        {{ topic.name }}-->
-                <!--                    </mat-option>-->
-                <!--                    <mat-option value="root">Policy Instance</mat-option>-->
-                <!--                    <mat-option class="link" value="new">-->
-                <!--                        <span class="mat-option-link">-->
-                <!--&lt;!&ndash;                                <mat-icon>add</mat-icon>&ndash;&gt;-->
-
-                <!--                            <i class="pi pi-plus"></i>-->
-                <!--                            <span>Create new topic</span>-->
-                <!--                        </span>-->
-                <!--                    </mat-option>-->
-                <!--                </mat-select>-->
-
                 <p-dropdown
                     [(ngModel)]="properties.topic"
                     [disabled]="readonly"
@@ -81,13 +50,6 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Owner</td>
             <td class="propRowCell">
-                <!--                <mat-select [(value)]="properties.topicOwner" [disabled]="readonly" (change)="onSave()">-->
-                <!--                    <mat-option value=""></mat-option>-->
-                <!--                    <mat-option value="user">Current User</mat-option>-->
-                <!--                    <mat-option value="owner">Document Owner</mat-option>-->
-                <!--                    <mat-option value="issuer">Document Issuer</mat-option>-->
-                <!--                </mat-select>-->
-
                 <p-dropdown
                     [(ngModel)]="properties.topicOwner"
                     [disabled]="readonly"
@@ -127,15 +89,11 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionGroup')"
             [attr.collapse]="propHidden.optionGroup">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Options</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addOption()">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus"></i>
                 <span>Add Option</span>
             </div>
@@ -146,8 +104,6 @@
         <tr class="propRow" [attr.collapse]="propHidden.optionGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
                 [attr.collapse]="propHidden.options[i]">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Option {{ i }}</td>
@@ -155,8 +111,6 @@
                 {{ option.name }}
                 <span *ngIf="option.value">: {{ option.value }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeOption(i)">
-<!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </span>
             </td>

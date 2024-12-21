@@ -15,171 +15,6 @@
     </div>
 
     <div *ngIf="resultContext" class="list">
-        <!--        <mat-accordion multi>-->
-        <!--            <mat-expansion-panel expanded>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Description</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div class="info-container" [style.grid-template-columns]="_gridStyle">-->
-        <!--                    <ng-container *ngFor="let context of resultContext">-->
-        <!--                        <div class="middle-compare-result compare-result"-->
-        <!--                            *ngIf="context.right"-->
-        <!--                            [style.grid-column-start]="2 * context.index"-->
-        <!--                            [attr.open]="true">-->
-        <!--                        </div>-->
-        <!--                        <div-->
-        <!--                            [style.grid-column-start]="2 * context.index + 1"-->
-        <!--                            [attr.open]="true"-->
-        <!--                            [ngClass]="{-->
-        <!--                                'left-compare-result': context.left,-->
-        <!--                                'right-compare-result': context.right,-->
-        <!--                                'compare-result': true-->
-        <!--                            }">-->
-        <!--                            <ng-container *ngTemplateOutlet="resultInfo; context: context"></ng-container>-->
-        <!--                        </div>-->
-        <!--                    </ng-container>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-        <!--            <mat-expansion-panel expanded *ngIf="treeContext">-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <div class="header">Policy Documents</div>-->
-        <!--                </mat-expansion-panel-header>-->
-
-        <!--                <div class="merge-container">-->
-        <!--                    <div class="legend"-->
-        <!--                        [attr.type-1]="_type1"-->
-        <!--                        [attr.type-2]="_type2"-->
-        <!--                        [attr.type-3]="_type3"-->
-        <!--                        [attr.type-4]="_type4">-->
-        <!--                        <div class="legend-item" (click)="_type1=!_type1">-->
-        <!--                            <div class="legend-icon legend-l1"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Documents are equal.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="_type2=!_type2">-->
-        <!--                            <div class="legend-icon legend-l2"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Documents are equal except for dynamic fields.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="_type3=!_type3">-->
-        <!--                            <div class="legend-icon legend-l3"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Documents are of the same type and are partially equal.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="_type4=!_type4">-->
-        <!--                            <div class="legend-icon legend-l4"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Documents are absent in the other Policy.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                    <div *ngIf="type==='tree'" class="merge-tree"-->
-        <!--                        [attr.tree-size]="size"-->
-        <!--                        [attr.open]="_panelOpenState"-->
-        <!--                        [attr.type-1]="_type1"-->
-        <!--                        [attr.type-2]="_type2"-->
-        <!--                        [attr.type-3]="_type3"-->
-        <!--                        [attr.type-4]="_type4">-->
-
-        <!--                        <div *ngFor="let row of treeContext" class="report-item report-item-number"-->
-        <!--                            [attr.hidden]="row.hidden"-->
-        <!--                            [style.grid-template-columns]="_gridStyle">-->
-
-        <!--                            <div class="report-number">{{row.number}}</div>-->
-        <!--                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">-->
-        <!--                                <mat-icon class="open-icon">remove</mat-icon>-->
-        <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
-        <!--                            </div>-->
-
-        <!--                            <ng-container *ngFor="let treeItemContext of row.contexts">-->
-        <!--                                <div-->
-        <!--                                    [attr.offset]="row.lvl"-->
-        <!--                                    [attr.rate]="treeItemContext.rate"-->
-        <!--                                    [attr.type]="treeItemContext.type"-->
-        <!--                                    [style.padding-left.px]="row.offset"-->
-        <!--                                    [style.grid-column-start]="2 * treeItemContext.index + 1"-->
-        <!--                                    [ngClass]="{-->
-        <!--                                        'left-tree': treeItemContext.left,-->
-        <!--                                        'right-tree': treeItemContext.right,-->
-        <!--                                        'hidden-item': true,-->
-        <!--                                        'fantom-tree': treeItemContext.fantom-->
-        <!--                                    }">-->
-        <!--                                    <div class="block-tree" (click)="row.open = !row.open">-->
-        <!--                                        <div class="block-index">-->
-        <!--                                            {{treeItemContext.data.docIndex}}-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-icon">-->
-        <!--                                            <mat-icon>{{treeItemContext.data.docIcon}}</mat-icon>-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-type">{{treeItemContext.data.docName}}</div>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-
-        <!--                                <div *ngIf="treeItemContext.right" class="middle-tree"-->
-        <!--                                    [style.grid-column-start]="2 * treeItemContext.index">-->
-        <!--                                    <div class="compare-btn" (click)="row.open = !row.open">-->
-        <!--                                        <mat-icon *ngIf="!row.open">unfold_more</mat-icon>-->
-        <!--                                        <mat-icon *ngIf="row.open">unfold_less</mat-icon>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-        <!--                            </ng-container>-->
-
-        <!--                            <ng-container *ngIf="row.open">-->
-        <!--                                <ng-container *ngFor="let treeDetailContext of row.detailContexts">-->
-        <!--                                    <div [attr.open]="row.open"-->
-        <!--                                        [style.padding-left.px]="row.offset"-->
-        <!--                                        [style.grid-column-start]="2 * treeDetailContext.index + 1"-->
-        <!--                                        [ngClass]="{-->
-        <!--                                            'left-compare-result': treeDetailContext.left,-->
-        <!--                                            'right-compare-result': treeDetailContext.right,-->
-        <!--                                            'fantom-block': treeDetailContext.fantom,-->
-        <!--                                            'hidden-item': true,-->
-        <!--                                            'compare-result': true-->
-        <!--                                        }">-->
-        <!--                                        <ng-container *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>-->
-        <!--                                    </div>-->
-        <!--                                    <div class="middle-compare-result compare-result"-->
-        <!--                                        *ngIf="treeDetailContext.right"-->
-        <!--                                        [style.grid-column-start]="2 * treeDetailContext.index"-->
-        <!--                                        [attr.open]="row.open"></div>-->
-        <!--                                </ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                    <div *ngIf="type==='table'" class="merge-table" [attr.open]="_panelOpenState">-->
-        <!--                        <div class="merge-table-content">-->
-        <!--                            <mat-table *ngIf="treeContext" [dataSource]="treeContext" class="table">-->
-        <!--                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">-->
-        <!--                                    <mat-header-cell *cdkHeaderCellDef>-->
-        <!--                                        {{ column.label }}-->
-        <!--                                    </mat-header-cell>-->
-        <!--                                    <mat-cell *cdkCellDef="let row">-->
-        <!--                                        <span class="table-value"-->
-        <!--                                            [title]="row.data[column.name]"-->
-        <!--                                            [attr.value]="row.data[column.name]"-->
-        <!--                                            [attr.display-type]="column.display">-->
-        <!--                                            {{ row.data[column.name] }}-->
-        <!--                                        </span>-->
-        <!--                                    </mat-cell>-->
-        <!--                                </ng-container>-->
-        <!--                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>-->
-        <!--                                <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>-->
-        <!--                            </mat-table>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-        <!--        </mat-accordion>-->
-
         <p-accordion [multiple]="true">
             <p-accordionTab header="Description" [selected]="true">
                 <div class="info-container" [style.grid-template-columns]="_gridStyle">
@@ -249,10 +84,6 @@
                              [style.grid-template-columns]="_gridStyle">
 
                             <div class="report-number">{{ row.number }}</div>
-                            <!--                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">-->
-                            <!--                                <mat-icon class="open-icon">remove</mat-icon>-->
-                            <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
-                            <!--                            </div>-->
 
                             <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
                                 <i class="pi pi-minus open-icon" *ngIf="row.collapse === 1"></i>
@@ -275,12 +106,8 @@
                                         <div class="block-index">
                                             {{ treeItemContext.data.docIndex }}
                                         </div>
-                                        <!--                                        <div class="block-icon">-->
-                                        <!--                                            <mat-icon>{{treeItemContext.data.docIcon}}</mat-icon>-->
-                                        <!--                                        </div>-->
 
                                         <div class="block-icon">
-<!--                                            <span class="icon">{{ treeItemContext.data.docIcon }}</span>-->
                                             <i [ngClass]="'pi pi-' + treeItemContext.data.docIcon"></i>
                                         </div>
                                         <div class="block-type">{{ treeItemContext.data.docName }}</div>
@@ -289,16 +116,12 @@
 
                                 <div *ngIf="treeItemContext.right" class="middle-tree"
                                      [style.grid-column-start]="2 * treeItemContext.index">
-                                    <!--                                    <div class="compare-btn" (click)="row.open = !row.open">-->
-                                    <!--                                        <mat-icon *ngIf="!row.open">unfold_more</mat-icon>-->
-                                    <!--                                        <mat-icon *ngIf="row.open">unfold_less</mat-icon>-->
-                                    <!--                                    </div>-->
 
                                     <div class="compare-btn" (click)="row.open = !row.open">
-                                        <!--                                        <span *ngIf="!row.open" class="icon">▼</span>-->
-                                        <!--                                        <span *ngIf="row.open" class="icon">▲</span>-->
-                                        <i *ngIf="!row.open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
-                                        <i  *ngIf="row.open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                                        <i *ngIf="!row.open"
+                                           class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                        <i *ngIf="row.open"
+                                           class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                     </div>
                                 </div>
                             </ng-container>
@@ -424,19 +247,9 @@
         <div class="prop-table" [attr.system]="_systemProp">
             <div class="prop-table-header">
                 Documents:
-                <!--                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">-->
-                <!--                    <mat-icon *ngIf="!_systemProp">unfold_more</mat-icon>-->
-                <!--                    <mat-icon *ngIf="_systemProp">unfold_less</mat-icon>-->
-                <!--                </div>-->
-
-                <!--                <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">-->
-                <!--                    <span *ngIf="!_systemProp" class="icon">▼</span>-->
-                <!--                    <span *ngIf="_systemProp" class="icon">▲</span>-->
-                <!--                </div>-->
-
                 <div class="prop-table-system-btn" (click)="_systemProp = !_systemProp">
                     <i *ngIf="!_systemProp" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
-                    <i  *ngIf="_systemProp" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                    <i *ngIf="_systemProp" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                 </div>
             </div>
             <div class="prop-table-body">
@@ -453,8 +266,6 @@
                     </div>
                     <div class="prop-table-value" [attr.prop-type]="field.propType">
                         <div class="compare-btn" (click)="compareSchema(field)">
-                            <!--                            <mat-icon>search</mat-icon>-->
-
                             <i class="pi pi-search"></i>
                         </div>
                         <span *ngIf="field.propType" [title]="field.value">

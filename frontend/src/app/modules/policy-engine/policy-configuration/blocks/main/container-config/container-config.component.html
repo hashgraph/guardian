@@ -11,7 +11,6 @@
 
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
@@ -28,11 +27,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.uiMetaData.type" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option value="blank">BLANK</mat-option>-->
-            <!--                <mat-option value="tabs">TABS</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown [(ngModel)]="properties.uiMetaData.type"
                         [options]="uiMetaDataTypeOptions"
                         [disabled]="readonly"

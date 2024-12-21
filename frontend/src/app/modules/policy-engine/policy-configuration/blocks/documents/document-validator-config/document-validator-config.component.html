@@ -4,13 +4,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Document Type</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.documentType" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option value="vc-document">VC Document</mat-option>-->
-            <!--                <mat-option value="vp-document">VP Document</mat-option>-->
-            <!--                <mat-option value="related-vc-document">Related VC Document</mat-option>-->
-            <!--                <mat-option value="related-vp-document">Related VP Document</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown
                 [(ngModel)]="properties.documentType"
                 [disabled]="readonly"
@@ -67,15 +60,11 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
             [attr.collapse]="propHidden.conditionsGroup">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Conditions</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addCondition()">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus"></i>
                 <span>Add Condition</span>
             </div>
@@ -85,8 +74,6 @@
         <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Condition {{ i }}</td>
@@ -96,8 +83,6 @@
                     {{ condition.field }} {{ condition.type }} {{ condition.value }}
                 </span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCondition(i)">
-<!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </span>
             </td>
@@ -106,13 +91,6 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
-                <!--                <mat-select [(value)]="condition.type" [disabled]="readonly" (change)="onSave()">-->
-                <!--                    <mat-option value="equal">Equal</mat-option>-->
-                <!--                    <mat-option value="not_equal">Not Equal</mat-option>-->
-                <!--                    <mat-option value="in">In</mat-option>-->
-                <!--                    <mat-option value="not_in">Not In</mat-option>-->
-                <!--                </mat-select>-->
-
                 <p-dropdown
                     [(ngModel)]="condition.type"
                     [disabled]="readonly"

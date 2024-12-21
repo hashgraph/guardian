@@ -175,7 +175,6 @@
                     />
                 </div>
                 <div (click)="onHepTextReset()" class="reset-btn">
-                    <!--                    <mat-icon>restart_alt</mat-icon>-->
                     <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
                     <span class="reset-btn-label">Reset</span>
                 </div>
@@ -215,40 +214,6 @@
             </ng-template>
         </div>
         <div *ngIf="enum && !loading" class="enum-options-container">
-            <!--            <mat-form-field-->
-            <!--                *ngIf="this.field.controlEnum.value.length"-->
-            <!--                appearance="outline"-->
-            <!--                class="enum-form-field"-->
-            <!--            >-->
-            <!--                <mat-label>Enum data</mat-label>-->
-            <!--&lt;!&ndash;                <mat-chip-list #chipList aria-label="Enum values">&ndash;&gt;-->
-            <!--&lt;!&ndash;                    <mat-chip&ndash;&gt;-->
-            <!--&lt;!&ndash;                        *ngFor="let keyword of keywords"&ndash;&gt;-->
-            <!--&lt;!&ndash;                        class="mat-chip-value"&ndash;&gt;-->
-            <!--&lt;!&ndash;                    >&ndash;&gt;-->
-            <!--&lt;!&ndash;                        <div class="mat-chip-value-label">&ndash;&gt;-->
-            <!--&lt;!&ndash;                            {{ keyword }}&ndash;&gt;-->
-            <!--&lt;!&ndash;                        </div>&ndash;&gt;-->
-            <!--&lt;!&ndash;                    </mat-chip>&ndash;&gt;-->
-            <!--&lt;!&ndash;                    <mat-chip *ngIf="keywords.length < field.enum.length">&ndash;&gt;-->
-            <!--&lt;!&ndash;                        ...&ndash;&gt;-->
-            <!--&lt;!&ndash;                    </mat-chip>&ndash;&gt;-->
-            <!--&lt;!&ndash;                </mat-chip-list>&ndash;&gt;-->
-
-            <!--                <div class="p-chips" aria-label="Enum values">-->
-            <!--                    <div class="p-chips-container">-->
-            <!--                        <div-->
-            <!--                            class="p-chips-token"-->
-            <!--                            *ngFor="let keyword of keywords">-->
-            <!--                            <span class="p-chips-token-label">{{ keyword }}</span>-->
-            <!--                        </div>-->
-            <!--                        <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">-->
-            <!--                            <span class="p-chips-token-label">...</span>-->
-            <!--                        </div>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--            </mat-form-field>-->
-
             <div *ngIf="field.controlEnum.value.length" class="form-group enum-form-field">
                 <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
                 <div class="p-chips" aria-label="Enum values">
@@ -269,7 +234,6 @@
                 [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
                 class="enum-edit-button"
             >
-                <!--                <mat-icon>edit</mat-icon>-->
                 <i class="pi pi-pencil"></i>
                 <span class="enum-edit-button-label">Edit values</span>
             </div>
@@ -298,10 +262,6 @@
             </div>
         </div>
     </div>
-    <!--    <div *ngIf="loading" class="loading">-->
-    <!--        <mat-spinner [diameter]="65"></mat-spinner>-->
-    <!--    </div>-->
-
     <div *ngIf="loading" class="loading">
         <p-progressSpinner
             [style]="{ width: '65px', height: '65px' }">
@@ -363,13 +323,6 @@
             />
         </div>
         <div class="checkbox-field-container">
-            <!--            <mat-checkbox-->
-            <!--                [checked]="value?.required"-->
-            <!--                [disabled]="readonly"-->
-            <!--                color="primary"-->
-            <!--            >-->
-            <!--            </mat-checkbox>-->
-
             <p-checkbox
                 [ngModel]="value?.required"
                 [disabled]="readonly"
@@ -383,13 +336,6 @@
             </label>
         </div>
         <div class="checkbox-field-container">
-            <!--            <mat-checkbox-->
-            <!--                [checked]="value?.isArray"-->
-            <!--                [disabled]="readonly"-->
-            <!--                color="primary"-->
-            <!--            >-->
-            <!--            </mat-checkbox>-->
-
             <p-checkbox
                 [ngModel]="value?.required"
                 [disabled]="readonly"

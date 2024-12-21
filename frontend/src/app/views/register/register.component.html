@@ -4,8 +4,6 @@
           *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
         <div class="login-header">
             <button class="login-header__back-button" (click)="setRole('')">
-                <!--                <mat-icon>chevron_left</mat-icon>-->
-
                 <i class="pi pi-chevron-left"></i>
                 <span>Back</span>
             </button>
@@ -13,16 +11,6 @@
         </div>
 
         <div class="login-content">
-            <!--            <mat-form-field class="example-full-width" appearance="outline">-->
-            <!--                <mat-label>Username:</mat-label>-->
-            <!--                <input matInput formControlName="login" (input)="onInput()">-->
-
-            <!--                <span *ngIf="error" class="field-error">{{ error }}</span>-->
-            <!--                <span *ngIf="shouldShowRequiredError('login')" class="field-error">-->
-            <!--                    Value is required-->
-            <!--                </span>-->
-            <!--            </mat-form-field>-->
-
             <div class="form-group example-full-width">
                 <label for="usernameInput" class="form-label">Username:</label>
                 <input
@@ -37,15 +25,6 @@
             </div>
 
             <div class="password-control">
-                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
-                <!--                    <mat-label>Password:</mat-label>-->
-                <!--                    <input matInput formControlName="password" [type]="passFieldType">-->
-
-                <!--                    <span *ngIf="shouldShowRequiredError('password')" class="field-error">-->
-                <!--                        Value is required-->
-                <!--                    </span>-->
-                <!--                </mat-form-field>-->
-
                 <div class="form-group example-full-width">
                     <label for="passwordInput" class="form-label">Password:</label>
                     <input
@@ -59,41 +38,17 @@
                         Value is required
                     </small>
                 </div>
-
-                <!--                <mat-icon-->
-                <!--                    *ngIf="showPasswordValue; else hidePassBtn"-->
-                <!--                    class="eye-icon"-->
-                <!--                    (click)="togglePasswordShow()"-->
-                <!--                >-->
-                <!--                    visibility_on-->
-                <!--                </mat-icon>-->
-
                 <i
                     *ngIf="showPasswordValue; else hidePassBtn"
                     class="pi pi-eye eye-icon"
                     (click)="togglePasswordShow()"
                 ></i>
-
                 <ng-template #hidePassBtn>
-                    <!--                    <mat-icon class="eye-icon" (click)="togglePasswordShow()">visibility_off</mat-icon>-->
-
                     <i class="pi pi-eye-slash eye-icon" (click)="togglePasswordShow()"></i>
                 </ng-template>
             </div>
 
             <div class="password-control">
-                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
-                <!--                    <mat-label>Confirm Password:</mat-label>-->
-                <!--                    <input matInput formControlName="confirmPassword" [type]="confirmPassFieldType">-->
-
-                <!--                    <span *ngIf="shouldShowRequiredError('confirmPassword')" class="field-error">-->
-                <!--                        Value is required-->
-                <!--                    </span>-->
-                <!--                    <span *ngIf="showPassMismatchError" class="field-error">-->
-                <!--                        The entered passwords do not match-->
-                <!--                    </span>-->
-                <!--                </mat-form-field>-->
-
                 <div class="form-group example-full-width">
                     <label for="confirmPasswordInput" class="form-label">Confirm Password:</label>
                     <input
@@ -110,24 +65,12 @@
                         The entered passwords do not match
                     </small>
                 </div>
-
-                <!--                <mat-icon-->
-                <!--                    *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"-->
-                <!--                    class="eye-icon"-->
-                <!--                    (click)="toggleConfirmPasswordShow()"-->
-                <!--                >-->
-                <!--                    visibility_on-->
-                <!--                </mat-icon>-->
-
                 <i
                     *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"
                     class="pi pi-eye eye-icon"
                     (click)="toggleConfirmPasswordShow()"
                 ></i>
-
                 <ng-template #hideConfirmPassBtn>
-                    <!--                    <mat-icon class="eye-icon" (click)="toggleConfirmPasswordShow()">visibility_off</mat-icon>-->
-
                     <i class="pi pi-eye-slash eye-icon" (click)="toggleConfirmPasswordShow()"></i>
                 </ng-template>
             </div>
@@ -153,8 +96,6 @@
             </button>
 
             <button mat-icon-button class="close-button" type="button" (click)="goBack()">
-                <!--                <mat-icon>clear</mat-icon>-->
-
                 <i class="pi pi-times"></i>
             </button>
         </div>

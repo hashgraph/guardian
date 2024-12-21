@@ -1,19 +1,18 @@
-import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { UntypedFormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { InformService } from 'src/app/services/inform.service';
-import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { colorToGradient } from '../../static/color-remoter.function';
-import { Subscription } from 'rxjs';
+import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
+import {UntypedFormControl, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+import {HttpClient} from '@angular/common/http';
+import {InformService} from 'src/app/services/inform.service';
+import {BrandingPayload, BrandingService} from 'src/app/services/branding.service';
+import {colorToGradient} from '../../static/color-remoter.function';
+import {Subscription} from 'rxjs';
 
 @Component({
     selector: 'app-branding',
     templateUrl: './branding.component.html',
     styleUrls: ['./branding.component.scss']
 })
-export class BrandingComponent implements OnInit, OnDestroy{
+export class BrandingComponent implements OnInit, OnDestroy {
 
     isPreviewOn: boolean = false;
     loading: boolean = false;

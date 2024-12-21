@@ -4,47 +4,31 @@
     <div *ngIf="requests?.length; else noRequests">
         <div *ngFor="let request of requests" class="request">
             <div class="profile">
-                <!--                <mat-icon class="profile__icon">person</mat-icon>-->
-
                 <i class="pi pi-user profile__icon"></i>
                 <span class="profile__id">{{ request.user }}</span>
             </div>
             <div class="tokens">
                 <div class="token-card" *ngFor="let token of request.tokens">
                     <span class="token-card__token">
-<!--                        <mat-icon>abc</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
                         <span>{{ token.tokenSymbol }}</span>
                     </span>
                     <span class="token-card__token">
-<!--                        <mat-icon>generating_tokens</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
                         <span>{{ token.token }}</span>
                     </span>
                     <span class="token-card__count" *ngIf="token.count > 0">
-<!--                        <mat-icon>calculate</mat-icon>-->
-
-                         <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
+                        <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
                         <span>{{ token.count | tokenCount: token.decimals }}</span>
                     </span>
                     <span class="token-card__serials" *ngIf="token.serials?.length > 0"
                           [title]="token.serials?.join(', ')">
-<!--                        <mat-icon>123</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/123.svg" svgClass="icon-style-123"></svg-icon>
                         <span>{{ token.serials?.join(', ') }}</span>
                     </span>
                 </div>
             </div>
             <div class="request__actions">
-                <!--                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn&#45;&#45;approve"-->
-                <!--                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"-->
-                <!--                        matTooltipClass="guardian-tooltip"-->
-                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Approve-->
-                <!--                </button>-->
-
                 <button (click)="approveRequest(request.id)"
                         pButton
                         class="btn btn--approve"
@@ -54,13 +38,6 @@
                         [tooltipDisabled]="hasPermissions(contract.permissions, 1)">
                     Approve
                 </button>
-
-                <!--                <button (click)="unsetRetire(request.id)" mat-flat-button class="btn btn&#45;&#45;reject"-->
-                <!--                        [disabled]="!hasPermissions(contract.permissions, 1)" matTooltip="You are not admin"-->
-                <!--                        matTooltipClass="guardian-tooltip"-->
-                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)">Reject-->
-                <!--                </button>-->
-
                 <button (click)="unsetRetire(request.id)"
                         pButton
                         class="btn btn--reject"

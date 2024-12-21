@@ -1,15 +1,14 @@
-import { Component, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { NavigationEnd, Router } from '@angular/router';
-import { IUser } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
-import { AuthStateService } from 'src/app/services/auth-state.service';
-import { DemoService } from 'src/app/services/demo.service';
-import { HeaderPropsService } from 'src/app/services/header-props.service';
-import { ProfileService } from 'src/app/services/profile.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { environment } from 'src/environments/environment';
-import { AuthService } from '../../services/auth.service';
+import {Component, OnInit} from '@angular/core';
+import {NavigationEnd, Router} from '@angular/router';
+import {IUser} from '@guardian/interfaces';
+import {Observable} from 'rxjs';
+import {AuthStateService} from 'src/app/services/auth-state.service';
+import {DemoService} from 'src/app/services/demo.service';
+import {HeaderPropsService} from 'src/app/services/header-props.service';
+import {ProfileService} from 'src/app/services/profile.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {environment} from 'src/environments/environment';
+import {AuthService} from '../../services/auth.service';
 
 /**
  * Header and Navigation
@@ -45,7 +44,6 @@ export class HeaderComponent implements OnInit {
         public auth: AuthService,
         public otherService: DemoService,
         public router: Router,
-        // public dialog: MatDialog,
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService
@@ -358,12 +356,12 @@ export class HeaderComponent implements OnInit {
 
             case 'USER_TOKENS':
                 this.router.navigate(['/user-profile'], {
-                    queryParams: { tab: 'tokens' }
+                    queryParams: {tab: 'tokens'}
                 });
                 return true;
             case 'USER_RETIRE':
                 this.router.navigate(['/user-profile'], {
-                    queryParams: { tab: 'retire' }
+                    queryParams: {tab: 'retire'}
                 });
                 return true;
             case 'USER_UP':
@@ -394,7 +392,7 @@ export class HeaderComponent implements OnInit {
                 this.profileData = profile;
                 this.hederaAccountID = this.profileData.hederaAccountId;
             },
-            ({ message }) => {
+            ({message}) => {
                 console.error('Failed to get profile data:', message);
             }
         );

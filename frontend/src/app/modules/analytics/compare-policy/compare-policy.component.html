@@ -4,275 +4,6 @@
         <div class="total-info" [attr.total]="total">
             Policies are <span>{{ total }}%</span> the same.
         </div>
-
-        <!--        <mat-accordion multi>-->
-        <!--            <mat-expansion-panel expanded>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Description</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div class="info-container">-->
-        <!--                    <div class="left-compare-result compare-result" [attr.open]="true">-->
-        <!--                        <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy1}"></ng-container>-->
-        <!--                    </div>-->
-        <!--                    <div class="middle-compare-result compare-result" [attr.open]="true"></div>-->
-        <!--                    <div class="right-compare-result compare-result" [attr.open]="true">-->
-        <!--                        <ng-container *ngTemplateOutlet="policyInfo; context: {policy:policy2}"></ng-container>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-        <!--            <mat-expansion-panel>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Policy Roles</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div *ngIf="roles?.length" class="merge-tree">-->
-        <!--                    <div *ngFor="let item of roles" class="report-item report-item-small" [attr.type]="item.type"-->
-        <!--                        [attr.rate]="item.total_rate">-->
-        <!--                        <div class="left-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.left">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>-->
-        <!--                        <div class="right-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.right">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-        <!--            <mat-expansion-panel>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Policy Groups</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div *ngIf="groups?.length" class="merge-tree">-->
-        <!--                    <div *ngFor="let item of groups" class="report-item report-item-small" [attr.type]="item.type"-->
-        <!--                        [attr.rate]="item.total_rate">-->
-        <!--                        <div class="left-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.left">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>-->
-        <!--                        <div class="right-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.right">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-        <!--            <mat-expansion-panel>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Policy Topics</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div *ngIf="topics?.length" class="merge-tree">-->
-        <!--                    <div *ngFor="let item of topics" class="report-item report-item-small" [attr.type]="item.type"-->
-        <!--                        [attr.rate]="item.total_rate">-->
-        <!--                        <div class="left-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.left">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>-->
-        <!--                        <div class="right-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.right">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-        <!--            <mat-expansion-panel>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        <div class="header">Policy Tokens</div>-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <div *ngIf="tokens?.length" class="merge-tree">-->
-        <!--                    <div *ngFor="let item of tokens" class="report-item report-item-small" [attr.type]="item.type"-->
-        <!--                        [attr.rate]="item.total_rate">-->
-        <!--                        <div class="left-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.left">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 0 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                        <div class="middle-compare-result compare-result" [attr.open]="true"></div>-->
-        <!--                        <div class="right-compare-result compare-result" [attr.open]="true">-->
-        <!--                            <ng-container *ngIf="item.right">-->
-        <!--                                <ng-container-->
-        <!--                                    *ngTemplateOutlet="propInfo; context: { props: item, index: 1 }"></ng-container>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-
-
-        <!--            <mat-expansion-panel expanded>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <div class="header">Policy Blocks</div>-->
-        <!--                </mat-expansion-panel-header>-->
-
-        <!--                <div class="merge-container">-->
-        <!--                    <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2" [attr.type-3]="type3"-->
-        <!--                        [attr.type-4]="type4">-->
-        <!--                        <div class="legend-item" (click)="type1=!type1">-->
-        <!--                            <div class="legend-icon legend-l1"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Blocks are equal, including their child blocks.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="type2=!type2">-->
-        <!--                            <div class="legend-icon legend-l2"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                blocks are equal, but their child blocks are different.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="type3=!type3">-->
-        <!--                            <div class="legend-icon legend-l3"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                blocks are of the same type and are partially equal.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                        <div class="legend-item" (click)="type4=!type4">-->
-        <!--                            <div class="legend-icon legend-l4"></div>-->
-        <!--                            <div class="legend-text">-->
-        <!--                                Blocks are absent in the other Policy.-->
-        <!--                            </div>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                    <div *ngIf="type==='tree'" class="merge-tree" [attr.open]="panelOpenState" [attr.type-1]="type1"-->
-        <!--                        [attr.type-2]="type2" [attr.type-3]="type3" [attr.type-4]="type4">-->
-
-        <!--                        <div *ngFor="let item of blocks; let i=index" class="report-item report-item-number"-->
-        <!--                            [attr.type]="item.type" [attr.rate]="item.total_rate" [attr.hidden]="item._hidden">-->
-        <!--                            <div class="report-number">{{i+1}}</div>-->
-        <!--                            <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">-->
-        <!--                                <mat-icon class="open-icon">remove</mat-icon>-->
-        <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
-        <!--                            </div>-->
-        <!--                            <ng-container *ngIf="item.left_type">-->
-        <!--                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"-->
-        <!--                                    class="left-tree hidden-item">-->
-        <!--                                    <div class="block-tree" (click)="item._open = !item._open">-->
-        <!--                                        <div class="block-index" [attr.index-rate]="item.index_rate">-->
-        <!--                                            {{item.left_index}}-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-icon">-->
-        <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-type">{{item.left_tag || item.left_type}}</div>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-        <!--                                <div *ngIf="!item.right_type" [attr.offset]="item.lvl"-->
-        <!--                                    [style.padding-left.px]="_pOffset*item.lvl"-->
-        <!--                                    class="right-tree fantom-tree hidden-item">-->
-        <!--                                    <div class="block-tree">-->
-        <!--                                        <div class="block-index" [attr.index-rate]="item.index_rate">-->
-        <!--                                            {{item.left_index}}-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-icon">-->
-        <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-type">{{item.left_tag || item.left_type}}</div>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-        <!--                            </ng-container>-->
-
-        <!--                            <ng-container *ngIf="item.right_type">-->
-        <!--                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"-->
-        <!--                                    class="right-tree hidden-item">-->
-        <!--                                    <div class="block-tree" (click)="item._open = !item._open">-->
-        <!--                                        <div class="block-index" [attr.index-rate]="item.index_rate">-->
-        <!--                                            {{item.right_index}}-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-icon">-->
-        <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-type">{{item.right_tag || item.right_type}}</div>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-        <!--                                <div *ngIf="!item.left_type" [attr.offset]="item.lvl"-->
-        <!--                                    [style.padding-left.px]="_pOffset*item.lvl"-->
-        <!--                                    class="left-tree fantom-tree hidden-item">-->
-        <!--                                    <div class="block-tree">-->
-        <!--                                        <div class="block-index" [attr.index-rate]="item.index_rate">-->
-        <!--                                            {{item.right_index}}-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-icon">-->
-        <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
-        <!--                                        </div>-->
-        <!--                                        <div class="block-type">{{item.right_tag || item.right_type}}</div>-->
-        <!--                                    </div>-->
-        <!--                                </div>-->
-        <!--                            </ng-container>-->
-
-        <!--                            <div class="middle-tree">-->
-        <!--                                <div class="compare-btn" (click)="item._open = !item._open">-->
-        <!--                                    <mat-icon *ngIf="!item._open">unfold_more</mat-icon>-->
-        <!--                                    <mat-icon *ngIf="item._open">unfold_less</mat-icon>-->
-        <!--                                </div>-->
-        <!--                            </div>-->
-
-        <!--                            <ng-container *ngIf="item._open">-->
-        <!--                                <div class="left-compare-result compare-result hidden-item" [attr.open]="item._open"-->
-        <!--                                    [style.padding-left.px]="_pOffset*item.lvl">-->
-        <!--                                    <ng-container *ngIf="item.left">-->
-        <!--                                        <ng-container-->
-        <!--                                            *ngTemplateOutlet="blockInfo; context: { blocks:item, index:0 }"></ng-container>-->
-        <!--                                    </ng-container>-->
-        <!--                                </div>-->
-        <!--                                <div class="middle-compare-result compare-result" [attr.open]="item._open"></div>-->
-        <!--                                <div class="right-compare-result compare-result hidden-item" [attr.open]="item._open"-->
-        <!--                                    [style.padding-left.px]="_pOffset*item.lvl">-->
-        <!--                                    <ng-container *ngIf="item.right">-->
-        <!--                                        <ng-container-->
-        <!--                                            *ngTemplateOutlet="blockInfo; context: { blocks:item, index:1 }"></ng-container>-->
-        <!--                                    </ng-container>-->
-        <!--                                </div>-->
-        <!--                            </ng-container>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                    <div *ngIf="type==='table'" class="merge-table" [attr.open]="panelOpenState">-->
-        <!--                        <div class="merge-table-content">-->
-        <!--                            <mat-table *ngIf="blocks" [dataSource]="blocks" class="table">-->
-        <!--                                <ng-container *ngFor="let column of columns" [cdkColumnDef]="column.name">-->
-        <!--                                    <mat-header-cell *cdkHeaderCellDef>{{ column.label }}</mat-header-cell>-->
-        <!--                                    <mat-cell *cdkCellDef="let row">{{ row[column.name] }}</mat-cell>-->
-        <!--                                </ng-container>-->
-        <!--                                <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>-->
-        <!--                                <mat-row *matRowDef="let row; columns: displayedColumns;" [attr.type]="row.type"-->
-        <!--                                    [attr.rate]="row.total_rate"></mat-row>-->
-        <!--                            </mat-table>-->
-        <!--                        </div>-->
-        <!--                    </div>-->
-
-        <!--                </div>-->
-        <!--            </mat-expansion-panel>-->
-        <!--        </mat-accordion>-->
-
         <p-accordion [multiple]="true">
             <p-accordionTab header="Description" [selected]="true">
                 <div class="info-container">
@@ -385,15 +116,7 @@
                         <div *ngFor="let item of blocks; let i=index" class="report-item report-item-number"
                              [attr.type]="item.type" [attr.rate]="item.total_rate" [attr.hidden]="item._hidden">
                             <div class="report-number">{{ i + 1 }}</div>
-                            <!--                            <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">-->
-                            <!--                                <mat-icon class="open-icon">remove</mat-icon>-->
-                            <!--                                <mat-icon class="collapse-icon">add</mat-icon>-->
-                            <!--                            </div>-->
-
                             <div class="report-collapse" [attr.collapse]="item._collapse" (click)="onCollapse(item)">
-<!--                                <span class="icon open-icon" *ngIf="item._collapse === 1">−</span>-->
-<!--                                <span class="icon collapse-icon" *ngIf="item._collapse !== 1">+</span>-->
-
                                 <i class="pi pi-minus icon open-icon" *ngIf="item._collapse === 1"></i>
                                 <i class="pi pi-plus icon collapse-icon" *ngIf="item._collapse !== 1"></i>
                             </div>
@@ -404,9 +127,6 @@
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
                                             {{ item.left_index }}
                                         </div>
-                                        <!--                                        <div class="block-icon">-->
-                                        <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
-                                        <!--                                        </div>-->
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
@@ -420,9 +140,6 @@
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
                                             {{ item.left_index }}
                                         </div>
-                                        <!--                                        <div class="block-icon">-->
-                                        <!--                                            <mat-icon>{{icons[item.left_type]}}</mat-icon>-->
-                                        <!--                                        </div>-->
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
@@ -438,9 +155,6 @@
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
                                             {{ item.right_index }}
                                         </div>
-                                        <!--                                        <div class="block-icon">-->
-                                        <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
-                                        <!--                                        </div>-->
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
@@ -454,9 +168,6 @@
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
                                             {{ item.right_index }}
                                         </div>
-                                        <!--                                        <div class="block-icon">-->
-                                        <!--                                            <mat-icon>{{icons[item.right_type]}}</mat-icon>-->
-                                        <!--                                        </div>-->
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
@@ -464,18 +175,12 @@
                                     </div>
                                 </div>
                             </ng-container>
-
-                            <!--                            <div class="middle-tree">-->
-                            <!--                                <div class="compare-btn" (click)="item._open = !item._open">-->
-                            <!--                                    <mat-icon *ngIf="!item._open">unfold_more</mat-icon>-->
-                            <!--                                    <mat-icon *ngIf="item._open">unfold_less</mat-icon>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
-
                             <div class="middle-tree">
                                 <div class="compare-btn" (click)="item._open = !item._open">
-                                    <i *ngIf="!item._open" class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
-                                    <i  *ngIf="item._open" class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                                    <i *ngIf="!item._open"
+                                       class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                    <i *ngIf="item._open"
+                                       class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
                                 </div>
                             </div>
 
@@ -604,10 +309,6 @@
                  [attr.offset]="prop.lvl" [attr.index]="index">
                 <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{ prop.name }}:</div>
                 <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
-                    <!--                    <div class="compare-btn" (click)="compareSchema(prop)">-->
-                    <!--                        <mat-icon>search</mat-icon>-->
-                    <!--                    </div>-->
-
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <i class="pi pi-search"></i>
                     </div>
@@ -719,9 +420,6 @@
                  [attr.offset]="prop.lvl" [attr.index]="index">
                 <div class="prop-table-name" [style.padding-left.px]="10*prop.lvl">{{ prop.name }}:</div>
                 <div class="prop-table-value" [attr.prop-type]="prop.items[index]?.type">
-                    <!--                    <div class="compare-btn" (click)="compareSchema(prop)">-->
-                    <!--                        <mat-icon>search</mat-icon>-->
-                    <!--                    </div>-->
 
                     <div class="compare-btn" (click)="compareSchema(prop)">
                         <i class="pi pi-search"></i>

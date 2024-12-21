@@ -3,8 +3,6 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
             [attr.collapse]="propHidden.options">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Options</td>
@@ -21,14 +19,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Method</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.method" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option value="GET">GET</mat-option>-->
-            <!--                <mat-option value="POST">POST</mat-option>-->
-            <!--                <mat-option value="PUT">PUT</mat-option>-->
-            <!--                <mat-option value="PATCH">PATCH</mat-option>-->
-            <!--                <mat-option value="DELETE">DELETE</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown [(ngModel)]="properties.method"
                         [options]="httpMethodsOptions"
                         [disabled]="readonly"
@@ -50,15 +40,11 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
             [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
-
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Headers</td>
         <td class="propHeaderCell">
             <div class="propAdd" (click)="addHeader()">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus"></i>
                 <span>Add header</span>
             </div>
@@ -68,15 +54,11 @@
         <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
                 [attr.collapse]="propHidden.conditions[i]">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Header {{ i }}</td>
             <td class="propRowCell">
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveHeader(i)">
-<!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </span>
             </td>

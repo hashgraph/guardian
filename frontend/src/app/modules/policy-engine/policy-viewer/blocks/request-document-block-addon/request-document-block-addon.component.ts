@@ -7,7 +7,6 @@ import {
     ViewChild,
 } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DocumentGenerator, ISchema, IUser, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
@@ -76,7 +75,6 @@ export class RequestDocumentBlockAddonComponent
         policyHelper: PolicyHelper,
         private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
-        // private dialog: MatDialog,
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef

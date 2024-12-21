@@ -2,66 +2,12 @@
     <div class="user-content-button">
         <div class="projects-link" routerLink="/projects">Projects</div>
     </div>
-    <!--    <div class="user-content-button" [matMenuTriggerFor]="demoMenu">-->
-    <!--        <div class="example-icon admin-panel">-->
-    <!--            <span>Demo Admin Panel</span>-->
-    <!--        </div>-->
-    <!--    </div>-->
-
     <div class="user-content-button" (click)="demoMenu.toggle($event)">
         <div class="example-icon admin-panel">
             <span>Demo Admin Panel</span>
         </div>
     </div>
-
-    <!--    <mat-menu #demoMenu="matMenu" xPosition="before">-->
-    <!--        <div mat-menu-item class="demo-menu">-->
-    <!--            <div class="debug-user">-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('Registrant','test')">Registrant</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('VVB','test')">VVB</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>-->
-    <!--                <button mat-raised-button (click)="authState.doLogin('Verra','test')">Verra</button>-->
-    <!--            </div>-->
-    <!--            <div class="debug-user">-->
-    <!--                <div class="current-user"-->
-    <!--                    *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"-->
-    <!--                    (click)="authState.doLogin(user.username, 'test')"-->
-    <!--                     [ngClass]="{-->
-    <!--                        'current-user-first' : isFirst,-->
-    <!--                        'current-user-last': i === users.length - 1-->
-    <!--                    }">-->
-    <!--                    <div class="current-user-name">-->
-    <!--                        <span>{{ user.username }}</span>-->
-    <!--                        <span class="current-user-role">({{user.role}})</span>-->
-    <!--                    </div>-->
-    <!--                    <div class="current-user-policy-roles"-->
-    <!--                        *ngIf="user.policyRoles && user.policyRoles.length"-->
-    <!--                        [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"-->
-    <!--                        matTooltipClass="policy-roles-tooltip">-->
-    <!--                        <b>User participates in {{user.policyRoles.length}} policies</b>-->
-    <!--                    </div>-->
-    <!--                </div>-->
-    <!--            </div>-->
-    <!--        </div>-->
-    <!--    </mat-menu>-->
-
     <p-overlayPanel #demoMenu [styleClass]="'demo-menu'">
-        <!--            <div class="debug-user">-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('StandardRegistry','test')">Standard Registry-->
-        <!--                </button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('Installer','test')">Installer</button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('Installer2','test')">Installer 2</button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('Auditor','test')">Auditor</button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('Registrant','test')">Registrant</button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('VVB','test')">VVB</button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('ProjectProponent','test')">Project Proponent-->
-        <!--                </button>-->
-        <!--                <button mat-raised-button (click)="authState.doLogin('Verra','test')">Verra</button>-->
-        <!--            </div>-->
         <div class="debug-user buttons">
             <p-button
                 class="raised-button"
@@ -116,13 +62,6 @@
                     <span>{{ user.username }}</span>
                     <span class="current-user-role">({{ user.role }})</span>
                 </div>
-                <!--                    <div class="current-user-policy-roles"-->
-                <!--                         *ngIf="user.policyRoles && user.policyRoles.length"-->
-                <!--                         [matTooltip]="getPoliciesRolesTooltip(user.policyRoles)"-->
-                <!--                         matTooltipClass="policy-roles-tooltip">-->
-                <!--                        <b>User participates in {{ user.policyRoles.length }} policies</b>-->
-                <!--                    </div>-->
-
                 <div class="current-user-policy-roles"
                      *ngIf="user.policyRoles && user.policyRoles.length"
                      [pTooltip]="getPoliciesRolesTooltip(user.policyRoles)"

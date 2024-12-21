@@ -13,60 +13,6 @@
             <div>
 
                 <div *ngIf="!exists">
-
-                    <!--                    <mat-radio-group aria-label="Select an option" [value]="policyType">-->
-                    <!--                        <div>-->
-                    <!--                            <div class="group-name">-->
-                    <!--                                <mat-radio-button value="Main" color="primary" (change)="onChange($event)">-->
-                    <!--                                    Create new multi policy-->
-                    <!--                                </mat-radio-button>-->
-                    <!--                            </div>-->
-                    <!--                            <div class="group-value" [attr.disabled]="policyType!=='Main'">-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Type: </span>-->
-                    <!--                                    <span>Main Policy</span>-->
-                    <!--                                </div>-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Main Policy: </span>-->
-                    <!--                                    <span>{{mainPolicyTopicId1}}</span>-->
-                    <!--                                </div>-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Topic for synchronization: </span>-->
-                    <!--                                    <span>{{synchronizationTopicId1}}</span>-->
-                    <!--                                </div>-->
-                    <!--                                <mat-form-field appearance="outline">-->
-                    <!--                                    <mat-label>Link</mat-label>-->
-                    <!--                                    <input matInput [value]="link1" readonly="true">-->
-                    <!--                                </mat-form-field>-->
-                    <!--                            </div>-->
-                    <!--                        </div>-->
-                    <!--                        <div>-->
-                    <!--                            <div class="group-name">-->
-                    <!--                                <mat-radio-button value="Sub" color="primary" (change)="onChange($event)">-->
-                    <!--                                    Join an existing policy-->
-                    <!--                                </mat-radio-button>-->
-                    <!--                            </div>-->
-                    <!--                            <div class="group-value" [attr.disabled]="policyType!=='Sub'">-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Type: </span>-->
-                    <!--                                    <span>Sub Policy</span>-->
-                    <!--                                </div>-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Main Policy: </span>-->
-                    <!--                                    <span>{{mainPolicyTopicId2}}</span>-->
-                    <!--                                </div>-->
-                    <!--                                <div class="table-container" style="margin-bottom: 15px;color: #707070">-->
-                    <!--                                    <span>Topic for synchronization: </span>-->
-                    <!--                                    <span>{{synchronizationTopicId2}}</span>-->
-                    <!--                                </div>-->
-                    <!--                                <mat-form-field appearance="outline">-->
-                    <!--                                    <mat-label>Link</mat-label>-->
-                    <!--                                    <input matInput [(ngModel)]="link2" (ngModelChange)="onParse($event)">-->
-                    <!--                                </mat-form-field>-->
-                    <!--                            </div>-->
-                    <!--                        </div>-->
-                    <!--                    </mat-radio-group>-->
-
                     <div class="radio-group">
                         <div>
                             <div class="group-name">
@@ -164,11 +110,6 @@
                             <span>Current Policy: </span>
                             <span>{{ instanceTopicId }}</span>
                         </div>
-                        <!--                        <mat-form-field appearance="outline">-->
-                        <!--                            <mat-label>Link</mat-label>-->
-                        <!--                            <input matInput [value]="link1" readonly="true">-->
-                        <!--                        </mat-form-field>-->
-
                         <div class="p-fluid">
                             <label for="link1">Link</label>
                             <input

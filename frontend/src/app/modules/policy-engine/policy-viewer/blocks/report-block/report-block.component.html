@@ -7,26 +7,6 @@
             [formGroup]="searchForm"
             class="filters"
         >
-            <!--            <mat-form-field class="search-input" appearance="outline">-->
-            <!--                <mat-label class="hash-label">HASH/ID</mat-label>-->
-            <!--                <input-->
-            <!--                    formControlName="value"-->
-            <!--                    matInput-->
-            <!--                    placeholder="HASH/ID"-->
-            <!--                    type="text"-->
-            <!--                />-->
-            <!--                <button-->
-            <!--                    [disabled]="!searchForm.valid"-->
-            <!--                    mat-icon-button-->
-            <!--                    matSuffix-->
-            <!--                    type="submit"-->
-            <!--                >-->
-            <!--                    &lt;!&ndash;                    <mat-icon>search</mat-icon>&ndash;&gt;-->
-
-            <!--                    <i class="pi pi-search"></i>-->
-            <!--                </button>-->
-            <!--            </mat-form-field>-->
-
             <div class="p-fluid">
                 <div class="p-inputgroup search-input">
                     <span class="p-inputgroup-addon hash-label">
@@ -61,8 +41,6 @@
                 <div *ngIf="item.vpDocument" class="header card-block">
                     <div class="card-info">
                         <h3>Verifiable Presentation</h3>
-                        <!--                        <mat-icon>check_circle</mat-icon>-->
-
                         <i class="pi pi-check-circle"></i>
                         <span class="vertical-devider"></span>
                         <button (click)="openVPDocument(item.vpDocument)" class="p-button-outlined" icon="pi pi-file"
@@ -167,8 +145,6 @@
                                     >
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <!--                                                <mat-icon>workspace_premium</mat-icon>-->
-
                                                 <svg-icon src="/assets/images/icons/workspace_premium.svg"
                                                           svgClass="icon-style-workspace_premium"></svg-icon>
                                             </div>
@@ -219,8 +195,6 @@
                                          class="card-item">
                                         <div class="card-title">
                                             <div class="card-icon">
-                                                <!--                                                <mat-icon>workspace_premium</mat-icon>-->
-
                                                 <svg-icon src="/assets/images/icons/workspace_premium.svg"
                                                           svgClass="icon-style-workspace_premium"></svg-icon>
                                             </div>
@@ -325,16 +299,10 @@
 
             <div class="container">
                 <div (click)="onScrollButtonPress(scrollContainer, -150)" class="scroll-right">
-                    <<<<<<< HEAD
-                    <!--                    <mat-icon>chevron_left</mat-icon>-->
-
-                    <i class="pi pi-chevron-left"></i>
-                    =======
                     <svg-icon class="icon-btn svg-icon"
                               src="/assets/images/icons/left-arrow.svg"
                               svgClass="icon-color-font">
                     </svg-icon>
-                    >>>>>>> develop
                 </div>
                 <div
                     #scrollContainer
@@ -367,15 +335,6 @@
                                         }"
                                          class="item-relationships-delimiter"
                                     ></div>
-                                    <!--                                    <mat-icon-->
-                                    <!--                                        *ngIf="-->
-                                    <!--                                        document.index === 0 &&-->
-                                    <!--                                        item.dynamicFilters.length &&-->
-                                    <!--                                        item.document.length > 1"-->
-                                    <!--                                        class="item-relationships-icon material-icons-outlined">-->
-                                    <!--                                        account_tree-->
-                                    <!--                                    </mat-icon>-->
-
                                     <i
                                         *ngIf="
                                         document.index === 0 &&
@@ -407,8 +366,6 @@
                                                 *ngIf="item.icon"
                                                 [ngSwitch]="item.iconType"
                                             >
-                                                <!--                                                <mat-icon *ngSwitchCase="'common'">{{ item.icon }}</mat-icon>-->
-
                                                 <i *ngSwitchCase="'common'" [ngClass]="'pi pi-' + item.icon"></i>
                                                 <img
                                                     *ngSwitchCase="'custom'"
@@ -425,8 +382,6 @@
                                             "
                                             class="revoke-container"
                                         >
-                                            <!--                                            <mat-icon class="revoke-icon">warning</mat-icon>-->
-
                                             <i class="pi pi-exclamation-triangle revoke-icon"></i>
                                             <b>Revoked with reason: "{{ document.document.comment }}"</b>
                                         </div>
@@ -470,18 +425,9 @@
                                             "
                                             class="multiple-documents-count"
                                         >
-
-                                            <!--                                            <mat-icon (click)="onPrevDocumentClick($event,item,document)">chevron_left-->
-                                            <!--                                            </mat-icon>-->
-
                                             <i class="pi pi-chevron-left"
                                                (click)="onPrevDocumentClick($event, item, document)"></i>
-
                                             {{ item.activeDocumentIndex }} in {{ item.document.length }}
-                                            <!--                                            <mat-icon (click)="onNextDocumentClick($event,item,document)">-->
-                                            <!--                                                chevron_right-->
-                                            <!--                                            </mat-icon>-->
-
                                             <i class="pi pi-chevron-right"
                                                (click)="onNextDocumentClick($event, item, document)"></i>
                                         </div>
@@ -501,7 +447,6 @@
                                             {{ item.title }}
                                         </div>
                                         <div class="empty-documents-description">
-                                            <!--                                            <mat-icon>search</mat-icon>-->
                                             <i class="pi pi-search"></i>
                                             <div class="chain-id">
                                                 Documents Not Found

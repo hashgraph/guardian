@@ -4,18 +4,7 @@
         <div class="content__tokens tokens">
             <div class="token-card" *ngFor="let tokenControl of tokenControls; let i=index;" [formGroup]="tokenControl">
                 <div class="token-card__token">
-                    <!--                    <mat-icon>generating_tokens</mat-icon>-->
-
                     <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                    <!--                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">-->
-                    <!--                        <mat-label>Token</mat-label>-->
-                    <!--                        <mat-select #select formControlName="token" placeholder="Choose Token">-->
-                    <!--                            <mat-option *ngFor="let token of getTokenList(select.value)"-->
-                    <!--                                        [value]="token.tokenId">{{ token.tokenSymbol }} ({{ token.tokenId }})-->
-                    <!--                            </mat-option>-->
-                    <!--                        </mat-select>-->
-                    <!--                    </mat-form-field>-->
-
                     <div
                         class="p-fluid dropdown-container"
                         style="transform: scale(0.9) translateX(6px) translateY(5px); width: 95px;"
@@ -36,39 +25,10 @@
                             </ng-template>
                         </p-dropdown>
                     </div>
-
-<!--                    <div class="p-fluid dropdown-container" [ngClass]="{'ng-invalid': form.get('token')?.invalid && form.get('token')?.touched}">-->
-<!--                        <div class="dropdown-wrapper">-->
-<!--                            <label for="tokenDropdown" class="floating-label">Token</label>-->
-<!--                            <p-dropdown-->
-<!--                                id="tokenDropdown"-->
-<!--                                formControlName="token"-->
-<!--                                [options]="getTokenList(selectedToken ?? '')"-->
-<!--                                optionLabel="tokenSymbol"-->
-<!--                                placeholder="Choose Token"-->
-<!--                            >-->
-<!--                                <ng-template let-option pTemplate="selectedItem">-->
-<!--                                    {{ option.tokenSymbol }} ({{ option.tokenId }})-->
-<!--                                </ng-template>-->
-<!--                                <ng-template let-option pTemplate="item">-->
-<!--                                    {{ option.tokenSymbol }} ({{ option.tokenId }})-->
-<!--                                </ng-template>-->
-<!--                            </p-dropdown>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
                 </div>
                 <div class="token-card__count">
-                    <!--                    <mat-icon>calculate</mat-icon>-->
-
                     <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
-                    <!--                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">-->
-                    <!--                        <mat-label>Count</mat-label>-->
-                    <!--                        <input matInput formControlName="count" type="number" placeholder="1">-->
-                    <!--                    </mat-form-field>-->
-
                     <div class="p-fluid" style="transform: scale(0.8) translateY(5px); width: 110px;">
-<!--                        <label for="countInput">Count</label>-->
                         <p-inputNumber
                             id="countInput"
                             formControlName="count"
@@ -79,11 +39,6 @@
                         </p-inputNumber>
                     </div>
                 </div>
-
-<!--                <button mat-flat-button color="primary" class="token-card__remove"-->
-<!--                        (click)="removeToken(i)">remove-->
-<!--                </button>-->
-
                 <button
                     pButton
                     class="token-card__remove mat-flat-button"
@@ -93,16 +48,12 @@
             </div>
 
             <div class="token-add-card" (click)="addToken()" *ngIf="tokens?.controls && tokens.controls.length < 2">
-                <!--                <mat-icon>add</mat-icon>-->
-
                 <i class="pi pi-plus toolbar-icons"></i>
             </div>
         </div>
         <div class="content__delimiter">
         </div>
         <div class="content__approval">
-            <!--            <mat-checkbox color="primary" [formControl]="immediately">Without approval</mat-checkbox>-->
-
             <div class="p-field-checkbox">
                 <p-checkbox
                     [binary]="true"

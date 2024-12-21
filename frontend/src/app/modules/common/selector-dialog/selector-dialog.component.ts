@@ -1,6 +1,4 @@
 import {Component, Inject, OnInit} from '@angular/core';
-// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 export interface SelectorDialogOptions {
@@ -25,14 +23,6 @@ export class SelectorDialogComponent implements OnInit {
     isVisible: boolean = true;
 
     constructor(
-        //     @Inject(MAT_DIALOG_DATA)
-        //     public data: {
-        //         title: string;
-        //         description: string;
-        //         label?: string;
-        //         options: SelectorDialogOptions[];
-        //         multiple?: boolean;
-        //     }
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig
     ) {

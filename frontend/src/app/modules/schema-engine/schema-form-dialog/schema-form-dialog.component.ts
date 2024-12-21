@@ -1,5 +1,4 @@
 import { Component, Inject } from '@angular/core';
-// import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { DocumentGenerator, Schema } from '@guardian/interfaces';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { SchemaService } from '../../../services/schema.service';
@@ -25,8 +24,6 @@ export class SchemaFormDialog {
     public category: string;
 
     constructor(
-        // public dialogRef: MatDialogRef<SchemaFormDialog>,
-        // @Inject(MAT_DIALOG_DATA) public data: any,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,

@@ -19,13 +19,10 @@
     </select>
     <div></div>
     <input [(ngModel)]="endPath" [readonly]="readonly" class="input-end" (input)="onInput()">
-    <!--    <mat-icon [matTooltip]="value" *ngIf="displayTooltip" matTooltipPosition="above" class="input-end-tooltip">more_horiz</mat-icon>-->
-
     <i class="pi pi-ellipsis-h input-end-tooltip"
        *ngIf="displayTooltip"
        [pTooltip]="value"
        tooltipPosition="top"
        tooltipStyleClass="input-end-tooltip">
-
     </i>
 </div>

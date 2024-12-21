@@ -1,14 +1,13 @@
-import { Component, Input, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import {Component, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {DialogBlock} from '../../dialog-block/dialog-block.component';
+import {animate, state, style, transition, trigger} from '@angular/animations';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {ViewerDialog} from '../../../dialogs/viewer-dialog/viewer-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
+import {HttpErrorResponse} from '@angular/common/http';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -19,8 +18,8 @@ import { HttpErrorResponse } from '@angular/common/http';
     styleUrls: ['./documents-source-block.component.scss'],
     animations: [
         trigger('statusExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
+            state('collapsed', style({height: '0px', minHeight: '0'})),
+            state('expanded', style({height: '*'})),
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ]
@@ -230,7 +229,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     dryRun: this.dryRun
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         } else {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
                 showHeader: false,
@@ -246,7 +246,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     viewDocument: true
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {});
+            dialogRef.onClose.subscribe(async (result) => {
+            });
 
         }
     }
@@ -368,7 +369,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             config.data = row;
             return config;
         } else {
-            const config = { ...block };
+            const config = {...block};
             config.data = row;
             return config;
         }
@@ -394,7 +395,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 viewDocument: false
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     onSerials(event: MouseEvent, row: any, field: any) {
@@ -421,7 +423,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 value: links,
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     onButton(event: MouseEvent, row: any, field: any) {
@@ -446,9 +449,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const data = row;
         const value = this.getObjectValue(row, field.name);
         this.loading = true;
-        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({ id }: any) => {
+        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({id}: any) => {
             this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
-                this.policyEngineService.setBlockData(id, this.policyId, { filterValue: value }).subscribe(() => {
+                this.policyEngineService.setBlockData(id, this.policyId, {filterValue: value}).subscribe(() => {
                     this.loading = false;
                     const filters: any = {};
                     for (let index = parents.length - 1; index > 0; index--) {

@@ -1,12 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
-import { AuthService } from 'src/app/services/auth.service';
-import { HeaderPropsService } from 'src/app/services/header-props.service';
-import { TagsService } from 'src/app/services/tag.service';
-import { IUser } from '@guardian/interfaces';
-import { ProfileService } from '../../services/profile.service';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {Subscription} from 'rxjs';
+import {AuthService} from 'src/app/services/auth.service';
+import {HeaderPropsService} from 'src/app/services/header-props.service';
+import {TagsService} from 'src/app/services/tag.service';
+import {IUser} from '@guardian/interfaces';
+import {ProfileService} from '../../services/profile.service';
 
 /**
  * The page with guided policy search
@@ -29,7 +28,6 @@ export class PolicySearchComponent implements OnInit {
         private auth: AuthService,
         private route: ActivatedRoute,
         private router: Router,
-        // public dialog: MatDialog,
         private headerProps: HeaderPropsService,
         private profileService: ProfileService,
     ) {

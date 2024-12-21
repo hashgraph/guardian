@@ -241,17 +241,6 @@
                                             <svg-icon src="/assets/images/icons/edit.svg"
                                                       svgClass="primary-color"></svg-icon>
                                         </div>
-                                        <!--                                        <div-->
-                                        <!--                                            class="btn-icon-menu"-->
-                                        <!--                                            matTooltip="Menu"-->
-                                        <!--                                            matTooltipClass="guardian-tooltip"-->
-                                        <!--                                            matTooltipHideDelay="100"-->
-                                        <!--                                            matTooltipPosition="above"-->
-                                        <!--                                            matTooltipShowDelay="500"-->
-                                        <!--                                            [matMenuTriggerFor]="policyMenu"-->
-                                        <!--                                            [matMenuTriggerData]="getMenu(policy)"-->
-                                        <!--                                        >-->
-
                                         <div
                                             class="btn-icon-menu"
                                             pTooltip="Menu"
@@ -420,12 +409,6 @@
     <ng-container *ngFor="let group of selectedMenuData?.groups; let last = last">
         <ng-container *ngIf="group.visible">
             <ng-container *ngIf="group.group">
-                <!--                    <div-->
-                <!--                        class="policy-menu-btn sub-menu-button"-->
-                <!--                        mat-menu-item-->
-                <!--                        [matMenuTriggerFor]="policySubMenu"-->
-                <!--                        [matMenuTriggerData]="group">-->
-
                 <div
                     class="policy-menu-btn sub-menu-button"
                     (click)="onSubMenuClick($event, policySubMenu, group)"

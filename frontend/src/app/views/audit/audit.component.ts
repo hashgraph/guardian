@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from '../../services/audit.service';
-import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from '../../services/policy-engine.service';
-import { HttpResponse } from '@angular/common/http';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {AuditService} from '../../services/audit.service';
+import {AuthService} from '../../services/auth.service';
+import {forkJoin} from 'rxjs';
+import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import {PolicyEngineService} from '../../services/policy-engine.service';
+import {HttpResponse} from '@angular/common/http';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Page with the list of VP Documents.
@@ -45,7 +44,6 @@ export class AuditComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private policyEngineService: PolicyEngineService,
-        // public dialog: MatDialog,
         private dialogService: DialogService,
     ) {
         this.dataCount = 0;
@@ -124,7 +122,7 @@ export class AuditComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -154,20 +152,21 @@ export class AuditComponent implements OnInit {
                 viewDocument: true
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     setFilter(type: string, value: string) {
         if (type == 'policyId') {
             this.currentPolicy = value;
-            this.router.navigate(['/audit'], { queryParams: { policyId: value } });
+            this.router.navigate(['/audit'], {queryParams: {policyId: value}});
             this.onFilter();
         }
         if (type == 'id') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
+            this.router.navigate(['/trust-chain'], {queryParams: {search: value}});
         }
         if (type == 'hash') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
+            this.router.navigate(['/trust-chain'], {queryParams: {search: value}});
         }
     }
 }

@@ -1,10 +1,9 @@
 import {Injectable} from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {API_BASE_URL} from '../../../services/api';
 import {IWizardConfig, Schema, Token} from '@guardian/interfaces';
 import {SelectorDialogComponent} from '../../common/selector-dialog/selector-dialog.component';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {ConfirmationDialogComponent} from '../../common/confirmation-dialog/confirmation-dialog.component';
 import {PolicyWizardDialogComponent} from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
 import {DialogService} from 'primeng/dynamicdialog';
@@ -93,7 +92,6 @@ export class WizardService {
                 dialogTitle: 'Save progress',
                 dialogText: 'Do you want to save progress?',
             },
-            // disableClose: true,
             modal: true,
             closable: false,
         });
@@ -205,7 +203,6 @@ export class WizardService {
                         },
                     ].concat(options),
                 },
-                // disableClose: true,
                 modal: true,
                 closable: false,
             });

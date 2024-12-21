@@ -1,23 +1,22 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { forkJoin } from 'rxjs';
-import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
+import {forkJoin} from 'rxjs';
+import {IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity,} from '@guardian/interfaces';
+import {ActivatedRoute, Router} from '@angular/router';
 //services
-import { AuthService } from '../../services/auth.service';
-import { ProfileService } from '../../services/profile.service';
-import { DemoService } from '../../services/demo.service';
-import { SchemaService } from '../../services/schema.service';
-import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
-import { TasksService } from '../../services/tasks.service';
+import {AuthService} from '../../services/auth.service';
+import {ProfileService} from '../../services/profile.service';
+import {DemoService} from '../../services/demo.service';
+import {SchemaService} from '../../services/schema.service';
+import {HeaderPropsService} from '../../services/header-props.service';
+import {InformService} from '../../services/inform.service';
+import {TasksService} from '../../services/tasks.service';
 //modules
-import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
-import { DialogService } from 'primeng/dynamicdialog';
-import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
-import { ChangePasswordComponent } from '../login/change-password/change-password.component';
+import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator';
+import {DialogService} from 'primeng/dynamicdialog';
+import {ValidateIfFieldEqual} from '../../validators/validate-if-field-equal';
+import {ChangePasswordComponent} from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
@@ -90,7 +89,7 @@ export class UserProfileComponent implements OnInit {
         return this.steps.filter((s) => s.visibility());
     }
 
-    public privateFields: any = { id: true };
+    public privateFields: any = {id: true};
     public schema!: Schema | null;
     public fullForm!: UntypedFormGroup;
     public hederaCredentialsForm!: UntypedFormGroup;
@@ -116,7 +115,6 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
-        // public dialog: MatDialog,
         public dialogService: DialogService,
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef
@@ -166,90 +164,90 @@ export class UserProfileComponent implements OnInit {
                 this.changeStep(1);
             }
         },
-        {
-            label: 'Hedera Credentials',
-            index: 1,
-            visibility: () => {
-                return true;
-            },
-            isFinish: () => {
-                return false;
-            },
-            canNext: () => {
-                return this.hederaCredentialsForm.valid;
-            },
-            next: () => {
-                this.changeStep(2);
-            }
-        },
-        {
-            label: 'DID Document',
-            index: 2,
-            visibility: () => {
-                return true;
-            },
-            isFinish: () => {
-                return !this.didDocumentType.value && !this.vcDocumentType.value;
-            },
-            canNext: () => {
-                if (this.didDocumentType.value) {
-                    return this.didDocumentForm.valid;
-                } else {
+            {
+                label: 'Hedera Credentials',
+                index: 1,
+                visibility: () => {
                     return true;
+                },
+                isFinish: () => {
+                    return false;
+                },
+                canNext: () => {
+                    return this.hederaCredentialsForm.valid;
+                },
+                next: () => {
+                    this.changeStep(2);
                 }
             },
-            next: () => {
-                if (this.didDocumentType.value) {
-                    this.parseDidDocument(() => {
-                        this.changeStep(3);
+            {
+                label: 'DID Document',
+                index: 2,
+                visibility: () => {
+                    return true;
+                },
+                isFinish: () => {
+                    return !this.didDocumentType.value && !this.vcDocumentType.value;
+                },
+                canNext: () => {
+                    if (this.didDocumentType.value) {
+                        return this.didDocumentForm.valid;
+                    } else {
+                        return true;
+                    }
+                },
+                next: () => {
+                    if (this.didDocumentType.value) {
+                        this.parseDidDocument(() => {
+                            this.changeStep(3);
+                        });
+                    } else {
+                        if (this.vcDocumentType.value) {
+                            this.changeStep(4);
+                        } else {
+                            this.onSubmit();
+                        }
+                    }
+                }
+            },
+            {
+                label: 'DID Document signing keys',
+                index: 3,
+                visibility: () => {
+                    return this.didDocumentType.value;
+                },
+                isFinish: () => {
+                    return !this.vcDocumentType.value;
+                },
+                canNext: () => {
+                    return this.didKeysForm.valid;
+                },
+                next: () => {
+                    this.parseDidKeys(() => {
+                        if (this.vcDocumentType.value) {
+                            this.changeStep(4);
+                        } else {
+                            this.onSubmit();
+                        }
                     });
-                } else {
-                    if (this.vcDocumentType.value) {
-                        this.changeStep(4);
-                    } else {
-                        this.onSubmit();
-                    }
                 }
-            }
-        },
-        {
-            label: 'DID Document signing keys',
-            index: 3,
-            visibility: () => {
-                return this.didDocumentType.value;
             },
-            isFinish: () => {
-                return !this.vcDocumentType.value;
-            },
-            canNext: () => {
-                return this.didKeysForm.valid;
-            },
-            next: () => {
-                this.parseDidKeys(() => {
-                    if (this.vcDocumentType.value) {
-                        this.changeStep(4);
-                    } else {
-                        this.onSubmit();
-                    }
-                });
-            }
-        },
-        {
-            label: 'VC Document',
-            index: 4,
-            visibility: () => {
-                return this.vcDocumentType.value;
-            },
-            isFinish: () => {
-                return true;
-            },
-            canNext: () => {
-                return this.vcDocumentForm.valid;
-            },
-            next: () => {
-                this.onSubmit();
-            }
-        }];
+            {
+                label: 'VC Document',
+                index: 4,
+                visibility: () => {
+                    return this.vcDocumentType.value;
+                },
+                isFinish: () => {
+                    return true;
+                },
+                canNext: () => {
+                    return this.vcDocumentForm.valid;
+                },
+                next: () => {
+                    this.onSubmit();
+                }
+            }];
     }
 
     ngOnInit() {
@@ -309,7 +307,7 @@ export class UserProfileComponent implements OnInit {
                     this.headerProps.setLoading(false);
                 }, 200);
             },
-            ({ message }) => {
+            ({message}) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);
@@ -332,8 +330,8 @@ export class UserProfileComponent implements OnInit {
             switch (operationMode) {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
-                        const { id, key } = task.result;
-                        this.hederaCredentialsForm.patchValue({ id, key });
+                        const {id, key} = task.result;
+                        this.hederaCredentialsForm.patchValue({id, key});
                         this.loading = false;
                     });
                     break;
@@ -362,7 +360,8 @@ export class UserProfileComponent implements OnInit {
                 viewDocument: true,
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     public openDIDDocument(document: any, title: string) {
@@ -379,7 +378,8 @@ export class UserProfileComponent implements OnInit {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     private changeStep(step: number): void {
@@ -441,7 +441,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public clearFilters(): void {
-        this.filtersForm.reset({ policyName: '', geography: '' });
+        this.filtersForm.reset({policyName: '', geography: ''});
         this.filteredRegistries = [];
         this.noFilterResults = false;
         this.selectStandardRegistry('');
@@ -493,13 +493,13 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.otherService.pushGetRandomKey().subscribe(
             (result) => {
-                const { taskId, expectation } = result;
+                const {taskId, expectation} = result;
                 this.taskId = taskId;
                 this.operationMode = OperationMode.Generate;
             },
             (e) => {
                 this.loading = false;
-                this.hederaCredentialsForm.setValue({ id: '', key: '' });
+                this.hederaCredentialsForm.setValue({id: '', key: ''});
             }
         );
     }
@@ -693,7 +693,7 @@ export class UserProfileComponent implements OnInit {
         }
         this.profileService.pushSetProfile(profile).subscribe(
             (result) => {
-                const { taskId, expectation } = result;
+                const {taskId, expectation} = result;
                 this.taskId = taskId;
                 this.router.navigate(['task', taskId], {
                     queryParams: {
@@ -701,7 +701,7 @@ export class UserProfileComponent implements OnInit {
                     },
                 });
             },
-            ({ message }) => {
+            ({message}) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);

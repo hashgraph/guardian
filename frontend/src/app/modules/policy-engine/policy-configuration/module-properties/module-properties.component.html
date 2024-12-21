@@ -12,7 +12,6 @@
                     <tr class="propHeader">
                         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')"
                             [attr.collapse]="propHidden.main">
-                            <!--                            <mat-icon>arrow_drop_down</mat-icon>-->
                             <i class="pi pi-caret-down"></i>
                         </td>
                         <td class="propHeaderCell cellName">Module</td>
@@ -48,14 +47,12 @@
                         <tr class="propHeader">
                             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)"
                                 [attr.collapse]="propHidden.variables[i]">
-                                <!--                                <mat-icon>arrow_drop_down</mat-icon>-->
                                 <i class="pi pi-caret-down"></i>
                             </td>
                             <td class="propHeaderCell cellName">Variable</td>
                             <td class="propHeaderCell">
                                 <div>{{ item.name }}</div>
                                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(item)">
-<!--                                    <mat-icon>delete</mat-icon>-->
                                     <i class="pi pi-trash"></i>
                                 </span>
                             </td>
@@ -86,17 +83,6 @@
                                 Variable Type
                             </td>
                             <td class="propRowCell">
-<!--                                <mat-select [(ngModel)]="item.type" [disabled]="readonly"-->
-<!--                                            (valueChange)="onEditVariable(item)">-->
-<!--                                    <mat-option value="Schema">Schema</mat-option>-->
-<!--                                    <mat-option value="Token">Token</mat-option>-->
-<!--                                    <mat-option value="TokenTemplate">Token Template</mat-option>-->
-<!--                                    <mat-option value="Role">Role</mat-option>-->
-<!--                                    <mat-option value="Group">Group</mat-option>-->
-<!--                                    <mat-option value="Topic">Topic</mat-option>-->
-<!--                                    <mat-option value="String">String</mat-option>-->
-<!--                                </mat-select>-->
-
                                 <p-dropdown
                                     [(ngModel)]="item.type"
                                     [options]="typeOptions"
@@ -112,7 +98,6 @@
                             class="propRow subRow">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName">
-                                <!-- <span class="required-fields">*</span> -->
                                 Base schema
                             </td>
                             <td *ngIf="!baseSchemaReadOnly(item.baseSchema)" class="propRowCell">
@@ -135,7 +120,6 @@
                     </tr>
                     <div class="propBottom">
                         <div class="propAdd" (click)="addVariable()">
-                            <!--                            <mat-icon>add</mat-icon>-->
                             <i class="pi pi-plus"></i>
                             <span>Add Variables</span>
                         </div>
@@ -148,7 +132,6 @@
                         <tr class="propHeader">
                             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.inputs, i)"
                                 [attr.collapse]="propHidden.inputs[i]">
-                                <!--                                <mat-icon>arrow_drop_down</mat-icon>-->
                                 <i class="pi pi-caret-down"></i>
                             </td>
                             <td class="propHeaderCell cellName">
@@ -157,7 +140,6 @@
                             <td class="propHeaderCell">
                                 <div>{{ item.name }}</div>
                                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveInput(item)">
-<!--                                    <mat-icon>delete</mat-icon>-->
                                     <i class="pi pi-trash"></i>
                                 </span>
                             </td>
@@ -190,7 +172,6 @@
                     </tr>
                     <div class="propBottom">
                         <div class="propAdd" (click)="addInput()">
-                            <!--                            <mat-icon>add</mat-icon>-->
                             <i class="pi pi-plus"></i>
                             <span>Add Input Event</span>
                         </div>
@@ -203,7 +184,6 @@
                         <tr class="propHeader">
                             <td class="propRowCol cellCollapse" (click)="onHide(propHidden.outputs, i)"
                                 [attr.collapse]="propHidden.outputs[i]">
-                                <!--                                <mat-icon>arrow_drop_down</mat-icon>-->
                                 <i class="pi pi-caret-down"></i>
                             </td>
                             <td class="propHeaderCell cellName">
@@ -212,7 +192,6 @@
                             <td class="propHeaderCell">
                                 <div>{{ item.name }}</div>
                                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveOutput(item)">
-<!--                                    <mat-icon>delete</mat-icon>-->
                                     <i class="pi pi-trash"></i>
                                 </span>
                             </td>
@@ -244,7 +223,6 @@
                     </tr>
                     <div class="propBottom">
                         <div class="propAdd" (click)="addOutput()">
-                            <!--                            <mat-icon>add</mat-icon>-->
                             <i class="pi pi-plus"></i>
                             <span>Add Output Event</span>
                         </div>

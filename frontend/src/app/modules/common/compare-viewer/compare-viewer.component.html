@@ -1,5 +1,4 @@
 <div class="context" *ngIf="count > 0">
-
     <div
         [class.current]="active"
         class="item cursor-pointer"
@@ -12,19 +11,11 @@
                 </span>
             </div>
         </div>
-<!--        <div-->
-<!--            [class.hidden-logotype]="collapsed"-->
-<!--            class="span-icon"-->
-<!--            (click)="onMenuOpened($event)"-->
-<!--            (menuClosed)="menuOpened = false"-->
-<!--            [matMenuTriggerFor]="compareMenu"-->
-<!--        >-->
-
-            <div
-                [class.hidden-logotype]="collapsed"
-                class="span-icon"
-                (click)="compareMenu.toggle($event); onMenuOpened($event)"
-            >
+        <div
+            [class.hidden-logotype]="collapsed"
+            class="span-icon"
+            (click)="compareMenu.toggle($event); onMenuOpened($event)"
+        >
             <span>Documents</span>
 
             <div class="badge">
@@ -35,7 +26,6 @@
 
         </div>
     </div>
-
     <p-overlayPanel #compareMenu class="compare-menu-panel">
         <div class="compare-menu" (click)="$event.stopPropagation()">
             <div class="compare-header">
@@ -52,8 +42,6 @@
                     {{ item }}
                 </div>
                 <div class="compare-item-delete" (click)="onDelete(item)">
-                    <!--                    <mat-icon>delete</mat-icon>-->
-
                     <i class="pi pi-trash"></i>
                 </div>
             </div>

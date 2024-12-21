@@ -1,5 +1,4 @@
 import {Component, Inject} from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {UntypedFormBuilder, Validators} from '@angular/forms';
 import moment from 'moment';
 import cronstrue from 'cronstrue';
@@ -16,7 +15,6 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 export class CronConfigDialog {
     started = false;
     period: string;
-    // startDate: string;
     startDate: any;
 
     dataForm = this.fb.group({
@@ -60,9 +58,7 @@ export class CronConfigDialog {
     ];
 
     constructor(
-        // public dialogRef: MatDialogRef<CronConfigDialog>,
         private fb: UntypedFormBuilder,
-        // @Inject(MAT_DIALOG_DATA) public data: any,
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
     ) {
@@ -75,8 +71,6 @@ export class CronConfigDialog {
         }
 
         this.period = 'week';
-        // this.startDate = data.startDate || (new Date).toISOString();
-        // this.startDate = this.startDate || new Date();
         this.sd = moment(this.startDate).utc();
         this.sd_local = this.sd.clone().local();
         switch (this.sd.day()) {

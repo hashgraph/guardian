@@ -1,15 +1,5 @@
 <div class="content">
     <form *ngIf="!hasParam; else chainTpl" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
-        <!--        <mat-form-field class="search-input" appearance="outline">-->
-        <!--            <mat-label>HASH/ID:</mat-label>-->
-        <!--            <input matInput type="text" placeholder="HASH/ID" formControlName="value">-->
-        <!--            <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">-->
-        <!--&lt;!&ndash;                <mat-icon>search</mat-icon>&ndash;&gt;-->
-
-        <!--                <i class="pi pi-search"></i>-->
-        <!--            </button>-->
-        <!--        </mat-form-field>-->
-
         <div class="search-input form-group">
             <label for="hashIdInput" class="form-label">HASH/ID:</label>
             <div class="input-group">
@@ -36,22 +26,16 @@
             <div class="verifiable-presentation">
                 <div *ngIf="vp" class="header">
                     <a routerLink="/audit" class="go-back-link">
-                        <!--                        <mat-icon>chevron_left</mat-icon>-->
-
                         <i class="pi pi-chevron-left"></i>
                         {{ vp.label }}: {{ vp.id }}
                     </a>
                     Verifiable Presentation
-                    <!--                    <mat-icon>check_circle</mat-icon>-->
-
                     <i class="pi pi-check-circle"></i>
 
                     <a class="open-vp" (click)="openVPDocument(vp)">VP File</a>
                 </div>
                 <div *ngIf="!vp && chain" class="header">
                     <a routerLink="/audit" class="go-back-link">
-                        <!--                        <mat-icon>chevron_left</mat-icon>-->
-
                         <i class="pi pi-chevron-left"></i>
                         {{ chain[0].label }}: {{ chain[0].id }}
                     </a>
@@ -114,8 +98,6 @@
             </div>
             <div class="container">
                 <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, -150)">
-                    <!--                    <mat-icon style="margin-left: 32px">chevron_left</mat-icon>-->
-
                     <i class="pi pi-chevron-left" style="margin-left: 32px"></i>
                 </div>
                 <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
@@ -123,18 +105,13 @@
                         <div class="chain-item item-type-{{item.type}}">
                             <div class="chain-title">
                                 <ng-container [ngSwitch]="item.entity">
-                                    <!--                                    <mat-icon *ngSwitchCase="'Policy'">format_list_bulleted</mat-icon>-->
                                     <i *ngSwitchCase="'Policy'" class="pi pi-list"></i>
-                                    <!--                                    <mat-icon *ngSwitchCase="'Inverter'" svgIcon="iot"></mat-icon>-->
                                     <svg-icon *ngSwitchCase="'Inverter'" src="/assets/images/icons/iot.svg"
                                               svgClass="icon-style-abc"></svg-icon>
-                                    <!--                                    <mat-icon *ngSwitchCase="'MRV'" svgIcon="mrv"></mat-icon>-->
                                     <svg-icon *ngSwitchCase="'MRV'" src="/assets/images/icons/mrv.svg"
                                               svgClass="icon-style-mrv"></svg-icon>
-                                    <!--                                    <mat-icon *ngSwitchCase="'Mint'" svgIcon="token"></mat-icon>-->
                                     <svg-icon *ngSwitchCase="'Mint'" src="/assets/images/icons/token.svg"
                                               svgClass="icon-style-token"></svg-icon>
-                                    <!--                                    <mat-icon *ngSwitchDefault>account_circle</mat-icon>-->
                                     <i *ngSwitchDefault class="pi pi-user"></i>
                                 </ng-container>
 
@@ -156,8 +133,6 @@
                     </ng-container>
                 </div>
                 <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, 150)">
-                    <!--                    <mat-icon>chevron_right</mat-icon>-->
-
                     <i class="pi pi-chevron-right"></i>
                 </div>
             </div>

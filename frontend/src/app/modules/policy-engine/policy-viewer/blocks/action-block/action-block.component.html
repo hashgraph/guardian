@@ -11,10 +11,6 @@
 </div>
 
 <div *ngIf="type == 'dropdown'" class="content-dropdown">
-    <!--    <mat-select [(value)]="currentValue" (selectionChange)="onDropdown()">-->
-    <!--        <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>-->
-    <!--    </mat-select>-->
-
     <p-dropdown
         [(ngModel)]="currentValue"
         [options]="options"

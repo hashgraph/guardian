@@ -1,4 +1,4 @@
-import { NestedTreeControl } from '@angular/cdk/tree';
+import {NestedTreeControl} from '@angular/cdk/tree';
 import {
     Component,
     EventEmitter,
@@ -6,7 +6,6 @@ import {
     Output,
     SimpleChanges,
 } from '@angular/core';
-// import { MatTreeNestedDataSource } from '@angular/material/tree';
 
 interface TreeNode {
     name: string;
@@ -20,9 +19,7 @@ interface TreeNode {
 })
 export class StepTreeComponent {
     treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
-    // dataSource = new MatTreeNestedDataSource<TreeNode>();
-    dataSource: { data: TreeNode[] } = { data: [] }
-    expandedKeys: { [key: string]: boolean } = {};
+    dataSource: { data: TreeNode[] } = {data: []}
 
     @Input('treeData') treeData!: any;
     @Input('currentNode') currentNode!: any;
@@ -30,7 +27,8 @@ export class StepTreeComponent {
     @Output('currentNodeChange') currentNodeChange: EventEmitter<any> =
         new EventEmitter<any>();
 
-    constructor() {}
+    constructor() {
+    }
 
     ngOnInit() {
         this.dataSource.data = this.treeData;
@@ -79,26 +77,6 @@ export class StepTreeComponent {
                     : [],
             };
         });
-    }
-
-    expandParents(node: TreeNode) {
-        let current: any = node;
-        while (current) {
-            this.expandedKeys[current.key] = true;
-            current = this.findParentNode(this.treeData, current);
-        }
-    }
-
-    findParentNode(nodes: TreeNode[], target: TreeNode): TreeNode | null {
-        for (const node of nodes) {
-            if (node.children?.includes(target)) {
-                return node;
-            } else if (node.children) {
-                const parent = this.findParentNode(node.children, target);
-                if (parent) return parent;
-            }
-        }
-        return null;
     }
 
     setExpandedNodes(nodes: any[]) {

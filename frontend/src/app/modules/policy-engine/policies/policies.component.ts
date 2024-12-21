@@ -1,5 +1,4 @@
 import {ChangeDetectorRef, Component, Inject, OnInit} from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {Router} from '@angular/router';
 import {
     ContractType,
@@ -557,7 +556,6 @@ export class PoliciesComponent implements OnInit {
         private profileService: ProfileService,
         private policyEngineService: PolicyEngineService,
         private router: Router,
-        private dialog: DialogService,
         private dialogService: DialogService,
         private taskService: TasksService,
         private informService: InformService,
@@ -569,7 +567,6 @@ export class PoliciesComponent implements OnInit {
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
-        private cdr: ChangeDetectorRef
     ) {
         this.policies = null;
         this.pageIndex = 0;
@@ -1140,17 +1137,6 @@ export class PoliciesComponent implements OnInit {
     }
 
     public createMultiPolicy(element: any) {
-        // const dialogRef = this.dialog.open(MultiPolicyDialogComponent, mobileDialog({
-        //     width: '650px',
-        //     panelClass: 'g-dialog',
-        //     disableClose: true,
-        //     autoFocus: false,
-        //     autoZIndex: true,
-        //     data: {
-        //         policyId: element.id
-        //     }
-        // }));
-
         const dialogRef = this.dialogService.open(MultiPolicyDialogComponent, {
             width: '650px',
             styleClass: 'g-dialog',
@@ -1159,8 +1145,8 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policyId: element.id
             }
-
         });
+
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importPolicyDetails(result);

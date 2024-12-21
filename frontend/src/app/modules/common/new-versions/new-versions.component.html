@@ -1,6 +1,4 @@
 <div class="new-versions" *ngIf="visible">
-    <!--    <mat-icon class="new-versions__info-icon"> info</mat-icon>-->
-
     <i class="pi pi-info-circle new-versions__info-icon"></i>
     <b class="new-versions__info-label">New versions of {{ type }} exist</b>
     <div class="new-versions__links">
@@ -11,31 +9,6 @@
                 (click)="onClick(newVersion.messageId)"
             >{{ newVersion.version }}
             </span>
-            <!--            <mat-icon-->
-            <!--                matTooltip="Copy message identifier"-->
-            <!--                matTooltipClass="guardian-tooltip"-->
-            <!--                matTooltipPosition="above"-->
-            <!--                [cdkCopyToClipboard]="newVersion.messageId"-->
-            <!--                class="new-versions__link-copy"-->
-            <!--                (click)="onCopyClick(newVersion)"-->
-            <!--                [ngClass]="{-->
-            <!--                    'new-versions__link-copy&#45;&#45;hidden': newVersion.copied-->
-            <!--                }"-->
-            <!--                >content_copy-->
-            <!--            </mat-icon>-->
-
-<!--            <i-->
-<!--                pTooltip="Copy message identifier"-->
-<!--                tooltipStyleClass="guardian-tooltip"-->
-<!--                tooltipPosition="top"-->
-<!--                [cdkCopyToClipboard]="newVersion.messageId"-->
-<!--                class="pi pi-copy new-versions__link-copy"-->
-<!--                (click)="onCopyClick(newVersion)"-->
-<!--                [ngClass]="{-->
-<!--        'new-versions__link-copy&#45;&#45;hidden': newVersion.copied-->
-<!--    }"-->
-<!--            ></i>-->
-
             <i
                 pTooltip="Copy message identifier"
                 tooltipStyleClass="guardian-tooltip"
@@ -46,11 +19,6 @@
                     'new-versions__link-copy--hidden': newVersion.copied
                 }"
             ></i>
-
-            <!--            <mat-icon class="new-versions__copy-done" *ngIf="newVersion.copied"-->
-            <!--                >done-->
-            <!--            </mat-icon>-->
-
             <i class="pi pi-check new-versions__copy-done" *ngIf="newVersion.copied"></i>
         </div>
     </div>

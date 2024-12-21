@@ -1,12 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { UntypedFormBuilder } from '@angular/forms';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
-import { InviteDialogComponent } from '../../../dialogs/invite-dialog/invite-dialog.component';
-import { HttpErrorResponse } from '@angular/common/http';
+import {Component, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {UntypedFormBuilder} from '@angular/forms';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {ConfirmationDialog} from '../confirmation-dialog/confirmation-dialog.component';
+import {InviteDialogComponent} from '../../../dialogs/invite-dialog/invite-dialog.component';
+import {HttpErrorResponse} from '@angular/common/http';
 import {DialogService} from 'primeng/dynamicdialog';
 
 /**
@@ -52,7 +51,6 @@ export class GroupManagerBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private fb: UntypedFormBuilder,
-        // private dialog: MatDialog
         private dialog: DialogService,
     ) {
     }
@@ -150,8 +148,6 @@ export class GroupManagerBlockComponent implements OnInit {
     onInvite(group: any) {
         const dialogRef = this.dialog.open(InviteDialogComponent, {
             width: '500px',
-            // panelClass: 'g-dialog',
-            // disableClose: true,
             data: {
                 header: 'Invitation',
                 blockId: this.id,
@@ -178,8 +174,7 @@ export class GroupManagerBlockComponent implements OnInit {
         ];
         const dialogRef = this.dialog.open(ConfirmationDialog, {
             width: '550px',
-            // disableClose: true,
-            data: { title, description },
+            data: {title, description},
             modal: true,
             closable: false,
         });

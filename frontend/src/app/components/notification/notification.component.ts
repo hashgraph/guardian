@@ -5,7 +5,6 @@ import {ToastrService} from 'ngx-toastr';
 import {forkJoin, Subscription} from 'rxjs';
 import {NotificationService} from 'src/app/services/notify.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
-// import {MatLegacyMenu as MatMenu, MatLegacyMenuTrigger as MatMenuTrigger} from '@angular/material/legacy-menu';
 
 @Component({
     selector: 'app-notification',
@@ -20,9 +19,6 @@ export class NotificationComponent implements OnInit {
     subscription = new Subscription();
 
     @Input() menuCollapsed: boolean;
-
-    // @ViewChild('notificationMenu') notificationMenu: MatMenu;
-    // @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;s
 
     viewDetails($event: MouseEvent, notification: any) {
         if (!notification.action) {
@@ -234,15 +230,8 @@ export class NotificationComponent implements OnInit {
         $event.stopPropagation();
         $event.stopImmediatePropagation();
         this.menuOpened = true;
-        // this.trigger.openMenu();
-        notificationMenu.toggle($event)
 
-        // if (this.menuCollapsed) {
-        //     $event.stopImmediatePropagation();
-        //     this.router.navigatыe(['notifications']);
-        //     return;
-        // }
-        //this.readFirstNotification();
+        notificationMenu.toggle($event)
     }
 
     viewAllNotifications() {

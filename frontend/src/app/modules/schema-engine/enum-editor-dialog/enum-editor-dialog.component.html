@@ -1,15 +1,6 @@
 <div class="g-dialog-content">
     <div class="g-dialog-body enum-input-container">
         <div class="enum-import-container">
-            <!--            <mat-form-field class="enum-import-url" appearance="outline">-->
-            <!--                <mat-label>URL</mat-label>-->
-            <!--                <input-->
-            <!--                        [formControl]="urlControl"-->
-            <!--                        matInput-->
-            <!--                        placeholder="example.com"-->
-            <!--                />-->
-            <!--            </mat-form-field>-->
-
             <div class="form-group enum-import-url">
                 <label for="urlInput" class="form-label">URL</label>
                 <input
@@ -39,16 +30,6 @@
             </button>
         </div>
         <div class="enum-label">Enum</div>
-        <!--        <mat-checkbox-->
-        <!--                *ngIf="loadToIpfs"-->
-        <!--                [(ngModel)]="loadToIpfsValue"-->
-        <!--                class="enum-load-to-ipfs"-->
-        <!--                color="primary"-->
-        <!--                labelPosition="before"-->
-        <!--        >-->
-        <!--            Will data be loaded to IPFS? (There are more than 5 options)-->
-        <!--        </mat-checkbox>-->
-
         <div *ngIf="loadToIpfs" class="form-group enum-load-to-ipfs">
             <p-checkbox
                 [(ngModel)]="loadToIpfsValue"
@@ -68,8 +49,6 @@
                 [options]="codeMirrorOptions"
             ></ngx-codemirror>
         </div>
-        <!--        <mat-spinner *ngIf="loading" class="loading"></mat-spinner>-->
-
         <div *ngIf="loading" class="loading">
             <p-progressSpinner></p-progressSpinner>
         </div>

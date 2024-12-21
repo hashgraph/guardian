@@ -3,7 +3,6 @@
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
             [attr.collapse]="propHidden.options">
-            <!--            <mat-icon>arrow_drop_down</mat-icon>-->
             <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">Options</td>
@@ -27,15 +26,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Period</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.period" [disabled]="readonly" (closed)="selectPeriod()">-->
-            <!--                <mat-option value="yearly">Yearly</mat-option>-->
-            <!--                <mat-option value="monthly">Monthly</mat-option>-->
-            <!--                <mat-option value="weekly">Weekly</mat-option>-->
-            <!--                <mat-option value="daily">Daily</mat-option>-->
-            <!--                <mat-option value="hourly">Hourly</mat-option>-->
-            <!--                <mat-option value="custom">Custom</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown
                 [(ngModel)]="properties.period"
                 [disabled]="readonly"

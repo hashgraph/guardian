@@ -1,10 +1,6 @@
 <ng-container *ngIf="options; else elseTemplate">
-<!--    <div class="select-menu" [matMenuTriggerFor]="publishMenu">-->
-
-        <div class="select-menu" (click)="publishMenu.toggle($event)">
+    <div class="select-menu" (click)="publishMenu.toggle($event)">
         <ng-container *ngTemplateOutlet="tempOutlet"></ng-container>
-        <!--        <mat-icon>arrow_drop_down</mat-icon>-->
-
         <i class="pi pi-sort-down-fill"></i>
     </div>
     <p-overlayPanel #publishMenu>

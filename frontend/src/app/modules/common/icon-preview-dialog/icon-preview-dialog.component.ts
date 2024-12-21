@@ -1,5 +1,4 @@
 import {Component, Inject} from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {IconType} from '@guardian/interfaces';
 import {IPFSService} from 'src/app/services/ipfs.service';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -18,8 +17,6 @@ export class IconPreviewDialog {
     loading: boolean = false;
 
     constructor(
-        // public dialogRef: MatDialogRef<IconPreviewDialog>,
-        // @Inject(MAT_DIALOG_DATA) public data: any
         private dialogRef: DynamicDialogRef,
         private config: DynamicDialogConfig,
         private ipfs: IPFSService,

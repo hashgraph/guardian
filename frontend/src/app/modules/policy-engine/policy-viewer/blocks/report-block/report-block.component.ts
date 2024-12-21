@@ -1,8 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {UntypedFormBuilder, Validators} from '@angular/forms';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-// import { MatIconRegistry } from '@angular/material/icon';
-// import { DomSanitizer } from '@angular/platform-browser';
 import {
     IImpactReport,
     IconType,
@@ -19,7 +16,7 @@ import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {IconsArray} from './iconsArray';
 import {DialogService} from 'primeng/dynamicdialog';
-import { HttpErrorResponse } from '@angular/common/http';
+import {HttpErrorResponse} from '@angular/common/http';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -59,19 +56,9 @@ export class ReportBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private fb: UntypedFormBuilder,
-        // public dialog: MatDialog,
         private dialogService: DialogService,
-        // iconRegistry: MatIconRegistry,
-        // sanitizer: DomSanitizer,
         private ipfs: IPFSService
     ) {
-        // for (let i = 0; i < IconsArray.length; i++) {
-        //     const element = IconsArray[i];
-        //     iconRegistry.addSvgIconLiteral(
-        //         element.name,
-        //         sanitizer.bypassSecurityTrustHtml(element.icon)
-        //     );
-        // }
     }
 
     ngOnInit(): void {

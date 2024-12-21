@@ -1,9 +1,7 @@
-import { AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-// import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-// import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
-import { Subscription } from 'rxjs';
-import { MapService } from '../../../services/map.service';
+import {AfterViewInit, ChangeDetectorRef, Component, Input, OnChanges, OnInit, SimpleChanges} from '@angular/core';
+import {UntypedFormControl, UntypedFormGroup, Validators} from '@angular/forms';
+import {Subscription} from 'rxjs';
+import {MapService} from '../../../services/map.service';
 
 const MY_FORMATS = {
     parse: {
@@ -21,10 +19,6 @@ const MY_FORMATS = {
     selector: 'app-sentinel-hub-type',
     templateUrl: './sentinel-hub-type.component.html',
     styleUrls: ['./sentinel-hub-type.component.scss'],
-    // providers: [
-    //     {provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter},
-    //     {provide: NGX_MAT_DATE_FORMATS, useValue: MY_FORMATS},
-    // ],
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     public key: string;
@@ -34,8 +28,6 @@ export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewIni
     @Input('preset') presetDocument: any = null;
     @Input('disabled') isDisabled: boolean = false;
     public datePicker = new UntypedFormGroup({
-        // from: new UntypedFormControl(),
-        // to: new UntypedFormControl()
         from: new UntypedFormControl(null, Validators.required),
         to: new UntypedFormControl(null, Validators.required)
     });

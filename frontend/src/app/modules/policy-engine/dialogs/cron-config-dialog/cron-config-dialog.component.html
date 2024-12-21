@@ -1,27 +1,6 @@
 <h1 mat-dialog-title>Custom Period</h1>
 <div mat-dialog-content class="dialog-content" [attr.started]="started">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-        <!--        <div class="c1">-->
-        <!--            <div class="f1" style="padding: 6px 4px; margin-right: 8px;">-->
-        <!--                <mat-label>Start Date:</mat-label>-->
-        <!--                <datetime-picker [(value)]="startDate" [readonly]="true"></datetime-picker>-->
-        <!--            </div>-->
-        <!--            <div class="f1" style="padding: 15px 10px; margin-left: 28px;">-->
-        <!--                <mat-label>Interval:</mat-label>-->
-        <!--                <input matInput type="number" min="1" max="100" formControlName="interval" (change)="selectPeriod()">-->
-        <!--            </div>-->
-        <!--            <div class="f1" style="padding: 15px 10px; margin-left: 8px;">-->
-        <!--                <mat-label>Period:</mat-label>-->
-        <!--                <mat-select [(value)]="period" (selectionChange)="selectPeriod()">-->
-        <!--                    <mat-option value="month">Month</mat-option>-->
-        <!--                    <mat-option value="week">Week</mat-option>-->
-        <!--                    <mat-option value="day">Day</mat-option>-->
-        <!--                    <mat-option value="hour">Hour</mat-option>-->
-        <!--                    <mat-option value="minute">Minute</mat-option>-->
-        <!--                </mat-select>-->
-        <!--            </div>-->
-        <!--        </div>-->
-
         <div class="c1">
             <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
                 <label for="startDate">Start Date:</label>
@@ -61,32 +40,11 @@
 
         <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
         <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
-
-        <!-- <mat-form-field class="example-full-width" appearance="outline">
-            <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>
-            <input matInput type="text" placeholder="* * * * *" formControlName="mask">
-        </mat-form-field> -->
-
         <div>
             {{ timeString }}
         </div>
 
         <div class="delimiter"></div>
-
-        <!--        <mat-accordion>-->
-        <!--            <mat-expansion-panel>-->
-        <!--                <mat-expansion-panel-header>-->
-        <!--                    <mat-panel-title>-->
-        <!--                        Cron Mask (advanced)-->
-        <!--                    </mat-panel-title>-->
-        <!--                </mat-expansion-panel-header>-->
-        <!--                <mat-form-field class="example-full-width" appearance="outline">-->
-        <!--                    <mat-label>* Mask: minute hour day(month) month day(week)</mat-label>-->
-        <!--                    <input matInput type="text" placeholder="* * * * *" formControlName="mask">-->
-        <!--                </mat-form-field>-->
-        <!--            </mat-expansion-panel>-->
-        <!--        </mat-accordion>-->
-
         <p-accordion [multiple]="true">
             <p-accordionTab header="Cron Mask (advanced)">
                 <div class="form-group">

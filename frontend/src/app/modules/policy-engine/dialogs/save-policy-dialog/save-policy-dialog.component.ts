@@ -1,5 +1,4 @@
 import { Component, Inject } from '@angular/core';
-// import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 
 import { Observable, ReplaySubject } from 'rxjs';
@@ -32,8 +31,6 @@ export class SavePolicyDialog {
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
-        // public dialogRef: MatDialogRef<SavePolicyDialog>,
-        // @Inject(MAT_DIALOG_DATA) public data: any
     ) {
         this.data = config.data;
 
@@ -50,8 +47,7 @@ export class SavePolicyDialog {
         return this._isActionSelected$;
     }
 
-    ngOnInit() {
-    }
+    ngOnInit() {}
 
     onNoClick(): void {
         this.dialogRef.close(null);

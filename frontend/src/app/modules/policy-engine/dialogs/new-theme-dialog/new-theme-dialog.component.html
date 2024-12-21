@@ -2,8 +2,6 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <!--                <mat-icon>close</mat-icon>-->
-
                 <i class="pi pi-times"></i>
             </div>
         </div>
@@ -19,11 +17,6 @@
     <div class="g-dialog-body">
         <div class="context">
             <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
-                <!--                <mat-form-field class="example-full-width" appearance="outline">-->
-                <!--                    <mat-label>* NAME:</mat-label>-->
-                <!--                    <input matInput type="text" placeholder="Theme name" formControlName="name">-->
-                <!--                </mat-form-field>-->
-
                 <div class="example-full-width">
                     <label for="name">* NAME:</label>
                     <input

@@ -10,8 +10,6 @@ import {ICategory, IEntity} from 'src/app/utils/permissions-interface';
 import {ConfirmationDialogComponent} from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
 import {DialogService} from 'primeng/dynamicdialog';
 
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-
 @Component({
     selector: 'app-roles-view',
     templateUrl: './roles-view.component.html',
@@ -38,7 +36,6 @@ export class RolesViewComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private fb: UntypedFormBuilder,
-        // private dialog: MatDialog
         private dialog: DialogService,
     ) {
     }
@@ -132,8 +129,6 @@ export class RolesViewComponent implements OnInit, OnDestroy {
                 dialogTitle: 'Delete role',
                 dialogText: 'Are you sure to delete role?'
             },
-            // disableClose: true,
-            // autoFocus: false
             modal: true,
             closable: false,
         });

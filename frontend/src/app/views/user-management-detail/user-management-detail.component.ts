@@ -326,7 +326,6 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
 
     public assignPolicy(policy: any, checked: boolean) {
         const ids = [policy.id];
-        // const assign = !policy.assigned;
         const assign = checked;
         if (this.user.PERMISSIONS_ROLE_MANAGE) {
             this.loading = true;

@@ -1,7 +1,3 @@
-<!--<div *ngIf="loading" class="loading">-->
-<!--    <mat-spinner></mat-spinner>-->
-<!--</div>-->
-
 <div *ngIf="loading" class="loading">
     <p-progressSpinner></p-progressSpinner>
 </div>
@@ -15,16 +11,9 @@
             </div>
         </div>
         <div class="recording-menu-btn" title="Stop" (click)="stopRecording()">
-            <!--            <mat-icon>stop</mat-icon>-->
-
             <i class="pi pi-stop"></i>
         </div>
-        <!-- <div class="recording-menu-btn" title="Pause">
-            <mat-icon>pause</mat-icon>
-        </div> -->
         <div class="recording-menu-btn" title="Actions" (click)="onShowActions()">
-            <!--            <mat-icon>menu</mat-icon>-->
-
             <i class="pi pi-bars"></i>
         </div>
     </div>
@@ -60,31 +49,18 @@
         </div>
 
         <div *ngIf="this.recordError" class="running-menu-btn" title="Retry step" (click)="retryStep()">
-            <!--            <mat-icon>play_arrow</mat-icon>-->
-
             <i class="pi pi-play"></i>
         </div>
         <div *ngIf="this.recordError" class="running-menu-btn" title="Skip step" (click)="skipStep()">
-            <!--            <mat-icon>redo</mat-icon>-->
-
             <i class="pi pi-replay"></i>
         </div>
-        <!-- <div class="running-menu-btn" title="Pause">
-            <mat-icon>pause</mat-icon>
-        </div> -->
         <div class="running-menu-btn" title="Fast Forward" (click)="fastForward()">
-            <!--            <mat-icon>skip_next</mat-icon>-->
-
             <i class="pi pi-step-forward"></i>
         </div>
         <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
-            <!--            <mat-icon>stop</mat-icon>-->
-
             <i class="pi pi-stop"></i>
         </div>
         <div class="running-menu-btn" title="Actions" (click)="onShowActions()">
-            <!--            <mat-icon>menu</mat-icon>-->
-
             <i class="pi pi-bars"></i>
         </div>
     </div>
@@ -96,19 +72,6 @@
         <div *ngIf="this.recordError" class="record-error">
             {{ this.recordError }}
         </div>
-        <!--        <div-->
-        <!--            *ngFor="let item of recordItems"-->
-        <!--            class="record-item"-->
-        <!--            [attr.selected]="item._selected"-->
-        <!--            matTooltipPosition="left"-->
-        <!--            matTooltipClass="record-tooltip"-->
-        <!--            [matTooltip]="item._tooltip"-->
-        <!--        >-->
-        <!--            <div class="record-item-index">{{ item._index }}</div>-->
-        <!--            <div class="record-item-method">{{ item._title }}</div>-->
-        <!--            <div class="record-item-time">{{ item._time }}</div>-->
-        <!--        </div>-->
-
         <div
             *ngFor="let item of recordItems"
             class="record-item"

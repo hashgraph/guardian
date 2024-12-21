@@ -3,15 +3,6 @@
                     (page)="onPage($event)">
 
     <div class="action-buttons">
-        <!--        <mat-form-field appearance="outline">-->
-        <!--            <mat-label>Tokens</mat-label>-->
-        <!--            <mat-select [(value)]="selectedTokens" multiple (selectionChange)="loadPools()">-->
-        <!--                <mat-option *ngFor="let token of tokens" [value]="token.tokenId">{{ token.tokenSymbol }}-->
-        <!--                    ({{ token.tokenId }})-->
-        <!--                </mat-option>-->
-        <!--            </mat-select>-->
-        <!--        </mat-form-field>-->
-
         <div class="p-fluid">
             <label for="tokensDropdown">Tokens</label>
             <p-multiSelect
@@ -31,20 +22,14 @@
             <div class="tokens">
                 <div class="token-card" *ngFor="let token of pool.tokens">
                     <span class="token-card__token">
-<!--                        <mat-icon>abc</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
                         <span>{{ token.tokenSymbol }}</span>
                     </span>
                     <span class="token-card__token">
-<!--                        <mat-icon>generating_tokens</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
                         <span>{{ token.token }}</span>
                     </span>
                     <span class="token-card__count">
-<!--                        <mat-icon>calculate</mat-icon>-->
-
                         <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
                         <span>{{ token.count | tokenCount: token.decimals }}</span>
                     </span>
@@ -61,15 +46,6 @@
                     }}</span>
             </div>
             <div class="pool-actions">
-                <!--                <button class="btn&#45;&#45;remove" mat-icon-button [disabled]="!hasPermissions(contract.permissions, 1)"-->
-                <!--                        matTooltip="You are not admin" matTooltipClass="guardian-tooltip"-->
-                <!--                        [matTooltipDisabled]="hasPermissions(contract.permissions, 1)"-->
-                <!--                        (click)="removePool(pool)">-->
-                <!--                    &lt;!&ndash;                    <mat-icon>delete</mat-icon>&ndash;&gt;-->
-
-                <!--                    <i class="pi pi-trash"></i>-->
-                <!--                </button>-->
-
                 <button class="btn--remove"
                         pButton
                         icon="pi pi-trash"

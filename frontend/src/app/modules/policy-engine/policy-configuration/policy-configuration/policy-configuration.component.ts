@@ -1,7 +1,6 @@
-import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import {CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
+import {ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
 import {
     ContractType,
     IContract,
@@ -12,34 +11,46 @@ import {
     UserPermissions,
 } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
-import { forkJoin, Observable } from 'rxjs';
-import { NewModuleDialog } from '../../dialogs/new-module-dialog/new-module-dialog.component';
-import { SaveBeforeDialogComponent } from '../../dialogs/save-before-dialog/save-before-dialog.component';
-import { PolicyAction, SavePolicyDialog } from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
-import { RegisteredService } from '../../services/registered.service';
-import { IPolicyCategory, ModuleTemplate, Options, PolicyBlock, PolicyModule, PolicyStorage, PolicyTemplate, Theme, ThemeRule, ToolMenu, ToolTemplate } from '../../structures';
-import { PolicyTreeComponent } from '../policy-tree/policy-tree.component';
-import { ThemeService } from '../../../../services/theme.service';
-import { SuggestionsService } from '../../../../services/suggestions.service';
-import { PolicyFolder, PolicyItem, PolicyRoot } from '../../structures/policy-models/interfaces/types';
-import { DialogService } from 'primeng/dynamicdialog';
-import { CONFIGURATION_ERRORS } from '../../injectors/configuration.errors.injector';
-import { StopResizingEvent } from '../../directives/resizing.directive';
-import { OrderOption } from '../../structures/interfaces/order-option.interface';
-import { PolicyPropertiesComponent } from '../policy-properties/policy-properties.component';
-import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
-import { ConfirmationDialogComponent } from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
-import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
-import { ModulesService } from 'src/app/services/modules.service';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { SchemaService } from 'src/app/services/schema.service';
-import { TokenService } from 'src/app/services/token.service';
-import { ProfileService } from 'src/app/services/profile.service';
-import { ToolsService } from 'src/app/services/tools.service';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { PublishPolicyDialog } from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
-import { ContractService } from 'src/app/services/contract.service';
+import {forkJoin, Observable} from 'rxjs';
+import {NewModuleDialog} from '../../dialogs/new-module-dialog/new-module-dialog.component';
+import {SaveBeforeDialogComponent} from '../../dialogs/save-before-dialog/save-before-dialog.component';
+import {PolicyAction, SavePolicyDialog} from '../../dialogs/save-policy-dialog/save-policy-dialog.component';
+import {RegisteredService} from '../../services/registered.service';
+import {
+    IPolicyCategory,
+    ModuleTemplate,
+    Options,
+    PolicyBlock,
+    PolicyModule,
+    PolicyStorage,
+    PolicyTemplate,
+    Theme,
+    ThemeRule,
+    ToolMenu,
+    ToolTemplate
+} from '../../structures';
+import {PolicyTreeComponent} from '../policy-tree/policy-tree.component';
+import {ThemeService} from '../../../../services/theme.service';
+import {SuggestionsService} from '../../../../services/suggestions.service';
+import {PolicyFolder, PolicyItem, PolicyRoot} from '../../structures/policy-models/interfaces/types';
+import {DialogService} from 'primeng/dynamicdialog';
+import {CONFIGURATION_ERRORS} from '../../injectors/configuration.errors.injector';
+import {StopResizingEvent} from '../../directives/resizing.directive';
+import {OrderOption} from '../../structures/interfaces/order-option.interface';
+import {PolicyPropertiesComponent} from '../policy-properties/policy-properties.component';
+import {WizardMode, WizardService} from 'src/app/modules/policy-engine/services/wizard.service';
+import {ConfirmationDialogComponent} from 'src/app/modules/common/confirmation-dialog/confirmation-dialog.component';
+import {SetVersionDialog} from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
+import {InformService} from 'src/app/services/inform.service';
+import {ModulesService} from 'src/app/services/modules.service';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {SchemaService} from 'src/app/services/schema.service';
+import {TokenService} from 'src/app/services/token.service';
+import {ProfileService} from 'src/app/services/profile.service';
+import {ToolsService} from 'src/app/services/tools.service';
+import {AnalyticsService} from 'src/app/services/analytics.service';
+import {PublishPolicyDialog} from '../../dialogs/publish-policy-dialog/publish-policy-dialog.component';
+import {ContractService} from 'src/app/services/contract.service';
 
 /**
  * The page for editing the policy and blocks.
@@ -159,6 +170,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public set menuList(value: CdkDropList<any>) {
         this.dropListConnector.menu = value;
     }
+
     public get menuList(): CdkDropList<any> {
         return this.dropListConnector.menu;
     }
@@ -249,7 +261,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.themes = this.themeService.getThemes();
             this.theme = this.themeService.getCurrent();
             this.updateCodeMirrorStyles();
-        }, ({ message }) => {
+        }, ({message}) => {
             console.error(message);
         });
     }
@@ -324,7 +336,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.modulesService.menuList(),
                 this.toolsService.menuList(),
                 this.policyEngineService.getPolicyCategories(),
-                this.contractService.getContracts({ type: ContractType.WIPE }),
+                this.contractService.getContracts({type: ContractType.WIPE}),
             ]).subscribe((data) => {
                 const tokens = data[0] || [];
                 const blockInformation = data[1] || {};
@@ -376,11 +388,11 @@ export class PolicyConfigurationComponent implements OnInit {
                         }
                     })
                 }
-            }, ({ message }) => {
+            }, ({message}) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -427,11 +439,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.moduleTemplate.setSchemas(this.schemas);
                 this.moduleTemplate.setTools(this.tools.items);
                 this.finishedLoad(this.moduleTemplate);
-            }, ({ message }) => {
+            }, ({message}) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -483,11 +495,11 @@ export class PolicyConfigurationComponent implements OnInit {
                 this.toolTemplate.setTools(this.tools.items);
 
                 this.finishedLoad(this.toolTemplate);
-            }, ({ message }) => {
+            }, ({message}) => {
                 this.loading = false;
                 console.error(message);
             });
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -508,7 +520,9 @@ export class PolicyConfigurationComponent implements OnInit {
         this.updateTools();
         this.updateTemporarySchemas();
 
-        setTimeout(() => { this.loading = false; }, 500);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
     }
 
     public onConfigChange() {
@@ -617,7 +631,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     if (this.currentBlock !== currentBlock) {
                         return;
                     }
-                    const { next, nested } = result;
+                    const {next, nested} = result;
                     if (
                         next &&
                         this.currentBlock?.parent?.children &&
@@ -625,7 +639,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.currentBlock.parent.children.indexOf(
                             this.currentBlock
                         ) + 1
-                        ]
+                            ]
                     ) {
                         this.nextBlock = {
                             icon: this.registeredService.getIcon(next),
@@ -633,7 +647,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: next,
                                 permissionsNumber:
-                                    this.currentBlock?.permissionsNumber,
+                                this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(next),
                         };
@@ -650,7 +664,7 @@ export class PolicyConfigurationComponent implements OnInit {
                             node: {
                                 blockType: nested,
                                 permissionsNumber:
-                                    this.currentBlock?.permissionsNumber,
+                                this.currentBlock?.permissionsNumber,
                             },
                             name: this.registeredService.getName(nested),
                         };
@@ -746,7 +760,6 @@ export class PolicyConfigurationComponent implements OnInit {
                     dialogTitle: 'Apply latest changes',
                     dialogText: 'Do you want to apply latest changes?'
                 },
-                // disableClose: true
                 modal: true,
                 closable: false,
             })
@@ -770,8 +783,7 @@ export class PolicyConfigurationComponent implements OnInit {
             try {
                 const parsedBlockData = JSON.parse(evt.clipboardData?.getData('text') || 'null');
                 this.onPasteBlock(parsedBlockData);
-            }
-            catch {
+            } catch {
                 console.warn('Block data is incorrect');
                 return;
             }
@@ -1275,8 +1287,6 @@ export class PolicyConfigurationComponent implements OnInit {
                     ? PolicyAction.CREATE_NEW_POLICY
                     : null
             },
-            // autoFocus: false,
-            // disableClose: true
             modal: true,
             closable: false,
         });
@@ -1294,7 +1304,7 @@ export class PolicyConfigurationComponent implements OnInit {
                         topicDescription: policy.topicDescription,
                         description: policy.description
                     }).subscribe((result) => {
-                        const { taskId, expectation } = result;
+                        const {taskId, expectation} = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
                                 last: btoa(location.href)
@@ -1311,7 +1321,7 @@ export class PolicyConfigurationComponent implements OnInit {
                     delete policy.version;
                     policy.previousVersion = json.version;
                     this.policyEngineService.pushCreate(policy).subscribe((result) => {
-                        const { taskId, expectation } = result;
+                        const {taskId, expectation} = result;
                         this.router.navigate(['task', taskId], {
                             queryParams: {
                                 last: btoa(location.href)
@@ -1338,7 +1348,7 @@ export class PolicyConfigurationComponent implements OnInit {
             config: json?.config
         }
         this.policyEngineService.validate(object).subscribe((data: any) => {
-            const { policy, results } = data;
+            const {policy, results} = data;
             const config = policy.config;
             this.policyTemplate.rebuild(config);
             this.setErrors(results, 'policy');
@@ -1369,7 +1379,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private publishPolicy(version: string) {
         this.loading = true;
         this.policyEngineService.pushPublish(this.policyId, version).subscribe((result) => {
-            const { taskId, expectation } = result;
+            const {taskId, expectation} = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -1384,7 +1394,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private dryRunPolicy() {
         this.loading = true;
         this.policyEngineService.dryRun(this.policyId).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
+            const {policies, isValid, errors} = data;
             if (isValid) {
                 this.clearState();
                 this.loadData();
@@ -1401,7 +1411,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public draftPolicy() {
         this.loading = true;
         this.policyEngineService.draft(this.policyId).subscribe((data: any) => {
-            const { policies, isValid, errors } = data;
+            const {policies, isValid, errors} = data;
             this.clearState();
             this.loadData();
         }, (e) => {
@@ -1413,8 +1423,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.hasChanges) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
-                // autoFocus: false,
-                // disableClose: true,
                 modal: true,
                 closable: false,
             });
@@ -1434,8 +1442,6 @@ export class PolicyConfigurationComponent implements OnInit {
         if (this.hasChanges) {
             const dialogRef = this.dialog.open(SaveBeforeDialogComponent, {
                 width: '500px',
-                // autoFocus: false,
-                // disableClose: true,
                 modal: true,
                 closable: false,
             });
@@ -1547,7 +1553,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = true;
             this.modulesService.create(module).subscribe((result) => {
                 this.router.navigate(['/module-configuration'], {
-                    queryParams: { moduleId: result.uuid }
+                    queryParams: {moduleId: result.uuid}
                 });
             }, (e) => {
                 this.loading = false;
@@ -1587,7 +1593,9 @@ export class PolicyConfigurationComponent implements OnInit {
                     this.modules.push(result);
                     this.updateModules();
                     this.changeDetector.detectChanges()
-                    setTimeout(() => { this.loading = false; }, 500);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
                 }, (e) => {
                     this.loading = false;
                 });
@@ -1622,7 +1630,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const module = this.moduleTemplate.getJSON();
         this.modulesService.validate(module).subscribe((data: any) => {
-            const { module, results } = data;
+            const {module, results} = data;
             this.moduleTemplate.rebuild(module);
             this.setErrors(results, 'module');
             this.onOpenRoot(this.moduleTemplate);
@@ -1656,7 +1664,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.loading = true;
             this.toolsService.create(tool).subscribe((result) => {
                 this.router.navigate(['/tool-configuration'], {
-                    queryParams: { toolId: result.id }
+                    queryParams: {toolId: result.id}
                 });
             }, (e) => {
                 this.loading = false;
@@ -1680,7 +1688,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public tryPublishTool() {
         this.loading = true;
         this.toolsService.pushPublish(this.toolId).subscribe((result) => {
-            const { taskId, expectation } = result;
+            const {taskId, expectation} = result;
             this.router.navigate(['task', taskId], {
                 queryParams: {
                     last: btoa(location.href)
@@ -1696,7 +1704,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loading = true;
         const tool = this.toolTemplate.getJSON();
         this.toolsService.validate(tool).subscribe((data: any) => {
-            const { tool, results } = data;
+            const {tool, results} = data;
             this.toolTemplate.rebuild(tool);
             this.setErrors(results, 'tool');
             this.onOpenRoot(this.toolTemplate);
@@ -1724,7 +1732,9 @@ export class PolicyConfigurationComponent implements OnInit {
                         this.policyTemplate.setSchemas(this.schemas);
                         this.policyTemplate.setTools(this.tools.items);
                     }
-                    setTimeout(() => { this.loading = false; }, 500);
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
                     subscriber.next();
                 }, (e) => {
                     console.error(e.error);
@@ -1796,7 +1806,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.loading = true;
         this.analyticsService.searchBlocks(option).subscribe((data: any) => {
-            this.blockSearchData = { source: block, data };
+            this.blockSearchData = {source: block, data};
             this.loading = false;
         }, (e) => {
             this.blockSearchData = null;

@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {CronConfigDialog} from '../../../../dialogs/cron-config-dialog/cron-config-dialog.component';
 import {IModuleVariables, PolicyBlock} from '../../../../structures';
 import {DialogService} from 'primeng/dynamicdialog';
@@ -40,7 +39,6 @@ export class TimerConfigComponent implements OnInit {
     ];
 
     constructor(
-        // private dialog: MatDialog
         private dialog: DialogService,
     ) {
     }
@@ -68,11 +66,9 @@ export class TimerConfigComponent implements OnInit {
         if (this.properties.period == 'custom') {
             const dialogRef = this.dialog.open(CronConfigDialog, {
                 width: '550px',
-                // disableClose: true,
                 data: {
                     startDate: this.properties.startDate
                 },
-                // autoFocus: false
                 modal: true,
                 closable: false,
             });

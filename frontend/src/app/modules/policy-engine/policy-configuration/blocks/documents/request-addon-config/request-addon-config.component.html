@@ -37,13 +37,6 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName"><span class="required-fields">*</span> Id Type</td>
         <td class="propRowCell">
-            <!--            <mat-select [(value)]="properties.idType" [disabled]="readonly" (change)="onSave()">-->
-            <!--                <mat-option value=""></mat-option>-->
-            <!--                <mat-option value="DID">DID (New DID)</mat-option>-->
-            <!--                <mat-option value="UUID">UUID (New UUID)</mat-option>-->
-            <!--                <mat-option value="OWNER">Owner (Owner DID)</mat-option>-->
-            <!--            </mat-select>-->
-
             <p-dropdown
                 [(ngModel)]="properties.idType"
                 [disabled]="readonly"
@@ -67,8 +60,6 @@
         <tr class="propHeader">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'preset')"
                 [attr.collapse]="propHidden.preset">
-                <!--                <mat-icon>arrow_drop_down</mat-icon>-->
-
                 <i class="pi pi-caret-down"></i>
             </td>
             <td class="propHeaderCell cellName">Preset</td>
@@ -87,8 +78,6 @@
             <tr class="propRow" [attr.collapse]="propHidden.preset">
                 <td class="propRowCol cellCollapse" (click)="onHide(propHidden.presetFields, i)"
                     [attr.collapse]="propHidden.presetFields[i]">
-                    <!--                    <mat-icon>arrow_drop_down</mat-icon>-->
-
                     <i class="pi pi-caret-down"></i>
                 </td>
                 <td class="propRowCell cellName">Field {{ i }}</td>
@@ -111,12 +100,6 @@
                     Preset Field
                 </td>
                 <td class="propRowCell">
-                    <!--                    <mat-select [(value)]="field.value" [disabled]="readonly" (change)="onSave()">-->
-                    <!--                        <mat-option *ngFor="let f of presetMap" [value]="f.name" [title]="f.title">-->
-                    <!--                            {{ f.title }}-->
-                    <!--                        </mat-option>-->
-                    <!--                    </mat-select>-->
-
                     <p-dropdown
                         [(ngModel)]="field.value"
                         [disabled]="readonly"

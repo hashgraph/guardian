@@ -1,31 +1,39 @@
-import { Component, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { HttpResponse } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ISchema, IUser, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TagType, UserPermissions } from '@guardian/interfaces';
-import { forkJoin, Observable } from 'rxjs';
+import {Component, OnInit} from '@angular/core';
+import {HttpResponse} from '@angular/common/http';
+import {ActivatedRoute, Router} from '@angular/router';
+import {
+    ISchema,
+    IUser,
+    Schema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaStatus,
+    TagType,
+    UserPermissions
+} from '@guardian/interfaces';
+import {forkJoin, Observable} from 'rxjs';
 //services
-import { ProfileService } from '../../services/profile.service';
-import { SchemaService } from '../../services/schema.service';
-import { PolicyEngineService } from '../../services/policy-engine.service';
-import { TagsService } from '../../services/tag.service';
+import {ProfileService} from '../../services/profile.service';
+import {SchemaService} from '../../services/schema.service';
+import {PolicyEngineService} from '../../services/policy-engine.service';
+import {TagsService} from '../../services/tag.service';
 //modules
-import { ConfirmationDialogComponent } from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
-import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
-import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
-import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
-import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
-import { SchemaFormDialog } from '../../modules/schema-engine/schema-form-dialog/schema-form-dialog.component';
-import { SetVersionDialog } from '../../modules/schema-engine/set-version-dialog/set-version-dialog.component';
-import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { SchemaViewDialog } from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
-import { ModulesService } from '../../services/modules.service';
-import { ToolsService } from 'src/app/services/tools.service';
-import { AlertComponent, AlertType } from 'src/app/modules/common/alert/alert.component';
-import { CopySchemaDialog } from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
-import { SchemaTreeComponent } from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
-import { DialogService } from 'primeng/dynamicdialog';
-import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
+import {ConfirmationDialogComponent} from '../../modules/common/confirmation-dialog/confirmation-dialog.component';
+import {SchemaDialog} from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
+import {ImportSchemaDialog} from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
+import {ExportSchemaDialog} from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import {CompareSchemaDialog} from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
+import {SchemaFormDialog} from '../../modules/schema-engine/schema-form-dialog/schema-form-dialog.component';
+import {SetVersionDialog} from '../../modules/schema-engine/set-version-dialog/set-version-dialog.component';
+import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import {SchemaViewDialog} from '../../modules/schema-engine/schema-view-dialog/schema-view-dialog.component';
+import {ModulesService} from '../../services/modules.service';
+import {ToolsService} from 'src/app/services/tools.service';
+import {AlertComponent, AlertType} from 'src/app/modules/common/alert/alert.component';
+import {CopySchemaDialog} from '../../modules/schema-engine/copy-schema-dialog/copy-schema-dialog';
+import {SchemaTreeComponent} from 'src/app/modules/schema-engine/schema-tree/schema-tree.component';
+import {DialogService} from 'primeng/dynamicdialog';
+import {ProjectComparisonService} from 'src/app/services/project-comparison.service';
 
 enum SchemaType {
     System = 'system',
@@ -116,11 +124,11 @@ export class SchemaConfigComponent implements OnInit {
     public compareList: any[] = [];
     public properties: any[] = [];
     public schemasTypes: { label: string; value: SchemaType }[] = [
-        { label: 'Policy Schemas', value: SchemaType.Policy },
-        { label: 'Module Schemas', value: SchemaType.Module },
-        { label: 'Tag Schemas', value: SchemaType.Tag },
-        { label: 'System Schemas', value: SchemaType.System },
-        { label: 'Tool Schemas', value: SchemaType.Tool },
+        {label: 'Policy Schemas', value: SchemaType.Policy},
+        {label: 'Module Schemas', value: SchemaType.Module},
+        {label: 'Tag Schemas', value: SchemaType.Tag},
+        {label: 'System Schemas', value: SchemaType.System},
+        {label: 'Tool Schemas', value: SchemaType.Tool},
     ];
 
     public element: any = {};
@@ -529,7 +537,7 @@ export class SchemaConfigComponent implements OnInit {
             } catch (error) {
                 this.loadError(error);
             }
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loadError(message);
         });
     }
@@ -624,7 +632,7 @@ export class SchemaConfigComponent implements OnInit {
         this.pageSize = 100;
         this.currentTopic = '';
         this.router.navigate(['/schemas'], {
-            queryParams: { type }
+            queryParams: {type}
         });
         this.loadSchemas();
     }
@@ -683,7 +691,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.pushCreate(category, schema, schema.topicId).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -756,7 +764,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.newVersion(category, schema, id).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -827,7 +835,7 @@ export class SchemaConfigComponent implements OnInit {
             case SchemaType.Policy:
             default: {
                 this.schemaService.pushPublish(id, version).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -856,7 +864,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByMessage(data, topicId).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -885,7 +893,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByFile(data, topicId).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -914,7 +922,7 @@ export class SchemaConfigComponent implements OnInit {
             default: {
                 const category = this.getCategory();
                 this.schemaService.pushImportByXlsx(data, topicId).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -960,14 +968,15 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenForm(schema: Schema, example: boolean): void {
         const dialogRef = this.dialog.open(SchemaFormDialog, {
             width: '950px',
-            // panelClass: 'g-dialog',
-            // disableClose: true,
-            data: { schema, example, category: this.getCategory() },
+            data: {schema, example, category: this.getCategory()},
             styleClass: 'g-dialog',
             modal: true,
             closable: false,
         });
-        dialogRef.onClose.subscribe(async ({ exampleDate, currentSchema }: { exampleDate: any, currentSchema: Schema }) => {
+        dialogRef.onClose.subscribe(async ({exampleDate, currentSchema}: {
+            exampleDate: any,
+            currentSchema: Schema
+        }) => {
             if (exampleDate && currentSchema) {
                 schema.setExample(exampleDate);
                 this.updateSchema(currentSchema.id, currentSchema);
@@ -990,7 +999,8 @@ export class SchemaConfigComponent implements OnInit {
                 category: this.getCategory()
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     public onEditSchema(element: Schema): void {
@@ -1055,8 +1065,6 @@ export class SchemaConfigComponent implements OnInit {
                     dialogTitle: 'Delete schema',
                     dialogText: 'Are you sure to delete schema?'
                 },
-                // disableClose: true,
-                // autoFocus: false
                 modal: true,
                 closable: false,
             });
@@ -1105,7 +1113,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private onCloneSchema(element: Schema): void {
-        const newDocument: any = { ...element };
+        const newDocument: any = {...element};
         delete newDocument._id;
         // delete newDocument.id;
         delete newDocument.uuid;
@@ -1135,7 +1143,7 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onCopySchema(element: Schema): void {
-        const newDocument: any = { ...element };
+        const newDocument: any = {...element};
         delete newDocument._id;
         delete newDocument.id;
         delete newDocument.uuid;
@@ -1145,8 +1153,6 @@ export class SchemaConfigComponent implements OnInit {
         delete newDocument.previousVersion;
         const dialogRef = this.dialog.open(CopySchemaDialog, {
             width: '950px',
-            // panelClass: 'g-dialog',
-            // disableClose: true,
             styleClass: 'g-dialog',
             modal: true,
             closable: false,
@@ -1164,7 +1170,7 @@ export class SchemaConfigComponent implements OnInit {
         dialogRef.onClose.subscribe(async (copyInfo: any | null) => {
             if (copyInfo) {
                 this.schemaService.copySchema(copyInfo).subscribe((result) => {
-                    const { taskId } = result;
+                    const {taskId} = result;
                     this.router.navigate(['task', taskId], {
                         queryParams: {
                             last: btoa(location.href)
@@ -1180,7 +1186,6 @@ export class SchemaConfigComponent implements OnInit {
     public onPublish(element: Schema): void {
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
-            // disableClose: true
             modal: true,
             closable: false,
         });
@@ -1203,7 +1208,7 @@ export class SchemaConfigComponent implements OnInit {
             header: 'Select action',
             width: '720px',
             styleClass: 'custom-dialog',
-            data: { timeStamp: messageId }
+            data: {timeStamp: messageId}
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
@@ -1213,11 +1218,9 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     private importSchemasDetails(result: any) {
-        const { type, data, schemas, errors } = result;
+        const {type, data, schemas, errors} = result;
         const dialogRef = this.dialog.open(SchemaViewDialog, {
             width: '950px',
-            // panelClass: 'g-dialog',
-            // disableClose: true,
             styleClass: 'g-dialog',
             modal: true,
             closable: false,

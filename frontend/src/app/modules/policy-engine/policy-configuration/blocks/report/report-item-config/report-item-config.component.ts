@@ -1,5 +1,4 @@
 import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import {IconPreviewDialog} from 'src/app/modules/common/icon-preview-dialog/icon-preview-dialog.component';
 import {IPFS_SCHEMA} from 'src/app/services/api';
 import {IPFSService} from 'src/app/services/ipfs.service';
@@ -58,7 +57,6 @@ export class ReportItemConfigComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        // public dialog: MatDialog
         private dialog: DialogService,
     ) {
     }
