@@ -4,6 +4,11 @@ icon: sidebar-flip
 
 # Schema Predefined Values using UI
 
+1. [Step By Step Process](schema-predefined-values-using-ui.md#id-1.-step-by-step-process)
+2. [Demo Video](schema-predefined-values-using-ui.md#id-2.-demo-video)
+
+## 1. Step By Step Process
+
 ## 1. Schema Predefined Values
 
 Predefined schema values allow users to set up values for each field in schema (number, string, GeoJSON, or other nested schema) and use them in policy while displaying request blocks. There are 3 types of predefined values:
@@ -49,3 +54,7 @@ Predefined values can also be used in more complex cases such as multiple fields
 ![](<../../../.gitbook/assets/6 (21).png>)
 
 ![](<../../../.gitbook/assets/7 (21).png>)
+
+## 2. Demo Video
+
+[Youtube](https://youtu.be/wFRk9uHRXss?si=2Gx2FNq6Tk9PnkIR\&t=104)

@@ -5,11 +5,28 @@
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
             <p-dropdown
+                [options]="typeOptions"
                 [(ngModel)]="properties.type"
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select a type"
-                [options]="typeOptions">
+            >
+            </p-dropdown>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Query Type</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [options]="queryTypeOptions"
+                [(ngModel)]="properties.queryType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+            >
+                <ng-template pTemplate="item" let-item>
+                    <span>{{item.label}}</span>
+                </ng-template>
             </p-dropdown>
         </td>
     </tr>

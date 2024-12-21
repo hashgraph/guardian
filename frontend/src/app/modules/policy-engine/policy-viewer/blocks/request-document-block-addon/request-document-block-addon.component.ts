@@ -196,6 +196,10 @@ export class RequestDocumentBlockAddonComponent
         }
     }
 
+    public getRef() {
+        return this.ref.id;
+    }
+
     public onDialog() {
         this.dataForm.reset();
         if (this.needPreset && this.rowDocument) {

@@ -44,7 +44,6 @@ export class FieldControl {
         entityType?: UntypedFormControl,
         name?: string
     ) {
-        console.log(field);
         this._defaultFieldMap = defaultFieldMap;
         this._entityType = entityType;
         this.name = `field${Date.now()}${Math.floor(Math.random() * 1000000)}`;

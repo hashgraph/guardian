@@ -43,7 +43,7 @@ import { KeyType, Users, Wallet } from '../helpers/index.js';
 import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
-import bs58 from 'bs58';
+import { Hashing } from '../hedera-modules/hashing.js';
 import { DatabaseServer } from '../database-modules/index.js';
 
 /**
@@ -501,10 +501,10 @@ export class VcHelper extends VCJS {
             const option = method.toObject(true) as any;
             switch (option.type) {
                 case 'Ed25519VerificationKey2018': {
-                    const privateKeyHex = bs58
+                    const privateKeyHex = Hashing.base58
                         .decode(option.privateKeyBase58)
                         .toString('hex')
-                    const publicKeyHex = bs58
+                    const publicKeyHex = Hashing.base58
                         .decode(option.publicKeyBase58)
                         .toString('hex')
                     if (!privateKeyHex.endsWith(publicKeyHex)) {
@@ -516,12 +516,12 @@ export class VcHelper extends VCJS {
                 case 'Bls12381G2Key2020': {
                     const privateKeyBase58 = option.privateKeyBase58;
                     const publicKeyBase58 = option.publicKeyBase58;
-                    const privateKeyHex = bs58
+                    const privateKeyHex = Hashing.base58
                         .decode(privateKeyBase58)
                         .toString('hex')
                         .toUpperCase();
                     const publicKey = bls12_381.getPublicKeyForShortSignatures(privateKeyHex);
-                    if (publicKeyBase58 !== bs58.encode(publicKey)) {
+                    if (publicKeyBase58 !== Hashing.base58.encode(publicKey)) {
                         return false;
                     }
                     keyPair = await Bls12381G2KeyPair.from(option);

@@ -7,18 +7,21 @@ export class QueueService extends NatsService{
     public messageQueueName = 'queue-service';
     public replySubject = 'reply-queue-service-' + GenerateUUIDv4();
 
-    private readonly refreshInterval = 1 * 1000; // 1s
-    private readonly processTimeout = 1 * 60 * 60000; // 1 hour
+    private readonly clearInterval = parseInt(process.env.CLEAR_INTERVAL, 10) || 30 * 1000; // 1m
+    private readonly refreshInterval = parseInt(process.env.REFRESH_INTERVAL, 10) || 1 * 1000; // 1s
+    private readonly processTimeout = parseInt(process.env.PROCESS_TIMEOUT, 10) || 1 * 60 * 60000; // 1 hour
 
     public async init() {
         await super.init();
 
-        // worker job
+        // worker jobs
         setInterval(async () => {
             await this.refreshAndReassignTasks();
+        }, this.refreshInterval);
+        setInterval(async () => {
             await this.clearOldTasks();
             await this.clearLongPendingTasks();
-        }, this.refreshInterval);
+        }, this.clearInterval);
 
         this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
             try {

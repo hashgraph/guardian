@@ -25,6 +25,13 @@
     height: 80%;
 }
 
+.grid-filters {
+    display: flex;
+    gap: 16px;
+    background-color: #f9fafc;
+    flex-wrap: wrap;
+}
+
 
 .table-container {
     overflow: scroll;

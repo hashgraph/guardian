@@ -247,7 +247,7 @@ export class RequestVcDocumentBlockAddon {
                 item.schema = schemaIRI;
                 item.accounts = accounts;
                 item = PolicyUtils.setDocumentRef(item, documentRef);
-
+                
                 const state: IPolicyEventState = { data: item };
                 const error = await this.validateDocuments(user, state);
                 if (error) {
