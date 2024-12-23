@@ -2057,6 +2057,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Standard Registry
         action:
           type: string
@@ -2357,6 +2361,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: DID-Document
         action:
           type: string
@@ -2495,6 +2503,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: DID-Document
         action:
           type: string
@@ -2811,6 +2823,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Policy
         action:
           type: string
@@ -3044,6 +3060,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Tool
         action:
           type: string
@@ -3257,6 +3277,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Module
         action:
           type: string
@@ -3463,6 +3487,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Schema
         action:
           type: string
@@ -3639,6 +3667,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Schema
         action:
           type: string
@@ -3994,6 +4026,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Role-Document
         action:
           type: string
@@ -4190,6 +4226,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: DID-Document
         action:
           type: string
@@ -4328,6 +4368,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: DID-Document
         action:
           type: string
@@ -4525,6 +4569,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
         category:
           type: number
           description: Category
@@ -4690,6 +4738,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: VP-Document
         action:
           type: string
@@ -4854,6 +4906,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: VP-Document
         action:
           type: string
@@ -5076,6 +5132,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: VC-Document
         action:
           type: string
@@ -5214,6 +5274,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: VC-Document
         action:
           type: string
@@ -5565,6 +5629,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Topic
         action:
           type: string
@@ -5854,6 +5922,10 @@ components:
             - Role-Document
             - Synchronization Event
             - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
           example: Contract
         action:
           type: string
