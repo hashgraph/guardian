@@ -237,7 +237,7 @@
                     <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                         <td class="propRowCol"></td>
                         <td class="propRowCell cellName source-elm">Source</td>
-                        <td class="propRowCell">
+                        <td class="propRowCell wrapper-readonly-prop">
                             <span class="readonly-prop current-elm">Current Block</span>
                         </td>
                     </tr>
@@ -337,8 +337,8 @@
                             [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName source-elm">Source</td>
-                            <td class="propRowCell">
-                                <span class="readonly-prop current-elm">Current Block</span>
+                            <td class="propRowCell wrapper-readonly-prop">
+                                    <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>
                         <tr *ngIf="isInputEvent(item)" class="propRow subRow"
@@ -390,7 +390,7 @@
                             [attr.collapse]="propHidden.eventsGroup[item.id]">
                             <td class="propRowCol"></td>
                             <td class="propRowCell cellName target-elm">Target</td>
-                            <td class="propRowCell">
+                            <td class="propRowCell wrapper-readonly-prop">
                                 <span class="readonly-prop current-elm">Current Block</span>
                             </td>
                         </tr>

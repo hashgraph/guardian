@@ -40,7 +40,9 @@
                             (onChange)="onSave()"
                             placeholder="Select Role"
                             optionLabel="name"
-                            optionValue="value">
+                            optionValue="value"
+                            [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
             <td *ngIf="item.type ==='Group'" class="propRowCell">

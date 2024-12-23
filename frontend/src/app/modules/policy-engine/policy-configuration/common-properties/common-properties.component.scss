@@ -86,7 +86,26 @@
     font-weight: 500
 }
 
+.wrapper-readonly-prop {
+    border: 4px solid #f7f7f7;
+    border-radius: 6px;
+}
+
 .current-elm {
     color: #5161e1 !important;
+    font-weight: 500;
+    height: 30px;
+    padding-top: 6px;
+    font-size:16px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.propRowCell {
+    height: 40px;
+}
+
+.propRowCell span {
+    font-size:16px;
+    font-family: 'Roboto', sans-serif;
     font-weight: 500;
 }
