@@ -28,6 +28,8 @@ export class MessageService {
             if (json) {
                 const documents = await MessageService.loadDocuments(json);
                 json.documents = documents;
+                json.loaded = MessageService.checkFiles(json);
+                json.lastUpdate = Date.now();
                 const messageRow = await MessageService.insertMessage(json, em);
                 if (messageRow) {
                     row.status = MessageStatus.LOADED;
@@ -107,6 +109,8 @@ export class MessageService {
                     if (!json.files || !json.files.length) {
                         const row = em.create(Message, json);
                         row.documents = [];
+                        row.loaded = MessageService.checkFiles(row);
+                        row.lastUpdate = Date.now();
                         em.persist(row);
                         ref.status = MessageStatus.LOADED;
                         await em.flush();
@@ -182,5 +186,11 @@ export class MessageService {
                 reject(error);
             }
         });
+    }
+
+    public static checkFiles(message: Message): boolean {
+        const links = message.files?.length || 0;
+        const files = message.documents?.length || 0;
+        return links === files;
     }
 }

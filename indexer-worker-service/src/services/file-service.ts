@@ -17,6 +17,8 @@ export class FileService {
             }
             const documents = await MessageService.loadDocuments(row);
             if (documents) {
+                row.documents = documents;
+                row.loaded = MessageService.checkFiles(row);
                 await em.nativeUpdate(Message, {
                     _id: row._id,
                 }, {
