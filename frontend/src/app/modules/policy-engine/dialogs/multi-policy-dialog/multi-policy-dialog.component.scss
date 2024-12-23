@@ -33,7 +33,8 @@
     align-content: center;
 }
 
-.g-dialog-title-btn mat-icon {
+.g-dialog-title-btn i,
+.g-dialog-title-btn svg,{
     position: absolute;
     font-size: 32px;
     top: 7px;

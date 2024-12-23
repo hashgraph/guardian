@@ -20,12 +20,14 @@
         <form [formGroup]="dataForm">
             <div class="form-input-container">
                 <label class="p-field-label" for="operatorId">* Operator ID</label>
-                <input class="p-field-input" formControlName="operatorId" id="operatorId" pInputText placeholder="0.0.1159"
+                <input class="p-field-input" formControlName="operatorId" id="operatorId" pInputText
+                       placeholder="0.0.1159"
                        type="text"/>
             </div>
             <div class="form-input-container">
                 <label class="p-field-label" for="opKey">* Operator Key (Hedera Account Private Key)</label>
-                <input class="p-field-input" formControlName="operatorKey" id="opKey" pInputText placeholder="Operator key"
+                <input class="p-field-input" formControlName="operatorKey" id="opKey" pInputText
+                       placeholder="Operator key"
                        type="text"/>
             </div>
             <div class="form-input-container">
@@ -55,5 +57,5 @@
 </ng-template>
 
 <ng-template #spinner>
-    <mat-spinner class="loading"></mat-spinner>
+    <p-progressSpinner class="loading"></p-progressSpinner>
 </ng-template>

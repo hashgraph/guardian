@@ -52,7 +52,7 @@
             padding-left: 44px;
             padding-right: 16px;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
                 left: 11px;
                 top: 9px;
@@ -81,7 +81,8 @@
             height: 76px;
             width: 76px;
 
-            & mat-icon {
+            & i,
+            & svg {
                 color: var(--pc-active-icon-color);
                 font-size: 40px;
                 width: 40px;
@@ -169,7 +170,7 @@
                 padding-left: 44px;
                 padding-right: 16px;
 
-                mat-icon {
+                i, svg {
                     position: absolute;
                     left: 11px;
                     top: 9px;
@@ -235,7 +236,7 @@
             width: 18px;
             height: 18px;
 
-            mat-icon {
+            i, svg {
                 font-size: 18px;
             }
         }
@@ -259,7 +260,8 @@
             margin: 18px 30px 0px 18px;
 
             &[collapsed="true"] {
-                .details-expand mat-icon {
+                .details-expand i,
+                .details-expand svg {
                     transform: rotate(-90deg);
                 }
 
@@ -283,7 +285,7 @@
                     width: 30px;
                     height: 30px;
 
-                    mat-icon {
+                    i, svg {
                         margin: 3px;
                         pointer-events: none;
                     }

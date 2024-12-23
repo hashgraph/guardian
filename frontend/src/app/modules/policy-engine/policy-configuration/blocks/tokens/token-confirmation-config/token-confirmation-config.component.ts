@@ -26,6 +26,16 @@ export class TokenConfirmationConfigComponent implements OnInit {
     tokens!: TokenVariables[];
     tokenTemplate!: TokenTemplateVariables[];
 
+    public accountTypeOptions = [
+        { label: 'Default', value: 'default' },
+        { label: 'Custom', value: 'custom' }
+    ];
+
+    public actionOptions = [
+        { label: 'Associate', value: 'associate' },
+        { label: 'Dissociate', value: 'dissociate' }
+    ];
+
     constructor() {
     }
 

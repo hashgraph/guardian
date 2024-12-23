@@ -1,0 +1,13 @@
+.propRowCell {
+    height: 40px;
+}
+
+.propRowCell span {
+    font-size:16px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+.propRow.subRow .propRowCell.cellName {
+    padding-left: 10px !important;
+}

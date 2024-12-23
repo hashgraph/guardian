@@ -1,32 +1,52 @@
 <app-dialog-wrapper (cancel)="onNoClick()" title="Wiper requests" [confirmVisible]="false" [syncVisible]="false"
-    [loading]="loading">
+                    [loading]="loading">
     <ng-container *ngIf="requests?.length; else noRequests">
         <div *ngFor="let request of requests" class="request">
             <div class="profile">
-                <mat-icon class="profile__icon">person</mat-icon>
-                <span class="profile__id">{{request.user}}</span>
+                <i class="pi pi-user profile__icon"></i>
+                <span class="profile__id">{{ request.user }}</span>
             </div>
             <div class="token" *ngIf="version !== '1.0.0'">
-                <mat-icon class="token__icon">generating_tokens</mat-icon>
-                <span class="token__id">{{request.token}}</span>
+                <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token token__icon"></svg-icon>
+                <span class="token__id">{{ request.token }}</span>
             </div>
             <div class="request__actions">
-                <button (click)="approveRequest(request.id)" mat-flat-button class="btn btn--approve"
-                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                    matTooltipClass="guardian-tooltip"
-                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Approve</button>
-                <button (click)="rejectRequest(request.id)" mat-flat-button class="btn btn--reject"
-                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                    matTooltipClass="guardian-tooltip"
-                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Reject</button>
-                <button (click)="rejectRequest(request.id, true)" mat-flat-button class="btn btn--ban"
-                    [disabled]="!hasPermissions(contract.permissions, 2)" matTooltip="You are not manager"
-                    matTooltipClass="guardian-tooltip"
-                    [matTooltipDisabled]="hasPermissions(contract.permissions, 2)">Ban</button>
+                <button (click)="approveRequest(request.id)"
+                        pButton
+                        class="btn btn--approve"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Approve
+                </button>
+                <button (click)="rejectRequest(request.id)"
+                        pButton
+                        class="btn btn--reject"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Reject
+                </button>
+                <button (click)="rejectRequest(request.id, true)"
+                        pButton
+                        class="btn btn--ban"
+                        [disabled]="!hasPermissions(contract.permissions, 2)"
+                        [pTooltip]="'You are not manager'"
+                        tooltipStyleClass="guardian-tooltip"
+                        [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+                    Ban
+                </button>
             </div>
         </div>
-        <mat-paginator [length]="length" [pageSize]="pageSize" [pageSizeOptions]="[5, 10]"
-            (page)="onPage($event)"></mat-paginator>
+        <app-paginator
+            [length]="length"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+            (page)="onPage($event)">
+        </app-paginator>
+
     </ng-container>
 </app-dialog-wrapper>
 <ng-template #noRequests>

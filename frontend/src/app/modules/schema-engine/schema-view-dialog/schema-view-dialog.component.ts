@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, Inject} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for preview schema.
@@ -20,11 +20,14 @@ export class SchemaViewDialog {
     schemaType: string;
 
     constructor(
-        public dialogRef: MatDialogRef<SchemaViewDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-        this.schemas = this.data.schemas || [];
-        this.topicId = this.data.topicId || null;
-        this.errors = this.data.errors || [];
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
+    ) {
+        const data = this.config.data
+
+        this.schemas = data.schemas || [];
+        this.topicId = data.topicId || null;
+        this.errors = data.errors || [];
 
         this.schemaType = data.schemaType || 'policy';
         this.policies = data.policies || [];
@@ -41,10 +44,10 @@ export class SchemaViewDialog {
     }
 
     onImport() {
-        this.dialogRef.close({ topicId: this.topicId });
+        this.dialogRef.close({topicId: this.topicId});
     }
 
     onNewVersionClick(messageId: string) {
-        this.dialogRef.close({ messageId });
+        this.dialogRef.close({messageId});
     }
 }

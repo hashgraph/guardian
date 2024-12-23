@@ -12,7 +12,8 @@
     width: 40px;
 }
 
-.select-block-icon mat-icon {
+.select-block-icon i,
+.select-block-icon svg {
     position: absolute;
     left: 1px;
     top: 9px;

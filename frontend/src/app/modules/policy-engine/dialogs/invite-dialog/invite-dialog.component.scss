@@ -85,7 +85,8 @@
     align-content: center;
 }
 
-.g-dialog-title-btn mat-icon {
+.g-dialog-title-btn i,
+.g-dialog-title-btn svg {
     position: absolute;
     font-size: 32px;
     top: 7px;
@@ -110,7 +111,8 @@
     background: rgb(0 0 0 / 5%);
 }
 
-.link-btn mat-icon {
+.link-btn i,
+.link-btn svg {
     position: absolute;
     left: 10px;
     top: 7px;

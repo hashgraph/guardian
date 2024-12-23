@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, TopicVariables } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, TopicVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -17,7 +17,7 @@ export class SendConfigComponent implements OnInit {
 
     private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
-    
+
     propHidden: any = {
         main: false,
         optionGroup: false,
@@ -26,6 +26,27 @@ export class SendConfigComponent implements OnInit {
 
     properties!: any;
     topics!: TopicVariables[];
+
+    public dataTypeOptions = [
+        {label: '', value: ''},
+        {label: 'Collection (VC)', value: 'vc-documents'},
+        {label: 'Collection (DID)', value: 'did-documents'},
+        {label: 'Collection (Approve)', value: 'approve'},
+        {label: 'Hedera (Topic)', value: 'hedera'}
+    ];
+
+    public dataSourceOptions = [
+        {label: 'Auto', value: 'auto'},
+        {label: 'Database', value: 'database'},
+        {label: 'Hedera Topic', value: 'hedera'}
+    ];
+
+    public topicOwnerOptions = [
+        {label: '', value: ''},
+        {label: 'Current User', value: 'user'},
+        {label: 'Document Owner', value: 'owner'},
+        {label: 'Document Issuer', value: 'issuer'}
+    ];
 
     constructor() {
     }
@@ -80,8 +101,20 @@ export class SendConfigComponent implements OnInit {
 
     onDataSource(event: any) {
     }
-    
+
     onSave() {
         this.item.changed = true;
+    }
+
+    getDropdownTopics() {
+        return [
+            ...this.topics.map(topic => ({
+                label: topic.name,
+                value: topic.name,
+                description: topic.description
+            })),
+            {label: 'Policy Instance', value: 'root'},
+            {label: 'Create new topic', value: 'new', icon: 'pi pi-plus', class: 'link'}
+        ];
     }
 }

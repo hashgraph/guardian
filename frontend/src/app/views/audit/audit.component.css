@@ -90,3 +90,23 @@ a[disabled="true"] {
     flex-direction: column;
     margin-right: 15px;
 }
+
+.header {
+    height: 56px;
+    font-size: 12px;
+}
+
+.header th {
+    background: var(--color-grey-white);
+}
+
+.header::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-color: #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}

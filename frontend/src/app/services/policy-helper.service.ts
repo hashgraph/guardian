@@ -43,7 +43,7 @@ export class PolicyHelper {
                         }
                     }
                 }
-                this.subject.next();
+                this.subject.next(null);
             }
         } catch (error) {
             this.policyId = null;

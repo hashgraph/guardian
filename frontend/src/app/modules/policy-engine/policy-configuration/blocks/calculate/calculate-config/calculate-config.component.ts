@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {Component, EventEmitter, Inject, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'policyRolesBlock' type.
@@ -25,6 +25,11 @@ export class CalculateConfigComponent implements OnInit {
 
     properties!: any;
     schemas!: SchemaVariables[];
+
+    inputDocumentsOptions = [
+        {label: 'Aggregate', value: 'aggregate'},
+        {label: 'Separate', value: 'separate'}
+    ];
 
     constructor() {
 

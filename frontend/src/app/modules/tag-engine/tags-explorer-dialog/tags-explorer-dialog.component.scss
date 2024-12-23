@@ -39,7 +39,8 @@
     border-radius: 4px;
 }
 
-.synchronization-time .synchronization-time-update mat-icon {
+.synchronization-time .synchronization-time-update i,
+.synchronization-time .synchronization-time-update svg {
     position: absolute;
     pointer-events: none;
     font-size: 22px;

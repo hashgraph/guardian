@@ -18,3 +18,29 @@
     height: 32px;
     margin-bottom: 15px;
 }
+
+.form-group {
+    width: 100%;
+    position: relative;
+}
+
+.form-group textarea {
+    height: 90px !important;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.form-group label {
+    position: absolute;
+    font-size: 12px;
+    background: var(--color-background);
+    top: 14px;
+    left: 14px;
+}
+
+::ng-deep p-dropdown {
+    width: 100%;
+    & > div {
+        width: 100%;
+    }
+}

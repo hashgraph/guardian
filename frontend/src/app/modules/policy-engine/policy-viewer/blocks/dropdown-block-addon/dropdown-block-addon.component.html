@@ -1,7 +1,13 @@
 <div class="content-dropdown">
-    <mat-select [disabled]="disabled" [(value)]="currentValue" (selectionChange)="onDropdown($event.value)">
-        <mat-option *ngFor="let item of documents" [value]="item.value">{{item.name}}</mat-option>
-    </mat-select>
+    <p-dropdown
+        [disabled]="disabled"
+        [(ngModel)]="currentValue"
+        [options]="documents"
+        optionLabel="name"
+        (onChange)="onDropdown($event.value)"
+        placeholder="Select"
+    >
+    </p-dropdown>
 </div>
 
 <ng-template #preloader>

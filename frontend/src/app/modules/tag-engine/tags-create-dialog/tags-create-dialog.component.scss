@@ -131,7 +131,8 @@ form {
     background: #f1f1f1;
 }
 
-.delete-artifact mat-icon {
+.delete-artifact i,
+.delete-artifact svg{
     position: absolute;
     color: #f44336;
     top: 12px;

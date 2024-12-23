@@ -1,15 +1,13 @@
-import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
-import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
-import * as moment from 'moment';
-import { DialogService } from 'primeng/dynamicdialog';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import {Component, ElementRef, HostListener, Input, OnInit} from '@angular/core';
+import {UntypedFormBuilder, Validators} from '@angular/forms';
+import {DomSanitizer} from '@angular/platform-browser';
+import moment from 'moment';
+import {DialogService} from 'primeng/dynamicdialog';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {HttpErrorResponse} from '@angular/common/http';
 
 /**
  * Dashboard Type
@@ -87,6 +85,7 @@ class Line {
     private _container: LineContainer | null;
     private readonly color1 = 'rgba(30, 130, 250, 0.8)';
     private readonly color2 = 'rgba(255, 152, 0, 0.9)';
+
     constructor(
         elementId1: string,
         elementId2: string,
@@ -212,6 +211,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private _topics1!: any[];
     private _topics2!: any[];
+
     public get topics(): any[] {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._topics1;
@@ -222,6 +222,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private _messages1!: any[];
     private _messages2!: any[];
+
     public get messages(): any[] {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._messages1;
@@ -232,6 +233,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private _gridTemplateRows1!: string;
     private _gridTemplateRows2!: string;
+
     public get gridTemplateRows(): string {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._gridTemplateRows1;
@@ -242,6 +244,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private _gridTemplateColumns1!: string;
     private _gridTemplateColumns2!: string;
+
     public get gridTemplateColumns(): string {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._gridTemplateColumns1;
@@ -265,16 +268,9 @@ export class MessagesReportBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
         private dialogService: DialogService,
-        private iconRegistry: MatIconRegistry,
         private sanitizer: DomSanitizer
     ) {
-        iconRegistry.addSvgIconLiteral('token', sanitizer.bypassSecurityTrustHtml(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-                <path id="Icon_awesome-coins" data-name="Icon awesome-coins" d="M0,28.5v3C0,33.982,6.047,36,13.5,36S27,33.982,27,31.5v-3c-2.9,2.046-8.212,3-13.5,3S2.9,30.544,0,28.5ZM22.5,9C29.953,9,36,6.982,36,4.5S29.953,0,22.5,0,9,2.018,9,4.5,15.047,9,22.5,9ZM0,21.122V24.75c0,2.482,6.047,4.5,13.5,4.5S27,27.232,27,24.75V21.122c-2.9,2.391-8.22,3.628-13.5,3.628S2.9,23.513,0,21.122Zm29.25.773C33.279,21.115,36,19.666,36,18V15a17.267,17.267,0,0,1-6.75,2.426ZM13.5,11.25C6.047,11.25,0,13.767,0,16.875S6.047,22.5,13.5,22.5,27,19.983,27,16.875,20.953,11.25,13.5,11.25Zm15.42,3.959c4.219-.759,7.08-2.25,7.08-3.959v-3c-2.5,1.765-6.785,2.714-11.3,2.939A7.874,7.874,0,0,1,28.92,15.209Z"/>
-            </svg>
-        `));
     }
 
     public ngOnInit(): void {
@@ -368,7 +364,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private createSmallReport() {
         for (const topic of this._topics1) {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
-                const t = { ...topic };
+                const t = {...topic};
                 t.__parent = null;
                 t.__offset = 20;
                 t.__order = this._topics2.length + 1;
@@ -395,7 +391,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private getAllMessages(topic: any, messages: any[]): any[] {
         if (topic.messages) {
             for (const message of topic.messages) {
-                messages.push({ ...message });
+                messages.push({...message});
             }
         }
         if (topic.children) {
@@ -611,13 +607,20 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private getStatusLabel(message: any) {
         switch (message.documentStatus) {
-            case 'NEW': return 'Create document';
-            case 'ISSUE': return 'Create document';
-            case 'REVOKE': return 'Revoke document';
-            case 'SUSPEND': return 'Suspend document';
-            case 'RESUME': return 'Resume document';
-            case 'FAILED': return 'Failed';
-            default: return message.documentStatus || 'Create document';
+            case 'NEW':
+                return 'Create document';
+            case 'ISSUE':
+                return 'Create document';
+            case 'REVOKE':
+                return 'Revoke document';
+            case 'SUSPEND':
+                return 'Suspend document';
+            case 'RESUME':
+                return 'Resume document';
+            case 'FAILED':
+                return 'Failed';
+            default:
+                return message.documentStatus || 'Create document';
         }
     }
 
@@ -687,7 +690,7 @@ export class MessagesReportBlockComponent implements OnInit {
         const documents: any[] = [];
         if (message.document && message.document.verifiableCredential) {
             for (const vc of message.document.verifiableCredential) {
-                const item: any = { document: vc };
+                const item: any = {document: vc};
                 item.__schema = this.searchSchema(item);
                 item.__issuer = this.getIssuer(item);
                 if (item.__schema) {
@@ -719,11 +722,14 @@ export class MessagesReportBlockComponent implements OnInit {
     public getTopicHeader(message: any): string {
         if (message) {
             switch (message.messageType) {
-                case 'USER_TOPIC': return 'Standard Registry';
-                case 'POLICY_TOPIC': return 'Policy';
+                case 'USER_TOPIC':
+                    return 'Standard Registry';
+                case 'POLICY_TOPIC':
+                    return 'Policy';
                 case 'INSTANCE_POLICY_TOPIC':
                     return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : message.name;
-                case 'DYNAMIC_TOPIC': return 'User defined';
+                case 'DYNAMIC_TOPIC':
+                    return 'User defined';
             }
         }
         return 'Global';
@@ -732,10 +738,14 @@ export class MessagesReportBlockComponent implements OnInit {
     public getTopicName(topic: any): string {
         if (topic.message) {
             switch (topic.message.messageType) {
-                case 'USER_TOPIC': return '';
-                case 'POLICY_TOPIC': return topic.message.name;
-                case 'INSTANCE_POLICY_TOPIC': return 'Version: ' + (topic.__rationale?.version || 'N/A');
-                case 'DYNAMIC_TOPIC': return topic.message.name;
+                case 'USER_TOPIC':
+                    return '';
+                case 'POLICY_TOPIC':
+                    return topic.message.name;
+                case 'INSTANCE_POLICY_TOPIC':
+                    return 'Version: ' + (topic.__rationale?.version || 'N/A');
+                case 'DYNAMIC_TOPIC':
+                    return topic.message.name;
             }
         }
         return '';
@@ -758,7 +768,7 @@ export class MessagesReportBlockComponent implements OnInit {
         this.loading = true;
         let filterValue = this.searchForm.value.value || '';
         filterValue = filterValue.trim();
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue }).subscribe(() => {
+        this.policyEngineService.setBlockData(this.id, this.policyId, {filterValue}).subscribe(() => {
             this.loadData();
         }, (e) => {
             console.error(e.error);
@@ -793,7 +803,8 @@ export class MessagesReportBlockComponent implements OnInit {
                     viewDocument: false
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         } else {
 
             const dialogRef = this.dialogService.open(VCViewerDialog, {
@@ -809,7 +820,8 @@ export class MessagesReportBlockComponent implements OnInit {
                     schema: message.__schema,
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         }
     }
 

@@ -1,12 +1,24 @@
 <div class="content">
     <form *ngIf="!hasParam; else chainTpl" class="filters" [formGroup]="searchForm" (ngSubmit)="updateFilter()">
-        <mat-form-field class="search-input" appearance="outline">
-            <mat-label>HASH/ID:</mat-label>
-            <input matInput type="text" placeholder="HASH/ID" formControlName="value">
-            <button mat-icon-button matSuffix type="submit" [disabled]="!searchForm.valid">
-                <mat-icon>search</mat-icon>
-            </button>
-        </mat-form-field>
+        <div class="search-input form-group">
+            <label for="hashIdInput" class="form-label">HASH/ID:</label>
+            <div class="input-group">
+                <input
+                    pInputText
+                    id="hashIdInput"
+                    type="text"
+                    placeholder="HASH/ID"
+                    formControlName="value"
+                    class="full-width">
+                <button
+                    pButton
+                    type="submit"
+                    class="p-button-rounded p-button-icon-only"
+                    [disabled]="!searchForm.valid">
+                    <i class="pi pi-search"></i>
+                </button>
+            </div>
+        </div>
     </form>
 
     <ng-template #chainTpl>
@@ -14,18 +26,18 @@
             <div class="verifiable-presentation">
                 <div *ngIf="vp" class="header">
                     <a routerLink="/audit" class="go-back-link">
-                        <mat-icon>chevron_left</mat-icon>
-                        {{vp.label}}: {{vp.id}}
+                        <i class="pi pi-chevron-left"></i>
+                        {{ vp.label }}: {{ vp.id }}
                     </a>
                     Verifiable Presentation
-                    <mat-icon>check_circle</mat-icon>
+                    <i class="pi pi-check-circle"></i>
 
                     <a class="open-vp" (click)="openVPDocument(vp)">VP File</a>
                 </div>
                 <div *ngIf="!vp && chain" class="header">
                     <a routerLink="/audit" class="go-back-link">
-                        <mat-icon>chevron_left</mat-icon>
-                        {{chain[0].label}}: {{chain[0].id}}
+                        <i class="pi pi-chevron-left"></i>
+                        {{ chain[0].label }}: {{ chain[0].id }}
                     </a>
                     <a class="open-vp" (click)="openVCDocument(chain[0])">File</a>
                 </div>
@@ -37,15 +49,16 @@
                     <div class="vp-table">
                         <div class="vp-field">
                             <div class="vp-field-label">Token</div>
-                            <div class="vp-field-value">{{vpMint.tokenId}}</div>
+                            <div class="vp-field-value">{{ vpMint.tokenId }}</div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer: Name</div>
-                            <div class="vp-field-value" [title]="getIssuer(vpMint)">{{userMap[getIssuer(vpMint)]}}</div>
+                            <div class="vp-field-value" [title]="getIssuer(vpMint)">{{ userMap[getIssuer(vpMint)] }}
+                            </div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Mint date</div>
-                            <div class="vp-field-value">{{vpMint.date}}</div>
+                            <div class="vp-field-value">{{ vpMint.date }}</div>
                         </div>
                     </div>
                 </div>
@@ -57,19 +70,21 @@
                     <div class="vp-table">
                         <div class="vp-field">
                             <div class="vp-field-label">Policy Name</div>
-                            <div class="vp-field-value">{{vpPolicy.name}}</div>
+                            <div class="vp-field-value">{{ vpPolicy.name }}</div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Description</div>
-                            <div class="vp-field-value">{{vpPolicy.description}}</div>
+                            <div class="vp-field-value">{{ vpPolicy.description }}</div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Version</div>
-                            <div class="vp-field-value">{{vpPolicy.version}}</div>
+                            <div class="vp-field-value">{{ vpPolicy.version }}</div>
                         </div>
                         <div class="vp-field">
                             <div class="vp-field-label">Issuer: Name</div>
-                            <div class="vp-field-value" [title]="getIssuer(vpPolicy)">{{userMap[getIssuer(vpPolicy)]}}</div>
+                            <div class="vp-field-value"
+                                 [title]="getIssuer(vpPolicy)">{{ userMap[getIssuer(vpPolicy)] }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -78,34 +93,37 @@
                 </div>
                 <div *ngIf="vp" class="vp-signature">
                     <div class="vp-field-label">Verified Signature:</div>
-                    <div class="vp-field-value">{{vp.document.proof.jws}}</div>
+                    <div class="vp-field-value">{{ vp.document.proof.jws }}</div>
                 </div>
             </div>
             <div class="container">
                 <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, -150)">
-                    <mat-icon style="margin-left: 32px">chevron_left</mat-icon>
+                    <i class="pi pi-chevron-left" style="margin-left: 32px"></i>
                 </div>
                 <div class="chain-container" (wheel)="onWheel($event)" #scrollContainer>
                     <ng-container *ngFor="let item of chain">
                         <div class="chain-item item-type-{{item.type}}">
                             <div class="chain-title">
                                 <ng-container [ngSwitch]="item.entity">
-                                    <mat-icon *ngSwitchCase="'Policy'">format_list_bulleted</mat-icon>
-                                    <mat-icon *ngSwitchCase="'Inverter'" svgIcon="iot"></mat-icon>
-                                    <mat-icon *ngSwitchCase="'MRV'" svgIcon="mrv"></mat-icon>
-                                    <mat-icon *ngSwitchCase="'Mint'" svgIcon="token"></mat-icon>
-                                    <mat-icon *ngSwitchDefault>account_circle</mat-icon>
+                                    <i *ngSwitchCase="'Policy'" class="pi pi-list"></i>
+                                    <svg-icon *ngSwitchCase="'Inverter'" src="/assets/images/icons/iot.svg"
+                                              svgClass="icon-style-abc"></svg-icon>
+                                    <svg-icon *ngSwitchCase="'MRV'" src="/assets/images/icons/mrv.svg"
+                                              svgClass="icon-style-mrv"></svg-icon>
+                                    <svg-icon *ngSwitchCase="'Mint'" src="/assets/images/icons/token.svg"
+                                              svgClass="icon-style-token"></svg-icon>
+                                    <i *ngSwitchDefault class="pi pi-user"></i>
                                 </ng-container>
 
-                                {{item.schema}}
+                                {{ item.schema }}
                             </div>
                             <div class="chain-id">
-                                {{formatFields(item)}}
+                                {{ formatFields(item) }}
                             </div>
                             <div class="parties">
                                 <div class="parties-label">Parties:</div>
                                 <div class="parties-value">
-                                    <div class="partie" [title]="getIssuer(item.document)">{{getParties(item)}}</div>
+                                    <div class="partie" [title]="getIssuer(item.document)">{{ getParties(item) }}</div>
                                 </div>
                             </div>
                             <div class="chain-document">
@@ -115,7 +133,7 @@
                     </ng-container>
                 </div>
                 <div class="scroll-right" (click)="onScrollButtonPress(scrollContainer, 150)">
-                    <mat-icon>chevron_right</mat-icon>
+                    <i class="pi pi-chevron-right"></i>
                 </div>
             </div>
         </div>

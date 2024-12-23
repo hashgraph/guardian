@@ -562,3 +562,22 @@ mat-radio-button {
 .p-button:disabled {
     pointer-events: none !important;
 }
+
+.example-full-width {
+    margin-top: 20px
+}
+
+.example-full-width textarea {
+    width: 100%;
+    &:focus {
+        border: none
+    }
+}
+
+.list-item div:first-child {
+    margin-bottom: 10px
+}
+
+.list-item label {
+    padding-left: 8px;
+}

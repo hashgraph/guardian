@@ -58,3 +58,24 @@
     font-weight: 500;
     font-size: 14px;
 }
+
+::ng-deep li.p-element {
+    height: 32px;
+}
+
+::ng-deep p-dropdown .p-dropdown {
+    width: 175px;
+}
+
+::ng-deep .p-dropdown-panel .components-search {
+    height: 48px;
+}
+
+::ng-deep .p-dropdown-panel .components-search i {
+    top: 12px !important;
+    right: 14px !important;
+}
+
+::ng-deep .p-dropdown-items {
+    width: 472px;
+}

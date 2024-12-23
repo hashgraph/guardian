@@ -1,8 +1,8 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
+import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
+import {UntypedFormBuilder, Validators} from '@angular/forms';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
 /**
@@ -41,6 +41,13 @@ export class ExternalTopicBlockComponent implements OnInit {
     public schemaForm = this.fb.group({
         schemaId: ['', Validators.required]
     });
+
+    public steps = [
+        {label: 'Source Topic Selection'},
+        {label: 'Policy Information'},
+        {label: 'Document Schema Selection'},
+        {label: 'Finish'}
+    ];
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -211,7 +218,15 @@ export class ExternalTopicBlockComponent implements OnInit {
             });
     }
 
-    public restart() {
+    public onBack({ isPrev }: { isPrev: boolean } = {isPrev: false}): void {
+        this.restart();
+
+        if(isPrev) {
+            this.prev()
+        }
+    }
+
+    public restart(): void {
         this.loading = true;
         const data = {
             operation: 'Restart'
@@ -239,5 +254,17 @@ export class ExternalTopicBlockComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
+    }
+
+    public prev(): void {
+        if (this.stepIndex > 0) {
+            this.stepIndex--;
+        }
+    }
+
+    public next(): void {
+        if (this.stepIndex < this.steps.length - 1) {
+            this.stepIndex++;
+        }
     }
 }

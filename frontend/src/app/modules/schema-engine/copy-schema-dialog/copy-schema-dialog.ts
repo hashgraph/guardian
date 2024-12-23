@@ -1,10 +1,9 @@
-import { ChangeDetectorRef, Component, Inject, ViewChild } from '@angular/core';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { SchemaConfigurationComponent } from '../schema-configuration/schema-configuration.component';
-import { Schema } from '@guardian/interfaces';
-import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { SchemaService } from '../../../services/schema.service';
+import {ChangeDetectorRef, Component, Inject, ViewChild} from '@angular/core';
+import {SchemaConfigurationComponent} from '../schema-configuration/schema-configuration.component';
+import {Schema} from '@guardian/interfaces';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import {UntypedFormBuilder, UntypedFormGroup} from '@angular/forms';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 enum SchemaType {
     System = 'system',
@@ -41,12 +40,22 @@ export class CopySchemaDialog {
 
     public dataForm!: UntypedFormGroup;
 
+    public defaultPolicyOption = {topicId: 'draft', name: 'No binding'};
+    public defaultToolOption = {topicId: 'draft', name: 'No binding'};
+    public defaultEntityOption = {value: '', label: 'No binding'};
+    public entities = [
+        {value: 'STANDARD_REGISTRY', label: 'STANDARD REGISTRY'},
+        {value: 'USER', label: 'USER'}
+    ];
+
     constructor(
-        public dialogRef: MatDialogRef<CopySchemaDialog>,
         private cdr: ChangeDetectorRef,
         private fb: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
+        const data = this.config.data
+
         this.scheme = data.scheme || null;
         this.type = data.type || null;
         this.topicId = data.topicId || null;
@@ -132,5 +141,17 @@ export class CopySchemaDialog {
     onRestoreClick() {
         this.scheme = this.restoreData;
         this.restoreData = null;
+    }
+
+    getPoliciesWithDefault(): Record<string, any>[] {
+        return [this.defaultPolicyOption, ...this.policies];
+    }
+
+    getToolsWithDefault(): Record<string, any>[] {
+        return [this.defaultToolOption, ...this.tools];
+    }
+
+    getEntitiesWithDefault(): Record<string, any>[] {
+        return [this.defaultEntityOption, ...this.entities];
     }
 }
