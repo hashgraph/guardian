@@ -167,14 +167,6 @@ export class Parser {
                         message.files.push(json.cid);
                     }
                     break;
-                case MessageType.ROLE_DOCUMENT:
-                    message.options.issuer = json.issuer;
-                    message.options.role = json.role;
-                    message.options.group = json.group;
-                    if (json.cid) {
-                        message.files.push(json.cid);
-                    }
-                    break;
                 case MessageType.SYNCHRONIZATION_EVENT:
                     message.options.user = json.user;
                     message.options.policy = json.policy;
@@ -191,6 +183,58 @@ export class Parser {
                     message.options.description = json.description;
                     message.options.contractType = json.contractType;
                     message.options.owner = json.owner;
+                    break;
+                case MessageType.ROLE_DOCUMENT:
+                    message.options.issuer = json.issuer;
+                    message.options.role = json.role;
+                    message.options.group = json.group;
+                    message.options.issuer = json.issuer;
+                    message.options.relationships = json.relationships;
+                    message.options.documentStatus = json.documentStatus;
+                    message.options.encodedData = false;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.GUARDIAN_ROLE:
+                    message.options.uuid = json.uuid;
+                    message.options.name = json.name;
+                    message.options.description = json.description;
+                    message.options.issuer = json.issuer;
+                    message.options.relationships = json.relationships;
+                    message.options.documentStatus = json.documentStatus;
+                    message.options.encodedData = false;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.USER_PERMISSIONS:
+                    message.options.user = json.user;
+                    message.options.issuer = json.issuer;
+                    message.options.relationships = json.relationships;
+                    message.options.documentStatus = json.documentStatus;
+                    message.options.encodedData = false;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.POLICY_STATISTIC:
+                    message.options.issuer = json.issuer;
+                    message.options.relationships = json.relationships;
+                    message.options.target = json.target;
+                    message.options.definition = json.definition;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
+                case MessageType.POLICY_LABEL:
+                    message.options.issuer = json.issuer;
+                    message.options.relationships = json.relationships;
+                    message.options.target = json.target;
+                    message.options.definition = json.definition;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
                     break;
                 default:
                     return null;

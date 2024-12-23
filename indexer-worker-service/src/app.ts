@@ -105,6 +105,10 @@ Promise.all([
         TOKEN_READ_TIMEOUT: Utils.getIntParm(process.env.TOKEN__READ_TIMEOUT, 60000),
         TOKEN_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOKEN__JOB_REFRESH_TIME, 60000),
         TOKEN_JOB_COUNT: Utils.getIntParm(process.env.TOKEN__JOB_COUNT, 2),
+        FILE_READ_DELAY: Utils.getIntParm(process.env.TOKEN__READ_DELAY, 1000),
+        FILE_READ_TIMEOUT: Utils.getIntParm(process.env.TOKEN__READ_TIMEOUT, 60000),
+        FILE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOKEN__JOB_REFRESH_TIME, 60000),
+        FILE_JOB_COUNT: Utils.getIntParm(process.env.TOKEN__JOB_COUNT, 2),
     }).start();
 
     // await state.updateState(ApplicationStates.READY);

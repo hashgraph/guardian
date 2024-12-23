@@ -216,6 +216,8 @@ async function loadFiles(cid: string, timeout: number): Promise<string | null> {
 async function saveDocuments(row: Message): Promise<Message> {
     const em = DataBaseHelper.getEntityManager();
     const collection = em.getCollection('message');
+    const links = row.files?.length || 0;
+    const files = row.documents?.length || 0;
     await collection.updateOne(
         {
             _id: row._id,
@@ -223,6 +225,8 @@ async function saveDocuments(row: Message): Promise<Message> {
         {
             $set: {
                 documents: row.documents,
+                loaded: links === files,
+                lastUpdate: Date.now()
             },
         },
         {

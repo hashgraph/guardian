@@ -4,6 +4,7 @@ import { Parser } from '../utils/parser.js';
 import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
 import { DataBaseHelper, Job, MessageCache, Message } from '@indexer/common';
+import { MessageStatus } from '@indexer/interfaces';
 
 export interface IFile {
     id?: ObjectId;
@@ -29,12 +30,12 @@ export class MessageService {
                 json.documents = documents;
                 const messageRow = await MessageService.insertMessage(json, em);
                 if (messageRow) {
-                    row.status = 'LOADED';
+                    row.status = MessageStatus.LOADED;
                 } else {
-                    row.status = 'ERROR';
+                    row.status = MessageStatus.ERROR;
                 }
             } else {
-                row.status = 'UNSUPPORTED';
+                row.status = MessageStatus.UNSUPPORTED;
             }
             await em.flush();
         } catch (error) {
@@ -48,8 +49,8 @@ export class MessageService {
             {
                 type: "Message",
                 $or: [
-                    { status: 'LOADING', lastUpdate: { $lt: delay } },
-                    { status: 'COMPRESSED' }
+                    { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
+                    { status: MessageStatus.COMPRESSED }
                 ]
             },
             {
@@ -67,12 +68,12 @@ export class MessageService {
         const count = await em.nativeUpdate(MessageCache, {
             _id: row._id,
             $or: [
-                { status: 'LOADING', lastUpdate: { $lt: delay } },
-                { status: 'COMPRESSED' }
+                { status: MessageStatus.LOADING, lastUpdate: { $lt: delay } },
+                { status: MessageStatus.COMPRESSED }
             ]
         }, {
             lastUpdate: Date.now(),
-            status: 'LOADING'
+            status: MessageStatus.LOADING
         });
 
         if (count) {
@@ -107,11 +108,11 @@ export class MessageService {
                         const row = em.create(Message, json);
                         row.documents = [];
                         em.persist(row);
-                        ref.status = 'LOADED';
+                        ref.status = MessageStatus.LOADED;
                         await em.flush();
                     }
                 } else {
-                    ref.status = 'UNSUPPORTED';
+                    ref.status = MessageStatus.UNSUPPORTED;
                     await em.flush();
                 }
             } catch (error) {
@@ -147,8 +148,8 @@ export class MessageService {
         if (Array.isArray(message.files)) {
             for (const file of message.files) {
                 const cid = IPFSService.parseCID(file);
-                if (cid && cid.version === 1) {
-                    cids.push(cid.toString());
+                if (cid) {
+                    cids.push(file);
                 } else {
                     return null;
                 }

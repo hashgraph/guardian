@@ -16,4 +16,13 @@ export class FiltersService {
             return new MessageError(error);
         }
     }
+    
+    @MessagePattern(IndexerMessageAPI.GET_VP_FILTERS)
+    async getVpFilters() {
+        try {
+            return new MessageResponse(null);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
 }

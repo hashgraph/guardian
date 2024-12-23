@@ -19,4 +19,8 @@ export enum MessageType {
     ROLE_DOCUMENT = 'Role-Document',
     SYNCHRONIZATION_EVENT = 'Synchronization Event',
     CONTRACT = 'Contract',
+    GUARDIAN_ROLE = 'Guardian-Role-Document',
+    USER_PERMISSIONS = 'User-Permissions',
+    POLICY_STATISTIC = 'Policy-Statistic',
+    POLICY_LABEL = 'Policy-Label'
 }
