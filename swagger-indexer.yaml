@@ -987,6 +987,248 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/statistics:
+    get:
+      operationId: EntityApi_getStatistics
+      summary: Get statistics
+      description: Returns statistics
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: >-
+                Search statistics, which are related to specific topic
+                identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Statistic topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: Statistic owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+        - name: options.policy
+          required: false
+          in: query
+          description: Policy
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StatisticDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/statistics/{messageId}:
+    get:
+      operationId: EntityApi_getStatistic
+      summary: Get statistic
+      description: Returns statistic
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Statistic details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/labels:
+    get:
+      operationId: EntityApi_getLabels
+      summary: Get labels
+      description: Returns labels
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search labels, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Label topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: Label owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+        - name: options.policy
+          required: false
+          in: query
+          description: Policy
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Labels
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LabelDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/labels/{messageId}:
+    get:
+      operationId: EntityApi_getLabel
+      summary: Get label
+      description: Returns label
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Label details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /entities/did-documents:
     get:
       operationId: EntityApi_getDidDocuments
@@ -2095,6 +2337,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
@@ -2399,6 +2649,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -2541,6 +2799,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -2861,6 +3127,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
@@ -3098,6 +3372,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
@@ -3315,6 +3597,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
@@ -3525,6 +3815,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -3705,6 +4003,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4064,6 +4370,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
@@ -4119,6 +4433,172 @@ components:
         - item
         - row
         - activity
+    StatisticDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+    StatisticDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+      required:
+        - id
+    LabelDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+    LabelDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+      required:
+        - id
     DIDOptionsDTO:
       type: object
       properties:
@@ -4264,6 +4744,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -4406,6 +4894,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -4776,6 +5272,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -4944,6 +5448,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -5170,6 +5682,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -5312,6 +5832,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -5667,6 +6195,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
@@ -5960,6 +6496,14 @@ components:
             - deferred-discontinue-policy
             - migrate-vc-document
             - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
           example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'
