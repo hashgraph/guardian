@@ -12,6 +12,13 @@ import escapeStringRegexp from 'escape-string-regexp';
 import { MessageAction, MessageType, SearchPolicyParams, SearchPolicyResult } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
+function createRegex(text: string) {
+    return {
+        $regex: `.*${escapeStringRegexp(text).trim()}.*`,
+        $options: 'si',
+    }
+}
+
 @Controller()
 export class AnalyticsService {
     @MessagePattern(IndexerMessageAPI.GET_ANALYTICS_SEARCH_POLICY)
@@ -40,10 +47,7 @@ export class AnalyticsService {
                 const keywords = text.split(' ');
                 for (const keyword of keywords) {
                     filter.$and.push({
-                        'analytics.textSearch': {
-                            $regex: `.*${escapeStringRegexp(keyword).trim()}.*`,
-                            $options: 'si',
-                        },
+                        'analytics.textSearch': createRegex(keyword)
                     });
                 }
             }

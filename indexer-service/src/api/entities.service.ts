@@ -50,7 +50,11 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN
+    IPFS_CID_PATTERN,
+    Statistic,
+    StatisticDetails,
+    Label,
+    LabelDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -65,14 +69,18 @@ const pageOptions = new Set([
     'keywords',
 ]);
 
+function createRegex(text: string) {
+    return {
+        $regex: `.*${escapeStringRegexp(text).trim()}.*`,
+        $options: 'si',
+    }
+}
+
 function parsePageFilters(msg: PageFilters) {
     let filters: any = {};
     const keys = Object.keys(msg).filter((name) => !pageOptions.has(name));
     for (const key of keys) {
-        filters[key] = {
-            $regex: `.*${escapeStringRegexp(msg[key]).trim()}.*`,
-            $options: 'si',
-        };
+        filters[key] = createRegex(msg[key]);
     }
     if (msg.keywords) {
         filters = Object.assign(filters, parseKeywordFilter(msg.keywords));
@@ -81,7 +89,7 @@ function parsePageFilters(msg: PageFilters) {
 }
 
 function parseKeywordFilter(keywordsString: string) {
-    let keywords;
+    let keywords: any;
     try {
         keywords = JSON.parse(keywordsString);
     } catch {
@@ -92,10 +100,7 @@ function parseKeywordFilter(keywordsString: string) {
     };
     for (const keyword of keywords) {
         filter.$and.push({
-            'analytics.textSearch': {
-                $regex: `.*${escapeStringRegexp(keyword).trim()}.*`,
-                $options: 'si',
-            },
+            'analytics.textSearch': createRegex(keyword)
         });
     }
     return filter;
@@ -1014,6 +1019,139 @@ export class EntityService {
         }
     }
     //#endregion
+
+    //#region STATISTICS
+    @MessagePattern(IndexerMessageAPI.GET_STATISTICS)
+    async getStatistics(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Statistic>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.POLICY_STATISTIC;
+            filters.action = MessageAction.PublishPolicyStatistic;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Statistic[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Statistic>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_STATISTIC)
+    async getStatistic(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<StatisticDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = (await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.POLICY_STATISTIC,
+                action: MessageAction.PublishPolicyStatistic,
+            } as any)) as Statistic;
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+            const activity: any = {};
+            if (!item) {
+                return new MessageResponse<StatisticDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+            return new MessageResponse<StatisticDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+
+    //#region LABELS
+    @MessagePattern(IndexerMessageAPI.GET_LABELS)
+    async getLabels(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Label>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.POLICY_LABEL;
+            filters.action = MessageAction.PublishPolicyLabel;
+            const em = DataBaseHelper.getEntityManager();
+            console.log(JSON.stringify(filters, null, 4))
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Label[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Statistic>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_LABEL)
+    async getLabel(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<LabelDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = (await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.POLICY_LABEL,
+                action: MessageAction.PublishPolicyLabel,
+            } as any)) as Label;
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+            const activity: any = {};
+            if (!item) {
+                return new MessageResponse<LabelDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+            return new MessageResponse<LabelDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+
+
     //#endregion
 
     //#region DOCUMENTS

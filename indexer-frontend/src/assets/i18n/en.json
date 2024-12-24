@@ -37,7 +37,9 @@
         "vcs": "Verifiable Credentials (VCs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
-        "search_placeholder": "Search by keyword"
+        "search_placeholder": "Search by keyword",
+        "statistics": "Statistics",
+        "labels": "Labels"
     },
     "home": {
         "header": "Indexer"
@@ -74,6 +76,7 @@
         "issuer": "Issuer",
         "account": "Account",
         "did": "DID",
+        "topicId": "Topic Id",
         "registrantTopicId": "User Topic Id",
         "open": "Open",
         "filter": {

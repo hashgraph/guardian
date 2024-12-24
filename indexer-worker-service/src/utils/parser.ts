@@ -1,5 +1,5 @@
 import { MessageCache, Message } from '@indexer/common';
-import { MessageType } from '@indexer/interfaces';
+import { MessageAction, MessageType } from '@indexer/interfaces';
 
 export class Parser {
     public static parseMassage(row: MessageCache): Message | null {
@@ -17,6 +17,7 @@ export class Parser {
             message.topicId = row.topicId;
             message.consensusTimestamp = row.consensusTimestamp;
             message.owner = row.owner;
+            message.sequenceNumber = row.sequenceNumber;
 
             message.uuid = json.id;
             message.status = json.status || 'ISSUE';
@@ -102,6 +103,16 @@ export class Parser {
                     message.options.relationships = json.relationships;
                     if (json.cid) {
                         message.files.push(json.cid);
+                    }
+                    //Label
+                    if (json.action === MessageAction.CreateLabelDocument) {
+                        message.options.target = json.target;
+                        message.options.definition = json.definition;
+                    }
+                    //Statistic
+                    if (json.action === MessageAction.CreateStatisticAssessment) {
+                        message.options.target = json.target;
+                        message.options.definition = json.definition;
                     }
                     break;
                 case MessageType.STANDARD_REGISTRY:
@@ -219,19 +230,23 @@ export class Parser {
                     }
                     break;
                 case MessageType.POLICY_STATISTIC:
-                    message.options.issuer = json.issuer;
-                    message.options.relationships = json.relationships;
-                    message.options.target = json.target;
-                    message.options.definition = json.definition;
+                    message.options.uuid = json.uuid;
+                    message.options.name = json.name;
+                    message.options.description = json.description;
+                    message.options.owner = json.owner;
+                    message.options.policyTopicId = json.policyTopicId;
+                    message.options.policyInstanceTopicId = json.policyInstanceTopicId;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }
                     break;
                 case MessageType.POLICY_LABEL:
-                    message.options.issuer = json.issuer;
-                    message.options.relationships = json.relationships;
-                    message.options.target = json.target;
-                    message.options.definition = json.definition;
+                    message.options.uuid = json.uuid;
+                    message.options.name = json.name;
+                    message.options.description = json.description;
+                    message.options.owner = json.owner;
+                    message.options.policyTopicId = json.policyTopicId;
+                    message.options.policyInstanceTopicId = json.policyInstanceTopicId;
                     if (json.cid) {
                         message.files.push(json.cid);
                     }

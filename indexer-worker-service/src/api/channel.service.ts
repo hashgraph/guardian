@@ -21,6 +21,7 @@ interface IOptions {
     TOKEN_READ_TIMEOUT: number;
     TOKEN_JOB_REFRESH_TIME: number;
     TOKEN_JOB_COUNT: number;
+    FILE_CYCLE_TIME: number;
     FILE_READ_DELAY: number;
     FILE_READ_TIMEOUT: number;
     FILE_JOB_REFRESH_TIME: number;
@@ -77,7 +78,7 @@ export class Worker {
         TopicService.CYCLE_TIME = option.CYCLE_TIME;
         MessageService.CYCLE_TIME = option.CYCLE_TIME;
         TokenService.CYCLE_TIME = option.CYCLE_TIME;
-        FileService.CYCLE_TIME = option.CYCLE_TIME;
+        FileService.CYCLE_TIME = option.FILE_CYCLE_TIME || option.CYCLE_TIME;
         this.topics = new Jobs({
             delay: option.TOPIC_READ_DELAY,
             timeout: option.TOPIC_READ_TIMEOUT,

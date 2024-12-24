@@ -53,7 +53,11 @@ import {
     SchemaTreeDTO,
     InternalServerErrorDTO,
     DetailsDTO,
-    UpdateFileDTO
+    UpdateFileDTO,
+    StatisticDTO,
+    StatisticDetailsDTO,
+    LabelDTO,
+    LabelDetailsDTO
 } from '#dto';
 
 @Controller('entities')
@@ -754,6 +758,192 @@ export class EntityApi extends ApiClient {
         });
     }
     //#endregion
+
+
+    //#region STATISTICS
+    @ApiOperation({
+        summary: 'Get statistics',
+        description: 'Returns statistics',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('Statistics', StatisticDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/statistics')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search statistics, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Statistic topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Statistic owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.policy',
+        description: 'Policy',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getStatistics(
+        @Query('pageIndex') pageIndex?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.owner') owner?: string,
+        @Query('options.policy') policy?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_STATISTICS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.owner': owner,
+            'options.policy': policy,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get statistic',
+        description: 'Returns statistic',
+    })
+    @ApiOkResponse({
+        description: 'Statistic details',
+        type: StatisticDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/statistics/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getStatistic(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_STATISTIC, {
+            messageId,
+        });
+    }
+    //#endregion
+    //#region LABELS
+    @ApiOperation({
+        summary: 'Get labels',
+        description: 'Returns labels',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('Labels', LabelDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/labels')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search labels, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Label topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'Label owner',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.policy',
+        description: 'Policy',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getLabels(
+        @Query('pageIndex') pageIndex?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.owner') owner?: string,
+        @Query('options.policy') policy?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_LABELS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.owner': owner,
+            'options.policy': policy,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get label',
+        description: 'Returns label',
+    })
+    @ApiOkResponse({
+        description: 'Label details',
+        type: LabelDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/labels/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getLabel(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_LABEL, {
+            messageId,
+        });
+    }
+    //#endregion
+
+
     //#endregion
 
     //#region DOCUMENTS

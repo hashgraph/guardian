@@ -40,6 +40,8 @@ import { NFTsComponent } from '@views/collections/nfts/nfts.component';
 import { NFTDetailsComponent } from '@views/details/nft-details/nft-details.component';
 import { DidDocumentDetailsComponent } from '@views/details/did-document-details/did-document-details.component';
 import { ContractDetailsComponent } from '@views/details/contract-details/contract-details.component';
+import { StatisticsComponent } from '@views/collections/statistics/statistics.component';
+import { LabelsComponent } from '@views/collections/labels/labels.component';
 
 export const routes: Routes = [
     // _DEV
@@ -68,6 +70,8 @@ export const routes: Routes = [
     { path: 'nfts', component: NFTsComponent },
     { path: 'topics', component: TopicsComponent },
     { path: 'contracts', component: ContractsComponent },
+    { path: 'statistics', component: StatisticsComponent },
+    { path: 'labels', component: LabelsComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },

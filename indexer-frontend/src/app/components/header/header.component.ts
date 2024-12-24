@@ -82,6 +82,14 @@ export class HeaderComponent {
             label: 'header.roles',
             routerLink: '/roles',
         },
+        {
+            label: 'header.statistics',
+            routerLink: '/statistics',
+        },
+        {
+            label: 'header.labels',
+            routerLink: '/labels',
+        },
     ];
 
     public documentsMenu: MenuItem[] = [

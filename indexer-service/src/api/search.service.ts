@@ -9,6 +9,14 @@ import {
 } from '@indexer/common';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import { Page, SearchItem } from '@indexer/interfaces';
+import escapeStringRegexp from 'escape-string-regexp';
+
+function createRegex(text: string) {
+    return {
+        $regex: `.*${escapeStringRegexp(text).trim()}.*`,
+        $options: 'si',
+    }
+}
 
 @Controller()
 export class SearchService {
@@ -28,9 +36,26 @@ export class SearchService {
             const [results, count] = (await em.findAndCount(
                 Message,
                 {
-                    $text: {
-                        $search: search,
-                    },
+                    $or: [
+                        {
+                            'analytics.textSearch': createRegex(search)
+                        },
+                        {
+                            'topicId': search
+                        },
+                        {
+                            'consensusTimestamp': search
+                        },
+                        {
+                            'owner': search
+                        },
+                        {
+                            'type': search
+                        },
+                        {
+                            'action': search
+                        },
+                    ]
                 } as any,
                 options
             )) as any as [SearchItem[], number];

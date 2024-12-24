@@ -150,7 +150,7 @@ Promise.all([
          * Listen
          */
         app.listen();
-
+        return;
         /**
          * Sync tasks
          */

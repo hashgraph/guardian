@@ -36,6 +36,10 @@ import {
     VP,
     VPDetails,
     Relationships,
+    Statistic,
+    StatisticDetails,
+    Label,
+    LabelDetails,
 } from '@indexer/interfaces';
 
 /**
@@ -315,6 +319,40 @@ export class EntitiesService {
     public getContract(messageId: string): Observable<ContractDetails> {
         const entity = 'contracts';
         return this.http.get<ContractDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+    //#endregion
+    //#region LABELS
+    public getLabels(filters: PageFilters): Observable<Page<Label>> {
+        const entity = 'labels';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Label>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getLabel(messageId: string): Observable<LabelDetails> {
+        const entity = 'labels';
+        return this.http.get<LabelDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+    //#endregion
+    //#region STATISTICS
+    public getStatistics(filters: PageFilters): Observable<Page<Statistic>> {
+        const entity = 'statistics';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Statistic>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getStatistic(messageId: string): Observable<StatisticDetails> {
+        const entity = 'statistics';
+        return this.http.get<StatisticDetails>(
             `${this.url}/${entity}/${messageId}`
         ) as any;
     }
