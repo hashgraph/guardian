@@ -9,7 +9,7 @@
                 <div class="custom-form-field"
                      [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}">
                     <input pInputText type="text"
-                           [placeholder]="field.placeholder"
+                           [placeholder]="field.label"
                            [formControlName]="field.name"
                            class="custom-input"/>
                 </div>
