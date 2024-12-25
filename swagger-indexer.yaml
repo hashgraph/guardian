@@ -1109,6 +1109,113 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/statistic-documents:
+    get:
+      operationId: EntityApi_getStatisticDocuments
+      summary: Get VCs
+      description: Returns VCs
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search VCs, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.issuer
+          required: false
+          in: query
+          description: Issuer
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+        - name: analytics.policyId
+          required: false
+          in: query
+          description: Policy identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+        - name: analytics.schemaId
+          required: false
+          in: query
+          description: Schema identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+        - name: options.relationships
+          required: false
+          in: query
+          description: Relationships
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VCs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/VCGridDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /entities/labels:
     get:
       operationId: EntityApi_getLabels
@@ -1222,6 +1329,106 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LabelDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/label-documents:
+    get:
+      operationId: EntityApi_getLabelDocuments
+      summary: Get VPs
+      description: Returns VPs
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search VPs, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.issuer
+          required: false
+          in: query
+          description: Issuer
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+        - name: analytics.policyId
+          required: false
+          in: query
+          description: Policy identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+        - name: analytics.schemaIds
+          required: false
+          in: query
+          description: Schema identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: VPs
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/VPGridDTO'
         '500':
           description: Internal server error
           content:
@@ -4516,6 +4723,206 @@ components:
           example: '1706823227.586179534'
       required:
         - id
+    VCOptionsDTO:
+      type: object
+      properties:
+        issuer:
+          type: string
+          description: Issuer
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        relationships:
+          description: Relationships
+          example:
+            - '1706823227.586179534'
+          type: array
+          items:
+            type: string
+        documentStatus:
+          type: string
+          description: Document status
+          example: Approved
+        encodedData:
+          type: boolean
+          description: Encoded EVC data
+      required:
+        - issuer
+        - relationships
+        - documentStatus
+        - encodedData
+    VCAnalyticsDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          description: Policy message identifier
+          example: '1706823227.586179534'
+        schemaId:
+          type: string
+          description: Schema message identifier
+          example: '1706823227.586179534'
+        schemaName:
+          type: string
+          description: Schema name
+          example: Monitoring Report
+        textSearch:
+          type: string
+          description: Text search
+      required:
+        - policyId
+        - schemaId
+        - schemaName
+        - textSearch
+    VCGridDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+          example: VC-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
+          example: create-vc-document
+        options:
+          $ref: '#/components/schemas/VCOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/VCAnalyticsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
+        - analytics
     LabelDTO:
       type: object
       properties:
@@ -4599,6 +5006,171 @@ components:
           example: '1706823227.586179534'
       required:
         - id
+    VPOptionsDTO:
+      type: object
+      properties:
+        issuer:
+          type: string
+          description: Issuer
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        relationships:
+          description: Relationships
+          example:
+            - '1706823227.586179534'
+          type: array
+          items:
+            type: string
+      required:
+        - issuer
+        - relationships
+    VPGridDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_2
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+          example: VP-Document
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
+          example: create-vp-document
+        options:
+          $ref: '#/components/schemas/VPOptionsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - type
+        - action
+        - options
     DIDOptionsDTO:
       type: object
       properties:
@@ -5135,171 +5707,6 @@ components:
         - relationships
         - links
         - categories
-    VPOptionsDTO:
-      type: object
-      properties:
-        issuer:
-          type: string
-          description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
-        relationships:
-          description: Relationships
-          example:
-            - '1706823227.586179534'
-          type: array
-          items:
-            type: string
-      required:
-        - issuer
-        - relationships
-    VPGridDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_2
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_4
-          type: array
-          items:
-            type: string
-        type:
-          type: string
-          description: Type
-          enum:
-            - EVC-Document
-            - VC-Document
-            - DID-Document
-            - Schema
-            - schema-document
-            - Policy
-            - Instance-Policy
-            - VP-Document
-            - Standard Registry
-            - Topic
-            - Token
-            - Module
-            - Tool
-            - Tag
-            - Role-Document
-            - Synchronization Event
-            - Contract
-            - Guardian-Role-Document
-            - User-Permissions
-            - Policy-Statistic
-            - Policy-Label
-          example: VP-Document
-        action:
-          type: string
-          description: Action
-          enum:
-            - create-did-document
-            - create-vc-document
-            - create-policy
-            - publish-policy
-            - delete-policy
-            - create-schema
-            - publish-schema
-            - delete-schema
-            - create-topic
-            - create-vp-document
-            - publish-system-schema
-            - Init
-            - change-message-status
-            - revoke-document
-            - delete-document
-            - token-issue
-            - create-token
-            - create-multi-policy
-            - mint
-            - publish-module
-            - publish-tag
-            - delete-tag
-            - publish-tool
-            - create-tool
-            - create-contract
-            - discontinue-policy
-            - deferred-discontinue-policy
-            - migrate-vc-document
-            - migrate-vp-document
-            - create-role
-            - update-role
-            - delete-role
-            - set-role
-            - publish-policy-statistic
-            - create-assessment-document
-            - publish-policy-label
-            - create-label-document
-          example: create-vp-document
-        options:
-          $ref: '#/components/schemas/VPOptionsDTO'
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-        - type
-        - action
-        - options
     VPAnalyticsDTO:
       type: object
       properties:
@@ -5513,206 +5920,6 @@ components:
         - item
         - row
         - history
-    VCOptionsDTO:
-      type: object
-      properties:
-        issuer:
-          type: string
-          description: Issuer
-          example: >-
-            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
-        relationships:
-          description: Relationships
-          example:
-            - '1706823227.586179534'
-          type: array
-          items:
-            type: string
-        documentStatus:
-          type: string
-          description: Document status
-          example: Approved
-        encodedData:
-          type: boolean
-          description: Encoded EVC data
-      required:
-        - issuer
-        - relationships
-        - documentStatus
-        - encodedData
-    VCAnalyticsDTO:
-      type: object
-      properties:
-        policyId:
-          type: string
-          description: Policy message identifier
-          example: '1706823227.586179534'
-        schemaId:
-          type: string
-          description: Schema message identifier
-          example: '1706823227.586179534'
-        schemaName:
-          type: string
-          description: Schema name
-          example: Monitoring Report
-        textSearch:
-          type: string
-          description: Text search
-      required:
-        - policyId
-        - schemaId
-        - schemaName
-        - textSearch
-    VCGridDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_2
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_4
-          type: array
-          items:
-            type: string
-        type:
-          type: string
-          description: Type
-          enum:
-            - EVC-Document
-            - VC-Document
-            - DID-Document
-            - Schema
-            - schema-document
-            - Policy
-            - Instance-Policy
-            - VP-Document
-            - Standard Registry
-            - Topic
-            - Token
-            - Module
-            - Tool
-            - Tag
-            - Role-Document
-            - Synchronization Event
-            - Contract
-            - Guardian-Role-Document
-            - User-Permissions
-            - Policy-Statistic
-            - Policy-Label
-          example: VC-Document
-        action:
-          type: string
-          description: Action
-          enum:
-            - create-did-document
-            - create-vc-document
-            - create-policy
-            - publish-policy
-            - delete-policy
-            - create-schema
-            - publish-schema
-            - delete-schema
-            - create-topic
-            - create-vp-document
-            - publish-system-schema
-            - Init
-            - change-message-status
-            - revoke-document
-            - delete-document
-            - token-issue
-            - create-token
-            - create-multi-policy
-            - mint
-            - publish-module
-            - publish-tag
-            - delete-tag
-            - publish-tool
-            - create-tool
-            - create-contract
-            - discontinue-policy
-            - deferred-discontinue-policy
-            - migrate-vc-document
-            - migrate-vp-document
-            - create-role
-            - update-role
-            - delete-role
-            - set-role
-            - publish-policy-statistic
-            - create-assessment-document
-            - publish-policy-label
-            - create-label-document
-          example: create-vc-document
-        options:
-          $ref: '#/components/schemas/VCOptionsDTO'
-        analytics:
-          $ref: '#/components/schemas/VCAnalyticsDTO'
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-        - type
-        - action
-        - options
-        - analytics
     VCDetailsItemDTO:
       type: object
       properties:
