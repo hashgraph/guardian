@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'sendToGuardian' type.
@@ -27,8 +27,32 @@ export class SourceAddonConfigComponent implements OnInit {
     properties!: any;
     schemas!: SchemaVariables[];
 
-    constructor(
-    ) {
+    public dataTypeOptions = [
+        {label: 'Collection (VC)', value: 'vc-documents'},
+        {label: 'Collection (DID)', value: 'did-documents'},
+        {label: 'Collection (Approve)', value: 'approve'},
+        {label: 'Collection (VP)', value: 'vp-documents'}
+    ];
+
+    public orderDirectionOptions = [
+        {label: 'None', value: ''},
+        {label: 'ASC', value: 'ASC'},
+        {label: 'DESC', value: 'DESC'}
+    ];
+
+    public fieldTypeOptions = [
+        {label: 'Equal', value: 'equal'},
+        {label: 'Not Equal', value: 'not_equal'},
+        {label: 'In', value: 'in'},
+        {label: 'Not In', value: 'not_in'},
+        {label: 'Greater Than', value: 'gt'},
+        {label: 'Greater Than or Equal', value: 'gte'},
+        {label: 'Less Than', value: 'lt'},
+        {label: 'Less Than or Equal', value: 'lte'},
+        {label: 'User Defined', value: 'user_defined'}
+    ];
+
+    constructor() {
 
     }
 

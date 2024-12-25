@@ -42,9 +42,16 @@ export class NewVersionsComponent implements OnInit {
     }
 
     onCopyClick(newVersion: any) {
-        newVersion.copied = true;
-        setTimeout(() => {
-            newVersion.copied = false;
-        }, 2000);
+        navigator.clipboard
+            .writeText(newVersion.messageId)
+            .then(() => {
+                newVersion.copied = true;
+                setTimeout(() => {
+                    newVersion.copied = false;
+                }, 2000);
+            })
+            .catch((err) => {
+                console.error('Failed to copy text: ', err);
+            });
     }
 }

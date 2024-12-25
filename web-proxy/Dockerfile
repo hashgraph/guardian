@@ -29,6 +29,6 @@ FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
 
 # Copy config and built application from the build stage into the image
 COPY --link ./web-proxy/configs/default.conf /etc/nginx/conf.d/default.conf
-COPY --link --from=build /usr/local/app/dist/guardian /usr/share/nginx/html
+COPY --link --from=build /usr/local/app/dist/guardian/browser /usr/share/nginx/html
 
 EXPOSE 80

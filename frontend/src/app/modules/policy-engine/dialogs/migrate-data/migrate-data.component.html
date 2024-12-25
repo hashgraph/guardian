@@ -171,8 +171,14 @@
                         <span>:</span>
                         <div class="map-right">
                             <div>
-                                <p-dropdown appendTo="body" [(ngModel)]="migrationConfig.roles[role]"
-                                    [options]="dstRoles" [showClear]="true" placeholder="Select role"></p-dropdown>
+                                <p-dropdown
+                                    appendTo="body"
+                                    [(ngModel)]="migrationConfig.roles[role]"
+                                    [options]="dstRoles"
+                                    [showClear]="true"
+                                    placeholder="Select role"
+                                    [appendTo]="'body'"
+                                ></p-dropdown>
                             </div>
                         </div>
                     </div>

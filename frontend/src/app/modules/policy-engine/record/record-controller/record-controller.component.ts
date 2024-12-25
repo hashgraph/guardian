@@ -1,13 +1,16 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { RecordService } from 'src/app/services/record.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { RecordResultDialog } from '../record-result-dialog/record-result-dialog.component';
-import { Router } from '@angular/router';
-import { ConfirmDialog } from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
-import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
+import {Subscription} from 'rxjs';
+import {RecordService} from 'src/app/services/record.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {RecordResultDialog} from '../record-result-dialog/record-result-dialog.component';
+import {Router} from '@angular/router';
+import {ConfirmDialog} from 'src/app/modules/common/confirm-dialog/confirm-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
+import {
+    IImportEntityResult,
+    ImportEntityDialog,
+    ImportEntityType
+} from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 
 @Component({
     selector: 'app-record-controller',
@@ -42,8 +45,7 @@ export class RecordControllerComponent implements OnInit {
         private dialogService: DialogService,
         private recordService: RecordService,
         private router: Router,
-        private dialog: MatDialog
-
+        private dialog: DialogService,
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
         this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
@@ -400,15 +402,15 @@ export class RecordControllerComponent implements OnInit {
     public showResult() {
         this._resultDialog = this.dialog.open(RecordResultDialog, {
             width: '700px',
-            panelClass: 'g-dialog',
-            autoFocus: false,
-            disableClose: true,
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
             data: {
                 recordId: this.recordId,
                 policyId: this.policyId
             }
         });
-        this._resultDialog.afterClosed().subscribe(async (result: any) => {
+        this._resultDialog.onClose.subscribe(async (result: any) => {
             if (result === 'Details') {
                 this.router.navigate(['/record-results'], {
                     queryParams: {
@@ -433,9 +435,10 @@ export class RecordControllerComponent implements OnInit {
                 submitButton: 'Continue',
                 cancelButton: 'Cancel'
             },
-            disableClose: true,
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(result => {
+        dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.overlay = this.recordId;
             }

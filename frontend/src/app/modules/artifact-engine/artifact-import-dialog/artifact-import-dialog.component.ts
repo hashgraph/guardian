@@ -1,7 +1,7 @@
 import { Component, Inject } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { PolicyType } from '@guardian/interfaces';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Import Artifacts Dialog.
@@ -16,13 +16,16 @@ export class ArtifactImportDialog {
     public policies: any = [];
 
     constructor(
-        public dialogRef: MatDialogRef<ArtifactImportDialog>,
-        private fb: UntypedFormBuilder,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
+        private fb: UntypedFormBuilder
+    ) {
+        const data = this.config.data
+
         if (data) {
             this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
             const current = this.policies.find((policy: any) => policy.id === data.policyId);
-            this.policyId.patchValue(current?.id || '');
+            this.policyId.patchValue(current ? { label: current.name, value: current.id } : null);
         }
     }
 
@@ -30,12 +33,19 @@ export class ArtifactImportDialog {
         if (this.policyId.valid) {
             this.dialogRef.close({
                 files: event,
-                policyId: this.policyId.value
+                policyId: this.policyId.value?.value
             });
         }
     }
 
     onNoClick(): void {
         this.dialogRef.close(false);
+    }
+
+    getPolicyOptions(): any[] {
+        return this.policies.map((policy: any) => ({
+            label: policy.name,
+            value: policy.id
+        }));
     }
 }

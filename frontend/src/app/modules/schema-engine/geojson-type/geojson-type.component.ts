@@ -39,7 +39,7 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     commonOptions: google.maps.MarkerOptions &
         google.maps.PolygonOptions &
         google.maps.PolylineOptions = {
-            animation: 2,
+            animation: null,
             clickable: false,
         };
     type: GeoJsonType = GeoJsonType.POINT;
@@ -55,6 +55,15 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     coordinates: string = '';
     isJSON: boolean = false;
     jsonInput: string = '';
+
+    typeOptions = [
+        { label: 'Point', value: 'Point' },
+        { label: 'Polygon', value: 'Polygon' },
+        { label: 'LineString', value: 'LineString' },
+        { label: 'MultiPoint', value: 'MultiPoint' },
+        { label: 'MultiPolygon', value: 'MultiPolygon' },
+        { label: 'MultiLineString', value: 'MultiLineString' }
+    ];
 
     constructor(
         public mapService: MapService,
@@ -76,6 +85,10 @@ export class GeojsonTypeComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.commonOptions = {
+
+        }
+
         this.onTypeChange(false);
         this.control?.setValidators(
             ajvSchemaValidator(new ajv().compile(GeoJsonSchema))
