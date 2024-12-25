@@ -35,6 +35,18 @@ export interface VPAnalytics {
      * Schema names
      */
     schemaNames?: string[];
+    /**
+     * Issuer
+     */
+    issuer?: string;
+    /**
+     * Token
+     */
+    tokenId?: string;
+    /**
+     * Label
+     */
+    labelName?: string;
 }
 
 /**

@@ -36,7 +36,7 @@ export async function loadFiles(ids: Set<string>, buffer: boolean): Promise<Map<
                 const bufferArray = chunkMap.get(fileId);
                 chunkMap.delete(fileId);
                 if (bufferArray) {
-                    result.set(filename, Buffer.concat(bufferArray));
+                    result.set(filename, Buffer.concat(bufferArray as any));
                 } else {
                     result.set(filename, null);
                 }
@@ -52,7 +52,7 @@ export async function loadFiles(ids: Set<string>, buffer: boolean): Promise<Map<
             try {
                 const bufferArray = chunkMap.get(fileId);
                 if (bufferArray) {
-                    result.set(filename, Buffer.concat(bufferArray).toString());
+                    result.set(filename, Buffer.concat(bufferArray as any).toString());
                 } else {
                     result.set(filename, null);
                 }

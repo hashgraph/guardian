@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
@@ -12,20 +12,21 @@ import { MatButtonModule } from '@angular/material/button';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { BaseGridComponent, Filter } from '../base-grid/base-grid.component';
 import { TranslocoModule } from '@jsverse/transloco';
-import { SelectFilterComponent } from '@components/select-filter/select-filter.component';
 import { EntitiesService } from '@services/entities.service';
 import { FiltersService } from '@services/filters.service';
+import { PaginatorModule } from 'primeng/paginator';
 import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { InputTextModule } from 'primeng/inputtext';
 import { ChipsModule } from 'primeng/chips';
 
 @Component({
-    selector: 'vp-documents',
-    templateUrl: './vp-documents.component.html',
+    selector: 'statistic-documents',
+    templateUrl: './statistic-documents.component.html',
     styleUrls: [
         '../base-grid/base-grid.component.scss',
-        './vp-documents.component.scss',
+        './statistic-documents.component.scss',
     ],
     standalone: true,
     imports: [
@@ -40,22 +41,23 @@ import { ChipsModule } from 'primeng/chips';
         MatButtonModule,
         LoadingComponent,
         TranslocoModule,
-        ReactiveFormsModule,
-        SelectFilterComponent,
         TableComponent,
+        PaginatorModule,
         InputGroupModule,
         InputGroupAddonModule,
-        ChipsModule
-    ]
+        InputTextModule,
+        ReactiveFormsModule,
+        ChipsModule,
+    ],
 })
-export class VpDocumentsComponent extends BaseGridComponent {
+export class StatisticDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
             type: ColumnType.TEXT,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
-            sort: true
+            sort: true,
         },
         {
             type: ColumnType.TEXT,
@@ -68,23 +70,23 @@ export class VpDocumentsComponent extends BaseGridComponent {
             },
         },
         {
-            type: ColumnType.TEXT,
-            field: 'uuid',
-            title: 'grid.uuid',
-            width: '350px',
-        },
-        {
             type: ColumnType.CHIP,
             field: 'status',
             title: 'grid.status',
             width: '100px',
-            sort: true
+            sort: true,
         },
         {
             type: ColumnType.TEXT,
-            field: 'analytics.issuer',
+            field: 'analytics.schemaName',
+            title: 'grid.schema',
+            width: '200px',
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.issuer',
             title: 'grid.issuer',
-            width: '500px',
+            width: '650px',
         },
         {
             type: ColumnType.BUTTON,
@@ -120,16 +122,21 @@ export class VpDocumentsComponent extends BaseGridComponent {
             }),
             new Filter({
                 type: 'input',
-                field: 'analytics.schemaIds',
+                field: 'analytics.schemaId',
                 label: 'grid.filter.schema_id',
             }),
+            new Filter({
+                type: 'input',
+                field: 'options.relationships',
+                label: 'grid.filter.relationship',
+            })
         );
     }
 
     protected loadData(): void {
         const filters = this.getFilters();
         this.loadingData = true;
-        this.entitiesService.getVpDocuments(filters).subscribe({
+        this.entitiesService.getStatisticDocuments(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
                 setTimeout(() => {
@@ -139,15 +146,14 @@ export class VpDocumentsComponent extends BaseGridComponent {
             error: ({ message }) => {
                 this.loadingData = false;
                 console.error(message);
-            }
+            },
         });
     }
 
     protected loadFilters(): void {
         this.loadingFilters = true;
-        this.filtersService.getVpFilters().subscribe({
+        this.filtersService.getVcFilters().subscribe({
             next: (result) => {
-                this.setFilters(result);
                 setTimeout(() => {
                     this.loadingFilters = false;
                 }, 500);
@@ -155,7 +161,7 @@ export class VpDocumentsComponent extends BaseGridComponent {
             error: ({ message }) => {
                 this.loadingFilters = false;
                 console.error(message);
-            }
+            },
         });
     }
 }

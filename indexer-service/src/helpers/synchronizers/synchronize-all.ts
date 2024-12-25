@@ -2,6 +2,7 @@ import { SynchronizationTask } from '../synchronization-task.js';
 import { SynchronizationAnalytics } from './synchronize-analytics.js';
 import { SynchronizationContracts } from './synchronize-contracts.js';
 import { SynchronizationDid } from './synchronize-dids.js';
+import { SynchronizationLabels } from './synchronize-labels.js';
 import { SynchronizationModules } from './synchronize-module.js';
 import { SynchronizationPolicy } from './synchronize-policy.js';
 import { SynchronizationProjects } from './synchronize-projects.js';
@@ -29,6 +30,7 @@ export class SynchronizationAll extends SynchronizationTask {
     private readonly synchronizationVPs: SynchronizationVPs;
     private readonly synchronizationPolicy: SynchronizationPolicy;
     private readonly synchronizationContracts: SynchronizationContracts;
+    private readonly synchronizationLabels: SynchronizationLabels;
 
     constructor(mask: string) {
         super('all', mask);
@@ -46,6 +48,7 @@ export class SynchronizationAll extends SynchronizationTask {
         this.synchronizationVPs = (new SynchronizationVPs(this.getMask(process.env.SYNC_VP_DOCUMENTS_MASK)));
         this.synchronizationPolicy = (new SynchronizationPolicy(this.getMask(process.env.SYNC_POLICIES_MASK)));
         this.synchronizationContracts = (new SynchronizationContracts(this.getMask(process.env.SYNC_CONTRACTS_MASK)));
+        this.synchronizationLabels = (new SynchronizationLabels(this.getMask(process.env.SYNC_LABELS_MASK)));
     }
 
     public override async sync(): Promise<void> {
@@ -62,6 +65,7 @@ export class SynchronizationAll extends SynchronizationTask {
         await this.runTask(this.synchronizationVPs);
         await this.runTask(this.synchronizationPolicy);
         await this.runTask(this.synchronizationContracts);
+        await this.runTask(this.synchronizationLabels);
     }
 
     private async runTask(task: SynchronizationTask) {

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatSortModule } from '@angular/material/sort';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
@@ -21,11 +21,11 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ChipsModule } from 'primeng/chips';
 
 @Component({
-    selector: 'vp-documents',
-    templateUrl: './vp-documents.component.html',
+    selector: 'label-documents',
+    templateUrl: './label-documents.component.html',
     styleUrls: [
         '../base-grid/base-grid.component.scss',
-        './vp-documents.component.scss',
+        './label-documents.component.scss',
     ],
     standalone: true,
     imports: [
@@ -48,7 +48,7 @@ import { ChipsModule } from 'primeng/chips';
         ChipsModule
     ]
 })
-export class VpDocumentsComponent extends BaseGridComponent {
+export class LabelDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
             type: ColumnType.TEXT,
@@ -61,7 +61,7 @@ export class VpDocumentsComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'topicId',
             title: 'grid.topic_id',
-            width: '150px',
+            width: '125px',
             link: {
                 field: 'topicId',
                 url: '/topics',
@@ -69,9 +69,19 @@ export class VpDocumentsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'uuid',
-            title: 'grid.uuid',
-            width: '350px',
+            field: 'analytics.tokenId',
+            title: 'grid.token_id',
+            width: '125px',
+            link: {
+                field: 'tokenId',
+                url: '/tokens',
+            },
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.target',
+            title: 'grid.target',
+            width: '250px',
         },
         {
             type: ColumnType.CHIP,
@@ -110,18 +120,18 @@ export class VpDocumentsComponent extends BaseGridComponent {
             }),
             new Filter({
                 type: 'input',
-                field: 'options.issuer',
-                label: 'grid.issuer',
-            }),
-            new Filter({
-                type: 'input',
                 field: 'analytics.policyId',
                 label: 'grid.filter.policy_id',
             }),
             new Filter({
                 type: 'input',
-                field: 'analytics.schemaIds',
-                label: 'grid.filter.schema_id',
+                field: 'analytics.tokenId',
+                label: 'grid.filter.token_id',
+            }),
+            new Filter({
+                type: 'input',
+                field: 'options.target',
+                label: 'grid.filter.target',
             }),
         );
     }
@@ -129,7 +139,7 @@ export class VpDocumentsComponent extends BaseGridComponent {
     protected loadData(): void {
         const filters = this.getFilters();
         this.loadingData = true;
-        this.entitiesService.getVpDocuments(filters).subscribe({
+        this.entitiesService.getLabelDocuments(filters).subscribe({
             next: (result) => {
                 this.setResult(result);
                 setTimeout(() => {

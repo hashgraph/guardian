@@ -85,6 +85,9 @@ export class Message implements IMessage {
         hash?: string;
         hashMap?: any;
         properties?: string[];
+        tokenId?: string,
+        labels?: string[];
+        labelName?: string;
     };
 
     @Property({ nullable: true })

@@ -339,6 +339,13 @@ export class EntitiesService {
             `${this.url}/${entity}/${messageId}`
         ) as any;
     }
+
+    public getLabelDocuments(filters: PageFilters): Observable<Page<VP>> {
+        const entity = 'label-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VP>>(`${this.url}/${entity}`, options) as any;
+    }
+
     //#endregion
     //#region STATISTICS
     public getStatistics(filters: PageFilters): Observable<Page<Statistic>> {
@@ -355,6 +362,12 @@ export class EntitiesService {
         return this.http.get<StatisticDetails>(
             `${this.url}/${entity}/${messageId}`
         ) as any;
+    }
+
+    public getStatisticDocuments(filters: PageFilters): Observable<Page<VC>> {
+        const entity = 'statistic-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VC>>(`${this.url}/${entity}`, options) as any;
     }
     //#endregion
     //#endregion

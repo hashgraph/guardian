@@ -68,6 +68,10 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     }, {
         label: 'details.hedera.issuer',
         path: 'options.issuer'
+    }, {
+        label: 'details.hedera.token_id',
+        path: 'analytics.tokenId',
+        link: '/tokens'
     }]
 
     historyColumns: any[] = [

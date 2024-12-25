@@ -35,6 +35,8 @@
         "nfts": "NFTs",
         "vps": "Verifiable Presentation (VPs)",
         "vcs": "Verifiable Credentials (VCs)",
+        "statistic_documents": "Statistic Documents (VCs)",
+        "label_documents": "Label Documents (VPs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
         "search_placeholder": "Search by keyword",
@@ -79,6 +81,7 @@
         "topicId": "Topic Id",
         "registrantTopicId": "User Topic Id",
         "open": "Open",
+        "target": "Target",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -88,7 +91,9 @@
             "topic_id": "Topic Id",
             "policy_id": "Policy Id",
             "schema_id": "Schema Id",
-            "relationship": "Relationship"
+            "relationship": "Relationship",
+            "target": "Target",
+            "token_id": "Token Id"
         },
         "paginator": {
             "items_per_page": "Items per page",
@@ -134,7 +139,8 @@
             "issuer": "Issuer",
             "transaction_id": "Transaction Id",
             "sender_account_id": "Sender",
-            "receiver_account_id": "Receiver"
+            "receiver_account_id": "Receiver",
+            "token_id": "Token Id"
         },
         "ipfs": "IPFS",
         "header": {
@@ -181,7 +187,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner"
             }
         },
@@ -195,7 +201,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "hash": "Hash"
             }
@@ -210,11 +216,39 @@
                 "topic_id": "Topic Id",
                 "instance_topic_id": "Instance Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
                 "policy_tag": "Policy Tag",
                 "registry": "Standard Registry"
+            }
+        },
+        "label": {
+            "header": "Label",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner"
+            }
+        },
+        "statistic": {
+            "header": "Statistic",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner"
             }
         },
         "schema": {
@@ -229,7 +263,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
                 "policy": "Policy"
@@ -303,7 +337,7 @@
                 "contract_id": "Contract Id",
                 "topic_id": "Topic Id",
                 "type": "Type",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "owner_did": "Owner DID"
             }

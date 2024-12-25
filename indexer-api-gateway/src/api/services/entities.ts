@@ -758,9 +758,8 @@ export class EntityApi extends ApiClient {
         });
     }
     //#endregion
-
-
     //#region STATISTICS
+    @Get('/statistics')
     @ApiOperation({
         summary: 'Get statistics',
         description: 'Returns statistics',
@@ -771,7 +770,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/statistics')
     @ApiQuery({
         name: 'keywords',
         description: 'Keywords to search',
@@ -826,6 +824,7 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @Get('/statistics/:messageId')
     @ApiOperation({
         summary: 'Get statistic',
         description: 'Returns statistic',
@@ -838,7 +837,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/statistics/:messageId')
     @ApiParam({
         name: 'messageId',
         description: 'Message identifier',
@@ -850,8 +848,90 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
+
+    @Get('/statistic-documents')
+    @ApiOperation({
+        summary: 'Get VCs',
+        description: 'Returns VCs',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('VCs', VCGridDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search VCs, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.issuer',
+        description: 'Issuer',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy identifier',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.schemaId',
+        description: 'Schema identifier',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.relationships',
+        description: 'Relationships',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getStatisticDocuments(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.issuer') issuer?: string,
+        @Query('analytics.policyId') policyId?: string,
+        @Query('analytics.schemaId') schemaId?: string,
+        @Query('options.relationships') relationship?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_STATISTIC_DOCUMENTS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.issuer': issuer,
+            'analytics.policyId': policyId,
+            'analytics.schemaId': schemaId,
+            'options.relationships': relationship,
+        });
+    }
     //#endregion
     //#region LABELS
+    @Get('/labels')
     @ApiOperation({
         summary: 'Get labels',
         description: 'Returns labels',
@@ -862,7 +942,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/labels')
     @ApiQuery({
         name: 'keywords',
         description: 'Keywords to search',
@@ -917,6 +996,7 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @Get('/labels/:messageId')
     @ApiOperation({
         summary: 'Get label',
         description: 'Returns label',
@@ -929,7 +1009,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/labels/:messageId')
     @ApiParam({
         name: 'messageId',
         description: 'Message identifier',
@@ -941,9 +1020,80 @@ export class EntityApi extends ApiClient {
             messageId,
         });
     }
+
+    @Get('/label-documents')
+    @ApiOperation({
+        summary: 'Get VPs',
+        description: 'Returns VPs',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('VPs', VPGridDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search VPs, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.issuer',
+        description: 'Issuer',
+        example:
+            'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.policyId',
+        description: 'Policy identifier',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'analytics.schemaIds',
+        description: 'Schema identifier',
+        example: '1706823227.586179534',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getLabelDocuments(
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.issuer') issuer?: string,
+        @Query('analytics.policyId') policyId?: string,
+        @Query('analytics.schemaIds') schemaId?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_LABEL_DOCUMENTS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.issuer': issuer,
+            'analytics.policyId': policyId,
+            'analytics.schemaIds': schemaId,
+        });
+    }
     //#endregion
-
-
     //#endregion
 
     //#region DOCUMENTS
@@ -1539,8 +1689,7 @@ export class EntityApi extends ApiClient {
         });
     }
     //#endregion
-    //#endregion
-
+    //#region FILES
     @Post('/update-files')
     @ApiOperation({
         summary: 'Try load ipfs files',
@@ -1565,4 +1714,6 @@ export class EntityApi extends ApiClient {
             body
         );
     }
+    //#endregion
+    //#endregion
 }

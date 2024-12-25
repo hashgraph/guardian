@@ -1,5 +1,4 @@
 import { Message, MessageCache } from '@indexer/common';
-import { MessageStatus } from '@indexer/interfaces';
 import { Migration } from '@mikro-orm/migrations-mongodb';
 
 /**
@@ -10,30 +9,7 @@ export class ReleaseMigration extends Migration {
      * Up migration
      */
     async up(): Promise<void> {
-        await this.updateStatus();
         await this.updateMessageIndexes();
-    }
-
-    /**
-     * Update status
-     */
-    async updateStatus() {
-        const cacheCollection = this.getCollection<MessageCache>('MessageCache');
-        const cacheRequests = cacheCollection.find({
-            status: MessageStatus.UNSUPPORTED
-        }, { session: this.ctx });
-        while (await cacheRequests.hasNext()) {
-            const cacheRequest = await cacheRequests.next();
-            await cacheCollection.updateOne(
-                { _id: cacheRequest._id },
-                {
-                    $set: {
-                        status: MessageStatus.COMPRESSED,
-                    },
-                },
-                { session: this.ctx, upsert: false }
-            );
-        }
     }
 
     /**
@@ -62,7 +38,7 @@ export class ReleaseMigration extends Migration {
                     $set: {
                         sequenceNumber: indexMap.get(messageRequest.consensusTimestamp),
                         loaded: links === files,
-                        lastUpdate: 0
+                        lastUpdate: 0,
                     },
                 },
                 { session: this.ctx, upsert: false }

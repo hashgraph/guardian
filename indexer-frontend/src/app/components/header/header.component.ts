@@ -105,6 +105,14 @@ export class HeaderComponent {
             label: 'header.vps',
             routerLink: '/vp-documents',
         },
+        {
+            label: 'header.statistic_documents',
+            routerLink: '/statistic-documents',
+        },
+        {
+            label: 'header.label_documents',
+            routerLink: '/label-documents',
+        },
     ];
 
     public othersMenu: MenuItem[] = [

@@ -61,6 +61,7 @@ import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
 import { IPFSService } from '../helpers/ipfs-service.js';
 
+//#region UTILS
 const pageOptions = new Set([
     'pageSize',
     'pageIndex',
@@ -260,6 +261,7 @@ function getContext(file: string): any {
         return null;
     }
 }
+//#endregion
 
 @Controller()
 export class EntityService {
@@ -1019,7 +1021,6 @@ export class EntityService {
         }
     }
     //#endregion
-
     //#region STATISTICS
     @MessagePattern(IndexerMessageAPI.GET_STATISTICS)
     async getStatistics(
@@ -1064,7 +1065,24 @@ export class EntityService {
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
-            const activity: any = {};
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+            const vcs = await em.count(Message, {
+                type: MessageType.VC_DOCUMENT,
+                topicId: row.topicId,
+            } as any);
+            const activity: any = {
+                schemas,
+                vcs
+            };
             if (!item) {
                 return new MessageResponse<StatisticDetails>({
                     id: messageId,
@@ -1083,8 +1101,41 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+    @MessagePattern(IndexerMessageAPI.GET_STATISTIC_DOCUMENTS)
+    async getStatisticDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VC>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VC_DOCUMENT;
+            filters.action = MessageAction.CreateStatisticAssessment;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VC[], number];
+            const result = {
+                items: rows.map((item) => {
+                    if (item.analytics) {
+                        item.analytics = Object.assign(item.analytics, {
+                            schemaName: item.analytics.schemaName,
+                        });
+                    }
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VC>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
     //#endregion
-
     //#region LABELS
     @MessagePattern(IndexerMessageAPI.GET_LABELS)
     async getLabels(
@@ -1096,7 +1147,7 @@ export class EntityService {
             filters.type = MessageType.POLICY_LABEL;
             filters.action = MessageAction.PublishPolicyLabel;
             const em = DataBaseHelper.getEntityManager();
-            console.log(JSON.stringify(filters, null, 4))
+
             const [rows, count] = (await em.findAndCount(
                 Message,
                 filters,
@@ -1130,7 +1181,24 @@ export class EntityService {
             const row = await em.findOne(MessageCache, {
                 consensusTimestamp: messageId,
             });
-            const activity: any = {};
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+            const vps = await em.count(Message, {
+                type: MessageType.VP_DOCUMENT,
+                topicId: row.topicId,
+            } as any);
+            const activity: any = {
+                schemas,
+                vps
+            };
             if (!item) {
                 return new MessageResponse<LabelDetails>({
                     id: messageId,
@@ -1149,9 +1217,35 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+
+    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENTS)
+    async getLabelDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VP>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VP_DOCUMENT;
+            filters.action = MessageAction.CreateLabelDocument;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VP[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VP>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
     //#endregion
-
-
     //#endregion
 
     //#region DOCUMENTS
@@ -1280,10 +1374,7 @@ export class EntityService {
                 options
             )) as [VP[], number];
             const result = {
-                items: rows.map((item) => {
-                    delete item.analytics;
-                    return item;
-                }),
+                items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
@@ -1754,8 +1845,7 @@ export class EntityService {
         }
     }
     //#endregion
-    //#endregion
-
+    //#region FILES
     @MessagePattern(IndexerMessageAPI.UPDATE_FILES)
     async updateFiles(
         @Payload() msg: { messageId: string }
@@ -1779,4 +1869,6 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+    //#endregion
+    //#endregion
 }
