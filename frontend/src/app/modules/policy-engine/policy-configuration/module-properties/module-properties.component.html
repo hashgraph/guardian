@@ -90,7 +90,9 @@
                                     optionValue="value"
                                     [disabled]="readonly"
                                     placeholder="Select type"
-                                    (onChange)="onEditVariable(item)">
+                                    (onChange)="onEditVariable(item)"
+                                    [appendTo]="'body'"
+                                >
                                 </p-dropdown>
                             </td>
                         </tr>

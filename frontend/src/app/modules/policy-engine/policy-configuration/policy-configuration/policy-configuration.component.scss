@@ -715,6 +715,7 @@
         svg.icon-style-handyman {
             width: 18px;
             padding-bottom: 5px;
+            fill: var(--pc-event-color);
         }
     }
 }
@@ -834,6 +835,13 @@
 
                 &.tab-header-min {
                     text-align: left;
+                    display: grid !important;
+
+                    span {
+                        font-size: 16px;
+                        margin-bottom: 4px;
+                        padding-left: 0;
+                    }
 
                     &[selected="false"] {
                         width: 31px;
@@ -851,7 +859,7 @@
                         }
                     }
 
-                    .icon-style-handyman {
+                    .icon-style-handyman svg {
                         fill: var(--pc-event-color);
                     }
                 }
@@ -939,9 +947,8 @@
                 flex: none;
 
                 &.tab-header-icon {
-                    //padding: 6px 16px 6px 32px;
-                    display: grid;
-                    grid-template-columns: 30px auto !important;
+                    display: grid !important;
+                    grid-template-columns: max-content auto !important;
                 }
             }
         }
