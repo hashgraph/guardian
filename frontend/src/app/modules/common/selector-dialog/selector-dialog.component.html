@@ -1,14 +1,19 @@
-<p-dialog [(visible)]="isVisible" [header]="title" [modal]="true" [closable]="false" (onHide)="onCancel()"
+<p-dialog [(visible)]="isVisible" [modal]="true" [closable]="false" (onHide)="onCancel()"
           [draggable]="false" class="p-dialog dialog">
     <div class="dialog-content">
-        <h2>{{ title }}</h2>
+        <h2 class="title">{{ title }}</h2>
 
-        <div>{{ description }}</div>
+        <div class="description">{{ description }}</div>
 
         <div class="options-form-field">
-            <label>{{ label }}</label>
-            <p-dropdown [options]="options" [(ngModel)]="result" optionLabel="name" optionValue="value"
-                        placeholder="Select an option">
+            <p-dropdown
+                [options]="options"
+                [(ngModel)]="result"
+                optionLabel="name"
+                optionValue="value"
+                placeholder="Select an option"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </div>
 

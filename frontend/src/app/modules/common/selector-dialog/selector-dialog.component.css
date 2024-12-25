@@ -24,11 +24,22 @@
 
 :host ::ng-deep .p-dialog .p-dialog-header {
     padding: 0;
-    font: 400 24px / 32px Roboto, "Helvetica Neue", sans-serif;
+    font: 400 24px / 32px Roboto, sans-serif;
 }
 
 :host ::ng-deep .p-dialog .p-dialog-content {
-    padding: 18px 0 0 0;
+    padding: 0;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content .title {
+    margin-top: 0;
+    font-size: 20px;
+    padding-left: 4px
+}
+
+:host ::ng-deep .p-dialog .p-dialog-content .description {
+    font-size: 14px;
+    padding-left: 4px
 }
 
 .dialog-actions {
@@ -57,4 +68,9 @@
 
 :host ::ng-deep .p-dialog .p-button-ok:hover {
     background-color: var(--blue-700);
+}
+
+.options-form-field {
+    width: 98%;
+    padding-left: 4px
 }
