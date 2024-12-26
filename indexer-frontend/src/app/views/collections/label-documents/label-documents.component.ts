@@ -73,7 +73,7 @@ export class LabelDocumentsComponent extends BaseGridComponent {
             title: 'grid.token_id',
             width: '125px',
             link: {
-                field: 'tokenId',
+                field: 'analytics.tokenId',
                 url: '/tokens',
             },
         },
@@ -82,6 +82,16 @@ export class LabelDocumentsComponent extends BaseGridComponent {
             field: 'options.target',
             title: 'grid.target',
             width: '250px',
+            link: {
+                field: 'options.target',
+                url: '/vp-documents',
+            },
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'analytics.labelName',
+            title: 'grid.name',
+            width: '500px',
         },
         {
             type: ColumnType.CHIP,
@@ -89,12 +99,6 @@ export class LabelDocumentsComponent extends BaseGridComponent {
             title: 'grid.status',
             width: '100px',
             sort: true
-        },
-        {
-            type: ColumnType.TEXT,
-            field: 'analytics.issuer',
-            title: 'grid.issuer',
-            width: '500px',
         },
         {
             type: ColumnType.BUTTON,

@@ -1,19 +1,9 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
+import { MessageType, MessageAction, IPFS_CID_PATTERN, VPAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
 import { Collection } from 'mongodb';
-
-interface VPAnalytics {
-    textSearch: string,
-    policyId?: string,
-    schemaIds?: string[],
-    schemaNames?: string[],
-    tokenId?: string,
-    labels?: string[],
-    issuer?: string,
-}
 
 export class SynchronizationVPs extends SynchronizationTask {
     public readonly name: string = 'vps';
@@ -170,6 +160,7 @@ export class SynchronizationVPs extends SynchronizationTask {
                     if (subject) {
                         if (subject.type === 'MintToken') {
                             documentAnalytics.tokenId = subject.tokenId;
+                            documentAnalytics.tokenAmount = subject.amount;
                         }
                         const documentFields = new Set<string>();
                         this.parseDocumentFields(subject, documentFields);

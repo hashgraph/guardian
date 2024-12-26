@@ -2,7 +2,7 @@
     <div class="header"></div>
     <div class="content">
         <div class="header">
-            <h1>{{ 'details.header.vp' | transloco }}</h1>
+            <h1>{{ 'details.header.label' | transloco }}</h1>
         </div>
         @if (loading) {
             <div class="loading">
@@ -76,14 +76,6 @@
                         <p-tabPanel [header]="'details.relationships' | transloco">
                             <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
                             </div>
-                        </p-tabPanel>
-                        
-                        <p-tabPanel [header]="'details.labels' | transloco">
-                            <app-table 
-                                [columns]="labelColumns" 
-                                [data]="labels" 
-                                [paginator]="false"
-                                [loading]="false"></app-table>
                         </p-tabPanel>
                     }
                     <p-tabPanel [header]="'details.raw_data' | transloco">

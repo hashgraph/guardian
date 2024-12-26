@@ -110,6 +110,7 @@
         "history": "History",
         "relationships": "Relationships",
         "raw_data": "Raw data",
+        "labels": "Labels",
         "tabs": {
             "activity": "Activity"
         },
@@ -136,18 +137,21 @@
             "action": "Action",
             "status": "Status",
             "status_reason": "Reason",
+            "name": "Name",
             "issuer": "Issuer",
             "transaction_id": "Transaction Id",
             "sender_account_id": "Sender",
             "receiver_account_id": "Receiver",
-            "token_id": "Token Id"
+            "token_id": "Token Id",
+            "token_amount": "Token Amount"
         },
         "ipfs": "IPFS",
         "header": {
             "registry": "Standard Registry",
             "registry_user": "Registry User",
             "vc": "Verifiable Credential",
-            "vp": "Verifiable Presentation"
+            "vp": "Verifiable Presentation",
+            "label": "Label (Verifiable Presentation)"
         },
         "topic": {
             "header": "Topic",

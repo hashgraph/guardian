@@ -46,6 +46,7 @@ import { StatisticDetailsComponent } from '@views/details/statistic-details/stat
 import { LabelDetailsComponent } from '@views/details/label-details/label-details.component';
 import { LabelDocumentsComponent } from '@views/collections/label-documents/label-documents.component';
 import { StatisticDocumentsComponent } from '@views/collections/statistic-documents/statistic-documents.component';
+import { LabelDocumentDetailsComponent } from '@views/details/label-document-details/label-document-details.component';
 
 export const routes: Routes = [
     // _DEV
@@ -96,7 +97,6 @@ export const routes: Routes = [
     { path: 'contracts/:id', component: ContractDetailsComponent },
     { path: 'statistics/:id', component: StatisticDetailsComponent },
     { path: 'labels/:id', component: LabelDetailsComponent },
-    
-    { path: 'label-documents/:id', component: VpDocumentDetailsComponent },
+    { path: 'label-documents/:id', component: LabelDocumentDetailsComponent },
     { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
 ];

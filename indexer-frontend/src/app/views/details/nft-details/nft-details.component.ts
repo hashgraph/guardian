@@ -53,6 +53,8 @@ export class NFTDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.nft.overview.metadata',
             path: 'metadata',
+            link: '/vp-documents',
+            pattern: '^\\d{10}\\.\\d{9}$'
         }
     ]
     tabs: any[] = ['overview', 'history', 'raw'];

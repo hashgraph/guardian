@@ -31,20 +31,48 @@ export class VPAnalyticsDTO implements VPAnalytics {
         example: ['1706823227.586179534'],
     })
     schemaIds: string[];
+
     @ApiProperty({
         description: 'Schema names',
         example: ['Monitoring Report'],
     })
     schemaNames: string[];
+
     @ApiProperty({
         description: 'Policy message identifier',
         example: '1706823227.586179534',
     })
     policyId: string;
+
     @ApiProperty({
         description: 'Text search',
     })
     textSearch: string;
+
+    @ApiProperty({
+        description: 'Document issuer',
+    })
+    issuer?: string;
+
+    @ApiProperty({
+        description: 'Token ID',
+    })
+    tokenId?: string;
+
+    @ApiProperty({
+        description: 'Token amount',
+    })
+    tokenAmount?: string;
+    
+    @ApiProperty({
+        description: 'Label name',
+    })
+    labelName?: string;
+
+    @ApiProperty({
+        description: 'Label IDs',
+    })
+    labels?: string[];
 }
 
 export class VPGridDTO
@@ -115,16 +143,24 @@ export class VPDetailsDTO
         example: '93938a10-d032-4a9b-9425-092e58bffbf7',
     })
     declare uuid?: string;
+
     @ApiProperty({
         type: VPDetailsItemDTO,
     })
     declare item?: VPDetailsItemDTO;
+
     @ApiProperty({
         type: RawMessageDTO,
     })
     declare row?: RawMessageDTO;
+
     @ApiProperty({
         type: [VPDetailsItemDTO],
     })
     declare history?: VPDetailsItemDTO[];
+
+    @ApiProperty({
+        type: [VPDetailsItemDTO],
+    })
+    declare labels?: VPDetailsItemDTO[];
 }

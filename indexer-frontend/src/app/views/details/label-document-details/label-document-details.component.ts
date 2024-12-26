@@ -18,11 +18,11 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
 
 @Component({
-    selector: 'vp-document-details',
-    templateUrl: './vp-document-details.component.html',
+    selector: 'label-document-details',
+    templateUrl: './label-document-details.component.html',
     styleUrls: [
         '../base-details/base-details.component.scss',
-        './vp-document-details.component.scss',
+        './label-document-details.component.scss',
     ],
     standalone: true,
     imports: [
@@ -40,9 +40,7 @@ import { ButtonModule } from 'primeng/button';
         ButtonModule
     ]
 })
-export class VpDocumentDetailsComponent extends BaseDetailsComponent {
-    public labels: any[] = [];
-
+export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
 
     overviewFields: OverviewFormField[] = [{
@@ -112,37 +110,6 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
         }
     ]
 
-    labelColumns: any[] = [
-        {
-            title: 'details.hedera.consensus_timestamp',
-            field: 'consensusTimestamp',
-            type: ColumnType.TEXT,
-            width: '250px',
-            link: {
-                field: 'consensusTimestamp',
-                url: '/label-documents',
-            },
-        },
-        {
-            title: 'details.hedera.topic_id',
-            field: 'topicId',
-            type: ColumnType.TEXT,
-            width: '100px'
-        },
-        {
-            title: 'details.hedera.name',
-            field: 'analytics.labelName',
-            type: ColumnType.TEXT,
-            width: '200px'
-        },
-        {
-            title: 'details.hedera.issuer',
-            field: 'analytics.issuer',
-            type: ColumnType.TEXT,
-            width: '300px'
-        }
-    ]
-
     constructor(
         entitiesService: EntitiesService,
         route: ActivatedRoute,
@@ -171,16 +138,6 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override setResult(result?: any) {
-        super.setResult(result);
-        if (result) {
-            this.labels = result.labels || [];
-        } else {
-            this.labels = [];
-        }
-
-    }
-
     protected override onNavigate(): void {
         if (this.id && this.tab === 'relationships') {
             this.loading = true;
@@ -207,8 +164,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
                 case 'documents': return 1;
                 case 'history': return 2;
                 case 'relationships': return 3;
-                case 'labels': return 4;
-                case 'raw': return 5;
+                case 'raw': return 4;
                 default: return 0;
             }
         } else {
@@ -223,8 +179,7 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
                 case 1: return 'documents';
                 case 2: return 'history';
                 case 3: return 'relationships';
-                case 4: return 'labels';
-                case 5: return 'raw';
+                case 4: return 'raw';
                 default: return 'raw';
             }
         } else {

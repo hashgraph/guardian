@@ -4,9 +4,9 @@
             <div class="field">
                 <span class="field__title">{{ field.label | transloco }}</span>
                 <span class="field__value 123">
-                    @if (field.link) {
+                    @if (field._link) {
                         <a 
-                            [routerLink]="field.direct ? [field.link]: [field.link, field.value]" 
+                            [routerLink]="field._link" 
                             [queryParams]="field.queryParams">{{field.value}}</a>
                     } @else {
                         {{field.value}}

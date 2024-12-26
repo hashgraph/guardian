@@ -1423,11 +1423,21 @@ export class EntityService {
             for (const historyItem of history) {
                 await loadDocuments(historyItem, false);
             }
+
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'options.target': messageId
+            } as any));
+
+            console.log()
+
             return new MessageResponse<VPDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
                 history,
+                labels,
                 row,
             });
         } catch (error) {
