@@ -5731,11 +5731,33 @@ components:
         textSearch:
           type: string
           description: Text search
+        issuer:
+          type: string
+          description: Document issuer
+        tokenId:
+          type: string
+          description: Token ID
+        tokenAmount:
+          type: string
+          description: Token amount
+        labelName:
+          type: string
+          description: Label name
+        labels:
+          description: Label IDs
+          type: array
+          items:
+            type: string
       required:
         - schemaIds
         - schemaNames
         - policyId
         - textSearch
+        - issuer
+        - tokenId
+        - tokenAmount
+        - labelName
+        - labels
     VPDetailsItemDTO:
       type: object
       properties:
@@ -5914,12 +5936,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VPDetailsItemDTO'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/VPDetailsItemDTO'
       required:
         - id
         - uuid
         - item
         - row
         - history
+        - labels
     VCDetailsItemDTO:
       type: object
       properties:
