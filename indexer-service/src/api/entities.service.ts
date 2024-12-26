@@ -77,11 +77,15 @@ function createRegex(text: string) {
     }
 }
 
-function parsePageFilters(msg: PageFilters) {
+function parsePageFilters(msg: PageFilters, exactFields?: Set<string>) {
     let filters: any = {};
     const keys = Object.keys(msg).filter((name) => !pageOptions.has(name));
     for (const key of keys) {
-        filters[key] = createRegex(msg[key]);
+        if (exactFields && exactFields.has(key)) {
+            filters[key] = msg[key];
+        } else {
+            filters[key] = createRegex(msg[key]);
+        }
     }
     if (msg.keywords) {
         filters = Object.assign(filters, parseKeywordFilter(msg.keywords));
@@ -938,9 +942,17 @@ export class EntityService {
             const row = await em.findOne(TokenCache, {
                 tokenId,
             });
+
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'analytics.tokenId': tokenId
+            } as any));
+
             return new MessageResponse<TokenDetails>({
                 id: tokenId,
                 row,
+                labels
             });
         } catch (error) {
             return new MessageError(error, error.code);
@@ -1611,7 +1623,7 @@ export class EntityService {
     ): Promise<AnyResponse<Page<NFT>>> {
         try {
             const options = parsePageParams(msg);
-            const filters = parsePageFilters(msg);
+            const filters = parsePageFilters(msg, new Set(['tokenId']));
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = await em.findAndCount(
                 NftCache,
@@ -1646,9 +1658,15 @@ export class EntityService {
             const nftHistory: any = await axios.get(
                 `https://${process.env.HEDERA_NET}.mirrornode.hedera.com/api/v1/tokens/${tokenId}/nfts/${serialNumber}/transactions?limit=100`
             );
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'options.target': row?.metadata
+            } as any));
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
                 row,
+                labels,
                 history: nftHistory.data?.transactions || [],
             });
         } catch (error) {

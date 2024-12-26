@@ -199,6 +199,8 @@ export class SearchViewComponent {
                 ]);
                 break;
             }
+            case 'NON_FUNGIBLE_UNIQUE':
+            case 'FUNGIBLE_COMMON':
             case 'Token': {
                 this.router.navigate([`/tokens/${item.tokenId}`]);
                 break;

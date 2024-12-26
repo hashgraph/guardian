@@ -3,12 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingComponent } from '@components/loading/loading.component';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ECElementEvent, EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
 import { MatInputModule } from '@angular/material/input';
 import { BaseDetailsComponent } from '../base-details/base-details.component';
 import { TranslocoModule } from '@jsverse/transloco';
-import { createChart } from '../base-details/relationships-chart.config';
 import { EntitiesService } from '@services/entities.service';
 import { OverviewFormComponent, OverviewFormField } from '@components/overview-form/overview-form.component';
 import { TabViewModule } from 'primeng/tabview';
@@ -39,6 +37,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     ]
 })
 export class NFTDetailsComponent extends BaseDetailsComponent {
+    public labels: any[] = [];
 
     overviewFields: OverviewFormField[] = [
         {
@@ -57,7 +56,7 @@ export class NFTDetailsComponent extends BaseDetailsComponent {
             pattern: '^\\d{10}\\.\\d{9}$'
         }
     ]
-    tabs: any[] = ['overview', 'history', 'raw'];
+    tabs: any[] = ['overview', 'history', 'labels', 'raw'];
     historyColumns: any[] = [
         {
             title: 'details.hedera.transaction_id',
@@ -83,6 +82,36 @@ export class NFTDetailsComponent extends BaseDetailsComponent {
             type: ColumnType.TEXT,
             width: '200px'
         },
+    ]
+    labelColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+            link: {
+                field: 'consensusTimestamp',
+                url: '/label-documents',
+            },
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.name',
+            field: 'analytics.labelName',
+            type: ColumnType.TEXT,
+            width: '200px'
+        },
+        {
+            title: 'details.hedera.issuer',
+            field: 'analytics.issuer',
+            type: ColumnType.TEXT,
+            width: '300px'
+        }
     ]
 
     constructor(
@@ -113,7 +142,16 @@ export class NFTDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override onNavigate(): void {}
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result) {
+            this.labels = result.labels || [];
+        } else {
+            this.labels = [];
+        }
+    }
+
+    protected override onNavigate(): void { }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {

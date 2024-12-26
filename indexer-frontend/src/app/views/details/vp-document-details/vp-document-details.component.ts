@@ -178,7 +178,6 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
         } else {
             this.labels = [];
         }
-
     }
 
     protected override onNavigate(): void {

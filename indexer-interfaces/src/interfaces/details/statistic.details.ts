@@ -5,7 +5,30 @@ import { Message } from '../message.interface.js';
  * Statistic options
  */
 export interface StatisticOptions {
-
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Policy topic identifier
+     */
+    policyTopicId: string;
+    /**
+     * Instance topic identifier
+     */
+    policyInstanceTopicId: string;
 }
 
 /**
@@ -19,7 +42,14 @@ export interface StatisticAnalytics {
  * Statistic activity
  */
 export interface StatisticActivity {
-
+    /**
+     * Schemas
+     */
+    schemas: number;
+    /**
+     * VCs
+     */
+    vcs: number;
 }
 
 /**

@@ -1,13 +1,7 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
-import { textSearch } from '../text-search-options.js';
+import { MessageType, MessageAction, LabelAnalytics } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { Collection } from 'mongodb';
-
-interface LabelAnalytics {
-    tokenId?: string,
-    labelName?: string,
-}
 
 export class SynchronizationLabels extends SynchronizationTask {
     public readonly name: string = 'labels';

@@ -6,6 +6,7 @@ import {
     MessageError,
     DataBaseHelper,
     Message,
+    TokenCache,
 } from '@indexer/common';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import { Page, SearchItem } from '@indexer/interfaces';
@@ -23,7 +24,11 @@ export class SearchService {
     @MessagePattern(IndexerMessageAPI.GET_SEARCH_API)
     async search(
         @Payload()
-        msg: { pageIndex: number, pageSize: number, search: string }
+        msg: {
+            pageIndex: number,
+            pageSize: number,
+            search: string
+        }
     ) {
         try {
             if (!msg.pageIndex || !msg.pageSize) {
@@ -33,7 +38,15 @@ export class SearchService {
             const { search } = msg;
 
             const em = DataBaseHelper.getEntityManager();
-            const [results, count] = (await em.findAndCount(
+
+            const [tokens, tokensCount] = (await em.findAndCount(
+                TokenCache,
+                {
+                    'tokenId': search
+                } as any,
+                options
+            )) as any as [SearchItem[], number];
+            const [messages, messagesCount] = (await em.findAndCount(
                 Message,
                 {
                     $or: [
@@ -42,6 +55,9 @@ export class SearchService {
                         },
                         {
                             'topicId': search
+                        },
+                        {
+                            'tokenId': search
                         },
                         {
                             'consensusTimestamp': search
@@ -57,14 +73,18 @@ export class SearchService {
                         },
                     ]
                 } as any,
-                options
+                {
+                    ...options,
+                    offset: Math.max(options.offset - tokensCount, 0),
+                    limit: Math.max(options.limit - tokens.length, 0),
+                }
             )) as any as [SearchItem[], number];
 
             const result = {
-                items: results,
+                items: [...tokens, ...messages],
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
-                total: count,
+                total: tokensCount + messagesCount,
                 order: options.orderBy,
             };
 
