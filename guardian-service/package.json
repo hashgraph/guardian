@@ -33,7 +33,7 @@
     "@transmute/jsonld-schema": "0.7.0-unstable.80",
     "@transmute/security-context": "0.7.0-unstable.80",
     "@transmute/vc.js": "0.7.0-unstable.80",
-    "@formulajs/formulajs": "^4.4.6",
+    "@formulajs/formulajs": "4.4.6",
     "mathjs": "^13.1.1",
     "ajv": "^8.10.0",
     "ajv-formats": "^2.1.1",
