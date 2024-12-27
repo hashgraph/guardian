@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
 
 @Component({
     selector: 'app-compare-module',
@@ -32,46 +32,46 @@ export class CompareModuleComponent implements OnInit {
     columns: any[] = [];
 
     icons: any = {
-        "interfaceContainerBlock": "tab",
-        "interfaceStepBlock": "vertical_split",
-        "policyRolesBlock": "manage_accounts",
-        "groupManagerBlock": "groups",
-        "informationBlock": "info",
-        "interfaceActionBlock": "flash_on",
-        "buttonBlock": "radio_button_checked",
-        "switchBlock": "rule",
-        "interfaceDocumentsSourceBlock": "table_view",
-        "requestVcDocumentBlock": "dynamic_form",
-        "multiSignBlock": "done_all",
-        "sendToGuardianBlock": "send",
-        "externalDataBlock": "cloud",
-        "aggregateDocumentBlock": "calendar_month",
-        "reassigningBlock": "content_copy",
-        "revokeBlock": "restart_alt",
-        "revocationBlock": "restart_alt",
-        "setRelationshipsBlock": "settings",
-        "splitBlock": "content_cut",
-        "filtersAddon": "filter_alt",
-        "documentsSourceAddon": "source",
-        "paginationAddon": "pages",
-        "timerBlock": "schedule",
-        "documentValidatorBlock": "task_alt",
-        "createTokenBlock": "token",
-        "mintDocumentBlock": "paid",
-        "retirementDocumentBlock": "delete",
-        "tokenActionBlock": "generating_tokens",
-        "tokenConfirmationBlock": "key",
-        "impactAddon": "receipt",
-        "calculateContainerBlock": "bar_chart",
-        "customLogicBlock": "bar_chart",
-        "calculateMathAddon": "calculate",
-        "calculateMathVariables": "123",
-        "reportBlock": "addchart",
-        "reportItemBlock": "list_alt",
-        "messagesReportBlock": "addchart",
-        "externalTopicBlock": "cloud",
-        "notificationBlock": "notifications",
-    }
+        'interfaceContainerBlock': 'pi-folder',
+        'interfaceStepBlock': 'pi-sort-amount-down-alt',
+        'policyRolesBlock': 'pi-users',
+        'groupManagerBlock': 'pi-users',
+        'informationBlock': 'pi-info-circle',
+        'interfaceActionBlock': 'pi-bolt',
+        'buttonBlock': 'pi-circle-on',
+        'switchBlock': 'pi-exchange',
+        'interfaceDocumentsSourceBlock': 'pi-table',
+        'requestVcDocumentBlock': 'pi-file',
+        'multiSignBlock': 'pi-check-circle',
+        'sendToGuardianBlock': 'pi-send',
+        'externalDataBlock': 'pi-cloud',
+        'aggregateDocumentBlock': 'pi-calendar',
+        'reassigningBlock': 'pi-copy',
+        'revokeBlock': 'pi-refresh',
+        'revocationBlock': 'pi-refresh',
+        'setRelationshipsBlock': 'pi-cog',
+        'splitBlock': 'pi-scissors',
+        'filtersAddon': 'pi-filter',
+        'documentsSourceAddon': 'pi-code',
+        'paginationAddon': 'pi-book',
+        'timerBlock': 'pi-clock',
+        'documentValidatorBlock': 'pi-file-edit',
+        'createTokenBlock': 'pi-dollar',
+        'mintDocumentBlock': 'pi-wallet',
+        'retirementDocumentBlock': 'pi-trash',
+        'tokenActionBlock': 'pi-cog',
+        'tokenConfirmationBlock': 'pi-key',
+        'impactAddon': 'pi-file',
+        'calculateContainerBlock': 'pi-chart-bar',
+        'customLogicBlock': 'pi-chart-bar',
+        'calculateMathAddon': 'pi-calculator',
+        'calculateMathVariables': 'pi-hashtag',
+        'reportBlock': 'pi-chart-line',
+        'reportItemBlock': 'pi-list',
+        'messagesReportBlock': 'pi-chart-line',
+        'externalTopicBlock': 'pi-cloud',
+        'notificationBlock': 'pi-bell',
+    };
 
     type1 = true;
     type2 = true;
@@ -122,10 +122,10 @@ export class CompareModuleComponent implements OnInit {
             item1._index = i;
             max = Math.max(max, item1.lvl);
         }
-        if(max > 10) {
+        if (max > 10) {
             this._pOffset = 20;
         }
-        if(max > 15) {
+        if (max > 15) {
             this._pOffset = 15;
         }
 
@@ -172,7 +172,7 @@ export class CompareModuleComponent implements OnInit {
         }
     }
 
-    onScroll(event:any) {
+    onScroll(event: any) {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })

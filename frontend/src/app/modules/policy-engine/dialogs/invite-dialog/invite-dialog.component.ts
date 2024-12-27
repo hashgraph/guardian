@@ -7,8 +7,9 @@ import {
     OnInit,
     ViewChild
 } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
+
 /**
  * Export schema dialog.
  */
@@ -30,10 +31,12 @@ export class InviteDialogComponent implements OnInit, AfterContentInit {
     role: string;
 
     constructor(
-        public dialogRef: MatDialogRef<InviteDialogComponent>,
         private policyEngineService: PolicyEngineService,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
+        const data = this.config.data
+
         this.blockId = data.blockId;
         this.policyId = data.policyId;
         this.group = data.group;
@@ -45,7 +48,6 @@ export class InviteDialogComponent implements OnInit, AfterContentInit {
     }
 
     ngOnInit() {
-
     }
 
     ngAfterContentInit() {
@@ -72,5 +74,16 @@ export class InviteDialogComponent implements OnInit, AfterContentInit {
             console.error(e.error);
             this.loading = false;
         });
+    }
+
+    copyToClipboard(text: string): void {
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                console.log('Copied to clipboard:', text);
+            })
+            .catch((err) => {
+                console.error('Failed to copy text:', err);
+            });
     }
 }

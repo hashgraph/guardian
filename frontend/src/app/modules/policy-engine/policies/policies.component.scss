@@ -98,7 +98,8 @@
     text-decoration: underline;
 }
 
-.btn-settings mat-icon {
+.btn-settings i,
+.btn-settings svg {
     position: absolute;
     left: 0;
     top: -1px;
@@ -243,8 +244,10 @@
     box-shadow: 0px 0px 0px 5px #e1e7fa;
 }
 
-.btn-icon-delete mat-icon,
-.btn-icon-delete-des mat-icon {
+.btn-icon-delete i,
+.btn-icon-delete-des i,
+.btn-icon-delete svg,
+.btn-icon-delete-des svg{
     font-size: 30px;
     position: absolute;
     left: 0;
@@ -256,14 +259,16 @@
     cursor: not-allowed;
 }
 
-.btn-icon-edit mat-icon {
+.btn-icon-edit i,
+.btn-icon-edit svg {
     font-size: 30px;
     position: absolute;
     left: 0;
     top: 0px;
 }
 
-.btn-icon-import mat-icon {
+.btn-icon-import i,
+.btn-icon-import svg {
     font-size: 32px;
     position: absolute;
     left: 0;
@@ -312,7 +317,7 @@
     position: relative;
     width: 220px;
 
-    mat-icon {
+    i, svg {
         color: #f44336;
         font-size: 26px;
         top: -2px;
@@ -328,7 +333,7 @@
     position: relative;
     width: 220px;
 
-    mat-icon {
+    i, svg {
         color: #b5b5b5;
         font-size: 26px;
         top: -2px;
@@ -376,7 +381,8 @@
     background: #3f51b5;
 }
 
-.btn-icon-go mat-icon {
+.btn-icon-go i,
+.btn-icon-go svg {
     position: absolute;
     left: 50px;
     top: 6px;
@@ -986,4 +992,23 @@
 .cell-description {
     min-width: 150px;
     max-width: calc(100vw - 970px);
+}
+
+.submenu-arrow {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 5px solid #6c757d;
+    position: absolute;
+    right: 20px;
+    top: 16px;
+}
+
+::ng-deep .sub-menu-overlay-container .p-overlaypanel-content {
+    padding: 0;
+}
+
+::ng-deep .sub-menu-overlay-container .p-overlaypanel-content .sub-menu-container {
+    padding: 1rem;
 }

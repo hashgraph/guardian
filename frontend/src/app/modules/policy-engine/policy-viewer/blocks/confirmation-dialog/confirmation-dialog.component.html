@@ -8,9 +8,14 @@
         </div>
     </div>
     <div class="textarea">
-        <mat-form-field appearance="outline">
-            <textarea matInput rows="4" [formControl]="value"></textarea>
-        </mat-form-field>
+        <div class="p-fluid">
+            <textarea
+                pInputTextarea
+                rows="4"
+                [formControl]="value"
+                placeholder="Введите текст">
+            </textarea>
+        </div>
     </div>
 </div>
 <div class="dialog-footer" mat-dialog-actions>

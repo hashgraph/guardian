@@ -1,5 +1,5 @@
-import { Component, Inject, Input } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
+import {Component, Inject, Input} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for display json
@@ -16,13 +16,13 @@ export class ViewerDialog {
     public json: any = '';
     public links: any = [];
 
+    public data: any
+
     constructor(
-        public dialogRef: MatDialogRef<ViewerDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: {
-            title: string,
-            value: any,
-            type: 'LINK' | 'TEXT' | 'JSON'
-        }) {
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
+    ) {
+        this.data = this.config.data;
     }
 
     ngOnInit() {

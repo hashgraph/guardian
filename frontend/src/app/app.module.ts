@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
@@ -55,7 +55,6 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
-import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -152,7 +151,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         InfoComponent,
         SchemaConfigComponent,
         BrandingComponent,
-        BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         NotificationComponent,
@@ -177,14 +175,14 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         UsersManagementDetailComponent,
         WorkerTasksComponent
     ],
-    imports: [
-        BrowserModule,
+    exports: [],
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         CommonModule,
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
@@ -192,7 +190,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
-        HttpClientJsonpModule,
         QRCodeModule,
         ButtonModule,
         InputTextModule,
@@ -218,9 +215,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()
-    ],
-    exports: [],
+        AngularSvgIconModule.forRoot()],
     providers: [
         WebSocketService,
         AuthService,
@@ -274,8 +269,9 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi: true,
-        }
-    ],
-    bootstrap: [AppComponent],
+        },
+        provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
+    ]
 })
-export class AppModule { }
+export class AppModule {
+}

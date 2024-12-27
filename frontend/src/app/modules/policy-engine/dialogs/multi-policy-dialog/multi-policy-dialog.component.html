@@ -13,59 +13,79 @@
             <div>
 
                 <div *ngIf="!exists">
-
-                    <mat-radio-group aria-label="Select an option" [value]="policyType">
+                    <div class="radio-group">
                         <div>
                             <div class="group-name">
-                                <mat-radio-button value="Main" color="primary" (change)="onChange($event)">
-                                    Create new multi policy
-                                </mat-radio-button>
+                                <p-radioButton
+                                    name="policyType"
+                                    [ngModel]="policyType"
+                                    [value]="'Main'"
+                                    (onClick)="onChange($event)"
+                                    class="p-radiobutton">
+                                </p-radioButton>
+                                <label>Create new multi policy</label>
                             </div>
-                            <div class="group-value" [attr.disabled]="policyType!=='Main'">
+                            <div class="group-value" [ngClass]="{'disabled': policyType !== 'Main'}">
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Type: </span>
                                     <span>Main Policy</span>
                                 </div>
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Main Policy: </span>
-                                    <span>{{mainPolicyTopicId1}}</span>
+                                    <span>{{ mainPolicyTopicId1 }}</span>
                                 </div>
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Topic for synchronization: </span>
-                                    <span>{{synchronizationTopicId1}}</span>
+                                    <span>{{ synchronizationTopicId1 }}</span>
                                 </div>
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Link</mat-label>
-                                    <input matInput [value]="link1" readonly="true">
-                                </mat-form-field>
+                                <div class="table-container">
+                                    <input
+                                        pInputText
+                                        type="text"
+                                        [value]="link1"
+                                        readonly="true"
+                                        class="form-control"
+                                        style="margin-bottom: 15px;">
+                                </div>
                             </div>
                         </div>
+
                         <div>
                             <div class="group-name">
-                                <mat-radio-button value="Sub" color="primary" (change)="onChange($event)">
-                                    Join an existing policy
-                                </mat-radio-button>
+                                <p-radioButton
+                                    name="policyType"
+                                    [ngModel]="policyType"
+                                    [value]="'Sub'"
+                                    (onClick)="onChange($event)"
+                                    class="p-radiobutton">
+                                </p-radioButton>
+                                <label>Join an existing policy</label>
                             </div>
-                            <div class="group-value" [attr.disabled]="policyType!=='Sub'">
+                            <div class="group-value" [ngClass]="{'disabled': policyType !== 'Sub'}">
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Type: </span>
                                     <span>Sub Policy</span>
                                 </div>
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Main Policy: </span>
-                                    <span>{{mainPolicyTopicId2}}</span>
+                                    <span>{{ mainPolicyTopicId2 }}</span>
                                 </div>
                                 <div class="table-container" style="margin-bottom: 15px;color: #707070">
                                     <span>Topic for synchronization: </span>
-                                    <span>{{synchronizationTopicId2}}</span>
+                                    <span>{{ synchronizationTopicId2 }}</span>
                                 </div>
-                                <mat-form-field appearance="outline">
-                                    <mat-label>Link</mat-label>
-                                    <input matInput [(ngModel)]="link2" (ngModelChange)="onParse($event)">
-                                </mat-form-field>
+                                <div class="table-container">
+                                    <input
+                                        pInputText
+                                        type="text"
+                                        [(ngModel)]="link2"
+                                        (ngModelChange)="onParse($event)"
+                                        class="form-control"
+                                        style="margin-bottom: 15px;">
+                                </div>
                             </div>
                         </div>
-                    </mat-radio-group>
+                    </div>
 
                 </div>
 
@@ -76,24 +96,30 @@
                     <div class="group-value">
                         <div style="margin-bottom: 15px;color: #707070">
                             <span>Type: </span>
-                            <span>{{policyType}} Policy</span>
+                            <span>{{ policyType }} Policy</span>
                         </div>
                         <div style="margin-bottom: 15px;color: #707070">
                             <span>Main Policy: </span>
-                            <span>{{mainPolicyTopicId1}}</span>
+                            <span>{{ mainPolicyTopicId1 }}</span>
                         </div>
                         <div style="margin-bottom: 15px;color: #707070">
                             <span>Topic for synchronization: </span>
-                            <span>{{synchronizationTopicId1}}</span>
+                            <span>{{ synchronizationTopicId1 }}</span>
                         </div>
                         <div style="margin-bottom: 15px;color: #707070">
                             <span>Current Policy: </span>
-                            <span>{{instanceTopicId}}</span>
+                            <span>{{ instanceTopicId }}</span>
                         </div>
-                        <mat-form-field appearance="outline">
-                            <mat-label>Link</mat-label>
-                            <input matInput [value]="link1" readonly="true">
-                        </mat-form-field>
+                        <div class="p-fluid">
+                            <label for="link1">Link</label>
+                            <input
+                                id="link1"
+                                pInputText
+                                [value]="link1"
+                                readonly
+                                class="p-inputtext p-component"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -102,9 +128,9 @@
     <div mat-dialog-actions>
         <div class="cancel-button">
             <p-button
-                    (click)="onOk()"
-                    label="Cancel"
-                    [outlined]=true
+                (click)="onOk()"
+                label="Cancel"
+                [outlined]=true
             ></p-button>
         </div>
         <div *ngIf="!exists">

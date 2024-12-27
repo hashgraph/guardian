@@ -1,5 +1,4 @@
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -34,7 +33,6 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        public dialog: MatDialog,
         private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
@@ -89,6 +87,7 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             this.setData(this.static);
             setTimeout(() => {
                 this.loading = false;
+                this.cdref.detectChanges();
             }, 500);
         } else {
             this.policyEngineService
