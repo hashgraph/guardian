@@ -16,6 +16,9 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ButtonModule } from 'primeng/button';
+import { IValidatorStep, LabelValidators } from '@indexer/interfaces';
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'label-document-details',
@@ -37,12 +40,15 @@ import { ButtonModule } from 'primeng/button';
         TableComponent,
         ProgressSpinnerModule,
         InputTextareaModule,
-        ButtonModule
+        ButtonModule,
+        RadioButtonModule,
+        FormsModule
     ]
 })
 export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
     public label: any = null;
+    public steps?: IValidatorStep[];
 
     overviewFields: OverviewFormField[] = [{
         label: 'details.hedera.topic_id',
@@ -142,9 +148,19 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     protected override setResult(result?: any) {
         super.setResult(result);
         if (result) {
-            this.label = result.label || [];
+            this.label = result.label;
         } else {
-            this.label = [];
+            this.label = null;
+        }
+        const vp = this.getVpDocument();
+        if (vp) {
+            const labelConfig = this.label?.analytics?.config;
+            const validator = new LabelValidators(labelConfig);
+            this.steps = validator.getDocument();
+            validator.setData([]);
+            validator.setVp(vp);
+        } else {
+            this.steps = [];
         }
     }
 
@@ -213,5 +229,23 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
+    }
+
+    public getVariableValue(value: any): any {
+        if (value === undefined) {
+            return 'N/A';
+        } else {
+            return value;
+        }
+    }
+
+    public getVpDocument() {
+        const file = this.getFirstDocument();
+        if (file && file.documentObject) {
+            return {
+                document: file.documentObject
+            }
+        }
+        return null;
     }
 }

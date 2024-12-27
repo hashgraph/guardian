@@ -67,7 +67,120 @@
 
                         <p-tabPanel [header]="'details.view' | transloco">
                             @if (label) {
-
+                                <div class="step-container">
+                                    <div class="step-body-container">
+                                        @for (current of steps; track current) {
+                                            <div class="node-container">
+                                                @if (current.type === 'validate') {
+                                                    <div class="node-header">
+                                                        <span class="node-status" [attr.status]="current.item.status"></span>
+                                                        @if (current.prefix) {
+                                                            <span class="node-prefix">{{current.prefix}}</span>
+                                                        }
+                                                        <span>{{current.title}}</span>
+                                                    </div>
+                                                } @else {
+                                                    <div class="node-body">
+                                                        @if (current.prefix) {
+                                                            <div class="node-sub-header">
+                                                                <span class="node-prefix">{{current.name}}</span>
+                                                            </div>
+                                                        }
+                                
+                                                        @if (current.type === 'variables') {
+                                                            @for (variable of current.config; track variable) {
+                                                                <div class="field-container">
+                                                                    <div class="field-name">
+                                                                        {{variable.fieldDescription}}
+                                                                    </div>
+                                                                    @if (variable.isArray) {
+                                                                        <div class="field-value-array">
+                                                                            @for (v of variable.value; track v) {
+                                                                                <div class="field-value">
+                                                                                    {{getVariableValue(v)}}
+                                                                                </div>
+                                                                            }
+                                                                        </div>
+                                                                    } @else {
+                                                                        <div class="field-value">
+                                                                            {{getVariableValue(variable.value)}}
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        }
+                                                        @if (current.type === 'scores') {
+                                                            @for (score of current.config; track score) {
+                                                                <div class="score-container">
+                                                                    @if (score.relationships) {
+                                                                        <div class="fields-container">
+                                                                            @for (variable of score._relationships; track variable) {
+                                                                                <div class="field-container">
+                                                                                    <div class="field-name">
+                                                                                        {{variable.fieldDescription}}
+                                                                                    </div>
+                                                                                    @if (variable.isArray) {
+                                                                                        <div class="field-value-array">
+                                                                                            @for (v of variable.value; track v) {
+                                                                                                <div class="field-value">
+                                                                                                    {{getVariableValue(v)}}
+                                                                                                </div>
+                                                                                            }
+                                                                                        </div>
+                                                                                    } @else {
+                                                                                        <div class="field-value">
+                                                                                            {{getVariableValue(variable.value)}}
+                                                                                        </div>
+                                                                                    }
+                                                                                </div>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                    <div class="score-name">
+                                                                        {{score.description}}
+                                                                    </div>
+                                                                    @if (score._options) {
+                                                                        <div class="options-container">
+                                                                            @for (option of score._options; track option) {
+                                                                                <div class="option-container">
+                                                                                    <div class="option-checkbox">
+                                                                                        <p-radioButton 
+                                                                                            class="guardian-radio-button radio-button-24"
+                                                                                            [name]="score.id" 
+                                                                                            [value]="option.value" 
+                                                                                            [(ngModel)]="score.value"
+                                                                                            [inputId]="option.id"
+                                                                                            readonly="true"
+                                                                                        ></p-radioButton>
+                                                                                    </div>
+                                                                                    <label class="option-name" [for]="option.id">
+                                                                                        {{option.description}}
+                                                                                    </label>
+                                                                                </div>
+                                                                            }
+                                                                        </div>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        }
+                                                        @if (current.type === 'formulas') {
+                                                            @for (formula of current.config; track formula) {
+                                                                <div class="field-container">
+                                                                    <div class="field-name">
+                                                                        {{formula.description}}
+                                                                    </div>
+                                                                    <div class="field-value">
+                                                                        {{formula.value}}
+                                                                    </div>
+                                                                </div>
+                                                            }
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
                             }
                         </p-tabPanel>
 

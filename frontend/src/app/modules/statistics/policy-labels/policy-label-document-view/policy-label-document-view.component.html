@@ -121,13 +121,6 @@
 
         <div *ngIf="stepper[1]" class="nav-body-container">
             <div class="step-body-container">
-
-
-
-
-
-
-
                 <div class="node-container" *ngFor="let current of steps">
                     <div *ngIf="current.type === 'validate'" class="node-header">
                         <span class="node-status" [attr.status]="current.item.status"></span>
@@ -217,31 +210,7 @@
                         </ng-container>
 
                     </div>
-
                 </div>
-
-
-
-
-
-
-
-
-
-
-                
-
-
-
-
-
-
-
-
-
-
-
-
             </div>
         </div>
         <div *ngIf="stepper[2]" class="nav-body-container">

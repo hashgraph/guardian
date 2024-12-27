@@ -1,4 +1,4 @@
-import { IConditionRuleData, IFormulaRuleData, IRangeRuleData } from './schema-rules.interface.js';
+import { IConditionRuleData, IFormulaRuleData, IRangeRuleData } from './schema-rules.js';
 
 export interface IFormulaData {
     id: string;
