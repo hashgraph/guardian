@@ -1,4 +1,4 @@
-import { DetailsActivity, DetailsHistory } from './details.interface.js';
+import { DetailsActivity } from './details.interface.js';
 import { Message } from '../message.interface.js';
 
 /**
@@ -35,7 +35,18 @@ export interface StatisticOptions {
  * Statistic analytics
  */
 export interface StatisticAnalytics {
-
+    /**
+     * Text search
+     */
+    textSearch?: string;
+    /**
+     * Owner
+     */
+    owner?: string;
+    /**
+     * Config
+     */
+    config?: any;
 }
 
 /**

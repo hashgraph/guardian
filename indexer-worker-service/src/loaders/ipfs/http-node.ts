@@ -1,5 +1,5 @@
 import axios from 'axios';
-import CID from "cids";
+import CID from 'cids';
 import { BaseNode, CheckFileResponse } from './base-node';
 
 export class HttpNode implements BaseNode {

@@ -3,7 +3,7 @@ import { HttpNode } from './ipfs/http-node.js';
 // import { IPFSNode } from './ipfs/ipfs-node.js'
 // import { HeliaNode } from './ipfs/helia-node.js'
 // import { KudoNode } from './ipfs/kudo-node.js';
-import CID from "cids";
+import CID from 'cids';
 
 export class IPFSService {
     private static readonly LOAD_TIMEOUT: number = 5 * 60 * 1000;

@@ -32,7 +32,7 @@ export async function parseToolFile(zipFile: any): Promise<IToolComponents> {
                 .filter((file) => /^tools\/.+/.test(file[0]))
                 .map((file) => file[1].async('string'))
         );
-    
+
         const tool = JSON.parse(toolString);
         const tags = tagsStringArray.map((item) => JSON.parse(item)) || [];
         const schemas = schemasStringArray.map((item) => JSON.parse(item));

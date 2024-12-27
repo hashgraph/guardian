@@ -55,16 +55,21 @@ export class LabelOptionsDTO implements LabelOptions {
 
 export class LabelAnalyticsDTO implements LabelAnalytics {
     @ApiProperty({
-        description: 'Token',
-        example: '0.0.4481265',
+        description: 'Text search',
     })
-    tokenId: string;
+    textSearch: string;
 
     @ApiProperty({
-        description: 'Name',
-        example: 'Label Name',
+        description: 'Owner',
+        example: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
     })
-    labelName: string;
+    owner?: string;
+
+    @ApiProperty({
+        description: 'Label Config',
+        type: 'object',
+    })
+    config?: any;
 }
 
 export class LabelActivityDTO implements LabelActivity {

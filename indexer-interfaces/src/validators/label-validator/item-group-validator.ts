@@ -6,7 +6,6 @@ import { ValidateNamespace } from './namespace.js';
 import { NodeItemValidator } from './item-node-validator.js';
 import { GroupType, IGroupItemConfig, IStepDocument, NavItemType } from '../interfaces/index.js';
 
-
 export class GroupItemValidator {
     public readonly type: NavItemType | null = NavItemType.Group;
 

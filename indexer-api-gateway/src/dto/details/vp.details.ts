@@ -63,7 +63,7 @@ export class VPAnalyticsDTO implements VPAnalytics {
         description: 'Token amount',
     })
     tokenAmount?: string;
-    
+
     @ApiProperty({
         description: 'Label name',
     })
