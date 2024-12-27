@@ -38,7 +38,7 @@ export class LabelMessage extends Message {
     /**
      * Document
      */
-    public config: any;
+    public config: ArrayBuffer;
 
     constructor(action: MessageAction) {
         super(action, MessageType.PolicyLabel);
@@ -48,14 +48,14 @@ export class LabelMessage extends Message {
      * Set document
      * @param item
      */
-    public setDocument(item: PolicyLabel): void {
+    public setDocument(item: PolicyLabel, zip: ArrayBuffer): void {
         this.name = item.name;
         this.description = item.description;
         this.owner = item.owner;
         this.uuid = item.uuid;
         this.policyTopicId = item.policyTopicId;
         this.policyInstanceTopicId = item.policyInstanceTopicId;
-        this.config = item.config;
+        this.config = zip;
     }
 
     /**
@@ -90,9 +90,10 @@ export class LabelMessage extends Message {
      * To documents
      */
     public async toDocuments(): Promise<ArrayBuffer[]> {
-        const document = JSON.stringify(this.config);
-        const buffer = Buffer.from(document);
-        return [buffer];
+        if (this.config) {
+            return [this.config];
+        }
+        return [];
     }
 
     /**
@@ -100,8 +101,8 @@ export class LabelMessage extends Message {
      * @param documents
      */
     public loadDocuments(documents: string[]): LabelMessage {
-        if (documents && Array.isArray(documents)) {
-            this.config = JSON.parse(documents[0]);
+        if (documents && documents.length === 1) {
+            this.config = Buffer.from(documents[0]);
         }
         return this;
     }

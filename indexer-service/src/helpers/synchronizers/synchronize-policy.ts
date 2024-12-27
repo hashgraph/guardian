@@ -152,6 +152,9 @@ export class SynchronizationPolicy extends SynchronizationTask {
             return;
         }
         const policyData = await parsePolicyFile(policyFileBuffer, false);
+        if (!policyData) {
+            return;
+        }
         analytics.tools = policyData.tools?.map((tool: any) => tool.messageId) || [];
         for (const tool of analytics.tools) {
             analytics.textSearch += `|${tool}`;

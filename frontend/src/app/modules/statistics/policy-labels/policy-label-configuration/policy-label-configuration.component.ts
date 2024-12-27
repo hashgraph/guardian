@@ -283,13 +283,19 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Publish') {
                 this.loading = true;
-                this.policyLabelsService
-                    .publish(this.item)
-                    .subscribe((response) => {
-                        this.loadData();
-                    }, (e) => {
+                this.policyLabelsService.pushPublish(this.item).subscribe(
+                    (result) => {
+                        const { taskId, expectation } = result;
+                        this.router.navigate(['task', taskId], {
+                            queryParams: {
+                                last: btoa(location.href),
+                            },
+                        });
+                    },
+                    (e) => {
                         this.loading = false;
-                    });
+                    }
+                );
             }
         });
     }

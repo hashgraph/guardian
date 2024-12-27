@@ -20,18 +20,19 @@ export class ReleaseMigration extends Migration {
         const messageCollection = this.getCollection<Message>('Message');
         const cacheCollection = this.getCollection<MessageCache>('MessageCache');
 
-        const messageRequests = messageCollection.find({
+        const vps = messageCollection.find({
             type: MessageType.VP_DOCUMENT
         }, { session: this.ctx });
 
-        while (await messageRequests.hasNext()) {
-            const messageRequest = await messageRequests.next();
-            if (messageRequest.action === MessageAction.CreateLabelDocument) {
+        while (await vps.hasNext()) {
+            const vp = await vps.next();
+            if (vp.action === MessageAction.CreateLabelDocument) {
+                //Label VP
                 await messageCollection.deleteOne({
-                    _id: messageRequest._id
+                    _id: vp._id
                 }, { session: this.ctx })
                 await cacheCollection.updateOne(
-                    { consensusTimestamp: messageRequest.consensusTimestamp },
+                    { consensusTimestamp: vp.consensusTimestamp },
                     {
                         $set: {
                             status: MessageStatus.COMPRESSED,
@@ -40,8 +41,9 @@ export class ReleaseMigration extends Migration {
                     { session: this.ctx, upsert: false }
                 );
             } else {
+                //Other VP
                 await messageCollection.updateOne(
-                    { _id: messageRequest._id },
+                    { _id: vp._id },
                     {
                         $set: {
                             analytics: null,
@@ -50,6 +52,22 @@ export class ReleaseMigration extends Migration {
                     { session: this.ctx, upsert: false }
                 );
             }
+        }
+
+        const labels = messageCollection.find({
+            type: MessageType.POLICY_LABEL
+        }, { session: this.ctx });
+        while (await labels.hasNext()) {
+            const label = await labels.next();
+            await messageCollection.updateOne(
+                { _id: label._id },
+                {
+                    $set: {
+                        analytics: null,
+                    },
+                },
+                { session: this.ctx, upsert: false }
+            );
         }
     }
 }

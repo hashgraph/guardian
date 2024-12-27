@@ -54,7 +54,8 @@ import {
     Statistic,
     StatisticDetails,
     Label,
-    LabelDetails
+    LabelDetails,
+    LabelDocumentDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -1229,34 +1230,6 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
-
-    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENTS)
-    async getLabelDocuments(
-        @Payload() msg: PageFilters
-    ): Promise<AnyResponse<Page<VP>>> {
-        try {
-            const options = parsePageParams(msg);
-            const filters = parsePageFilters(msg);
-            filters.type = MessageType.VP_DOCUMENT;
-            filters.action = MessageAction.CreateLabelDocument;
-            const em = DataBaseHelper.getEntityManager();
-            const [rows, count] = (await em.findAndCount(
-                Message,
-                filters,
-                options
-            )) as [VP[], number];
-            const result = {
-                items: rows,
-                pageIndex: options.offset / options.limit,
-                pageSize: options.limit,
-                total: count,
-                order: options.orderBy,
-            };
-            return new MessageResponse<Page<VP>>(result);
-        } catch (error) {
-            return new MessageError(error, error.code);
-        }
-    }
     //#endregion
     //#endregion
 
@@ -1397,6 +1370,7 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_VP_DOCUMENT)
     async getVpDocument(
         @Payload() msg: { messageId: string }
@@ -1456,6 +1430,7 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_VP_RELATIONSHIPS)
     async getVpRelationships(
         @Payload() msg: { messageId: string }
@@ -1609,6 +1584,93 @@ export class EntityService {
             });
         } catch (error) {
             console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+    //#region LABELS DOCUMENTS
+    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENTS)
+    async getLabelDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VP>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VP_DOCUMENT;
+            filters.action = MessageAction.CreateLabelDocument;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VP[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VP>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENT)
+    async getLabelDocument(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<LabelDocumentDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VP_DOCUMENT,
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            if (!item) {
+                return new MessageResponse<LabelDocumentDetails>({
+                    id: messageId,
+                    row,
+                });
+            }
+
+            await loadDocuments(item, true);
+            const history = await em.find(
+                Message,
+                {
+                    uuid: item.uuid,
+                    type: MessageType.VP_DOCUMENT,
+                },
+                {
+                    orderBy: {
+                        consensusTimestamp: 'ASC',
+                    },
+                }
+            );
+            for (const historyItem of history) {
+                await loadDocuments(historyItem, false);
+            }
+
+            const label = (await em.findOne(Message, {
+                type: MessageType.POLICY_LABEL,
+                action: MessageAction.PublishPolicyLabel,
+                consensusTimestamp: item.options?.definition
+            } as any)) as Label;
+
+            return new MessageResponse<LabelDocumentDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                history,
+                label,
+                row,
+            });
+        } catch (error) {
             return new MessageError(error, error.code);
         }
     }

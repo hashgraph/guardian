@@ -346,6 +346,13 @@ export class EntitiesService {
         return this.http.get<Page<VP>>(`${this.url}/${entity}`, options) as any;
     }
 
+    public getLabelDocument(messageId: string): Observable<VPDetails> {
+        const entity = 'label-documents';
+        return this.http.get<VPDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
     //#endregion
     //#region STATISTICS
     public getStatistics(filters: PageFilters): Observable<Page<Statistic>> {

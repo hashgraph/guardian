@@ -14,10 +14,64 @@ import {
     PolicyLabelImportExport,
     Users,
     Schema as SchemaCollection,
+    RunFunctionAsync,
 } from '@guardian/common';
 import { EntityStatus, IOwner, LabelValidators, MessageAPI, PolicyType, Schema, SchemaStatus } from '@guardian/interfaces';
 import { findRelationships, generateSchema, generateVpDocument, getOrCreateTopic, publishLabelConfig } from './helpers/policy-labels-helpers.js';
 import { publishSchemas, saveSchemas } from './helpers/index.js';
+import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
+
+async function publishPolicyLabel(
+    item: PolicyLabel,
+    owner: IOwner,
+    notifier: INotifier,
+    logger: PinoLogger
+): Promise<PolicyLabel> {
+    item.status = EntityStatus.PUBLISHED;
+    item.config = PolicyLabelImportExport.validateConfig(item.config);
+    item.config = publishLabelConfig(item.config);
+
+    notifier.start('Create topic');
+    const topic = await getOrCreateTopic(item);
+    const user = await (new Users()).getHederaAccount(owner.creator);
+    const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
+    messageServer.setTopicObject(topic);
+
+    notifier.completedAndStart('Generate schemas');
+    const schemas = await generateSchema(topic.topicId, item.config, owner);
+    const schemaList = new Set<SchemaCollection>();
+    for (const { schema } of schemas) {
+        schemaList.add(schema);
+    }
+
+    notifier.completedAndStart('Publish schemas');
+    await publishSchemas(schemaList, owner, messageServer, MessageAction.PublishSchema);
+    await saveSchemas(schemaList);
+    for (const { node, schema } of schemas) {
+        node.schemaId = schema.iri;
+    }
+
+    notifier.completedAndStart('Publish label');
+    const zip = await PolicyLabelImportExport.generate(item);
+    const buffer = await zip.generateAsync({
+        type: 'arraybuffer',
+        compression: 'DEFLATE',
+        compressionOptions: {
+            level: 3
+        }
+    });
+
+    const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
+    statMessage.setDocument(item, buffer);
+    const statMessageResult = await messageServer
+        .sendMessage(statMessage);
+
+    item.topicId = topic.topicId;
+    item.messageId = statMessageResult.getId();
+
+    const result = await DatabaseServer.updatePolicyLabel(item);
+    return result;
+}
 
 /**
  * Connect to the message broker methods of working with policy labels.
@@ -101,7 +155,9 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     'description',
                     'status',
                     'policyId',
-                    'config'
+                    'config',
+                    'topicId',
+                    'messageId'
                 ];
                 const query: any = {
                     owner: owner.owner
@@ -251,7 +307,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Activate policy label
+     * Publish policy label
      *
      * @param {any} msg - policy label id
      *
@@ -269,41 +325,52 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.ACTIVE) {
+                if (item.status === EntityStatus.PUBLISHED) {
                     return new MessageError(`Item is already active.`);
                 }
 
-                item.status = EntityStatus.PUBLISHED;
-                item.config = PolicyLabelImportExport.validateConfig(item.config);
-                item.config = publishLabelConfig(item.config);
-
-                const topic = await getOrCreateTopic(item);
-                const user = await (new Users()).getHederaAccount(owner.creator);
-                const messageServer = new MessageServer(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
-                messageServer.setTopicObject(topic);
-
-                const schemas = await generateSchema(topic.topicId, item.config, owner);
-                const schemaList = new Set<SchemaCollection>();
-                for (const { schema } of schemas) {
-                    schemaList.add(schema);
-                }
-                await publishSchemas(schemaList, owner, messageServer, MessageAction.PublishSchema);
-                await saveSchemas(schemaList);
-                for (const { node, schema } of schemas) {
-                    node.schemaId = schema.iri;
-                }
-
-                const statMessage = new LabelMessage(MessageAction.PublishPolicyLabel);
-                statMessage.setDocument(item);
-                const statMessageResult = await messageServer
-                    .sendMessage(statMessage);
-
-                item.topicId = topic.topicId;
-                item.messageId = statMessageResult.getId();
-
-                const result = await DatabaseServer.updatePolicyLabel(item);
+                const result = await publishPolicyLabel(item, owner, emptyNotifier(), logger);
                 return new MessageResponse(result);
 
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
+    /**
+     * Publish policy label
+     *
+     * @param {any} msg - policy label id
+     *
+     * @returns {any} - policy label
+     */
+    ApiResponse(MessageAPI.PUBLISH_POLICY_LABEL_ASYNC,
+        async (msg: { definitionId: string, owner: IOwner, task: any }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { definitionId, owner, task } = msg;
+
+                const item = await DatabaseServer.getPolicyLabelById(definitionId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is already active.`);
+                }
+
+                const notifier = await initNotifier(task);
+                RunFunctionAsync(async () => {
+                    const result = await publishPolicyLabel(item, owner, notifier, logger);
+                    notifier.result(result);
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    notifier.error(error);
+                });
+
+                return new MessageResponse(task);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

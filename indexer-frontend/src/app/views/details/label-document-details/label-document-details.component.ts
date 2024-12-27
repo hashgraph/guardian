@@ -42,6 +42,7 @@ import { ButtonModule } from 'primeng/button';
 })
 export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     public chartOption: EChartsOption = createChart();
+    public label: any = null;
 
     overviewFields: OverviewFormField[] = [{
         label: 'details.hedera.topic_id',
@@ -121,7 +122,7 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     protected override loadData(): void {
         if (this.id) {
             this.loading = true;
-            this.entitiesService.getVpDocument(this.id).subscribe({
+            this.entitiesService.getLabelDocument(this.id).subscribe({
                 next: (result) => {
                     this.setResult(result);
                     setTimeout(() => {
@@ -135,6 +136,15 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
             });
         } else {
             this.setResult();
+        }
+    }
+
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result) {
+            this.label = result.label || [];
+        } else {
+            this.label = [];
         }
     }
 

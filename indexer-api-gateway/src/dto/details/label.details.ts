@@ -6,11 +6,13 @@ import {
     LabelAnalytics,
     LabelDetails,
     LabelOptions,
+    VPDetails,
 } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
-import { DetailsActivityDTO } from './details.interface.js';
+import { DetailsActivityDTO, DetailsHistoryDTO } from './details.interface.js';
 import { RawMessageDTO } from '../raw-message.dto.js';
+import { VPDetailsItemDTO } from './vp.details.js';
 
 export class LabelOptionsDTO implements LabelOptions {
     @ApiProperty({
@@ -130,4 +132,34 @@ export class LabelDetailsDTO
         type: LabelActivityDTO,
     })
     declare activity?: LabelActivityDTO;
+}
+
+export class LabelDocumentDetailsDTO
+    extends DetailsHistoryDTO<VPDetailsItemDTO>
+    implements VPDetails {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
+
+    @ApiProperty({
+        type: VPDetailsItemDTO,
+    })
+    declare item?: VPDetailsItemDTO;
+
+    @ApiProperty({
+        type: RawMessageDTO,
+    })
+    declare row?: RawMessageDTO;
+
+    @ApiProperty({
+        type: [VPDetailsItemDTO],
+    })
+    declare history?: VPDetailsItemDTO[];
+
+    @ApiProperty({
+        type: [VPDetailsItemDTO],
+    })
+    declare label?: VPDetailsItemDTO;
 }

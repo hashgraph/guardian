@@ -3292,6 +3292,20 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Async publish policy
+     * @param definitionId
+     * @param owner
+     * @param task
+     */
+    public async publishPolicyLabelAsync(
+        definitionId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL_ASYNC, { definitionId, owner, task });
+    }
+
+    /**
      * Load policy label file for import
      * @param zip
      * @param owner
@@ -3315,7 +3329,7 @@ export class Guardians extends NatsService {
      * @param zip
      * @param owner
      */
-    public async previewPolicyLabel(zip: any, owner: IOwner):Promise<PolicyLabelDTO> {
+    public async previewPolicyLabel(zip: any, owner: IOwner): Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.PREVIEW_POLICY_LABEL_FILE, { zip, owner });
     }
 

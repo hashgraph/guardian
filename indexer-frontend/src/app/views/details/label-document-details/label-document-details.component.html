@@ -65,6 +65,12 @@
                             }
                         </p-tabPanel>
 
+                        <p-tabPanel [header]="'details.view' | transloco">
+                            @if (label) {
+
+                            }
+                        </p-tabPanel>
+
                         <p-tabPanel [header]="'details.history' | transloco">
                             <app-table 
                                 [columns]="historyColumns" 

@@ -69,3 +69,10 @@ export type VP = Message<VPOptions, VPAnalytics>;
 export interface VPDetails extends DetailsHistory<VP> {
     labels?: VP[];
 }
+
+/**
+ * Label Document details
+ */
+export interface LabelDocumentDetails extends DetailsHistory<VP> {
+    label?: Label;
+}

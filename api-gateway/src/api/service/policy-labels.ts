@@ -1,9 +1,9 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, TaskAction } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO } from '#middlewares';
-import { Guardians, InternalException, EntityOwner } from '#helpers';
+import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO, TaskDTO } from '#middlewares';
+import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
 @Controller('policy-labels')
@@ -249,7 +249,7 @@ export class PolicyLabelsApi {
     }
 
     /**
-     * Activate policy label
+     * Publish policy label
      */
     @Put('/:definitionId/publish')
     @Auth(Permissions.STATISTICS_LABEL_CREATE)
@@ -289,6 +289,62 @@ export class PolicyLabelsApi {
                 throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
             }
             return await guardians.publishPolicyLabel(definitionId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Publish policy label (Async)
+     */
+    @Put('/push/:definitionId/publish')
+    @Auth(Permissions.STATISTICS_LABEL_CREATE)
+    @ApiOperation({
+        summary: 'Publishes policy label.',
+        description: 'Publishes policy label for the specified label ID.',
+    })
+    @ApiParam({
+        name: 'definitionId',
+        type: 'string',
+        required: true,
+        description: 'policy label Identifier',
+        example: Examples.DB_ID,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: PolicyLabelDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, PolicyLabelDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.ACCEPTED)
+    async publishPolicyLabelAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('definitionId') definitionId: string
+    ): Promise<TaskDTO> {
+        try {
+            if (!definitionId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getPolicyLabelById(definitionId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.PUBLISH_POLICY_LABEL, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                await guardians.publishPolicyLabelAsync(definitionId, owner, task);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY']);
+                taskManager.addError(task.taskId, { code: 500, message: error.message || error });
+            });
+
+            return task;
         } catch (error) {
             await InternalException(error, this.logger);
         }

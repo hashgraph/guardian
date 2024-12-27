@@ -57,7 +57,8 @@ import {
     StatisticDTO,
     StatisticDetailsDTO,
     LabelDTO,
-    LabelDetailsDTO
+    LabelDetailsDTO,
+    LabelDocumentDetailsDTO
 } from '#dto';
 
 @Controller('entities')
@@ -1021,13 +1022,38 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @Get('/label-documents/:messageId')
+    @ApiOperation({
+        summary: 'Get label document',
+        description: 'Returns label document',
+    })
+    @ApiOkResponse({
+        description: 'Label document details',
+        type: LabelDocumentDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getLabelDocument(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_LABEL_DOCUMENT, {
+            messageId,
+        });
+    }
+
     @Get('/label-documents')
     @ApiOperation({
-        summary: 'Get VPs',
-        description: 'Returns VPs',
+        summary: 'Get Label Documents',
+        description: 'Returns Label Documents',
     })
     @ApiPaginatedRequest
-    @ApiPaginatedResponse('VPs', VPGridDTO)
+    @ApiPaginatedResponse('Label Documents', VPGridDTO)
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',
         type: InternalServerErrorDTO

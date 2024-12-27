@@ -36,13 +36,17 @@ export interface LabelOptions {
  */
 export interface LabelAnalytics {
     /**
-     * TopicId
+     * Text search
      */
-    tokenId?: string,
+    textSearch?: string;
     /**
-     * Label Name
+     * Owner
      */
-    labelName?: string,
+    owner?: string;
+    /**
+     * Config
+     */
+    config?: any;
 }
 
 /**

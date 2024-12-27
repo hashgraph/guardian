@@ -69,6 +69,10 @@ export class PolicyLabelsService {
         return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
     }
 
+    public pushPublish(item: any): Observable<{ taskId: string, expectation: number }> {
+        return this.http.put<{ taskId: string, expectation: number }>(`${this.url}/push/${item.id}/publish`, item);
+    }
+
     public getRelationships(definitionId: string): Observable<{
         policy: any,
         policySchemas: any[],
