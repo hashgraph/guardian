@@ -1336,11 +1336,38 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/label-documents/{messageId}:
+    get:
+      operationId: EntityApi_getLabelDocument
+      summary: Get label document
+      description: Returns label document
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Label document details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LabelDocumentDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /entities/label-documents:
     get:
       operationId: EntityApi_getLabelDocuments
-      summary: Get VPs
-      description: Returns VPs
+      summary: Get Label Documents
+      description: Returns Label Documents
       parameters:
         - name: pageIndex
           required: false
@@ -1418,7 +1445,7 @@ paths:
             type: string
       responses:
         '200':
-          description: VPs
+          description: Label Documents
           content:
             application/json:
               schema:
@@ -5336,17 +5363,21 @@ components:
     LabelAnalyticsDTO:
       type: object
       properties:
-        tokenId:
+        textSearch:
           type: string
-          description: Token
-          example: 0.0.4481265
-        labelName:
+          description: Text search
+        owner:
           type: string
-          description: Name
-          example: Label Name
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        config:
+          type: object
+          description: Label Config
       required:
-        - tokenId
-        - labelName
+        - textSearch
+        - owner
+        - config
     LabelDTO:
       type: object
       properties:
@@ -5534,6 +5565,36 @@ components:
         - item
         - row
         - activity
+    LabelDocumentDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/VPDetailsItemDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/VPDetailsItemDTO'
+        label:
+          type: array
+          items:
+            $ref: '#/components/schemas/VPDetailsItemDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
+        - history
+        - label
     VPGridDTO:
       type: object
       properties:
