@@ -1,5 +1,5 @@
 import {Component, Inject} from '@angular/core';
-import {UntypedFormBuilder, Validators} from '@angular/forms';
+import {FormControl, UntypedFormBuilder, Validators} from '@angular/forms';
 import moment from 'moment';
 import cronstrue from 'cronstrue';
 import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
@@ -20,6 +20,11 @@ export class CronConfigDialog {
     dataForm = this.fb.group({
         mask: ['* * * * *', Validators.required],
         interval: [1, Validators.required],
+        period: ['week', Validators.required],
+        startDate: new FormControl(
+            { value: new Date(), disabled: true },
+            Validators.required
+        ),
     });
 
     weekDay = {
@@ -66,8 +71,7 @@ export class CronConfigDialog {
 
         if (data.startDate) {
             this.startDate = new Date(data.startDate) as Date;
-        } else {
-            this.startDate = new Date() as Date;
+            this.dataForm.patchValue({ startDate: this.startDate })
         }
 
         this.period = 'week';
@@ -247,6 +251,8 @@ export class CronConfigDialog {
     }
 
     selectPeriod() {
+        this.period = this.dataForm.get('period')?.value;
+        console.log("this.period", this.period);
         this.setMask(this.getMask());
         this.setText(this.getMaskByInterval());
     }
@@ -263,7 +269,7 @@ export class CronConfigDialog {
 
     setMask(mask: string) {
         const data = this.dataForm.value;
-        this.dataForm.setValue({mask: mask, interval: data.interval});
+        this.dataForm.patchValue({ mask, interval: data.interval })
     }
 
     setText(mask: string) {
