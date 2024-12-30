@@ -87,10 +87,12 @@ export class PolicyLabelPreviewDialog {
 
     public onPrev(): void {
         this.current = this.validator.prev();
+        this.updateStep();
     }
 
     public onNext(): void {
         this.current = this.validator.next();
+        this.updateStep();
     }
 
     public onClose(): void {
@@ -100,5 +102,18 @@ export class PolicyLabelPreviewDialog {
     public onSubmit() {
         const result = this.validator.getStatus();
         this.ref.close(null);
+    }
+
+    public updateStep() {
+        if (this.current?.type === 'scores') {
+            let valid = true;
+            if (Array.isArray(this.current.config)) {
+                for (const score of this.current.config) {
+                    let validScore = score.value !== undefined;
+                    valid = valid && validScore;
+                }
+            }
+            this.current.disabled = !valid;
+        }
     }
 }

@@ -97,16 +97,13 @@ export class RuleItemValidator {
     }
 
     public validateVariables(): IValidateStatus {
-        if (this.valid) {
-            if (this.valid.valid === false) {
-                return this.valid;
-            }
-        } else {
-            this.valid = {
-                id: this.id,
-                valid: true
-            };
+        if (this.valid && this.valid.error === 'Invalid document') {
+            return this.valid;
         }
+        this.valid = {
+            id: this.id,
+            valid: true
+        };
 
         for (const variable of this.variables) {
             const value = this.namespace.getField(variable.schemaId, variable.path);
@@ -122,16 +119,13 @@ export class RuleItemValidator {
     }
 
     public validateScores(): IValidateStatus {
-        if (this.valid) {
-            if (this.valid.valid === false) {
-                return this.valid;
-            }
-        } else {
-            this.valid = {
-                id: this.id,
-                valid: true
-            };
+        if (this.valid && this.valid.error === 'Invalid document') {
+            return this.valid;
         }
+        this.valid = {
+            id: this.id,
+            valid: true
+        };
 
         for (const score of this.scores) {
             const status = score.validate(score.value);
@@ -145,16 +139,13 @@ export class RuleItemValidator {
     }
 
     public validateFormulas(): IValidateStatus {
-        if (this.valid) {
-            if (this.valid.valid === false) {
-                return this.valid;
-            }
-        } else {
-            this.valid = {
-                id: this.id,
-                valid: true
-            };
+        if (this.valid && this.valid.error === 'Invalid document') {
+            return this.valid;
         }
+        this.valid = {
+            id: this.id,
+            valid: true
+        };
 
         for (const score of this.scores) {
             this.scope.setVariable(score.id, score.value);
@@ -174,16 +165,13 @@ export class RuleItemValidator {
     }
 
     public validate(): IValidateStatus {
-        if (this.valid) {
-            if (this.valid.valid === false) {
-                return this.valid;
-            }
-        } else {
-            this.valid = {
-                id: this.id,
-                valid: true
-            };
+        if (this.valid && this.valid.error === 'Invalid document') {
+            return this.valid;
         }
+        this.valid = {
+            id: this.id,
+            valid: true
+        };
 
         const scope = this.getScore();
         for (const formula of this.formulas) {
@@ -319,7 +307,7 @@ export class RuleItemValidator {
     }
 
     public setResult(document: any): void {
-        if(!document) {
+        if (!document) {
             this.valid = {
                 id: this.id,
                 valid: false,

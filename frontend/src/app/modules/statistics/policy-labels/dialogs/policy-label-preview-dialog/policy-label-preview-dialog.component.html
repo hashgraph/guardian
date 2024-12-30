@@ -98,6 +98,7 @@
                                             [value]="option.value" 
                                             [(ngModel)]="score.value"
                                             [inputId]="option.id"
+                                            (onClick)="updateStep()"
                                         ></p-radioButton>
                                     </div>
                                     <label class="option-name" [for]="option.id">
@@ -163,6 +164,7 @@
         <div *ngIf="validator.isNext()" class="dialog-button">
             <button 
                 (click)="onNext()" 
+                [disabled]="current?.disabled"
                 class="guardian-button guardian-button-primary">Next</button>
         </div>
         <div *ngIf="!validator.isNext()" class="dialog-button">

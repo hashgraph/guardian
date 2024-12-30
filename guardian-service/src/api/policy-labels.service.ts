@@ -517,7 +517,14 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 }
                 if (options.owner) {
                     filter.$and.push({
-                        owner: options.owner
+                        $or: [
+                            {
+                                owner: options.owner
+                            },
+                            {
+                                creator: options.owner
+                            }
+                        ]
                     });
                 }
 

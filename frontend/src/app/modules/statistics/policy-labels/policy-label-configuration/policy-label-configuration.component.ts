@@ -256,11 +256,27 @@ export class PolicyLabelConfigurationComponent implements OnInit {
         this.loading = true;
         this.rulesConfig.show = false;
         this.rulesConfig.onSave();
-        setTimeout(() => {
-            this.labelConfig.goToStep(2).then(() => {
+
+        const item = this.getItem();
+        this.policyLabelsService
+            .updateLabel(item)
+            .subscribe((item) => {
+                this.item = item;
+                this.labelConfig.setData(this.item);
+                setTimeout(() => {
+                    this.labelConfig.goToStep(2).then(() => {
+                        this.loading = false;
+                    })
+                }, 1000);
+            }, (e) => {
                 this.loading = false;
-            })
-        }, 100);
+            });
+
+        // setTimeout(() => {
+        //     this.labelConfig.goToStep(2).then(() => {
+        //         this.loading = false;
+        //     })
+        // }, 100);
     }
 
     private publish() {
