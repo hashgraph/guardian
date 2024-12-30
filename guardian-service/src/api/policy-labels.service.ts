@@ -442,6 +442,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 delete label.id;
                 delete label.status;
                 delete label.owner;
+                delete label.topicId;
                 label.creator = owner.creator;
                 label.owner = owner.owner;
                 label.policyId = policyId;

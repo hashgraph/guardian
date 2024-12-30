@@ -62,6 +62,7 @@ export interface IStatistic {
     policyId?: string;
     messageId?: string;
     owner?: string;
+    creator?: string;
     status?: string;
     config?: IStatisticConfig;
 }

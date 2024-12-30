@@ -673,6 +673,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 delete definition.status;
                 delete definition.owner;
                 delete definition.messageId;
+                delete definition.topicId;
                 definition.creator = owner.creator;
                 definition.owner = owner.owner;
                 definition.policyId = policyId;

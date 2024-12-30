@@ -250,7 +250,7 @@ export class NavItem implements TreeNode {
             title: item.name || '',
             name: item.name || '',
             description: item.description || '',
-            owner: item.owner || '',
+            owner: item.creator || '',
             messageId: item.messageId,
             config: item.config,
         }
@@ -265,7 +265,7 @@ export class NavItem implements TreeNode {
             title: item.name || '',
             name: item.name || '',
             description: item.description || '',
-            owner: item.owner || '',
+            owner: item.creator || '',
             messageId: item.messageId,
             config: item.config,
         }

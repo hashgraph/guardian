@@ -85,6 +85,7 @@ export interface IPolicyLabel {
     policyId?: string;
     messageId?: string;
     owner?: string;
+    creator?: string;
     status?: string;
     config?: IPolicyLabelConfig;
 }
