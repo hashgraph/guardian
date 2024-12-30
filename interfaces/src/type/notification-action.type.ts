@@ -5,4 +5,5 @@ export enum NotificationAction {
     SCHEMAS_PAGE = 'SCHEMAS_PAGE',
     TOKENS_PAGE = 'TOKENS_PAGE',
     PROFILE_PAGE = 'PROFILE_PAGE',
+    POLICY_LABEL_PAGE= 'POLICY_LABEL_PAGE'
 }

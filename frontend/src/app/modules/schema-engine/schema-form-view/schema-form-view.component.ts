@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
-import { Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
-import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
 
 interface IFieldControl extends SchemaField {
     fullPath: string;

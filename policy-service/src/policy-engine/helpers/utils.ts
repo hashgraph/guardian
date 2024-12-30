@@ -1340,11 +1340,11 @@ export class PolicyUtils {
         //Check number value
         const numberValue = PolicyUtils.parseQueryNumberValue(queryValue);
         if (numberValue) {
-            if(queryOperation === '$nin') {
+            if (queryOperation === '$nin') {
                 return {
                     $and: [
-                        { $not: { $in: [`\$${queryKey}`, numberValue[0]] }},
-                        { $not: { $in: [`\$${queryKey}`, numberValue[1]] }}
+                        { $not: { $in: [`\$${queryKey}`, numberValue[0]] } },
+                        { $not: { $in: [`\$${queryKey}`, numberValue[1]] } }
                     ]
                 }
             } else if (queryOperation === '$ne') {
@@ -1363,10 +1363,11 @@ export class PolicyUtils {
                 }
             }
         } else {
-            if(queryOperation === '$nin') {
-                return { $not: { $in: [`\$${queryKey}`, queryValue] }}
-            } else 
+            if (queryOperation === '$nin') {
+                return { $not: { $in: [`\$${queryKey}`, queryValue] } }
+            } else {
                 return { [`${queryOperation}`]: [`\$${queryKey}`, queryValue] };
+            }
         }
     }
 

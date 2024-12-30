@@ -50,13 +50,19 @@ import {
     NFT,
     SchemaTree,
     Relationships as IRelationships,
-    IPFS_CID_PATTERN
+    IPFS_CID_PATTERN,
+    Statistic,
+    StatisticDetails,
+    Label,
+    LabelDetails,
+    LabelDocumentDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
 import { SchemaTreeNode } from '../utils/schema-tree.js';
 import { IPFSService } from '../helpers/ipfs-service.js';
 
+//#region UTILS
 const pageOptions = new Set([
     'pageSize',
     'pageIndex',
@@ -65,14 +71,22 @@ const pageOptions = new Set([
     'keywords',
 ]);
 
-function parsePageFilters(msg: PageFilters) {
+function createRegex(text: string) {
+    return {
+        $regex: `.*${escapeStringRegexp(text).trim()}.*`,
+        $options: 'si',
+    }
+}
+
+function parsePageFilters(msg: PageFilters, exactFields?: Set<string>) {
     let filters: any = {};
     const keys = Object.keys(msg).filter((name) => !pageOptions.has(name));
     for (const key of keys) {
-        filters[key] = {
-            $regex: `.*${escapeStringRegexp(msg[key]).trim()}.*`,
-            $options: 'si',
-        };
+        if (exactFields && exactFields.has(key)) {
+            filters[key] = msg[key];
+        } else {
+            filters[key] = createRegex(msg[key]);
+        }
     }
     if (msg.keywords) {
         filters = Object.assign(filters, parseKeywordFilter(msg.keywords));
@@ -81,7 +95,7 @@ function parsePageFilters(msg: PageFilters) {
 }
 
 function parseKeywordFilter(keywordsString: string) {
-    let keywords;
+    let keywords: any;
     try {
         keywords = JSON.parse(keywordsString);
     } catch {
@@ -92,10 +106,7 @@ function parseKeywordFilter(keywordsString: string) {
     };
     for (const keyword of keywords) {
         filter.$and.push({
-            'analytics.textSearch': {
-                $regex: `.*${escapeStringRegexp(keyword).trim()}.*`,
-                $options: 'si',
-            },
+            'analytics.textSearch': createRegex(keyword)
         });
     }
     return filter;
@@ -216,6 +227,8 @@ async function loadFiles(cid: string, timeout: number): Promise<string | null> {
 async function saveDocuments(row: Message): Promise<Message> {
     const em = DataBaseHelper.getEntityManager();
     const collection = em.getCollection('message');
+    const links = row.files?.length || 0;
+    const files = row.documents?.length || 0;
     await collection.updateOne(
         {
             _id: row._id,
@@ -223,6 +236,8 @@ async function saveDocuments(row: Message): Promise<Message> {
         {
             $set: {
                 documents: row.documents,
+                loaded: links === files,
+                lastUpdate: Date.now()
             },
         },
         {
@@ -251,6 +266,7 @@ function getContext(file: string): any {
         return null;
     }
 }
+//#endregion
 
 @Controller()
 export class EntityService {
@@ -927,9 +943,17 @@ export class EntityService {
             const row = await em.findOne(TokenCache, {
                 tokenId,
             });
+
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'analytics.tokenId': tokenId
+            } as any));
+
             return new MessageResponse<TokenDetails>({
                 id: tokenId,
                 row,
+                labels
             });
         } catch (error) {
             return new MessageError(error, error.code);
@@ -999,6 +1023,203 @@ export class EntityService {
             await loadDocuments(item, true);
 
             return new MessageResponse<RoleDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+    //#region STATISTICS
+    @MessagePattern(IndexerMessageAPI.GET_STATISTICS)
+    async getStatistics(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Statistic>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.POLICY_STATISTIC;
+            filters.action = MessageAction.PublishPolicyStatistic;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Statistic[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Statistic>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_STATISTIC)
+    async getStatistic(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<StatisticDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = (await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.POLICY_STATISTIC,
+                action: MessageAction.PublishPolicyStatistic,
+            } as any)) as Statistic;
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+            const vcs = await em.count(Message, {
+                type: MessageType.VC_DOCUMENT,
+                topicId: row.topicId,
+            } as any);
+            const activity: any = {
+                schemas,
+                vcs
+            };
+            if (!item) {
+                return new MessageResponse<StatisticDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+            return new MessageResponse<StatisticDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    @MessagePattern(IndexerMessageAPI.GET_STATISTIC_DOCUMENTS)
+    async getStatisticDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VC>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VC_DOCUMENT;
+            filters.action = MessageAction.CreateStatisticAssessment;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VC[], number];
+            const result = {
+                items: rows.map((item) => {
+                    if (item.analytics) {
+                        item.analytics = Object.assign(item.analytics, {
+                            schemaName: item.analytics.schemaName,
+                        });
+                    }
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VC>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+    //#region LABELS
+    @MessagePattern(IndexerMessageAPI.GET_LABELS)
+    async getLabels(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Label>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.POLICY_LABEL;
+            filters.action = MessageAction.PublishPolicyLabel;
+            const em = DataBaseHelper.getEntityManager();
+
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Label[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Statistic>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_LABEL)
+    async getLabel(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<LabelDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = (await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.POLICY_LABEL,
+                action: MessageAction.PublishPolicyLabel,
+            } as any)) as Label;
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+            const schemas = await em.count(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+            const vps = await em.count(Message, {
+                type: MessageType.VP_DOCUMENT,
+                topicId: row.topicId,
+            } as any);
+            const activity: any = {
+                schemas,
+                vps
+            };
+            if (!item) {
+                return new MessageResponse<LabelDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+            return new MessageResponse<LabelDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
@@ -1138,10 +1359,7 @@ export class EntityService {
                 options
             )) as [VP[], number];
             const result = {
-                items: rows.map((item) => {
-                    delete item.analytics;
-                    return item;
-                }),
+                items: rows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
@@ -1152,6 +1370,7 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_VP_DOCUMENT)
     async getVpDocument(
         @Payload() msg: { messageId: string }
@@ -1190,17 +1409,28 @@ export class EntityService {
             for (const historyItem of history) {
                 await loadDocuments(historyItem, false);
             }
+
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'options.target': messageId
+            } as any));
+
+            console.log()
+
             return new MessageResponse<VPDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,
                 history,
+                labels,
                 row,
             });
         } catch (error) {
             return new MessageError(error, error.code);
         }
     }
+
     @MessagePattern(IndexerMessageAPI.GET_VP_RELATIONSHIPS)
     async getVpRelationships(
         @Payload() msg: { messageId: string }
@@ -1358,6 +1588,93 @@ export class EntityService {
         }
     }
     //#endregion
+    //#region LABELS DOCUMENTS
+    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENTS)
+    async getLabelDocuments(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<VP>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.VP_DOCUMENT;
+            filters.action = MessageAction.CreateLabelDocument;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [VP[], number];
+            const result = {
+                items: rows,
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<VP>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_LABEL_DOCUMENT)
+    async getLabelDocument(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<LabelDocumentDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.VP_DOCUMENT,
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            if (!item) {
+                return new MessageResponse<LabelDocumentDetails>({
+                    id: messageId,
+                    row,
+                });
+            }
+
+            await loadDocuments(item, true);
+            const history = await em.find(
+                Message,
+                {
+                    uuid: item.uuid,
+                    type: MessageType.VP_DOCUMENT,
+                },
+                {
+                    orderBy: {
+                        consensusTimestamp: 'ASC',
+                    },
+                }
+            );
+            for (const historyItem of history) {
+                await loadDocuments(historyItem, false);
+            }
+
+            const label = (await em.findOne(Message, {
+                type: MessageType.POLICY_LABEL,
+                action: MessageAction.PublishPolicyLabel,
+                consensusTimestamp: item.options?.definition
+            } as any)) as Label;
+
+            return new MessageResponse<LabelDocumentDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                history,
+                label,
+                row,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
     //#endregion
 
     //#region OTHERS
@@ -1368,7 +1685,7 @@ export class EntityService {
     ): Promise<AnyResponse<Page<NFT>>> {
         try {
             const options = parsePageParams(msg);
-            const filters = parsePageFilters(msg);
+            const filters = parsePageFilters(msg, new Set(['tokenId']));
             const em = DataBaseHelper.getEntityManager();
             const [rows, count] = await em.findAndCount(
                 NftCache,
@@ -1403,9 +1720,15 @@ export class EntityService {
             const nftHistory: any = await axios.get(
                 `https://${process.env.HEDERA_NET}.mirrornode.hedera.com/api/v1/tokens/${tokenId}/nfts/${serialNumber}/transactions?limit=100`
             );
+            const labels = (await em.find(Message, {
+                type: MessageType.VP_DOCUMENT,
+                action: MessageAction.CreateLabelDocument,
+                'options.target': row?.metadata
+            } as any));
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
                 row,
+                labels,
                 history: nftHistory.data?.transactions || [],
             });
         } catch (error) {
@@ -1612,8 +1935,7 @@ export class EntityService {
         }
     }
     //#endregion
-    //#endregion
-
+    //#region FILES
     @MessagePattern(IndexerMessageAPI.UPDATE_FILES)
     async updateFiles(
         @Payload() msg: { messageId: string }
@@ -1637,4 +1959,6 @@ export class EntityService {
             return new MessageError(error, error.code);
         }
     }
+    //#endregion
+    //#endregion
 }

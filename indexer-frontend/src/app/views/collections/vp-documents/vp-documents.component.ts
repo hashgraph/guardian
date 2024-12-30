@@ -82,7 +82,7 @@ export class VpDocumentsComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
-            field: 'options.issuer',
+            field: 'analytics.issuer',
             title: 'grid.issuer',
             width: '500px',
         },

@@ -40,6 +40,13 @@ import { NFTsComponent } from '@views/collections/nfts/nfts.component';
 import { NFTDetailsComponent } from '@views/details/nft-details/nft-details.component';
 import { DidDocumentDetailsComponent } from '@views/details/did-document-details/did-document-details.component';
 import { ContractDetailsComponent } from '@views/details/contract-details/contract-details.component';
+import { StatisticsComponent } from '@views/collections/statistics/statistics.component';
+import { LabelsComponent } from '@views/collections/labels/labels.component';
+import { StatisticDetailsComponent } from '@views/details/statistic-details/statistic-details.component';
+import { LabelDetailsComponent } from '@views/details/label-details/label-details.component';
+import { LabelDocumentsComponent } from '@views/collections/label-documents/label-documents.component';
+import { StatisticDocumentsComponent } from '@views/collections/statistic-documents/statistic-documents.component';
+import { LabelDocumentDetailsComponent } from '@views/details/label-document-details/label-document-details.component';
 
 export const routes: Routes = [
     // _DEV
@@ -68,6 +75,10 @@ export const routes: Routes = [
     { path: 'nfts', component: NFTsComponent },
     { path: 'topics', component: TopicsComponent },
     { path: 'contracts', component: ContractsComponent },
+    { path: 'statistics', component: StatisticsComponent },
+    { path: 'labels', component: LabelsComponent },
+    { path: 'label-documents', component: LabelDocumentsComponent },
+    { path: 'statistic-documents', component: StatisticDocumentsComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },
@@ -84,4 +95,8 @@ export const routes: Routes = [
     { path: 'vc-documents/:id', component: VcDocumentDetailsComponent },
     { path: 'vp-documents/:id', component: VpDocumentDetailsComponent },
     { path: 'contracts/:id', component: ContractDetailsComponent },
+    { path: 'statistics/:id', component: StatisticDetailsComponent },
+    { path: 'labels/:id', component: LabelDetailsComponent },
+    { path: 'label-documents/:id', component: LabelDocumentDetailsComponent },
+    { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
 ];

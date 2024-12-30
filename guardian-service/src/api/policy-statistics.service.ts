@@ -285,7 +285,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 item.topicId = topic.topicId;
                 item.messageId = statMessageResult.getId();
 
-                const schema = await generateSchema(item, owner);
+                const schema = await generateSchema(item.topicId, item.config, owner);
                 await publishSchema(schema, owner, messageServer, MessageAction.PublishSchema);
                 await DatabaseServer.createAndSaveSchema(schema);
 
@@ -673,6 +673,7 @@ export async function statisticsAPI(logger: PinoLogger): Promise<void> {
                 delete definition.status;
                 delete definition.owner;
                 delete definition.messageId;
+                delete definition.topicId;
                 definition.creator = owner.creator;
                 definition.owner = owner.owner;
                 definition.policyId = policyId;
