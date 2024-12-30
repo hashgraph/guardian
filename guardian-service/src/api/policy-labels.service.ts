@@ -433,6 +433,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
+                const schemas = await PolicyLabelImportExport.getPolicySchemas(policy);
+
                 const preview = await PolicyLabelImportExport.parseZipFile(Buffer.from(zip.data));
                 const { label } = preview;
 
@@ -446,6 +448,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 label.policyTopicId = policy.topicId;
                 label.policyInstanceTopicId = policy.instanceTopicId;
                 label.status = EntityStatus.DRAFT;
+                label.config = PolicyLabelImportExport.updateSchemas(schemas, label.config);
                 label.config = PolicyLabelImportExport.validateConfig(label.config);
                 const row = await DatabaseServer.createPolicyLabel(label);
 

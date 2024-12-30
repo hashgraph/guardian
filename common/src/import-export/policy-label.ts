@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { PolicyLabel } from '../entity/index.js';
+import { PolicyLabel, Policy, Schema as SchemaCollection } from '../entity/index.js';
 import {
     IPolicyLabelConfig,
     INavItemConfig,
@@ -11,9 +11,14 @@ import {
     IGroupItemConfig,
     INavLabelImportConfig,
     INavStatisticImportConfig,
-    IStatisticConfig
+    IStatisticConfig,
+    SchemaEntity,
+    SchemaStatus,
+    Schema
 } from '@guardian/interfaces';
 import { PolicyStatisticImportExport } from './policy-statistic.js';
+import { PolicyImportExport } from './policy.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * PolicyLabel components
@@ -274,6 +279,105 @@ export class PolicyLabelImportExport {
             return data.trim().replace(/\s/ig, '_');
         } else {
             return '';
+        }
+    }
+
+    /**
+     * Load policy schemas
+     * @param policy policy
+     * @returns policy schemas
+     */
+    public static async getPolicySchemas(policy: Policy): Promise<SchemaCollection[]> {
+        const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+        const systemSchemas = await DatabaseServer.getSchemas({
+            topicId: policy.topicId,
+            entity: { $in: [SchemaEntity.MINT_TOKEN, SchemaEntity.MINT_NFTOKEN] }
+        });
+
+        const all = []
+            .concat(schemas, toolSchemas, systemSchemas)
+            .filter((s) => s.status === SchemaStatus.PUBLISHED && s.entity !== 'EVC');
+        return all;
+    }
+
+    /**
+     * Update schema uuid
+     * @param schemas policy schemas
+     * @param data config
+     * @returns new config
+     */
+    public static updateSchemas(
+        schemas: SchemaCollection[],
+        data?: IPolicyLabelConfig
+    ): IPolicyLabelConfig | undefined {
+        if (!data) {
+            return;
+        }
+
+        const fieldMap = new Map<string, string>();
+        const schemaObjects = schemas.map((s) => new Schema(s));
+        for (const schema of schemaObjects) {
+            const allFields = schema.getFields();
+            for (const field of allFields) {
+                const key = `${schema.name}|${field.path}|${field.description}|${field.type}|${field.isArray}|${field.isRef}`;
+                fieldMap.set(key, schema.iri);
+            }
+        }
+
+        if (Array.isArray(data?.children)) {
+            for (const item of data.children) {
+                PolicyLabelImportExport._updateSchemas(fieldMap, item);
+            }
+        }
+
+        return data;
+    }
+
+    private static _updateSchemas(
+        fieldMap: Map<string, string>,
+        data: INavItemConfig
+    ): void {
+        if (!data) {
+            return;
+        }
+        if (data.type === NavItemType.Group) {
+            if (Array.isArray(data.children)) {
+                for (const item of data.children) {
+                    PolicyLabelImportExport._updateSchemas(fieldMap, item);
+                }
+            }
+        }
+        if (data.type === NavItemType.Label) {
+            if (Array.isArray(data.config?.children)) {
+                for (const item of data.config.children) {
+                    PolicyLabelImportExport._updateSchemas(fieldMap, item);
+                }
+            }
+        }
+        if (data.type === NavItemType.Rules || data.type === NavItemType.Statistic) {
+            const config = data.config;
+            const variables = config.variables;
+            const rules = config.rules;
+
+            const schemaMap = new Map<string, string>();
+            if (Array.isArray(variables)) {
+                for (const variable of variables) {
+                    const key = `${variable.schemaName}|${variable.path}|${variable.fieldDescription}|${variable.fieldType}|${variable.fieldArray}|${variable.fieldRef}`;
+                    schemaMap.set(variable.schemaId, fieldMap.get(key));
+                }
+            }
+
+            if (Array.isArray(variables)) {
+                for (const variable of variables) {
+                    variable.schemaId = schemaMap.get(variable.schemaId);
+                }
+            }
+
+            if (Array.isArray(rules)) {
+                for (const rule of rules) {
+                    rule.schemaId = schemaMap.get(rule.schemaId);
+                }
+            }
         }
     }
 }

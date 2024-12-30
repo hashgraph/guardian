@@ -108,7 +108,6 @@ export class AuthService {
     }
 
     public balance(): Observable<any> {
-        return of('0');
         return this.http.get<any>(`${this.url}/balance`);
     }
 

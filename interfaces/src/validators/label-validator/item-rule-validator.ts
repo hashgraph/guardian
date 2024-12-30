@@ -293,15 +293,22 @@ export class RuleItemValidator {
             status: this.status
         };
         for (const field of this.variables) {
-            if (field.value !== undefined) {
-                document[field.id] = field.getValue();
+            const value = field.getValue();
+            if (value !== undefined) {
+                document[field.id] = value;
             }
         }
         for (const score of this.scores) {
-            document[score.id] = score.getValue();
+            const value = score.getValue();
+            if (value !== undefined) {
+                document[score.id] = value;
+            }
         }
         for (const formula of this.formulas) {
-            document[formula.id] = formula.getValue();
+            const value = formula.getValue();
+            if (value !== undefined) {
+                document[formula.id] = value;
+            }
         }
         return document;
     }
