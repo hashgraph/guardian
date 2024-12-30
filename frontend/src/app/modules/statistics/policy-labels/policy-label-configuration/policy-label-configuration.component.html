@@ -229,7 +229,8 @@
                             <div class="navigation-toolbar-group-title">{{group.title}}</div>
                         </div>
                         <div *ngFor="let item of group.items" class="navigation-toolbar-group-item"
-                            pDraggable="navigationTree" (onDragStart)="labelConfig.dragMenuStart(item)"
+                            pDraggable="navigationTree" 
+                            (onDragStart)="labelConfig.dragMenuStart(item)"
                             (onDragEnd)="labelConfig.dragMenuEnd()">
                             <div class="navigation-toolbar-group-item-icon">
                                 <svg-icon class="icon-btn svg-icon-16"
@@ -247,9 +248,13 @@
                     <div *ngIf="labelConfig.draggedMenuItem" class="navigation-drop-area" pDroppable="navigationTree"
                         (onDrop)="labelConfig.onDrop()"></div>
                     <div class="navigation-tree-area">
-                        <p-tree class="navigation-tree guardian-tree" [value]="labelConfig.navigationTree.data"
-                            [draggableNodes]="true" [droppableNodes]="true" draggableScope="navigationTree"
-                            droppableScope="navigationTree" [validateDrop]="true"
+                        <p-tree class="navigation-tree guardian-tree" 
+                            [value]="labelConfig.navigationTree.data"
+                            [draggableNodes]="true" 
+                            [droppableNodes]="true" 
+                            draggableScope="navigationTree"
+                            droppableScope="navigationTree" 
+                            [validateDrop]="true"
                             [selectionMode]="labelConfig.navigationTree.mode"
                             (onNodeDrop)="labelConfig.onDropValidator($event)">
                             <ng-template let-expanded pTemplate="togglericon">

@@ -303,6 +303,21 @@ export class NavItem implements TreeNode {
         }
         return null;
     }
+
+    public getItem(key: string): NavItem | null {
+        if (this.key === key) {
+            return this;
+        }
+        if (Array.isArray(this.children)) {
+            for (const node of this.children) {
+                const result = node.getItem(key);
+                if (result) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
 }
 
 export class NavTree {
@@ -321,6 +336,16 @@ export class NavTree {
 
     public delete(node: NavItem): void {
         this._deleteNode(this.data, node);
+    }
+
+    public getItem(key: string): NavItem | null {
+        for (const node of this.data) {
+            const result = node.getItem(key);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
     }
 
     private _deleteNode(nodes: NavItem[] | undefined, node: NavItem): void {

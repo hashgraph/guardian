@@ -50,6 +50,7 @@ export class LabelConfig {
         this.menu = NavMenu.from(item);
         this.navigationTree = NavTree.from(item);
         this.navigationTree.update();
+        this.updateSelected();
     }
 
     public setPolicy(relationships: any) {
@@ -117,6 +118,13 @@ export class LabelConfig {
 
     public onNavItemSelect(node: NavItem) {
         this.selectedNavItem = node;
+    }
+
+    public updateSelected() {
+        if (this.selectedNavItem) {
+            const key = this.selectedNavItem.key;
+            this.selectedNavItem = this.navigationTree.getItem(key);
+        }
     }
 
     public ifNavSelected(node: NavItem) {
