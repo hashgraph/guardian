@@ -220,3 +220,38 @@ form {
         margin: 20px 5% !important;
     }
 }
+
+.groups-container {
+    position: relative;
+    margin-top: 5px;
+}
+
+::ng-deep p-radiobutton {
+    padding-right: 10px
+}
+
+.groups-container label,
+.group-label-container label,
+.invite-container label {
+    position: absolute;
+    z-index: 100;
+    top: -7px;
+    left: 15px;
+    background: var(--color-grey-white);
+    color: var(--color-grey-5);
+    padding: 0 4px;
+}
+
+.group-label-container {
+    position: relative;
+    margin-top: 25px;
+}
+
+.group-label-container input,
+.invite-container input{
+    width: 474px;
+}
+
+.invite-container {
+    position: relative;
+}

@@ -1,15 +1,24 @@
 <div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'">
-    <p-steps [model]="steps" [(activeIndex)]="stepIndex" [readonly]="!editable[stepIndex]">
-        <ng-template matStepperIcon="description">
-            <i class="pi pi-receipt"></i>
-        </ng-template>
+    <p-steps [model]="steps" [(activeIndex)]="stepIndex" [readonly]="true"></p-steps>
+
         <div *ngIf="stepIndex === 0">
             <form [formGroup]="topicForm" (submit)="setTopic()">
-                <div class="form-content">
+                <div class="form-content first-step">
                     <div class="text">
                         Enter Hedera topic ID which contains messages about ingress VC documents.
                     </div>
-                    <p-inputText placeholder="_._._" formControlName="topicId" mask="0*.0*.0*"></p-inputText>
+
+                    <div class="form-group">
+                        <label for="topicId">Topic ID</label>
+                        <input
+                            id="topicId"
+                            type="text"
+                            placeholder="_._._"
+                            formControlName="topicId"
+                            class="p-inputtext p-component"
+                            (input)="applyMask($event)"
+                        />
+                    </div>
                 </div>
                 <div class="form-buttons">
                     <button pButton type="submit" label="Next" [disabled]="!topicForm.valid"
@@ -55,32 +64,30 @@
         </div>
         <div *ngIf="stepIndex === 2">
             <form [formGroup]="schemaForm" (submit)="setSchema()">
-                <div class="form-content">
-                    <div class="text">
+                <div class="form-content step-three">
+                    <div class="text first">
                         Select the ingress documents schema. Note: selected schema must be compatible with the current
                         policy.
                     </div>
-                    <div class="text">
+                    <div class="text second">
                         Only documents conforming to the schema would be accepted into the system.
                     </div>
-                    <div formControlName="schemaId">
-                        <div *ngFor="let s of schemas" class="schema-row">
-                            <div>
-                                <p-radioButton
-                                    name="schemaId"
-                                    [value]="s.id"
-                                    formControlName="schemaId"
-                                    [disabled]="s.status === 'INCOMPATIBLE'">
-                                </p-radioButton>
-                            </div>
-                            <div>{{ s.name }}</div>
-                            <div *ngIf="s.status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">
+
+                    <div formArrayName="schemaArray" class="schemas-block">
+                        <div *ngFor="let control of schemaArray.controls; let i = index" class="schema-row">
+                            <p-radioButton
+                                [formControl]="getFormControl(control)"
+                                [value]="schemas?.[i].id"
+                            ></p-radioButton>
+                            <div>{{ schemas?.[i].name }}</div>
+
+                            <div *ngIf="schemas?.[i].status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">
                                 Need verification
                             </div>
-                            <div *ngIf="s.status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">
+                            <div *ngIf="schemas?.[i].status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">
                                 Incompatible
                             </div>
-                            <div *ngIf="s.status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">
+                            <div *ngIf="schemas?.[i].status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">
                                 Verified
                             </div>
                         </div>
@@ -133,7 +140,6 @@
                 <button pButton type="button" label="Finish" (click)="next()" class="p-button-raised p-button-primary"></button>
             </div>
         </div>
-    </p-steps>
 </div>
 
 <div class="page-content" *ngIf="status === 'PROCESSING'">
@@ -160,9 +166,11 @@
             An unexpected error occurred.
         </div>
         <div>
-            <button mat-raised-button color="primary" (click)="restart()">
-                Retry
-            </button>
+            <button pButton type="submit"
+                    label="Retry"
+                    class="p-button-raised p-button-primary"
+                    (click)="restart()"
+            ></button>
         </div>
     </div>
 </div>

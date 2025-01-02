@@ -1,9 +1,16 @@
 import {ChangeDetectorRef, Component, Input, OnInit} from '@angular/core';
-import {UntypedFormBuilder, Validators} from '@angular/forms';
+import {
+    AbstractControl,
+    FormArray,
+    FormControl, FormGroup,
+    UntypedFormBuilder,
+    ValidationErrors, ValidatorFn,
+    Validators
+} from '@angular/forms';
 import {PolicyEngineService} from 'src/app/services/policy-engine.service';
 import {PolicyHelper} from 'src/app/services/policy-helper.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
-import { HttpErrorResponse } from '@angular/common/http';
+import {HttpErrorResponse} from '@angular/common/http';
 
 /**
  * Component for display block of 'external-topic' type.
@@ -36,11 +43,10 @@ export class ExternalTopicBlockComponent implements OnInit {
     public editable: boolean[] = [];
 
     public topicForm = this.fb.group({
-        topicId: ['', Validators.required]
+        topicId: ['', [Validators.required, this.minLengthValidator(3)]]
     });
-    public schemaForm = this.fb.group({
-        schemaId: ['', Validators.required]
-    });
+
+    public schemaForm: FormGroup;
 
     public steps = [
         {label: 'Source Topic Selection'},
@@ -65,6 +71,10 @@ export class ExternalTopicBlockComponent implements OnInit {
         this.schemas = null;
         this.schema = null;
         this.lastUpdate = null;
+
+        this.schemaForm = this.fb.group({
+            schemaArray: this.fb.array([], this.atLeastOneSelectedValidator())
+        });
     }
 
     ngOnInit(): void {
@@ -129,6 +139,20 @@ export class ExternalTopicBlockComponent implements OnInit {
             this.schemas = data.schemas || [];
             this.schema = data.schema;
             this.lastUpdate = data.lastUpdate;
+
+            const formArray = this.fb.array(
+                this.schemas!.map((schema) => {
+                    const control = this.fb.control(false);
+                    if (schema.status === 'INCOMPATIBLE') {
+                        control.disable();
+                    }
+                    return control;
+                }),
+                this.atLeastOneSelectedValidator()
+            );
+
+            this.schemaForm.setControl('schemaArray', formArray);
+
             switch (this.status) {
                 case 'NEED_TOPIC':
                     this.topicForm.reset();
@@ -166,6 +190,8 @@ export class ExternalTopicBlockComponent implements OnInit {
             this.schema = null;
             this.lastUpdate = null;
             this.stepIndex = 0;
+
+            this.schemaForm.setControl('schemaArray', this.fb.array([]));
         }
     }
 
@@ -188,11 +214,16 @@ export class ExternalTopicBlockComponent implements OnInit {
 
     public setSchema() {
         this.loading = true;
-        const form = this.schemaForm.value;
+
+        const selectedSchema = this.schemaArray.controls
+            .find((control, index) =>
+                control.value && this.schemas?.[index]?.id)?.value;
+
         const data = {
             operation: 'SetSchema',
-            value: form?.schemaId
+            value: selectedSchema
         };
+
         this.policyEngineService
             .setBlockData(this.id, this.policyId, data)
             .subscribe(() => {
@@ -218,10 +249,10 @@ export class ExternalTopicBlockComponent implements OnInit {
             });
     }
 
-    public onBack({ isPrev }: { isPrev: boolean } = {isPrev: false}): void {
+    public onBack({isPrev}: { isPrev: boolean } = {isPrev: false}): void {
         this.restart();
 
-        if(isPrev) {
+        if (isPrev) {
             this.prev()
         }
     }
@@ -266,5 +297,50 @@ export class ExternalTopicBlockComponent implements OnInit {
         if (this.stepIndex < this.steps.length - 1) {
             this.stepIndex++;
         }
+    }
+
+    public applyMask(event: any): void {
+        const input = event.target.value.replace(/\D/g, '');
+        let masked = '';
+
+        if (input.length >= 1) {
+            masked += input.substring(0, 1);
+        }
+        if (input.length >= 2) {
+            masked += '.' + input.substring(1, 2);
+        }
+        if (input.length >= 3) {
+            masked += '.' + input.substring(2, 3);
+        }
+        if (input.length > 3) {
+            masked += input.substring(3);
+        }
+
+        event.target.value = masked;
+        this.topicForm.get('topicId')?.setValue(masked, {emitEvent: false});
+    }
+
+    private minLengthValidator(minLength: number) {
+        return (control: AbstractControl): ValidationErrors | null => {
+            const value = control.value || '';
+            const digitsOnly = value.replace(/\./g, '').length;
+            return digitsOnly >= minLength ? null : {minLength: true};
+        };
+    }
+
+    get schemaArray(): FormArray {
+        return this.schemaForm.get('schemaArray') as FormArray;
+    }
+
+    getFormControl(control: AbstractControl): FormControl {
+        return control as FormControl;
+    }
+
+    private atLeastOneSelectedValidator(): ValidatorFn {
+        return (formArray: AbstractControl): ValidationErrors | null => {
+            const controls = (formArray as FormArray).controls;
+            const isValid = controls.some(control => control.value);
+            return isValid ? null : {required: true};
+        };
     }
 }

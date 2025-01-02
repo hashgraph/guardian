@@ -36,24 +36,24 @@ form {
 
 .f1 {
     height: 50px;
-    border: 1px solid #dfdfdf;
     border-radius: 4px;
     margin-bottom: 10px;
     position: relative;
-    margin-top: 10px;
+    margin-top: 20px;
     box-sizing: border-box;
 }
 
 
-.f1 mat-label {
+.f1 label {
     position: absolute;
     background: #fff;
     font-size: 11px;
     color: rgb(0 0 0 / 60%);
     line-height: 11px;
-    top: -4px;
-    left: 4px;
+    top: -5px;
+    left: 15px;
     padding: 0 5px;
+    z-index: 100;
 }
 
 .delimiter {
@@ -139,4 +139,57 @@ mat-accordion {
     position: relative;
     left: -6px;
     width: 516px;
+}
+
+.dialog-title {
+    margin: 0 0 10px 0;
+    font-size: 22px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+}
+
+.input-mask-container {
+    position: relative;
+}
+
+.input-mask-container label {
+    position: absolute;
+    font-size: 12px;
+    top: -7px;
+    left: 15px;
+    background: white;
+    color: gray;
+    padding: 0 4px;
+}
+
+.input-mask-container input {
+    width: 465px;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+::ng-deep .p-dialog .p-button {
+    background-color: var(--color-grey-white);
+    color: var(--primary-color);
+    border-radius: 20px;
+    padding: 8px 24px;
+    font-weight: bold;
+}
+
+::ng-deep .p-dialog .p-button-ok {
+    background-color: var(--primary-color);
+    color: var(--color-grey-white);
+}
+
+::ng-deep .p-dialog .p-button:hover {
+    background-color: var(--blue-100);
+}
+
+::ng-deep .p-dialog .p-button-ok:hover {
+    background-color: var(--blue-700);
 }

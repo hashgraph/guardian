@@ -173,12 +173,12 @@
                 <div class="grid-container">
                     <table>
                         <thead>
-                        <tr class="grid-header">
-                            <th>NAME</th>
-                            <th>Description</th>
-                            <th>Status</th>
-                            <th>Version</th>
-                            <th>
+                        <tr class="grid-header header-container">
+                            <th class="name">NAME</th>
+                            <th class="description">Description</th>
+                            <th class="status">Status</th>
+                            <th class="version">Version</th>
+                            <th class="checkbox">
                                 <label>
                                     <p-checkbox
                                         [(ngModel)]="allPolicy"
@@ -191,16 +191,16 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr *ngFor="let row of policyPage" class="grid-row">
-                            <td>{{ row.name }}</td>
-                            <td>{{ row.description }}</td>
-                            <td>
+                        <tr *ngFor="let row of policyPage" class="grid-row row-container">
+                            <td class="name">{{ row.name }}</td>
+                            <td class="description">{{ row.description }}</td>
+                            <td class="status">
                                 <div class="chip chip-color-{{ getColor(row.status, !!row.discontinuedDate) }}">
                                     {{ getLabelStatus(row.status, !!row.discontinuedDate) }}
                                 </div>
                             </td>
-                            <td>{{ row.version }}</td>
-                            <td>
+                            <td class="version">{{ row.version }}</td>
+                            <td class="checkbox">
                                 <p-checkbox [(ngModel)]="row.assigned"
                                             [binary]="true"
                                             (onChange)="assignPolicy(row, $event.checked)">
