@@ -82,6 +82,10 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
     }, {
         label: 'details.hedera.token_amount',
         path: 'analytics.tokenAmount',
+    }, {
+        label: 'details.hedera.target',
+        path: 'options.target',
+        link: '/vp-documents'
     }]
 
     historyColumns: any[] = [
