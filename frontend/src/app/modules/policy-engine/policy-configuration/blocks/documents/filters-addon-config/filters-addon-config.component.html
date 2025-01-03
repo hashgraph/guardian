@@ -4,9 +4,30 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <mat-select [(value)]="properties.type" [disabled]="readonly" (change)="onSave()">
-                <mat-option value="dropdown">Dropdown</mat-option>
-            </mat-select>
+            <p-dropdown
+                [options]="typeOptions"
+                [(ngModel)]="properties.type"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                placeholder="Select a type"
+            >
+            </p-dropdown>
+        </td>
+    </tr>
+    <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Query Type</td>
+        <td class="propRowCell">
+            <p-dropdown
+                [options]="queryTypeOptions"
+                [(ngModel)]="properties.queryType"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+            >
+                <ng-template pTemplate="item" let-item>
+                    <span>{{item.label}}</span>
+                </ng-template>
+            </p-dropdown>
         </td>
     </tr>
     <tr class="propRow">
@@ -14,7 +35,7 @@
         <td class="propRowCell cellName">Can Be Empty</td>
         <td class="propRowCell">
             <input class="prop-input" type="checkbox" [(ngModel)]="properties.canBeEmpty" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
     <tr class="propRow">
@@ -22,7 +43,7 @@
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
             <document-path [(value)]="properties.field" [readonly]="readonly" [displayTooltip]="true"
-                (change)="onSave()"></document-path>
+                           (change)="onSave()"></document-path>
         </td>
     </tr>
 
@@ -30,7 +51,7 @@
         <tr class="propRow">
             <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
                 [attr.collapse]="propHidden.dropdownGroup">
-                <mat-icon>arrow_drop_down</mat-icon>
+                <i class="pi pi-caret-down"></i>
             </td>
             <td class="propRowCell cellName">Dropdown Options</td>
             <td class="propRowCell">
@@ -41,7 +62,7 @@
             <td class="propRowCell cellName">Option Name</td>
             <td class="propRowCell">
                 <document-path [(value)]="properties.optionName" [readonly]="readonly" [displayTooltip]="true"
-                    (change)="onSave()"></document-path>
+                               (change)="onSave()"></document-path>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
@@ -49,14 +70,14 @@
             <td class="propRowCell cellName">Option Value</td>
             <td class="propRowCell">
                 <document-path [(value)]="properties.optionValue" [readonly]="readonly" [displayTooltip]="true"
-                    (change)="onSave()"></document-path>
+                               (change)="onSave()"></document-path>
             </td>
         </tr>
     </ng-container>
 
     <tr class="propHeader">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <mat-icon>arrow_drop_down</mat-icon>
+            <i class="pi pi-caret-down"></i>
         </td>
         <td class="propHeaderCell cellName">UI</td>
         <td class="propHeaderCell"></td>
@@ -73,7 +94,7 @@
         <td class="propRowCell cellName">Button Content</td>
         <td class="propRowCell">
             <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
-                (blur)="onSave()">
+                   (blur)="onSave()">
         </td>
     </tr>
 </table>

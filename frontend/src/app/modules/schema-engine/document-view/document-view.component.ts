@@ -1,11 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { LegacyPageEvent as PageEvent } from '@angular/material/legacy-paginator';
-import { Schema } from '@guardian/interfaces';
+import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
 import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { SchemaRuleValidateResult, SchemaRuleValidators } from '../../common/models/field-rule-validator';
 
 /**
  * View document
@@ -37,7 +35,7 @@ export class DocumentViewComponent implements OnInit {
     public pageIndex: number = 0;
     public pageSize: number = 5;
     public schemaMap: { [x: string]: Schema | null } = {};
-    public rules: SchemaRuleValidators;
+    public rules: DocumentValidators;
     public rulesResults: SchemaRuleValidateResult;
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -131,7 +129,7 @@ export class DocumentViewComponent implements OnInit {
         this.loading = true;
         forkJoin(requests).subscribe((results: any[]) => {
             const rules = results.pop();
-            this.rules = new SchemaRuleValidators(rules);
+            this.rules = new DocumentValidators(rules);
             for (const result of results) {
                 if (result) {
                     try {

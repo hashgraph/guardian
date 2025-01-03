@@ -14,5 +14,6 @@ export enum TopicType {
     ContractTopic = 'CONTRACT_TOPIC',
     ToolTopic = 'TOOL_TOPIC',
     TagsTopic = 'TAGS_TOPIC',
-    StatisticTopic = 'STATISTIC_TOPIC'
+    StatisticTopic = 'STATISTIC_TOPIC',
+    LabelTopic = 'LABEL_TOPIC'
 }

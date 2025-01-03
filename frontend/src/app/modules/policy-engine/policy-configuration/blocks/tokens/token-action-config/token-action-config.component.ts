@@ -26,6 +26,27 @@ export class TokenActionConfigComponent implements OnInit {
     tokens!: TokenVariables[];
     tokenTemplate!: TokenTemplateVariables[];
 
+    public accountTypeOptions = [
+        { label: 'Default', value: 'default' },
+        { label: 'Custom', value: 'custom' }
+    ];
+
+    public actionOptions = [
+        { label: 'Associate', value: 'associate' },
+        { label: 'Dissociate', value: 'dissociate' },
+        { label: 'Freeze', value: 'freeze' },
+        { label: 'Unfreeze', value: 'unfreeze' },
+        { label: 'Grant Kyc', value: 'grantKyc' },
+        { label: 'Revoke Kyc', value: 'revokeKyc' }
+    ];
+
+    public actionOptionsCustom = [
+        { label: 'Freeze', value: 'freeze' },
+        { label: 'Unfreeze', value: 'unfreeze' },
+        { label: 'Grant Kyc', value: 'grantKyc' },
+        { label: 'Revoke Kyc', value: 'revokeKyc' }
+    ];
+
     constructor() {
     }
 

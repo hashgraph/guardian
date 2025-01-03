@@ -1,8 +1,9 @@
 import JSZip from 'jszip';
 import { Policy, PolicyStatistic, Schema as SchemaCollection } from '../entity/index.js';
 import { IFormulaData, IRuleData, IScoreData, IScoreOption, IStatisticConfig, IVariableData, Schema, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
-import { DatabaseServer } from '../database-modules/index.js';
+import { SchemaRuleImportExport } from './schema-rule.js';
 import { PolicyImportExport } from './policy.js';
+import { DatabaseServer } from '../database-modules/index.js';
 
 /**
  * PolicyStatistic components
@@ -164,7 +165,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Variables
      */
-    private static validateVariables(data?: IVariableData[]): IVariableData[] {
+    public static validateVariables(data?: IVariableData[]): IVariableData[] {
         const variables: IVariableData[] = [];
         if (Array.isArray(data)) {
             for (const variable of data) {
@@ -201,7 +202,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Scores
      */
-    private static validateScores(data?: IScoreData[]): IScoreData[] {
+    public static validateScores(data?: IScoreData[]): IScoreData[] {
         const scores: IScoreData[] = [];
         if (Array.isArray(data)) {
             for (const score of data) {
@@ -232,7 +233,7 @@ export class PolicyStatisticImportExport {
      *
      * @param data Formulas
      */
-    private static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
+    public static validateFormulas(data?: IFormulaData[]): IFormulaData[] {
         const formulas: IFormulaData[] = [];
         if (Array.isArray(data)) {
             for (const formula of data) {
@@ -258,11 +259,42 @@ export class PolicyStatisticImportExport {
     }
 
     /**
+     * Validate Formulas with rule
+     *
+     * @param data Formulas
+     */
+    public static validateFormulasWithRule(data?: IFormulaData[]): IFormulaData[] {
+        const formulas: IFormulaData[] = [];
+        if (Array.isArray(data)) {
+            for (const formula of data) {
+                formulas.push(PolicyStatisticImportExport.validateFormulaWithRule(formula));
+            }
+        }
+        return formulas;
+    }
+
+    /**
+     * Validate Formula with rule
+     *
+     * @param data Formula
+     */
+    private static validateFormulaWithRule(data?: IFormulaData): IFormulaData {
+        const formula: IFormulaData = {
+            id: PolicyStatisticImportExport.validateString(data.id),
+            type: PolicyStatisticImportExport.validateString(data.type),
+            description: PolicyStatisticImportExport.validateString(data.description),
+            formula: PolicyStatisticImportExport.validateString(data.formula),
+            rule: SchemaRuleImportExport.validateRule(data.rule),
+        }
+        return formula;
+    }
+
+    /**
      * Validate Rules
      *
      * @param data Rules
      */
-    private static validateRules(data?: IRuleData[]): IRuleData[] {
+    public static validateRules(data?: IRuleData[]): IRuleData[] {
         const rules: IRuleData[] = [];
         if (Array.isArray(data)) {
             for (const rule of data) {

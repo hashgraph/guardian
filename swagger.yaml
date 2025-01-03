@@ -13033,6 +13033,707 @@ paths:
       tags: *ref_28
       security:
         - bearer: []
+  /policy-labels:
+    post:
+      operationId: PolicyLabelsApi_createPolicyLabel
+      summary: Creates a new policy label.
+      description: Creates a new policy label.
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyLabelDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_29
+        - policy-labels
+      security:
+        - bearer: []
+    get:
+      operationId: PolicyLabelsApi_getPolicyLabels
+      summary: Return a list of all policy labels.
+      description: Returns all policy labels.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: policyInstanceTopicId
+          required: false
+          in: query
+          description: Policy Instance Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}:
+    get:
+      operationId: PolicyLabelsApi_getPolicyLabelById
+      summary: Retrieves policy label.
+      description: Retrieves policy label for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    put:
+      operationId: PolicyLabelsApi_updatePolicyLabel
+      summary: Updates policy label.
+      description: Updates policy label configuration for the specified label ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyLabelDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    delete:
+      operationId: PolicyLabelsApi_deletePolicyLabel
+      summary: Deletes the policy label.
+      description: Deletes the policy label with the provided ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/publish:
+    put:
+      operationId: PolicyLabelsApi_publishPolicyLabel
+      summary: Publishes policy label.
+      description: Publishes policy label for the specified label ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/push/{definitionId}/publish:
+    put:
+      operationId: PolicyLabelsApi_publishPolicyLabelAsync
+      summary: Publishes policy label.
+      description: Publishes policy label for the specified label ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/relationships:
+    get:
+      operationId: PolicyLabelsApi_getPolicyLabelRelationships
+      summary: Retrieves policy label relationships.
+      description: Retrieves policy label relationships for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{policyId}/import/file:
+    post:
+      operationId: PolicyLabelsApi_importPolicyLabel
+      summary: Imports new labels from a zip file.
+      description: Imports new labels from the provided zip file into the local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing labels to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/export/file:
+    get:
+      operationId: PolicyLabelsApi_exportPolicyLabel
+      summary: Returns a zip file containing labels.
+      description: Returns a zip file containing labels.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/import/file/preview:
+    post:
+      operationId: PolicyLabelsApi_previewPolicyLabel
+      summary: Imports a zip file containing labels.
+      description: Imports a zip file containing labels.
+      parameters: []
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: policy label preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/components:
+    post:
+      operationId: PolicyLabelsApi_searchComponents
+      summary: Search labels ans statistics.
+      description: Return a list of other labels ans statistics.
+      parameters: []
+      requestBody:
+        required: true
+        description: Filters.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyLabelFiltersDTO'
+      responses:
+        '200':
+          description: A list of labels ans statistics.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/tokens:
+    get:
+      operationId: PolicyLabelsApi_getPolicyLabelTokens
+      summary: Return a list of all documents.
+      description: Returns all documents.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/tokens/{documentId}:
+    get:
+      operationId: PolicyLabelsApi_getPolicyLabelDocument
+      summary: Return a list of all documents.
+      description: Returns all documents.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Document Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/documents:
+    post:
+      operationId: PolicyLabelsApi_createStatisticDocument
+      summary: Creates a new label document.
+      description: Creates a new label document.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyLabelDocumentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    get:
+      operationId: PolicyLabelsApi_getLabelDocuments
+      summary: Return a list of all label documents.
+      description: Returns all label documents.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: policy label Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyLabelDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/documents/{documentId}:
+    get:
+      operationId: PolicyLabelsApi_getLabelDocument
+      summary: Retrieves label document.
+      description: Retrieves label document for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Label Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Label Document Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /policy-labels/{definitionId}/documents/{documentId}/relationships:
+    get:
+      operationId: PolicyLabelsApi_getStatisticAssessmentRelationships
+      summary: Retrieves documents relationships.
+      description: Retrieves documents relationships for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: documentId
+          required: true
+          in: path
+          description: Label Document Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyLabelDocumentRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
   /worker-tasks:
     get:
       operationId: WorkerTasksController_getAllWorkerTasks
@@ -13079,7 +13780,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_29
+      tags: &ref_30
         - worker-tasks
       security:
         - bearer: []
@@ -13102,7 +13803,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /worker-tasks/delete/{taskId}:
@@ -13131,7 +13832,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
 info:
@@ -13616,19 +14317,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_38
+          enum: &ref_39
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_39
+          example: &ref_40
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_40
+          example: &ref_41
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -13813,35 +14514,35 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_30
+          oneOf: &ref_31
             - type: string
             - type: number
-          enum: &ref_31
+          enum: &ref_32
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_32
+          oneOf: &ref_33
             - type: string
             - type: number
-          enum: &ref_33
+          enum: &ref_34
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_34
+          oneOf: &ref_35
             - type: string
             - type: number
-          enum: &ref_35
+          enum: &ref_36
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_36
+          oneOf: &ref_37
             - type: string
             - type: number
-          enum: &ref_37
+          enum: &ref_38
             - 0
             - 1
             - 2
@@ -13905,20 +14606,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_30
-          enum: *ref_31
+          oneOf: *ref_31
+          enum: *ref_32
           example: 0
         eventsLvl:
-          oneOf: *ref_32
-          enum: *ref_33
+          oneOf: *ref_33
+          enum: *ref_34
           example: 0
         propLvl:
-          oneOf: *ref_34
-          enum: *ref_35
+          oneOf: *ref_35
+          enum: *ref_36
           example: 0
         childrenLvl:
-          oneOf: *ref_36
-          enum: *ref_37
+          oneOf: *ref_37
+          enum: *ref_38
           example: 0
         moduleId1:
           type: string
@@ -14032,20 +14733,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_30
-          enum: *ref_31
+          oneOf: *ref_31
+          enum: *ref_32
           example: 0
         eventsLvl:
-          oneOf: *ref_32
-          enum: *ref_33
+          oneOf: *ref_33
+          enum: *ref_34
           example: 0
         propLvl:
-          oneOf: *ref_34
-          enum: *ref_35
+          oneOf: *ref_35
+          enum: *ref_36
           example: 0
         childrenLvl:
-          oneOf: *ref_36
-          enum: *ref_37
+          oneOf: *ref_37
+          enum: *ref_38
           example: 0
         documentId1:
           type: string
@@ -14080,20 +14781,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_30
-          enum: *ref_31
+          oneOf: *ref_31
+          enum: *ref_32
           example: 0
         eventsLvl:
-          oneOf: *ref_32
-          enum: *ref_33
+          oneOf: *ref_33
+          enum: *ref_34
           example: 0
         propLvl:
-          oneOf: *ref_34
-          enum: *ref_35
+          oneOf: *ref_35
+          enum: *ref_36
           example: 0
         childrenLvl:
-          oneOf: *ref_36
-          enum: *ref_37
+          oneOf: *ref_37
+          enum: *ref_38
           example: 0
         toolId1:
           type: string
@@ -14597,6 +15298,7 @@ components:
             - TAG
             - TOOL
             - STATISTIC
+            - LABEL
           example: POLICY
         documentURL:
           type: string
@@ -14843,15 +15545,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_38
+          enum: *ref_39
           example: USER
         permissionsGroup:
-          example: *ref_39
+          example: *ref_40
           type: array
           items:
             type: string
         permissions:
-          example: *ref_40
+          example: *ref_41
           type: array
           items:
             type: string
@@ -15955,6 +16657,7 @@ components:
             - SCHEMAS_PAGE
             - TOKENS_PAGE
             - PROFILE_PAGE
+            - POLICY_LABEL_PAGE
         result:
           type: object
         read:
@@ -16139,7 +16842,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_41
+          enum: &ref_42
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -16150,7 +16853,6 @@ components:
             - ARTIFACTS_FILE_DELETE
             - CONTRACTS_CONTRACT_READ
             - CONTRACTS_CONTRACT_EXECUTE
-            - CONTRACTS_CONTRACT_MANAGE
             - MODULES_MODULE_READ
             - MODULES_MODULE_CREATE
             - MODULES_MODULE_UPDATE
@@ -16190,6 +16892,8 @@ components:
             - PERMISSIONS_ROLE_MANAGE
             - STATISTICS_STATISTIC_READ
             - STATISTICS_STATISTIC_CREATE
+            - STATISTICS_LABEL_READ
+            - STATISTICS_LABEL_CREATE
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
             - SCHEMAS_RULE_EXECUTE
@@ -16211,7 +16915,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_41
+          enum: *ref_42
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -16278,6 +16982,7 @@ components:
             - ROLE
             - STATISTIC
             - RULE
+            - LABEL
           example: POLICY
         action:
           type: string
@@ -16502,6 +17207,152 @@ components:
           $ref: '#/components/schemas/SchemaRuleDTO'
         document:
           $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
+    PolicyLabelDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    PolicyLabelRelationshipsDTO:
+      type: object
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        policySchemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        documentsSchemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    PolicyLabelFiltersDTO:
+      type: object
+      properties:
+        text:
+          type: string
+          example: Name
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        components:
+          type: string
+          description: Component type
+          enum:
+            - all
+            - label
+            - statistic
+          example: all
+    PolicyLabelComponentsDTO:
+      type: object
+      properties:
+        statistics:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatisticDefinitionDTO'
+        labels:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyLabelDTO'
+    PolicyLabelDocumentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        definitionId:
+          type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        target:
+          type: string
+          example: '0000000000.000000001'
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+        document:
+          type: object
+          nullable: true
+    PolicyLabelDocumentRelationshipsDTO:
+      type: object
+      properties:
+        target:
+          $ref: '#/components/schemas/VpDocumentDTO'
         relationships:
           type: array
           items:

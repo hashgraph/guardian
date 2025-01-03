@@ -1,8 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { RecordService } from 'src/app/services/record.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Component, Inject} from '@angular/core';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {RecordService} from 'src/app/services/record.service';
+import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating theme.
@@ -24,11 +23,12 @@ export class RecordResultDialog {
     public info: any;
 
     constructor(
-        public dialog: MatDialog,
-        public dialogRef: MatDialogRef<RecordResultDialog>,
-        private dialogService: DialogService,
         private recordService: RecordService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        public dialogService: DialogService,
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
+    ) {
+        const data = this.config.data
 
         this.title = 'Playback completed';
         this.text = 'Playback completed';
@@ -83,7 +83,6 @@ export class RecordResultDialog {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     onDetails(): void {

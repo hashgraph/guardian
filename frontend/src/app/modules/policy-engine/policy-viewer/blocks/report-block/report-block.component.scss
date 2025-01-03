@@ -122,14 +122,14 @@ a[disabled="true"] {
     height: 25px;
 }
 
-.display-chain {
-}
+.display-chain {}
 
 .container {
     display: flex;
 }
 
-.container>mat-icon {
+.container>i,
+.container>svg {
     font-size: 50px;
     flex: 0 0 80px;
     align-self: center;
@@ -246,7 +246,8 @@ a[disabled="true"] {
     font-weight: bold;
 }
 
-.chain-title mat-icon {
+.chain-title i,
+.chain-title svg {
     font-size: 30px;
     color: #000;
     position: relative;
@@ -280,7 +281,8 @@ a[disabled="true"] {
     height: 170px;
 }
 
-.empty-documents-description mat-icon {
+.empty-documents-description i,
+.empty-documents-description svg {
     font-size: 115px;
     height: 115px;
     width: 115px;
@@ -340,7 +342,8 @@ a.go-back-link {
     padding-right: 28px;
 }
 
-a.go-back-link mat-icon {
+a.go-back-link i,
+a.go-back-link svg {
     color: #707070;
     position: relative;
     top: -3px;
@@ -352,7 +355,8 @@ a.go-back-link mat-icon {
     padding: 45px;
 }
 
-.header mat-icon {
+.header i,
+.header svg {
     color: #00d048;
     font-size: 24px;
     vertical-align: bottom;
@@ -517,7 +521,7 @@ a.open-vp {
 
 .active-multiple-document {
     transform: translate(0, 0);
-    z-index: 3;
+    z-index: 3 !important;
     border: 2px solid gray;
 }
 
@@ -525,7 +529,7 @@ a.open-vp {
     position: absolute;
     left: 0;
     bottom: 0;
-    z-index: 2;
+    z-index: 2 !important;
     transform: translate(-7px, -7px);
     border: 2px solid #9d9d9d;
 }
@@ -534,17 +538,17 @@ a.open-vp {
     position: absolute;
     left: 0;
     bottom: 0;
-    z-index: 1;
+    z-index: 1 !important;
     transform: translate(-14px, -14px);
     border: 2px solid #bfbfbf;
 }
 
 .single-multiple-document {
-    z-index: 1;
+    z-index: 1 !important;
 }
 
 .hide-multiple-document {
-    display: none;
+    display: none !important;
 }
 
 .multiple-documents-count {
@@ -559,7 +563,8 @@ a.open-vp {
     align-items: center;
 }
 
-.multiple-documents-count mat-icon {
+.multiple-documents-count i,
+.multiple-documents-count svg {
     cursor: pointer;
 }
 
@@ -635,7 +640,8 @@ a.open-vp {
     border: 1px solid var(--grey-grey-3, #E1E7EF);
 }
 
-.card-item[main="true"] mat-icon {
+.card-item[main="true"] i,
+.card-item[main="true"] svg {
     color: #00a100;
 }
 
@@ -654,7 +660,8 @@ a.open-vp {
     line-height: 14px;
 }
 
-.card-icon mat-icon {
+.card-icon i,
+.card-icon svg {
     position: absolute;
     top: -3px;
     left: -3px;

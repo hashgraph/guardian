@@ -1,15 +1,14 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { NgxMatDatetimePickerModule, NgxMatNativeDateModule, NgxMatTimepickerModule, } from '@angular-material-components/datetime-picker';
-import { ClipboardModule } from '@angular/cdk/clipboard';
-import { CodemirrorModule } from '@ctrl/ngx-codemirror';
-import { GoogleMapsModule } from '@angular/google-maps';
-import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
+import {NgModule} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {ClipboardModule} from '@angular/cdk/clipboard';
+import {CodemirrorModule} from '@ctrl/ngx-codemirror';
+import {GoogleMapsModule} from '@angular/google-maps';
+import {GeojsonTypeComponent} from './geojson-type/geojson-type.component';
 //Modules
-import { MaterialModule } from '../common/material.module';
-import { CommonComponentsModule } from '../common/common-components.module';
-import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
+import {MaterialModule} from '../common/material.module';
+import {CommonComponentsModule} from '../common/common-components.module';
+import {ArtifactEngineModule} from '../artifact-engine/artifact-engine.module';
 //Components
 import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
@@ -42,6 +41,9 @@ import { SentinelHubTypeComponent } from './sentinel-hub-type/sentinel-hub-type.
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AccordionModule } from 'primeng/accordion';
+import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
+import { EnumComponent } from './schema-form/controls/enum/enum';
+import { InputComponent } from './schema-form/controls/input/input';
 
 @NgModule({
     declarations: [
@@ -64,16 +66,16 @@ import { AccordionModule } from 'primeng/accordion';
         DeleteSchemaDialogComponent,
         ServiceUnavailableDialog,
         SchemaTreeComponent,
-        SchemaFormDialog
+        SchemaFormDialog,
+        DateTimeComponent,
+        EnumComponent,
+        InputComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
         CommonComponentsModule,
         MaterialModule,
-        NgxMatDatetimePickerModule,
-        NgxMatNativeDateModule,
-        NgxMatTimepickerModule,
         ClipboardModule,
         CodemirrorModule,
         ArtifactEngineModule,
@@ -105,4 +107,5 @@ import { AccordionModule } from 'primeng/accordion';
         SchemaFormDialog
     ],
 })
-export class SchemaEngineModule { }
+export class SchemaEngineModule {
+}

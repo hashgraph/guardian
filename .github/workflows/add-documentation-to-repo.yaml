@@ -13,7 +13,7 @@ jobs:
     runs-on: guardian-linux-medium
     strategy:
       matrix:
-        node-version: [ 20.x ]
+        node-version: [ 20.18.1 ]
         mongodb-version: [ 7.0.5 ]
     steps:
       - name: Harden Runner
@@ -50,7 +50,7 @@ jobs:
           git checkout "${GITHUB_REF:11}"
 
       - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@5a87bd81f88e2a8b195f8b7b656f5cda1350815a # v1.11.0
+        uses: step-security/mongodb-github-action@ff3d5a3dec0957be7ef99d3d1c9ca4499e8a4cb8 # v1.11.0
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 

@@ -1,17 +1,14 @@
-import { NGX_MAT_DATE_FORMATS, NgxMatDateAdapter } from '@angular-material-components/datetime-picker';
-import { NgxMatMomentAdapter } from '@angular-material-components/moment-adapter';
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { GenerateUUIDv4, Schema, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { GenerateUUIDv4, Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
-import * as moment from 'moment';
+import moment from 'moment';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { uriValidator } from 'src/app/validators/uri.validator';
 import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
-import { SchemaRuleValidateResult } from '../../common/models/field-rule-validator';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -94,10 +91,6 @@ interface IFieldIndexControl<T extends UntypedFormControl | UntypedFormGroup> {
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
     styleUrls: ['./schema-form.component.scss'],
-    providers: [
-        { provide: NgxMatDateAdapter, useClass: NgxMatMomentAdapter },
-        { provide: NGX_MAT_DATE_FORMATS, useValue: GUARDIAN_DATETIME_FORMAT }
-    ]
 })
 export class SchemaFormComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
@@ -316,13 +309,7 @@ export class SchemaFormComponent implements OnInit {
         return new UntypedFormArray([]);
     }
 
-    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
-        if (item.customType === 'geo' || item.customType === 'sentinel') {
-            return new UntypedFormControl({})
-        } else {
-            return new UntypedFormGroup({});
-        }
-    }
+    private trigger = true;
 
     private updateButton() {
         this.buttons.emit(this.buttonsConfig);
@@ -476,6 +463,25 @@ export class SchemaFormComponent implements OnInit {
         return listItem;
     }
 
+    parseDate(item: string | string[], calendar: any, index?: number) {
+        setTimeout(() => {
+            if (calendar.dateParsed) {
+                return;
+            }
+            if (Array.isArray(item) && (index !== undefined) && item[index]) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item[index]).format('YYYY-MM-DD HH:mm:ss');
+                }
+            } else if (item) {
+                if (!calendar.el.nativeElement.querySelector('input').value) {
+                    calendar.el.nativeElement.querySelector('input').value = moment(item).format('YYYY-MM-DD HH:mm:ss');
+                }
+            }
+            calendar.dateParsed = true;
+        }, 50);
+
+    }
+
     public removeGroup(item: IFieldControl<any>, event: any) {
         if (event?.stopPropagation) {
             event.stopPropagation();
@@ -622,8 +628,7 @@ export class SchemaFormComponent implements OnInit {
     public getConditions(field: any) {
         if (!this.conditions) {
             return [];
-        }
-        else {
+        } else {
             return this.conditions!.filter((item: any) => item.ifCondition.field.name === field.name);
         }
     }
@@ -729,7 +734,7 @@ export class SchemaFormComponent implements OnInit {
                         valueToSet = "";
                     }
                 } else if (format === 'time') {
-                    const momentDate = moment(val);
+                    const momentDate = moment(val, 'hh:mm:ss');
                     if (momentDate.isValid()) {
                         momentDate.milliseconds(0);
                         valueToSet = momentDate.format('HH:mm:ss');
@@ -927,13 +932,14 @@ export class SchemaFormComponent implements OnInit {
             item.list = [];
             let count = suggest.length;
             while (count-- > 0) {
-                const control = this.createListControl(item);
+                const control = this.createListControl(item, Array.isArray(suggest) ? suggest[count] : undefined);
                 item.list.push(control);
                 (item.control as UntypedFormArray).push(control.control);
             }
         }
         item.control?.patchValue(suggest);
         item.control?.markAsDirty();
+        (item as any).subject.next();
     }
 
     public isEmpty(value: any): boolean {
@@ -952,6 +958,9 @@ export class SchemaFormComponent implements OnInit {
         }
         if (field.customType === 'geo') {
             return Object.keys(value).length === 0;
+        }
+        if (field.customType === 'sentinel') {
+            return JSON.stringify(value) === '{"layers":"NATURAL-COLOR","format":"image/jpeg","maxcc":null,"width":null,"height":null,"bbox":"","time":null}';
         }
         if (field.fields) {
             for (const _field of field.fields) {
@@ -1097,6 +1106,7 @@ export class SchemaFormComponent implements OnInit {
                 item.control?.disable();
             });
         }
+        (item as any).subject = new Subject();
         return item;
     }
 
@@ -1106,6 +1116,14 @@ export class SchemaFormComponent implements OnInit {
 
     public ifSimpleField(item: IFieldControl<any>): boolean {
         return !item.isArray && !item.isRef;
+    }
+
+    private createSubSchemaControl(item: IFieldControl<any>): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
+        if (item.customType === 'geo') {
+            return new UntypedFormControl({})
+        } else {
+            return new UntypedFormGroup({});
+        }
     }
 
     public ifSubSchema(item: IFieldControl<any>): boolean {

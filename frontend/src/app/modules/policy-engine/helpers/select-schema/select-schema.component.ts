@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { PolicyBlock, SchemaVariables } from '../../structures';
 
 /**
@@ -6,6 +6,7 @@ import { PolicyBlock, SchemaVariables } from '../../structures';
  */
 @Component({
     selector: 'select-schema',
+    changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './select-schema.component.html',
     styleUrls: ['./select-schema.component.scss']
 })
@@ -25,5 +26,14 @@ export class SelectSchema {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+    }
+
+    getSchemaOptions() {
+        return this.schemas.map(schema => ({
+            label: schema.displayName,
+            value: schema.value,
+            tooltip: schema.tooltip,
+            disabled: schema.disable
+        }));
     }
 }

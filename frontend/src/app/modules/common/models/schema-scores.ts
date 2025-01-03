@@ -93,6 +93,7 @@ export class SchemaScores {
     }
 
     public fromData(data: IScoreData[] | undefined) {
+        this.names.clear();
         this.scores = [];
         if (data) {
             for (let index = 0; index < data.length; index++) {

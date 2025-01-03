@@ -1,0 +1,339 @@
+<div class="guardian-page">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+    </div>
+
+    <div class="header-container">
+        <div class="guardian-user-back-button">
+            <button 
+                (click)="onBack()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Labels</div>
+            </button>
+        </div>
+    
+        <div class="guardian-user-page-header">
+            <span>{{definition?.name}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="stepper[0]" (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/list.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Overview</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[1]" (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Document</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="stepper[2]" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/tree.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Relationships</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="body-container">
+
+        <div *ngIf="navLoading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <div *ngIf="stepper[0]" class="nav-body-container">
+            <div *ngIf="definition" class="step-body-container">
+                <div class="fields-container">
+                    <div class="field-container">
+                        <div class="field-name">Name</div>
+                        <div class="field-value">{{definition.name}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Name</div>
+                        <div class="field-value">{{policy.name}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Version</div>
+                        <div class="field-value">{{policy.version}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Policy Topic ID</div>
+                        <div class="field-value">{{document.policyInstanceTopicId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Topic ID</div>
+                        <div class="field-value">{{document.topicId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Message ID</div>
+                        <div class="field-value">{{document.messageId}}</div>
+                    </div>
+                    <div class="field-container">
+                        <div class="field-name">Target Document</div>
+                        <div class="field-value">{{document.target}}</div>
+                    </div>
+                    <ng-container *ngIf="token">
+                        <div class="field-container">
+                            <div class="field-name">Token Id</div>
+                            <div class="field-value">{{token.tokenId}}</div>
+                        </div>
+                        <div class="field-container">
+                            <div class="field-name">Amount</div>
+                            <div class="field-value">{{token.amount}}</div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="stepper[1]" class="nav-body-container">
+            <div class="step-body-container">
+                <div class="node-container" *ngFor="let current of steps">
+                    <div *ngIf="current.type === 'validate'" class="node-header">
+                        <span class="node-status" [attr.status]="current.item.status"></span>
+                        <span *ngIf="current.prefix" class="node-prefix">{{current.prefix}}</span>
+                        <span>{{current.title}}</span>
+                    </div>
+
+                    <div *ngIf="current.type !== 'validate'" class="node-body">
+                        <div class="node-sub-header">
+                            <span *ngIf="current.prefix" class="node-prefix">{{current.name}}</span>
+                        </div>
+
+                        <ng-container *ngIf="current.type === 'variables'">
+                            <div *ngFor="let variable of current.config" class="field-container">
+                                <div class="field-name">
+                                    {{variable.fieldDescription}}
+                                </div>
+                                <ng-container *ngIf="variable.isArray">
+                                    <div class="field-value-array">
+                                        <div *ngFor="let v of variable.value" class="field-value">
+                                            {{getVariableValue(v)}}
+                                        </div>
+                                    </div>
+                                </ng-container>
+                                <ng-container *ngIf="!variable.isArray">
+                                    <div class="field-value">
+                                        {{getVariableValue(variable.value)}}
+                                    </div>
+                                </ng-container>
+        
+                            </div>
+                        </ng-container>
+        
+                        <ng-container *ngIf="current.type === 'scores'">
+                            <div *ngFor="let score of current.config" class="score-container">
+                                <div *ngIf="score.relationships" class="fields-container">
+                                    <div *ngFor="let variable of score._relationships" class="field-container">
+                                        <div class="field-name">
+                                            {{variable.fieldDescription}}
+                                        </div>
+                                        <ng-container *ngIf="variable.isArray">
+                                            <div class="field-value-array">
+                                                <div *ngFor="let v of variable.value" class="field-value">
+                                                    {{getVariableValue(v)}}
+                                                </div>
+                                            </div>
+                                        </ng-container>
+                                        <ng-container *ngIf="!variable.isArray">
+                                            <div class="field-value">
+                                                {{getVariableValue(variable.value)}}
+                                            </div>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                                <div class="score-name">
+                                    {{score.description}}
+                                </div>
+                                <div *ngIf="score._options" class="options-container">
+                                    <div *ngFor="let option of score._options" class="option-container">
+                                        <div class="option-checkbox">
+                                            <p-radioButton 
+                                                class="guardian-radio-button radio-button-24"
+                                                [name]="score.id" 
+                                                [value]="option.value" 
+                                                [(ngModel)]="score.value"
+                                                [inputId]="option.id"
+                                                readonly="true"
+                                            ></p-radioButton>
+                                        </div>
+                                        <label class="option-name" [for]="option.id">
+                                            {{option.description}}
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </ng-container>
+        
+                        <ng-container *ngIf="current.type === 'formulas'">
+                            <div *ngFor="let formula of current.config" class="field-container">
+                                <div class="field-name">
+                                    {{formula.description}}
+                                </div>
+                                <div class="field-value">
+                                    {{formula.value}}
+                                </div>
+                            </div>
+                        </ng-container>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div *ngIf="stepper[2]" class="nav-body-container">
+            <div class="tree-container">
+                <app-tree-graph 
+                    (init)="initTree($event)"
+                    (render)="createNodes($event)"
+                    (select)="onSelectNode($event)"
+                >
+                    <ng-template 
+                        #nodeTemplate 
+                        let-node="node" 
+                    >
+                        <div  class="tree-node {{node.type}}-node selected-type-{{node.selected}}">
+                            <div class="node-header">
+                                {{node.data.schemaName}}
+                            </div>
+                        </div>
+                    </ng-template>
+                </app-tree-graph>
+            </div>
+
+            <div class="zoom-toolbar" [attr.hidden-schema]="!selectedNode">
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(0)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/center.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/add.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+                <div class="zoom-button">
+                    <div class="zoom-label">{{zoom}}%</div>
+                </div>
+                <div class="zoom-button">
+                    <button 
+                        class="guardian-icon-button" 
+                        (click)="onZoom(-1)">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/minus.svg"
+                            svgClass="icon-color-primary">
+                        </svg-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="schema-fields" [attr.hidden-schema]="!selectedNode">
+                <div *ngIf="nodeLoading" class="guardian-loading">
+                    <div class="guardian-loading-image"></div>
+                </div>
+                <div *ngIf="selectedNode" class="schema-fields-container">
+                    <div class="schema-name">
+                        {{selectedNode.data.schemaName}}
+                        <div class="schema-close" (click)="onClearNode()">
+                            <svg-icon 
+                                src="/assets/images/icons/close.svg" 
+                                svgClass="icon-color-close"></svg-icon>
+                        </div>
+                    </div>
+                    <div *ngIf="selectedNode.entity === 'vp'" class="schema-config">
+                        <div class="fields-container">
+                            <div class="field-container">
+                                <div class="field-name">Message ID</div>
+                                <div class="field-value">{{selectedNode.data?.messageId}}</div>
+                            </div>
+                            <div class="field-container">
+                                <div class="field-name">Issuer</div>
+                                <div class="field-value">{{selectedNode.data?.document?.issuer}}</div>
+                            </div>
+                        </div>
+                        <button 
+                            (click)="openVPDocument(selectedNode.data)" 
+                            class="guardian-button guardian-button-secondary">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon"
+                                    src="/assets/images/icons/document.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">View document</div>
+                        </button>
+                    </div>
+                    <div *ngIf="selectedNode.entity !== 'vp'" class="schema-config">
+                        <div class="fields-container">
+                            <div class="field-container">
+                                <div class="field-name">Message ID</div>
+                                <div class="field-value">{{selectedNode.data?.messageId}}</div>
+                            </div>
+                            <div class="field-container">
+                                <div class="field-name">Issuer</div>
+                                <div class="field-value">{{selectedNode.data?.document?.issuer}}</div>
+                            </div>
+                        </div>
+                        <button 
+                            (click)="openVCDocument(selectedNode.data)" 
+                            class="guardian-button guardian-button-secondary">
+                            <div class="guardian-button-icon">
+                                <svg-icon class="icon-btn svg-icon"
+                                    src="/assets/images/icons/document.svg"
+                                    svgClass="icon-color-primary">
+                                </svg-icon>
+                            </div>
+                            <div class="guardian-button-label">View document</div>
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

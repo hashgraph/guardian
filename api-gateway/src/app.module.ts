@@ -43,6 +43,7 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
 import { PolicyStatisticsApi } from './api/service/policy-statistics.js';
 import { SchemaRulesApi } from './api/service/schema-rules.js';
 import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
+import { PolicyLabelsApi } from './api/service/policy-labels.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -96,6 +97,7 @@ import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/ind
         PermissionsApi,
         PolicyStatisticsApi,
         SchemaRulesApi,
+        PolicyLabelsApi,
         WorkerTasksController
     ],
     providers: [

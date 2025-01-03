@@ -59,13 +59,12 @@ VM0033 on Guardian platform is set to become a powerful tool for scaling up tida
 
 ## Policy Workflow
 
-Coming Soon
 
 ## Policy Guide
 
 First version of this policy is published to the Hedera network and can be imported via Github (.policy file) or IPFS timestamp.
 
-IPFS Timestamp of 0.0.1 - 1728312926.986578213
+IPSF Timestamp of 0.0.2 - 1729153016.931600601
 
 ### Available Roles
 

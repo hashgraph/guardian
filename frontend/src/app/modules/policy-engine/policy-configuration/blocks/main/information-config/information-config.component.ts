@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'informationBlock' type.
@@ -23,6 +23,11 @@ export class InformationConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    uiMetaDataTypeOptions = [
+        {label: 'LOADER', value: 'loader'},
+        {label: 'TEXT', value: 'text'}
+    ];
 
     constructor() {
     }

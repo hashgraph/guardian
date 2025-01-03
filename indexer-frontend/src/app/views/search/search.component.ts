@@ -58,6 +58,12 @@ export class SearchViewComponent {
         },
         {
             type: ColumnType.TEXT,
+            title: 'grid.topicId',
+            field: 'topicId',
+            width: '200px',
+        },
+        {
+            type: ColumnType.TEXT,
             title: 'grid.consensus_timestamp',
             field: 'consensusTimestamp',
             width: '200px',
@@ -193,6 +199,8 @@ export class SearchViewComponent {
                 ]);
                 break;
             }
+            case 'NON_FUNGIBLE_UNIQUE':
+            case 'FUNGIBLE_COMMON':
             case 'Token': {
                 this.router.navigate([`/tokens/${item.tokenId}`]);
                 break;

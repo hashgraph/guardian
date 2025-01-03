@@ -65,7 +65,8 @@ export enum PermissionEntities {
     TRUST_CHAIN = 'TRUST_CHAIN',
     ROLE = 'ROLE',
     STATISTIC = 'STATISTIC',
-    RULE = 'RULE'
+    RULE = 'RULE',
+    LABEL = 'LABEL'
 }
 
 /**
@@ -221,6 +222,8 @@ export enum Permissions {
     //STATISTICS
     STATISTICS_STATISTIC_CREATE = 'STATISTICS_STATISTIC_CREATE',
     STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ',
+    STATISTICS_LABEL_CREATE = 'STATISTICS_LABEL_CREATE',
+    STATISTICS_LABEL_READ = 'STATISTICS_LABEL_READ',
     //SCHEMA RULES
     SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
     SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ',
@@ -349,7 +352,7 @@ export const PermissionsArray: {
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.MANAGE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.CONTRACTS_CONTRACT_READ,
                 Permissions.CONTRACTS_CONTRACT_CREATE,
@@ -1145,6 +1148,20 @@ export const PermissionsArray: {
             action: PermissionActions.CREATE,
             disabled: false
         },
+        {
+            name: Permissions.STATISTICS_LABEL_READ,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.STATISTICS_LABEL_CREATE,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.CREATE,
+            disabled: false
+        },
         //SCHEMA RULE
         {
             name: Permissions.SCHEMAS_RULE_READ,
@@ -1334,6 +1351,8 @@ export const DefaultRoles: Permissions[] = [
     Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
     Permissions.STATISTICS_STATISTIC_READ,
     Permissions.STATISTICS_STATISTIC_CREATE,
+    Permissions.STATISTICS_LABEL_READ,
+    Permissions.STATISTICS_LABEL_CREATE,
     Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 

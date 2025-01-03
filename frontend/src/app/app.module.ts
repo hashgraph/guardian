@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
@@ -37,6 +37,7 @@ import { NotificationService } from './services/notify.service';
 import { PermissionsService } from './services/permissions.service';
 import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
+import { PolicyLabelsService } from './services/policy-labels.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -54,7 +55,6 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
-import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -75,8 +75,7 @@ import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
-import { PolicyStatisticsModule } from './modules/policy-statistics/policy-statistics.module';
-import { SchemaRulesModule } from './modules/schema-rules/schema-rules.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -152,7 +151,6 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         InfoComponent,
         SchemaConfigComponent,
         BrandingComponent,
-        BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         NotificationComponent,
@@ -177,23 +175,21 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         UsersManagementDetailComponent,
         WorkerTasksComponent
     ],
-    imports: [
-        BrowserModule,
+    exports: [],
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         CommonModule,
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
-        PolicyStatisticsModule,
-        SchemaRulesModule,
+        StatisticsModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
-        HttpClientJsonpModule,
         QRCodeModule,
         ButtonModule,
         InputTextModule,
@@ -219,9 +215,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()
-    ],
-    exports: [],
+        AngularSvgIconModule.forRoot()],
     providers: [
         WebSocketService,
         AuthService,
@@ -233,6 +227,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         PolicyEngineService,
         PolicyStatisticsService,
         SchemaRulesService,
+        PolicyLabelsService,
         PolicyHelper,
         IPFSService,
         ArtifactService,
@@ -274,8 +269,9 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi: true,
-        }
-    ],
-    bootstrap: [AppComponent],
+        },
+        provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
+    ]
 })
-export class AppModule { }
+export class AppModule {
+}

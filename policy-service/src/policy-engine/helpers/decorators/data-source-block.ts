@@ -3,6 +3,7 @@ import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { IPolicyBlock } from '../../policy-engine.interface.js';
 import { PolicyUser } from '../../policy-user.js';
 import { BlockActionError } from '../../errors/index.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Datasource block decorator
@@ -96,6 +97,58 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 })
             }
 
+            private parseFilterValue(filterValue: any) {
+                if (!filterValue) {
+                    return { operator: null, value: null };
+                } else if (filterValue.$eq) {
+                    return { operator: '$eq', value: filterValue.$eq };
+                } else if (filterValue.$ne) {
+                    return { operator: '$ne', value: filterValue.$ne };
+                } else if (filterValue.$in) {
+                    return { operator: '$in', value: filterValue.$in };
+                } else if (filterValue.$nin) {
+                    return { operator: '$nin', value: filterValue.$nin };
+                } else if (filterValue.$gt) {
+                    return { operator: '$gt', value: filterValue.$gt };
+                } else if (filterValue.$gte) {
+                    return { operator: '$gte', value: filterValue.$gte };
+                } else if (filterValue.$lt) {
+                    return { operator: '$lt', value: filterValue.$lt };
+                } else if (filterValue.$lte) {
+                    return { operator: '$lte', value: filterValue.$lte };
+                } else if (filterValue.$regex) {
+                    return { operator: '$regex', value: filterValue.$regex };
+                } else {
+                    return { operator: '$eq', value: filterValue };
+                }
+            }
+
+            private checkNumberValue(key: string, filterValue: any): any {
+                const { operator, value } = this.parseFilterValue(filterValue);
+                if (operator) {
+                    const filter: any = {};
+                    if (isNaN(value)) {
+                        filter[key] = {};
+                        filter[key][operator] = value;
+                    } else {
+                        const filter1: any = {};
+                        const filter2: any = {};
+                        filter1[key] = {};
+                        filter1[key][operator] = String(value);
+                        filter2[key] = {};
+                        filter2[key][operator] = Number(value);
+                        if (operator === '$ne' || operator === '$nin') {
+                            filter.$and = [filter1, filter2];
+                        } else {
+                            filter.$or = [filter1, filter2];
+                        }
+                    }
+                    return filter;
+                } else {
+                    return null;
+                }
+            }
+
             /**
              * Get global sources
              * @param user
@@ -107,8 +160,13 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 const dynFilters = {};
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
-                        for (const [key, value] of Object.entries(await child.getFilters(user))) {
-                            dynFilters[key] = { $eq: value };
+                        for (const [key, filterValue] of Object.entries(await child.getFilters(user))) {
+                            const { operator, value } = this.parseFilterValue(filterValue);
+                            if (operator) {
+                                dynFilters[key] = {};
+                                dynFilters[key][operator] = value;
+                            }
+
                         }
                     }
                 }
@@ -127,7 +185,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                 for (const child of this.children) {
                     if (child.blockClassName === 'DataSourceAddon') {
                         for (const [key, value] of Object.entries(await child.getFilters(user))) {
-                            dynFilters.push({ $eq: [value, `\$${key}`] });
+                            dynFilters.push(PolicyUtils.getQueryFilter(key, value));
                         }
                     }
                 }
@@ -150,15 +208,29 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                  */
                 dataType: number
             }> {
-                const filters = [];
                 const sourceAddons = this.children.filter(c => c.blockClassName === 'SourceAddon');
+                const filters = [];
+                filters.push({
+                    $set: {
+                        firstCredentialSubject: {
+                            $ifNull: [{
+                                $arrayElemAt: ['$document.credentialSubject', 0]
+                            }, null]
+                        }
+                    }
+                });
+
                 for (const addon of sourceAddons) {
                     const blockFilter = await addon.getFromSourceFilters(user, globalFilters);
                     if (!blockFilter) {
                         continue;
                     }
+
                     filters.push(blockFilter);
                 }
+                filters.push({
+                    $unset: 'firstCredentialSubject'
+                });
                 return { filters, dataType: sourceAddons[0].options.dataType };
             }
 
@@ -170,25 +242,24 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
              * @param countResult
              * @protected
              */
-            protected async getSources(user: PolicyUser, globalFilters: any, paginationData: any, countResult: boolean = false): Promise<any[] | number> {
+            protected async getSources(
+                user: PolicyUser,
+                globalFilters: any,
+                paginationData: any,
+                countResult: boolean = false
+            ): Promise<any[] | number> {
                 const data = [];
                 let totalCount = 0;
                 let currentPosition = 0;
 
                 const _globalFilters = {} as any;
-                for (const key in globalFilters) {
-                    if (!isNaN(globalFilters[key].$eq)) {
-                        if (!_globalFilters.$or) {
-                            _globalFilters.$or = [];
+                for (const key of Object.keys(globalFilters)) {
+                    const value = this.checkNumberValue(key, globalFilters[key]);
+                    if (value) {
+                        if (!_globalFilters.$and) {
+                            _globalFilters.$and = [];
                         }
-                        const filter1 = {} as any;
-                        filter1[key] = {$eq: String(globalFilters[key].$eq)};
-                        _globalFilters.$or.push(filter1);
-                        const filter2 = {} as any;
-                        filter2[key] = {$eq: Number(globalFilters[key].$eq)};
-                        _globalFilters.$or.push(filter2);
-                    } else {
-                        _globalFilters[key] = globalFilters[key];
+                        _globalFilters.$and.push(value);
                     }
                 }
 

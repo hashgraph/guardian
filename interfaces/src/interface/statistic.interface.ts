@@ -1,8 +1,11 @@
+import { IConditionRuleData, IFormulaRuleData, IRangeRuleData } from './schema-rules.interface.js';
+
 export interface IFormulaData {
     id: string;
     type: string;
     description: string;
     formula: string;
+    rule?: IFormulaRuleData | IConditionRuleData | IRangeRuleData;
 }
 
 export interface IVariableData {
@@ -57,7 +60,9 @@ export interface IStatistic {
     description?: string;
     instanceTopicId?: string;
     policyId?: string;
+    messageId?: string;
     owner?: string;
+    creator?: string;
     status?: string;
     config?: IStatisticConfig;
 }

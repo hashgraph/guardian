@@ -25,6 +25,13 @@
     height: 80%;
 }
 
+.grid-filters {
+    display: flex;
+    gap: 16px;
+    background-color: #f9fafc;
+    flex-wrap: wrap;
+}
+
 
 .table-container {
     overflow: scroll;
@@ -187,7 +194,7 @@
 .text {
     overflow: hidden;
     white-space: nowrap;
-    max-width: 40vw;
+    max-width: 400px;
     display: inline-block;
     text-overflow: ellipsis;
 }
@@ -198,7 +205,8 @@
     position: relative;
 }
 
-.array.text mat-icon {
+.array.text i,
+.array.text svg,{
     position: absolute;
     right: 0;
     top: 0;
@@ -211,7 +219,8 @@
     position: relative;
 }
 
-.serials mat-icon {
+.serials i,
+.serials svg {
     position: absolute;
     right: 0;
     top: 0;
@@ -325,4 +334,20 @@ tr.revoked td:not(.mat-column-history) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+::ng-deep .table.no-hover th,
+::ng-deep .p-datatable .p-sortable-column.p-highlight:hover {
+    background-color: transparent;
+    cursor: default;
+    color: var(--color-grey-5, #495057);
+}
+
+::ng-deep .p-datatable-thead {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+::ng-deep .p-datatable-tbody .pi {
+    font-size: 0.75rem;
 }

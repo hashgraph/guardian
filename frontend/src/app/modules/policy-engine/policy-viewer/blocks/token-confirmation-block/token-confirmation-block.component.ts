@@ -1,8 +1,8 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import {Component, ElementRef, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
 /**
@@ -126,7 +126,8 @@ export class TokenConfirmationBlockComponent implements OnInit {
                     action: 'confirm',
                 })
                 .subscribe(
-                    () => { },
+                    () => {
+                    },
                     (e) => {
                         console.error(e.error);
                         this.loading = false;
@@ -150,5 +151,9 @@ export class TokenConfirmationBlockComponent implements OnInit {
                     this.loading = false;
                 }
             );
+    }
+
+    togglePasswordVisibility(inputElement: HTMLInputElement): void {
+        inputElement.type = inputElement.type === 'password' ? 'text' : 'password';
     }
 }

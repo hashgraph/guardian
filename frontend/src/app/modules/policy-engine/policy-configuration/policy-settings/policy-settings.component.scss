@@ -59,7 +59,8 @@
         height: 76px;
         width: 76px;
 
-        & mat-icon {
+        & i,
+        & svg {
             color: var(--pc-active-icon-color);
             font-size: 40px;
             width: 40px;
@@ -142,7 +143,7 @@
             padding-left: 44px;
             padding-right: 16px;
 
-            mat-icon {
+            i, svg {
                 position: absolute;
                 left: 11px;
                 top: 9px;
@@ -170,7 +171,7 @@
         color: var(--pc-active-icon-color);
         border-radius: 6px;
 
-        mat-icon {
+        i, svg {
             position: absolute;
             left: 12px;
             top: 4px;
@@ -238,7 +239,8 @@
             cursor: pointer;
             color: var(--pc-header-color);
 
-            & mat-icon {
+            & i,
+            & svg {
                 position: absolute;
                 left: 10px;
                 top: 6px;
@@ -671,4 +673,28 @@
 .switch-btn {
     width: 180px;
     height: 32px;
+}
+
+.settings-select,
+.settings-select ::ng-deep p-dropdown .p-dropdown{
+    height: 38px !important;
+}
+
+.settings-select .p-fluid{
+    position: relative;
+    line-height: 0.2;
+}
+
+.settings-select .dropdown-label {
+    position: absolute;
+    z-index: 1000;
+    width: 36px;
+    font-size: 10px;
+    background: white;
+    height: 5px;
+    left: 10px;
+}
+
+.settings-select ::ng-deep p-dropdown .p-dropdown-label {
+    padding: 18px;
 }

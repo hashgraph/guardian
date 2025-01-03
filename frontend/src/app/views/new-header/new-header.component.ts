@@ -1,15 +1,14 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { getMenuItems, NavbarMenuItem } from './menu.model';
-import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
-import { AuthStateService } from '../../services/auth-state.service';
-import { AuthService } from '../../services/auth.service';
-import { DemoService } from '../../services/demo.service';
-import { NavigationEnd, Router } from '@angular/router';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { ProfileService } from '../../services/profile.service';
-import { WebSocketService } from '../../services/web-socket.service';
-import { HeaderPropsService } from '../../services/header-props.service';
-import { BrandingService } from '../../services/branding.service';
+import {Component, Input, OnInit} from '@angular/core';
+import {getMenuItems, NavbarMenuItem} from './menu.model';
+import {IUser, UserCategory, UserPermissions, UserRole} from '@guardian/interfaces';
+import {AuthStateService} from '../../services/auth-state.service';
+import {AuthService} from '../../services/auth.service';
+import {DemoService} from '../../services/demo.service';
+import {NavigationEnd, Router} from '@angular/router';
+import {ProfileService} from '../../services/profile.service';
+import {WebSocketService} from '../../services/web-socket.service';
+import {HeaderPropsService} from '../../services/header-props.service';
+import {BrandingService} from '../../services/branding.service';
 
 @Component({
     selector: 'app-new-header',
@@ -35,11 +34,11 @@ export class NewHeaderComponent implements OnInit {
 
     @Input() remoteContainerMethod: any;
 
-    constructor(public authState: AuthStateService,
+    constructor(
+        public authState: AuthStateService,
         public auth: AuthService,
         public otherService: DemoService,
         public router: Router,
-        public dialog: MatDialog,
         public profileService: ProfileService,
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,
@@ -147,7 +146,7 @@ export class NewHeaderComponent implements OnInit {
                 const logo = document.getElementById('company-logo') as HTMLImageElement;
                 if (logo) {
                     logo.src = res.companyLogoUrl;
-                    if(res.companyLogoUrl) {
+                    if (res.companyLogoUrl) {
                         logo.style.display = 'block';
                     } else {
                         logo.style.display = 'none';
@@ -216,7 +215,7 @@ export class NewHeaderComponent implements OnInit {
     }
 
     public onRouter(barItem: any) {
-        if(barItem.childItems) {
+        if (barItem.childItems) {
             barItem.active = !barItem.active
         } else {
             this.router.navigate([barItem.routerLink]);

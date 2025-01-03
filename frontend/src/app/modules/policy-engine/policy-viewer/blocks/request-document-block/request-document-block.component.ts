@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { DocumentGenerator, ISchema, Schema } from '@guardian/interfaces';
+import { DocumentGenerator, DocumentValidators, ISchema, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -10,7 +10,6 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { SchemaRuleValidators } from 'src/app/modules/common/models/field-rule-validator';
 import { audit, takeUntil } from 'rxjs/operators';
 import { interval, Subject } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -73,7 +72,7 @@ export class RequestDocumentBlockComponent
     public dialogRef: any;
     public buttonClass: any;
     public restoreData: any;
-    public rules: SchemaRuleValidators;
+    public rules: DocumentValidators;
     public rulesResults: any;
     public destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -194,7 +193,7 @@ export class RequestDocumentBlockComponent
                 parentId: this.ref?.id
             })
             .subscribe((rules) => {
-                this.rules = new SchemaRuleValidators(rules);
+                this.rules = new DocumentValidators(rules);
                 setTimeout(() => {
                     this.loading = false;
                 }, 500);
@@ -261,6 +260,10 @@ export class RequestDocumentBlockComponent
     public preset(document: any) {
         this.presetDocument = document;
         this.changeDetectorRef.detectChanges();
+    }
+
+    public getRef() {
+        return this.ref;
     }
 
     public onDialog() {

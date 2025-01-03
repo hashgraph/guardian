@@ -93,18 +93,27 @@ Promise.all([
     await worker.init({
         NAME: channelName,
         CYCLE_TIME: Utils.getIntParm(process.env.CYCLE_TIME, 60 * 60 * 1000),
+        //MESSAGE
         MESSAGE_READ_DELAY: Utils.getIntParm(process.env.MESSAGE_READ_DELAY, 1000),
-        MESSAGE_READ_TIMEOUT: Utils.getIntParm(process.env.MESSAGE_READ_TIMEOUT, 60000),
-        MESSAGE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.MESSAGE_JOB_REFRESH_TIME, 60000),
+        MESSAGE_READ_TIMEOUT: Utils.getIntParm(process.env.MESSAGE_READ_TIMEOUT, 60 * 1000),
+        MESSAGE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.MESSAGE_JOB_REFRESH_TIME, 60 * 1000),
         MESSAGE_JOB_COUNT: Utils.getIntParm(process.env.MESSAGE_JOB_COUNT, 10),
+        //TOPIC
         TOPIC_READ_DELAY: Utils.getIntParm(process.env.TOPIC_READ_DELAY, 1000),
-        TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60000),
-        TOPIC_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOPIC_JOB_REFRESH_TIME, 60000),
+        TOPIC_READ_TIMEOUT: Utils.getIntParm(process.env.TOPIC_READ_TIMEOUT, 60 * 1000),
+        TOPIC_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOPIC_JOB_REFRESH_TIME, 60 * 1000),
         TOPIC_JOB_COUNT: Utils.getIntParm(process.env.TOPIC_JOB_COUNT, 5),
-        TOKEN_READ_DELAY: Utils.getIntParm(process.env.TOKEN__READ_DELAY, 1000),
-        TOKEN_READ_TIMEOUT: Utils.getIntParm(process.env.TOKEN__READ_TIMEOUT, 60000),
-        TOKEN_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOKEN__JOB_REFRESH_TIME, 60000),
-        TOKEN_JOB_COUNT: Utils.getIntParm(process.env.TOKEN__JOB_COUNT, 2),
+        //TOKEN
+        TOKEN_READ_DELAY: Utils.getIntParm(process.env.TOKEN_READ_DELAY, 1000),
+        TOKEN_READ_TIMEOUT: Utils.getIntParm(process.env.TOKEN_READ_TIMEOUT, 60 * 1000),
+        TOKEN_JOB_REFRESH_TIME: Utils.getIntParm(process.env.TOKEN_JOB_REFRESH_TIME, 60 * 1000),
+        TOKEN_JOB_COUNT: Utils.getIntParm(process.env.TOKEN_JOB_COUNT, 2),
+        //FILE
+        FILE_CYCLE_TIME: Utils.getIntParm(process.env.FILE_CYCLE_TIME, 24 * 60 * 60 * 1000),
+        FILE_READ_DELAY: Utils.getIntParm(process.env.FILE_READ_DELAY, 5 * 1000),
+        FILE_READ_TIMEOUT: Utils.getIntParm(process.env.FILE_READ_TIMEOUT, 60 * 1000),
+        FILE_JOB_REFRESH_TIME: Utils.getIntParm(process.env.FILE_JOB_REFRESH_TIME, 60 * 1000),
+        FILE_JOB_COUNT: Utils.getIntParm(process.env.FILE_JOB_COUNT, 1),
     }).start();
 
     // await state.updateState(ApplicationStates.READY);
