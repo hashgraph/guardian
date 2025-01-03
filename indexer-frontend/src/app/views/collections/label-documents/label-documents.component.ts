@@ -91,7 +91,7 @@ export class LabelDocumentsComponent extends BaseGridComponent {
             type: ColumnType.TEXT,
             field: 'analytics.labelName',
             title: 'grid.name',
-            width: '500px',
+            width: '400px',
         },
         {
             type: ColumnType.CHIP,

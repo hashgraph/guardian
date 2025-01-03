@@ -158,6 +158,12 @@ export class SynchronizationLabels extends SynchronizationTask {
                 {
                     analytics: undefined,
                 },
+                {
+                    'analytics.labelName': undefined,
+                },
+                {
+                    'analytics.tokenId': undefined,
+                },
             ],
         };
     }

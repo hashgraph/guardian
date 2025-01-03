@@ -112,22 +112,24 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message, tryLoad: boolean): Promise<IMessage> {
+async function loadDocuments(row: Message, tryLoad: boolean): Promise<Message> {
     try {
-        if (!row?.files?.length) {
-            return row;
+        const result = { ...row };
+        if (!result?.files?.length) {
+            return result;
         }
 
         if (tryLoad) {
-            await checkDocuments(row, 20 * 1000);
-            await saveDocuments(row);
+            await checkDocuments(result, 20 * 1000);
+            await saveDocuments(result);
         }
 
-        row.documents = [];
-        for (const fileName of row.files) {
+        result.documents = [];
+        for (const fileName of result.files) {
             const file = await DataBaseHelper.loadFile(fileName);
-            row.documents.push(file);
+            result.documents.push(file);
         }
+        return result;
     } catch (error) {
         return row;
     }
@@ -474,7 +476,7 @@ export class EntityService {
                     fields: ['options'],
                 }
             );
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 topicId: {
                     $in: registryOptions.map(
                         (reg) => reg.options.registrantTopicId
@@ -497,7 +499,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, false);
+            item = await loadDocuments(item, false);
 
             const vcs = await em.count(Message, {
                 type: MessageType.VC_DOCUMENT,
@@ -817,7 +819,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.SCHEMA,
                 action: {
@@ -854,7 +856,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             return new MessageResponse<SchemaDetails>({
                 id: messageId,
@@ -995,7 +997,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.ROLE_DOCUMENT,
             });
@@ -1020,7 +1022,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             return new MessageResponse<RoleDetails>({
                 id: messageId,
@@ -1268,7 +1270,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.DID_DOCUMENT,
             });
@@ -1283,7 +1285,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1296,8 +1298,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
             return new MessageResponse<DIDDetails>({
                 id: messageId,
@@ -1378,7 +1380,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VP_DOCUMENT,
             });
@@ -1393,7 +1395,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1406,8 +1408,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
 
             const labels = (await em.find(Message, {
@@ -1415,8 +1417,6 @@ export class EntityService {
                 action: MessageAction.CreateLabelDocument,
                 'options.target': messageId
             } as any));
-
-            console.log()
 
             return new MessageResponse<VPDetails>({
                 id: messageId,
@@ -1507,7 +1507,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VC_DOCUMENT,
             });
@@ -1522,7 +1522,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             const schema = await loadSchema(item, true);
 
@@ -1538,9 +1538,10 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
+
             return new MessageResponse<VCDetails>({
                 id: messageId,
                 uuid: item.uuid,
@@ -1624,7 +1625,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VP_DOCUMENT,
             });
@@ -1639,7 +1640,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1652,8 +1653,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
 
             const label = (await em.findOne(Message, {
