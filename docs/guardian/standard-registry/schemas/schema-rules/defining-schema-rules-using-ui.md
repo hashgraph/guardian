@@ -19,46 +19,46 @@ Schema rules have been created to enable authorised policy users to offer assist
 
 Each Policy can have associated by Schema rules. The list of schema rules is displayed in the corresponding section of the UI, which provides the facility to enable/disable each of them individually.
 
-![](<../../../../.gitbook/assets/0 (1).png>)
+![](<../../../../.gitbook/assets/0 (1) (1).png>)
 
 #### **1.2 Creation**
 
 To initiate the creation of a new schema rules users need to click on the ‘Create New’ button in the corresponding UI section.
 
-<figure><img src="../../../../.gitbook/assets/1 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/1 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/2 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/2 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.3 Configuration**
 
 After a rule has been created it should be configured to be meaningful, the process can be started by clicking the edit icon in the rules grid.
 
-![](<../../../../.gitbook/assets/3 (1).png>)
+![](<../../../../.gitbook/assets/3 (1) (1).png>)
 
 **1.3.1 General configuration**
 
 Specifying the rules name and its ‘target’ policy is mandatory.
 
-![](<../../../../.gitbook/assets/4 (1).png>)
+![](<../../../../.gitbook/assets/4 (1) (1).png>)
 
 **1.3.2 Configuring fields and schema**
 
 To source data from documents rule creators need to specify which fields from which schemas should be retrieved. Schema tree view shows policy schemas in a hierarchical structure, and allows to select the target fields.
 
-![](<../../../../.gitbook/assets/5 (1).png>)
+![](<../../../../.gitbook/assets/5 (1) (1).png>)
 
 **1.3.2.1 Search**
 
 In complex policies the complexity of schema structures can be difficult to navigate, rules creators could use search tool to optimize their work.\
 
 
-<figure><img src="../../../../.gitbook/assets/6 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/6 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **1.3.2.2 Selection**
 
 Clicking on a schema box opens the side menu which lists all the fields available in the selected schema.
 
-![](<../../../../.gitbook/assets/7 (1).png>)
+![](<../../../../.gitbook/assets/7 (1) (1).png>)
 
 \
 &#xNAN;_&#x4E;ote: sub-schemas do not produce corresponding document, when such sub-schema is selected in the schema view the right hand panel shows the fields from the parent schema of which this sub-schema is a part._
@@ -68,7 +68,7 @@ Clicking on a schema box opens the side menu which lists all the fields availabl
 By default searching for fields is performed on the basis of the values in their description field, however it is possible to search for matches in their ‘property’ values by navigating into the corresponding tab.\
 
 
-<figure><img src="../../../../.gitbook/assets/8 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/8 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 _Note: some schema fields might not have or have empty property fields, such cases are displayed as greyed-out items in the list and their ‘description’ field is shown instead_
 
@@ -78,16 +78,16 @@ The selected schemas and their fields constitute ‘input’ data for the rules.
 
 The system automatically creates short variable names for the target fields, each of which then can be used as a rule target (for which to specify the acceptable values/ranged) or used in a formula to specify those for another field variable.
 
-![](<../../../../.gitbook/assets/9 (1).png>)
+![](<../../../../.gitbook/assets/9 (1) (1).png>)
 
 **1.3.3.1 Editing rules**
 
-<figure><img src="../../../../.gitbook/assets/10 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/10 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 There are a number of templates that can be used when configuring or editing rules. When a template is not selected for an existing rule it indicates that the rule is effectively non-existent for this field.\
 
 
-<figure><img src="../../../../.gitbook/assets/11 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/11 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **1.3.3.1 Templates**
 
@@ -97,13 +97,13 @@ Formula is the most flexible and most powerful rule template.
 
 Formulas must be configured such that their evaluation results in a true or false values (or numerical 0/1). Formulas support mathematical operations from [https://mathjs.org/](https://mathjs.org/) and Microsoft Excel function as supported by [https://formulajs.info/functions/](https://formulajs.info/functions/). Formulas can feature any or all fields which have been selected in the previous steps.
 
-<figure><img src="../../../../.gitbook/assets/12 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/12 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * **Range**
 
 Ranges are simplified rules which verify that the value of the target field falls between the two borderline values specified.
 
-![](<../../../../.gitbook/assets/13 (1).png>)
+![](<../../../../.gitbook/assets/13 (1) (1).png>)
 
 * **Condition**
 
@@ -115,7 +115,7 @@ This template allows for configuration of logical flows which can evaluate condi
 
 _Note: in cases where more than one ‘if’ condition would resolve to true only the first ‘then’ gets applied_
 
-<figure><img src="../../../../.gitbook/assets/14 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/14 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 The conditions are specified as formulas, which are subject for the principles and conventions specified above.
 
@@ -125,28 +125,28 @@ Formulas support notations for the following typical operations:
 * **Range –** simplified notation to check if the value is in the specified range
 * **Enum –** if the field of a type ‘enum’ this option allows the selection of a single or multiple values from the enum for matching. If any of these values match the formula is considered to have been resolved to ‘true’.
 
-<figure><img src="../../../../.gitbook/assets/15 (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/15 (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 **1.3.3.3 Preview**
 
 Preview option helps users to test the behaviour of the formulas during their configuration.
 
-![](<../../../../.gitbook/assets/16 (1).png>)
+![](<../../../../.gitbook/assets/16 (1) (1).png>)
 
 \
 Users are required to manually populate the values for the ‘input’ fields so to trigger the evaluation of the formulas.
 
-![](<../../../../.gitbook/assets/17 (1).png>)
+![](<../../../../.gitbook/assets/17 (1) (1).png>)
 
 If the formula contains an error, or the system is unable to calculate the resulting value the result field would be highlighted in red.
 
-![](<../../../../.gitbook/assets/18 (1).png>)
+![](<../../../../.gitbook/assets/18 (1) (1).png>)
 
 If the evaluation was successful the result field would be highlighted in amber (if the value ‘failed’ the evaluation) or in green (if it was a ‘success’).
 
-![](<../../../../.gitbook/assets/19 (1).png>)
+![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
-![](<../../../../.gitbook/assets/20 (1).png>)
+![](<../../../../.gitbook/assets/20 (1) (1).png>)
 
 Once all editing is done the template must be saved.
 
