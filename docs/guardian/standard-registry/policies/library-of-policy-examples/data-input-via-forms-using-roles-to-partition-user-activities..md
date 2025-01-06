@@ -29,7 +29,7 @@ See detailed information about the Roles in [Example 1](creating-and-using-roles
 
 1.1 Go to ‘Schemas’ tab and create a new schema
 
-![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![Creating new Schema](<../../../../.gitbook/assets/1 (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 1.2 To make sure there is some demo/test data content in this schema create 3 fields:
 

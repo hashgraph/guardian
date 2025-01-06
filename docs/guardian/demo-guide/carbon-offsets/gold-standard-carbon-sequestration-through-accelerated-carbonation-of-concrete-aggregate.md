@@ -83,7 +83,7 @@ Carbon sequestration projects play a crucial role in addressing global climate c
 
 ### Policy Workflow  <a href="#toc157611386" id="toc157611386"></a>
 
-<figure><img src="../../../.gitbook/assets/0 (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc157611387" id="toc157611387"></a>
 
@@ -124,9 +124,9 @@ Note:  If you would like to organize your data before adding it to the project f
 
 1. Create a new user and assign role as Project Proponent.&#x20;
 
-![](<../../../.gitbook/assets/1 (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/1 (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/2 (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.&#x20;
 

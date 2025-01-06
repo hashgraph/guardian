@@ -19,15 +19,15 @@ Schema rules have been created to enable authorised policy users to offer assist
 
 Each Policy can have associated by Schema rules. The list of schema rules is displayed in the corresponding section of the UI, which provides the facility to enable/disable each of them individually.
 
-![](<../../../../.gitbook/assets/0 (1) (1).png>)
+![](<../../../../.gitbook/assets/0 (1) (1) (1).png>)
 
 #### **1.2 Creation**
 
 To initiate the creation of a new schema rules users need to click on the ‘Create New’ button in the corresponding UI section.
 
-<figure><img src="../../../../.gitbook/assets/1 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/1 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/2 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/2 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.3 Configuration**
 

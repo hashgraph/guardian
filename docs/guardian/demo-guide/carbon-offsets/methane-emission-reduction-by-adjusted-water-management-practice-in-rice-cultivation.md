@@ -46,7 +46,7 @@ The Methane Emission Reduction in Rice Cultivation methodology offers a comprehe
 
 ## Policy Workflow
 
-<div align="left"><img src="../../../.gitbook/assets/0 (1) (1) (1).png" alt=""></div>
+<div align="left"><img src="../../../.gitbook/assets/0 (1) (1) (1) (1).png" alt=""></div>
 
 ## Policy Guide
 
