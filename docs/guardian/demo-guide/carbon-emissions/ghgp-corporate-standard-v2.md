@@ -167,7 +167,7 @@ The Organization is responsible for inputting key data and information and assig
 
 1. After the organizational emissions have been calculated, the Registry will approve or reject the CET issuance request, and consequently issue CETs if approved.
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 2. Once it is approved, tokens are minted as shown:
 

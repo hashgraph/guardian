@@ -47,7 +47,12 @@ There are a bunch of improved cookstove methodologies to choose from -
 
 According to a new [research](https://assets.researchsquare.com/files/rs-2606020/v1/c2e6a772-b013-49f9-9fc4-8d7d82d4bebc.pdf?c=1678869691) from scholars of University of California, Berkeley - Gold Standard’s Metered and Measured methodology, which directly monitors fuel use, is most aligned with the estimates (only 1.3 times over-credited) and is best suited for fuel switching projects which provide the most abatement potential and health benefit.
 
-This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local communities in the project development and monitoring process. This approach promotes greater transparency and accountability and helps to ensure that the environmental and social benefits of the project are maximized. This Guardian policy, is a reflection of same methodology according to the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle\_15042021\_Annyta.pdf).
+This approach is more precise than traditional methodologies, which rely on more generalized assumptions or estimates to
+calculate emissions reductions. It also places a strong emphasis on stakeholder engagement and the inclusion of local
+communities in the project development and monitoring process. This approach promotes greater transparency and
+accountability and helps to ensure that the environmental and social benefits of the project are maximized. This
+Guardian policy, is a reflection of same methodology according to
+the [Gold standard's typical project lifecycle](https://academy.sustain-cert.com/wp-content/uploads/sites/3/2021/10/GS-Project-Cycle_15042021_Annyta.pdf).
 
 ### Demo Video
 
@@ -55,7 +60,7 @@ This approach is more precise than traditional methodologies, which rely on more
 
 ### Policy Workflow
 
-<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide
 
@@ -129,7 +134,7 @@ Registry is allowed to publish and edit policy config, schemas, tokens and all t
 
 <figure><img src="../../../.gitbook/assets/image (38) (3).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 3. Once project is approved by registry, a detailed PDD(project design document) needs to be submitted. This is the most important document highlighting the technical details of project. It includes calculations around baseline, project and leakage scenarios for accurate calculation of avoided emissions.
 
