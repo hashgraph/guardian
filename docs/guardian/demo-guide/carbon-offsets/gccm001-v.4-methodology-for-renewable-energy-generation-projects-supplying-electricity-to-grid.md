@@ -86,7 +86,7 @@ The workflow outlined in this policy replicates the procedural steps required fo
 
 ## Policy Workflow <a href="#toc705007519" id="toc705007519"></a>
 
-![](<../../../.gitbook/assets/1 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/1 (1) (1) (1) (1).png>)
 
 ## Policy Import <a href="#toc2064975104" id="toc2064975104"></a>
 
@@ -156,7 +156,7 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
 
-![](<../../../.gitbook/assets/2 (1) (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1).png>)
 
 2. Any tools used within the policy can be seen in the policy workflow blocks.
 

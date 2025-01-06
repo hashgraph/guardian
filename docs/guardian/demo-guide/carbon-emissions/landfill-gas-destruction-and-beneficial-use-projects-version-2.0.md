@@ -87,7 +87,7 @@ Additionality must be demonstrated using one of the following approaches:
 
 ## Policy Workflow <a href="#toc184812678" id="toc184812678"></a>
 
-![](<../../../.gitbook/assets/0 (1).png>)
+![](<../../../.gitbook/assets/0 (1) (1).png>)
 
 ## Policy Import <a href="#toc184812679" id="toc184812679"></a>
 
@@ -181,9 +181,9 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.&#x20;
 
-![](<../../../.gitbook/assets/1 (1).png>)
+![](<../../../.gitbook/assets/1 (1) (1).png>)
 
-![](<../../../.gitbook/assets/2 (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1).png>)
 
 ![](<../../../.gitbook/assets/3 (1).png>)
 

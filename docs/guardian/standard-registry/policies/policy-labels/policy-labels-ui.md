@@ -12,7 +12,7 @@ Policy Labels functionality enables Guardian users to create and publish assessm
 
 Access to Policy Labels functionality is controlled by the corresponding permissions settings.
 
-<figure><img src="../../../../.gitbook/assets/0.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/0 (1).png" alt=""><figcaption></figcaption></figure>
 
 ## **2. Authoring Policy Labels**
 
@@ -20,13 +20,13 @@ Access to Policy Labels functionality is controlled by the corresponding permiss
 
 Users can review the list of existing labels and their statuses in the corresponding section of Guardian UI.
 
-![](../../../../.gitbook/assets/1.png)
+![](<../../../../.gitbook/assets/1 (1).png>)
 
 ### **2.2 Authoring**
 
 A new Policy Label definition can be created by clicking on the ‘Create New’ button on the Policy Labels page.
 
-![](../../../../.gitbook/assets/2.png)
+![](<../../../../.gitbook/assets/2 (1).png>)
 
 ![](../../../../.gitbook/assets/3.png)
 

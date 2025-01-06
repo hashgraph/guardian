@@ -94,7 +94,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 1. Create a new user and assign role as Project Proponent.
 
-![](<../../../.gitbook/assets/2 (1) (1) (1) (1) (1) (1) (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
 2. Create a New project by clicking on "New Project" button and enter all the required details.
 
