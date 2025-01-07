@@ -4,6 +4,7 @@ import { IndexerMessageAPI, Singleton, Jobs, Utils } from '@indexer/common';
 import { TopicService } from '../services/topic-service.js';
 import { MessageService } from '../services/message-service.js';
 import { TokenService } from '../services/token-service.js';
+import { FileService } from '../services/file-service.js';
 
 interface IOptions {
     NAME: string;
@@ -20,6 +21,11 @@ interface IOptions {
     TOKEN_READ_TIMEOUT: number;
     TOKEN_JOB_REFRESH_TIME: number;
     TOKEN_JOB_COUNT: number;
+    FILE_CYCLE_TIME: number;
+    FILE_READ_DELAY: number;
+    FILE_READ_TIMEOUT: number;
+    FILE_JOB_REFRESH_TIME: number;
+    FILE_JOB_COUNT: number;
 }
 
 @Controller()
@@ -60,6 +66,7 @@ export class Worker {
     public topics: Jobs;
     public messages: Jobs;
     public tokens: Jobs;
+    public files: Jobs;
 
     /**
      * Initialize worker
@@ -71,6 +78,7 @@ export class Worker {
         TopicService.CYCLE_TIME = option.CYCLE_TIME;
         MessageService.CYCLE_TIME = option.CYCLE_TIME;
         TokenService.CYCLE_TIME = option.CYCLE_TIME;
+        FileService.CYCLE_TIME = option.FILE_CYCLE_TIME || option.CYCLE_TIME;
         this.topics = new Jobs({
             delay: option.TOPIC_READ_DELAY,
             timeout: option.TOPIC_READ_TIMEOUT,
@@ -92,6 +100,13 @@ export class Worker {
             count: option.TOKEN_JOB_COUNT,
             callback: TokenService.updateToken
         });
+        this.files = new Jobs({
+            delay: option.FILE_READ_DELAY,
+            timeout: option.FILE_READ_TIMEOUT,
+            refresh: option.FILE_JOB_REFRESH_TIME,
+            count: option.FILE_JOB_COUNT,
+            callback: FileService.updateFile
+        });
         return this;
     }
 
@@ -103,6 +118,7 @@ export class Worker {
         await this.topics.start();
         await this.messages.start();
         await this.tokens.start();
+        await this.files.start();
         this.status = 'STARTED';
         return this;
     }
@@ -114,6 +130,7 @@ export class Worker {
         await this.topics.stop();
         await this.messages.stop();
         await this.tokens.stop();
+        await this.files.stop();
         this.status = 'STOPPED';
         return this;
     }
@@ -128,7 +145,8 @@ export class Worker {
             status: this.status,
             topics: this.topics?.getStatuses(),
             messages: this.messages?.getStatuses(),
-            tokens: this.tokens?.getStatuses()
+            tokens: this.tokens?.getStatuses(),
+            files: this.files?.getStatuses()
         };
     }
 }

@@ -85,6 +85,7 @@ const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.DELETE_TOKEN, NotificationAction.TOKENS_PAGE],
     [TaskAction.DELETE_POLICY, NotificationAction.POLICIES_PAGE],
     [TaskAction.CLONE_POLICY, NotificationAction.POLICY_CONFIGURATION],
+    [TaskAction.PUBLISH_POLICY_LABEL, NotificationAction.POLICY_LABEL_PAGE],
 ]);
 const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CREATE_POLICY, 'Policy created'],
@@ -114,6 +115,7 @@ const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.DISSOCIATE_TOKEN, 'Token dissociated'],
     [TaskAction.RESTORE_USER_PROFILE, 'Profile restored'],
     [TaskAction.MIGRATE_DATA, 'Data migrated'],
+    [TaskAction.PUBLISH_POLICY_LABEL, 'Label published'],
 ]);
 
 function getNotificationResultMessage(action: TaskAction, result: any) {
@@ -122,6 +124,8 @@ function getNotificationResultMessage(action: TaskAction, result: any) {
             return `Policy ${result} created`;
         case TaskAction.PUBLISH_POLICY:
             return `Policy ${result.policyId} published`;
+        case TaskAction.PUBLISH_POLICY_LABEL:
+            return `Policy ${result.id} published`;
         case TaskAction.IMPORT_POLICY_FILE:
         case TaskAction.IMPORT_POLICY_MESSAGE:
             return `Policy ${result.policyId} imported`;
@@ -178,6 +182,8 @@ function getNotificationResult(action: TaskAction, result: any) {
         case TaskAction.IMPORT_TOOL_FILE:
         case TaskAction.IMPORT_TOOL_MESSAGE:
             return result.toolId;
+        case TaskAction.PUBLISH_POLICY_LABEL:
+            return result.id;
         default:
             return result;
     }

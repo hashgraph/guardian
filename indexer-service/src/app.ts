@@ -24,6 +24,7 @@ import {
     SynchronizationTopics,
     SynchronizationVCs,
     SynchronizationVPs,
+    SynchronizationLabels,
     SynchronizationAll
 } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
@@ -150,7 +151,6 @@ Promise.all([
          * Listen
          */
         app.listen();
-
         /**
          * Sync tasks
          */
@@ -196,6 +196,9 @@ Promise.all([
 
             (new SynchronizationContracts(getMask(process.env.SYNC_CONTRACTS_MASK)))
                 .start(getBoolean(process.env.START_SYNC_CONTRACTS));
+
+            (new SynchronizationLabels(getMask(process.env.SYNC_LABELS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_LABELS));
         }
     },
     (reason) => {

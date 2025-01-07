@@ -99,6 +99,17 @@
             }
         }
 
+        .guardian-step-template {
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--guardian-grey-color-3, #AAB7C4);
+            background: var(--guardian-grey-color, #EFF3F7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         .guardian-step-name {
             height: 24px;
             padding: 2px 8px;
@@ -133,6 +144,11 @@
                     fill: var(--guardian-secondary-color, #FFFFFF);
                     color: var(--guardian-secondary-color, #FFFFFF);
                 }
+            }
+
+            .guardian-step-template {
+                background: var(--guardian-primary-color, #4169E2);
+                border: 1px solid var(--guardian-primary-color, #4169E2);
             }
 
             .guardian-step-name {

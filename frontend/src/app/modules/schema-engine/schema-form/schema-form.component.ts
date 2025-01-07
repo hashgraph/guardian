@@ -1,23 +1,14 @@
-import {ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
-import {
-    AbstractControl,
-    UntypedFormArray,
-    UntypedFormControl,
-    UntypedFormGroup,
-    ValidationErrors,
-    ValidatorFn,
-    Validators
-} from '@angular/forms';
-import {GenerateUUIDv4, Schema, SchemaField, UnitSystem} from '@guardian/interfaces';
-import {fullFormats} from 'ajv-formats/dist/formats';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AbstractControl, UntypedFormArray, UntypedFormControl, UntypedFormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { GenerateUUIDv4, Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
+import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
-import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {IPFSService} from 'src/app/services/ipfs.service';
-import {uriValidator} from 'src/app/validators/uri.validator';
-import {GUARDIAN_DATETIME_FORMAT} from '../../../utils/datetime-format';
-import {API_IPFS_GATEWAY_URL, IPFS_SCHEMA} from '../../../services/api';
-import {SchemaRuleValidateResult} from '../../common/models/field-rule-validator';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { uriValidator } from 'src/app/validators/uri.validator';
+import { GUARDIAN_DATETIME_FORMAT } from '../../../utils/datetime-format';
+import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -221,8 +212,7 @@ export class SchemaFormComponent implements OnInit {
     constructor(
         private ipfs: IPFSService,
         protected changeDetectorRef: ChangeDetectorRef
-    ) {
-    }
+    ) { }
 
 
     ngOnInit(): void {
@@ -301,7 +291,7 @@ export class SchemaFormComponent implements OnInit {
                 this.subscribeCondition(conditionForm);
                 this.conditionFields.push(...cond.thenFields);
                 this.conditionFields.push(...cond.elseFields);
-                return Object.assign({conditionForm}, cond);
+                return Object.assign({ conditionForm }, cond);
             });
         }
 
@@ -647,7 +637,7 @@ export class SchemaFormComponent implements OnInit {
         condition.conditionForm = new UntypedFormGroup({});
         this.subscribeCondition(condition.conditionForm);
         fields.forEach(item => {
-            setTimeout(() => this.options?.removeControl(item.name, {emitEvent: false}));
+            setTimeout(() => this.options?.removeControl(item.name, { emitEvent: false }));
         });
     }
 

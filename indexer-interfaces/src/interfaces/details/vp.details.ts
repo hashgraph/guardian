@@ -1,5 +1,6 @@
 import { DetailsHistory } from './details.interface.js';
 import { Message } from '../message.interface.js';
+import { Label } from './label.details.js';
 
 /**
  * VP options
@@ -35,6 +36,26 @@ export interface VPAnalytics {
      * Schema names
      */
     schemaNames?: string[];
+    /**
+     * Issuer
+     */
+    issuer?: string;
+    /**
+     * Token
+     */
+    tokenId?: string;
+    /**
+     * Label
+     */
+    labelName?: string;
+    /**
+     * Token Amount
+     */
+    tokenAmount?: string;
+    /**
+     * Labels
+     */
+    labels?: string[];
 }
 
 /**
@@ -45,4 +66,13 @@ export type VP = Message<VPOptions, VPAnalytics>;
 /**
  * VP details
  */
-export type VPDetails = DetailsHistory<VP>;
+export interface VPDetails extends DetailsHistory<VP> {
+    labels?: VP[];
+}
+
+/**
+ * Label Document details
+ */
+export interface LabelDocumentDetails extends DetailsHistory<VP> {
+    label?: Label;
+}

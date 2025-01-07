@@ -46,3 +46,5 @@ export * from './log.js';
 export * from './policy-statistic.js';
 export * from './policy-statistic-document.js';
 export * from './schema-rule.js';
+export * from './policy-label.js';
+export * from './policy-label-document.js';

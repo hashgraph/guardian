@@ -322,6 +322,15 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     replaceUrl: true,
                 });
                 break;
+            case TaskAction.PUBLISH_POLICY_LABEL:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                this.router.navigate(['policy-labels'], {
+                    replaceUrl: true,
+                });
+                break;  
         }
     }
 

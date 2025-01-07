@@ -52,6 +52,7 @@ import {
     PolicyStatistic,
     PolicyStatisticDocument,
     SchemaRule,
+    PolicyLabel,
     PolicyTest,
     PolicyTool,
     Record,
@@ -76,7 +77,8 @@ import {
     VpDocument,
     Wallet,
     WiperRequest,
-    Workers
+    Workers,
+    PolicyLabelDocument
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -111,6 +113,8 @@ import { AISuggestionsService } from './helpers/ai-suggestions.js';
 import { AssignedEntityAPI } from './api/assigned-entity.service.js';
 import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
+import { policyLabelsAPI } from './api/policy-labels.service.js';
+import { initMathjs } from './utils/formula.js';
 
 export const obj = {};
 
@@ -161,7 +165,9 @@ const necessaryEntity = [
     PolicyTest,
     PolicyStatistic,
     PolicyStatisticDocument,
-    SchemaRule
+    SchemaRule,
+    PolicyLabel,
+    PolicyLabelDocument
 ]
 
 Promise.all([
@@ -266,6 +272,7 @@ Promise.all([
         await permissionAPI(logger);
         await statisticsAPI(logger);
         await schemaRulesAPI(logger);
+        await policyLabelsAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -488,6 +495,8 @@ Promise.all([
         logger
     );
     clearPolicyCache.start(true);
+
+    initMathjs();
 
     startMetricsServer();
 }, (reason) => {

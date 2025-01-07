@@ -2,6 +2,7 @@ import { NFT, NFTDetails } from '@indexer/interfaces';
 import { DetailsDTO } from './details.interface.js';
 import { RawNFTDTO } from '../raw-nft.dto.js';
 import { ApiProperty } from '@nestjs/swagger';
+import { VPDetailsItemDTO } from './vp.details.js';
 
 export class NFTDTO extends RawNFTDTO implements NFT {}
 
@@ -13,6 +14,7 @@ export class NFTDetailsDTO
         type: NFTDTO,
     })
     declare row?: NFTDTO;
+
     @ApiProperty({
         description: 'NFT transaction history',
         type: 'array',
@@ -41,4 +43,9 @@ export class NFTDetailsDTO
         ],
     })
     history: any[];
+
+    @ApiProperty({
+        type: [VPDetailsItemDTO],
+    })
+    declare labels?: VPDetailsItemDTO[];
 }
