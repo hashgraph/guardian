@@ -22,7 +22,8 @@ export class FileService {
                 await em.nativeUpdate(Message, {
                     _id: row._id,
                 }, {
-                    documents
+                    documents,
+                    loaded: true
                 });
             }
         } catch (error) {
