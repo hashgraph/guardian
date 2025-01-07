@@ -161,13 +161,13 @@
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'delete'">
                                         <div 
-                                            [attr.disabled]="row.status === 'ACTIVE'"
+                                            [attr.disabled]="row.status === 'PUBLISHED'"
                                             class="guardian-icon-button big" 
                                             (click)="onDelete(row)">
                                             <svg-icon 
                                                 class="icon-btn"
                                                 src="/assets/images/icons/delete.svg"
-                                                [svgClass]="row.status === 'ACTIVE' ? 'icon-color-disabled' : 'icon-color-delete'">
+                                                [svgClass]="row.status === 'PUBLISHED' ? 'icon-color-disabled' : 'icon-color-delete'">
                                             </svg-icon>
                                         </div>
                                     </ng-container>
