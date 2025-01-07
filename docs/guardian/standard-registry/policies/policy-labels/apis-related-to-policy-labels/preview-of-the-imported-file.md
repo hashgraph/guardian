@@ -1,6 +1,6 @@
 # Preview of the imported file
 
-{% swagger src="../../../../../.gitbook/assets/swagger.yaml" path="/policy-statistics/import/file/preview" method="
+{% swagger src="../../../../../.gitbook/assets/swagger (1).yaml" path="/policy-statistics/import/file/preview" method="
 post" %}
-[swagger.yaml](../../../../../.gitbook/assets/swagger.yaml)
+[swagger (1).yaml](<../../../../../.gitbook/assets/swagger (1).yaml>)
 {% endswagger %}

@@ -1,6 +1,6 @@
 # Create a new Label document for token (VP)
 
-{% swagger src="../../../../../.gitbook/assets/swagger.yaml" path="/policy-labels/{definitionId}/documents" method="
+{% swagger src="../../../../../.gitbook/assets/swagger (1).yaml" path="/policy-labels/{definitionId}/documents" method="
 post" %}
-[swagger.yaml](../../../../../.gitbook/assets/swagger.yaml)
+[swagger (1).yaml](<../../../../../.gitbook/assets/swagger (1).yaml>)
 {% endswagger %}
