@@ -88,9 +88,10 @@ form {
         border: 1px solid #E1E7EF;
         border-radius: 8px;
         padding: 8px 0px;
+        overflow: auto;
 
         .preview-menu-item {
-            width: 250px;
+            width: 100%;
             height: 56px;
             display: flex;
             flex-direction: row;
