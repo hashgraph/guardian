@@ -80,6 +80,17 @@ export class SchemaScores {
         return Array.from(names);
     }
 
+    public getOptions(): any[] {
+        const options = [];
+        for (const score of this.scores) {
+            options.push({
+                label: score.description,
+                value: score.id,
+            })
+        }
+        return options;
+    }
+
     public add() {
         const score = new SchemaScore();
         score.id = this.getName();

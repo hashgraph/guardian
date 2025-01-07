@@ -157,8 +157,8 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
             this.label = null;
         }
         const vp = this.getVpDocument();
-        if (vp) {
-            const labelConfig = this.label?.analytics?.config;
+        const labelConfig = this.label?.analytics?.config;
+        if (vp && labelConfig) {
             const validator = new LabelValidators(labelConfig);
             this.steps = validator.getDocument();
             validator.setData([]);
@@ -192,9 +192,10 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
             switch (name) {
                 case 'overview': return 0;
                 case 'documents': return 1;
-                case 'history': return 2;
-                case 'relationships': return 3;
-                case 'raw': return 4;
+                case 'view': return 2;
+                case 'history': return 3;
+                case 'relationships': return 4;
+                case 'raw': return 5;
                 default: return 0;
             }
         } else {
@@ -207,9 +208,10 @@ export class LabelDocumentDetailsComponent extends BaseDetailsComponent {
             switch (index) {
                 case 0: return 'overview';
                 case 1: return 'documents';
-                case 2: return 'history';
-                case 3: return 'relationships';
-                case 4: return 'raw';
+                case 2: return 'view';
+                case 3: return 'history';
+                case 4: return 'relationships';
+                case 5: return 'raw';
                 default: return 'raw';
             }
         } else {

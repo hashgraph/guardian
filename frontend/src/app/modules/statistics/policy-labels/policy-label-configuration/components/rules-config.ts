@@ -592,6 +592,8 @@ export class RulesConfig {
             styleClass: 'guardian-dialog',
             data: {
                 variables: this.variables.getOptions(),
+                scores: this.scores.getOptions(),
+                formulas: this.formulas.getOptions(),
                 item: formula.clone(),
                 readonly: this.readonly,
                 enums: this.getEnums()
