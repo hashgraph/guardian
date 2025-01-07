@@ -149,7 +149,7 @@
             </div>
 
             <div *ngIf="labelConfig.isActionStep(1)" class="imports-viewer">
-                <div class="import-toolbar">
+                <div *ngIf="!labelConfig.readonly" class="import-toolbar">
                     <button (click)="onImport()" class="guardian-button guardian-button-primary">
                         <div class="guardian-button-icon">
                             <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/import.svg"
@@ -158,7 +158,6 @@
                         </div>
                         <div class="guardian-button-label">Import</div>
                     </button>
-
                 </div>
                 <div class="import-list">
                     <div *ngIf="labelConfig.menu.imports.length" class="variables-grid">
