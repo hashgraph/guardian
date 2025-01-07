@@ -1,5 +1,5 @@
 # Retrieve the list of Label definitions
 
-{% swagger src="../../../../../.gitbook/assets/swagger.yaml" path="/policy-labels" method="get" %}
-[swagger.yaml](../../../../../.gitbook/assets/swagger.yaml)
+{% swagger src="../../../../../.gitbook/assets/swagger (1).yaml" path="/policy-labels" method="get" %}
+[swagger (1).yaml](<../../../../../.gitbook/assets/swagger (1).yaml>)
 {% endswagger %}

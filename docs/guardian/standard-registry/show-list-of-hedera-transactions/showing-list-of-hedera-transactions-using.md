@@ -15,10 +15,3 @@ Each of the displayed items in the transactions list is clickable.&#x20;
 It links directly to the external explorer service where users familiar with blockchain systems can explore the selected transaction parameters and content.
 
 <figure><img src="../../../.gitbook/assets/2.png" alt=""><figcaption></figcaption></figure>
-
-Entities API contains facilities to provide transaction related information on client requests:
-
-* /api/v1/policies/:policyId/transactions
-* /api/v1/schemas/:schemaId/transactions
-* /api/v1/tokens/:tokenId/transactions
-* /api/v1/contracts/:contractId/transactions

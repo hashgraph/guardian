@@ -2,6 +2,6 @@
 
 
 
-{% swagger src="../../../../../.gitbook/assets/swagger.yaml" path="/policy-labels/{definitionId}" method="put" %}
-[swagger.yaml](../../../../../.gitbook/assets/swagger.yaml)
+{% swagger src="../../../../../.gitbook/assets/swagger (1).yaml" path="/policy-labels/{definitionId}" method="put" %}
+[swagger (1).yaml](<../../../../../.gitbook/assets/swagger (1).yaml>)
 {% endswagger %}

@@ -1,5 +1,5 @@
 # Retrieve a label definition configuration by ID
 
-{% swagger src="../../../../../.gitbook/assets/swagger.yaml" path="/policy-labels/{definitionId}" method="get" %}
-[swagger.yaml](../../../../../.gitbook/assets/swagger.yaml)
+{% swagger src="../../../../../.gitbook/assets/swagger (1).yaml" path="/policy-labels/{definitionId}" method="get" %}
+[swagger (1).yaml](<../../../../../.gitbook/assets/swagger (1).yaml>)
 {% endswagger %}
