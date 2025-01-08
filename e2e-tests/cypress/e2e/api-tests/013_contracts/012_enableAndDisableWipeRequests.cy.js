@@ -163,8 +163,6 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
 			})
 		})
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			//NAHUYA???
-			//KONEC NAHUYA
 			cy.request({
 				method: METHOD.GET,
 				url: API.ApiServer + API.ListOfTokens,

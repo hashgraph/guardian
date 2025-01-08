@@ -350,7 +350,7 @@ context("Contracts", { tags: ['contracts', 'firstPool'] }, () => {
                     }
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
-                    expect(response.body.at(0).contractId).eql(contractIdR)
+                    expect(response.body.at(0).contractId).eql(contractUuidR)
                     expect(response.body.at(0).tokens.at(0).token).eql(tokenId)
                     expect(response.body.at(0).tokens.at(0).count).eql(1)
                     expect(response.body.at(0).user).eql(hederaId)

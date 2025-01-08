@@ -32,7 +32,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 failOnStatusCode: false,
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body.at(0).username).eq("StandardRegistry");
+                expect(response.body.at(0).username).eq(SRUsername);
             });
         });
     });
