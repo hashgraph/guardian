@@ -144,7 +144,8 @@
             "sender_account_id": "Sender",
             "receiver_account_id": "Receiver",
             "token_id": "Token Id",
-            "token_amount": "Token Amount"
+            "token_amount": "Token Amount",
+            "target": "Target"
         },
         "ipfs": "IPFS",
         "header": {

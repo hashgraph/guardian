@@ -109,10 +109,21 @@ export class SchemaFormulas {
 
     public getNames(): string[] {
         const names: Set<string> = new Set<string>();
-        for (const score of this.formulas) {
-            names.add(score.id);
+        for (const formula of this.formulas) {
+            names.add(formula.id);
         }
         return Array.from(names);
+    }
+
+    public getOptions(): any[] {
+        const options = [];
+        for (const formula of this.formulas) {
+            options.push({
+                label: formula.description,
+                value: formula.id,
+            })
+        }
+        return options;
     }
 
     public add() {

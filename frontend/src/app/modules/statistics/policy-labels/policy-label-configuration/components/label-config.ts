@@ -1,5 +1,5 @@
 import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { IPolicyLabel, GenerateUUIDv4, IPolicyLabelConfig, IGroupItemConfig, NavItemType, IRulesItemConfig, ILabelItemConfig, IStatisticItemConfig } from "@guardian/interfaces";
+import { IPolicyLabel, GenerateUUIDv4, IPolicyLabelConfig, IGroupItemConfig, NavItemType, IRulesItemConfig, ILabelItemConfig, IStatisticItemConfig, EntityStatus } from "@guardian/interfaces";
 import { TreeDragDropService } from "primeng/api";
 import { DialogService } from "primeng/dynamicdialog";
 import { Subject } from "rxjs";
@@ -51,6 +51,8 @@ export class LabelConfig {
         this.navigationTree = NavTree.from(item);
         this.navigationTree.update();
         this.updateSelected();
+
+        this.readonly = item?.status === EntityStatus.PUBLISHED;
     }
 
     public setPolicy(relationships: any) {

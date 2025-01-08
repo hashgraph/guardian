@@ -87,7 +87,7 @@ Additionality must be demonstrated using one of the following approaches:
 
 ## Policy Workflow <a href="#toc184812678" id="toc184812678"></a>
 
-![](../../../.gitbook/assets/0.png)
+![](<../../../.gitbook/assets/0 (1) (1).png>)
 
 ## Policy Import <a href="#toc184812679" id="toc184812679"></a>
 
@@ -181,61 +181,61 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.&#x20;
 
-![](../../../.gitbook/assets/1.png)
+![](<../../../.gitbook/assets/1 (1) (1).png>)
 
-![](../../../.gitbook/assets/2.png)
+![](<../../../.gitbook/assets/2 (1) (1).png>)
 
-![](../../../.gitbook/assets/3.png)
+![](<../../../.gitbook/assets/3 (1).png>)
 
-![](../../../.gitbook/assets/4.png)
+![](<../../../.gitbook/assets/4 (1).png>)
 
 2. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.&#x20;
 
-![](../../../.gitbook/assets/5.png)
+![](<../../../.gitbook/assets/5 (1).png>)
 
-![](../../../.gitbook/assets/6.png)
+![](<../../../.gitbook/assets/6 (1).png>)
 
 3. Create a new user account and assign it to the Project Proponent. Ensure that the Project Proponent registration form is complete, then select ‘Submit’.
 
-<figure><img src="../../../.gitbook/assets/7.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/7 (1).png" alt=""><figcaption></figcaption></figure>
 
-![](../../../.gitbook/assets/8.png)
+![](<../../../.gitbook/assets/8 (1).png>)
 
-![](../../../.gitbook/assets/9.png)
+![](<../../../.gitbook/assets/9 (1).png>)
 
-![](../../../.gitbook/assets/10.png)
+![](<../../../.gitbook/assets/10 (1).png>)
 
 4. Log in to the administrator account to review and approve the Project Proponent registration form. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.
 
-![](../../../.gitbook/assets/11.png)
+![](<../../../.gitbook/assets/11 (1).png>)
 
 5. The Project Proponent can click 'Create' to submit the Project Listing Form.
 
-![](../../../.gitbook/assets/12.png)
+![](<../../../.gitbook/assets/12 (1).png>)
 
-![](../../../.gitbook/assets/13.png)
+![](<../../../.gitbook/assets/13 (1).png>)
 
-![](../../../.gitbook/assets/14.png)
+![](<../../../.gitbook/assets/14 (1).png>)
 
 6. Log in to the administrator account to review and approve the Project Listing Form.
 
-<figure><img src="../../../.gitbook/assets/15.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/15 (1).png" alt=""><figcaption></figcaption></figure>
 
 7. Create a new user account and assign it to the Verifier. Ensure that the Verifier registration form is complete, then select ‘Submit’.
 
-![](../../../.gitbook/assets/16.png)
+![](<../../../.gitbook/assets/16 (1).png>)
 
-![](../../../.gitbook/assets/17.png)
+![](<../../../.gitbook/assets/17 (1).png>)
 
-![](../../../.gitbook/assets/18.png)
+![](<../../../.gitbook/assets/18 (1).png>)
 
 8. Log in to the administrator account to review and approve the Verifier registration form. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.&#x20;
 
-![](../../../.gitbook/assets/19.png)
+![](<../../../.gitbook/assets/19 (1).png>)
 
 9. Navigate back to the Verifier account and submit a Project Specific Conflict of Interest (COI) form.
 
-![](../../../.gitbook/assets/20.png)
+![](<../../../.gitbook/assets/20 (1).png>)
 
 10. Log in to the administrator account to review and approve the COI form.
 

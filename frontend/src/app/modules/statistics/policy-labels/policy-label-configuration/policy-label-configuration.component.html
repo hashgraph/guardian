@@ -149,7 +149,7 @@
             </div>
 
             <div *ngIf="labelConfig.isActionStep(1)" class="imports-viewer">
-                <div class="import-toolbar">
+                <div *ngIf="!labelConfig.readonly" class="import-toolbar">
                     <button (click)="onImport()" class="guardian-button guardian-button-primary">
                         <div class="guardian-button-icon">
                             <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/import.svg"
@@ -158,7 +158,6 @@
                         </div>
                         <div class="guardian-button-label">Import</div>
                     </button>
-
                 </div>
                 <div class="import-list">
                     <div *ngIf="labelConfig.menu.imports.length" class="variables-grid">
@@ -211,7 +210,7 @@
             </div>
 
             <div *ngIf="labelConfig.isActionStep(2)" class="navigation-viewer">
-                <div class="navigation-toolbar">
+                <div class="navigation-toolbar" [attr.readonly]="readonly">
                     <div class="navigation-toolbar-header">Elements</div>
                     <div class="navigation-toolbar-search"></div>
 
@@ -250,8 +249,8 @@
                     <div class="navigation-tree-area">
                         <p-tree class="navigation-tree guardian-tree" 
                             [value]="labelConfig.navigationTree.data"
-                            [draggableNodes]="true" 
-                            [droppableNodes]="true" 
+                            [draggableNodes]="!readonly" 
+                            [droppableNodes]="!readonly" 
                             draggableScope="navigationTree"
                             droppableScope="navigationTree" 
                             [validateDrop]="true"
@@ -412,7 +411,7 @@
                                     (click)="onEditNavItem(selectedNavItem)"
                                     class="guardian-button guardian-button-secondary">View Rules</button>
                             </ng-container>
-                            <button *ngIf="!selectedNavItem.freezed"
+                            <button *ngIf="!selectedNavItem.freezed && !readonly"
                                 (click)="labelConfig.onDeleteNavItem(selectedNavItem)"
                                 class="guardian-button guardian-button-delete">Delete</button>
                         </div>
