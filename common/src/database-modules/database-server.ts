@@ -42,7 +42,8 @@ import {
     PolicyStatisticDocument,
     SchemaRule,
     PolicyLabel,
-    PolicyLabelDocument
+    PolicyLabelDocument,
+    Methodology
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -4075,5 +4076,64 @@ export class DatabaseServer extends AbstractDatabaseServer {
         filters: FilterQuery<PolicyLabelDocument>
     ): Promise<PolicyLabelDocument | null> {
         return await new DataBaseHelper(PolicyLabelDocument).findOne(filters);
+    }
+
+    /**
+     * Create Methodology
+     * @param methodology
+     */
+    public static async createMethodology(
+        methodology: FilterObject<Methodology>
+    ): Promise<Methodology> {
+        const item = new DataBaseHelper(Methodology).create(methodology);
+        return await new DataBaseHelper(Methodology).save(item);
+    }
+
+    /**
+     * Get Methodologies
+     * @param filters
+     * @param options
+     */
+    public static async getMethodologiesAndCount(
+        filters?: FilterObject<Methodology>,
+        options?: FindOptions<unknown>
+    ): Promise<[Methodology[], number]> {
+        return await new DataBaseHelper(Methodology).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Methodologies
+     * @param filters
+     * @param options
+     */
+    public static async getMethodologies(
+        filters?: FilterObject<Methodology>,
+        options?: unknown
+    ): Promise<Methodology[]> {
+        return await new DataBaseHelper(Methodology).find(filters, options);
+    }
+
+    /**
+     * Get Methodology By ID
+     * @param id
+     */
+    public static async getMethodologyById(id: string): Promise<Methodology | null> {
+        return await new DataBaseHelper(Methodology).findOne(id);
+    }
+
+    /**
+     * Update Methodology
+     * @param methodology
+     */
+    public static async updateMethodology(methodology: Methodology): Promise<Methodology> {
+        return await new DataBaseHelper(Methodology).update(methodology);
+    }
+
+    /**
+     * Delete Methodology
+     * @param methodology
+     */
+    public static async removeMethodology(methodology: Methodology): Promise<void> {
+        return await new DataBaseHelper(Methodology).remove(methodology);
     }
 }

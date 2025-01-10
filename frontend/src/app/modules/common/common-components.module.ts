@@ -32,7 +32,7 @@ import {ButtonModule} from 'primeng/button';
 import {PaginatorComponent} from './paginator/paginator.component';
 import {AngularSvgIconModule} from 'angular-svg-icon';
 import {StatusDropdown} from './status-dropdown/status-dropdown.component';
-import {CustomCustomDialogComponent} from './custom-confirm-dialog/custom-confirm-dialog.component';
+import {CustomConfirmDialogComponent} from './custom-confirm-dialog/custom-confirm-dialog.component';
 import {TreeGraphComponent} from './tree-graph/tree-graph.component';
 import {GuardianSwitchButton} from './guardian-switch-button/guardian-switch-button.component';
 import {ImportEntityDialog} from './import-entity-dialog/import-entity-dialog.component';
@@ -63,7 +63,7 @@ import {TooltipModule} from 'primeng/tooltip';
         AlertComponent,
         PaginatorComponent,
         StatusDropdown,
-        CustomCustomDialogComponent,
+        CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
         ImportEntityDialog
@@ -111,7 +111,7 @@ import {TooltipModule} from 'primeng/tooltip';
         PaginatorComponent,
         DataInputDialogComponent,
         StatusDropdown,
-        CustomCustomDialogComponent,
+        CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
         ImportEntityDialog

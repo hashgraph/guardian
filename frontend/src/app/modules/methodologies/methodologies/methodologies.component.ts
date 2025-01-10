@@ -1,15 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { EntityStatus, IStatistic, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { EntityStatus, PolicyType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { NewPolicyStatisticsDialog } from '../dialogs/new-policy-statistics-dialog/new-policy-statistics-dialog.component';
-import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../../common/import-entity-dialog/import-entity-dialog.component';
-
+import { MethodologiesService } from 'src/app/services/methodologies.service';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { NewMethodologyDialog } from '../dialogs/new-methodology-dialog/new-methodology-dialog.component';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 interface IColumn {
     id: string;
@@ -22,12 +21,12 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-statistic-definitions',
-    templateUrl: './statistic-definitions.component.html',
-    styleUrls: ['./statistic-definitions.component.scss'],
+    selector: 'app-methodologies',
+    templateUrl: './methodologies.component.html',
+    styleUrls: ['./methodologies.component.scss'],
 })
-export class StatisticDefinitionsComponent implements OnInit {
-    public readonly title: string = 'Statistics';
+export class MethodologiesComponent implements OnInit {
+    public readonly title: string = 'Methodologies';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -40,30 +39,12 @@ export class StatisticDefinitionsComponent implements OnInit {
     public columns: IColumn[];
     public allPolicies: any[] = [];
     public currentPolicy: any = null;
-    public statuses = [{
-        label: 'Draft',
-        value: EntityStatus.DRAFT,
-        description: 'Return to editing.',
-        disable: true
-    }, {
-        label: 'Published',
-        value: EntityStatus.PUBLISHED,
-        description: 'Release version into public domain.',
-        disable: (value: string): boolean => {
-            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
-        }
-    }, {
-        label: 'Error',
-        value: EntityStatus.ERROR,
-        description: '',
-        disable: true
-    }]
 
     private subscription = new Subscription();
 
     constructor(
         private profileService: ProfileService,
-        private policyStatisticsService: PolicyStatisticsService,
+        private methodologiesService: MethodologiesService,
         private policyEngineService: PolicyEngineService,
         private dialogService: DialogService,
         private router: Router,
@@ -82,22 +63,10 @@ export class StatisticDefinitionsComponent implements OnInit {
             size: 'auto',
             tooltip: false
         }, {
-            id: 'topicId',
-            title: 'Topic',
-            type: 'text',
-            size: '135',
-            tooltip: false
-        }, {
             id: 'status',
             title: 'Status',
             type: 'text',
             size: '180',
-            tooltip: false
-        }, {
-            id: 'documents',
-            title: 'Documents',
-            type: 'text',
-            size: '125',
             tooltip: false
         }, {
             id: 'edit',
@@ -110,12 +79,6 @@ export class StatisticDefinitionsComponent implements OnInit {
             title: '',
             type: 'text',
             size: '56',
-            tooltip: false
-        }, {
-            id: 'options',
-            title: '',
-            type: 'text',
-            size: '210',
             tooltip: false
         }, {
             id: 'delete',
@@ -136,7 +99,6 @@ export class StatisticDefinitionsComponent implements OnInit {
                 this.loadProfile();
             })
         );
-        // this.loadProfile();
     }
 
     ngOnDestroy(): void {
@@ -144,7 +106,6 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     private loadProfile() {
-        // const policyId = this.route.snapshot.params['policyId'];
         this.isConfirmed = false;
         this.loading = true;
         forkJoin([
@@ -185,14 +146,14 @@ export class StatisticDefinitionsComponent implements OnInit {
             filters.policyInstanceTopicId = this.currentPolicy?.instanceTopicId;
         }
         this.loading = true;
-        this.policyStatisticsService
-            .getDefinitions(
+        this.methodologiesService
+            .getMethodologies(
                 this.pageIndex,
                 this.pageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.policyStatisticsService.parsePage(response);
+                const { page, count } = this.methodologiesService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
                 for (const item of this.page) {
@@ -227,12 +188,12 @@ export class StatisticDefinitionsComponent implements OnInit {
         }
         this.pageIndex = 0;
         const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/policy-statistics'], { queryParams: { topic } });
+        this.router.navigate(['/methodologies'], { queryParams: { topic } });
         this.loadData();
     }
 
     public onCreate() {
-        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+        const dialogRef = this.dialogService.open(NewMethodologyDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -245,20 +206,20 @@ export class StatisticDefinitionsComponent implements OnInit {
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
-                this.create(result)
+                this.loading = true;
+                this.methodologiesService
+                    .createMethodologies(result)
+                    .subscribe((newItem) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
             }
         });
     }
 
-    private create(item: any) {
-        this.loading = true;
-        this.policyStatisticsService
-            .createDefinition(item)
-            .subscribe((newItem) => {
-                this.loadData();
-            }, (e) => {
-                this.loading = false;
-            });
+    public onEdit(item: any) {
+        this.router.navigate(['/methodologies', item.id]);
     }
 
     public onImport() {
@@ -267,7 +228,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.Statistic,
+                type: ImportEntityType.Methodology,
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -278,8 +239,8 @@ export class StatisticDefinitionsComponent implements OnInit {
     }
 
     private importDetails(result: IImportEntityResult) {
-        const { type, data, statistic } = result;
-        const dialogRef = this.dialogService.open(NewPolicyStatisticsDialog, {
+        const { type, data, methodology } = result;
+        const dialogRef = this.dialogService.open(NewMethodologyDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -288,13 +249,13 @@ export class StatisticDefinitionsComponent implements OnInit {
                 action: 'Import',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
-                statistic
+                methodology
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.policyId) {
                 this.loading = true;
-                this.policyStatisticsService
+                this.methodologiesService
                     .import(result.policyId, data)
                     .subscribe((newItem) => {
                         this.loadData();
@@ -307,15 +268,15 @@ export class StatisticDefinitionsComponent implements OnInit {
 
     public onExport(item: any) {
         this.loading = true;
-        this.policyStatisticsService.export(item.id)
+        this.methodologiesService.export(item.id)
             .subscribe((fileBuffer) => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-statistic'
+                        type: 'application/guardian-methodology'
                     })
                 );
-                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.statistic`);
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.methodology`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();
@@ -327,30 +288,8 @@ export class StatisticDefinitionsComponent implements OnInit {
             });
     }
 
-    public onEdit(item: any) {
-        this.router.navigate(['/policy-statistics', item.id]);
-    }
-
-    public onChangeStatus($event: string, row: any): void {
-        this.publish(row)
-    }
-
-    public onCreateInstance(item: any): void {
-        if (item.status !== 'PUBLISHED') {
-            return;
-        }
-        this.router.navigate(['/policy-statistics', item.id, 'assessment']);
-    }
-
-    public onOpenInstances(item: any): void {
-        if (item.status !== 'PUBLISHED') {
-            return;
-        }
-        this.router.navigate(['/policy-statistics', item.id, 'assessments']);
-    }
-
     public onDelete(item: any) {
-        if (item.status === 'PUBLISHED') {
+        if (item.status === EntityStatus.ACTIVE) {
             return;
         }
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
@@ -358,8 +297,8 @@ export class StatisticDefinitionsComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete Statistic',
-                text: `Are you sure want to delete statistic (${item.name})?`,
+                header: 'Delete Methodology',
+                text: `Are you sure want to delete methodology (${item.name})?`,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -372,64 +311,14 @@ export class StatisticDefinitionsComponent implements OnInit {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
-                this.policyStatisticsService
-                    .deleteDefinition(item)
-                    .subscribe((newItem) => {
+                this.methodologiesService
+                    .deleteMethodology(item.id)
+                    .subscribe((result) => {
                         this.loadData();
                     }, (e) => {
                         this.loading = false;
                     });
             }
         });
-    }
-
-    private publish(row: IStatistic) {
-        const rules = row?.config?.rules || [];
-        const main = rules.find((r) => r.type === 'main');
-        if (!main) {
-            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                showHeader: false,
-                width: '640px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    header: 'Publish Statistic',
-                    text: 'Statistics cannot be published. Please select main schema.',
-                    buttons: [{
-                        name: 'Close',
-                        class: 'secondary'
-                    }]
-                },
-            });
-            dialogRef.onClose.subscribe((result) => { });
-        } else {
-            const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-                showHeader: false,
-                width: '640px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    header: 'Publish Statistic',
-                    text: `Are you sure want to publish statistic (${row.name})?`,
-                    buttons: [{
-                        name: 'Close',
-                        class: 'secondary'
-                    }, {
-                        name: 'Publish',
-                        class: 'primary'
-                    }]
-                },
-            });
-            dialogRef.onClose.subscribe((result: string) => {
-                if (result === 'Publish') {
-                    this.loading = true;
-                    this.policyStatisticsService
-                        .publishDefinition(row)
-                        .subscribe((response) => {
-                            this.loadData();
-                        }, (e) => {
-                            this.loading = false;
-                        });
-                }
-            });
-        }
     }
 }

@@ -37,6 +37,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/tools'
             },
             {
+                title: 'Manage Methodologies',
+                routerLink: '/methodologies'
+            },
+            {
                 title: 'Manage Schema Rules',
                 routerLink: '/schema-rules'
             },
@@ -163,6 +167,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 childItems.push({
                     title: 'Policy Labels',
                     routerLink: '/policy-labels'
+                });
+            }
+            if (user.METHODOLOGIES_METHODOLOGY_READ) {
+                childItems.push({
+                    title: 'Methodologies',
+                    routerLink: '/methodologies'
                 });
             }
         }

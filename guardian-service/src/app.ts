@@ -78,7 +78,8 @@ import {
     Wallet,
     WiperRequest,
     Workers,
-    PolicyLabelDocument
+    PolicyLabelDocument,
+    Methodology
 } from '@guardian/common';
 import { ApplicationStates, PolicyEvents, PolicyType, WorkerTaskType } from '@guardian/interfaces';
 import { AccountId, PrivateKey, TopicId } from '@hashgraph/sdk';
@@ -115,6 +116,7 @@ import { permissionAPI } from './api/permission.service.js';
 import { setDefaultSchema } from './api/helpers/default-schemas.js';
 import { policyLabelsAPI } from './api/policy-labels.service.js';
 import { initMathjs } from './utils/formula.js';
+import { methodologiesAPI } from './api/methodologies.service.js';
 
 export const obj = {};
 
@@ -167,7 +169,8 @@ const necessaryEntity = [
     PolicyStatisticDocument,
     SchemaRule,
     PolicyLabel,
-    PolicyLabelDocument
+    PolicyLabelDocument,
+    Methodology
 ]
 
 Promise.all([
@@ -273,6 +276,7 @@ Promise.all([
         await statisticsAPI(logger);
         await schemaRulesAPI(logger);
         await policyLabelsAPI(logger);
+        await methodologiesAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);

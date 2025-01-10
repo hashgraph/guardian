@@ -47,7 +47,8 @@ import {
     PolicyLabelRelationshipsDTO,
     PolicyLabelDocumentRelationshipsDTO,
     PolicyLabelComponentsDTO,
-    PolicyLabelFiltersDTO
+    PolicyLabelFiltersDTO,
+    MethodologyDTO
 } from '#middlewares';
 
 /**
@@ -2935,7 +2936,7 @@ export class Guardians extends NatsService {
      * @param definition
      * @param owner
      *
-     * @returns theme
+     * @returns statistic
      */
     public async updateStatisticDefinition(
         definitionId: string,
@@ -2963,7 +2964,7 @@ export class Guardians extends NatsService {
      * @param definitionId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns statistic
      */
     public async publishStatisticDefinition(definitionId: string, owner: IOwner): Promise<StatisticDefinitionDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_STATISTIC_DEFINITION, { definitionId, owner });
@@ -3010,7 +3011,7 @@ export class Guardians extends NatsService {
      * @param assessmentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns assessment
      */
     public async getStatisticAssessment(
         definitionId: string,
@@ -3027,7 +3028,7 @@ export class Guardians extends NatsService {
      * @param assessmentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns relationships
      */
     public async getStatisticAssessmentRelationships(
         definitionId: string,
@@ -3093,7 +3094,7 @@ export class Guardians extends NatsService {
      *
      * @param ruleId
      * @param owner
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async getSchemaRuleById(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE, { ruleId, owner });
@@ -3118,7 +3119,7 @@ export class Guardians extends NatsService {
      * @param definition
      * @param owner
      *
-     * @returns theme
+     * @returns schema rule
      */
     public async updateSchemaRule(
         ruleId: string,
@@ -3146,7 +3147,7 @@ export class Guardians extends NatsService {
      * @param ruleId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async activateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.ACTIVATE_SCHEMA_RULE, { ruleId, owner });
@@ -3158,7 +3159,7 @@ export class Guardians extends NatsService {
      * @param ruleId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns schema rule
      */
     public async inactivateSchemaRule(ruleId: string, owner: IOwner): Promise<SchemaRuleDTO> {
         return await this.sendMessage(MessageAPI.INACTIVATE_SCHEMA_RULE, { ruleId, owner });
@@ -3170,7 +3171,7 @@ export class Guardians extends NatsService {
      * @param options
      * @param owner
      *
-     * @returns Operation Success
+     * @returns Schema Rule Data
      */
     public async getSchemaRuleData(options: any, owner: IOwner): Promise<SchemaRuleDataDTO> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
@@ -3232,7 +3233,7 @@ export class Guardians extends NatsService {
      *
      * @param definitionId
      * @param owner
-     * @returns Operation Success
+     * @returns policy label
      */
     public async getPolicyLabelById(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL, { definitionId, owner });
@@ -3257,7 +3258,7 @@ export class Guardians extends NatsService {
      * @param label
      * @param owner
      *
-     * @returns theme
+     * @returns policy label
      */
     public async updatePolicyLabel(
         definitionId: string,
@@ -3285,7 +3286,7 @@ export class Guardians extends NatsService {
      * @param definitionId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns policy label
      */
     public async publishPolicyLabel(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
         return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL, { definitionId, owner });
@@ -3424,7 +3425,7 @@ export class Guardians extends NatsService {
      * @param documentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns policy label document
      */
     public async getLabelDocument(
         definitionId: string,
@@ -3443,7 +3444,7 @@ export class Guardians extends NatsService {
      * @param documentId
      * @param owner
      *
-     * @returns Operation Success
+     * @returns relationships
      */
     public async getLabelDocumentRelationships(
         definitionId: string,
@@ -3453,5 +3454,97 @@ export class Guardians extends NatsService {
         return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT_RELATIONSHIPS,
             { definitionId, documentId, owner }
         );
+    }
+
+    /**
+     * Create methodology
+     *
+     * @param methodology
+     * @param owner
+     *
+     * @returns methodology
+     */
+    public async createMethodology(methodology: MethodologyDTO, owner: IOwner): Promise<MethodologyDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_METHODOLOGY, { methodology, owner });
+    }
+
+    /**
+     * Return methodologies
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<MethodologyDTO>}
+     */
+    public async getMethodologies(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<MethodologyDTO>> {
+        return await this.sendMessage(MessageAPI.GET_METHODOLOGIES, { filters, owner });
+    }
+
+    /**
+     * Get methodology
+     *
+     * @param methodologyId
+     * @param owner
+     * @returns methodology
+     */
+    public async getMethodologyById(methodologyId: string, owner: IOwner): Promise<MethodologyDTO> {
+        return await this.sendMessage(MessageAPI.GET_METHODOLOGY, { methodologyId, owner });
+    }
+
+    /**
+     * Update methodology
+     *
+     * @param methodologyId
+     * @param definition
+     * @param owner
+     *
+     * @returns methodology
+     */
+    public async updateMethodology(
+        methodologyId: string,
+        methodology: MethodologyDTO,
+        owner: IOwner
+    ): Promise<MethodologyDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_METHODOLOGY, { methodologyId, methodology, owner });
+    }
+
+    /**
+     * Delete methodology
+     *
+     * @param methodologyId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deleteMethodology(methodologyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_METHODOLOGY, { methodologyId, owner });
+    }
+
+    /**
+     * Load methodology file for import
+     * @param zip
+     * @param owner
+     */
+    public async importMethodology(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_METHODOLOGY_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get methodology export file
+     * @param methodologyId
+     * @param owner
+     */
+    public async exportMethodology(methodologyId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_METHODOLOGY_FILE, { methodologyId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get methodology info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewMethodology(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_METHODOLOGY_FILE, { zip, owner });
     }
 }

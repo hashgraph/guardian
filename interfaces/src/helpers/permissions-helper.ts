@@ -520,13 +520,22 @@ export class UserPermissions {
         return this.check(Permissions.SCHEMAS_RULE_EXECUTE);
     }
 
-    //SCHEMA RULES
+    //SCHEMA LABELS
     public get STATISTICS_LABEL_CREATE(): boolean {
         return this.check(Permissions.STATISTICS_LABEL_CREATE);
     }
 
     public get STATISTICS_LABEL_READ(): boolean {
         return this.check(Permissions.STATISTICS_LABEL_READ);
+    }
+
+    //SCHEMA METHODOLOGIES
+    public get METHODOLOGIES_METHODOLOGY_CREATE(): boolean {
+        return this.check(Permissions.METHODOLOGIES_METHODOLOGY_CREATE);
+    }
+
+    public get METHODOLOGIES_METHODOLOGY_READ(): boolean {
+        return this.check(Permissions.METHODOLOGIES_METHODOLOGY_READ);
     }
 
     public static isPolicyAdmin(user: any): boolean {
