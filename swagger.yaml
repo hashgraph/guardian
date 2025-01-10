@@ -13033,6 +13033,301 @@ paths:
       tags: *ref_28
       security:
         - bearer: []
+  /methodologies:
+    post:
+      operationId: MethodologiesApi_createMethodology
+      summary: Creates a new methodology.
+      description: Creates a new methodology.
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MethodologyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_29
+        - methodologies
+      security:
+        - bearer: []
+    get:
+      operationId: MethodologiesApi_getMethodologies
+      summary: Return a list of all methodologies.
+      description: Returns all methodologies.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: policyInstanceTopicId
+          required: false
+          in: query
+          description: Policy Instance Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /methodologies/{methodologyId}:
+    get:
+      operationId: MethodologiesApi_getMethodologyById
+      summary: Retrieves methodology.
+      description: Retrieves methodology for the specified ID.
+      parameters:
+        - name: methodologyId
+          required: true
+          in: path
+          description: Methodology Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    put:
+      operationId: MethodologiesApi_updateMethodology
+      summary: Updates methodology.
+      description: Updates methodology configuration for the specified methodology ID.
+      parameters:
+        - name: methodologyId
+          required: true
+          in: path
+          description: Methodology Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MethodologyDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    delete:
+      operationId: MethodologiesApi_deleteMethodology
+      summary: Deletes the methodology.
+      description: Deletes the methodology with the provided ID.
+      parameters:
+        - name: methodologyId
+          required: true
+          in: path
+          description: Methodology Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /methodologies/{policyId}/import/file:
+    post:
+      operationId: MethodologiesApi_importMethodology
+      summary: Imports new methodology from a zip file.
+      description: Imports new methodology from the provided zip file into the local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing methodology to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /methodologies/{methodologyId}/export/file:
+    get:
+      operationId: MethodologiesApi_exportMethodology
+      summary: Returns a zip file containing methodology.
+      description: Returns a zip file containing methodology.
+      parameters:
+        - name: methodologyId
+          required: true
+          in: path
+          description: Methodology Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /methodologies/import/file/preview:
+    post:
+      operationId: MethodologiesApi_previewMethodology
+      summary: Imports a zip file containing methodology.
+      description: Imports a zip file containing methodology.
+      parameters: []
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Methodology preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MethodologyDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
   /policy-labels:
     post:
       operationId: PolicyLabelsApi_createPolicyLabel
@@ -13063,7 +13358,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_29
+      tags: &ref_30
         - policy-labels
       security:
         - bearer: []
@@ -13119,7 +13414,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}:
@@ -13152,7 +13447,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     put:
@@ -13191,7 +13486,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     delete:
@@ -13223,7 +13518,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/publish:
@@ -13256,7 +13551,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/push/{definitionId}/publish:
@@ -13289,7 +13584,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/relationships:
@@ -13322,7 +13617,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{policyId}/import/file:
@@ -13362,7 +13657,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/export/file:
@@ -13391,7 +13686,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/import/file/preview:
@@ -13424,7 +13719,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/components:
@@ -13453,7 +13748,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens:
@@ -13509,7 +13804,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens/{documentId}:
@@ -13556,7 +13851,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents:
@@ -13596,7 +13891,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     get:
@@ -13651,7 +13946,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}:
@@ -13691,7 +13986,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}/relationships:
@@ -13731,7 +14026,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /worker-tasks:
@@ -13780,7 +14075,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_30
+      tags: &ref_31
         - worker-tasks
       security:
         - bearer: []
@@ -13803,7 +14098,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_30
+      tags: *ref_31
       security:
         - bearer: []
   /worker-tasks/delete/{taskId}:
@@ -13832,7 +14127,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_30
+      tags: *ref_31
       security:
         - bearer: []
 info:
@@ -14317,19 +14612,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_39
+          enum: &ref_40
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_40
+          example: &ref_41
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_41
+          example: &ref_42
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -14514,35 +14809,35 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_31
+          oneOf: &ref_32
             - type: string
             - type: number
-          enum: &ref_32
+          enum: &ref_33
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_33
+          oneOf: &ref_34
             - type: string
             - type: number
-          enum: &ref_34
+          enum: &ref_35
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_35
+          oneOf: &ref_36
             - type: string
             - type: number
-          enum: &ref_36
+          enum: &ref_37
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_37
+          oneOf: &ref_38
             - type: string
             - type: number
-          enum: &ref_38
+          enum: &ref_39
             - 0
             - 1
             - 2
@@ -14606,20 +14901,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         moduleId1:
           type: string
@@ -14733,20 +15028,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         documentId1:
           type: string
@@ -14781,20 +15076,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         toolId1:
           type: string
@@ -15545,15 +15840,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_39
+          enum: *ref_40
           example: USER
         permissionsGroup:
-          example: *ref_40
+          example: *ref_41
           type: array
           items:
             type: string
         permissions:
-          example: *ref_41
+          example: *ref_42
           type: array
           items:
             type: string
@@ -16842,7 +17137,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_42
+          enum: &ref_43
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -16897,6 +17192,8 @@ components:
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
             - SCHEMAS_RULE_EXECUTE
+            - METHODOLOGIES_METHODOLOGY_READ
+            - METHODOLOGIES_METHODOLOGY_CREATE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -16915,7 +17212,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_42
+          enum: *ref_43
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -16943,6 +17240,7 @@ components:
             - ACCESS
             - DELEGATION
             - STATISTICS
+            - METHODOLOGIES
           example: ANALYTIC
         entity:
           type: string
@@ -16983,6 +17281,7 @@ components:
             - STATISTIC
             - RULE
             - LABEL
+            - METHODOLOGY
           example: POLICY
         action:
           type: string
@@ -17211,6 +17510,45 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VcDocumentDTO'
+    MethodologyDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
     PolicyLabelDTO:
       type: object
       properties:
