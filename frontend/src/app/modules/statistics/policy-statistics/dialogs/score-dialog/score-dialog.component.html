@@ -27,31 +27,31 @@
                 <div class="col-44"></div>
             </div>
             <div *ngIf="options.length" class="dialog-grid-body vertical-border">
-                <ng-container *ngFor="let item of options" >   
+                <ng-container *ngFor="let item of options" >
                     <div class="dialog-grid-row row-52">
                         <div class="col-auto">
-                            <input 
+                            <input
                                 class="guardian-input guardian-input-cell"
-                                [(ngModel)]="item.description" 
-                                id="item.description" 
-                                pInputText 
+                                [(ngModel)]="item.description"
+                                id="item.description"
+                                pInputText
                                 type="text"/>
                             <div class="cell-focus"></div>
                         </div>
                         <div class="col-120">
-                            <input 
+                            <input
                                 class="guardian-input guardian-input-cell"
-                                [(ngModel)]="item.value" 
-                                id="item.value" 
-                                pInputText 
+                                [(ngModel)]="item.value"
+                                id="item.value"
+                                pInputText
                                 type="text"/>
                             <div class="cell-focus"></div>
                         </div>
                         <div class="col-44 col-button">
-                            <div 
-                                class="guardian-icon-button big delete-btn" 
+                            <div
+                                class="guardian-icon-button big delete-btn"
                                 (click)="deleteOption(item, $event)">
-                                <svg-icon 
+                                <svg-icon
                                     class="icon-btn"
                                     src="/assets/images/icons/delete.svg"
                                     svgClass="icon-color-delete">
@@ -69,12 +69,12 @@
                         svgClass="icon-color-disabled">
                     </svg-icon>
                 </div>
-                <div>There were no options created yet.</div>
+                <div>There are no options created yet</div>
             </div>
-        </div> 
+        </div>
         <div class="option-actions">
-            <button 
-                (click)="addOption()" 
+            <button
+                (click)="addOption()"
                 class="guardian-button guardian-button-secondary">
                 <div class="guardian-button-icon">
                     <svg-icon
@@ -93,13 +93,13 @@
 <div class="dialog-footer">
     <div class="action-buttons">
         <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
+            <button
+                (click)="onClose()"
                 class="guardian-button guardian-button-secondary">Close</button>
         </div>
         <div class="dialog-button publish-button">
-            <button 
-                (click)="onSubmit()" 
+            <button
+                (click)="onSubmit()"
                 class="guardian-button guardian-button-primary">Save</button>
         </div>
     </div>
