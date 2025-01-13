@@ -12,14 +12,22 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Start Date</td>
         <td class="propRowCell">
-            <datetime-picker [(value)]="properties.startDate" [readonly]="readonly"></datetime-picker>
+            <datetime-picker
+                [(value)]="properties.startDate"
+                [readonly]="readonly"
+                [appendTo]="'body'"
+            ></datetime-picker>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">End Date</td>
         <td class="propRowCell">
-            <datetime-picker [(value)]="properties.endDate" [readonly]="readonly"></datetime-picker>
+            <datetime-picker
+                [(value)]="properties.endDate"
+                [readonly]="readonly"
+                [appendTo]="'body'"
+            ></datetime-picker>
         </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
@@ -31,7 +39,9 @@
                 [disabled]="readonly"
                 (onHide)="selectPeriod()"
                 placeholder="Select a period"
-                [options]="periodOptions">
+                [options]="periodOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>

@@ -212,12 +212,8 @@ export class UserRetirePoolsDialogComponent implements OnInit {
         }));
     }
 
-    getSerialOptions(tokenId: string) {
-        const token = this.tokens.find(t => t.tokenId === tokenId) as any;
-        if (!token || !token.serials) {
-            return [];
-        }
-        return (token.serials).map((serial: any) => ({
+    getSerialOptions(serials: number[] = []) {
+        return (serials).map((serial: number) => ({
             label: serial.toString(),
             value: serial,
         }));

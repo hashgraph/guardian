@@ -176,6 +176,7 @@
                                 [(ngModel)]="entity.all"
                                 [binary]="true"
                                 [styleClass]="'primary-checkbox'"
+                                [ngModelOptions]="{standalone: true}"
                             ></p-checkbox>
                         </div>
                         <div class="entity-name" (click)="onAll(entity)">
