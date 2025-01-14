@@ -19,31 +19,31 @@
 # NOTE: Must be placed last to ensure enforcement over all other rules
 
 # Protection Rules for Github Configuration Files and Actions Workflows
-/.github/                                       @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers
-/.github/workflows/                             @hashgraph/devops-ci @hashgraph/devops-ci-committers
+/.github/                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
+/.github/workflows/                             @hashgraph/platform-ci @hashgraph/platform-ci-committers
 
 # NodeJS project files
-package.json                                    @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
-package-lock.json                               @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
-jest.config.mjs                                 @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
+package.json                                    @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+package-lock.json                               @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+jest.config.mjs                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
-.remarkrc                                       @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/developer-advocates
+/config/                                        @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+.remarkrc                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
 
 # Semantic Release Configuration
-.releaserc                                      @hashgraph/devops-ci @hashgraph/devops-ci-committers
+.releaserc                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
 /CODEOWNERS                                     @hashgraph/release-engineering-managers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers
+/README.md                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
 **/LICENSE                                      @hashgraph/release-engineering-managers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/devops-ci @hashgraph/devops-ci-committers
+**/codecov.yml                                  @hashgraph/platform-ci @hashgraph/platform-ci-committers
 
 # Git Ignore definitions
-**/.gitignore                                   @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers
-**/.gitignore.*                                 @hashgraph/devops-ci @hashgraph/devops-ci-committers @hashgraph/release-engineering-managers
+**/.gitignore                                   @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
+**/.gitignore.*                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
