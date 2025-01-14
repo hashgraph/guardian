@@ -59,6 +59,8 @@ Extend/modify trustchain implementation to support new contract-based issuance a
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2243](https://github.com/hashgraph/guardian/issues/2243)
 
+Documentation Link: [https://docs.hedera.com/guardian-dev-1/guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement](https://docs.hedera.com/guardian-dev-1/guardian/tokens/retirement-contract/trustchain-representation-of-token-retirement)
+
 ## American Carbon Registry (ACR) ACR Methodology for Quantifying, Monitoring, Reporting, and Verifying Greenhouse Gas Emissions Reductions and Removals from Landfill Gas Destruction and Beneficial Use Projects
 
 1. Creating Schema design for this methodology.&#x20;
