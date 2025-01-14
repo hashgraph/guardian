@@ -2,3 +2,9 @@
     display: flex;
     flex-flow: column;
 }
+
+::ng-deep {
+    math-field::part(virtual-keyboard-toggle) {
+        display: none;
+    }
+}

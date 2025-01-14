@@ -1,5 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MathfieldElement, Mathfield } from 'mathlive';
+import { matrixKeyboard } from './keyboards/matrix-keyboard';
+import { mathKeyboard } from './keyboards/math-keyboard';
 
 @Component({
     selector: 'math-live',
@@ -18,6 +20,17 @@ export class MathLiveComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        const mathVirtualKeyboard: any = window.mathVirtualKeyboard;
+        mathVirtualKeyboard.layouts = [
+            mathKeyboard,
+            matrixKeyboard,
+            "numeric",
+            "symbols",
+            "greek"
+        ];
+        this.mfe.mathVirtualKeyboardPolicy = "manual";
+        this.mfe.addEventListener("focusin", () => mathVirtualKeyboard.show());
+        this.mfe.addEventListener("focusout", () => mathVirtualKeyboard.hide());
 
     }
 
