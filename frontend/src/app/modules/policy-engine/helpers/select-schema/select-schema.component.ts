@@ -27,13 +27,4 @@ export class SelectSchema {
 
     ngOnChanges(changes: SimpleChanges) {
     }
-
-    getSchemaOptions() {
-        return this.schemas.map(schema => ({
-            label: schema.displayName,
-            value: schema.value,
-            tooltip: schema.tooltip,
-            disabled: schema.disable
-        }));
-    }
 }
