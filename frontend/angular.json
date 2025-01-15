@@ -114,28 +114,29 @@
                           "src/styles.scss"
                         ],
                         "tsConfig": "tsconfig.app.json",
-                        "browser": "src/main.ts"
+                        "browser": "src/main.ts",
+                        "preserveSymlinks": true
                     }
                 },
                 "extract-i18n": {
                     "builder": "@angular-devkit/build-angular:extract-i18n",
                     "options": {
-                        "browserTarget": "guardian:build"
+                        "buildTarget": "guardian:build"
                     }
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
                     "configurations": {
                         "development": {
-                            "browserTarget": "guardian:build:development",
+                            "buildTarget": "guardian:build:development",
                             "proxyConfig": "proxy.conf.json"
                         },
                         "production": {
-                            "browserTarget": "guardian:build:production",
+                            "buildTarget": "guardian:build:production",
                             "proxyConfig": "proxy.conf.json"
                         },
                         "demo": {
-                            "browserTarget": "guardian:build:demo",
+                            "buildTarget": "guardian:build:demo",
                             "proxyConfig": "proxy.conf.json"
                         }
                     },

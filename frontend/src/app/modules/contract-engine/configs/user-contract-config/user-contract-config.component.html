@@ -11,15 +11,20 @@
 
     <ng-container *ngIf="isConfirmed">
         <div class="actions">
-            <div style="text-align: end">
-                <button mat-raised-button color="primary" class="toolbar-btn add" (click)="openRetirePoolsDialog()">
-                    <i class="pi pi-eye"></i>
-                    <span>Retire</span>
+            <div style="text-align: end" class="buttons">
+                <button
+                    pButton
+                    label="Retire"
+                    icon="pi pi-eye"
+                    class="p-button"
+                    (click)="openRetirePoolsDialog()">
                 </button>
-                <button (click)="openRetireRequestsDialog()" class="toolbar-btn" color="primary"
-                        mat-raised-button>
-                    <i class="pi pi-eye"></i>
-                    <span>Requests</span>
+                <button
+                    pButton
+                    label="Requests"
+                    icon="pi pi-eye"
+                    class="p-button"
+                    (click)="openRetireRequestsDialog()">
                 </button>
             </div>
         </div>

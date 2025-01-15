@@ -1,18 +1,22 @@
-<h1 mat-dialog-title>Custom Period</h1>
-<div mat-dialog-content class="dialog-content" [attr.started]="started">
+<h1 class="dialog-title">Custom Period</h1>
+<div class="dialog-content" [attr.started]="started">
     <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
         <div class="c1">
-            <div class="f1" style="padding: 6px 4px; margin-right: 8px;">
+            <div class="f1">
                 <label for="startDate">Start Date:</label>
                 <p-calendar
                     id="startDate"
-                    [(ngModel)]="startDate"
-                    [readonlyInput]="true"
-                    dateFormat="dd/mm/yy">
-                </p-calendar>
+                    formControlName="startDate"
+                    dateFormat="dd/mm/yy"
+                    [appendTo]="'body'"
+                    [hourFormat]="'12'"
+                    [showTime]="true"
+                    [stepHour]="true"
+                    [stepMinute]="true"
+                ></p-calendar>
             </div>
 
-            <div class="f1" style="padding: 15px 10px; margin-left: 28px;">
+            <div class="f1">
                 <label for="interval">Interval:</label>
                 <input
                     id="interval"
@@ -24,19 +28,20 @@
                     (change)="selectPeriod()">
             </div>
 
-            <div class="f1" style="padding: 15px 10px; margin-left: 8px;">
+            <div class="f1">
                 <label for="period">Period:</label>
                 <p-dropdown
                     id="period"
-                    [(ngModel)]="period"
+                    formControlName="period"
                     [options]="periodOptions"
                     placeholder="Select a period"
-                    (onChange)="selectPeriod()">
-                </p-dropdown>
+                    (onChange)="selectPeriod()"
+                    [appendTo]="'body'"
+                ></p-dropdown>
             </div>
         </div>
 
-        <div class="delimiter"></div>
+            <div class="delimiter"></div>
 
         <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
         <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
@@ -47,7 +52,7 @@
         <div class="delimiter"></div>
         <p-accordion [multiple]="true">
             <p-accordionTab header="Cron Mask (advanced)">
-                <div class="form-group">
+                <div class="form-group input-mask-container">
                     <label>* Mask: minute hour day(month) month day(week)</label>
                     <input pInputText type="text" placeholder="* * * * *" formControlName="mask"
                            class="example-full-width"/>
@@ -55,11 +60,11 @@
             </p-accordionTab>
         </p-accordion>
 
-        <div mat-dialog-actions>
-            <button mat-raised-button color="primary" type="submit" [attr.started]="started"
-                    [disabled]="!dataForm.valid">Ok
-            </button>
-            <button mat-button type="button" (click)="onNoClick()">Cancel</button>
+        <div class="dialog-actions">
+            <p-button label="Ok" icon="pi pi-check" type="submit" [attr.started]="started"
+                      [disabled]="!dataForm.valid" styleClass="p-button-ok p-button-primary"></p-button>
+            <p-button label="Cancel" icon="pi pi-times" type="button" (click)="onNoClick()"
+                      styleClass="p-button-cancel"></p-button>
         </div>
     </form>
 
