@@ -111,6 +111,10 @@ jobs:
                   npm start &
                   sleep 20
                   popd
+                  pushd queue-service
+                  npm start &
+                  sleep 20
+                  popd
                   pushd worker-service
                   npm start &
                   sleep 20
