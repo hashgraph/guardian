@@ -3,7 +3,9 @@
     [disabled]="disabled"
     placeholder="Select a schema"
     [options]="getSchemaOptions()"
-    optionLabel="label">
+    optionLabel="label"
+    [appendTo]="'body'"
+>
     <ng-template let-item pTemplate="item">
         <div
             pTooltip="{{ item.tooltip }}"
