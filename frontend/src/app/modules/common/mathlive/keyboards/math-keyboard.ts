@@ -350,9 +350,10 @@ export const mathKeyboard = {
                     { class: 'small', latex: "\\artanh" },
                     { class: 'small', latex: "\\arctan" },
                     { class: 'small', latex: "\\arctg" },
+                    { class: 'small', latex: "\\cot" },
                 ]
             },
-            "\\cot",
+            "\\Delta",
             {
                 latex: "\\pi",
                 shift: "\\tau",
@@ -385,11 +386,58 @@ export const mathKeyboard = {
                     { latex: "#@_{n}" },
                     { latex: "#@^{n}" },
                     { latex: "#@_{ij}" },
+                    { latex: "#@_{t}" },
                 ]
             },
-
-            
-
+            {
+                latex: "\\text{\\_}",
+                shift: "\\circ",
+                variants: [
+                    { latex: "\\ast" },
+                    { latex: "\\circ" },
+                    { latex: "\\bigcirc" },
+                    { latex: "\\bullet" },
+                    { latex: "\\odot" },
+                    { latex: "\\oslash" },
+                    { latex: "\\circledcirc" },
+                    { latex: "\\star" },
+                    { latex: "\\times" },
+                    { latex: "\\doteq" },
+                    { latex: "\\doteqdot" },
+                ]
+            },
+            {
+                latex: '+',
+                class: 'action',
+                command: ['performWithFeedback', 'addRowAfter'],
+            },
+            {
+                label: "Text",
+                class: 'action',
+                command: ['switchMode', 'text'],
+                shift: {
+                    label: "Math",
+                    class: 'small action',
+                    command: ['switchMode', 'math'],
+                },
+                variants: [
+                    {
+                        label: "Text",
+                        class: 'small',
+                        command: ['switchMode', 'text'],
+                    },
+                    {
+                        label: "Math",
+                        class: 'small',
+                        command: ['switchMode', 'math'],
+                    },
+                    {
+                        label: "LaTeX",
+                        class: 'small',
+                        command: ['switchMode', 'latex'],
+                    },
+                ]
+            },
         ]
     ]
 };
