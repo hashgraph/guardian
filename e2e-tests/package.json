@@ -16,10 +16,9 @@
   "license": "ISC",
   "devDependencies": {
     "cy-verify-downloads": "^0.1.14",
-    "cypress": "^13.7.1",
+    "cypress": "^10.0.0",
     "cypress-grep": "^3.0.3",
-    "cypress-mochawesome-reporter": "^3.5.1",
-    "cypress-select-tests": "^1.7.1"
+    "cypress-mochawesome-reporter": "^3.5.1"
   },
   "dependencies": {
     "@bahmutov/cy-api": "^2.1.3",

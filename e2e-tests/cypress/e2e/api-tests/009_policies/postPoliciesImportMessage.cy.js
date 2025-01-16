@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Policies', { tags: ['policies', 'secondPool'] }, () => {
+context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Imports new policy and all associated artifacts from file', { tags: ['smoke'] }, () => {

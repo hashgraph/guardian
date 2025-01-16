@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Analytics", { tags: ['analytics', 'thirdPool'] }, () => {
+context("Analytics", { tags: ['analytics', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let schemaId1, schemaId2

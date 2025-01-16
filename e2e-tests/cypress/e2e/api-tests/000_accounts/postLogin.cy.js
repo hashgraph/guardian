@@ -1,8 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-
-context('Accounts',  { tags: ['accounts', 'firstPool'] }, () => {
+context('Login',  { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 

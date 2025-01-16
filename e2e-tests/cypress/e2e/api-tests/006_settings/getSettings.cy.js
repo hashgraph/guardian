@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Settings', { tags: ['settings', 'thirdPool'] }, () => {
+context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     it('Get current settings', { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

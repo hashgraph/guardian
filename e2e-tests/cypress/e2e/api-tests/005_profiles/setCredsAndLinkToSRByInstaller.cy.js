@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SR3Username = Cypress.env('SR3User');
 
     it('Set Hedera credentials for the Installer', () => {
