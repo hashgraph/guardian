@@ -72,18 +72,18 @@
                 </div>
                 <div class="guardian-menu-separator"></div>
             </ng-container>
-            <ng-container *ngIf="!readonly"> 
-                <div 
-                    class="guardian-menu-button guardian-menu-select" 
+            <ng-container *ngIf="!readonly">
+                <div
+                    class="guardian-menu-button guardian-menu-select"
                     (click)="statusMenu.toggle($event)"
                     [attr.open]="statusMenu.visible">
                     <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/edit.svg"></svg-icon>
                     <div class="guardian-menu-name">Draft</div>
                     <div class="guardian-menu-select-icon"></div>
                 </div>
-                <p-tieredMenu 
-                    #statusMenu 
-                    [model]="statusMenuItems" 
+                <p-tieredMenu
+                    #statusMenu
+                    [model]="statusMenuItems"
                     [popup]="true"
                     appendTo="body"
                     styleClass="guardian-menu-popup">
@@ -228,7 +228,7 @@
                             <div class="navigation-toolbar-group-title">{{group.title}}</div>
                         </div>
                         <div *ngFor="let item of group.items" class="navigation-toolbar-group-item"
-                            pDraggable="navigationTree" 
+                            pDraggable="navigationTree"
                             (onDragStart)="labelConfig.dragMenuStart(item)"
                             (onDragEnd)="labelConfig.dragMenuEnd()">
                             <div class="navigation-toolbar-group-item-icon">
@@ -247,12 +247,12 @@
                     <div *ngIf="labelConfig.draggedMenuItem" class="navigation-drop-area" pDroppable="navigationTree"
                         (onDrop)="labelConfig.onDrop()"></div>
                     <div class="navigation-tree-area">
-                        <p-tree class="navigation-tree guardian-tree" 
+                        <p-tree class="navigation-tree guardian-tree"
                             [value]="labelConfig.navigationTree.data"
-                            [draggableNodes]="!readonly" 
-                            [droppableNodes]="!readonly" 
+                            [draggableNodes]="!readonly"
+                            [droppableNodes]="!readonly"
                             draggableScope="navigationTree"
-                            droppableScope="navigationTree" 
+                            droppableScope="navigationTree"
                             [validateDrop]="true"
                             [selectionMode]="labelConfig.navigationTree.mode"
                             (onNodeDrop)="labelConfig.onDropValidator($event)">
@@ -272,8 +272,8 @@
                                     <div class="navigation-item-icon">
                                         <svg-icon class="icon-btn svg-icon-16"
                                             src="/assets/images/icons/16/{{node.nodeIcon}}.svg"
-                                            svgClass="icon-color-primary" [svgClass]="node.freezed ? 
-                                                'icon-color-close' : 
+                                            svgClass="icon-color-primary" [svgClass]="node.freezed ?
+                                                'icon-color-close' :
                                                 'icon-color-primary'
                                             ">
                                         </svg-icon>
@@ -743,7 +743,7 @@
                                 svgClass="icon-color-disabled">
                             </svg-icon>
                         </div>
-                        <div>There were no scores created yet.</div>
+                        <div>There are no scores created yet</div>
                     </div>
                     <div *ngIf="!rulesConfig.readonly" class="variables-actions">
                         <button (click)="rulesConfig.onAddScore()" class="guardian-button guardian-button-secondary">
@@ -826,7 +826,7 @@
                                 svgClass="icon-color-disabled">
                             </svg-icon>
                         </div>
-                        <div>There were no formulas created yet.</div>
+                        <div>There are no formulas created yet</div>
                     </div>
                     <div *ngIf="!rulesConfig.readonly" class="variables-actions">
                         <button (click)="rulesConfig.onAddFormula()" class="guardian-button guardian-button-secondary">

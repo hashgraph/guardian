@@ -17,7 +17,7 @@ Enter Hedera network account with non-0 hbar balance to be used by the system fo
 
 #### 1.2.1 Default DID
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 When the ‘Generate new DID document’ option is selected, clicking on the Next button would result in Guardian generating a new dedicated DID to be used exclusively in Guardian based on the Hedera account ID entered at the previous step. Such DID would have the following format:
 
@@ -34,7 +34,7 @@ Example:
 
 #### 1.2.2 Externally-controlled (custom) DID
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

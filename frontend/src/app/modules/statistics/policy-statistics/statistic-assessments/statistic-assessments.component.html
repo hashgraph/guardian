@@ -9,8 +9,8 @@
     </div>
 
     <div class="guardian-user-back-button">
-        <button 
-            (click)="onBack()" 
+        <button
+            (click)="onBack()"
             class="guardian-button guardian-button-secondary">
             <div class="guardian-button-icon">
                 <svg-icon class="icon-btn svg-icon"
@@ -33,17 +33,17 @@
     <div class="guardian-user-page-grid">
         <ng-container *ngIf="page && page.length > 0; else noData">
             <div class="guardian-grid-container">
-                <p-table 
+                <p-table
                     class="guardian-grid-table"
-                    [value]="page" 
-                    [scrollable]="true" 
+                    [value]="page"
+                    [scrollable]="true"
                 >
                     <ng-template pTemplate="header">
                         <tr class="guardian-grid-header">
                             <ng-container *ngFor="let column of columns">
-                                <th 
+                                <th
                                     *ngIf="!column.canDisplay || column.canDisplay()"
-                                    class="header-cell-{{column.type}} col-{{column.size}}" 
+                                    class="header-cell-{{column.type}} col-{{column.size}}"
                                     >{{column.title}}</th>
                             </ng-container>
                         </tr>
@@ -51,17 +51,17 @@
                     <ng-template let-row pTemplate="body">
                         <tr class="guardian-grid-row">
                             <ng-container *ngFor="let column of columns">
-                                <td 
+                                <td
                                     *ngIf="!column.canDisplay || column.canDisplay()"
-                                    class="row-cell-{{column.type}} col-{{column.size}}" 
+                                    class="row-cell-{{column.type}} col-{{column.size}}"
                                     pTooltip="{{row[column.id]}}"
                                     [tooltipDisabled]="!column.tooltip"
                                     tooltipPosition="top"
                                     [ngSwitch]="column.id"
                                 >
                                     <ng-container *ngSwitchCase="'options'">
-                                        <button 
-                                            (click)="onOpen(row)" 
+                                        <button
+                                            (click)="onOpen(row)"
                                             class="guardian-button guardian-button-secondary grid-btn">
                                             Open
                                         </button>
@@ -87,12 +87,12 @@
         </ng-container>
         <ng-template #noData>
             <div class="guardian-user-not-data">
-                <svg-icon 
-                    class="svg-icon-32" 
-                    src="/assets/images/icons/32/list.svg" 
+                <svg-icon
+                    class="svg-icon-32"
+                    src="/assets/images/icons/32/list.svg"
                     svgClass="icon-color-disabled"></svg-icon>
-                <span class="guardian-user-not-data__text-strong">There were no assessment created yet</span>
-                <span class="guardian-user-not-data__text">Please create new assessment to see the data</span>
+                <span class="guardian-user-not-data__text-strong">There are no assessments created yet</span>
+                <span class="guardian-user-not-data__text">Please create a new assessment to see the data</span>
             </div>
         </ng-template>
     </div>

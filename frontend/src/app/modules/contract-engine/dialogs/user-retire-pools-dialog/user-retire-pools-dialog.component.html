@@ -5,7 +5,6 @@
     <ng-container *ngIf="!retireMod; else retireView">
         <div class="action-buttons">
             <div class="p-fluid">
-                <label for="tokens">Tokens</label>
                 <p-multiSelect
                     id="tokens"
                     [(ngModel)]="selectedTokens"
@@ -14,6 +13,7 @@
                     [showHeader]="false"
                     defaultLabel="Select Tokens"
                     [filter]="true"
+                    [appendTo]="'body'"
                     (onChange)="loadPools()">
                     <ng-template let-item pTemplate="item">
                         {{ item.label }}
@@ -45,7 +45,7 @@
                     <span class="approve__label--no-approve" *ngIf="pool.immediately">Without approval</span>
                 </div>
                 <div class="pool-actions">
-                    <button (click)="retire(pool)" mat-flat-button class="btn btn--retire">Retire</button>
+                    <button (click)="retire(pool)" class="btn btn--retire">Retire</button>
                 </div>
             </div>
         </div>
@@ -83,17 +83,20 @@
                             formControlName="count"
                             [placeholder]="'1'"
                             mode="decimal"
+                            [showButtons]="true"
+                            [step]="1"
                             [min]="1">
                         </p-inputNumber>
                     </div>
                     <div *ngIf="token.type === 'non-fungible'" class="p-fluid"
-                         style="transform: scale(0.8) translateY(5px); width: 100px;">
+                         style="transform: scale(0.8) translateY(5px); width: 152px;">
                         <label for="serials">Serials</label>
                         <p-multiSelect
                             id="serials"
                             formControlName="serials"
-                            [options]="getSerialOptions(token.tokenId)"
+                            [options]="getSerialOptions(token.serials)"
                             optionLabel="label"
+                            [appendTo]="'body'"
                             placeholder="Select Serials">
                             <ng-template let-item pTemplate="item">
                                 {{ item.label }}

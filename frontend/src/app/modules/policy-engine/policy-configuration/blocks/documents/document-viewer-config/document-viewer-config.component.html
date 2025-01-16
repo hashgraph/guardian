@@ -65,7 +65,9 @@
                     (onChange)="onSelectFieldType(field)"
                     [disabled]="readonly"
                     placeholder="Select a field type"
-                    [options]="fieldTypeOptions">
+                    [options]="fieldTypeOptions"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
         </tr>
@@ -127,7 +129,9 @@
                         [disabled]="readonly"
                         (onChange)="onSave()"
                         placeholder="Select an action"
-                        [options]="actionOptions">
+                        [options]="actionOptions"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </td>
             </tr>
