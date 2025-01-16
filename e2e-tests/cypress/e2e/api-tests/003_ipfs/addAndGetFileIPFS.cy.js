@@ -25,7 +25,6 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
                             "cypress/fixtures/testJsonCid",
                             response.body
                         );
-
                     });
                 });
         })
