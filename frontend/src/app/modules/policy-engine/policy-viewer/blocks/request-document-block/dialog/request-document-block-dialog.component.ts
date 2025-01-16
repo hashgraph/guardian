@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -51,6 +51,7 @@ export class RequestDocumentBlockDialog {
         private policyEngineService: PolicyEngineService,
         private schemaRulesService: SchemaRulesService,
         private fb: UntypedFormBuilder,
+        private cdr: ChangeDetectorRef,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -65,6 +66,8 @@ export class RequestDocumentBlockDialog {
             .subscribe(val => {
                 this.validate();
             });
+
+        this.cdr.detectChanges();
     }
 
     ngOnDestroy(): void {
@@ -163,6 +166,34 @@ export class RequestDocumentBlockDialog {
             return !this.dataForm.valid || this.loading;
         } else {
             return false;
+        }
+    }
+
+    public makeDraftData()
+    {
+        console.log("Draft");
+        
+        if (this.disabled || this.loading) {
+            return;
+        }
+        if (this.dataForm.valid) {
+            const data = this.dataForm.getRawValue();
+            this.loading = true;
+            prepareVcData(data);
+            this.policyEngineService
+                .setBlockDraftData(this.id, this.policyId, {
+                    document: data,
+                    ref: this.docRef,
+                })
+                .subscribe(() => {
+                    setTimeout(() => {
+                        this.loading = false;
+                        this.dialogRef.close(null);
+                    }, 1000);
+                }, (e) => {
+                    console.error(e.error);
+                    this.loading = false;
+                });
         }
     }
 }

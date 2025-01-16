@@ -105,21 +105,47 @@
 
         <div class="policy-header" [attr.policy-status]="policyInfo.status"
              [attr.expired]="!!policyInfo.discontinuedDate">
-            <div class="guardian-user-back-button">
-                <button
-                    (click)="onBack()"
-                    class="guardian-button guardian-button-secondary"
-                    [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
-                >
-                    <div class="guardian-button-icon">
-                        <svg-icon class="icon-btn svg-icon"
-                                  src="/assets/images/icons/left-arrow.svg"
-                                  svgClass="icon-color-primary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Back to Manage Policies</div>
-                </button>
-            </div>
+             <div class="policy-navigation-buttons">
+                <div class="guardian-user-back-button">
+                    <button
+                        (click)="onBack()"
+                        class="guardian-button guardian-button-secondary"
+                        [ngClass]="{ 'back-button': isDryRun || !!policyInfo.discontinuedDate }"
+                    >
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                      src="/assets/images/icons/left-arrow.svg"
+                                      svgClass="icon-color-primary">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Back to Manage Policies</div>
+                    </button>
+                </div>
+                <div class="guardian-draft-buttons">
+                    <button
+                        (click)="onDiscardDraftData()"
+                        class="guardian-button guardian-button-primary discard-drafts-button"
+                    >
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                      src="/assets/images/icons/refresh.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Discard all Draft data</div>
+                    </button>
+                    <button
+                        (click)="onGoToDrafts()"
+                        class="guardian-button guardian-button-primary go-to-drafts-button"
+                    >
+                        <div class="guardian-button-icon">
+                            <svg-icon class="icon-btn svg-icon"
+                                      src="/assets/images/icons/right-arrow.svg">
+                            </svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Go to Drafts</div>
+                    </button>
+                </div>
+             </div>
             <div *ngIf="policyInfo" class="policy-info-container">
                 <div class="policy-name-container">
                     <span *ngIf="policyInfo && policyInfo.name">{{ policyInfo.name }}</span>

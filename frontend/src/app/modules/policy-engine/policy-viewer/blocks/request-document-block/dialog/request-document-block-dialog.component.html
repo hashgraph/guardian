@@ -80,6 +80,12 @@
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
+        <button 
+            (click)="makeDraftData()"
+            [disabled]="!dataForm.valid"
+            class="guardian-button guardian-button-secondary draft-button">
+            Send Draft
+        </button>
         <div 
             *ngFor="let config of buttons"
             [attr.visible]="config.visible()"

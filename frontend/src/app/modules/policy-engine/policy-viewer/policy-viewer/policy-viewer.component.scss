@@ -73,6 +73,32 @@ a.go-back-link svg {
     font-size: 20px;
 }
 
+.policy-navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+
+    .guardian-draft-buttons {
+        display: flex;
+        gap: 16px;
+
+        .discard-drafts-button {
+            width: 205px;
+            height: 40px;
+            border-color: var(--color-accent-red-1, #FF432A);
+            background-color: var(--color-accent-red-1, #FF432A);
+        }
+
+        .go-to-drafts-button {
+            width: 146px;
+            height: 40px;
+        }
+
+        svg {
+            fill: var(--color-grey-white, #FFFFFF);
+        }
+    }
+}
+
 .back-button {
     background: none !important;
     color: #ffffff !important;

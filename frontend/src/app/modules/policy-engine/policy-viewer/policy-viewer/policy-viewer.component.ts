@@ -470,4 +470,12 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public onBack() {
         this.router.navigate(['/policy-viewer']);
     }
+
+    public onDiscardDraftData() {
+        this.router.navigate(['/policy-drafts']);
+    }
+
+    public onGoToDrafts() {
+        this.router.navigate(['/policy-drafts']);
+    }
 }
