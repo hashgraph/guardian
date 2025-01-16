@@ -1,11 +1,11 @@
 name: Guardian CI API Tests(Manual)
 on:
     workflow_dispatch:
-        # inputs:
-        #     tags:
-        #         type: string
-        #         description: Tags for run(smoke, accounts, firstPool and etc.)
-        #         default: 'all'
+        inputs:
+            tags:
+                type: string
+                description: Tags for run(smoke, accounts, firstPool and etc.)
+                default: 'all'
         description: 'Manual run'
 jobs:
     buildAndTest:
