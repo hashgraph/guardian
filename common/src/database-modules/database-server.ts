@@ -42,7 +42,8 @@ import {
     PolicyStatisticDocument,
     SchemaRule,
     PolicyLabel,
-    PolicyLabelDocument
+    PolicyLabelDocument,
+    TrialDraft
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -370,6 +371,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Overriding the create method
+     * @param entityClass
+     * @param item
+     */
+    public createDraft<T extends BaseEntity>(entityClass: new () => T, item: Partial<T>): T {
+        return (new DataBaseHelper(TrialDraft).create(item)) as unknown as T;
+    }
+
+    /**
      * Create much data
      * @param entityClass Entity class
      * @param item Item
@@ -427,6 +437,32 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Overriding the save method
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    async saveDraft<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
+        if (Array.isArray(item)) {
+            return await this.saveManyDraft(entityClass, item, filter) as any
+        }
+
+        // this.addDryRunId(entityClass, item); // Todo ?
+        return await new DataBaseHelper(TrialDraft).save(item, filter) as unknown as T;
+    }
+
+    /**
+     * Save many
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    async saveManyDraft<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: FilterObject<T>): Promise<T[]> {
+        // this.addDryRunId(entityClass, item); // Todo ?
+        return await new DataBaseHelper(TrialDraft).saveMany(item, filter) as unknown as T[];
+    }
+
+    /**
      * Overriding the update method
      * @param entityClass
      * @param criteria
@@ -466,6 +502,40 @@ export class DatabaseServer extends AbstractDatabaseServer {
         } else {
             return await new DataBaseHelper(entityClass).updateMany(entities as T[], filter);
         }
+    }
+
+    /**
+     * Overriding the update method
+     * @param entityClass
+     * @param criteria
+     * @param row
+     */
+    async updateDraft<T extends BaseEntity>(
+        entityClass: new () => T,
+        criteria: FilterQuery<T>,
+        row: unknown | unknown[]
+    ): Promise<T> {
+        if (Array.isArray(criteria)) {
+            return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
+        }
+
+        // this.addDryRunId(entityClass, row);
+        return (await new DataBaseHelper(TrialDraft).update(row as TrialDraft, criteria as FilterQuery<TrialDraft>)) as unknown as T;
+    }
+
+    /**
+     * Update many method
+     * @param entityClass
+     * @param entities
+     * @param filter
+     */
+    async updateManyDraft<T extends BaseEntity>(
+        entityClass: new () => T,
+        entities: T[],
+        filter?: FilterQuery<T>,
+    ): Promise<TrialDraft[] | T[]> {
+        // this.addDryRunId(entityClass, entities);
+        return (await new DataBaseHelper(TrialDraft).updateMany(entities as unknown as TrialDraft[], filter as FilterQuery<TrialDraft>));
     }
 
     /**
@@ -952,6 +1022,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save Did
+     * @param row
+     *
+     * @virtual
+     */
+    public async saveDraftDocument(row: Partial<TrialDraft>): Promise<TrialDraft> {
+        const doc = this.createDraft(TrialDraft, row);
+        return await this.saveDraft(TrialDraft, doc);
+    }
+
+    /**
      * Get Policy
      * @param policyId
      *
@@ -1082,6 +1163,16 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getVpDocument(filters: FilterQuery<VpDocumentCollection>): Promise<VpDocumentCollection | null> {
         return await this.findOne(VpDocumentCollection, filters);
+    }
+
+    /**
+     * Get Draft Document
+     * @param filters
+     *
+     * @virtual
+     */
+    public async getDraftDocument(filters: FilterQuery<TrialDraft>): Promise<TrialDraft | null> {
+        return await this.findOne(TrialDraft, filters);
     }
 
     /**

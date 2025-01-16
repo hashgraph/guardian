@@ -1544,6 +1544,73 @@ export class PolicyApi {
     /**
      * Sends data to the specified block
      */
+    @Post('/:policyId/blocksDraft/:uuid')
+    @Auth(
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+    )
+    @ApiOperation({
+        summary: 'Sends data to the specified block.',
+        description: 'Sends data to the specified block.',
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        description: 'Policy Id',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiParam({
+        name: 'uuid',
+        type: 'string',
+        required: true,
+        description: 'Block Identifier',
+        example: Examples.UUID
+    })
+    @ApiBody({
+        description: 'Data',
+        type: Object
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: BlockDTO
+    })
+    @ApiServiceUnavailableResponse({
+        description: 'Block Unavailable.',
+        type: ServiceUnavailableErrorDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(BlockDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async setBlockDataDraft(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Param('uuid') uuid: string,
+        @Body() body: any,
+        @Req() req
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+
+            // Remove?
+            const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+            return await engineService.setBlockData(user, policyId, uuid, body, true);
+        } catch (error) {
+            error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Sends data to the specified block
+     */
     @Post('/:policyId/tag/:tagName/blocks')
     @Auth(
         Permissions.POLICIES_POLICY_EXECUTE,

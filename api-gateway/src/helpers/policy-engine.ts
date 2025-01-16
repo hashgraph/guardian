@@ -298,9 +298,10 @@ export class PolicyEngine extends NatsService {
         user: IAuthUser,
         policyId: string,
         blockId: string,
-        data: any
+        data: any,
+        isDraft?: boolean,
     ): Promise<any> {
-        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data });
+        return await this.sendMessage(PolicyEngineEvents.SET_BLOCK_DATA, { user, blockId, policyId, data, isDraft });
     }
 
     /**
