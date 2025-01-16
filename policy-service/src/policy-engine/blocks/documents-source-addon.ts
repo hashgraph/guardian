@@ -118,7 +118,7 @@ export class DocumentsSourceAddon {
 
         const dynFilters = {};
         for (const [key, value] of Object.entries(await ref.getFilters(user))) {
-            dynFilters[key] = { $eq: value };
+            dynFilters[key] = value;
         }
 
         Object.assign(filters, dynFilters);
