@@ -40,5 +40,13 @@
         height: 100%;
         user-select: none;
         position: relative;
+
+        .formula-item {
+            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, rgba(0, 0, 0, 0.0784313725));
+            background: var(--guardian-background, #FFFFFF);
+            padding: 24px 24px 24px 24px;
+            border-radius: 8px;
+            margin: 24px;
+        }
     }
 }

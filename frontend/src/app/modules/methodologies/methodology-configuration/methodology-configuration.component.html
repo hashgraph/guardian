@@ -32,6 +32,59 @@
         </div>
     </div>
     <div class="body-container">
-        <math-live></math-live>
+        <div class="formula-items">
+
+            <ng-container *ngFor="let item of items">
+                <div class="formula-item" *ngIf="item.type === 'constant'">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Description</label>
+                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                </div>
+
+                <div class="formula-item" *ngIf="item.type === 'variable'">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Description</label>
+                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                </div>
+
+                <div class="formula-item" *ngIf="item.type === 'formula'">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Description</label>
+                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <math-live [(value)]="item.value"></math-live>
+                </div>
+                
+                <div class="formula-item" *ngIf="item.type === 'text'">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Description</label>
+                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                </div>
+            </ng-container>
+        </div>
+
+        <button (click)="addItem('constant')" class="guardian-button guardian-button-primary">Add Constant</button>
+        <button (click)="addItem('variable')" class="guardian-button guardian-button-primary">Add Variable</button>
+        <button (click)="addItem('formula')" class="guardian-button guardian-button-primary">Add Formula</button>
+        <button (click)="addItem('text')" class="guardian-button guardian-button-primary">Add Text</button>
     </div>
 </div>

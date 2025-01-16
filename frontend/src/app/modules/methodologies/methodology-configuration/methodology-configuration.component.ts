@@ -1,9 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserPermissions } from '@guardian/interfaces';
+import { GenerateUUIDv4, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { MethodologiesService } from 'src/app/services/methodologies.service';
+
+enum FormulaItemType {
+    Constant = 'constant',
+    Variable = 'variable',
+    Formula = 'formula',
+    Text = 'text'
+}
+
+interface FormulaItem {
+    uuid: string;
+    name: string;
+    description: string;
+    type: FormulaItemType,
+    value?: any;
+    link?: any;
+    relationships?: any;
+}
 
 @Component({
     selector: 'app-methodology-configuration',
@@ -24,6 +41,8 @@ export class MethodologyConfigurationComponent implements OnInit {
     public item: any;
     public policy: any;
     public readonly: boolean = false;
+
+    public items: FormulaItem[] = [];
 
     constructor(
         private profileService: ProfileService,
@@ -98,5 +117,48 @@ export class MethodologyConfigurationComponent implements OnInit {
             }, (e) => {
                 this.loading = false;
             });
+    }
+
+    public addItem(type: string) {
+        if (type === FormulaItemType.Constant) {
+            this.items.push({
+                uuid: GenerateUUIDv4(),
+                name: '',
+                description: '',
+                type: type,
+                value: ''
+            })
+        } else if (type === FormulaItemType.Variable) {
+            this.items.push({
+                uuid: GenerateUUIDv4(),
+                name: '',
+                description: '',
+                type: type,
+                value: '',
+                link: null
+            })
+        } else if (type === FormulaItemType.Formula) {
+            this.items.push({
+                uuid: GenerateUUIDv4(),
+                name: '',
+                description: '',
+                type: type,
+                value: '',
+                link: null,
+                relationships: []
+            })
+        } else if (type === FormulaItemType.Text) {
+            this.items.push({
+                uuid: GenerateUUIDv4(),
+                name: '',
+                description: '',
+                type: type,
+                value: '',
+                link: null,
+                relationships: []
+            })
+        } else {
+            return;
+        }
     }
 }

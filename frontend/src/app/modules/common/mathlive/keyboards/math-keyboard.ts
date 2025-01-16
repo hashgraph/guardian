@@ -410,6 +410,11 @@ export const mathKeyboard = {
                 latex: '+',
                 class: 'action',
                 command: ['performWithFeedback', 'addRowAfter'],
+                shift: {
+                    latex: '-',
+                    class: 'action',
+                    command: ['performWithFeedback', 'removeRow'],
+                },
             },
             {
                 label: "Text",
