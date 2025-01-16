@@ -36,7 +36,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
             cy.fixture("testJsonDR.json").then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.IPFSFile + policyId + "/" + API.DryRun,
+                    url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
                     body: file,
                     headers: {
                         "content-type": "binary/octet-stream",
@@ -58,7 +58,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     it("Add file from ipfs for dry run mode without auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + policyId + "/" + API.DryRun,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -68,7 +68,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     it("Add file from ipfs for dry run mode with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + policyId + "/" + API.DryRun,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             headers: {
                 authorization: "Bearer wqe",
             },
@@ -81,7 +81,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     it("Add file from ipfs for dry run mode with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + policyId + "/" + API.DryRun,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             headers: {
                 authorization: "",
             },

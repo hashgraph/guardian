@@ -133,6 +133,7 @@ jobs:
                   IPFS_NODE_ADDRESS: http://localhost:5001
                   IPFS_PROVIDER: local
                   IPFS_PUBLIC_GATEWAY: http://localhost:8080/ipfs/${cid}
+                  ACCESS_TOKEN_UPDATE_INTERVAL: 600000
 
             - name: Run tests with Cypress
               run: |
