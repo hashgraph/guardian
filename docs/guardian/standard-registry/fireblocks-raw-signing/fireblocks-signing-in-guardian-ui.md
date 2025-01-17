@@ -69,6 +69,6 @@ When creating a user, select the “**Use fireblocks signing**” option and pop
 * Fireblocks API Key
 * Fireblocks Private Key
 
-![](<../../../.gitbook/assets/0 (1) (1).png>)
+![](<../../../.gitbook/assets/0 (1) (1) (1) (1) (1).png>)
 
 Users, which have been created with this option enabled to remotely sign their Hedera transactions using Fireblocks API instead of via the built-in Guardian signing workflow.

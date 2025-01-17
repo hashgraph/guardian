@@ -13,11 +13,11 @@ This folder contains a sample file that is referenced in the Demo Usage Guide
 
 2\. After running the installation commands, open a tab on your browser and navigate to [http://localhost:3000/](http://localhost:3000/). Typically, the way we start the reference implementation demonstration is by logging in as Verra. Click the Demo Admin Panel drop-down located in the upper right-hand corner of the login screen and select the Verra user.
 
-![](../../../.gitbook/assets/Verra\_1.png)
+![](../../../.gitbook/assets/Verra_1.png)
 
 3\. You'll now be prompted to configure your Verra account. Enter the details and then press the Generate button to generate a Hedera Operator ID and an Operator Key and enter the name of your Standard Registry. Press Connect when finished. This will now create Hedera Consensus Service Topics, fill the account with test hBar, create a DID document, create a Verifiable Credential, etc.
 
-![](../../../.gitbook/assets/Verra\_2.2.png)
+![](../../../.gitbook/assets/Verra_2.2.png)
 
 4\. This could be one of the most interesting parts of the reference implementation. Now we will be creating the Policy. We have two ways to "create policies." The first way is to import an existing policy. This is the easiest way to get started. When you import a policy, all schemas and tokens that are required in the policy are automatically populated. To do this, you can use the sample policy that we have already uploaded to IPFS. Click on the import button and enter the one of the following Hedera message IDs:
 
@@ -27,7 +27,7 @@ REDD 2.2.2 = 1707207149.487956003
 Verra REDD Policy 3 groups = 1707207286.119377003
 ```
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once Policy is imported successfully, you get two options : Publish and Dry Run mode.
 
@@ -69,7 +69,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](https://github.com/hashgraph/guardian/blob/main/Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
 
-![](../../../.gitbook/assets/verra\_new\_8.png)
+![](../../../.gitbook/assets/verra_new_8.png)
 
 12\. The next step of our flow is to log out and sign back in as the Standard Registry. Navigate to the Policies tab and click the Open button on the far right. Here you will find the approval actions based on our Policy Workflow required by Verra. You will be able to view the Verifiable Credential prior to approval by selecting the View Document link. Once you are ready to approve the project details, you can click on the Add button.
 
@@ -111,8 +111,8 @@ Note: If there are more than one VVB, we need atleast 70% consensus to get the f
 
 18\. Once, Minting process is completed, navigate to the Token History tab, where you have an option of viewing TrustChain. You can view TrustChain by clicking on View TrustChain button.
 
-![](../../../.gitbook/assets/verra\_new\_16.png)
+![](../../../.gitbook/assets/verra_new_16.png)
 
 The Trust Chain view displays essential elements that can be publicly discovered. Elements include token information, Policy information, and all the essential information regarding the Verifiable Credentials that make up the Verifiable Presentation. You will notice "Cards" on the bottom of the screen. Those cards are Verifiable Credentials displayed in chronological order.
 
-![](../../../.gitbook/assets/verra\_new\_17.png)
+![](../../../.gitbook/assets/verra_new_17.png)

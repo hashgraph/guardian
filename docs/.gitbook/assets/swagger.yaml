@@ -74,6 +74,32 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /accounts/change-password:
+    post:
+      operationId: AccountApi_changePassword
+      summary: Change user password.
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: User credentials.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountsSessionResponseDTO'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /accounts/access-token:
     post:
       operationId: AccountApi_getAccessToken
@@ -1094,6 +1120,40 @@ paths:
       tags: *ref_3
       security:
         - bearer: []
+  /contracts/{contractId}/transactions:
+    get:
+      operationId: ContractsApi_getSchemaTransactions
+      summary: Return all transactions for contract.
+      description: Return all transactions for contract.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: [ ]
   /contracts/{contractId}/permissions:
     get:
       operationId: ContractsApi_contractPermissions
@@ -1403,6 +1463,48 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_3
       security:
+        - bearer: [ ]
+  /contracts/wipe/{contractId}/requests/{hederaId}:
+    delete:
+      operationId: ContractsApi_clearWipeRequestsWithHederaId
+      summary: Clear wipe requests for hedera account.
+      description: >-
+        Clear wipe contract requests for specific hedera account. Only users
+        with the Standard Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
         - bearer: []
   /contracts/wipe/{contractId}/admin/{hederaId}:
     post:
@@ -1630,6 +1732,103 @@ paths:
           required: true
           in: path
           description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: [ ]
+  /contracts/wipe/{contractId}/wiper/{hederaId}/{tokenId}:
+    post:
+      operationId: ContractsApi_wipeAddWiperWithToken
+      summary: Add wipe wiper for token.
+      description: >-
+        Add wipe contract wiper for specific token. Only users with the Standard
+        Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
+      security:
+        - bearer: [ ]
+    delete:
+      operationId: ContractsApi_wipeRemoveWiperWithToken
+      summary: Remove wipe wiper for token.
+      description: >-
+        Remove wipe contract wiper for specific token. Only users with the
+        Standard Registry role are allowed to make the request.
+      parameters:
+        - name: contractId
+          required: true
+          in: path
+          description: Contract identifier
+          example: 652745597a7b53526de37c05
+          schema:
+            type: string
+        - name: hederaId
+          required: true
+          in: path
+          description: Hedera identifier
+          example: 0.0.1
+          schema:
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
           example: 0.0.1
           schema:
             type: string
@@ -4572,6 +4771,40 @@ paths:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_11
       security:
+        - bearer: [ ]
+  /policies/{policyId}/transactions:
+    get:
+      operationId: PolicyApi_getSchemaTransactions
+      summary: Return all transactions for policy.
+      description: Return all transactions for policy.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
         - bearer: []
   /policies/{policyId}:
     get:
@@ -5286,6 +5519,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5328,6 +5567,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5374,6 +5619,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5421,6 +5672,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -5462,6 +5719,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
+        '503':
+          description: Block Unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
       tags: *ref_11
       security:
         - bearer: []
@@ -6969,6 +7232,40 @@ paths:
       tags: &ref_12
         - schema
       security:
+        - bearer: [ ]
+  /schema/{schemaId}/transactions:
+    get:
+      operationId: SingleSchemaApi_getSchemaTransactions
+      summary: Return all transactions for schema.
+      description: Return all transactions for schema.
+      parameters:
+        - name: schemaId
+          required: true
+          in: path
+          description: Schema identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_12
+      security:
         - bearer: []
   /schema/{schemaId}/parents:
     get:
@@ -7275,6 +7572,38 @@ paths:
   /schemas/type/{schemaType}:
     get:
       operationId: SchemaApi_getSchemaByType
+      summary: Finds the schema using the json document type.
+      description: Finds the schema using the json document type.
+      parameters:
+        - name: schemaType
+          required: true
+          in: path
+          description: Type
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_13
+      security:
+        - bearer: [ ]
+  /schemas/type-by-user/{schemaType}:
+    get:
+      operationId: SchemaApi_getSchemaByTypeAndUser
       summary: Finds the schema using the json document type.
       description: Finds the schema using the json document type.
       parameters:
@@ -9152,6 +9481,40 @@ paths:
       tags: *ref_16
       security:
         - bearer: []
+  /tokens/{tokenId}/transactions:
+    get:
+      operationId: TokensApi_getSchemaTransactions
+      summary: Return all transactions for policy.
+      description: Return all transactions for policy.
+      parameters:
+        - name: tokenId
+          required: true
+          in: path
+          description: Policy identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_16
+      security:
+        - bearer: [ ]
   /tokens/push:
     post:
       operationId: TokensApi_pushTokenAsync
@@ -11783,6 +12146,1029 @@ paths:
       tags: *ref_26
       security:
         - bearer: []
+  /policy-statistics:
+    post:
+      operationId: PolicyStatisticsApi_createStatisticDefinition
+      summary: Creates a new statistic definition.
+      description: Creates a new statistic definition.
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticDefinitionDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_27
+        - policy-statistics
+      security:
+        - bearer: [ ]
+    get:
+      operationId: PolicyStatisticsApi_getStatisticDefinitions
+      summary: Return a list of all statistic definitions.
+      description: Returns all statistic definitions.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: policyInstanceTopicId
+          required: false
+          in: query
+          description: Policy Instance Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticDefinitionById
+      summary: Retrieves statistic definition.
+      description: Retrieves statistic definition for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+    put:
+      operationId: PolicyStatisticsApi_updateStatisticDefinition
+      summary: Updates statistic definition.
+      description: >-
+        Updates statistic definition configuration for the specified statistic
+        ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticDefinitionDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+    delete:
+      operationId: PolicyStatisticsApi_deleteStatisticDefinition
+      summary: Deletes the statistic definition.
+      description: Deletes the statistic definition with the provided ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/publish:
+    put:
+      operationId: PolicyStatisticsApi_publishStatisticDefinition
+      summary: Publishes statistic definition.
+      description: Publishes statistic definition for the specified statistic ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/relationships:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticRelationships
+      summary: Retrieves statistic relationships.
+      description: Retrieves statistic relationships for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/documents:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticDocuments
+      summary: Return a list of all documents.
+      description: Returns all documents.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VcDocumentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/assessment:
+    post:
+      operationId: PolicyStatisticsApi_createStatisticAssessment
+      summary: Creates a new statistic assessment.
+      description: Creates a new statistic assessment.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StatisticAssessmentDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+    get:
+      operationId: PolicyStatisticsApi_getStatisticAssessments
+      summary: Return a list of all statistic assessment.
+      description: Returns all statistic assessment.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/assessment/{assessmentId}:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticAssessment
+      summary: Retrieves statistic assessment.
+      description: Retrieves statistic assessment for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: assessmentId
+          required: true
+          in: path
+          description: Statistic Assessment Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticAssessmentDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/assessment/{assessmentId}/relationships:
+    get:
+      operationId: PolicyStatisticsApi_getStatisticAssessmentRelationships
+      summary: Retrieves assessment relationships.
+      description: Retrieves assessment relationships for the specified ID.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+        - name: assessmentId
+          required: true
+          in: path
+          description: Statistic Assessment Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticAssessmentRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{policyId}/import/file:
+    post:
+      operationId: PolicyStatisticsApi_importStatisticDefinition
+      summary: Imports new statistic definition from a zip file.
+      description: >-
+        Imports new statistic definition from the provided zip file into the
+        local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing statistic definition to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/{definitionId}/export/file:
+    get:
+      operationId: PolicyStatisticsApi_exportStatisticDefinition
+      summary: Returns a zip file containing statistic definition.
+      description: Returns a zip file containing statistic definition.
+      parameters:
+        - name: definitionId
+          required: true
+          in: path
+          description: Statistic Definition Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /policy-statistics/import/file/preview:
+    post:
+      operationId: PolicyStatisticsApi_previewStatisticDefinition
+      summary: Imports a zip file containing statistic definition.
+      description: Imports a zip file containing statistic definition.
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Statistic definition preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatisticDefinitionDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_27
+      security:
+        - bearer: [ ]
+  /schema-rules:
+    post:
+      operationId: SchemaRulesApi_createSchemaRule
+      summary: Creates a new schema rule.
+      description: Creates a new schema rule.
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRuleDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_28
+        - schema-rules
+      security:
+        - bearer: [ ]
+    get:
+      operationId: SchemaRulesApi_getSchemaRules
+      summary: Return a list of all schema rules.
+      description: Returns all schema rules.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: policyInstanceTopicId
+          required: false
+          in: query
+          description: Policy Instance Topic Id
+          example: 0.0.1
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{ruleId}:
+    get:
+      operationId: SchemaRulesApi_getSchemaRuleById
+      summary: Retrieves schema rule.
+      description: Retrieves schema rule for the specified ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+    put:
+      operationId: SchemaRulesApi_updateSchemaRule
+      summary: Updates schema rule.
+      description: Updates schema rule configuration for the specified rule ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRuleDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+    delete:
+      operationId: SchemaRulesApi_deleteSchemaRule
+      summary: Deletes the schema rule.
+      description: Deletes the schema rule with the provided ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{ruleId}/activate:
+    put:
+      operationId: SchemaRulesApi_activateSchemaRule
+      summary: Activates schema rule.
+      description: Activates schema rule for the specified rule ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{ruleId}/inactivate:
+    put:
+      operationId: SchemaRulesApi_inactivateSchemaRule
+      summary: Inactivates schema rule.
+      description: Inactivates schema rule for the specified rule ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{ruleId}/relationships:
+    get:
+      operationId: SchemaRulesApi_getSchemaRuleRelationships
+      summary: Retrieves schema rule relationships.
+      description: Retrieves schema rule relationships for the specified ID.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/data:
+    post:
+      operationId: SchemaRulesApi_getSchemaRuleData
+      summary: ''
+      description: ''
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SchemaRuleDataDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDataDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{policyId}/import/file:
+    post:
+      operationId: SchemaRulesApi_importSchemaRule
+      summary: Imports new rules from a zip file.
+      description: Imports new rules from the provided zip file into the local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing rules to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/{ruleId}/export/file:
+    get:
+      operationId: SchemaRulesApi_exportSchemaRule
+      summary: Returns a zip file containing rules.
+      description: Returns a zip file containing rules.
+      parameters:
+        - name: ruleId
+          required: true
+          in: path
+          description: Schema Rule Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
+  /schema-rules/import/file/preview:
+    post:
+      operationId: SchemaRulesApi_previewSchemaRule
+      summary: Imports a zip file containing rules.
+      description: Imports a zip file containing rules.
+      parameters: [ ]
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Schema rule preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemaRuleDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_28
+      security:
+        - bearer: [ ]
   /worker-tasks:
     get:
       operationId: WorkerTasksController_getAllWorkerTasks
@@ -11829,7 +13215,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_27
+      tags: &ref_29
         - worker-tasks
       security:
         - bearer: []
@@ -11852,7 +13238,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_27
+      tags: *ref_29
       security:
         - bearer: []
   /worker-tasks/delete/{taskId}:
@@ -11881,7 +13267,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_27
+      tags: *ref_29
       security:
         - bearer: []
 info:
@@ -11892,7 +13278,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 2.26.2
+  version: 3.0.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -11975,83 +13361,134 @@ components:
       required:
         - username
         - password
-    CredentialSubjectDTO:
+    ChangePasswordDTO:
       type: object
       properties:
-        geography:
+        username:
           type: string
-        law:
+        oldPassword:
           type: string
-        tags:
+        newPassword:
           type: string
-        ISIC:
+      required:
+        - username
+        - oldPassword
+        - newPassword
+    VcDTO:
+      type: object
+      properties:
+        id:
           type: string
+          example: 00000000-0000-0000-0000-000000000000
+          nullable: true
+        '@context':
+          type: array
+          items:
+            type: string
+        type:
+          type: array
+          items:
+            type: string
+        credentialSubject:
+          type: array
+          items:
+            type: object
+        issuer:
+          type: object
+        issuanceDate:
+          type: string
+        proof:
+          type: object
+          nullable: true
+      required:
+        - id
+        - '@context'
+        - type
+        - credentialSubject
+        - issuer
+        - issuanceDate
+        - proof
+    VpDTO:
+      type: object
+      properties:
         '@context':
           type: array
           items:
             type: string
         id:
           type: string
+          example: 00000000-0000-0000-0000-000000000000
         type:
-          type: string
+          type: array
+          items:
+            type: string
+        verifiableCredential:
+          type: array
+          items:
+            type: object
+        proof:
+          type: object
       required:
-        - geography
-        - law
-        - tags
-        - ISIC
         - '@context'
         - id
         - type
-    ProofDTO:
-      type: object
-      properties:
-        type:
-          type: string
-        created:
-          format: date-time
-          type: string
-        verificationMethod:
-          type: string
-        proofPurpose:
-          type: string
-        jws:
-          type: string
-      required:
-        - type
-        - created
-        - verificationMethod
-        - proofPurpose
-        - jws
+        - verifiableCredential
+        - proof
     VcDocumentDTO:
       type: object
       properties:
         id:
           type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        hash:
+          type: string
+          example: hash
+        signature:
+          type: number
+          example: 0
+        status:
+          type: string
+          enum:
+            - NEW
+            - ISSUE
+            - REVOKE
+            - SUSPEND
+            - RESUME
+            - FAILED
+          example: NEW
+        tag:
+          type: string
+          example: Block tag
         type:
-          type: array
-          items:
-            type: string
-        issuer:
           type: string
-        issuanceDate:
-          format: date-time
+          example: Document type
+        createDate:
           type: string
-        '@context':
-          type: array
-          items:
-            type: string
-        credentialSubject:
-          $ref: '#/components/schemas/CredentialSubjectDTO'
-        proof:
-          $ref: '#/components/schemas/ProofDTO'
+          example: '1900-01-01T00:00:00.000Z'
+        updateDate:
+          type: string
+          example: '1900-01-01T00:00:00.000Z'
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        document:
+          $ref: '#/components/schemas/VpDTO'
       required:
         - id
+        - policyId
+        - hash
+        - signature
+        - status
+        - tag
         - type
-        - issuer
-        - issuanceDate
-        - '@context'
-        - credentialSubject
-        - proof
+        - createDate
+        - updateDate
+        - owner
+        - document
     PolicyTestDTO:
       type: object
       properties:
@@ -12315,19 +13752,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_36
+          enum: &ref_38
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_37
+          example: &ref_39
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_38
+          example: &ref_40
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -12512,14 +13949,6 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_28
-            - type: string
-            - type: number
-          enum: &ref_29
-            - 0
-            - 1
-          example: 0
-        eventsLvl:
           oneOf: &ref_30
             - type: string
             - type: number
@@ -12527,20 +13956,28 @@ components:
             - 0
             - 1
           example: 0
-        propLvl:
+        eventsLvl:
           oneOf: &ref_32
             - type: string
             - type: number
           enum: &ref_33
             - 0
             - 1
-            - 2
           example: 0
-        childrenLvl:
+        propLvl:
           oneOf: &ref_34
             - type: string
             - type: number
           enum: &ref_35
+            - 0
+            - 1
+            - 2
+          example: 0
+        childrenLvl:
+          oneOf: &ref_36
+            - type: string
+            - type: number
+          enum: &ref_37
             - 0
             - 1
             - 2
@@ -12604,20 +14041,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_28
-          enum: *ref_29
-          example: 0
-        eventsLvl:
           oneOf: *ref_30
           enum: *ref_31
           example: 0
-        propLvl:
+        eventsLvl:
           oneOf: *ref_32
           enum: *ref_33
           example: 0
-        childrenLvl:
+        propLvl:
           oneOf: *ref_34
           enum: *ref_35
+          example: 0
+        childrenLvl:
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         moduleId1:
           type: string
@@ -12731,20 +14168,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_28
-          enum: *ref_29
-          example: 0
-        eventsLvl:
           oneOf: *ref_30
           enum: *ref_31
           example: 0
-        propLvl:
+        eventsLvl:
           oneOf: *ref_32
           enum: *ref_33
           example: 0
-        childrenLvl:
+        propLvl:
           oneOf: *ref_34
           enum: *ref_35
+          example: 0
+        childrenLvl:
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         documentId1:
           type: string
@@ -12779,20 +14216,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_28
-          enum: *ref_29
-          example: 0
-        eventsLvl:
           oneOf: *ref_30
           enum: *ref_31
           example: 0
-        propLvl:
+        eventsLvl:
           oneOf: *ref_32
           enum: *ref_33
           example: 0
-        childrenLvl:
+        propLvl:
           oneOf: *ref_34
           enum: *ref_35
+          example: 0
+        childrenLvl:
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         toolId1:
           type: string
@@ -12922,6 +14359,10 @@ components:
           type: array
           items:
             type: string
+        wipeTokenIds:
+          type: array
+          items:
+            type: string
       required:
         - id
         - contractId
@@ -12934,6 +14375,7 @@ components:
         - syncPoolsDate
         - lastSyncEventTimeStamp
         - wipeContractIds
+        - wipeTokenIds
     ContractConfigDTO:
       type: object
       properties:
@@ -12944,6 +14386,13 @@ components:
       required:
         - type
         - description
+    TransactionDTO:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - type
     WiperRequestDTO:
       type: object
       properties:
@@ -12953,10 +14402,13 @@ components:
           type: string
         user:
           type: string
+        token:
+          type: string
       required:
         - id
         - contractId
         - user
+        - token
     RetireRequestDTO:
       type: object
       properties:
@@ -13097,39 +14549,6 @@ components:
       required:
         - taskId
         - expectation
-    VCDocumentDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          nullable: false
-        '@context':
-          type: array
-          items:
-            type: string
-        type:
-          type: array
-          items:
-            type: string
-        credentialSubject:
-          type: array
-          items:
-            type: object
-        issuer:
-          type: object
-        issuanceDate:
-          type: string
-        proof:
-          type: object
-          nullable: true
-      required:
-        - id
-        - '@context'
-        - type
-        - credentialSubject
-        - issuer
-        - issuanceDate
-        - proof
     ExternalDocumentDTO:
       type: object
       properties:
@@ -13140,7 +14559,7 @@ components:
         document:
           nullable: false
           allOf:
-            - $ref: '#/components/schemas/VCDocumentDTO'
+            - $ref: '#/components/schemas/VcDTO'
       required:
         - owner
         - policyTag
@@ -13320,6 +14739,7 @@ components:
             - SYSTEM
             - TAG
             - TOOL
+            - STATISTIC
           example: POLICY
         documentURL:
           type: string
@@ -13566,15 +14986,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_36
+          enum: *ref_38
           example: USER
         permissionsGroup:
-          example: *ref_37
+          example: *ref_39
           type: array
           items:
             type: string
         permissions:
-          example: *ref_38
+          example: *ref_40
           type: array
           items:
             type: string
@@ -13868,6 +15288,18 @@ components:
     Object:
       type: object
       properties: {}
+    ServiceUnavailableErrorDTO:
+      type: object
+      properties:
+        code:
+          type: number
+          example: 503
+        message:
+          type: string
+          example: Error message
+      required:
+        - code
+        - message
     PolicyPreviewDTO:
       type: object
       properties:
@@ -14402,32 +15834,6 @@ components:
         - uuid
         - name
         - rules
-    VpDTO:
-      type: object
-      properties:
-        '@context':
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-          example: 00000000-0000-0000-0000-000000000000
-        type:
-          type: array
-          items:
-            type: string
-        verifiableCredential:
-          type: array
-          items:
-            type: object
-        proof:
-          type: object
-      required:
-        - '@context'
-        - id
-        - type
-        - verifiableCredential
-        - proof
     VpDocumentDTO:
       type: object
       properties:
@@ -14876,7 +16282,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_39
+          enum: &ref_41
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -14887,7 +16293,6 @@ components:
             - ARTIFACTS_FILE_DELETE
             - CONTRACTS_CONTRACT_READ
             - CONTRACTS_CONTRACT_EXECUTE
-            - CONTRACTS_CONTRACT_MANAGE
             - MODULES_MODULE_READ
             - MODULES_MODULE_CREATE
             - MODULES_MODULE_UPDATE
@@ -14925,6 +16330,11 @@ components:
             - PERMISSIONS_ROLE_UPDATE
             - PERMISSIONS_ROLE_DELETE
             - PERMISSIONS_ROLE_MANAGE
+            - STATISTICS_STATISTIC_READ
+            - STATISTICS_STATISTIC_CREATE
+            - SCHEMAS_RULE_READ
+            - SCHEMAS_RULE_CREATE
+            - SCHEMAS_RULE_EXECUTE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -14943,7 +16353,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_39
+          enum: *ref_41
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -14970,6 +16380,7 @@ components:
             - PERMISSIONS
             - ACCESS
             - DELEGATION
+            - STATISTICS
           example: ANALYTIC
         entity:
           type: string
@@ -15007,6 +16418,8 @@ components:
             - TOKEN
             - TRUST_CHAIN
             - ROLE
+            - STATISTIC
+            - RULE
           example: POLICY
         action:
           type: string
@@ -15055,6 +16468,186 @@ components:
       required:
         - policyIds
         - assign
+    StatisticDefinitionDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        topicId:
+          type: string
+          example: 0.0.1
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    StatisticDefinitionRelationshipsDTO:
+      type: object
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        schema:
+          $ref: '#/components/schemas/SchemaDTO'
+    StatisticAssessmentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        definitionId:
+          type: string
+          example: '000000000000000000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        topicId:
+          type: string
+          example: 0.0.1
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        target:
+          type: string
+          example: '0000000000.000000001'
+        relationships:
+          example:
+            - '0000000000.000000001'
+          type: array
+          items:
+            type: string
+        document:
+          type: object
+          nullable: true
+    StatisticAssessmentRelationshipsDTO:
+      type: object
+      properties:
+        target:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
+    SchemaRuleDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    SchemaRuleRelationshipsDTO:
+      type: object
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    SchemaRuleDataDTO:
+      type: object
+      properties:
+        rules:
+          $ref: '#/components/schemas/SchemaRuleDTO'
+        document:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
     WorkersTasksDTO:
       type: object
       properties:
@@ -15086,3 +16679,50 @@ components:
         - taskId
         - type
         - updateDate
+    CredentialSubjectDTO:
+      type: object
+      properties:
+        geography:
+          type: string
+        law:
+          type: string
+        tags:
+          type: string
+        ISIC:
+          type: string
+        '@context':
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        type:
+          type: string
+      required:
+        - geography
+        - law
+        - tags
+        - ISIC
+        - '@context'
+        - id
+        - type
+    ProofDTO:
+      type: object
+      properties:
+        type:
+          type: string
+        created:
+          format: date-time
+          type: string
+        verificationMethod:
+          type: string
+        proofPurpose:
+          type: string
+        jws:
+          type: string
+      required:
+        - type
+        - created
+        - verificationMethod
+        - proofPurpose
+        - jws
