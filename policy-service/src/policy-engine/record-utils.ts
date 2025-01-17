@@ -1,7 +1,7 @@
 import { Recording } from './record/recording.js';
 import { Running } from './record/index.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
-import { IPolicyUser } from './policy-user.js';
+import { PolicyUser } from './policy-user.js';
 import { AnyBlockType } from './policy-engine.interface.js';
 
 /**
@@ -74,9 +74,37 @@ export class RecordUtils {
     public static async StopRunning(policyId: string): Promise<boolean> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return false;
+            return true;
         }
         return await components.stopRunning();
+    }
+
+    /**
+     * Destroy recording
+     * @param policyId
+     * @public
+     * @static
+     */
+    public static async DestroyRecording(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return false;
+        }
+        return await components.destroyRecording();
+    }
+
+    /**
+     * Destroy running
+     * @param policyId
+     * @public
+     * @static
+     */
+    public static async DestroyRunning(policyId: string): Promise<boolean> {
+        const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
+        if (!components) {
+            return true;
+        }
+        return await components.destroyRunning();
     }
 
     /**
@@ -183,10 +211,10 @@ export class RecordUtils {
         actions: any[],
         results: any[],
         options: any
-    ): Promise<boolean> {
+    ): Promise<string> {
         const components = PolicyComponentsUtils.GetPolicyComponents(policyId);
         if (!components) {
-            return false;
+            return null;
         }
         return await components.runRecord(actions, results, options);
     }
@@ -201,7 +229,7 @@ export class RecordUtils {
      */
     public static async RecordSelectGroup(
         policyId: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         uuid: string
     ): Promise<void> {
         const record = RecordUtils.GetRecordingController(policyId);
@@ -221,7 +249,7 @@ export class RecordUtils {
      */
     public static async RecordSetBlockData(
         policyId: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         block: AnyBlockType,
         data: any
     ): Promise<void> {

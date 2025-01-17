@@ -4,7 +4,7 @@ import { findOptions } from '../helpers/find-options.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -39,6 +39,9 @@ export class FiltersAddonBlock {
         }
     }
 
+    private readonly previousState: { [key: string]: any } = {};
+    private readonly previousFilters: { [key: string]: any } = {};
+
     /**
      * Block state
      * @private
@@ -52,7 +55,7 @@ export class FiltersAddonBlock {
      * Get filters
      * @param user
      */
-    public async getFilters(user: IPolicyUser): Promise<{ [key: string]: string }> {
+    public async getFilters(user: PolicyUser): Promise<{ [key: string]: string }> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         const filters = ref.filters[user.id] || {};
         if (ref.options.type === 'dropdown') {
@@ -76,7 +79,7 @@ export class FiltersAddonBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser) {
+    async getData(user: PolicyUser) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
 
         const block: any = {
@@ -96,6 +99,9 @@ export class FiltersAddonBlock {
                     name: findOptions(e, ref.options.optionName),
                     value: findOptions(e, ref.options.optionValue),
                 }
+            }).filter((value, index, array) => {
+                const i = array.findIndex(v => v.value === value.value);
+                return i === index;
             });
             block.data = blockState.lastData;
             block.optionName = ref.options.optionName;
@@ -107,13 +113,21 @@ export class FiltersAddonBlock {
         return block;
     }
 
-    /**
-     * Set block data
-     * @param user
-     * @param data
-     */
-    async setData(user: IPolicyUser, data: any) {
+    async resetFilters(user: PolicyUser): Promise<void> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        if (this.previousState[user.id]) {
+            this.state[user.id] = this.previousState[user.id];
+            delete this.previousState[user.id];
+        }
+        if (this.previousFilters[user.id]) {
+            ref.filters[user.id] = this.previousFilters[user.id];
+            delete this.previousFilters[user.id];
+        }
+    }
+
+    async setFiltersStrict(user: PolicyUser, data: any) {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        this.previousState[user.id] = {...this.state[user.id]};
         const filter: any = {};
         if (!data) {
             throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
@@ -124,7 +138,36 @@ export class FiltersAddonBlock {
             if (!blockState.lastData) {
                 await this.getData(user);
             }
-            const selectItem = blockState.lastData.find((e: any) => e.value === value);
+
+            if (value) {
+                filter[ref.options.field] = value;
+            }
+
+            if (!ref.options.canBeEmpty) {
+                throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+            }
+            blockState.lastValue = value;
+            this.state[user.id] = blockState;
+
+        }
+        this.previousFilters[user.id] = {...ref.filters[user.id]};
+        ref.setFilters(filter, user);
+    }
+
+    async setFilterState(user: PolicyUser, data: any): Promise<void> {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
+        this.previousState[user.id] = {...this.state[user.id]};
+        const filter: any = {};
+        if (!data) {
+            throw new BlockActionError(`filter value is unknown`, ref.blockType, ref.uuid)
+        }
+        if (ref.options.type === 'dropdown') {
+            const value = data.filterValue;
+            const blockState = this.state[user.id] || {};
+            if (!blockState.lastData) {
+                await this.getData(user);
+            }
+            const selectItem = Array.isArray(blockState.lastData) ? blockState.lastData.find((e: any) => e.value === value) : null;
             if (selectItem) {
                 filter[ref.options.field] = selectItem.value;
             } else if (!ref.options.canBeEmpty) {
@@ -133,7 +176,18 @@ export class FiltersAddonBlock {
             blockState.lastValue = value;
             this.state[user.id] = blockState;
         }
+        this.previousFilters[user.id] = {...ref.filters[user.id]};
         ref.setFilters(filter, user);
+    }
+
+    /**
+     * Set block data
+     * @param user
+     * @param data
+     */
+    async setData(user: PolicyUser, data: any) {
+        await this.setFilterState(user, data);
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyAddonBlock>(this);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, data));
     }
 }

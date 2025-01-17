@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../../../services/api';
 import { IWizardConfig, Schema, Token } from '@guardian/interfaces';
 import { SelectorDialogComponent } from '../../common/selector-dialog/selector-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ConfirmationDialogComponent } from '../../common/confirmation-dialog/confirmation-dialog.component';
-import { PolicyWizardDialogComponent } from '../helpers/policy-wizard-dialog/policy-wizard-dialog.component';
+import { PolicyWizardDialogComponent } from '../dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 
 export enum WizardMode {

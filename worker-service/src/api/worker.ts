@@ -1,4 +1,4 @@
-import { Logger, MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, SecretManager, Users, } from '@guardian/common';
+import { MessageBrokerChannel, MessageResponse, NatsService, NotificationHelper, PinoLogger, SecretManager, Users } from '@guardian/common';
 import { ExternalMessageEvents, GenerateUUIDv4, ISignOptions, ITask, ITaskResult, WorkerEvents, WorkerTaskType } from '@guardian/interfaces';
 import { HederaSDKHelper, NetworkOptions } from './helpers/hedera-sdk-helper.js';
 import { IpfsClientClass } from './ipfs-client-class.js';
@@ -23,12 +23,6 @@ function rejectTimeout(t: number): Promise<void> {
  * Worker class
  */
 export class Worker extends NatsService {
-    /**
-     * Logger instance
-     * @private
-     */
-    private readonly logger: Logger;
-
     /**
      * Message queue name
      */
@@ -102,11 +96,18 @@ export class Worker extends NatsService {
      */
     //private readonly workerID: string;
 
+    /**
+     * Analytics Service
+     * @private
+     */
+    private readonly analyticsService: string;
+
     constructor(
         private w3cKey: string,
         private w3cProof: string,
         private readonly filebaseKey: string,
-        private readonly workerID: string
+        private readonly workerID: string,
+        private readonly logger: PinoLogger
     ) {
         super();
         //this.workerID = this._workerID;
@@ -115,8 +116,8 @@ export class Worker extends NatsService {
             this.w3cProof,
             this.filebaseKey
         );
-        this.logger = new Logger();
 
+        this.analyticsService = process.env.ANALYTICS_SERVICE;
         this.minPriority = parseInt(process.env.MIN_PRIORITY, 10);
         this.maxPriority = parseInt(process.env.MAX_PRIORITY, 10);
         this.taskTimeout = parseInt(process.env.TASK_TIMEOUT, 10) * 1000; // env in seconds
@@ -166,22 +167,10 @@ export class Worker extends NatsService {
 
             }
 
-            const completeTask = (data) => {
-                // let count = 0;
-                const fn = async () => {
-                    await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), data);
-                    // if (count < 5) {
-                    //     setTimeout(async () => {
-                    //         await fn()
-                    //     })
-                    //     count++
-                    // }
-                }
-                fn();
+            const completeTask = async (data) => {
+                await this.publish(WorkerEvents.TASK_COMPLETE, data)
             }
-
             await completeTask(result);
-            // await this.publish([task.reply, WorkerEvents.TASK_COMPLETE].join('.'), result);
             await this.publish(WorkerEvents.WORKER_READY);
             this.isInUse = false;
         }
@@ -319,6 +308,25 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.ANALYTICS_SEARCH_POLICIES: {
+                    const { options } = task.data.payload;
+                    try {
+                        const response = await axios.post(
+                            `${this.analyticsService}/analytics/search/policy`,
+                            options,
+                            { responseType: 'json' }
+                        );
+                        result.data = response.data;
+                    } catch (error) {
+                        if (error.code === 'ECONNREFUSED') {
+                            result.error = 'Indexer service is not available';
+                        } else {
+                            result.error = error.message;
+                        }
+                    }
+                    break;
+                }
+
                 case WorkerTaskType.HTTP_REQUEST: {
                     const { method, url, headers, body } = task.data.payload;
                     const response = await axios({
@@ -340,7 +348,10 @@ export class Worker extends NatsService {
                     break;
                 }
 
-                case WorkerTaskType.GENERATE_DEMO_KEY: {
+                /*
+                 * Task represents "Create Account" functionality in Hedera SDK. It is available on every network.
+                 */
+                case WorkerTaskType.CREATE_ACCOUNT: {
                     const { operatorId, operatorKey, initialBalance } = task.data;
                     client = new HederaSDKHelper(operatorId, operatorKey, null, networkOptions);
                     const treasury = await client.newAccount(initialBalance);
@@ -822,25 +833,11 @@ export class Worker extends NatsService {
 
                 case WorkerTaskType.GET_CONTRACT_INFO: {
                     const {
-                        hederaAccountId,
-                        hederaAccountKey,
                         contractId,
                     } = task.data;
-                    client = new HederaSDKHelper(
-                        hederaAccountId,
-                        hederaAccountKey,
-                        null,
-                        networkOptions
-                    );
-                    // const address = await client.contractQuery(
-                    //     contractId,
-                    //     'getOwner',
-                    //     new ContractFunctionParameters()
-                    // );
-                    // const owner = AccountId.fromSolidityAddress(address.getAddress()).toString();
-                    const info = await client.getContractInfo(contractId);
+                    const info = await HederaSDKHelper.getContractInfo(contractId);
                     result.data = {
-                        memo: info.contractMemo
+                        memo: info.memo
                     };
 
                     break;
@@ -851,9 +848,8 @@ export class Worker extends NatsService {
                         timestamp,
                         contractId,
                         order,
-                        limit
                     } = task.data;
-                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order, limit);
+                    result.data = await HederaSDKHelper.getContractEvents(contractId, timestamp, order);
                     break;
                 }
 
@@ -900,9 +896,8 @@ export class Worker extends NatsService {
                         order,
                         filter,
                         limit,
-                        findOne,
                     } = task.data;
-                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit, findOne);
+                    const transactions = await HederaSDKHelper.getTransactions(accountId, transactiontype, timestamp, order, filter, limit);
                     result.data = transactions || [];
                     break;
                 }

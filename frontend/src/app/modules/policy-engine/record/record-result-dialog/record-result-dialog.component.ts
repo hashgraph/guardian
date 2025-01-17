@@ -1,7 +1,8 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { RecordService } from 'src/app/services/record.service';
+import { DialogService } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating theme.
@@ -25,6 +26,7 @@ export class RecordResultDialog {
     constructor(
         public dialog: MatDialog,
         public dialogRef: MatDialogRef<RecordResultDialog>,
+        private dialogService: DialogService,
         private recordService: RecordService,
         @Inject(MAT_DIALOG_DATA) public data: any) {
 
@@ -68,21 +70,20 @@ export class RecordResultDialog {
     openDocument(item: any): void {
         const document = item.document;
         const title = `${item.type.toUpperCase()} Document`;
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '850px',
-            panelClass: 'g-dialog',
-            disableClose: true,
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: item,
                 dryRun: true,
                 document: document,
                 title: title,
                 type: 'JSON',
             }
         });
-
-        dialogRef.afterClosed().subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     onDetails(): void {

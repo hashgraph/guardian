@@ -1,4 +1,4 @@
-import { ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
+import { IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField } from '../index.js';
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
@@ -35,7 +35,8 @@ export class SchemaHelper {
             customType: null,
             comment: null,
             isPrivate: null,
-            examples: null
+            examples: null,
+            default: null,
         };
         let _property = property;
         const readonly = _property.readOnly;
@@ -43,11 +44,12 @@ export class SchemaHelper {
             _property = _property.oneOf[0];
         }
         field.name = name;
-        field.title = _property.title || name;
-        field.description = _property.description || name;
+        field.title = property.title || _property.title || name;
+        field.description = property.description || _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
         field.comment = _property.$comment;
         field.examples = Array.isArray(_property.examples) ? _property.examples : null;
+        field.default = _property.default;
         if (field.isArray) {
             _property = _property.items;
         }
@@ -86,7 +88,11 @@ export class SchemaHelper {
             orderPosition,
             isPrivate,
             hidden,
+            suggest,
+            autocalculate,
+            expression
         } = SchemaHelper.parseFieldComment(field.comment);
+        field.suggest = suggest;
         if (field.isRef) {
             const { type } = SchemaHelper.parseRef(field.type);
             field.context = {
@@ -123,6 +129,8 @@ export class SchemaHelper {
         field.isPrivate = isPrivate;
         field.required = required;
         field.hidden = !!hidden;
+        field.autocalculate = !!autocalculate;
+        field.expression = expression;
         field.order = orderPosition || -1;
         return field;
     }
@@ -141,6 +149,13 @@ export class SchemaHelper {
         property.title = field.title || name;
         property.description = field.description || name;
         property.readOnly = !!field.readOnly;
+
+        if (field.examples) {
+            property.examples = field.examples;
+        }
+        if (field.default) {
+            property.default = field.default;
+        }
 
         if (field.isArray) {
             property.type = SchemaDataTypes.array;
@@ -165,9 +180,6 @@ export class SchemaHelper {
             }
             if (field.pattern) {
                 item.pattern = field.pattern;
-            }
-            if (field.examples) {
-                item.examples = field.examples;
             }
         }
 
@@ -534,6 +546,15 @@ export class SchemaHelper {
         if (field.hidden) {
             comment.hidden = !!field.hidden;
         }
+        if (field.suggest) {
+            comment.suggest = field.suggest;
+        }
+        if (field.autocalculate) {
+            comment.autocalculate = field.autocalculate;
+        }
+        if (field.expression) {
+            comment.expression = field.expression;
+        }
         return JSON.stringify(comment);
     }
 
@@ -653,7 +674,7 @@ export class SchemaHelper {
      * @param data
      * @param newOwner
      */
-    public static updateOwner(data: ISchema, newOwner: string) {
+    public static updateOwner(data: ISchema, newOwner: IOwner) {
         let document = data.document;
         if (typeof document === 'string') {
             document = JSON.parse(document) as ISchemaDocument;
@@ -663,8 +684,8 @@ export class SchemaHelper {
         const { previousVersion } = SchemaHelper.parseSchemaComment(document.$comment);
         data.version = data.version || version;
         data.uuid = data.uuid || uuid;
-        data.owner = newOwner;
-        data.creator = newOwner;
+        data.owner = newOwner.owner || newOwner.username;
+        data.creator = newOwner.creator || newOwner.username;
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
@@ -680,10 +701,10 @@ export class SchemaHelper {
      * @param data
      * @param did
      */
-    public static updatePermission(data: ISchema[], did: string) {
+    public static updatePermission(data: ISchema[], owner: IOwner) {
         for (const element of data) {
-            element.isOwner = element.owner && element.owner === did;
-            element.isCreator = element.creator && element.creator === did;
+            element.isOwner = element.owner && element.owner === owner.owner;
+            element.isCreator = element.creator && element.creator === owner.creator;
         }
     }
 

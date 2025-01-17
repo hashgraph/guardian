@@ -1,5 +1,5 @@
 import { AnyBlockType, IPolicyDocument } from '../policy-engine.interface.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 
 /**
  * External Event Type
@@ -50,7 +50,7 @@ export class ExternalEvent<T> {
     constructor(
         type: ExternalEventType,
         block: AnyBlockType,
-        user: IPolicyUser,
+        user: PolicyUser,
         data: T
     ) {
         this.type = type;

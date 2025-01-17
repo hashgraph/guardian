@@ -1,16 +1,16 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DidDocument, DidURL, Logger, MessageError, MessageResponse, Schema, } from '@guardian/common';
+import { DatabaseServer, DidDocument, DidURL, MessageError, MessageResponse, PinoLogger, Schema } from '@guardian/common';
 import { MessageAPI } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with Documents Loader.
  *
- * @param didDocumentLoader - DID Documents Loader
- * @param schemaDocumentLoader - Schema Documents Loader
+ * @param dataBaseServer - Data base server
+ * @param logger - pino logger
  */
 export async function loaderAPI(
-    didDocumentRepository: DataBaseHelper<DidDocument>,
-    schemaRepository: DataBaseHelper<Schema>
+    dataBaseServer: DatabaseServer,
+    logger: PinoLogger,
 ): Promise<void> {
     /**
      * Return DID Document
@@ -24,14 +24,14 @@ export async function loaderAPI(
         try {
             const iri = msg.did;
             const did = DidURL.getController(iri);
-            const reqObj = { where: { did: { $eq: did } } };
-            const didDocuments = await didDocumentRepository.findOne(reqObj);
+            const reqObj = { did: { $eq: did } };
+            const didDocuments = await dataBaseServer.findOne(DidDocument, reqObj);
             if (didDocuments) {
                 return new MessageResponse(didDocuments.document);
             }
             return new MessageError('Document not found');
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -49,19 +49,15 @@ export async function loaderAPI(
             }
 
             if (Array.isArray(msg)) {
-                const schema = await schemaRepository.find({
-                    where: { documentURL: { $in: msg } }
-                });
+                const schema = await dataBaseServer.find(Schema, { documentURL: { $in: msg } });
                 return new MessageResponse(schema);
             } else {
-                const schema = await schemaRepository.findOne({
-                    where: { documentURL: { $eq: msg } }
-                });
+                const schema = await dataBaseServer.findOne(Schema,  { documentURL: { $eq: msg } });
                 return new MessageResponse(schema);
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -78,19 +74,15 @@ export async function loaderAPI(
                 return new MessageError('Document not found');
             }
             if (Array.isArray(msg)) {
-                const schema = await schemaRepository.find({
-                    where: { contextURL: { $in: msg } }
-                });
+                const schema = await dataBaseServer.find(Schema, { contextURL: { $in: msg } });
                 return new MessageResponse(schema);
             } else {
-                const schema = await schemaRepository.findOne({
-                    where: { contextURL: { $eq: msg } }
-                });
+                const schema = await dataBaseServer.findOne(Schema, { contextURL: { $eq: msg } });
                 return new MessageResponse(schema);
             }
         }
         catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

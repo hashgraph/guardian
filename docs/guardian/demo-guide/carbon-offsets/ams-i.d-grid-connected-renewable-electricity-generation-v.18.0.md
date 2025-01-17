@@ -87,7 +87,7 @@ At Monitoring Periods:
 
 ### Policy Workflow  <a href="#toc160021932" id="toc160021932"></a>
 
-<figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc160021933" id="toc160021933"></a>
 

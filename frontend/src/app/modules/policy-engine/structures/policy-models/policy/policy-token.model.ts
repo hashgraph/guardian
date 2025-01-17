@@ -16,6 +16,7 @@ export class PolicyToken {
     private _enableFreeze?: boolean | undefined;
     private _enableKYC?: boolean | undefined;
     private _enableWipe?: boolean | undefined;
+    private _wipeContractId?: string | undefined;
 
     private _changed: boolean;
 
@@ -35,6 +36,7 @@ export class PolicyToken {
         this._enableFreeze = token.enableFreeze;
         this._enableKYC = token.enableKYC;
         this._enableWipe = token.enableWipe;
+        this._wipeContractId = token.wipeContractId;
     }
 
     public get templateTokenTag(): string {
@@ -126,6 +128,15 @@ export class PolicyToken {
         this.changed = true;
     }
 
+    public get wipeContractId(): string | undefined {
+        return this._wipeContractId;
+    }
+
+    public set wipeContractId(value: string | undefined) {
+        this._wipeContractId = value;
+        this.changed = true;
+    }
+
     public get changed(): boolean {
         return this._changed;
     }
@@ -153,7 +164,8 @@ export class PolicyToken {
             changeSupply: this.changeSupply,
             enableFreeze: this.enableFreeze,
             enableKYC: this.enableKYC,
-            enableWipe: this.enableWipe
+            enableWipe: this.enableWipe,
+            wipeContractId: this.wipeContractId,
         };
     }
 

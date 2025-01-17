@@ -9,11 +9,13 @@ import { CompareStorage } from '../../../services/compare-storage.service';
 export class CompareBtnComponent implements OnInit {
     @Input('type') type!: string;
     @Input('id') id!: string;
+    @Input('buttonStyle') buttonStyle!: string;
 
     public status: boolean = false;
     public ids: string[];
 
     constructor(private compareStorage: CompareStorage) {
+        this.buttonStyle = '';
     }
 
     ngOnInit(): void {

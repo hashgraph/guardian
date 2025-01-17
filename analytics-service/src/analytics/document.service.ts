@@ -1,13 +1,13 @@
 import {
     DIDMessage,
-    DataBaseHelper,
     Message,
     MessageType,
     RoleMessage,
     TopicMessage,
     UrlType,
     VCMessage,
-    VPMessage
+    VPMessage,
+    DatabaseServer,
 } from '@guardian/common';
 import { AnalyticsDocument as Document } from '../entity/analytics-document.js';
 import { AnalyticsPolicyInstance as PolicyInstance } from '../entity/analytics-policy-instance.js';
@@ -86,7 +86,7 @@ export class AnalyticsDocumentService {
                 const data: any = AnalyticsDocumentService.parsDocumentMessage(message);
                 if (data) {
                     if (data.type === MessageType.VCDocument || data.type === MessageType.EVCDocument) {
-                        const row = new DataBaseHelper(Document).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             policyUUID: instance.policyUUID,
@@ -98,11 +98,15 @@ export class AnalyticsDocumentService {
                             issuer: data.issuer,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
-                        });
-                        await new DataBaseHelper(Document).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Document, row);
+
+                        await databaseServer.save(Document, entity);
                     }
                     if (data.type === MessageType.VPDocument) {
-                        const row = new DataBaseHelper(Document).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             policyUUID: instance.policyUUID,
@@ -114,11 +118,15 @@ export class AnalyticsDocumentService {
                             issuer: data.issuer,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
-                        });
-                        await new DataBaseHelper(Document).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Document, row);
+
+                        await databaseServer.save(Document, entity);
                     }
                     if (data.type === MessageType.RoleDocument) {
-                        const row = new DataBaseHelper(Document).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             policyUUID: instance.policyUUID,
@@ -132,11 +140,15 @@ export class AnalyticsDocumentService {
                             group: data.group,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
-                        });
-                        await new DataBaseHelper(Document).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Document, row);
+
+                        await databaseServer.save(Document, entity);
                     }
                     if (data.type === MessageType.DIDDocument) {
-                        const row = new DataBaseHelper(Document).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             policyUUID: instance.policyUUID,
@@ -148,11 +160,15 @@ export class AnalyticsDocumentService {
                             issuer: data.did,
                             action: data.action,
                             ipfs: data.getUrlValue(0, UrlType.cid)
-                        });
-                        await new DataBaseHelper(Document).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Document, row);
+
+                        await databaseServer.save(Document, entity);
                     }
                     if (data.type === MessageType.Topic && data.childId) {
-                        const row = new DataBaseHelper(Topic).create({
+                        const row = {
                             uuid: report.uuid,
                             root: report.root,
                             policyUUID: instance.policyUUID,
@@ -165,8 +181,12 @@ export class AnalyticsDocumentService {
                             description: data.description,
                             owner: data.owner,
                             action: data.action
-                        });
-                        await new DataBaseHelper(Topic).save(row);
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = databaseServer.create(Topic, row);
+
+                        await databaseServer.save(Topic, entity);
                     }
                 }
             });
@@ -184,10 +204,10 @@ export class AnalyticsDocumentService {
     public static async searchDocuments(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.DOCUMENTS, ReportStatus.PROGRESS);
 
-        //Policy Instance
-        const row = await new DataBaseHelper(PolicyInstance).find({
-            uuid: report.uuid
-        });
+        const databaseServer = new DatabaseServer();
+
+        const row = await databaseServer.find(PolicyInstance, { uuid: report.uuid });
+
         const instances = AnalyticsUtils.unique(row, 'instanceTopicId');
 
         AnalyticsUtils.updateProgress(report, instances.length);
@@ -199,10 +219,8 @@ export class AnalyticsDocumentService {
         const tasks = new Tasks(instances, task);
         await tasks.run(AnalyticsDocumentService.CHUNKS_COUNT);
 
-        //User Topics
-        const row2 = await new DataBaseHelper(Topic).find({
-            uuid: report.uuid
-        });
+        const row2 = await databaseServer.find(Topic, { uuid: report.uuid });
+
         const topics = AnalyticsUtils.unique(row2, 'topicId');
 
         AnalyticsUtils.updateProgress(report, topics.length);

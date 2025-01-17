@@ -15,5 +15,10 @@ export function getPageOptions(msg: any, options?: any): any {
         otherOptions.orderBy = { createDate: 'DESC' };
         otherOptions.limit = 100;
     }
+
+    if(msg.fields) {
+        otherOptions.fields = msg.fields;
+    }
+
     return otherOptions;
 }

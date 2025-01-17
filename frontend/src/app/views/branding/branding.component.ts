@@ -1,10 +1,10 @@
 import { Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { InformService } from 'src/app/services/inform.service';
 import { BrandingPayload, BrandingService } from 'src/app/services/branding.service';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { colorToGradient } from '../../static/color-remoter.function';
 import { Subscription } from 'rxjs';
 
@@ -19,25 +19,25 @@ export class BrandingComponent implements OnInit, OnDestroy{
     loading: boolean = false;
     public isChangesMade: boolean = false;
     public innerWidth: any;
-    public termsAndConditions = new FormControl('', [Validators.required]);
+    public termsAndConditions = new UntypedFormControl('', [Validators.required]);
 
     faviconLinks = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
 
-    headerHexColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
-    headerColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
-    headerColor1Control = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
-    primaryHexColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
-    primaryColorControl = new FormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    headerHexColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    headerColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    headerColor1Control = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    primaryHexColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+    primaryColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
 
     fonts = [
         {label: 'Roboto', value: 'Roboto'},
         {label: 'Open Sans', value: 'Open Sans'},
         {label: 'Montserrat', value: 'Montserrat'}
     ];
-    fontControl = new FormControl('Roboto');
+    fontControl = new UntypedFormControl('Roboto');
     selectedFont = this.fonts.find(font => font.value === this.fontControl.value);
 
-    companyNameControl = new FormControl('');
+    companyNameControl = new UntypedFormControl('');
 
     companyLogoFile: File | null = null;
     loginBannerFile: File | null = null;
@@ -94,7 +94,7 @@ export class BrandingComponent implements OnInit, OnDestroy{
         this.subscription.unsubscribe();
     }
 
-    updateCompanyName(companyNameControl: FormControl) {
+    updateCompanyName(companyNameControl: UntypedFormControl) {
         this.isChangesMade = true;
     }
 

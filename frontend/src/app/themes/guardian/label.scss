@@ -1,0 +1,36 @@
+.guardian-label {
+    display: flex;
+    border-radius: 6px;
+    font-family: var(--guardian-font-family);
+    transition: all 0.25s ease-in-out;
+    white-space: nowrap;
+    user-select: none;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+
+    &-primary {
+        color: var(--guardian-secondary-color);
+        background-color: var(--guardian-primary-color);
+    }
+
+    &-secondary {
+        color: var(--guardian-primary-color);
+        background-color: var(--guardian-primary-background);
+    }
+
+    &-delete {
+        color: var(--guardian-delete-color);
+        background-color: var(--guardian-delete-background);
+    }
+
+    &-disabled {
+        color: var(--guardian-disabled-color);
+        background-color: var(--guardian-disabled-color);
+    }
+}

@@ -5,7 +5,7 @@ import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import {
     SplitDocuments,
     Schema as SchemaCollection,
@@ -156,7 +156,7 @@ export class SplitBlock {
     private async split(
         ref: IPolicyBlock,
         root: UserCredentials,
-        user: IPolicyUser,
+        user: PolicyUser,
         result: SplitDocuments[][],
         residue: SplitDocuments[],
         document: IPolicyDocument
@@ -242,7 +242,7 @@ export class SplitBlock {
      * @param user
      * @param documents
      */
-    private async addDocs(ref: IPolicyBlock, user: IPolicyUser, documents: IPolicyDocument[]) {
+    private async addDocs(ref: IPolicyBlock, user: PolicyUser, documents: IPolicyDocument[]) {
         const residue = await ref.databaseServer.getResidue(ref.policyId, ref.uuid, user.id);
         const root = await PolicyUtils.getUserCredentials(ref, ref.policyOwner);
 

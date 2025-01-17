@@ -1,33 +1,35 @@
-import { Guardians } from '../../helpers/guardians.js';
-import { Users } from '../../helpers/users.js';
-import { Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { Controller, Get, HttpCode, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags, getSchemaPath } from '@nestjs/swagger';
-import { TaskAction, UserRole } from '@guardian/interfaces';
-import { RegisteredUsersDTO } from '../../middlewares/validation/schemas/index.js';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
+import { PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Permissions, TaskAction } from '@guardian/interfaces';
+import { InternalServerErrorDTO, RegisteredUsersDTO, TaskDTO } from '#middlewares';
+import { Auth, AuthUser } from '#auth';
+import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users } from '#helpers';
 
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
+    /**
+     * Returns list of registered users
+     */
+    @Get('/registered-users')
     @ApiOperation({
         summary: 'Returns list of registered users.',
         description: 'Returns list of registered users.',
     })
-    // @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            $ref: getSchemaPath(RegisteredUsersDTO),
-        },
+        type: RegisteredUsersDTO
     })
-    @Get('/registered-users')
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
         const guardians = new Guardians();
@@ -44,26 +46,43 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error, this.logger);
         }
     }
 
+    /**
+     * Generate demo key
+     */
     @Get('/random-key')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.DEMO_KEY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
+    @ApiOperation({
+        summary: 'Generate demo key.',
+        description: 'Generate demo key.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async randomKey(@AuthUser() user: any): Promise<any> {
+    async randomKey(
+        @AuthUser() user: any
+    ): Promise<any> {
         try {
             const guardians = new Guardians();
             const role = user?.role;
 
-            return await guardians.generateDemoKey(role);
+            return await guardians.generateDemoKey(role, user.id.toString());
         } catch (error) {
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR)
+            await InternalException(error, this.logger);
         }
         // try {
         //     const guardians = new Guardians();
@@ -87,25 +106,42 @@ export class DemoApi {
         // }
     }
 
+    /**
+     * Generate demo key (async)
+     */
     @Get('/push/random-key')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.DEMO_KEY_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
+    @ApiOperation({
+        summary: 'Generate demo key.',
+        description: 'Generate demo key.',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
-    async pushRandomKey(@AuthUser() user: any): Promise<any> {
+    async pushRandomKey(
+        @AuthUser() user: any
+    ): Promise<NewTask> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CREATE_RANDOM_KEY, user?.id);
         RunFunctionAsync<ServiceError>(async () => {
             const guardians = new Guardians();
-            await guardians.generateDemoKeyAsync(user?.role, task);
+            await guardians.generateDemoKeyAsync(user?.role, task, user.id.toString());
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
-
         return task;
     }
-
 }

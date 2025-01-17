@@ -31,4 +31,10 @@ export enum MessageAction {
     DeferredDiscontinuePolicy = 'deferred-discontinue-policy',
     MigrateVC = 'migrate-vc-document',
     MigrateVP = 'migrate-vp-document',
+    CreateRole = 'create-role',
+    UpdateRole = 'update-role',
+    DeleteRole = 'delete-role',
+    SetRole = 'set-role',
+    PublishPolicyStatistic = 'publish-policy-statistic',
+    CreateStatisticAssessment = 'create-assessment-document'
 }

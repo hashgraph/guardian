@@ -8,7 +8,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 
@@ -106,7 +106,7 @@ export class RetirementBlock {
         relationships: string[],
         topicId: string,
         root: UserCredentials,
-        user: IPolicyUser,
+        user: PolicyUser,
         targetAccountId: string
     ): Promise<[IPolicyDocument, number]> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
@@ -190,7 +190,7 @@ export class RetirementBlock {
             throw new BlockActionError('Bad VC', ref.blockType, ref.uuid);
         }
 
-        const docOwner = PolicyUtils.getDocumentOwner(ref, docs[0]);
+        const docOwner = await PolicyUtils.getDocumentOwner(ref, docs[0]);
         if (!docOwner) {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }

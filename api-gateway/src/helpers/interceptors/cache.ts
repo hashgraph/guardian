@@ -1,6 +1,4 @@
-import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus } from '@nestjs/common';
-
-import crypto from 'crypto';
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler, HttpException, HttpStatus, StreamableFile } from '@nestjs/common';
 
 import { Observable, of, switchMap, tap } from 'rxjs';
 
@@ -8,67 +6,97 @@ import { Observable, of, switchMap, tap } from 'rxjs';
 import { CacheService } from '../cache-service.js';
 import { Users } from '../users.js';
 
+//helpers
+import { streamToBuffer } from '../index.js';
+
+//utils
+import { getCacheKey } from './utils/index.js';
+
 //constants
-import { CACHE, META_DATA } from '../../constants/index.js';
+import { CACHE, CACHE_PREFIXES, META_DATA } from '#constants';
 
 @Injectable()
 export class CacheInterceptor implements NestInterceptor {
-  constructor(private readonly cacheService: CacheService) {
-  }
-
-  async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
-    const httpContext = context.switchToHttp();
-    const request = httpContext.getRequest();
-    const responseContext = httpContext.getResponse();
-
-    const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
-    const isExpress = Reflect.getMetadata(META_DATA.EXPRESS, context.getHandler());
-
-    const token = request.headers.authorization?.split(' ')[1];
-    let user = {}
-
-    if(token) {
-      const users: Users = new Users();
-      try {
-        user = await users.getUserByToken(token);
-      } catch (error) {
-        throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
-      }
+    constructor(private readonly cacheService: CacheService) {
     }
 
-    const hashUser: string = crypto.createHash('md5').update(JSON.stringify(user)).digest('hex');
-    const { url: route } = request;
-    const cacheKey = `cache/${route}:${hashUser}`;
+    async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<unknown>> {
+        const httpContext = context.switchToHttp();
+        const request = httpContext.getRequest();
+        const responseContext = httpContext.getResponse();
 
-    return of(null).pipe(
-      switchMap(async () => {
-        const cachedResponse: string = await this.cacheService.get(cacheKey);
+        const ttl = Reflect.getMetadata(META_DATA.TTL, context.getHandler()) ?? CACHE.DEFAULT_TTL;
+        const isFastify = Reflect.getMetadata(META_DATA.FASTIFY, context.getHandler());
 
-        if (cachedResponse) {
-          return JSON.parse(cachedResponse);
-        }
-      }),
-      switchMap(resultResponse => {
-        if (resultResponse) {
-          if (isExpress) {
-            return of(responseContext.json(resultResponse));
-          }
+        const token = request.headers.authorization?.split(' ')[1];
+        let user = {};
 
-          return of(resultResponse);
-        }
-
-        return next.handle().pipe(
-          tap(async response => {
-            let result = response;
-
-            if (isExpress) {
-              result = response.locals.data;
+        if (token) {
+            const users: Users = new Users();
+            try {
+                user = await users.getUserByToken(token);
+            } catch (error) {
+                throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
             }
+        }
 
-            await this.cacheService.set(cacheKey, JSON.stringify(result), ttl);
-          }),
+        const { url: route } = request;
+        const [cacheKey] = getCacheKey([route], user, CACHE_PREFIXES.CACHE);
+        const [cacheTag] = getCacheKey([route.split('?')[0]], user);
+
+        return of(null).pipe(
+            switchMap(async () => {
+                const cachedResponse: string = await this.cacheService.get(cacheKey);
+
+                if (cachedResponse) {
+                    let result = JSON.parse(cachedResponse);
+
+                    if (result.type === 'StreamableFile') {
+                        const buffer = Buffer.from(result.data, 'base64');
+                        result = new StreamableFile(buffer);
+                    }
+                    else if (result.type === 'buffer') {
+                        result = Buffer.from(result.data, 'base64');
+                    } else  {
+                        result = result.data;
+                    }
+
+                    return result;
+                }
+            }),
+            switchMap(resultResponse => {
+                if (resultResponse) {
+                    if (isFastify) {
+                        return of(responseContext.send(resultResponse));
+                    }
+
+                    return of(resultResponse);
+                }
+
+                return next.handle().pipe(
+                    tap(async response => {
+                        let result = response;
+
+                        if (isFastify) {
+                            result = request.locals;
+                        }
+
+                        if (response instanceof StreamableFile) {
+                            const buffer = await streamToBuffer(response.getStream());
+                            result = { type: 'StreamableFile', data: buffer.toString('base64') };
+                        }
+                        else if (Buffer.isBuffer(result)) {
+                            result = { type: 'buffer', data: result.toString('base64') };
+                        } else if (typeof response === 'object') {
+                            result = { type: 'json', data: result };
+                        } else {
+                            result = { type: 'string', data: result };
+                        }
+
+                        await this.cacheService.set(cacheKey, JSON.stringify(result), ttl, cacheTag);
+                    }),
+                );
+            }),
         );
-      }),
-    );
-  }
+    }
 }

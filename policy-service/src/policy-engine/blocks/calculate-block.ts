@@ -1,4 +1,4 @@
-import { SchemaHelper } from '@guardian/interfaces';
+import { IVC, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -10,11 +10,11 @@ import { VcDocument as VcDocumentCollection } from '@guardian/common';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 interface IMetadata {
-    owner: IPolicyUser;
+    owner: PolicyUser;
     id: string;
     reference: string;
     accounts: any;
@@ -62,10 +62,19 @@ export class CalculateContainerBlock {
      * @param ref
      * @private
      */
-    private async calculate(documents: any | any[], ref: IPolicyCalculateBlock): Promise<VcDocumentCollection> {
+    private async calculate(
+        documents: IVC | IVC[],
+        ref: IPolicyCalculateBlock,
+        parents: IPolicyDocument | IPolicyDocument[],
+    ): Promise<VcDocumentCollection> {
         const fields = ref.options.inputFields;
         let scope = {};
-        let docOwner: IPolicyUser;
+        let docOwner: PolicyUser;
+        if (Array.isArray(parents)) {
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents[0]);
+        } else {
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents);
+        }
         if (fields) {
             if (Array.isArray(documents)) {
                 for (const field of fields) {
@@ -75,12 +84,10 @@ export class CalculateContainerBlock {
                     }
                     scope[field.value] = value;
                 }
-                docOwner = PolicyUtils.getDocumentOwner(ref, documents[0]);
             } else {
                 for (const field of fields) {
                     scope[field.value] = documents[field.name];
                 }
-                docOwner = PolicyUtils.getDocumentOwner(ref, documents);
             }
         }
         const addons = ref.getAddons();
@@ -128,11 +135,11 @@ export class CalculateContainerBlock {
         }
         // -->
 
-        const newJson = await this.calculate(json, ref);
+        const newJson = await this.calculate(json, ref, documents);
         if (ref.options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {
-            const metadata = this.aggregateMetadata(documents, ref);
+            const metadata = await this.aggregateMetadata(documents, ref);
             return await this.createDocument(newJson, metadata, ref);
         }
     }
@@ -142,13 +149,12 @@ export class CalculateContainerBlock {
      * @param documents
      * @param ref
      */
-    private aggregateMetadata(
+    private async aggregateMetadata(
         documents: IPolicyDocument | IPolicyDocument[],
         ref: IPolicyCalculateBlock
-    ): IMetadata {
+    ): Promise<IMetadata> {
         const isArray = Array.isArray(documents);
         const firstDocument = isArray ? documents[0] : documents;
-        const owner = PolicyUtils.getDocumentOwner(ref, firstDocument);
         const relationships = [];
         let accounts: any = {};
         let tokens: any = {};
@@ -189,6 +195,7 @@ export class CalculateContainerBlock {
                 relationships.push(documents.messageId);
             }
         }
+        const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument);
         return { owner, id, reference, accounts, tokens, relationships };
     }
 

@@ -7,29 +7,64 @@ import { tokenAPI } from './api/token.service.js';
 import { trustChainAPI } from './api/trust-chain.service.js';
 import { PolicyEngineService } from './policy-engine/policy-engine.service.js';
 import {
+    AggregateVC,
     ApplicationState,
+    ApprovalDocument,
+    Artifact,
+    ArtifactChunk,
+    AssignEntity,
+    BlockCache,
+    BlockState,
     Branding,
     COMMON_CONNECTION_CONFIG,
     Contract,
-    DataBaseHelper,
     DatabaseServer,
     DidDocument,
-    entities,
+    DocumentState,
+    DryRun,
+    DryRunFiles,
     Environment,
+    ExternalDocument,
     ExternalEventChannel,
+    GenerateTLSOptionsNats,
     IPFS,
     LargePayloadContainer,
-    Logger,
     MessageBrokerChannel,
     MessageServer,
     Migration,
+    MintRequest,
+    MintTransaction,
+    mongoForLoggingInitialization,
+    MultiDocuments,
+    MultiPolicy,
+    MultiPolicyTransaction,
     OldSecretManager,
+    PinoLogger,
+    pinoLoggerInitialization,
     Policy,
+    PolicyCache,
+    PolicyCacheData,
+    PolicyCategory,
+    PolicyInvitations,
+    PolicyModule,
+    PolicyProperty,
+    PolicyRoles,
+    PolicyStatistic,
+    PolicyStatisticDocument,
+    SchemaRule,
+    PolicyTest,
+    PolicyTool,
+    Record,
     RetirePool,
     RetireRequest,
     Schema,
     SecretManager,
     Settings,
+    SplitDocuments,
+    SuggestionsConfig,
+    Tag,
+    TagCache,
+    Theme,
     Token,
     Topic,
     TopicMemo,
@@ -39,6 +74,7 @@ import {
     ValidateConfiguration,
     VcDocument,
     VpDocument,
+    Wallet,
     WiperRequest,
     Workers
 } from '@guardian/common';
@@ -52,10 +88,11 @@ import { PolicyServiceChannelsContainer } from './helpers/policy-service-channel
 import { PolicyEngine } from './policy-engine/policy-engine.js';
 import { modulesAPI } from './api/module.service.js';
 import { toolsAPI } from './api/tool.service.js';
+import { statisticsAPI } from './api/policy-statistics.service.js';
+import { schemaRulesAPI } from './api/schema-rules.service.js';
 import { GuardiansService } from './helpers/guardians.js';
 import { mapAPI } from './api/map.service.js';
 import { tagsAPI } from './api/tag.service.js';
-import { setDefaultSchema } from './api/helpers/schema-helper.js';
 import { demoAPI } from './api/demo.service.js';
 import { themeAPI } from './api/theme.service.js';
 import { brandingAPI } from './api/branding.service.js';
@@ -66,14 +103,66 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
-import { GridFSBucket } from 'mongodb';
 import { suggestionsAPI } from './api/suggestions.service.js';
 import { SynchronizationTask } from './helpers/synchronization-task.js';
 import { recordAPI } from './api/record.service.js';
 import { projectsAPI } from './api/projects.service.js';
 import { AISuggestionsService } from './helpers/ai-suggestions.js';
+import { AssignedEntityAPI } from './api/assigned-entity.service.js';
+import { permissionAPI } from './api/permission.service.js';
+import { setDefaultSchema } from './api/helpers/default-schemas.js';
 
 export const obj = {};
+
+const necessaryEntity = [
+    AggregateVC,
+    ApprovalDocument,
+    ArtifactChunk,
+    Artifact,
+    BlockCache,
+    BlockState,
+    Branding,
+    Contract,
+    DidDocument,
+    DocumentState,
+    DryRun,
+    ExternalDocument,
+    PolicyModule,
+    MultiDocuments,
+    MultiPolicyTransaction,
+    MultiPolicy,
+    PolicyInvitations,
+    PolicyRoles,
+    Policy,
+    RetirePool,
+    RetireRequest,
+    Schema,
+    Settings,
+    SplitDocuments,
+    SuggestionsConfig,
+    TagCache,
+    Tag,
+    Theme,
+    Token,
+    PolicyTool,
+    Topic,
+    VcDocument,
+    VpDocument,
+    WiperRequest,
+    Record,
+    PolicyCategory,
+    PolicyProperty,
+    MintRequest,
+    MintTransaction,
+    DryRunFiles,
+    PolicyCacheData,
+    PolicyCache,
+    AssignEntity,
+    PolicyTest,
+    PolicyStatistic,
+    PolicyStatisticDocument,
+    SchemaRule
+]
 
 Promise.all([
     Migration({
@@ -82,11 +171,8 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        driverOptions: {
-            useUnifiedTopology: true
-        },
         ensureIndexes: true,
-        entities
+        entities: necessaryEntity
     }, [
         'v2-4-0',
         'v2-7-0',
@@ -99,6 +185,8 @@ Promise.all([
         'v2-18-0',
         'v2-20-0',
         'v2-23-1',
+        'v2-27-1',
+        'v2-28-0',
     ]),
     MessageBrokerChannel.connect('GUARDIANS_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
@@ -108,17 +196,20 @@ Promise.all([
             name: `${process.env.SERVICE_CHANNEL}`,
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
-            ]
+            ],
+            tls: GenerateTLSOptionsNats()
         },
-    })
+    }),
+    mongoForLoggingInitialization()
 ]).then(async values => {
-    const [db, cn, app] = values;
+    const [db, cn, app, loggerMongo] = values;
 
     app.listen();
 
-    DataBaseHelper.orm = db;
+    DatabaseServer.connectBD(db);
 
-    DataBaseHelper.gridFS = new GridFSBucket(db.em.getDriver().getConnection().getDb());
+    DatabaseServer.connectGridFS();
+
     new PolicyServiceChannelsContainer().setConnection(cn);
     new TransactionLogger().initialization(
         cn,
@@ -127,7 +218,8 @@ Promise.all([
     new GuardiansService().setConnection(cn).init();
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
-    await new Logger().setConnection(cn);
+    const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+
     const state = new ApplicationState();
     await state.setServiceName('GUARDIAN_SERVICE').setConnection(cn).init();
     const secretManager = SecretManager.New();
@@ -146,47 +238,34 @@ Promise.all([
 
     await state.updateState(ApplicationStates.STARTED);
 
-    const didDocumentRepository = new DataBaseHelper(DidDocument);
-    const vcDocumentRepository = new DataBaseHelper(VcDocument);
-    const vpDocumentRepository = new DataBaseHelper(VpDocument);
-    const tokenRepository = new DataBaseHelper(Token);
-    const schemaRepository = new DataBaseHelper(Schema);
-    const settingsRepository = new DataBaseHelper(Settings);
-    const topicRepository = new DataBaseHelper(Topic);
-    const policyRepository = new DataBaseHelper(Policy);
-    const contractRepository = new DataBaseHelper(Contract);
-    const wipeRequestRepository = new DataBaseHelper(WiperRequest);
-    const retirePoolRepository = new DataBaseHelper(RetirePool);
-    const retireRequestRepository = new DataBaseHelper(RetireRequest);
-    const brandingRepository = new DataBaseHelper(Branding);
+    const dataBaseServer = new DatabaseServer();
 
     try {
-        await configAPI(settingsRepository, topicRepository);
-        await schemaAPI();
-        await tokenAPI(tokenRepository);
-        await loaderAPI(didDocumentRepository, schemaRepository);
-        await profileAPI();
-        await documentsAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository, policyRepository);
-        await demoAPI(settingsRepository);
-        await trustChainAPI(didDocumentRepository, vcDocumentRepository, vpDocumentRepository);
-        await artifactAPI();
-        await contractAPI(contractRepository,
-            wipeRequestRepository,
-            retirePoolRepository,
-            retireRequestRepository,
-            vcDocumentRepository
-        );
-        await modulesAPI();
-        await toolsAPI();
-        await tagsAPI();
-        await analyticsAPI();
-        await mapAPI();
-        await themeAPI();
-        await wizardAPI();
-        await recordAPI();
-        await brandingAPI(brandingRepository);
+        await configAPI(dataBaseServer, logger);
+        await schemaAPI(logger);
+        await tokenAPI(dataBaseServer, logger);
+        await loaderAPI(dataBaseServer, logger);
+        await profileAPI(logger);
+        await documentsAPI(dataBaseServer);
+        await demoAPI(dataBaseServer, logger);
+        await trustChainAPI(dataBaseServer, logger);
+        await artifactAPI(logger);
+        await contractAPI(dataBaseServer, logger);
+        await modulesAPI(logger);
+        await toolsAPI(logger);
+        await tagsAPI(logger);
+        await analyticsAPI(logger);
+        await mapAPI(logger);
+        await themeAPI(logger);
+        await wizardAPI(logger);
+        await recordAPI(logger);
+        await brandingAPI(dataBaseServer);
         await suggestionsAPI();
-        await projectsAPI();
+        await projectsAPI(logger);
+        await AssignedEntityAPI(logger)
+        await permissionAPI(logger);
+        await statisticsAPI(logger);
+        await schemaRulesAPI(logger);
     } catch (error) {
         console.error(error.message);
         process.exit(0);
@@ -200,7 +279,7 @@ Promise.all([
             const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
             Environment.setNodes(nodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
                 ['GUARDIAN_SERVICE']
             );
@@ -214,7 +293,7 @@ Promise.all([
             );
             Environment.setMirrorNodes(mirrorNodes);
         } catch (error) {
-            await new Logger().warn(
+            await logger.warn(
                 'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
                 error.message,
                 ['GUARDIAN_SERVICE']
@@ -228,6 +307,7 @@ Promise.all([
     new ExternalEventChannel().setChannel(channel);
 
     await new Users().setConnection(cn).init();
+    await new Wallet().setConnection(cn).init();
     const workersHelper = new Workers();
     await workersHelper.setConnection(cn).init();
     workersHelper.initListeners();
@@ -244,14 +324,14 @@ Promise.all([
             }
             AccountId.fromString(OPERATOR_ID);
         } catch (error) {
-            await new Logger().error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_ID field in settings: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
         try {
             PrivateKey.fromString(OPERATOR_KEY);
         } catch (error) {
-            await new Logger().error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('OPERATOR_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
         }
         try {
@@ -262,7 +342,7 @@ Promise.all([
                 TopicId.fromString(process.env.INITIALIZATION_TOPIC_ID);
             }
         } catch (error) {
-            await new Logger().error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_ID field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
@@ -271,7 +351,7 @@ Promise.all([
                 PrivateKey.fromString(process.env.INITIALIZATION_TOPIC_KEY);
             }
         } catch (error) {
-            await new Logger().error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
+            await logger.error('INITIALIZATION_TOPIC_KEY field in .env file: ' + error.message, ['GUARDIAN_SERVICE']);
             return false;
             // process.exit(0);
         }
@@ -295,11 +375,11 @@ Promise.all([
         state.updateState(ApplicationStates.INITIALIZING);
 
         try {
-            policyEngine = new PolicyEngine();
+            policyEngine = new PolicyEngine(logger);
             await policyEngine.setConnection(cn).init();
-            const policyService = new PolicyEngineService(cn);
+            const policyService = new PolicyEngineService(cn, logger);
             await policyService.init();
-            policyService.registerListeners();
+            policyService.registerListeners(logger);
             await policyEngine.init();
         } catch (error) {
             console.error(error.message);
@@ -314,7 +394,7 @@ Promise.all([
         }
 
         try {
-            await ipfsAPI();
+            await ipfsAPI(logger);
         } catch (error) {
             console.error(error.message);
         }
@@ -324,13 +404,13 @@ Promise.all([
             new LargePayloadContainer().runServer();
         }
 
-        await new Logger().info('guardian service started', ['GUARDIAN_SERVICE']);
+        await logger.info('guardian service started', ['GUARDIAN_SERVICE']);
 
         await state.updateState(ApplicationStates.READY);
 
         try {
             if (process.env.SEND_KEYS_TO_VAULT?.toLowerCase() === 'true') {
-                await sendKeysToVault(db.em);
+                await sendKeysToVault(db.em, logger);
             }
         } catch (error) {
             console.error(error.message);
@@ -349,39 +429,37 @@ Promise.all([
         'retire-sync',
         syncRetireContracts.bind(
             {},
-            contractRepository,
-            retirePoolRepository,
-            retireRequestRepository,
+            dataBaseServer,
             workers,
             users
         ),
         process.env.RETIRE_CONTRACT_SYNC_MASK || '* * * * *',
-        channel
+        channel,
+        logger
     );
     retireSync.start();
     const wipeSync = new SynchronizationTask(
         'wipe-sync',
         syncWipeContracts.bind(
             {},
-            contractRepository,
-            wipeRequestRepository,
-            retirePoolRepository,
+            dataBaseServer,
             workers,
             users
         ),
         process.env.WIPE_CONTRACT_SYNC_MASK || '* * * * *',
-        channel
+        channel,
+        logger
     );
     wipeSync.start();
     const policyDiscontinueTask = new SynchronizationTask(
         'policy-discontinue',
         async () => {
             const date = new Date();
-            const policiesToDiscontunie = await policyRepository.find({
+            const policiesToDiscontunie = await dataBaseServer.find(Policy, {
                 discontinuedDate: { $lte: date },
                 status: PolicyType.PUBLISH
             });
-            await policyRepository.update(policiesToDiscontunie.map(policy => {
+            await dataBaseServer.update(Policy, null, policiesToDiscontunie.map(policy => {
                 policy.status = PolicyType.DISCONTINUED;
                 return policy;
             }));
@@ -390,7 +468,8 @@ Promise.all([
             ));
         },
         '0 * * * *',
-        channel
+        channel,
+        logger
     );
     policyDiscontinueTask.start(true);
     const clearPolicyCache = new SynchronizationTask(
@@ -405,7 +484,8 @@ Promise.all([
             }
         },
         process.env.CLEAR_POLICY_CACHE_INTERVAL || '0 * * * *',
-        channel
+        channel,
+        logger
     );
     clearPolicyCache.start(true);
 

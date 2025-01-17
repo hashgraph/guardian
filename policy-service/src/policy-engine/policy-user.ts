@@ -1,6 +1,6 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, PolicyRole, SignType } from '@guardian/interfaces';
-import { AnyBlockType, IPolicyDocument } from './policy-engine.interface.js';
+import { ISignOptions, Permissions, PolicyRole, SignType } from '@guardian/interfaces';
+import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
  * Hedera Account interface
@@ -19,141 +19,173 @@ export interface IHederaCredentials {
 /**
  * User in policy
  */
-export interface IPolicyUser {
+export class PolicyUser {
     /**
      * User DID
      */
-    readonly id: string;
+    private _id: string;
     /**
      * User DID
      */
-    readonly did: string;
-    /**
-     * User Role
-     */
-    readonly role: PolicyRole | null;
-    /**
-     * User Role
-     */
-    readonly group: string;
-    /**
-     * User DID
-     */
-    readonly virtual?: boolean;
+    private _did: string;
     /**
      * username
      */
-    readonly username?: string;
-}
-
-/**
- * User in policy
- */
-export class PolicyUser implements IPolicyUser {
-    /**
-     * User DID
-     */
-    public id: string;
-    /**
-     * User DID
-     */
-    public did: string;
+    private _username: string;
     /**
      * User Role
      */
-    public role: PolicyRole | null;
+    private _role: PolicyRole | null;
     /**
      * User Role
      */
-    public group: string;
-    /**
-     * User DID
-     */
-    public virtual?: boolean;
-    /**
-     * username
-     */
-    public username?: string;
+    private _group: string;
     /**
      * Role message
      */
-    public roleMessage?: string;
+    private _roleMessage: string | null;
+    /**
+     * Policy id
+     */
+    public readonly policyId: string | null;
+    /**
+     * Policy owner
+     */
+    public readonly policyOwner: string | null;
+    /**
+     * Permissions
+     */
+    public readonly permissions: string[];
 
-    constructor(did: string, virtual: boolean = false) {
-        this.id = did;
-        this.did = did;
+    constructor(arg: IAuthUser | string, instance: IPolicyInstance | AnyBlockType) {
+        if (typeof arg === 'string') {
+            this.did = arg;
+            this.username = null;
+            this.permissions = [];
+        } else {
+            this.did = arg.did;
+            this.username = arg.username;
+            this.permissions = arg.permissions || [];
+        }
         this.role = null;
         this.group = null;
-        this.virtual = virtual;
         this.roleMessage = null;
+        this.policyId = instance.policyId;
+        this.policyOwner = instance.policyOwner;
+    }
+
+    public get id(): string {
+        return this._id;
+    }
+
+    public get did(): string {
+        return this._did;
+    }
+
+    protected set did(did: string) {
+        this._did = did;
+        if (this._group) {
+            this._id = `${this._group}:${this._did}`;
+        } else {
+            this._id = this._did;
+        }
+    }
+
+    public get username(): string {
+        return this._username;
+    }
+
+    protected set username(username: string) {
+        this._username = username;
+    }
+
+    public get role(): PolicyRole | null {
+        return this._role;
+    }
+
+    protected set role(role: PolicyRole | null) {
+        this._role = role;
+    }
+
+    public get group(): string | null {
+        return this._group;
+    }
+
+    protected set group(uuid: string) {
+        this._group = uuid;
+        if (this._group) {
+            this._id = `${this._group}:${this._did}`;
+        } else {
+            this._id = this._did;
+        }
+    }
+
+    public get roleMessage(): string | null {
+        return this._roleMessage;
+    }
+
+    protected set roleMessage(messageId: string | null) {
+        this._roleMessage = messageId;
+    }
+
+    public get virtual(): boolean {
+        return false;
+    }
+
+    public get isAdmin(): boolean {
+        return (
+            this._did === this.policyOwner ||
+            this.permissions.includes(Permissions.POLICIES_POLICY_MANAGE)
+        );
     }
 
     /**
      * Set Group
      * @param group
      */
-    public setGroup(group: {
-        /**
-         * Role in Group
-         */
-        role?: string,
-        /**
-         * Group ID
-         */
-        uuid?: string
-        /**
-         * Message ID
-         */
-        messageId?: string
-    } | null): PolicyUser {
-        if (group) {
-            this.role = group.role;
-            this.group = group.uuid || null;
-            this.roleMessage = group.messageId || null;
-            if (this.group) {
-                this.id = `${this.group}:${this.did}`;
-            } else {
-                this.id = this.did;
-            }
+    public setCurrentGroup(group: PolicyRoles): PolicyUser {
+        this.role = group?.role || null;
+        this.group = group?.uuid || null;
+        this.roleMessage = group?.messageId || null;
+        return this;
+    }
+
+    public equal(did: string, uuid: string): boolean {
+        if (this._group || uuid) {
+            return this._did === did && this._group === uuid;
+        } else {
+            return this._did === did;
         }
-        return this;
     }
 
-    /**
-     * Set Virtual DID
-     * @param user
-     */
-    public setVirtualUser(user: any): PolicyUser {
-        if (user) {
-            this.did = user.did;
-            this.virtual = true;
-            this.username = user.username;
-            if (this.group) {
-                this.id = `${this.group}:${this.did}`;
-            } else {
-                this.id = this.did;
-            }
+    public toJson() {
+        return {
+            id: this.id,
+            did: this.did,
+            username: this.username,
+            role: this.role,
+            group: this.group,
+            roleMessage: this.roleMessage,
+            virtual: this.virtual,
+            isAdmin: this.isAdmin,
+            policyId: this.policyId
         }
-        return this;
+    }
+}
+
+/**
+ * User in policy
+ */
+export class VirtualUser extends PolicyUser {
+    constructor(
+        virtualUser: any,
+        instance: IPolicyInstance | AnyBlockType
+    ) {
+        super(virtualUser || {}, instance);
     }
 
-    /**
-     * Create User by group object
-     * @param group
-     * @param virtual
-     */
-    public static create(group: PolicyRoles, virtual: boolean = false): PolicyUser {
-        const user = new PolicyUser(group.did, virtual);
-        return user.setGroup(group);
-    }
-
-    /**
-     * Set username
-     * @param username
-     */
-    public setUsername(username: string): PolicyUser {
-        this.username = username;
-        return this;
+    public override get virtual(): boolean {
+        return true;
     }
 }
 

@@ -143,15 +143,13 @@ a[disabled="true"] {
     cursor: pointer;
     height: 220px;
     margin-top: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .scroll-right:hover {
     box-shadow: inset 0px 0px 5px 0px rgb(0 0 0 / 10%);
-}
-
-.scroll-right mat-icon {
-    font-size: 50px;
-    margin-top: 80px;
 }
 
 .chain-container {

@@ -4,7 +4,7 @@ import { VcDocumentDefinition as VcDocument } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
@@ -152,11 +152,11 @@ export class SwitchBlock {
                 result = true;
             }
 
-            let curUser: IPolicyUser = event.user;
+            let curUser: PolicyUser = event.user;
             if (actor === 'owner' && owner) {
-                curUser = PolicyUtils.getPolicyUser(ref, owner, group);
+                curUser = await PolicyUtils.getPolicyUser(ref, owner, group);
             } else if (actor === 'issuer' && issuer) {
-                curUser = PolicyUtils.getPolicyUser(ref, issuer, group);
+                curUser = await PolicyUtils.getPolicyUser(ref, issuer, group);
             }
 
             ref.log(`check condition: ${curUser?.id}, ${type},  ${value},  ${result}, ${JSON.stringify(scope)}`);

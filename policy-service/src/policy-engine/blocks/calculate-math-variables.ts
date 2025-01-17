@@ -4,7 +4,7 @@ import { IPolicyCalculateAddon } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -141,7 +141,7 @@ export class CalculateMathVariables {
      * Run logic
      * @param scope
      */
-    public async run(scope: any, user: IPolicyUser): Promise<any> {
+    public async run(scope: any, user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateAddon>(this);
 
         const filters: any = {};

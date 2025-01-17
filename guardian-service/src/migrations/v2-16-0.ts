@@ -142,7 +142,8 @@ export class ReleaseMigration extends Migration {
                         buffers.push(item.data.buffer);
                     }
                     const data = buffers.length > 0 ? Buffer.concat(buffers) : Buffer.from('');
-                    const f = new FileModel(file, data, HashComparator.options);
+                    file.data = data;
+                    const f = new FileModel(file, HashComparator.options);
                     f.update(HashComparator.options);
                     artifactsModels.push(f);
                 }

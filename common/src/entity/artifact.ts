@@ -50,6 +50,12 @@ export class Artifact extends BaseEntity {
     category?: 'tool' | 'policy';
 
     /**
+     * Artifact creator
+     */
+    @Property({ nullable: true })
+    creator?: string;
+
+    /**
      * Default document values
      */
     @BeforeCreate()

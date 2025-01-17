@@ -1,137 +1,108 @@
-import { UserRole } from '@guardian/interfaces';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards, } from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import { Guardians } from '../../helpers/guardians.js';
-import { ApiBearerAuth, ApiCreatedResponse, ApiExtraModels, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse, getSchemaPath, } from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, } from '../../middlewares/validation/schemas/suggestions.js';
-import { AuthGuard } from '../../auth/auth-guard.js';
+import { Permissions } from '@guardian/interfaces';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
+import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
+import { IAuthUser } from '@guardian/common';
+import { AuthUser, Auth } from '#auth';
+import { Guardians, ONLY_SR } from '#helpers';
 
 @Controller('suggestions')
 @ApiTags('suggestions')
 export class SuggestionsApi {
+
+    /**
+     * Get next and nested suggested block types
+     */
+    @Post('/')
+    @Auth(
+        Permissions.SUGGESTIONS_SUGGESTIONS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get next and nested suggested block types',
-        description:
-            'Get next and nested suggested block types. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Get next and nested suggested block types.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(
-        SuggestionsInputDTO,
-        SuggestionsOutputDTO,
-        InternalServerErrorDTO
-    )
+    @ApiBody({
+        description: 'Data.',
+        type: SuggestionsInputDTO,
+    })
     @ApiOkResponse({
-        description:
-            'Successful operation. Suggested next and nested block types respectively.',
-        schema: {
-            $ref: getSchemaPath(SuggestionsOutputDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        description: 'Successful operation. Suggested next and nested block types respectively.',
+        type: SuggestionsOutputDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Post('/')
+    @ApiExtraModels(SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async policySuggestions(
-        @Req() req,
+        @AuthUser() user: IAuthUser,
         @Body() body: SuggestionsInputDTO
     ): Promise<SuggestionsOutputDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
         const guardians = new Guardians();
         return await guardians.policySuggestions(body, user);
     }
 
+    /**
+     * Set suggestions config
+     */
+    @Post('/config')
+    @Auth(
+        Permissions.SUGGESTIONS_SUGGESTIONS_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Set suggestions config',
-        description:
-            'Set suggestions config. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Set suggestions config.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(
-        SuggestionsConfigItemDTO,
-        SuggestionsConfigDTO,
-        InternalServerErrorDTO
-    )
+    @ApiBody({
+        description: 'Suggestions config.',
+        type: SuggestionsConfigDTO,
+    })
     @ApiCreatedResponse({
-        description:
-            'Successful operation. Response setted suggestions config.',
-        schema: {
-            $ref: getSchemaPath(SuggestionsConfigDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        description: 'Successful operation. Response setted suggestions config.',
+        type: SuggestionsConfigDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Post('/config')
+    @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async setPolicySuggestionsConfig(
-        @Req() req,
+        @AuthUser() user: IAuthUser,
         @Body() body: SuggestionsConfigDTO
     ): Promise<SuggestionsConfigDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
         const guardians = new Guardians();
-        const user = req.user;
-        return {
-            items: await guardians.setPolicySuggestionsConfig(body.items, user),
-        };
+        return { items: await guardians.setPolicySuggestionsConfig(body.items, user) };
     }
 
+    /**
+     * Get suggestions config
+     */
+    @Get('/config')
+    @Auth(
+        Permissions.SUGGESTIONS_SUGGESTIONS_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Get suggestions config',
-        description:
-            'Get suggestions config. Only users with the Standard Registry role are allowed to make the request.',
+        description: 'Get suggestions config.' + ONLY_SR,
     })
-    @ApiSecurity('bearerAuth')
-    @ApiExtraModels(
-        SuggestionsConfigItemDTO,
-        SuggestionsConfigDTO,
-        InternalServerErrorDTO
-    )
     @ApiOkResponse({
         description: 'Successful operation. Response suggestions config.',
-        schema: {
-            $ref: getSchemaPath(SuggestionsConfigDTO),
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
+        type: SuggestionsConfigDTO
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO),
-        },
+        type: InternalServerErrorDTO,
     })
-    @ApiBearerAuth()
-    @UseGuards(AuthGuard)
-    @Get('/config')
+    @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getPolicySuggestionsConfig(
-        @Req() req
+        @AuthUser() user: IAuthUser
     ): Promise<SuggestionsConfigDTO> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
-        const user = req.user;
         const guardians = new Guardians();
         return { items: await guardians.getPolicySuggestionsConfig(user) };
     }

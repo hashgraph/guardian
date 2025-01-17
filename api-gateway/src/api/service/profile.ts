@@ -1,35 +1,33 @@
-import { Guardians } from '../../helpers/guardians.js';
-import { DidDocumentStatus, SchemaEntity, TaskAction, TopicType, UserRole } from '@guardian/interfaces';
-import { IAuthUser, Logger, RunFunctionAsync } from '@guardian/common';
-import { TaskManager } from '../../helpers/task-manager.js';
-import { ServiceError } from '../../helpers/service-requests-base.js';
-import { Controller, Get, HttpCode, HttpException, HttpStatus, Put, Param, Post, Body } from '@nestjs/common';
-import { AuthUser } from '../../auth/authorization-helper.js';
-import { Auth } from '../../auth/auth.decorator.js';
-import { ApiBody, ApiForbiddenResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiSecurity, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { ProfileDTO, InternalServerErrorDTO, TaskDTO, CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO } from '../../middlewares/validation/schemas/index.js';
-import { CACHE } from '../../constants/index.js';
-import { UseCache } from '../../helpers/decorators/cache.js';
+import { DidDocumentStatus, Permissions, SchemaEntity, TaskAction, TopicType } from '@guardian/interfaces';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Req } from '@nestjs/common';
+import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { CredentialsDTO, DidDocumentDTO, DidDocumentStatusDTO, DidDocumentWithKeyDTO, DidKeyStatusDTO, InternalServerErrorDTO, ProfileDTO, TaskDTO } from '#middlewares';
+import { Auth, AuthUser } from '#auth';
+import { CacheService, getCacheKey, Guardians, InternalException, ServiceError, TaskManager, UseCache } from '#helpers';
+import { CACHE } from '#constants';
 
 @Controller('profiles')
 @ApiTags('profiles')
 export class ProfileApi {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
+    }
+
     /**
-     * Get user.profile
+     * Get user profile.
      */
     @Get('/:username/')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILES_USER_READ
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Returns user account info.',
         description: 'Returns user account information. For users with the Standard Registry role it also returns address book and VC document information.',
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to fetch the information',
@@ -40,20 +38,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: ProfileDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(ProfileDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
+    @UseCache()
     async getProfile(
         @AuthUser() user: IAuthUser
-    ): Promise<any> {
+    ): Promise<ProfileDTO> {
         const guardians = new Guardians();
         try {
             let didDocument: any = null;
@@ -100,20 +94,20 @@ export class ProfileApi {
             return {
                 username: user.username,
                 role: user.role,
+                permissionsGroup: user.permissionsGroup,
+                permissions: user.permissions,
                 did: user.did,
                 parent: user.parent,
                 hederaAccountId: user.hederaAccountId,
                 confirmed: !!(didDocument && didDocument.status === DidDocumentStatus.CREATE),
                 failed: !!(didDocument && didDocument.status === DidDocumentStatus.FAILED),
-                hederaAccountKey: null,
                 topicId: topic?.topicId,
                 parentTopicId: topic?.parent,
                 didDocument,
                 vcDocument
             };
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -122,16 +116,16 @@ export class ProfileApi {
      */
     @Put('/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILES_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Sets Hedera credentials for the user.',
         description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to update the information.',
@@ -146,25 +140,25 @@ export class ProfileApi {
     @ApiOkResponse({
         description: 'Created.',
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
     async setUserProfile(
         @AuthUser() user: IAuthUser,
-        @Body() profile: any
-    ): Promise<any> {
+        @Body() profile: any,
+        @Req() req
+    ): Promise<void> {
         const username: string = user.username;
         const guardians = new Guardians();
-        await guardians.createUserProfileCommon(username, profile);
-        return;
+        try {
+            await guardians.createUserProfileCommon(username, profile);
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+        }
+        await this.cacheService.invalidate(getCacheKey([req.url], req.user))
     }
 
     /**
@@ -172,16 +166,16 @@ export class ProfileApi {
      */
     @Put('/push/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILES_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Sets Hedera credentials for the user.',
         description: 'Sets Hedera credentials for the user. For users with the Standard Registry role it also creates an address book.'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to update the information.',
@@ -197,21 +191,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: TaskDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async setUserProfileAsync(
         @AuthUser() user: IAuthUser,
         @Body() profile: any
-    ): Promise<any> {
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.CONNECT_USER, user.id);
         const username: string = user.username;
@@ -219,7 +208,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.createUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -230,16 +219,16 @@ export class ProfileApi {
      */
     @Get('/:username/balance')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER,
-        UserRole.AUDITOR
+        Permissions.PROFILES_BALANCE_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER,
+        // UserRole.AUDITOR
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Returns user\'s Hedera account balance.',
         description: 'Requests Hedera account balance. Only users with the Installer role are allowed to make the request.'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to fetch the balance.',
@@ -250,22 +239,17 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: String
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
-    @HttpCode(HttpStatus.OK)
+    @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
+    @HttpCode(HttpStatus.OK)
     async getUserBalance(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string
-    ): Promise<any> {
+    ): Promise<string> {
         if (!user.did) {
             return null;
         }
@@ -283,14 +267,14 @@ export class ProfileApi {
      */
     @Put('/restore/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.PROFILES_RESTORE_ALL,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Restore user data (policy, DID documents, VC documents).',
         description: 'Restore user data (policy, DID documents, VC documents).'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to restore the information.',
@@ -306,21 +290,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: TaskDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreUserProfile(
         @AuthUser() user: IAuthUser,
         @Body() profile: any
-    ): Promise<any> {
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.RESTORE_USER_PROFILE, user.id);
         const username: string = user.username;
@@ -328,7 +307,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.restoreUserProfileCommonAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -339,14 +318,14 @@ export class ProfileApi {
      */
     @Put('/restore/topics/:username')
     @Auth(
-        UserRole.STANDARD_REGISTRY
+        Permissions.PROFILES_RESTORE_ALL,
+        // UserRole.STANDARD_REGISTRY
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'List of available recovery topics.',
         description: 'List of available recovery topics.'
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'username',
         type: String,
         description: 'The name of the user for whom to restore the information.',
@@ -362,21 +341,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: TaskDTO
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(CredentialsDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async restoreTopic(
         @AuthUser() user: IAuthUser,
         @Body() profile: any
-    ): Promise<any> {
+    ): Promise<TaskDTO> {
         const taskManager = new TaskManager();
         const task = taskManager.start(TaskAction.GET_USER_TOPICS, user.id);
         const username: string = user.username;
@@ -384,7 +358,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             await guardians.getAllUserTopicsAsync(username, profile, task);
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
         });
         return task;
@@ -395,10 +369,10 @@ export class ProfileApi {
      */
     @Post('/did-document/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER
+        Permissions.PROFILES_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Validate DID document format.',
         description: 'Validate DID document format.',
@@ -412,21 +386,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: DidDocumentStatusDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(DidDocumentDTO, DidDocumentStatusDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidDocument(
         @AuthUser() user: IAuthUser,
         @Body() document: any
-    ) {
+    ): Promise<DidDocumentStatusDTO> {
         if (!document) {
             throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -434,8 +403,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidDocument(document);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -444,10 +412,10 @@ export class ProfileApi {
      */
     @Post('/did-keys/validate')
     @Auth(
-        UserRole.STANDARD_REGISTRY,
-        UserRole.USER
+        Permissions.PROFILES_USER_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
     )
-    @ApiSecurity('bearerAuth')
     @ApiOperation({
         summary: 'Validate DID document keys.',
         description: 'Validate DID document keys.',
@@ -461,21 +429,16 @@ export class ProfileApi {
         description: 'Successful operation.',
         type: DidKeyStatusDTO,
     })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
-    })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO
     })
+    @ApiExtraModels(DidKeyStatusDTO, DidDocumentWithKeyDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateDidKeys(
         @AuthUser() user: IAuthUser,
         @Body() body: any
-    ) {
+    ): Promise<DidKeyStatusDTO> {
         if (!body) {
             throw new HttpException('Body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
         }
@@ -490,8 +453,7 @@ export class ProfileApi {
             const guardians = new Guardians();
             return await guardians.validateDidKeys(document, keys);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 }

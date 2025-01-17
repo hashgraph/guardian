@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuditService } from '../../services/audit.service';
 import { AuthService } from '../../services/auth.service';
@@ -141,21 +141,20 @@ export class AuditComponent implements OnInit {
 
     openVP(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: element.id,
+                row: element,
                 dryRun: !!element.dryRunId,
                 document: element.document,
-                title: 'VP',
+                title: 'VP Document',
                 type: 'VP',
                 viewDocument: true
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     setFilter(type: string, value: string) {

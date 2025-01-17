@@ -1,7 +1,22 @@
 import { Singleton } from '../helpers/decorators/singleton.js';
-import { ApplicationStates, AuthEvents, GenerateUUIDv4, MessageAPI, UserRole } from '@guardian/interfaces';
+import { ApplicationStates, AuthEvents, GenerateUUIDv4, IOwner, MessageAPI, UserRole } from '@guardian/interfaces';
 import { AuthenticatedRequest, IAuthUser, NatsService, ProviderAuthUser } from '@guardian/common';
 import { Injectable } from '@nestjs/common';
+import { AccountsSessionResponseDTO, RoleDTO } from '#middlewares';
+
+/**
+ * Items and count
+ */
+interface ResponseAndCount<U> {
+    /**
+     * Return count
+     */
+    count: number;
+    /**
+     * Schemas array
+     */
+    items: U[];
+}
 
 /**
  * Users service
@@ -35,7 +50,7 @@ export class Users extends NatsService {
             if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {
                 return null;
             }
-            user = await this.sendMessage(AuthEvents.GET_USER, {username: (target as AuthenticatedRequest).user.username});
+            user = await this.sendMessage(AuthEvents.GET_USER, { username: (target as AuthenticatedRequest).user.username });
         }
         return user;
     }
@@ -70,7 +85,15 @@ export class Users extends NatsService {
      * @param username
      */
     public async getUser(username: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER, {username});
+        return await this.sendMessage(AuthEvents.GET_USER, { username });
+    }
+
+    /**
+     * Return user by username
+     * @param username
+     */
+    public async getUserPermissions(username: string): Promise<IAuthUser> {
+        return await this.sendMessage(AuthEvents.GET_USER_PERMISSIONS, { username });
     }
 
     /**
@@ -78,7 +101,7 @@ export class Users extends NatsService {
      * @param did
      */
     public async getUserById(did: string): Promise<IAuthUser> {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, {did});
+        return await this.sendMessage(AuthEvents.GET_USER_BY_ID, { did });
     }
 
     /**
@@ -94,7 +117,7 @@ export class Users extends NatsService {
      * @param dids
      */
     public async getUsersByIds(dids: string[]): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, {dids});
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ID, { dids });
     }
 
     /**
@@ -102,7 +125,7 @@ export class Users extends NatsService {
      * @param role
      */
     public async getUsersByRole(role: UserRole): Promise<IAuthUser[]> {
-        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, {role});
+        return await this.sendMessage(AuthEvents.GET_USERS_BY_ROLE, { role });
     }
 
     /**
@@ -115,19 +138,11 @@ export class Users extends NatsService {
     }
 
     /**
-     * Save user
-     * @param user
-     */
-    public async save(user: IAuthUser) {
-        return await this.sendMessage(AuthEvents.SAVE_USER, user);
-    }
-
-    /**
      * Get user by token
      * @param token
      */
     public async getUserByToken(token: string) {
-        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, {token});
+        return await this.sendMessage(AuthEvents.GET_USER_BY_TOKEN, { token });
     }
 
     /**
@@ -136,7 +151,7 @@ export class Users extends NatsService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string) {
+    public async registerNewUser(username: string, password: string, role: UserRole): Promise<IAuthUser> {
         return await this.sendMessage(AuthEvents.REGISTER_NEW_USER, { username, password, role });
     }
 
@@ -145,18 +160,32 @@ export class Users extends NatsService {
      * @param username
      * @param password
      */
-    public async generateNewToken(username: string, password: string) {
+    public async generateNewToken(username: string, password: string): Promise<AccountsSessionResponseDTO> {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
     }
 
     public async generateNewAccessToken(refreshToken: string): Promise<any> {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, {refreshToken});
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, { refreshToken });
+    }
+
+    /**
+     * Register new token
+     * @param username
+     * @param oldPassword
+     * @param newPassword
+     */
+    public async changeUserPassword(
+        username: string,
+        oldPassword: string,
+        newPassword: string
+    ): Promise<AccountsSessionResponseDTO> {
+        return await this.sendMessage(AuthEvents.CHANGE_USER_PASSWORD, { username, oldPassword, newPassword });
     }
 
     /**
      * Get all user accounts
      */
-    public async getAllUserAccounts(): Promise<any> {
+    public async getAllUserAccounts(): Promise<IAuthUser[]> {
         return await this.sendMessage(AuthEvents.GET_ALL_USER_ACCOUNTS);
     }
 
@@ -190,6 +219,124 @@ export class Users extends NatsService {
 
     public async generateNewUserTokenBasedOnExternalUserProvider(userProvider: ProviderAuthUser): Promise<any> {
         return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER, userProvider);
+    }
+
+    /**
+     * Get permissions
+     * @param options
+     * @returns Operation Success
+     */
+    public async getPermissions(): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.GET_PERMISSIONS, {});
+    }
+
+    /**
+     * Get roles
+     * @param options
+     * @returns Operation Success
+     */
+    public async getRoles(options: any): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_ROLES, options);
+    }
+
+    /**
+     * Get role
+     * @param id
+     * @returns Operation Success
+     */
+    public async getRoleById(id: string): Promise<any> {
+        return await this.sendMessage(AuthEvents.GET_ROLE, { id });
+    }
+
+    /**
+     * Create role
+     * @param id
+     * @param role
+     * @param owner
+     * @returns Operation Success
+     */
+    public async createRole(role: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.CREATE_ROLE, { role, owner });
+    }
+
+    /**
+     * Update role
+     * @param id
+     * @param role
+     * @param owner
+     * @returns Operation Success
+     */
+    public async updateRole(id: string, role: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_ROLE, { id, role, owner });
+    }
+
+    /**
+     * Delete role
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async deleteRole(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(AuthEvents.DELETE_ROLE, { id, owner });
+    }
+
+    /**
+     * Det default role
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async setDefaultRole(id: string, owner: string): Promise<RoleDTO> {
+        return await this.sendMessage(AuthEvents.SET_DEFAULT_ROLE, { id, owner });
+    }
+
+    /**
+     * Get roles
+     * @param options
+     * @returns Operation Success
+     */
+    public async getWorkers(options: any): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(AuthEvents.GET_USER_ACCOUNTS, options);
+    }
+
+    /**
+     * Update user role
+     * @param username
+     * @param user
+     * @param owner
+     * @returns Operation Success
+     */
+    public async updateUserRole(
+        username: string,
+        userRoles: string[],
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.UPDATE_USER_ROLE, { username, userRoles, owner });
+    }
+
+    /**
+     * Delegate user role
+     * @param username
+     * @param userRoles
+     * @param owner
+     * @returns Operation Success
+     */
+    public async delegateUserRole(
+        username: string,
+        userRoles: string[],
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(AuthEvents.DELEGATE_USER_ROLE, { username, userRoles, owner });
+    }
+
+    /**
+     * Refresh user permissions
+     * @param id
+     * @param owner
+     * @returns Operation Success
+     */
+    public async refreshUserPermissions(id: string, owner: string): Promise<any[]> {
+        return await this.sendMessage(AuthEvents.REFRESH_USER_PERMISSIONS, { id, owner });
     }
 }
 
@@ -269,14 +416,6 @@ export class UsersService {
     }
 
     /**
-     * Save user
-     * @param user
-     */
-    public async save(user: IAuthUser) {
-        return await this.users.save(user);
-    }
-
-    /**
      * Get user by token
      * @param token
      */
@@ -290,7 +429,7 @@ export class UsersService {
      * @param password
      * @param role
      */
-    public async registerNewUser(username: string, password: string, role: string) {
+    public async registerNewUser(username: string, password: string, role: UserRole) {
         return await this.users.registerNewUser(username, password, role);
     }
 

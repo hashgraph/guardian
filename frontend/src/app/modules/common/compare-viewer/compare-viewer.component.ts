@@ -2,7 +2,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { CompareStorage } from '../../../services/compare-storage.service';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { MatMenuTrigger } from '@angular/material/menu';
+import { MatLegacyMenuTrigger as MatMenuTrigger } from '@angular/material/legacy-menu';
 
 @Component({
     selector: 'app-compare-viewer',
@@ -79,10 +79,19 @@ export class CompareViewerComponent implements OnInit {
         }
         if (this.selectedCount > 1) {
             const ids = this.ids.filter(id => this.selected[id]);
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: ids.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
+                    }
+                })
+            }));
             this.router.navigate(['/compare'], {
                 queryParams: {
                     type: 'document',
-                    documentIds: ids
+                    items
                 }
             });
         }
@@ -93,10 +102,19 @@ export class CompareViewerComponent implements OnInit {
         if (this.collapsed) {
             $event.stopImmediatePropagation();
             const ids = this.ids.filter(id => this.selected[id]);
+            const items = btoa(JSON.stringify({
+                parent: null,
+                items: ids.map((id) => {
+                    return {
+                        type: 'id',
+                        value: id
+                    }
+                })
+            }));
             this.router.navigate(['/compare'], {
                 queryParams: {
                     type: 'document',
-                    documentIds: ids
+                    items
                 }
             });
             return;

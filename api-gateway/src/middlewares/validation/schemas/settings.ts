@@ -1,10 +1,10 @@
-import fieldsValidation from '../../../middlewares/validation/fields-validation.js';
+import fieldsValidation from '../../validation/fields-validation.js';
 import * as yup from 'yup';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export const updateSettings = () => {
-    const {ipfsStorageApiKey, operatorId, operatorKey} = fieldsValidation;
+    const { ipfsStorageApiKey, operatorId, operatorKey } = fieldsValidation;
     return yup.object({
         body: yup.object({
             ipfsStorageApiKey,

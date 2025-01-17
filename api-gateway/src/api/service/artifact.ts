@@ -1,128 +1,233 @@
-import { UserRole } from '@guardian/interfaces';
-import { Logger } from '@guardian/common';
-import { Guardians } from '../../helpers/guardians.js';
-import {
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Post,
-    Req,
-    Response,
-    UploadedFiles,
-    UseInterceptors,
-} from '@nestjs/common';
-import { checkPermission } from '../../auth/authorization-helper.js';
-import {
-    ApiExtraModels,
-    ApiInternalServerErrorResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiSecurity,
-    ApiTags,
-    ApiUnauthorizedResponse,
-    ApiForbiddenResponse,
-    getSchemaPath,
-    ApiBody,
-    ApiConsumes
-} from '@nestjs/swagger';
-import { InternalServerErrorDTO } from '../../middlewares/validation/schemas/errors.js';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator.js';
-import { ArtifactDTOItem } from '../../middlewares/validation/schemas/artifacts.js';
-import { ApiImplicitParam } from '@nestjs/swagger/dist/decorators/api-implicit-param.decorator.js';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { Permissions } from '@guardian/interfaces';
+import { Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Post, Query, Param, Response, UseInterceptors, Version, Req } from '@nestjs/common';
+import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiConsumes, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { AuthUser, Auth } from '#auth';
+import { IAuthUser, PinoLogger } from '@guardian/common';
+import { Guardians, InternalException, AnyFilesInterceptor, UploadedFiles, EntityOwner, CacheService, UseCache, getCacheKey } from '#helpers';
+import { pageHeader, Examples, InternalServerErrorDTO, ArtifactDTOItem } from '#middlewares';
+import { ARTIFACT_REQUIRED_PROPS, PREFIXES } from '#constants'
 
 @Controller('artifacts')
 @ApiTags('artifacts')
 export class ArtifactApi {
+
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
+    }
     /**
      * Get artifacts
-     * @param req
-     * @param res
      */
     @Get('/')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACTS_FILE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Returns all artifacts.',
         description: 'Returns all artifacts.',
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
+        name: 'id',
+        type: String,
+        description: 'Artifact identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
         name: 'type',
         enum: ['tool', 'policy'],
         description: 'Tool|Policy',
-        required: false
+        required: false,
+        example: 'policy'
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'policyId',
         type: String,
         description: 'Policy identifier',
-        required: false
+        required: false,
+        example: Examples.DB_ID
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'toolId',
         type: String,
         description: 'Tool identifier',
-        required: false
+        required: false,
+        example: Examples.DB_ID
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageIndex',
         type: Number,
         description: 'The number of pages to skip before starting to collect the result set',
-        required: false
+        required: false,
+        example: 0
     })
-    @ApiImplicitQuery({
+    @ApiQuery({
         name: 'pageSize',
         type: Number,
         description: 'The numbers of items to return',
-        required: false
+        required: false,
+        example: 20
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        isArray: true,
+        headers: pageHeader,
+        type: ArtifactDTOItem
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    async getArtifacts(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @UseCache({isFastify: true})
+    async getArtifacts(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Req() req,
+        @Query('id') id: string,
+        @Query('type') type?: string,
+        @Query('policyId') policyId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number,
+    ): Promise<ArtifactDTOItem> {
         try {
-            const guardians = new Guardians();
             const options: any = {
-                owner: req.user.did,
+                owner: new EntityOwner(user)
+            };
+            if (type) {
+                options.type = type;
             }
-            if (req.query) {
-                options.type = req.query.type;
-                options.policyId = req.query.policyId;
-                options.toolId = req.query.toolId;
-                options.id = req.query.id;
+            if (policyId) {
+                options.policyId = policyId;
             }
-            if (req.query && req.query.pageIndex && req.query.pageSize) {
-                options.pageIndex = req.query.pageIndex;
-                options.pageSize = req.query.pageSize;
+            if (toolId) {
+                options.toolId = toolId;
             }
+            if (id) {
+                options.id = id;
+            }
+            if (pageIndex && pageSize) {
+                options.pageIndex = pageIndex;
+                options.pageSize = pageSize;
+            }
+            const guardians = new Guardians();
             const { artifacts, count } = await guardians.getArtifacts(options);
-            return res.setHeader('X-Total-Count', count).json(artifacts);
+
+            req.locals = artifacts
+
+            return res.header('X-Total-Count', count).send(artifacts);
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get artifacts V2 04.06.2024
+     */
+    @Get('/')
+    @Auth(
+        Permissions.ARTIFACTS_FILE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns all artifacts.',
+        description: 'Returns all artifacts.',
+    })
+    @ApiQuery({
+        name: 'id',
+        type: String,
+        description: 'Artifact identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'type',
+        enum: ['tool', 'policy'],
+        description: 'Tool|Policy',
+        required: false,
+        example: 'policy'
+    })
+    @ApiQuery({
+        name: 'policyId',
+        type: String,
+        description: 'Policy identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'toolId',
+        type: String,
+        description: 'Tool identifier',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
+        name: 'pageIndex',
+        type: Number,
+        description: 'The number of pages to skip before starting to collect the result set',
+        required: false,
+        example: 0
+    })
+    @ApiQuery({
+        name: 'pageSize',
+        type: Number,
+        description: 'The numbers of items to return',
+        required: false,
+        example: 20
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: ArtifactDTOItem
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    @Version('2')
+    async getArtifactsV2(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('id') id: string,
+        @Query('type') type?: string,
+        @Query('policyId') policyId?: string,
+        @Query('toolId') toolId?: string,
+        @Query('pageIndex') pageIndex?: number,
+        @Query('pageSize') pageSize?: number
+    ): Promise<ArtifactDTOItem> {
+        try {
+            const options: any = {
+                owner: new EntityOwner(user)
+            };
+            if (type) {
+                options.type = type;
+            }
+            if (policyId) {
+                options.policyId = policyId;
+            }
+            if (toolId) {
+                options.toolId = toolId;
+            }
+            if (id) {
+                options.id = id;
+            }
+            if (pageIndex && pageSize) {
+                options.pageIndex = pageIndex;
+                options.pageSize = pageSize;
+            }
+
+            options.fields = Object.values(ARTIFACT_REQUIRED_PROPS)
+
+            const guardians = new Guardians();
+            const { artifacts, count } = await guardians.getArtifactsV2(options);
+
+            return res.header('X-Total-Count', count).send(artifacts);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
 
@@ -130,17 +235,20 @@ export class ArtifactApi {
      * Upload artifact
      */
     @Post('/:parentId')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACTS_FILE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Upload artifact.',
         description: 'Upload artifact. For users with the Standard Registry role only.',
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'parentId',
         type: String,
         description: 'Parent ID',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiConsumes('multipart/form-data')
     @ApiBody({
@@ -161,36 +269,27 @@ export class ArtifactApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        isArray: true,
+        type: ArtifactDTOItem
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @UseInterceptors(FilesInterceptor('artifacts'))
+    @UseInterceptors(AnyFilesInterceptor())
     @HttpCode(HttpStatus.CREATED)
-    async uploadArtifacts(@Req() req, @UploadedFiles() files): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    async uploadArtifacts(
+        @AuthUser() user: IAuthUser,
+        @Param('parentId') parentId: string,
+        @UploadedFiles() files: any,
+        @Req() req,
+    ): Promise<any> {
         try {
             if (!files) {
-                throw new HttpException('There are no files to upload', HttpStatus.UNPROCESSABLE_ENTITY)
+                throw new HttpException('There are no files to upload', HttpStatus.BAD_REQUEST)
             }
-            const owner = req.user.did;
-            const parentId = req.params.parentId;
+            const owner = new EntityOwner(user);
             const uploadedArtifacts = [];
             const guardian = new Guardians();
             for (const artifact of files) {
@@ -199,10 +298,12 @@ export class ArtifactApi {
                     uploadedArtifacts.push(result);
                 }
             }
+            const invalidedCacheKeys = [`/${PREFIXES.ARTIFACTS}`]
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
+
             return uploadedArtifacts;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw error;
+            await InternalException(error, this.logger);
         }
     }
 
@@ -210,50 +311,44 @@ export class ArtifactApi {
      * Delete artifact
      */
     @Delete('/:artifactId')
-    @ApiSecurity('bearerAuth')
+    @Auth(
+        Permissions.ARTIFACTS_FILE_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
     @ApiOperation({
         summary: 'Delete artifact.',
         description: 'Delete artifact.',
     })
-    @ApiImplicitParam({
+    @ApiParam({
         name: 'artifactId',
         type: String,
         description: 'Artifact ID',
         required: true,
-        example: '000000000000000000000001'
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        schema: {
-            type: 'array',
-            items: {
-                $ref: getSchemaPath(ArtifactDTOItem),
-            }
-        },
-    })
-    @ApiUnauthorizedResponse({
-        description: 'Unauthorized.',
-    })
-    @ApiForbiddenResponse({
-        description: 'Forbidden.',
+        type: Boolean
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        schema: {
-            $ref: getSchemaPath(InternalServerErrorDTO)
-        }
+        type: InternalServerErrorDTO
     })
     @ApiExtraModels(ArtifactDTOItem, InternalServerErrorDTO)
-    @HttpCode(HttpStatus.NO_CONTENT)
-    async deleteArtifact(@Req() req, @Response() res): Promise<any> {
-        await checkPermission(UserRole.STANDARD_REGISTRY)(req.user);
+    @HttpCode(HttpStatus.OK)
+    async deleteArtifact(
+        @AuthUser() user: IAuthUser,
+        @Param('artifactId') artifactId: string,
+        @Req() req,
+    ): Promise<boolean> {
         try {
             const guardian = new Guardians();
-            await guardian.deleteArtifact(req.params.artifactId, req.user.did)
-            return res.status(204).send();
+            const invalidedCacheTags = [PREFIXES.ARTIFACTS];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
+            return await guardian.deleteArtifact(artifactId, new EntityOwner(user));
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+            await InternalException(error, this.logger);
         }
     }
 }

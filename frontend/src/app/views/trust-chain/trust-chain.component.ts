@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,7 +37,7 @@ export class TrustChainComponent implements OnInit {
         private auditService: AuditService,
         private route: ActivatedRoute,
         private router: Router,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         public dialog: MatDialog,
         private dialogService: DialogService,
         iconRegistry: MatIconRegistry,
@@ -142,59 +142,59 @@ export class TrustChainComponent implements OnInit {
 
 
     openVCDocument(item: any) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VC',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
+                row: item,
                 dryRun: !!item.dryRunId,
                 viewDocument: true,
                 document: item.document,
-                title: item.type,
+                title: title,
                 type: 'VC'
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     openVPDocument(item: any) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
+                row: item,
                 dryRun: !!item.dryRunId,
                 viewDocument: true,
                 document: item.document,
-                title: item.type,
+                title: title,
                 type: 'VP'
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     openJsonDocument(item: any) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'Json',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.id,
+                row: item,
                 dryRun: !!item.dryRunId,
                 document: item.document,
-                title: item.type,
+                title: title,
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     mapData(data: any[]) {

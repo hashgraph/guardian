@@ -25,6 +25,12 @@
       ],
       "@helpers/*": [
         "helpers/*"
+      ],
+      "#constants": [
+        "constants/index.js"
+      ],
+      "#utils": [
+        "utils/index.js"
       ]
     },
     "target": "es2022"

@@ -1,7 +1,5 @@
-import { ApplicationState, COMMON_CONNECTION_CONFIG, DataBaseHelper, LargePayloadContainer, MessageBrokerChannel, Migration } from '@guardian/common';
+import { ApplicationState, COMMON_CONNECTION_CONFIG, DatabaseServer, GenerateTLSOptionsNats, LargePayloadContainer, Log, MessageBrokerChannel, Migration, mongoForLoggingInitialization } from '@guardian/common';
 import { ApplicationStates } from '@guardian/interfaces';
-import { MikroORM } from '@mikro-orm/core';
-import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
 import { Deserializer, IncomingRequest, MicroserviceOptions, Serializer, Transport } from '@nestjs/microservices';
 import process from 'process';
@@ -26,15 +24,10 @@ Promise.all([
         migrations: {
             path: 'dist/migrations',
             transactional: false
-        }
-    }),
-    MikroORM.init<MongoDriver>({
-        ...COMMON_CONNECTION_CONFIG,
-        driverOptions: {
-            useUnifiedTopology: true
         },
-        ensureIndexes: true
+        entities: [Log],
     }),
+    mongoForLoggingInitialization(),
     MessageBrokerChannel.connect('LOGGER_SERVICE'),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule,{
         transport: Transport.NATS,
@@ -44,13 +37,15 @@ Promise.all([
             servers: [
                 `nats://${process.env.MQ_ADDRESS}:4222`
             ],
+            tls: GenerateTLSOptionsNats()
             // serializer: new LoggerSerializer(),
             // deserializer: new LoggerDeserializer(),
         },
     }),
 ]).then(async values => {
     const [_, db, mqConnection, app] = values;
-    DataBaseHelper.orm = db;
+
+    DatabaseServer.connectBD(db);
 
     app.listen();
 
@@ -64,7 +59,14 @@ Promise.all([
         new LargePayloadContainer().runServer();
     }
 
-    state.updateState(ApplicationStates.READY);
+    const isMongoTransport = process.env.TRANSPORTS.includes('MONGO')
+
+    if(isMongoTransport) {
+        await state.updateState(ApplicationStates.READY);
+    } else {
+        await state.updateState(ApplicationStates.STOPPED);
+    }
+
     // const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
     // if (Number.isInteger(maxPayload)) {
     //     new LargePayloadContainer().runServer();

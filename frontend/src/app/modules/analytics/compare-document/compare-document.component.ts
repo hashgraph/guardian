@@ -50,6 +50,9 @@ interface IFieldContext {
     styleUrls: ['./compare-document.component.scss']
 })
 export class CompareDocumentComponent implements OnInit {
+    @Input('disableHeader') disableHeader: boolean = false;
+    @Input('customColumnSize') customColumnSize: string | null = null;
+    @Input('comparationType') comparationType = 'policy'
     @Input('value') value!: any;
     @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
@@ -59,7 +62,7 @@ export class CompareDocumentComponent implements OnInit {
 
     @Output() change = new EventEmitter<any>();
 
-    public minWidth: number;
+    public minWidth: number | string;
     public headers: any[];
 
     public size: number;
@@ -79,6 +82,36 @@ export class CompareDocumentComponent implements OnInit {
     public _systemProp = true;
     private _pOffset = 30;
 
+    get comparationLabels(): any {
+        switch (this.comparationType) {
+            case 'policy': {
+                return {
+                    equalFullLabel: 'Blocks are equal, including their child blocks',
+                    equalNotFullLabel: 'Blocks are equal, but their child blocks are different',
+                    sameTypeLabel: 'Blocks are of the same type and are partially equal.',
+                    differentLabel: 'Blocks are absent in the other Policy.',
+                    documentsLabel: 'Policy Documents'
+                }
+                break;
+            }
+
+            case 'documents': {
+                return {
+                    equalFullLabel: 'Documents/fields are equal, including nested elements',
+                    equalNotFullLabel: 'Documents/fields are equal, but some nested elements are different',
+                    sameTypeLabel: 'Documents/fields are of the same type, but contain different values',
+                    differentLabel: 'Documents/fields are absent from one of the documents',
+                    documentsLabel: 'Project documents'
+                }
+                break;
+            }
+
+            default: {
+                return {}
+            }
+        }
+    }
+
     constructor() {
         this.minWidth = 1600;
         this.headers = [];
@@ -89,7 +122,6 @@ export class CompareDocumentComponent implements OnInit {
     }
 
     ngOnInit() {
-
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -101,12 +133,14 @@ export class CompareDocumentComponent implements OnInit {
     onInit() {
         this.size = this.value.size || 2;
         this.totals = this.value.totals;
-        this.minWidth = 770 * this.size;
+        this.minWidth = (!this.customColumnSize) ? this.size * 770 : 'unset';
 
-        const k = Math.round(100 / this.size);
-        this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
-        for (let i = 1; i < this.size; i++) {
-            this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+        if (!this.customColumnSize) {
+            const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
+            this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
+            for (let i = 1; i < this.size; i++) {
+                this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+            }
         }
 
         this.createHeaders(this.value);
@@ -450,12 +484,17 @@ export class CompareDocumentComponent implements OnInit {
     }
 
     public compareSchema(prop: any) {
-        const schema1 = prop?.items[0];
-        const schema2 = prop?.items[1];
+        const schemaId1 = prop?.items[0]?.schemaId;
+        const schemaId2 = prop?.items[1]?.schemaId;
         this.change.emit({
             type: 'schema',
-            schemaId1: schema1?.schemaId,
-            schemaId2: schema2?.schemaId
+            schemaIds: [{
+                type: 'id',
+                value: schemaId1
+            }, {
+                type: 'id',
+                value: schemaId2
+            }]
         })
     }
 

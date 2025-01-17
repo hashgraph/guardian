@@ -273,7 +273,7 @@
 .progress-bar {
     display: flex;
     gap: 10px;
-    align-items: end;
+    align-items: flex-end;
     grid-area: progress;
     margin-bottom: 3px;
 

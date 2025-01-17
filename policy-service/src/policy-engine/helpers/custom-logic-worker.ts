@@ -6,14 +6,14 @@ import * as formulajs from '@formulajs/formulajs'
  * Execute function
  */
 function execute(): void {
-    const done = (result) => {
-        parentPort.postMessage(result);
+    const done = (result, final = true) => {
+        parentPort.postMessage({result, final});
     }
 
-    const { execFunc, user, documents, artifacts } = workerData;
+    const { execFunc, user, documents, artifacts, sources } = workerData;
 
     const func = Function(execFunc);
-    func.apply(documents, [done, user, documents, mathjs, artifacts, formulajs]);
+    func.apply(documents, [done, user, documents, mathjs, artifacts, formulajs, sources]);
 }
 
 execute();

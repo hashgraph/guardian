@@ -34,8 +34,13 @@ const validate = (schema) => async (req, res, next) => {
         }, { abortEarly: false });
         return next();
     } catch (err) {
-        return res.status(422).json(prepareValidationResponse(err, err.name));
+        return res.status(422).send(prepareValidationResponse(err, err.name));
     }
 };
 
 export default validate
+
+export * from './examples.js';
+export * from './page-header.js';
+export * from './fields-validation.js';
+export * from './schemas/index.js';

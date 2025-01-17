@@ -1,10 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@import './variables.scss';
-@import '~codemirror/lib/codemirror';
-@import '~codemirror/theme/material';
-@import '~codemirror/addon/fold/foldgutter.css';
-@import '~codemirror/addon/lint/lint.css';
-@import "~primeicons/primeicons.css";
+@import "./variables.scss";
+@import "codemirror/lib/codemirror";
+@import "codemirror/theme/material";
+@import "codemirror/addon/fold/foldgutter.css";
+@import "codemirror/addon/lint/lint.css";
+@import "codemirror/addon/hint/show-hint.css";
+@import "primeicons/primeicons.css";
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 
 html,
@@ -34,6 +35,10 @@ body>.leader-line-areaAnchor {
     font-size: 20px;
     line-height: 23px;
     flex: 0 0 190px;
+}
+
+.mat-tooltip {
+    font-size: 14px;
 }
 
 .signed-in {
@@ -423,7 +428,7 @@ input:not(:checked)+.slider:before {
     height: 10px;
     width: 10px;
     left: 3px;
-    bottom: 5px;
+    bottom: 4px;
     background-image: none;
     background-color: var(--color-grey-4, #B0B5BA);
 }
@@ -610,4 +615,28 @@ svg-icon.svg-icon-32 {
 
 #ngx-colors-overlay .circle.button {
     padding: unset;
+}
+
+.p-datatable-scrollable .p-frozen-column {
+    position: sticky;
+    background: inherit;
+    z-index: 1;
+}
+
+// Dropdown option of Angular material is overlap by PrimeNG dialog
+.cdk-overlay-container {
+    z-index: 9000;
+}
+
+.pre {
+    max-width: fit-content;
+
+    .p-tooltip-text {
+        white-space: pre;
+    }
+}
+
+.p-dialog .p-dialog-content:last-of-type {
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
 }

@@ -16,6 +16,9 @@ export enum MessageType {
     Module = 'Module',
     Tag = 'Tag',
     RoleDocument = 'Role-Document',
+    GuardianRole = 'Guardian-Role-Document',
     Tool = 'Tool',
-    Contract = 'Contract'
+    Contract = 'Contract',
+    UserPermissions = 'User-Permissions',
+    PolicyStatistic = 'Policy-Statistic'
 }

@@ -2,6 +2,7 @@ import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
+import { headersV2 } from '../constants';
 /**
  * Services for working from user profile.
  */
@@ -21,14 +22,17 @@ export class ArtifactService {
     }
 
     public getArtifacts(policyId?: string, pageIndex?: any, pageSize?: any): Observable<HttpResponse<any[]>> {
-        const parameters = {
-            policyId,
+        const parameters: any = {
             pageIndex,
             pageSize
-        } as any;
+        };
+        if (policyId) {
+            parameters.policyId = policyId;
+        }
         return this.http.get<any>(`${this.url}`, {
             observe: 'response',
-            params: parameters
+            params: parameters,
+            headers: headersV2
         });
     }
 

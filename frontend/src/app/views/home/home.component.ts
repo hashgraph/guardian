@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserRole } from '@guardian/interfaces';
+import { UserCategory, UserRole } from '@guardian/interfaces';
 import { AuthService } from 'src/app/services/auth.service';
 
 /**
@@ -25,13 +25,8 @@ export class HomeComponent implements OnInit {
     async redirect() {
         this.auth.sessions().subscribe((user: any | null) => {
             if (user) {
-                if (user.role === UserRole.STANDARD_REGISTRY) {
-                    this.router.navigate(['/config']);
-                } else if (user.role === UserRole.AUDITOR) {
-                    this.router.navigate(['/audit']);
-                } else {
-                    this.router.navigate(['/user-profile']);
-                }
+                const home = this.auth.home(user.role);
+                this.router.navigate([home]);
             } else {
                 this.router.navigate(['/login']);
             }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 
 @Component({
     selector: 'app-paginator',
@@ -11,6 +11,8 @@ export class PaginatorComponent {
     @Input('length') length: number = 0;
     @Output('page') page = new EventEmitter<any>();
 
+    public options = [10, 25, 50, 100];
+
     public get pageNumberMin(): number {
         return this.pageIndex * this.pageSize + 1;
     }
@@ -22,6 +24,13 @@ export class PaginatorComponent {
     }
 
     constructor() {
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (!this.options.includes(this.pageSize)) {
+            this.options.push(this.pageSize);
+            this.options.sort((a, b) => a < b ? -1 : 1);
+        }
     }
 
     public newOnSize() {

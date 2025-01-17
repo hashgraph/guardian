@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PolicyCategoryType } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
@@ -76,18 +76,18 @@ export class ProjectsOverviewComponent implements OnInit {
 
     selectedProjectsCount: number = 0;
 
-    filterFormGroup = new FormGroup({
-        sectoralScopes: new FormControl(null),
-        activityScales: new FormControl(null),
-        appliedTechnologies: new FormControl(null),
-        projectScales: new FormControl(null),
-        subTypes: new FormControl(null),
-        methodologiesUsed: new FormControl(null),
-        search: new FormControl(null),
-        amountOfReductionsFrom: new FormControl(null),
-        amountOfReductionsTo: new FormControl(null),
-        feeLevelFrom: new FormControl(null),
-        feeLevelTo: new FormControl(null),
+    filterFormGroup = new UntypedFormGroup({
+        sectoralScopes: new UntypedFormControl(null),
+        activityScales: new UntypedFormControl(null),
+        appliedTechnologies: new UntypedFormControl(null),
+        projectScales: new UntypedFormControl(null),
+        subTypes: new UntypedFormControl(null),
+        methodologiesUsed: new UntypedFormControl(null),
+        search: new UntypedFormControl(null),
+        amountOfReductionsFrom: new UntypedFormControl(null),
+        amountOfReductionsTo: new UntypedFormControl(null),
+        feeLevelFrom: new UntypedFormControl(null),
+        feeLevelTo: new UntypedFormControl(null),
     });
 
     constructor(

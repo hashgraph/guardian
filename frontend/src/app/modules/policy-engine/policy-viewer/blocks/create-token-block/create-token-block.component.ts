@@ -1,13 +1,11 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { ContractType, IUser } from '@guardian/interfaces';
-import { forkJoin } from 'rxjs';
+import { Component, Input, OnInit } from '@angular/core';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { ContractType } from '@guardian/interfaces';
 import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'createTokenBlock' types.
@@ -15,7 +13,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
 @Component({
     selector: 'create-token-block',
     templateUrl: './create-token-block.component.html',
-    styleUrls: ['./create-token-block.component.scss']
+    styleUrls: ['./create-token-block.component.scss'],
 })
 export class CreateTokenBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -24,18 +22,10 @@ export class CreateTokenBlockComponent implements OnInit {
 
     loading: boolean = true;
     socket: any;
-    dialogLoading: boolean = false;
-    dataForm: FormGroup;
-    type!: string;
-    content: any;
-    dialogContent: any;
-    templatePreset: any;
+    dataForm: UntypedFormGroup;
     title: any;
     description: any;
-    buttonClass: any;
-    user!: IUser;
     isExist: boolean = false;
-    disabled = false;
     contracts: { contractId: string }[] = [];
 
     constructor(
@@ -43,40 +33,22 @@ export class CreateTokenBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private profile: ProfileService,
         private contractService: ContractService,
-        private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
-        private dialog: MatDialog,
-        private changeDetectorRef: ChangeDetectorRef
+        private fb: UntypedFormBuilder
     ) {
-        this.dataForm = fb.group({
-            tokenName: ['Token Name', Validators.required],
-            tokenSymbol: ['F', Validators.required],
-            tokenType: ['fungible', Validators.required],
-            decimals: ['2'],
-            initialSupply: ['0'],
-            enableAdmin: [true, Validators.required],
-            changeSupply: [true, Validators.required],
-            enableFreeze: [false, Validators.required],
-            enableKYC: [false, Validators.required],
-            enableWipe: [true, Validators.required],
-            wipeContractId: [],
-        });
     }
 
     ngOnInit(): void {
         if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+            this.socket = this.wsService.blockSubscribe(
+                this.onUpdate.bind(this)
+            );
         }
-        forkJoin([
-            this.contractService.getContracts({
-                type: ContractType.WIPE
-            }),
-            this.profile.getProfile()
-        ]).subscribe((value) => {
-            this.contracts = value[0] && value[0].body || [];
-            this.user = value[1];
+        this.contractService.getContracts({
+            type: ContractType.WIPE,
+        }).subscribe((value) => {
+            this.contracts = value.body || [];
             this.loadData();
-        })
+        });
     }
 
     ngOnDestroy(): void {
@@ -99,37 +71,52 @@ export class CreateTokenBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            this.policyEngineService.getBlockData(this.id, this.policyId).subscribe((data: any) => {
-                this.setData(data);
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
     setData(data: any) {
         if (data) {
-            const uiMetaData = data.uiMetaData;
-            this.templatePreset = data.data;
-            this.type = uiMetaData.type;
-            if (this.type == 'dialog') {
-                this.content = uiMetaData.content;
-                this.buttonClass = uiMetaData.buttonClass;
-                this.description = uiMetaData.description;
-                this.title = uiMetaData.title;
+            this.dataForm = this.fb.group({
+                tokenName: ['Token Name', Validators.required],
+                tokenSymbol: ['F', Validators.required],
+                tokenType: ['fungible', Validators.required],
+                decimals: ['2'],
+                initialSupply: ['0'],
+                enableAdmin: [true, Validators.required],
+                changeSupply: [true, Validators.required],
+                enableFreeze: [false, Validators.required],
+                enableKYC: [false, Validators.required],
+                enableWipe: [true, Validators.required],
+                wipeContractId: [],
+            })
+            this.dataForm.patchValue(data.data);
+            for (const presetEntry of Object.entries(data.data)) {
+                this.dataForm.get(presetEntry[0])?.disable();
             }
-            if (this.type == 'page') {
-                this.title = uiMetaData.title;
-                this.description = uiMetaData.description;
-            }
-            this.disabled = data.active === false;
+            this.title = data.title;
+            this.description = data.description;
+            this.loading = data.active === false;
             this.isExist = true;
         } else {
-            this.disabled = false;
             this.isExist = false;
         }
     }
@@ -138,14 +125,16 @@ export class CreateTokenBlockComponent implements OnInit {
         if (submitData || this.dataForm.valid) {
             const data = submitData || this.dataForm.value;
             this.loading = true;
-            this.dialogLoading = true;
-            this.policyEngineService.setBlockData(this.id, this.policyId, data).subscribe(() => {
-                this.dialogLoading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.dialogLoading = false;
-                this.loading = false;
-            });
+            this.policyEngineService
+                .setBlockData(this.id, this.policyId, data)
+                .subscribe(
+                    // tslint:disable-next-line:no-empty
+                    () => {},
+                    (e) => {
+                        console.error(e.error);
+                        this.loading = false;
+                    }
+                );
         }
     }
 }

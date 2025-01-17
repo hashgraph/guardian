@@ -1,0 +1,29 @@
+<div class="page-content">
+    <div class="content">
+        <div class="header">
+            <h1>{{ 'details.token.header' | transloco }} {{id}}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
+        @if (row) {
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+            <p-tabPanel [header]="'details.token.tabs.overview' | transloco">
+                <app-overview-form [target]="row"
+                    [fields]="overviewFields.concat(additionalOveriviewFormFields)"></app-overview-form>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.raw_data' | transloco">
+                <div class="text-area-container">
+                    <textarea [value]="row | json" readonly pInputTextarea>
+                    </textarea>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+        } @else {
+        <div>{{ 'details.not_found' | transloco }}</div>
+        }
+        }
+    </div>
+</div>

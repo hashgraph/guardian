@@ -1,0 +1,42 @@
+<div class="page-content">
+    <div class="content">
+        <div class="header">
+            @if (target) {
+            <div class="topic-type">
+                <p-tag [value]="topicNames[target.options.messageType]" />
+            </div>
+            }
+            <h1>{{ 'details.topic.header' | transloco }} {{id}}</h1>
+        </div>
+        @if (loading) {
+        <div class="loading">
+            <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
+        </div>
+        } @else {
+        @if (row) {
+        <p-tabView [activeIndex]="tabIndex" (activeIndexChange)="onTab($event)">
+            @if (target) {
+            <p-tabPanel [header]="'details.topic.tabs.overview' | transloco">
+                <app-overview-form [target]="target" [fields]="overviewFields"></app-overview-form>
+            </p-tabPanel>
+            }
+            <p-tabPanel [header]="'details.topic.tabs.content' | transloco">
+                <app-activity [activity]="activityItems" [total]="totalActivity"></app-activity>
+            </p-tabPanel>
+            <p-tabPanel [header]="'details.raw_data' | transloco">
+                <div class="text-area-container">
+                    <textarea readonly style="
+                        width: 100%;
+                        height: 100%;
+                        resize: none;
+                ">{{ getJson(row) }}</textarea>
+                </div>
+            </p-tabPanel>
+
+        </p-tabView>
+        } @else {
+        <div>{{ 'details.not_found' | transloco }}</div>
+        }
+        }
+    </div>
+</div>

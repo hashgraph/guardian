@@ -1,6 +1,6 @@
 import { PolicyBlockDecoratorOptions } from '../../interfaces/block-options.js';
 import { BasicBlock } from './basic-block.js';
-import { IPolicyUser } from '../../policy-user.js';
+import { PolicyUser } from '../../policy-user.js';
 
 /**
  * Set relationships block decorator
@@ -23,7 +23,7 @@ export function SetRelationshipsBlock(options: Partial<PolicyBlockDecoratorOptio
              * @param globalFilters
              * @protected
              */
-            protected async getSources(user: IPolicyUser, globalFilters: any): Promise<any[]> {
+            protected async getSources(user: PolicyUser, globalFilters: any): Promise<any[]> {
                 const data = [];
                 for (const child of this.children) {
                     if (child.blockClassName === 'SourceAddon') {

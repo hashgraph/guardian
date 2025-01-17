@@ -8,6 +8,7 @@ import { SecretManager } from '../secret-manager.js';
 import { Wallet } from '../../wallet/index.js';
 import { SecretManagerType } from '../secret-manager-config.js';
 import { exit } from 'process';
+import { DatabaseServer } from '../../database-modules';
 
 const globalEnvPath = path.join(process.cwd(), '../.env')
 // const authEnvPath = path.join(process.cwd(), '../auth-service/.env')
@@ -17,6 +18,11 @@ const workerEnvPath = path.join(process.cwd(), '../worker-service/.env')
 // const authCertsPath = path.join('../auth-service/tls/vault/client')
 const guardianCertsPath = path.join('../guardian-service/tls/vault/client.js')
 const workerCertsPath = path.join('../worker-service/tls/vault/client.js')
+
+const DEFAULT_MIN_POOL_SIZE = '1';
+const DEFAULT_MAX_POOL_SIZE = '5';
+const DEFAULT_MAX_IDLE_TIME_MS = '30000';
+const RADIX = 10;
 
 /**
  * Set common configs for Vault
@@ -127,13 +133,16 @@ async function migrate() {
     entities: [
       'dist/secret-manager/migrations/vault-account.js'
     ],
-    driverOptions: {
-      useUnifiedTopology: true
-    },
-    ensureIndexes: true,
+      driverOptions: {
+          minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MIN_POOL_SIZE, RADIX),
+          maxPoolSize: parseInt(process.env.MAX_POOL_SIZE ?? DEFAULT_MAX_POOL_SIZE, RADIX),
+          maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS ?? DEFAULT_MAX_IDLE_TIME_MS, RADIX),
+      },
+      ensureIndexes: true,
   })
 
-  DataBaseHelper.orm = db;
+  DatabaseServer.connectBD(db);
+
   const dbSecret = new DataBaseHelper(WalletAccount)
 
   // write IPFS API KEY to Vault

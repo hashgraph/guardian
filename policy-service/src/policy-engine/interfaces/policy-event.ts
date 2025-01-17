@@ -1,6 +1,7 @@
+import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
-import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { EventActor, PolicyInputEventType, PolicyOutputEventType } from './policy-event-type.js';
 
 /**
@@ -47,7 +48,7 @@ export interface IPolicyEvent<T> {
     /**
      * User
      */
-    user?: IPolicyUser;
+    user?: PolicyUser;
     /**
      * Data
      */
@@ -116,25 +117,22 @@ export class PolicyLink<T> {
      * @param user
      * @param data
      */
-    public run(user: IPolicyUser, data: T): void {
-        if (this.actor === EventActor.Owner) {
-            user = this.getOwner(data);
-        } else if (this.actor === EventActor.Issuer) {
-            user = this.getIssuer(data);
-        }
-        const event: IPolicyEvent<T> = {
-            type: this.type,
-            inputType: this.inputType,
-            outputType: this.outputType,
-            policyId: this.policyId,
-            source: this.source.tag,
-            sourceId: this.source.uuid,
-            target: this.target.tag,
-            targetId: this.target.uuid,
-            user,
-            data
-        };
-        this.callback.call(this.target, event);
+    public run(user: PolicyUser, data: T): void {
+        this.getUser(user, data).then((_user) => {
+            const event: IPolicyEvent<T> = {
+                type: this.type,
+                inputType: this.inputType,
+                outputType: this.outputType,
+                policyId: this.policyId,
+                source: this.source.tag,
+                sourceId: this.source.uuid,
+                target: this.target.tag,
+                targetId: this.target.uuid,
+                user: _user,
+                data
+            };
+            this.callback.call(this.target, event);
+        });
     }
 
     /**
@@ -142,14 +140,33 @@ export class PolicyLink<T> {
      * @param data
      * @private
      */
-    private getOwner(data: any): IPolicyUser {
+    private async getUser(user: PolicyUser, data: T): Promise<PolicyUser> {
+        if (this.actor === EventActor.Owner) {
+            return await this.getOwner(user, data);
+        } else if (this.actor === EventActor.Issuer) {
+            return await this.getIssuer(user, data);
+        } else {
+            return user;
+        }
+    }
+
+    /**
+     * Get owner
+     * @param data
+     * @private
+     */
+    private async getOwner(user: PolicyUser, data: any): Promise<PolicyUser> {
         if (!data) {
             return null;
         }
         if (data.data) {
             data = Array.isArray(data.data) ? data.data[0] : data.data;
         }
-        return this.createUser(data.owner, data.group);
+        if (user && user.equal(data.owner, data.group)) {
+            return user;
+        } else {
+            return await PolicyComponentsUtils.GetPolicyUserByDID(data.owner, data.group, this.target);
+        }
     }
 
     /**
@@ -157,7 +174,7 @@ export class PolicyLink<T> {
      * @param data
      * @private
      */
-    private getIssuer(data: any): IPolicyUser {
+    private async getIssuer(user: PolicyUser, data: any): Promise<PolicyUser> {
         if (!data) {
             return null;
         }
@@ -165,26 +182,15 @@ export class PolicyLink<T> {
             data = Array.isArray(data.data) ? data.data[0] : data.data;
         }
         if (data) {
+            let did = data.owner;
             if (data.document) {
-                return this.createUser(PolicyUtils.getDocumentIssuer(data.document), data.group);
+                did = PolicyUtils.getDocumentIssuer(data.document);
             }
-            return this.createUser(data.owner, data.group)
-        }
-        return null;
-    }
-
-    /**
-     * Create user
-     * @param did
-     * @private
-     */
-    private createUser(did: string, group: string): IPolicyUser {
-        if (did) {
-            const user = new PolicyUser(did, !!this.target?.dryRun);
-            if (group) {
-                user.setGroup({ role: null, uuid: group });
+            if (user && user.equal(did, data.group)) {
+                return user;
+            } else {
+                return await PolicyComponentsUtils.GetPolicyUserByDID(did, data.group, this.target);
             }
-            return user;
         }
         return null;
     }

@@ -4,7 +4,7 @@
 
 | Block Property   | Definition                                                                                                                                                   | Example Input                                                                                                                | Status |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| type             | A type of the block which creates a well formed 'credential subject' part of a future VC Document.                                                           | **requestVCDocumentBlock** (Can't be changed).                                                                               |        |
+| type             | A type of the block which receives data in the format of a ‘credential subject’ part of a VC Document                                                        | **requestVCDocumentBlock** (Can't be changed).                                                                               |        |
 | tag              | Unique name for the logic block.                                                                                                                             | add\_new\_installer\_request.                                                                                                |        |
 | permissions      | Which entity has rights to interact at this part of the workflow.                                                                                            | Standard Registry.                                                                                                           |        |
 | defaultActive    | Shows whether this block is active at this time and whether it needs to be shown.                                                                            | Checked or unchecked.                                                                                                        |        |
@@ -43,20 +43,17 @@ To know more information about events, please look at [Events](events.md).
 
 ### API Parameters
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:blue;">`GET`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Path Parameters
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Block ID
-{% endswagger-parameter %}
+| Name                                       | Type   | Description |
+| ------------------------------------------ | ------ | ----------- |
+| uuid<mark style="color:red;">\*</mark>     | String | Block ID    |
+| policyId<mark style="color:red;">\*</mark> | String | Policy ID   |
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy ID
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
+{% tabs %}
+{% tab title="200: OK Successful Operation" %}
 ```javascript
 {
   "id": "ef2a7742-68d4-407f-ada7-14cdce80e24d",
@@ -264,19 +261,14 @@ Policy ID
               "$comment": "{\"term\":\"field6\",\"@id\":\"https://www.schema.org/text\",\"orderPosition\":6}"
 .....
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="" %}
-{% swagger-description %}
+<mark style="color:green;">`POST`</mark> `/policies/{policyId}/blocks/{uuid}`
 
-{% endswagger-description %}
+#### Request Body
 
-{% swagger-parameter in="body" name="document" type="VC" required="true" %}
-VC Document
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="ref" type="String" required="false" %}
-ID of linked VC
-{% endswagger-parameter %}
-{% endswagger %}
+| Name                                       | Type   | Description        |
+| ------------------------------------------ | ------ | ------------------ |
+| document<mark style="color:red;">\*</mark> | Object | Credential Subject |
+| ref                                        | String | ID of linked VC    |

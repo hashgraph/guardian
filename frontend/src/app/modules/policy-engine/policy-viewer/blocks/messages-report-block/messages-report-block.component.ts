@@ -1,6 +1,6 @@
 import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import * as moment from 'moment';
@@ -9,6 +9,7 @@ import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialo
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Dashboard Type
@@ -260,7 +261,7 @@ export class MessagesReportBlockComponent implements OnInit {
 
     constructor(
         private element: ElementRef,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
@@ -306,16 +307,25 @@ export class MessagesReportBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(
-                this.id,
-                this.policyId
-            ).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -772,35 +782,34 @@ export class MessagesReportBlockComponent implements OnInit {
     public onOpenDocument(message: any) {
         if (message.type === 'DID-Document') {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'DID',
-                styleClass: 'custom-dialog',
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
                 data: {
+                    row: null,
                     document: message.document,
-                    title: 'Document',
+                    title: 'DID Document',
                     type: 'JSON',
                     viewDocument: false
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
+            dialogRef.onClose.subscribe(async (result) => { });
         } else {
+
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'VC',
-                styleClass: 'custom-dialog',
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
                 data: {
+                    row: null,
                     document: message.document,
-                    title: 'Document',
+                    title: 'VC Document',
                     type: 'VC',
                     viewDocument: true,
                     schema: message.__schema,
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
+            dialogRef.onClose.subscribe(async (result) => { });
         }
     }
 

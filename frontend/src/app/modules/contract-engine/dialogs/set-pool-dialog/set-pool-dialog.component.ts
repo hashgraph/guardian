@@ -1,16 +1,16 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef, MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/legacy-dialog';
 import {
     AbstractControl,
-    FormArray,
-    FormControl,
-    FormGroup,
+    UntypedFormArray,
+    UntypedFormControl,
+    UntypedFormGroup,
     ValidationErrors,
     ValidatorFn,
     Validators,
 } from '@angular/forms';
 import { moreThanZeroValidator } from 'src/app/validators/more-than-zero.validator';
-import { MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/radio';
+import { MAT_LEGACY_RADIO_DEFAULT_OPTIONS as MAT_RADIO_DEFAULT_OPTIONS } from '@angular/material/legacy-radio';
 import { Token } from '@guardian/interfaces';
 import { TokenService } from 'src/app/services/token.service';
 /**
@@ -30,13 +30,13 @@ import { TokenService } from 'src/app/services/token.service';
 export class SetPoolDialogComponent {
     loading: boolean = false;
     _tokenList: Token[] = [];
-    immediately: FormControl;
-    tokens: FormArray;
+    immediately: UntypedFormControl;
+    tokens: UntypedFormArray;
 
-    form: FormGroup;
+    form: UntypedFormGroup;
 
     get tokenControls() {
-        return (this.tokens?.controls || []) as FormGroup[];
+        return (this.tokens?.controls || []) as UntypedFormGroup[];
     }
 
     constructor(
@@ -55,12 +55,12 @@ export class SetPoolDialogComponent {
                 );
             this.loading = false;
         });
-        const tokens = new FormArray(
+        const tokens = new UntypedFormArray(
             [],
             [Validators.required, this.moreThanTokensZeroValidator()]
         );
-        const immediately = new FormControl(true, Validators.required);
-        this.form = new FormGroup(
+        const immediately = new UntypedFormControl(true, Validators.required);
+        this.form = new UntypedFormGroup(
             {
                 tokens,
                 immediately,
@@ -81,9 +81,9 @@ export class SetPoolDialogComponent {
 
     addToken() {
         this.tokens.push(
-            new FormGroup({
-                token: new FormControl('', Validators.required),
-                count: new FormControl(0, [
+            new UntypedFormGroup({
+                token: new UntypedFormControl('', Validators.required),
+                count: new UntypedFormControl(0, [
                     Validators.required,
                     moreThanZeroValidator(),
                 ]),

@@ -1,11 +1,11 @@
 import { Artifact, DatabaseServer, getArtifactType } from '@guardian/common';
-import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
 /**
  * Import Result
  */
-interface ImportResult {
+export interface ImportArtifactResult {
     /**
      * New token uuid
      */
@@ -27,10 +27,10 @@ interface ImportResult {
  * @param notifier
  */
 export async function importArtifactsByFiles(
-    owner: string,
+    user: IOwner,
     artifacts: any[] = [],
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportArtifactResult> {
     const errors: any[] = [];
     const artifactsMap = new Map<string, string>();
 
@@ -41,7 +41,8 @@ export async function importArtifactsByFiles(
         const newArtifactUUID = GenerateUUIDv4();
         delete artifact._id;
         delete artifact.id;
-        artifact.owner = owner;
+        artifact.creator = user.creator;
+        artifact.owner = user.owner;
         artifact.uuid = newArtifactUUID;
         artifact.type = getArtifactType(artifact.extention);
         const file = await DatabaseServer.saveArtifact(artifact)

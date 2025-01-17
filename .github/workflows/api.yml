@@ -1,11 +1,13 @@
 name: Guardian CI API Tests
 on:
-    schedule:
-        - cron: '0 1 * * *'
+    push:
+        branches-ignore:
+            - 'dependabot/**'
 
 jobs:
     buildAndTest:
-        runs-on: ubuntu-latest
+        name: Build and Test
+        runs-on: guardian-linux-medium
         services:
             ipfs-node:
                 image: ipfs/kubo:latest
@@ -21,17 +23,33 @@ jobs:
                 node-version: [ 20.x ]
                 mongodb-version: [ 7.0.5 ]
         steps:
-            - uses: actions/checkout@v1
+            - name: Harden Runner
+              uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout Code
+              uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
               with:
                   ref: 'develop'
+
             - name: Use Node.js ${{ matrix.node-version }}
-              uses: actions/setup-node@v1
+              uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af #v4.1.0
               with:
                   node-version: ${{ matrix.node-version }}
+
+            - name: Setup Yarn
+              uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+              with:
+                cmd: install
+
             - name: Install dependencies
-              run: yarn
+              run: yarn install
+
             - name: Build packages
               run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
                   pushd interfaces
                   yarn run build
                   popd
@@ -47,6 +65,9 @@ jobs:
                   pushd auth-service
                   yarn run build
                   popd
+                  pushd queue-service
+                  yarn run build
+                  popd
                   pushd guardian-service
                   yarn run build
                   popd
@@ -59,14 +80,17 @@ jobs:
                   pushd api-gateway
                   yarn run build
                   popd
+
             - name: Start NatsMQ
-              uses: onichandame/nats-action@master
+              uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
               with:
-                  port: "4222"
+                  port: '4222'
+
             - name: Start MongoDB
-              uses: supercharge/mongodb-github-action@1.7.0
+              uses: step-security/mongodb-github-action@ff3d5a3dec0957be7ef99d3d1c9ca4499e8a4cb8 # v1.11.0
               with:
                   mongodb-version: ${{ matrix.mongodb-version }}
+
             - name: Run Guardian
               run: |
                   pushd notification-service
@@ -78,6 +102,10 @@ jobs:
                   sleep 20
                   popd
                   pushd auth-service
+                  npm start &
+                  sleep 20
+                  popd                  
+                  pushd queue-service
                   npm start &
                   sleep 20
                   popd
@@ -110,10 +138,11 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install --force
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }}" --spec cypress/e2e/api-tests/**/*.cy.js            
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=smoke,grepFilterSpecs=true" --spec cypress/e2e/api-tests/**/*.cy.js            
                   popd
+
             - name: Publish API Test Results
-              uses: EnricoMi/publish-unit-test-result-action@v1
+              uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
               if: always()
               with:
                   files: e2e-tests/cypress/test_results/**/*.xml

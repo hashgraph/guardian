@@ -1,6 +1,8 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Webhook } from '../entities/Webhook.js';
+import process from 'process';
+import { DEFAULT_MONGO } from '#constants';
 
 export default class MongodbConnection {
 
@@ -14,6 +16,11 @@ export default class MongodbConnection {
       dbName: 'application_events',
       driver: MongoDriver,
       entities: [ Webhook ],
+      driverOptions: {
+        minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MONGO.MIN_POOL_SIZE),
+        maxPoolSize: parseInt(process.env.MAX_POOL_SIZE  ?? DEFAULT_MONGO.MAX_POOL_SIZE),
+        maxIdleTimeMS: parseInt(process.env.MAX_IDLE_TIME_MS  ?? DEFAULT_MONGO.MAX_IDLE_TIME_MS)
+      },
     });
   };
 

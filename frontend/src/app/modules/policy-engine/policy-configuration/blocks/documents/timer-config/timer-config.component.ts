@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { CronConfigDialog } from '../../../../helpers/cron-config-dialog/cron-config-dialog.component';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { CronConfigDialog } from '../../../../dialogs/cron-config-dialog/cron-config-dialog.component';
 import { IModuleVariables, PolicyBlock } from '../../../../structures';
 
 /**

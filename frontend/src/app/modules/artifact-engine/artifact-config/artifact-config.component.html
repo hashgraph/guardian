@@ -19,21 +19,29 @@
 <ng-template #actionsContainer>
     <div class="actions-container">
         <div class="dropdown-block">
-            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="policies!">
+            <p-dropdown (onChange)="onFilter()" [(ngModel)]="currentPolicy" [options]="filterOptions!">
                 <ng-template pTemplate="selectedItem">
-                    <div *ngIf="currentPolicy"><span class="dropdown-label">Policy</span> <span
-                            class="dropdown-item">{{ currentPolicy.name }}</span></div>
+                    <div *ngIf="currentPolicy">
+                        <span class="dropdown-label">Policy</span> 
+                        <span *ngIf="currentPolicy.name !== 'all'" class="dropdown-item">{{ currentPolicy.name }}</span>
+                    </div>
                 </ng-template>
                 <ng-template let-policy pTemplate="item">
-                    <div
-                            class="dropdown-item">{{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
+                    <div class="dropdown-item">
+                        {{ policy.name + (policy.id !== 'all' ? ' (' + policy.id + ')' : '') }}
                     </div>
                 </ng-template>
             </p-dropdown>
         </div>
         <div class="flex flex-column-gap-8">
-            <button (click)="importArtifacts()" [icon]="'pi pi-download'" class="button" label="Import an Artifact" pButton
-                    type="button"></button>
+            <button 
+                *ngIf="user.ARTIFACTS_FILE_CREATE"
+                (click)="importArtifacts()" 
+                [icon]="'pi pi-download'" 
+                class="button" 
+                label="Import an Artifact" 
+                pButton
+                type="button"></button>
         </div>
     </div>
 </ng-template>
@@ -60,7 +68,9 @@
                         <td>
                             <div class="flex flex-sb-c">
                                 <div class="flex flex-column-gap-20">
-                                    <svg-icon (click)="artifact.editable ? openDeleteArtifactDialog(artifact) : null"
+                                    <svg-icon 
+                                        *ngIf="user.ARTIFACTS_FILE_DELETE"
+                                        (click)="artifact.editable ? openDeleteArtifactDialog(artifact) : null"
                                         src="/assets/images/icons/delete.svg" 
                                         [svgClass]="artifact.editable ? 'accent-color-red' : 'disabled-color'"></svg-icon>
                                 </div>
@@ -96,7 +106,7 @@
     </div>
 </ng-template>
 
-<div *ngIf="false" class="content">
+<!-- <div *ngIf="false" class="content">
     <div *ngIf="isConfirmed" class="actions">
         <mat-form-field appearance="outline">
             <mat-label>Policy</mat-label>
@@ -167,11 +177,11 @@
     <div *ngIf="loading" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
-</div>
+</div> -->
 
 <p-dialog [(visible)]="deleteArtifactVisible" [closable]="true" [draggable]="false" [modal]="true">
     <ng-template pTemplate="header">
-        <span class="modal-header">Detele Artifact</span>
+        <span class="modal-header">Delete Artifact</span>
     </ng-template>
     <ng-template pTemplate="container">
         <div class="" style="padding: 0 10px 0 10px;">

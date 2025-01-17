@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { PolicyType } from '@guardian/interfaces';
 
 /**
@@ -12,16 +12,17 @@ import { PolicyType } from '@guardian/interfaces';
     styleUrls: ['./artifact-import-dialog.component.css']
 })
 export class ArtifactImportDialog {
-    policyId = this.fb.control('', [Validators.required]);
-    policies: any = [];
+    public policyId = this.fb.control('', [Validators.required]);
+    public policies: any = [];
 
     constructor(
         public dialogRef: MatDialogRef<ArtifactImportDialog>,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         @Inject(MAT_DIALOG_DATA) public data: any) {
         if (data) {
-            this.policyId.patchValue(data.policyId || '');
             this.policies = data.policies?.filter((policy: any) => policy.status === PolicyType.DRAFT) || [];
+            const current = this.policies.find((policy: any) => policy.id === data.policyId);
+            this.policyId.patchValue(current?.id || '');
         }
     }
 

@@ -4,7 +4,7 @@ import { IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { MessageServer, MessageStatus, PolicyRoles } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
@@ -41,7 +41,7 @@ export class GroupManagerBlock {
      */
     private async createInvite(
         ref: IPolicyInterfaceBlock,
-        user: IPolicyUser,
+        user: PolicyUser,
         groupId: string,
         role: string
     ): Promise<string> {
@@ -79,7 +79,7 @@ export class GroupManagerBlock {
      */
     private async deleteMember(
         ref: IPolicyInterfaceBlock,
-        user: IPolicyUser,
+        user: PolicyUser,
         groupId: string,
         did: string,
         text: string
@@ -125,7 +125,8 @@ export class GroupManagerBlock {
                 .sendMessage(message, false);
         }
 
-        ref.triggerInternalEvent('remove-user', (new PolicyUser(did, !!ref.dryRun)).setGroup(member));
+        const target = await PolicyComponentsUtils.GetPolicyUserByGroup(member, ref);
+        ref.triggerInternalEvent('remove-user', target);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.DeleteMember, ref, user, null));
     }
 
@@ -135,7 +136,7 @@ export class GroupManagerBlock {
      * @param user
      * @param group
      */
-    private async groupMapping(ref: IPolicyInterfaceBlock, user: IPolicyUser, group: PolicyRoles): Promise<any> {
+    private async groupMapping(ref: IPolicyInterfaceBlock, user: PolicyUser, group: PolicyRoles): Promise<any> {
         const config = PolicyUtils.getGroupTemplate<any>(ref, group.groupName);
         const members = (await ref.databaseServer.getAllMembersByGroup(group)).map(member => {
             return {
@@ -167,7 +168,7 @@ export class GroupManagerBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         if (!user && !user.did) {
             throw new Error(`Permission denied`);
@@ -188,7 +189,7 @@ export class GroupManagerBlock {
      * @param user
      * @param blockData
      */
-    async setData(user: IPolicyUser, blockData: any): Promise<any> {
+    async setData(user: PolicyUser, blockData: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyInterfaceBlock>(this);
         PolicyComponentsUtils.ExternalEventFn(new ExternalEvent(ExternalEventType.Set, ref, user, {
             action: blockData?.action

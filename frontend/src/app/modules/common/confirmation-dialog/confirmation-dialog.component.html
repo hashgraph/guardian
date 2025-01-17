@@ -3,16 +3,20 @@
     <div>
         {{ dialogText }}
     </div>
-    <div mat-dialog-actions>
+    <div mat-dialog-actions class="buttons-block">
         <div class="cancel-button">
             <p-button
                     (click)="onNoClick()"
                     label="Cancel"
-                    styleClass="p-button-outlined"
+                    class="toolbar-btn-outlined"
+                    [outlined]=true
             ></p-button>
         </div>
         <div>
-            <p-button (click)="onSubmit()" label="Ok"></p-button>
+            <p-button
+                class="toolbar-btn-primary"
+                (click)="onSubmit()"
+                label="Confirm"></p-button>
         </div>
     </div>
 </div>

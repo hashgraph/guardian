@@ -4,7 +4,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyContainerBlock, IPolicyEventState } from '../policy-engine.interface.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType, PropertyType, SelectItemType } from '../interfaces/block-about.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 
 /**
@@ -90,7 +90,7 @@ export class InterfaceStepBlock {
     @ActionCallback({
         output: PolicyOutputEventType.RefreshEvent
     })
-    async changeStep(user: IPolicyUser, data: any, target: IPolicyBlock) {
+    async changeStep(user: PolicyUser, data: any, target: IPolicyBlock) {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
@@ -150,7 +150,7 @@ export class InterfaceStepBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         let blockState: any;
         if (!this.state.hasOwnProperty(user.id)) {
@@ -171,7 +171,7 @@ export class InterfaceStepBlock {
      * @param child
      * @param user
      */
-    public isChildActive(child: AnyBlockType, user: IPolicyUser): boolean {
+    public isChildActive(child: AnyBlockType, user: PolicyUser): boolean {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
         const childIndex = ref.children.indexOf(child);
         if (childIndex === -1) {

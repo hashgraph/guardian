@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Record } from '../entity/index.js';
+import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 
 /**
@@ -36,6 +36,10 @@ export interface IRecordComponents {
      * Current time
      */
     time: number;
+    /**
+     * Duration
+     */
+    duration: number;
 }
 
 /**
@@ -144,6 +148,10 @@ export class RecordImportExport {
         }
     }
 
+    private static duration(first: string | number | Date, last: string | number | Date): number {
+        return (Number(last) - Number(first));
+    }
+
     /**
      * Load record results
      * @param uuid record
@@ -159,12 +167,13 @@ export class RecordImportExport {
     ): Promise<IRecordResult[]> {
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(policyId);
-        const vcs = await db.getVcDocuments<any[]>({
+        const vcs = await db.getVcDocuments<VcDocumentCollection>({
             updateDate: {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        });
+        }) as VcDocumentCollection[];
+
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -172,12 +181,14 @@ export class RecordImportExport {
                 document: vc.document
             });
         }
-        const vps = await db.getVpDocuments<any[]>({
+
+        const vps = await db.getVpDocuments<VpDocumentCollection>({
             updateDate: {
                 $gte: new Date(startTime),
                 $lt: new Date(endTime)
             }
-        });
+        }) as VpDocumentCollection[];
+
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,
@@ -214,9 +225,10 @@ export class RecordImportExport {
         const time: any = first ? first.time : null;
         if (first && last) {
             const results = await RecordImportExport.loadRecordResults(first.policyId, first.time, last.time);
-            return { records, time, results };
+            const duration = RecordImportExport.duration(first.time, last.time);
+            return { records, time, duration, results };
         } else {
-            return { records, time, results: [] };
+            return { records, time, duration: 0, results: [] };
         }
     }
 
@@ -335,10 +347,13 @@ export class RecordImportExport {
                 }
             }
         }
-
+        const first = records[0];
+        const last = records[records.length - 1];
+        const duration = RecordImportExport.duration(first?.time, last?.time);
         return {
             records,
             results,
+            duration,
             time: now
         };
     }

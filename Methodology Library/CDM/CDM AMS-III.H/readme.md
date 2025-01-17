@@ -50,7 +50,7 @@ In the modern landscape of emission reduction initiatives, transparency and cred
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp = 1719334963.305320577
 
 ### Available Roles 
  

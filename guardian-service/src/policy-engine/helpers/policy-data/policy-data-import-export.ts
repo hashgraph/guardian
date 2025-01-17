@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import {
+    SchemasLoader,
     BlockStateLoader,
     PolicyDataLoader,
     RolesLoader,
@@ -12,20 +13,19 @@ import {
     AggregateVCLoader,
     SplitDocumentLoader,
     DocumentStateLoader,
+    TokensLoader,
+    RetirePoolLoader
 } from './loaders/index.js';
 import { GuardiansService } from '../../../helpers/guardians.js';
-import { PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
+import { IOwner, PolicyEvents, PolicyHelper, TopicType } from '@guardian/interfaces';
 import {
     DatabaseServer,
     DidDocument,
     Policy,
     Users,
-    findAllEntities,
+    findAllEntities, DryRun,
 } from '@guardian/common';
-import { SchemasLoader } from './loaders/schemas.loader.js';
 import { ObjectId } from 'bson';
-import { TokensLoader } from './loaders/tokens.loader.js';
-import { RetirePoolLoader } from './loaders/retire-pool.loader.js';
 
 /**
  * Static loaders
@@ -76,7 +76,7 @@ export class PolicyDataImportExport {
     private readonly _loaderInstances = new Map<string, PolicyDataLoader>();
 
     constructor(private readonly _policy: Policy) {
-        this._isDryRun = _policy.status === PolicyType.DRY_RUN;
+        this._isDryRun = PolicyHelper.isDryRunMode(_policy);
         for (const [name, Loader] of PolicyDataImportExport._loaders) {
             if (
                 ![
@@ -237,11 +237,14 @@ export class PolicyDataImportExport {
      * @param dryRunId Dry run identifier
      * @returns Virtual keys
      */
-    static async exportVirtualKeys(owner: string, dryRunId: string) {
+    static async exportVirtualKeys(
+        user: IOwner,
+        dryRunId: string
+    ) {
         const zip = new JSZip();
         const virtualKeys = await new DatabaseServer(dryRunId).getVirtualKeys({
-            did: { $ne: owner },
-        });
+            did: { $ne: user.owner },
+        } as DryRun);
         zip.folder('virtualKeys');
         for (const virtualKey of virtualKeys) {
             zip.file(
@@ -309,7 +312,10 @@ export class PolicyDataImportExport {
      * @param data Data
      * @returns Imported policy
      */
-    static async importData(userId: string, data: Buffer) {
+    static async importData(
+        userId: string,
+        data: Buffer
+    ) {
         await DatabaseServer.clearPolicyCaches({
             userId,
         });

@@ -1,12 +1,13 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, ISignOptions, NotificationAction, TokenType, WorkerTaskType, } from '@guardian/interfaces';
-import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MintRequest, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
+import { DatabaseServer, ExternalEventChannel, KeyType, MessageAction, MessageServer, MintRequest, MultiPolicy, MultiPolicyTransaction, NotificationHelper, PinoLogger, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Mint Service
@@ -19,7 +20,7 @@ export class MintService {
     /**
      * Logger service
      */
-    private static readonly logger = new Logger();
+    private static readonly logger = new PinoLogger();
 
     /**
      * Active mint processes
@@ -89,7 +90,7 @@ export class MintService {
         ref: AnyBlockType,
         token: Token,
         tokenValue: number,
-        documentOwner: IPolicyUser,
+        documentOwner: PolicyUser,
         root: IHederaCredentials,
         targetAccount: string,
         vpMessageId: string,
@@ -142,7 +143,7 @@ export class MintService {
                     amount: tokenValue,
                     target: targetAccount,
                     status: 'Waiting',
-                });
+                } as FilterObject<MultiPolicyTransaction>);
             }
             notifier.success(
                 `Multi mint`,
@@ -242,7 +243,7 @@ export class MintService {
                     vpMessageId,
                 },
             ],
-        });
+        } as FilterObject<MintRequest>);
         if (requests.length === 0) {
             throw new Error('There are no requests to retry');
         }
@@ -262,7 +263,8 @@ export class MintService {
                 rootUser?.id,
                 root,
                 documentOwnerUser?.id,
-                ref
+                ref,
+                user.id.toString()
             );
         }
 
@@ -279,9 +281,11 @@ export class MintService {
      * Retry mint request
      * @param request Mint request
      * @param userId User identifier
+     * @param rootId
      * @param root Root
      * @param ownerId Owner identifier
      * @param ref Block ref
+     * @param _userId
      * @returns Mint or transfer is processed
      */
     public static async retryRequest(
@@ -290,7 +294,8 @@ export class MintService {
         rootId: string,
         root: IRootConfig,
         ownerId: string,
-        ref?: any
+        ref?: any,
+        _userId?: string
     ) {
         if (!request) {
             throw new Error('There is no mint request');
@@ -346,7 +351,8 @@ export class MintService {
                             root,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId])
+                            NotificationHelper.init([rootId, userId, ownerId]),
+                            _userId
                         )
                     ).mint();
                     break;
@@ -357,7 +363,8 @@ export class MintService {
                             root,
                             tokenConfig,
                             ref,
-                            NotificationHelper.init([rootId, userId, ownerId])
+                            NotificationHelper.init([rootId, userId, ownerId]),
+                            _userId
                         )
                     ).mint();
                     break;
@@ -596,7 +603,7 @@ export class MintService {
      */
     private static async getMultipleConfig(
         ref: AnyBlockType,
-        documentOwner: IPolicyUser
+        documentOwner: PolicyUser
     ) {
         return await DatabaseServer.getMultiPolicy(
             ref.policyInstance.instanceTopicId,
@@ -611,14 +618,14 @@ export class MintService {
     public static log(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.info(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.info(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.info(message, ['POLICY_SERVICE']);
         }
     }
 
@@ -629,14 +636,14 @@ export class MintService {
     public static error(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.error(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.error(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.error(message, ['POLICY_SERVICE']);
         }
     }
 
@@ -647,14 +654,14 @@ export class MintService {
     public static warn(message: string, ref?: AnyBlockType) {
         if (ref) {
             MintService.logger.warn(message, [
-                'GUARDIAN_SERVICE',
+                'POLICY_SERVICE',
                 ref.uuid,
                 ref.blockType,
                 ref.tag,
                 ref.policyId,
             ]);
         } else {
-            MintService.logger.warn(message, ['GUARDIAN_SERVICE']);
+            MintService.logger.warn(message, ['POLICY_SERVICE']);
         }
     }
 }

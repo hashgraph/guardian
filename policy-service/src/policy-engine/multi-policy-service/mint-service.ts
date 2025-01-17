@@ -1,9 +1,10 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, ISignOptions, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
+import { DatabaseServer, ExternalEventChannel, KeyType, MessageAction, MessageServer, MultiPolicy, MultiPolicyTransaction, NotificationHelper, PinoLogger, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
-import { IHederaCredentials, IPolicyUser } from '../policy-user.js';
+import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Token Config
@@ -48,7 +49,233 @@ export class MintService {
     /**
      * Logger service
      */
-    private static readonly logger = new Logger();
+    private static readonly logger = new PinoLogger();
+
+    /**
+     * Mint
+     * @param ref
+     * @param token
+     * @param tokenValue
+     * @param documentOwner
+     * @param root
+     * @param targetAccount
+     * @param messageId
+     * @param transactionMemo
+     * @param documents
+     * @param userId
+     */
+    public static async mint(
+        ref: AnyBlockType,
+        token: Token,
+        tokenValue: number,
+        documentOwner: PolicyUser,
+        root: IHederaCredentials,
+        targetAccount: string,
+        messageId: string,
+        transactionMemo: string,
+        documents: VcDocument[],
+        userId?: string
+    ): Promise<void> {
+        const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
+        const users = new Users();
+        const documentOwnerUser = await users.getUserById(documentOwner.did);
+        const wallet = new Wallet();
+        const signOptions = await wallet.getUserSignOptions(documentOwnerUser);
+        const policyOwner = await users.getUserById(ref.policyOwner);
+        const notifier = NotificationHelper.init(
+            [documentOwnerUser?.id, policyOwner?.id],
+        );
+        if (multipleConfig) {
+            const hash = VcDocument.toCredentialHash(documents, (value: any) => {
+                delete value.id;
+                delete value.policyId;
+                delete value.ref;
+                return value;
+            });
+            await MintService.sendMessage(ref, multipleConfig, root, {
+                hash,
+                messageId,
+                tokenId: token.tokenId,
+                amount: tokenValue,
+                memo: transactionMemo,
+                target: targetAccount,
+                userId
+            }, signOptions);
+            if (multipleConfig.type === 'Main') {
+                const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);
+                await DatabaseServer.createMultiPolicyTransaction({
+                    uuid: GenerateUUIDv4(),
+                    policyId: ref.policyId,
+                    owner: documentOwner.did,
+                    user: user.hederaAccountId,
+                    hash,
+                    tokenId: token.tokenId,
+                    amount: tokenValue,
+                    target: targetAccount,
+                    status: 'Waiting'
+                } as FilterObject<MultiPolicyTransaction>);
+            }
+        } else {
+            const tokenConfig = await MintService.getTokenConfig(ref, token);
+            if (token.tokenType === 'non-fungible') {
+                const serials = await MintService.mintNonFungibleTokens(
+                    tokenConfig,
+                    tokenValue,
+                    root,
+                    targetAccount,
+                    messageId,
+                    transactionMemo,
+                    ref,
+                    await notifier.progress(
+                        'Minting tokens',
+                        `Start minting ${token.tokenName}`
+                    ),
+                    userId
+                );
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
+            } else {
+                const amount = await MintService.mintFungibleTokens(
+                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
+                );
+                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
+            }
+        }
+
+        notifier.success(
+            multipleConfig ? `Multi mint` : `Mint completed`,
+            multipleConfig
+                ? `Request to mint is submitted`
+                : `All ${token.tokenName} tokens have been minted and transferred`,
+            NotificationAction.POLICY_VIEW,
+            ref.policyId
+        );
+
+        new ExternalEventChannel().publishMessage(
+            ExternalMessageEvents.TOKEN_MINTED,
+            {
+                tokenId: token.tokenId,
+                tokenValue,
+                memo: transactionMemo
+            }
+        );
+    }
+
+    /**
+     * Mint
+     * @param token
+     * @param tokenValue
+     * @param root
+     * @param targetAccount
+     * @param ids
+     * @param notifier
+     * @param userId
+     */
+    public static async multiMint(
+        root: IHederaCredentials,
+        token: Token,
+        tokenValue: number,
+        targetAccount: string,
+        ids: string[],
+        notifier?: NotificationHelper,
+        userId?: string
+    ): Promise<void> {
+        const messageIds = ids.join(',');
+        const memo = messageIds;
+        const tokenConfig: TokenConfig = {
+            treasuryId: token.adminId,
+            tokenId: token.tokenId,
+            supplyKey: null,
+            treasuryKey: null,
+            tokenName: token.tokenName,
+        }
+        const [treasuryKey, supplyKey] = await Promise.all([
+            MintService.wallet.getUserKey(
+                token.owner,
+                KeyType.TOKEN_TREASURY_KEY,
+                token.tokenId
+            ),
+            MintService.wallet.getUserKey(
+                token.owner,
+                KeyType.TOKEN_SUPPLY_KEY,
+                token.tokenId
+            ),
+        ]);
+        tokenConfig.supplyKey = supplyKey;
+        tokenConfig.treasuryKey = treasuryKey;
+
+        if (token.tokenType === 'non-fungible') {
+            const serials = await MintService.mintNonFungibleTokens(
+                tokenConfig,
+                tokenValue,
+                root,
+                targetAccount,
+                messageIds,
+                memo,
+                null,
+                await notifier?.progress(
+                    'Minting tokens',
+                    `Start minting ${token.tokenName}`
+                ),
+                userId
+            );
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, serials }, null);
+        } else {
+            const amount = await MintService.mintFungibleTokens(
+                tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null, userId
+            );
+            await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
+        }
+
+        notifier?.success(
+            `Mint completed`,
+            `All ${token.tokenName} tokens have been minted and transferred`
+        );
+
+        new ExternalEventChannel().publishMessage(
+            ExternalMessageEvents.TOKEN_MINTED,
+            {
+                tokenId: token.tokenId,
+                tokenValue,
+                memo
+            }
+        );
+    }
+
+    /**
+     * Get token keys
+     * @param ref
+     * @param token
+     */
+    private static async getTokenConfig(ref: AnyBlockType, token: Token): Promise<TokenConfig> {
+        const tokenConfig: TokenConfig = {
+            treasuryId: token.draftToken ? '0.0.0' : token.adminId,
+            tokenId: token.draftToken ? '0.0.0' : token.tokenId,
+            supplyKey: null,
+            treasuryKey: null,
+            tokenName: token.tokenName,
+        }
+        if (ref.dryRun) {
+            const tokenPK = PrivateKey.generate().toString();
+            tokenConfig.supplyKey = tokenPK;
+            tokenConfig.treasuryKey = tokenPK;
+        } else {
+            const [treasuryKey, supplyKey] = await Promise.all([
+                MintService.wallet.getUserKey(
+                    token.owner,
+                    KeyType.TOKEN_TREASURY_KEY,
+                    token.tokenId
+                ),
+                MintService.wallet.getUserKey(
+                    token.owner,
+                    KeyType.TOKEN_SUPPLY_KEY,
+                    token.tokenId
+                ),
+            ]);
+            tokenConfig.supplyKey = supplyKey;
+            tokenConfig.treasuryKey = treasuryKey;
+        }
+        return tokenConfig;
+    }
 
     /**
      * Mint Non Fungible Tokens
@@ -59,6 +286,8 @@ export class MintService {
      * @param uuid
      * @param transactionMemo
      * @param ref
+     * @param notifier
+     * @param userId
      */
     private static async mintNonFungibleTokens(
         token: TokenConfig,
@@ -69,6 +298,7 @@ export class MintService {
         transactionMemo: string,
         ref?: AnyBlockType,
         notifier?: NotificationHelper,
+        userId?: string
     ): Promise<any[]> {
         const mintNFT = (metaData: string[]): Promise<number[]> =>
             workers.addRetryableTask(
@@ -84,7 +314,7 @@ export class MintService {
                         transactionMemo,
                     },
                 },
-                1, 10
+                1, 10, userId
             );
         const transferNFT = (serials: number[]): Promise<number[] | null> => {
             MintService.logger.debug(
@@ -108,7 +338,7 @@ export class MintService {
                         transactionMemo,
                     },
                 },
-                1, 10
+                1, 10, userId
             );
         };
         const mintAndTransferNFT = async (metaData: string[]) => {
@@ -193,6 +423,7 @@ export class MintService {
      * @param uuid
      * @param transactionMemo
      * @param ref
+     * @param userId
      */
     private static async mintFungibleTokens(
         token: TokenConfig,
@@ -202,6 +433,7 @@ export class MintService {
         uuid: string,
         transactionMemo: string,
         ref?: AnyBlockType,
+        userId?: string
     ): Promise<number | null> {
         const mintId = Date.now();
         MintService.log(`Mint(${mintId}): Start (Count: ${tokenValue})`, ref);
@@ -220,7 +452,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 10);
+            }, 10, 0, userId);
             await workers.addRetryableTask({
                 type: WorkerTaskType.TRANSFER_FT,
                 data: {
@@ -234,7 +466,7 @@ export class MintService {
                     tokenValue,
                     transactionMemo
                 }
-            }, 10);
+            }, 10, 0, userId);
             result = tokenValue;
         } catch (error) {
             result = null;
@@ -247,158 +479,21 @@ export class MintService {
     }
 
     /**
-     * Get token keys
-     * @param ref
-     * @param token
-     */
-    private static async getTokenConfig(ref: AnyBlockType, token: Token): Promise<TokenConfig> {
-        const tokenConfig: TokenConfig = {
-            treasuryId: token.draftToken ? '0.0.0' : token.adminId,
-            tokenId: token.draftToken ? '0.0.0' : token.tokenId,
-            supplyKey: null,
-            treasuryKey: null,
-            tokenName: token.tokenName,
-        }
-        if (ref.dryRun) {
-            const tokenPK = PrivateKey.generate().toString();
-            tokenConfig.supplyKey = tokenPK;
-            tokenConfig.treasuryKey = tokenPK;
-        } else {
-            const [treasuryKey, supplyKey] = await Promise.all([
-                MintService.wallet.getUserKey(
-                    token.owner,
-                    KeyType.TOKEN_TREASURY_KEY,
-                    token.tokenId
-                ),
-                MintService.wallet.getUserKey(
-                    token.owner,
-                    KeyType.TOKEN_SUPPLY_KEY,
-                    token.tokenId
-                ),
-            ]);
-            tokenConfig.supplyKey = supplyKey;
-            tokenConfig.treasuryKey = treasuryKey;
-        }
-        return tokenConfig;
-    }
-
-    /**
-     * Mint
-     * @param ref
-     * @param token
-     * @param tokenValue
-     * @param documentOwner
-     * @param root
-     * @param targetAccount
-     * @param uuid
-     */
-    public static async mint(
-        ref: AnyBlockType,
-        token: Token,
-        tokenValue: number,
-        documentOwner: IPolicyUser,
-        root: IHederaCredentials,
-        targetAccount: string,
-        messageId: string,
-        transactionMemo: string,
-        documents: VcDocument[],
-    ): Promise<void> {
-        const multipleConfig = await MintService.getMultipleConfig(ref, documentOwner);
-        const users = new Users();
-        const documentOwnerUser = await users.getUserById(documentOwner.did);
-        const wallet = new Wallet();
-        const signOptions = await wallet.getUserSignOptions(documentOwnerUser);
-        const policyOwner = await users.getUserById(ref.policyOwner);
-        const notifier = NotificationHelper.init(
-            [documentOwnerUser?.id, policyOwner?.id],
-        );
-        if (multipleConfig) {
-            const hash = VcDocument.toCredentialHash(documents, (value: any) => {
-                delete value.id;
-                delete value.policyId;
-                delete value.ref;
-                return value;
-            });
-            await MintService.sendMessage(ref, multipleConfig, root, {
-                hash,
-                messageId,
-                tokenId: token.tokenId,
-                amount: tokenValue,
-                memo: transactionMemo,
-                target: targetAccount,
-            }, signOptions);
-            if (multipleConfig.type === 'Main') {
-                const user = await PolicyUtils.getUserCredentials(ref, documentOwner.did);
-                await DatabaseServer.createMultiPolicyTransaction({
-                    uuid: GenerateUUIDv4(),
-                    policyId: ref.policyId,
-                    owner: documentOwner.did,
-                    user: user.hederaAccountId,
-                    hash,
-                    tokenId: token.tokenId,
-                    amount: tokenValue,
-                    target: targetAccount,
-                    status: 'Waiting'
-                });
-            }
-        } else {
-            const tokenConfig = await MintService.getTokenConfig(ref, token);
-            if (token.tokenType === 'non-fungible') {
-                const serials = await MintService.mintNonFungibleTokens(
-                    tokenConfig,
-                    tokenValue,
-                    root,
-                    targetAccount,
-                    messageId,
-                    transactionMemo,
-                    ref,
-                    await notifier.progress(
-                        'Minting tokens',
-                        `Start minting ${token.tokenName}`
-                    )
-                );
-                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, serials }, ref);
-            } else {
-                const amount = await MintService.mintFungibleTokens(
-                    tokenConfig, tokenValue, root, targetAccount, messageId, transactionMemo, ref
-                );
-                await MintService.updateDocuments(messageId, { tokenId: token.tokenId, amount }, ref);
-            }
-        }
-
-        notifier.success(
-            multipleConfig ? `Multi mint` : `Mint completed`,
-            multipleConfig
-                ? `Request to mint is submitted`
-                : `All ${token.tokenName} tokens have been minted and transferred`,
-            NotificationAction.POLICY_VIEW,
-            ref.policyId
-        );
-
-        new ExternalEventChannel().publishMessage(
-            ExternalMessageEvents.TOKEN_MINTED,
-            {
-                tokenId: token.tokenId,
-                tokenValue,
-                memo: transactionMemo
-            }
-        );
-    }
-
-    /**
      * Send Synchronization Message
      * @param ref
      * @param multipleConfig
      * @param root
      * @param data
      * @param signOptions
+     * @param userId
      */
     private static async sendMessage(
         ref: AnyBlockType,
         multipleConfig: MultiPolicy,
         root: IHederaCredentials,
         data: any,
-        signOptions: ISignOptions
+        signOptions: ISignOptions,
+        userId?: string
     ) {
         const message = new SynchronizationMessage(MessageAction.Mint);
         message.setDocument(multipleConfig, data);
@@ -406,86 +501,7 @@ export class MintService {
         const topic = new TopicConfig({ topicId: multipleConfig.synchronizationTopicId }, null, null);
         await messageServer
             .setTopicObject(topic)
-            .sendMessage(message);
-    }
-
-    /**
-     * Mint
-     * @param ref
-     * @param token
-     * @param tokenValue
-     * @param documentOwner
-     * @param root
-     * @param targetAccount
-     * @param uuid
-     */
-    public static async multiMint(
-        root: IHederaCredentials,
-        token: Token,
-        tokenValue: number,
-        targetAccount: string,
-        ids: string[],
-        notifier?: NotificationHelper,
-    ): Promise<void> {
-        const messageIds = ids.join(',');
-        const memo = messageIds;
-        const tokenConfig: TokenConfig = {
-            treasuryId: token.adminId,
-            tokenId: token.tokenId,
-            supplyKey: null,
-            treasuryKey: null,
-            tokenName: token.tokenName,
-        }
-        const [treasuryKey, supplyKey] = await Promise.all([
-            MintService.wallet.getUserKey(
-                token.owner,
-                KeyType.TOKEN_TREASURY_KEY,
-                token.tokenId
-            ),
-            MintService.wallet.getUserKey(
-                token.owner,
-                KeyType.TOKEN_SUPPLY_KEY,
-                token.tokenId
-            ),
-        ]);
-        tokenConfig.supplyKey = supplyKey;
-        tokenConfig.treasuryKey = treasuryKey;
-
-        if (token.tokenType === 'non-fungible') {
-            const serials = await MintService.mintNonFungibleTokens(
-                tokenConfig,
-                tokenValue,
-                root,
-                targetAccount,
-                messageIds,
-                memo,
-                null,
-                await notifier?.progress(
-                    'Minting tokens',
-                    `Start minting ${token.tokenName}`
-                )
-            );
-            await MintService.updateDocuments(ids, { tokenId: token.tokenId, serials }, null);
-        } else {
-            const amount = await MintService.mintFungibleTokens(
-                tokenConfig, tokenValue, root, targetAccount, messageIds, memo, null
-            );
-            await MintService.updateDocuments(ids, { tokenId: token.tokenId, amount }, null);
-        }
-
-        notifier?.success(
-            `Mint completed`,
-            `All ${token.tokenName} tokens have been minted and transferred`
-        );
-
-        new ExternalEventChannel().publishMessage(
-            ExternalMessageEvents.TOKEN_MINTED,
-            {
-                tokenId: token.tokenId,
-                tokenValue,
-                memo
-            }
-        );
+            .sendMessage(message, true, null, userId);
     }
 
     /**
@@ -568,9 +584,9 @@ export class MintService {
     private static async updateDocuments(ids: string | string[], value: any, ref: AnyBlockType) {
         const dryRunId = ref ? ref.dryRun : null;
         const filter = Array.isArray(ids) ? {
-            where: { messageId: { $in: ids } }
+            messageId: { $in: ids }
         } : {
-            where: { messageId: { $eq: ids } }
+            messageId: { $eq: ids }
         }
         await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }
@@ -580,7 +596,7 @@ export class MintService {
      * @param ref
      * @param documentOwner
      */
-    private static async getMultipleConfig(ref: AnyBlockType, documentOwner: IPolicyUser) {
+    private static async getMultipleConfig(ref: AnyBlockType, documentOwner: PolicyUser) {
         return await DatabaseServer.getMultiPolicy(ref.policyInstance.instanceTopicId, documentOwner.did);
     }
 

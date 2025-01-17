@@ -1,99 +1,150 @@
 <form>
-    <div *ngIf="loading > 0" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
     </div>
-    <div *ngIf="loading < 1 && this.document">
-        <div class="form-input-container">
-            <label class="p-field-label">Id</label>
-            <input [readOnly]="true" [value]="this.document.id || ''" class="p-field-input" pInputText type="text"/>
-        </div>
-        <hr>
-        <ng-template [ngIf]="this.type === 'VC'">
-            <div *ngIf="!isIssuerObject" class="form-field">
-                <div class="form-input-container">
-                    <label class="p-field-label">Issuer</label>
-                    <input [readOnly]="true" [value]="this.document.issuer || ''" class="p-field-input" pInputText
-                           type="text"/>
-                </div>
-            </div>
-            <div *ngIf="isIssuerObject" class="form-field">
-                <div class="label-field">Issuer</div>
-                <div class="issuer-option">
-                    <div class="form-input-container">
-                        <label class="p-field-label">Issuer ID</label>
-                        <input [readOnly]="true" [value]="this.document.issuer.id || ''" class="p-field-input" pInputText
-                               type="text"/>
-                    </div>
-                    <div *ngFor="let item of issuerOptions" class="form-field">
-                        <div class="form-input-container">
-                            <label class="p-field-label">{{ item[0] }}</label>
-                            <input [readOnly]="true" [value]="item[1]" class="p-field-input" formControlName="name" pInputText
-                                   type="text"/>
+
+    <div *ngIf="document">
+
+        <div class="guardian-accordion-container">
+            <p-accordion [activeIndex]="0" class="guardian-accordion">
+                <p-accordionTab header="General Information">
+                    <div class="form-field-container">
+                        <div class="form-field">
+                            <div class="label-field">Id</div>
+                            <div class="form-field-value">
+                                <div class="form-field-input guardian-input-container">
+                                    <input pInputText [value]="document.id || ''" [readonly]="true" type="text"/>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-            <hr>
-            <div class="form-field">
-                <div class="form-input-container">
-                    <label class="p-field-label">Issuance Date</label>
-                    <input [readOnly]="true" [value]="this.document.issuanceDate | date: 'short'" class="p-field-input" pInputText
-                           type="text"/>
-                </div>
-            </div>
-            <hr>
-        </ng-template>
 
-        <div *ngIf="this.evidenceJson" class="form-field">
-            <div class="form-input-container">
-                <label class="p-field-label">Evidence</label>
-                <textarea [readOnly]="true" [rows]="5" [value]="this.evidenceJson" class="p-field-input" pInputTextarea
-                          type="text"></textarea>
-            </div>
+                    <ng-container *ngIf="type === 'VC'">
+                        <div class="form-field-container">
+                            <div *ngIf="!isIssuerObject" class="form-field">
+                                <div class="label-field">Issuer</div>
+                                <div class="form-field-value">
+                                    <div class="form-field-input guardian-input-container">
+                                        <input pInputText [value]="document.issuer || ''" [readonly]="true" type="text"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div *ngIf="isIssuerObject" class="form-field">
+                                <div class="label-field">Issuer</div>
+                                <div class="issuer-option">
+                                    <div class="form-field">
+                                        <div class="label-field">Issuer ID</div>
+                                        <div class="form-field-value">
+                                            <div class="form-field-input guardian-input-container">
+                                                <input pInputText [value]="document.issuer.id || ''" [readonly]="true" type="text"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div *ngFor="let item of issuerOptions" class="form-field">
+                                        <div class="label-field">{{item[0]}}</div>
+                                        <div class="form-field-value">
+                                            <div class="form-field-input guardian-input-container">
+                                                <input pInputText [value]="item[1] || ''" [readonly]="true" type="text"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-field-container">
+                            <div class="form-field">
+                                <div class="label-field">Issuance Date</div>
+                                <div class="form-field-value">
+                                    <div class="form-field-input guardian-input-container">
+                                        <input pInputText [value]="document.issuanceDate | date: 'short'" [readonly]="true" type="text"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    
+                    <div *ngIf="evidenceJson" class="form-field-container">
+                        <div class="form-field">
+                            <div class="label-field">Evidence</div>
+                            <div class="form-field-value">
+                                <div class="form-field-textarea guardian-textarea-container">
+                                    <textarea 
+                                        [readOnly]="true" 
+                                        [rows]="5" [value]="evidenceJson" 
+                                        pInputTextarea
+                                        type="text"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="proofJson" class="form-field-container">
+                        <div class="form-field">
+                            <div class="label-field">Proof</div>
+                            <div class="form-field-value">
+                                <div class="form-field-textarea guardian-textarea-container">
+                                    <textarea 
+                                        [readOnly]="true" 
+                                        [rows]="5" [value]="proofJson" 
+                                        pInputTextarea
+                                        type="text"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+            </p-accordion>
         </div>
-        <hr>
-        <div class="form-field">
-            <div class="form-input-container">
-                <label class="p-field-label">Proof</label>
-                <textarea [readOnly]="true" [rows]="5" [value]="this.proofJson || ''" class="p-field-input" pInputTextarea
-                          type="text"></textarea>
-            </div>
-        </div>
 
-        <hr>
-
-        <div class="form-field-group schema-form-field-array-group" [ngSwitch]="this.type">
-            <ng-template [ngSwitchCase]="'VC'">
-                <div class="label-field">Credential Subject</div>
-                <div *ngFor="let credentialSubject of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
-                     [attr.index]="this.subjects.indexOf(credentialSubject)">
-                    <div class="form-field-group">
-                        <app-schema-form-view [private-fields]="hideFields" [schema]="schemaMap[credentialSubject.type]"
-                                              [delimiter-hide]="true" [dryRun]="dryRun" [values]="credentialSubject">
+        <div class="group-container" *ngIf="type === 'VC' && subjects.length > 0">
+            <div *ngIf="subjects.length > 1" class="group-multiple-header">Credential Subjects</div>
+            <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
+                <p-accordion [multiple]="true" [activeIndex]="[0]" class="guardian-accordion">
+                    <p-accordionTab header="{{getCredentialSubject(item)}}">
+                        <app-schema-form-view 
+                            [private-fields]="hideFields" 
+                            [schema]="schemaMap[item.type]"
+                            [delimiter-hide]="true" 
+                            [dryRun]="dryRun" 
+                            [values]="item"
+                            [rules]="rulesResults">
                         </app-schema-form-view>
-                    </div>
-                </div>
-                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
-                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
-                </mat-paginator>
-                <hr>
-            </ng-template>
-
-            <ng-template [ngSwitchCase]="'VP'">
-                <div class="label-header">Verifiable Credential</div>
-                <div *ngFor="let vcDocument of getItemsPage(subjects, pageEvent)" class="form-field-array-item"
-                     [attr.index]="this.subjects.indexOf(vcDocument)">
-                    <div class="form-field-group">
-                        <app-document-view [document]="vcDocument" [dryRun]="dryRun" [hide-fields]="this.hideFields"
-                                           type="VC">
-                        </app-document-view>
-                    </div>
-                </div>
-                <mat-paginator *ngIf="pageSize < this.subjects.length" [length]="this.subjects.length"
-                               (page)="pageEvent = $event" [pageSizeOptions]="[5, 10, 20]" [pageSize]="pageSize">
-                </mat-paginator>
-                <hr>
-            </ng-template>
+                    </p-accordionTab>
+                </p-accordion>
+            </div>
+            <app-paginator
+                *ngIf="pageSize < subjects.length" 
+                class="guardian-grid-paginator"
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [length]="subjects.length"
+                (page)="onPage($event)"
+            ></app-paginator>
         </div>
+        
+        <div class="group-container" *ngIf="type === 'VP' && subjects.length > 0">
+            <div *ngIf="subjects.length > 1" class="group-multiple-header">Verifiable Credentials</div>
+            <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
+                <p-accordion [multiple]="true" [activeIndex]="[0]" class="guardian-accordion">
+                    <p-accordionTab header="{{getVerifiableCredential(item)}}">
+                        <app-document-view 
+                            [document]="item"
+                            [dryRun]="dryRun" 
+                            [hide-fields]="hideFields"
+                            type="VC">
+                        </app-document-view>
+                    </p-accordionTab>
+                </p-accordion>
+            </div>
+            <app-paginator
+                *ngIf="pageSize < subjects.length" 
+                class="guardian-grid-paginator"
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [length]="subjects.length"
+                (page)="onPage($event)"
+            ></app-paginator>
+        </div>
+
     </div>
 </form>

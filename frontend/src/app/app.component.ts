@@ -1,11 +1,11 @@
-import { HttpClient } from '@angular/common/http';
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { AuthStateService } from './services/auth-state.service';
-import { MapService } from './services/map.service';
 import { WebSocketService } from './services/web-socket.service';
 import { BrandingService } from './services/branding.service';
 import './modules/policy-engine/policy-lang-modes/policy-json-lang.mode';
 import './modules/policy-engine/policy-lang-modes/policy-yaml-lang.mode';
+import './modules/common/models/lang-modes/formula-lang.mode';
+import './modules/common/models/lang-modes/single-line';
 import { globalLoaderActive } from './static/global-loader.function';
 import { ActivatedRoute } from '@angular/router';
 import { MatIconRegistry } from '@angular/material/icon';
@@ -14,7 +14,10 @@ import { DomSanitizer } from '@angular/platform-browser';
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss'],
+    styleUrls: [
+        './app.component.scss',
+        './themes/guardian/index.scss'
+    ],
 })
 export class AppComponent implements OnInit {
     public title = 'guardian';
@@ -31,25 +34,11 @@ export class AppComponent implements OnInit {
     constructor(
         public authState: AuthStateService,
         public wsService: WebSocketService,
-        public mapService: MapService,
-        public httpClient: HttpClient,
         private brandingService: BrandingService,
         private activatedRoute: ActivatedRoute,
         private domSanitizer: DomSanitizer,
         private matIconRegistry: MatIconRegistry
     ) {
-        const mapRequest = (value?: string) => {
-            httpClient
-                .jsonp(
-                    `https://maps.googleapis.com/maps/api/js${value ? '?key=' + value : ''
-                    }`,
-                    'callback'
-                )
-                .subscribe((result) => {
-                    this.mapService.mapLoaded = true;
-                });
-        };
-        mapService.getApiKey().subscribe(mapRequest);
         this.matIconRegistry.addSvgIconLiteral('policy-module', this.domSanitizer.bypassSecurityTrustHtml(`
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path style="fill:#e1933c" d="M 12,0.83007812 3.0507812,6 12,11.160156 20.949219,6 Z" />

@@ -236,6 +236,21 @@ export class Schema implements ISchema {
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
+        this.setPaths(this.fields, '', this.iri + '/');
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setPaths(fields: SchemaField[], path: string, fullPath: string): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            f.fullPath = fullPath + f.name;
+            if (Array.isArray(f.fields)) {
+                this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
     }
 
     /**

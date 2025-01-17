@@ -1,5 +1,4 @@
 import {
-    DataBaseHelper,
     DidDocument as DidDocumentCollection,
     DIDMessage,
     KeyType,
@@ -32,13 +31,17 @@ import {
     MessageAction,
     VcHelper,
     UrlType,
-    RoleMessage
+    RoleMessage,
+    GuardianRoleMessage,
+    UserPermissionsMessage, PinoLogger, DatabaseServer,
 } from '@guardian/common';
 import {
     DidDocumentStatus,
+    EntityOwner,
     ISchema,
     PolicyType,
     SchemaCategory,
+    SchemaEntity,
     SchemaStatus,
     TopicType,
     UserRole,
@@ -125,6 +128,7 @@ export class RestoreDataFromHedera {
         for (const m of messages) {
             try {
                 const r = MessageServer.fromMessage<Message>(m.message);
+                r.setAccount(m.payer_account_id);
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);
@@ -184,8 +188,10 @@ export class RestoreDataFromHedera {
             category: SchemaCategory.POLICY,
             codeVersion: s.codeVersion
         };
-        const result = new DataBaseHelper(SchemaCollection).create(schemaObj);
-        await new DataBaseHelper(SchemaCollection).save(result);
+        const dataBaseServer = new DatabaseServer();
+
+        const result = dataBaseServer.create(SchemaCollection, schemaObj);
+        await dataBaseServer.save(SchemaCollection, result);
     }
 
     /**
@@ -205,25 +211,34 @@ export class RestoreDataFromHedera {
         user: IAuthUser,
         hederaAccountKey: string
     ): Promise<void> {
+        const dataBaseServer = new DatabaseServer();
+
+        const didDocumentObjects = []
+        const vcDocumentObjects = []
+        const vpDocumentObjects = []
+
         for (const row of topicMessages) {
             await this.loadIPFS(row);
             switch (row.constructor) {
                 case DIDMessage: {
                     const message = row as DIDMessage;
-                    await new DataBaseHelper(DidDocumentCollection).save({
+
+                    didDocumentObjects.push({
                         did: message.document.id,
                         document: message.document,
                         status: DidDocumentStatus.CREATE,
                         messageId: message.id,
                         topicId: message.topicId,
                     });
+
                     break;
                 }
 
                 case VCMessage: {
                     const message = row as VCMessage;
                     const vcDoc = VcDocument.fromJsonTree(message.document);
-                    await new DataBaseHelper(VcDocumentCollection).save({
+
+                    vcDocumentObjects.push({
                         hash: vcDoc.toCredentialHash(),
                         owner,
                         messageId: message.id,
@@ -232,13 +247,15 @@ export class RestoreDataFromHedera {
                         document: vcDoc.toJsonTree(),
                         type: undefined,
                     });
+
                     break;
                 }
 
                 case VPMessage: {
                     const message = row as VPMessage;
                     const vpDoc = VpDocument.fromJsonTree(message.document);
-                    await new DataBaseHelper(VpDocumentCollection).save({
+
+                    vpDocumentObjects.push({
                         hash: vpDoc.toCredentialHash(),
                         policyId,
                         owner,
@@ -247,6 +264,7 @@ export class RestoreDataFromHedera {
                         document: vpDoc.toJsonTree(),
                         type: undefined,
                     });
+
                     break;
                 }
 
@@ -290,10 +308,26 @@ export class RestoreDataFromHedera {
                     break;
                 }
 
+                case GuardianRoleMessage: {
+                    //Skip message
+                    break;
+                }
+
+                case UserPermissionsMessage: {
+                    //Skip message
+                    break;
+                }
+
                 default:
                     console.error('Unknown message type', row);
             }
         }
+
+        await dataBaseServer.saveMany(DidDocumentCollection, didDocumentObjects);
+
+        await dataBaseServer.saveMany(VcDocumentCollection, vcDocumentObjects);
+
+        await dataBaseServer.saveMany(VpDocumentCollection, vpDocumentObjects);
     }
 
     /**
@@ -303,6 +337,7 @@ export class RestoreDataFromHedera {
      * @param user
      * @param hederaAccountID
      * @param hederaAccountKey
+     * @param logger
      * @private
      */
     private async restorePolicy(
@@ -310,7 +345,8 @@ export class RestoreDataFromHedera {
         owner: string,
         user: IAuthUser,
         hederaAccountID: string,
-        hederaAccountKey: string
+        hederaAccountKey: string,
+        logger: PinoLogger
     ): Promise<void> {
         try {
             const policyMessages = await this.readTopicMessages(policyTopicId);
@@ -330,6 +366,8 @@ export class RestoreDataFromHedera {
                 hederaAccountKey
             );
 
+            const dataBaseServer = new DatabaseServer();
+
             // Restore tokens
             for (const {
                 tokenId,
@@ -338,7 +376,7 @@ export class RestoreDataFromHedera {
                 tokenType,
                 decimals,
             } of this.findMessagesByType<TokenMessage>(MessageType.Token, policyMessages)) {
-                await new DataBaseHelper(Token).save({
+                await dataBaseServer.save(Token, {
                     tokenId,
                     tokenName,
                     tokenSymbol,
@@ -387,8 +425,8 @@ export class RestoreDataFromHedera {
                 }
 
                 const policyInstanceMessages = await this.readTopicMessages(policyObject.instanceTopicId);
-                const p = new DataBaseHelper(PolicyCollection).create(policyObject);
-                const r = await new DataBaseHelper(PolicyCollection).save(p);
+                const p = dataBaseServer.create(PolicyCollection, policyObject);
+                const r = await dataBaseServer.save(PolicyCollection, p);
 
                 const policyInstanceTopic = policyInstanceMessages[0] as TopicMessage;
                 await this.restoreTopic(
@@ -415,7 +453,7 @@ export class RestoreDataFromHedera {
                     hederaAccountKey
                 );
 
-                await new PolicyEngine().generateModel(r.id.toString());
+                await new PolicyEngine(logger).generateModel(r.id.toString());
                 // await new BlockTreeGenerator().generate(r.id.toString());
             }
         } catch (e) {
@@ -440,7 +478,7 @@ export class RestoreDataFromHedera {
      * @private
      */
     private findMessagesByType<T extends Message>(type: MessageType, messages: Message[]): T[] {
-        return messages.filter((m) => m.type === type) as T[];
+        return (messages?.filter((m) => m.type === type) || []) as T[];
     }
 
     /**
@@ -457,7 +495,7 @@ export class RestoreDataFromHedera {
         topicAdminKey: string,
         topicSubmitKey: string
     ): Promise<void> {
-        await new DataBaseHelper(Topic).save(topic);
+        await new DatabaseServer().save(Topic, topic);
         await Promise.all([
             this.wallet.setKey(
                 user.walletToken,
@@ -524,13 +562,16 @@ export class RestoreDataFromHedera {
      * @param hederaAccountID
      * @param hederaAccountKey
      * @param registrantTopicId
+     * @param didDocument
+     * @param logger
      */
     async restoreRootAuthority(
         username: string,
         hederaAccountID: string,
         hederaAccountKey: string,
         registrantTopicId: string,
-        didDocument: CommonDidDocument
+        didDocument: CommonDidDocument,
+        logger: PinoLogger
     ): Promise<void> {
         const did = didDocument.getDid();
         const user = await this.users.getUser(username);
@@ -572,8 +613,10 @@ export class RestoreDataFromHedera {
 
         await this.loadIPFS(didDocumentMessage);
 
-        const existingUser = await new DataBaseHelper(DidDocumentCollection)
-            .findOne({ did });
+        const dataBaseServer = new DatabaseServer();
+
+        const existingUser = await dataBaseServer.findOne(DidDocumentCollection, { did });
+
         if (existingUser) {
             throw new Error('The DID document already exists.');
         }
@@ -587,12 +630,12 @@ export class RestoreDataFromHedera {
         didRow.status = DidDocumentStatus.CREATE;
         didRow.messageId = didDocumentMessage.id;
         didRow.topicId = didDocumentMessage.topicId.toString();
-        await new DataBaseHelper(DidDocumentCollection).update(didRow);
+        await dataBaseServer.update(DidDocumentCollection, null, didRow);
 
         if (vcDocumentMessage) {
             await this.loadIPFS(vcDocumentMessage);
             const vcDoc = VcDocument.fromJsonTree(vcDocumentMessage.document);
-            await new DataBaseHelper(VcDocumentCollection).save({
+            await dataBaseServer.save(VcDocumentCollection, {
                 hash: vcDoc.toCredentialHash(),
                 owner: did,
                 document: vcDoc.toJsonTree(),
@@ -606,7 +649,8 @@ export class RestoreDataFromHedera {
             hederaAccountId: hederaAccountID,
         });
 
-        await this.restoreUsers(allMessages);
+        await this.restoreUsers(allMessages, did);
+        await this.restorePermissions(allMessages, did, user, hederaAccountID);
 
         await this.restoreTopic(
             {
@@ -638,26 +682,107 @@ export class RestoreDataFromHedera {
                 did,
                 user,
                 hederaAccountID,
-                hederaAccountKey
+                hederaAccountKey,
+                logger
             );
         }
     }
 
-    private async restoreUsers(messages: Message[]) {
+    private async restoreUsers(messages: Message[], owner: string) {
         const userDIDs = this.findMessagesByType<DIDMessage>(MessageType.DIDDocument, messages);
-        if (!userDIDs) {
-            return;
-        }
         userDIDs.shift();
+
         for (const message of userDIDs) {
             await this.loadIPFS(message);
-            await new DataBaseHelper(DidDocumentCollection).save({
-                did: message.document.id,
+            const did = message.document.id;
+            await new DatabaseServer().save(DidDocumentCollection, {
+                did,
                 document: message.document,
                 status: DidDocumentStatus.CREATE,
                 messageId: message.id,
                 topicId: message.topicId,
             });
+            this.users.generateNewTemplate(UserRole.USER, did, owner);
+        }
+    }
+
+    private async restorePermissions(
+        messages: Message[],
+        parentDid: string,
+        parent: IAuthUser,
+        hederaAccountID: string
+    ) {
+        const guardianRoles = this.findMessagesByType<GuardianRoleMessage>(MessageType.GuardianRole, messages);
+        const _guardianRoles = new Map<string, GuardianRoleMessage>();
+        for (const message of guardianRoles) {
+            if (message.payer === hederaAccountID) {
+                _guardianRoles.set(message.uuid, message);
+            }
+        }
+
+        const _owner = EntityOwner.sr(parent.id?.toString(), parentDid);
+        const _roleMap = new Map<string, any>();
+        for (const message of _guardianRoles.values()) {
+            await this.loadIPFS(message);
+            const vcDoc = VcDocument.fromJsonTree(message.document);
+            const uuid = vcDoc.getField<string>('uuid');
+            const role = await this.users.createRole({
+                uuid,
+                name: vcDoc.getField<string>('name'),
+                description: vcDoc.getField<string>('description'),
+                permissions: vcDoc.getField<string[]>('permissions')
+            }, _owner, true);
+            await new DatabaseServer().save(VcDocumentCollection, {
+                hash: vcDoc.toCredentialHash(),
+                owner: parentDid,
+                messageId: message.id,
+                topicId: message.topicId,
+                document: vcDoc.toJsonTree(),
+                type: SchemaEntity.ROLE
+            });
+            _roleMap.set(uuid, role)
+        }
+
+        const permissions = this.findMessagesByType<UserPermissionsMessage>(MessageType.UserPermissions, messages);
+        const _permissions = new Map<string, UserPermissionsMessage>();
+        for (const message of permissions) {
+            if (message.payer === hederaAccountID) {
+                _permissions.set(message.user, message);
+            }
+        }
+
+        for (const message of _permissions.values()) {
+            await this.loadIPFS(message);
+            const vcDoc = VcDocument.fromJsonTree(message.document);
+            const userRoles = vcDoc.getField<{
+                uuid: string,
+                name: string,
+                owner: string
+            }[]>('roles');
+            const userDid = vcDoc.getField<string>('userId');
+            const template = await this.users.getUserById(userDid);
+            if (
+                template &&
+                template.role === UserRole.USER &&
+                template.parent === parentDid
+            ) {
+                const roleIds: string[] = [];
+                for (const item of userRoles) {
+                    const role = _roleMap.get(item.uuid);
+                    if (role) {
+                        roleIds.push(role.id);
+                        await this.users.updateUserRole(template.username, roleIds, _owner);
+                        await new DatabaseServer().save(VcDocumentCollection, {
+                            hash: vcDoc.toCredentialHash(),
+                            owner: parentDid,
+                            messageId: message.id,
+                            topicId: message.topicId,
+                            document: vcDoc.toJsonTree(),
+                            type: SchemaEntity.USER_PERMISSIONS
+                        });
+                    }
+                }
+            }
         }
     }
 }

@@ -19,7 +19,7 @@
                     <p-dropdown
                         (onChange)="onFilter($event)"
                         [(ngModel)]="currentTopic"
-                        [options]="policies"
+                        [options]="allPolicies"
                         [showClear]="false"
                         class="policy-dropdown"
                         optionLabel="name"
@@ -68,7 +68,7 @@
                     (click)="onCompare()"
                     [pTooltip]="'Compare'"
                     class="toolbar-btn-secondary"
-                    styleClass="p-button-outlined"
+                    [outlined]=true
                     tooltipPosition="bottom">
                     <svg-icon src="/assets/images/icons/compare.svg" svgClass="primary-color"></svg-icon>
                 </p-button>
@@ -171,8 +171,8 @@
 
                     <ng-container *ngIf="type === 'policy'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
-                            <a 
-                                [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }" 
+                            <a
+                                [queryParams]="{ policyId: policyIdByTopic[schema.topicId] }"
                                 [routerLink]="['/policy-configuration']"
                             >
                                 {{policyNameByTopic[schema.topicId]}}
@@ -197,12 +197,14 @@
                         </td>
                         <td style="min-width: 185px;">
                             <tags-explorer
-                                [data]="schema._tags"
-                                [entity]="tagEntity"
-                                [owner]="owner"
-                                [schemas]="tagSchemas"
-                                [service]="tagsService"
-                                [target]="schema.id"></tags-explorer>
+                                    *ngIf="user.TAGS_TAG_READ"
+                                    [user]="user"
+                                    [data]="schema._tags"
+                                    [entity]="tagEntity"
+                                    [owner]="owner"
+                                    [schemas]="tagSchemas"
+                                    [service]="tagsService"
+                                    [target]="schema.id"></tags-explorer>
                         </td>
                         <td style="min-width: 100px;">
                             <span [ngSwitch]="schema.status">
@@ -217,6 +219,9 @@
                                 </div>
                                 <div *ngSwitchCase="'ERROR'">
                                     <span class="schema-status status-ERROR">Incomplete</span>
+                                </div>
+                                <div *ngSwitchCase="'DEMO'">
+                                    <span class="schema-status status-DEMO">Demo</span>
                                 </div>
                                 <div *ngSwitchDefault>
                                     <span class="schema-status">{{schema.status}}</span>
@@ -283,7 +288,7 @@
                     <ng-container *ngIf="type === 'tool'">
                         <td class="first-schema-grid-cell text-truncate" style="min-width: 140px; max-width: 150px;">
                             <a [queryParams]="{toolId: toolIdByTopic[schema.topicId]}"
-                                [routerLink]="'/policy-configuration'">
+                                [routerLink]="'/tool-configuration'">
                                 {{ toolNameByTopic[schema.topicId] }}
                             </a>
                         </td>
@@ -465,10 +470,10 @@
             [disabled]="!ifCanExport(element)"
             label="Export schema"
             class="schema-menu-p-btn"
-            styleClass="p-button-outlined"
+            [outlined]=true
             [pTooltip]="'Export schema'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" 
+            <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button>
 
@@ -482,7 +487,7 @@
             styleClass="p-button-outlined"
             [pTooltip]="'Export schema to Excel'"
             tooltipPosition="bottom">
-            <svg-icon src="/assets/images/icons/export.svg" 
+            <svg-icon src="/assets/images/icons/export.svg"
                 [svgClass]="ifCanExport(element) ? 'primary-color' : 'disabled-color'"></svg-icon>
         </p-button> -->
         <!-- <p-button
@@ -495,7 +500,7 @@
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/import.svg" svgClass="primary-color"></svg-icon>
         </p-button> -->
-        
+
         <!-- <p-button
             (click)="downloadExcelExample()"
             label="Download Excel example"
@@ -513,7 +518,7 @@
             <span>Copy</span>
         </button>
 
-        <button mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
+        <button *ngIf="ifCanEdit(element)" mat-menu-item (click)="onOpenConfig(element)" class="schema-menu-btn">
             <mat-icon>settings</mat-icon>
             <span>Configuration</span>
         </button>
@@ -546,6 +551,7 @@
             label="Delete schema"
             class="schema-menu-p-btn"
             styleClass="p-button-outlined accent-color-red"
+            [outlined]="true"
             [pTooltip]="'Delete schema'"
             tooltipPosition="bottom">
             <svg-icon

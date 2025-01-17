@@ -4,35 +4,31 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { LargePayloadContainer, Logger, MessageBrokerChannel } from '@guardian/common';
+import { GenerateTLSOptionsNats, LargePayloadContainer, MessageBrokerChannel, PinoLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import process from 'process';
-import { HttpStatus, ValidationPipe } from '@nestjs/common';
-import { json } from 'express';
+import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
-import { SwaggerModels, SwaggerPaths } from './old-descriptions.js';
 import { MeecoAuth } from './helpers/meeco.js';
-import * as extraModels from './middlewares/validation/schemas/index.js'
+import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
 import { AISuggestions } from './helpers/ai-suggestions.js';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import fastifyFormbody from '@fastify/formbody'
+import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
 
-// const restResponseTimeHistogram = new client.Histogram({
-//     name: 'api_gateway_rest_response_time_duration_seconds',
-//     help: 'api-gateway a histogram metric',
-//     labelNames: ['method', 'route', 'statusCode'],
-//     buckets: [0.1, 5, 15, 50, 100, 500],
-// });
+const BODY_LIMIT = 1024 * 1024 * 1024
 
 Promise.all([
-    NestFactory.create(AppModule, {
+    NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter({ ignoreTrailingSlash: true }), {
         rawBody: true,
-        bodyParser: false
+        bodyParser: false,
     }),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
@@ -43,16 +39,26 @@ Promise.all([
                 name: `${process.env.SERVICE_CHANNEL}`,
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
-                ]
+                ],
+                tls: GenerateTLSOptionsNats()
             },
+        });
+        app.enableVersioning({
+            type: VersioningType.HEADER,
+            header: 'Api-Version',
         });
         app.useGlobalPipes(new ValidationPipe({
             errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY
         }));
 
-        app.use(json({ limit: '10mb' }));
+        const logger: PinoLogger= app.get(PinoLogger);
 
-        new Logger().setConnection(cn);
+        await app.register(fastifyFormbody);
+        await app.register(fastifyMultipart);
+
+        app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
+        app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
+
         await new Guardians().setConnection(cn).init();
         await new IPFS().setConnection(cn).init();
         await new PolicyEngine().setConnection(cn).init();
@@ -65,10 +71,10 @@ Promise.all([
         await new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
-        const wsService = new WebSocketsService(server, cn);
-        wsService.init();
+        const wsService = new WebSocketsService(logger);
+        wsService.setConnection(server, cn).init();
 
-        new TaskManager().setDependecies(wsService, cn);
+        new TaskManager().setDependencies(wsService, cn);
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig, {
             extraModels: Object.values(extraModels).filter((constructor: new (...args: any[]) => any) => {
@@ -79,18 +85,18 @@ Promise.all([
                 } catch {
                     return false;
                 }
-            })
+            }) as any
         });
-        Object.assign(document.paths, SwaggerPaths)
-        Object.assign(document.components.schemas, SwaggerModels.schemas);
+        // Object.assign(document.paths, SwaggerPaths)
+        // Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
         if (Number.isInteger(maxPayload)) {
             new LargePayloadContainer().runServer();
         }
-        app.listen(PORT, async () => {
-            new Logger().info(`Started on ${PORT}`, ['API_GATEWAY']);
+        app.listen(PORT, '0.0.0.0', async () => {
+           await logger.info(`Started on ${PORT}`, ['API_GATEWAY']);
         });
     } catch (error) {
         console.error(error.message);

@@ -61,8 +61,8 @@ export class TaskManager {
         [TaskAction.CREATE_POLICY, 8],
         [TaskAction.WIZARD_CREATE_POLICY, 8],
         [TaskAction.PUBLISH_POLICY, 13],
-        [TaskAction.IMPORT_POLICY_FILE, 10],
-        [TaskAction.IMPORT_POLICY_MESSAGE, 12],
+        [TaskAction.IMPORT_POLICY_FILE, 15],
+        [TaskAction.IMPORT_POLICY_MESSAGE, 17],
         [TaskAction.PUBLISH_SCHEMA, 8],
         [TaskAction.IMPORT_SCHEMA_FILE, 3],
         [TaskAction.IMPORT_SCHEMA_MESSAGE, 3],
@@ -89,7 +89,7 @@ export class TaskManager {
      * @param wsService
      * @param cn
      */
-    public setDependecies(wsService: WebSocketsService, cn: NatsConnection) {
+    public setDependencies(wsService: WebSocketsService, cn: NatsConnection) {
         this.wsService = wsService;
         this.channel = new TaskManagerChannel();
         this.channel.setConnection(cn);

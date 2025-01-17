@@ -8,7 +8,7 @@ import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { EventBlock } from '../helpers/decorators/event-block.js';
 import { DIDMessage, MessageAction, MessageServer, VcDocument as VcDocumentCollection, VcHelper, } from '@guardian/common';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser, UserCredentials } from '../policy-user.js';
+import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import deepEqual from 'deep-equal';
 
@@ -97,7 +97,7 @@ export class RequestVcDocumentBlock {
      * @param state
      */
     protected async validateDocuments(
-        user: IPolicyUser,
+        user: PolicyUser,
         state: IPolicyEventState
     ): Promise<string> {
         const validators = this.getValidators();
@@ -125,7 +125,7 @@ export class RequestVcDocumentBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const options = PolicyComponentsUtils.GetBlockUniqueOptionsObject(this);
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
         const sources = await ref.getSources(user);
@@ -166,7 +166,7 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: IPolicyUser, _data: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, _data: IPolicyDocument): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         if (this.state.hasOwnProperty(user.id)) {
@@ -179,6 +179,7 @@ export class RequestVcDocumentBlock {
 
         try {
             const document = _data.document;
+            this.autoCalculate(document);
             const documentRef = await this.getRelationships(ref, _data.ref);
             const presetCheck = await this.checkPreset(ref, document, documentRef)
             if (!presetCheck.valid) {
@@ -259,6 +260,26 @@ export class RequestVcDocumentBlock {
         }
     }
 
+    private autoCalculate(document: any): void {
+        for (const key in this._schema.document.properties) {
+            if (!this._schema.document.properties.hasOwnProperty(key)) {
+                continue;
+            }
+            const value = this._schema.document.properties[key];
+            if (!value.$comment) {
+                continue;
+            }
+            const {autocalculate, expression} = JSON.parse(value.$comment);
+            if (!autocalculate) {
+                continue;
+            }
+            const func = Function(`with (this) { return ${expression} }`);
+            const calcValue = func.apply(document);
+            document[value.title] = calcValue;
+
+        }
+    }
+
     /**
      * Save data to restore
      * @param event Event
@@ -291,7 +312,7 @@ export class RequestVcDocumentBlock {
      */
     async generateId(
         idType: string,
-        user: IPolicyUser,
+        user: PolicyUser,
         userCred: UserCredentials
     ): Promise<string | undefined> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);

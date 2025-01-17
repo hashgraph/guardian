@@ -16,20 +16,29 @@
                 <h1>Profile</h1>
             </div>
             <div class="user-info-container">
+                <div class="item-header">Account</div>
                 <div class="item">
-                    <span>HEDERA ID</span>
+                    <span>User Name</span>
+                    <span class="value-text">{{ profile!.username }}</span>
+                </div>
+                <div class="item">
+                    <span>Password</span>
+                    <div (click)="changePassword(profile)" class="view-document-button">
+                        <span>Change Password</span>
+                    </div>
+                </div>
+
+                <div class="item-header">Hedera</div>
+                <div class="item">
+                    <span>Hedera Account ID</span>
                     <div>
                         <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
                             {{ profile.hederaAccountId }}
                         </hedera-explorer>
                     </div>
                 </div>
-                <div class="item">
-                    <span>BALANCE</span>
-                    <span>{{ balance }}</span>
-                </div>
                 <div *ngIf="profile.topicId" class="item">
-                    <span>USER TOPIC</span>
+                    <span>User Topic</span>
                     <div>
                         <hedera-explorer [params]="profile.topicId" type="topics">
                             {{ profile.topicId }}
@@ -37,17 +46,24 @@
                     </div>
                 </div>
                 <div class="item">
+                    <span>Balance</span>
+                    <span class="value-text">{{ balance }}</span>
+                </div>
+
+
+                <div class="item-header">Documents</div>
+                <div class="item">
                     <span>Standard Registry</span>
-                    <span>{{ profile.parent }}</span>
+                    <span class="value-text">{{ profile.parent }}</span>
                 </div>
                 <div class="item">
                     <span>DID</span>
-                    <span>{{ profile.did }}</span>
+                    <span class="value-text">{{ profile.did }}</span>
                 </div>
                 <div class="item">
                     <span>DID Document</span>
                     <div
-                        (click)="openDIDDocument(didDocument, 'DID')"
+                        (click)="openDIDDocument(didDocument, 'DID Document')"
                         class="view-document-button"
                     >
                         <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
@@ -58,7 +74,7 @@
                 <div *ngIf="vcDocument" class="item">
                     <span>VC Document</span>
                     <div
-                        (click)="openVCDocument(vcDocument, 'VC')"
+                        (click)="openVCDocument(vcDocument, 'VC Document')"
                         class="view-document-button"
                     >
                         <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
@@ -138,7 +154,7 @@
                                             (click)="clearFilters()"
                                             [disabled]="!filtersForm.dirty"
                                             class="clear-filters-button"
-                                            styleClass="p-button-outlined"
+                                            [outlined]=true
                                         >Clear filters</p-button>
                                     </div>
                                 </form>
@@ -263,7 +279,7 @@
                                         (click)="randomKey()"
                                         class="generate-btn"
                                         label="Generate"
-                                        styleClass="p-button-outlined"
+                                        [outlined]=true
                                     >
                                     </p-button>
                                 </form>
@@ -359,7 +375,7 @@
                         <p-button
                             (click)="onPrev()"
                             label="Previous"
-                            styleClass="p-button-outlined"
+                            [outlined]=true
                         ></p-button>
                     </div>
 

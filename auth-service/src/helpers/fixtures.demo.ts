@@ -1,85 +1,66 @@
-import crypto from 'crypto';
 import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
-import { DataBaseHelper } from '@guardian/common';
+import { DatabaseServer } from '@guardian/common';
+import { UserPassword } from '#utils';
 
 /**
  * Create default users
  */
 export async function fixtures(): Promise<void> {
-    const usersRepository = new DataBaseHelper(User);
+    const usersRepository = new DatabaseServer();
+
     // Fixture user
-    if (await usersRepository.count() === 0) {
-        let user = usersRepository.create({
+    if (await usersRepository.count(User, null) === 0) {
+        const users = [{
             username: 'StandardRegistry',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.STANDARD_REGISTRY
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.STANDARD_REGISTRY,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'Installer',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.USER
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.USER,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'Installer2',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.USER
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.USER,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'Auditor',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.AUDITOR
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.AUDITOR,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'Registrant',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.USER
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.USER,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'VVB',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.USER
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.USER,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'ProjectProponent',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.USER
-        });
-        await usersRepository.save(user);
-
-        user = usersRepository.create({
+            role: UserRole.USER,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }, {
             username: 'Verra',
-            password: crypto.createHash('sha256').update('test').digest('hex'),
-            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-            walletToken: '',
-            role: UserRole.STANDARD_REGISTRY
-        });
-        await usersRepository.save(user);
+            role: UserRole.STANDARD_REGISTRY,
+            // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex')
+            walletToken: ''
+        }];
+        for (const user of users) {
+            const password = await UserPassword.generatePasswordV2('test');
+            const row = usersRepository.create(User, {
+                ...user,
+                password: password.password,
+                salt: password.salt,
+                passwordVersion: password.passwordVersion,
+            });
+            await usersRepository.save(User, row);
+        }
     }
 }

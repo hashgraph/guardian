@@ -1,4 +1,4 @@
-import { DataBaseHelper, MessageType, RegistrationMessage } from '@guardian/common';
+import { DatabaseServer, MessageType, RegistrationMessage } from '@guardian/common';
 import { AnalyticsStatus as Status } from '../entity/analytics-status.js';
 import { AnalyticsUser as User } from '../entity/analytics-user.js';
 import { ReportStatus } from '../interfaces/report-status.type.js';
@@ -48,7 +48,7 @@ export class AnalyticsUserService {
             report = await AnalyticsUtils.searchMessages(report, report.root, skip, async (message) => {
                 const user = AnalyticsUserService.parsStandardRegistry(message);
                 if (user) {
-                    const row = new DataBaseHelper(User).create({
+                    const row = {
                         uuid: report.uuid,
                         root: report.root,
                         topicId: user.registrantTopicId,
@@ -57,8 +57,12 @@ export class AnalyticsUserService {
                         timeStamp: user.id,
                         type: UserType.STANDARD_REGISTRY,
                         action: user.action
-                    });
-                    await new DataBaseHelper(User).save(row);
+                    };
+                    const databaseServer = new DatabaseServer();
+
+                    const entity = await databaseServer.create(User, row);
+
+                    await databaseServer.save(User, entity);
                 }
             });
             AnalyticsUtils.updateProgress(report);

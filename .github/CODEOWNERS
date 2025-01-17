@@ -1,0 +1,49 @@
+###################################
+##### Global Protection Rule ######
+###################################
+# NOTE: This rule is overriden by the more specific rules below. This is the catch-all rule for all files not covered by the more specific rules below.
+*                                               @hashgraph/developer-advocates
+
+############################
+#####  Project Files  ######
+############################
+
+*/src/**                                         @hashgraph/developer-advocates @hashgraph/envision-blockchain-hedera
+*/tests/**                                       @hashgraph/developer-advocates @hashgraph/envision-blockchain-hedera
+
+
+#########################
+#####  Core Files  ######
+#########################
+
+# NOTE: Must be placed last to ensure enforcement over all other rules
+
+# Protection Rules for Github Configuration Files and Actions Workflows
+/.github/                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
+/.github/workflows/                             @hashgraph/platform-ci @hashgraph/platform-ci-committers
+
+# NodeJS project files
+package.json                                    @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+package-lock.json                               @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+jest.config.mjs                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+
+# Codacy Tool Configurations
+/config/                                        @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+.remarkrc                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-advocates
+
+# Semantic Release Configuration
+.releaserc                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers
+
+# Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
+/CODEOWNERS                                     @hashgraph/release-engineering-managers
+
+# Protect the repository root files
+/README.md                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
+**/LICENSE                                      @hashgraph/release-engineering-managers
+
+# CodeCov configuration
+**/codecov.yml                                  @hashgraph/platform-ci @hashgraph/platform-ci-committers
+
+# Git Ignore definitions
+**/.gitignore                                   @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
+**/.gitignore.*                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers

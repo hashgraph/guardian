@@ -20,7 +20,7 @@ export class AccountsResponseDTO {
     @ApiProperty()
     @IsString()
     @Expose()
-    did: string
+    did?: string
 }
 
 export class AccountsSessionResponseDTO {
@@ -38,6 +38,23 @@ export class AccountsSessionResponseDTO {
     @IsString()
     @Expose()
     accessToken: string
+}
+
+export class ChangePasswordDTO {
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    username: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    oldPassword: string;
+
+    @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
+    newPassword: string;
 }
 
 export class LoginUserDTO {
@@ -76,7 +93,7 @@ export class RegisterUserDTO {
     @IsString()
     @IsNotEmpty()
     @IsIn(Object.values(UserRole))
-    role: UserRole | string
+    role: UserRole;
 }
 
 export class CredentialSubjectDTO {
@@ -102,113 +119,7 @@ export class CredentialSubjectDTO {
     type: string;
 }
 
-export class ProofDTO {
-    @ApiProperty()
-    type: string;
-
-    @ApiProperty()
-    created: Date;
-
-    @ApiProperty()
-    verificationMethod: string;
-
-    @ApiProperty()
-    proofPurpose: string;
-
-    @ApiProperty()
-    jws: string;
-}
-
-export class VcDocumentDTO {
-    @ApiProperty()
-    id: string;
-
-    @ApiProperty()
-    type: string[];
-
-    @ApiProperty()
-    issuer: string;
-
-    @ApiProperty()
-    issuanceDate: Date;
-
-    @ApiProperty()
-    '@context': string[]
-
-    @ApiProperty()
-    credentialSubject: CredentialSubjectDTO;
-
-    @ApiProperty()
-    proof: ProofDTO;
-}
-
-export class PolicyDTO {
-    @ApiProperty()
-    _id: string;
-
-    @ApiProperty()
-    createDate: Date;
-
-    @ApiProperty()
-    uuid: string;
-
-    @ApiProperty()
-    name: string;
-
-    @ApiProperty()
-    description: string;
-
-    @ApiProperty()
-    status: string;
-
-    @ApiProperty()
-    creator: string;
-
-    @ApiProperty()
-    owner: string;
-
-    @ApiProperty()
-    topicId: string;
-
-    @ApiProperty()
-    policyTag: string;
-
-    @ApiProperty()
-    codeVersion: string;
-
-    @ApiProperty()
-    userRoles: string[];
-
-    @ApiProperty()
-    userGroups: Object[];
-
-    @ApiProperty()
-    userRole: string;
-
-    @ApiProperty()
-    userGroup: string;
-
-    @ApiProperty()
-    id: string;
-}
-
-export class AggregatedDTOItem {
-    @ApiProperty()
-    did: string;
-
-    @ApiProperty()
-    hederaAccountId: string;
-
-    @ApiProperty()
-    vcDocument: VcDocumentDTO;
-
-    @ApiProperty()
-    policies: PolicyDTO;
-}
-
-export type AggregatedDTO = AggregatedDTOItem[]
-
-export class UserDTO {
+class UserDTO {
     @ApiProperty()
     username: string;
 

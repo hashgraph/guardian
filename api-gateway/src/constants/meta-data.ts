@@ -1,4 +1,5 @@
 export const META_DATA = {
   TTL: 'ttl',
-  EXPRESS: 'express'
+  EXPRESS: 'express',
+  FASTIFY: 'fastify',
 };

@@ -1,8 +1,8 @@
 import { IPolicyBlock, IPolicyInstance, IPolicyInterfaceBlock, IPolicyNavigationStep } from './policy-engine.interface.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
-import { GenerateUUIDv4, IUser, PolicyEvents, UserRole } from '@guardian/interfaces';
-import { DataBaseHelper, DatabaseServer, Logger, MessageError, MessageResponse, NatsService, Policy, Singleton, Users, } from '@guardian/common';
-import { IPolicyUser, PolicyUser } from './policy-user.js';
+import { GenerateUUIDv4, IUser, PolicyEvents } from '@guardian/interfaces';
+import { DataBaseHelper, DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, Policy, Singleton, Users } from '@guardian/common';
+import { PolicyUser } from './policy-user.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js'
 import { headers } from 'nats';
 import { ComponentsService } from './helpers/components-service.js';
@@ -43,29 +43,15 @@ export class BlockTreeGenerator extends NatsService {
      * @param policy
      * @param user
      */
-    public async getUser(policy: IPolicyInstance | IPolicyInterfaceBlock, user: IUser): Promise<IPolicyUser> {
-        const regUser = await this.users.getUser(user.username);
-        if (!regUser || !regUser.did) {
+    public async getUser(
+        policy: IPolicyInstance | IPolicyInterfaceBlock,
+        user: IUser
+    ): Promise<PolicyUser> {
+        const policyUser = await PolicyComponentsUtils.GetPolicyUserByName(user?.username, policy);
+        if (!user) {
             throw new Error(`Forbidden`);
         }
-        const userFull = new PolicyUser(regUser.did);
-        if (policy.dryRun) {
-            if (user.role === UserRole.STANDARD_REGISTRY) {
-                const virtualUser = await DatabaseServer.getVirtualUser(policy.policyId);
-                userFull.setVirtualUser(virtualUser);
-            } else {
-                throw new Error(`Forbidden`);
-            }
-        } else {
-            userFull.setUsername(regUser.username);
-        }
-        const groups = await policy.components.databaseServer.getGroupsByUser(policy.policyId, userFull.did);
-        for (const group of groups) {
-            if (group.active !== false) {
-                return userFull.setGroup(group);
-            }
-        }
-        return userFull;
+        return policyUser;
     }
 
     /**
@@ -113,7 +99,7 @@ export class BlockTreeGenerator extends NatsService {
                 const data = await policyInstance.getData(userFull, policyInstance.uuid);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -144,22 +130,21 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA, policyId, async (msg: any) => {
-
-            const { user, blockId } = msg;
+            const { user, blockId, params } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
             if (block && (await block.isAvailable(userFull))) {
-                const data = await block.getData(userFull, blockId, null);
+                const data = await block.getData(userFull, blockId, params);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
         this.getPolicyMessages(PolicyEvents.GET_BLOCK_DATA_BY_TAG, policyId, async (msg: any) => {
-            const { user, tag } = msg;
+            const { user, tag, params } = msg;
 
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByTag<IPolicyInterfaceBlock>(policyId, tag);
@@ -170,10 +155,10 @@ export class BlockTreeGenerator extends NatsService {
                         'Block is not supporting get data functions'
                     );
                 }
-                const data = await block.getData(userFull, block.uuid, null);
+                const data = await block.getData(userFull, block.uuid, params);
                 return new MessageResponse(data);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -195,7 +180,7 @@ export class BlockTreeGenerator extends NatsService {
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -212,7 +197,7 @@ export class BlockTreeGenerator extends NatsService {
                 const result = await block.setData(userFull, data);
                 return new MessageResponse(result);
             } else {
-                return new MessageResponse(null);
+                return new MessageError('Block Unavailable', 503);
             }
         });
 
@@ -337,16 +322,27 @@ export class BlockTreeGenerator extends NatsService {
         });
     }
 
+    public async destroyModel(policyId: string, logger: PinoLogger): Promise<void> {
+        try {
+            await RecordUtils.DestroyRecording(policyId);
+            await RecordUtils.DestroyRunning(policyId);
+        } catch (error) {
+            await logger.error(`Error destroy policy ${error}`, ['POLICY', policyId.toString()]);
+        }
+    }
+
     /**
      * Generate policy instance from config
      * @param policy
      * @param skipRegistration
      * @param policyValidator
+     * @param logger
      */
     public async generate(
         policy: Policy,
         skipRegistration: boolean,
-        policyValidator: PolicyValidator
+        policyValidator: PolicyValidator,
+        logger: PinoLogger
     ): Promise<IPolicyBlock | { type: 'error', message: string }> {
         if (!policy || (typeof policy !== 'object')) {
             throw new Error('Policy was not exist');
@@ -385,7 +381,7 @@ export class BlockTreeGenerator extends NatsService {
 
             return rootInstance;
         } catch (error) {
-            new Logger().error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
+            await logger.error(`Error build policy ${error}`, ['POLICY', policy.name, policyId.toString()]);
             policyValidator.addError(typeof error === 'string' ? error : error.message);
             return {
                 type: 'error',

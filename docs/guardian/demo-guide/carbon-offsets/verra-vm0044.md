@@ -1,4 +1,4 @@
-# 🏢 Verra VM0044
+# 🏢 VM0044 Methodology for Biochar Utilization in Soil and Non-Soil Applications
 
 ## Table of Contents
 
@@ -45,7 +45,7 @@ Within this digital methodology, users will use a collection of Clean Developmen
 
 ### Policy Workflow  <a href="#toc149219505" id="toc149219505"></a>
 
-<figure><img src="../../../.gitbook/assets/0 (1) (1).jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1) (1) (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc149219506" id="toc149219506"></a>
 

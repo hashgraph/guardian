@@ -2,16 +2,24 @@
 
 ### BUILDING AND RETURNING A TRUSTCHAIN
 
-{% swagger method="get" path="" baseUrl="/trust-chains/{hash}" summary="Returns a trustchain for a VP document" %}
-{% swagger-description %}
+{% hint style="info" %}
+**Note: This API is obsolete and will be deprecated in future releases. We would recommend to use policy based controlled API through policy configurator.**
+{% endhint %}
+
+## Returns a trustchain for a VP document
+
+<mark style="color:blue;">`GET`</mark> `/trust-chains/{hash}`
+
 Builds and returns a trustchain, from the VP to the root VC document. Only users with the Auditor role are allowed to make the request.
-{% endswagger-description %}
 
-{% swagger-parameter in="path" name="hash" type="String" required="true" %}
-Hash or ID of a VP document
-{% endswagger-parameter %}
+#### Path Parameters
 
-{% swagger-response status="200: OK" description="" %}
+| Name                                   | Type   | Description                 |
+| -------------------------------------- | ------ | --------------------------- |
+| hash<mark style="color:red;">\*</mark> | String | Hash or ID of a VP document |
+
+{% tabs %}
+{% tab title="200: OK " %}
 ```javascript
 {
     content:
@@ -20,25 +28,25 @@ Hash or ID of a VP document
                 $ref: '#/components/schemas/TrustChains'
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
+{% tab title="401: Unauthorized " %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="403: Forbidden" description="" %}
+{% tab title="403: Forbidden " %}
 ```javascript
 {
     // Response
 }
 ```
-{% endswagger-response %}
+{% endtab %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+{% tab title="500: Internal Server Error Internal Server Error" %}
 ```javascript
 {
     content:
@@ -47,5 +55,5 @@ Hash or ID of a VP document
                 $ref: '#/components/schemas/Error'
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+{% endtab %}
+{% endtabs %}

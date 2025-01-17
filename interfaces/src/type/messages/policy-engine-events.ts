@@ -8,7 +8,7 @@ export enum PolicyEngineEvents {
     POLICY_IMPORT_MESSAGE = 'policy-engine-event-policy-import-message',
     POLICY_IMPORT_MESSAGE_ASYNC = 'policy-engine-event-policy-import-message-async',
     POLICY_IMPORT_XLSX = 'policy-engine-event-policy-import-xlsx',
-    POLICY_IMPORT_XLSX_ASYNC= 'policy-engine-event-policy-import-xlsx-async',
+    POLICY_IMPORT_XLSX_ASYNC = 'policy-engine-event-policy-import-xlsx-async',
     POLICY_IMPORT_MESSAGE_PREVIEW = 'policy-engine-event-policy-import-message-preview',
     POLICY_IMPORT_MESSAGE_PREVIEW_ASYNC = 'policy-engine-event-policy-import-message-preview-async',
     POLICY_IMPORT_FILE_PREVIEW = 'policy-engine-event-policy-import-file-preview',
@@ -32,6 +32,7 @@ export enum PolicyEngineEvents {
     SET_BLOCK_DATA_BY_TAG = 'policy-engine-event-set-block-data-by-tag',
     BLOCK_BY_TAG = 'policy-engine-event-get-block-by-tag',
     GET_POLICIES = 'policy-engine-event-get-policies',
+    GET_POLICIES_V2 = 'policy-engine-event-get-policies-V2',
     GET_POLICY = 'policy-engine-event-get-policy',
     GET_BLOCK_PARENTS = 'policy-engine-event-get-block-parents',
     BLOCK_ABOUT = 'policy-engine-event-block-about',
@@ -61,4 +62,11 @@ export enum PolicyEngineEvents {
     UPLOAD_POLICY_DATA = 'policy-engine-event-upload-policy-data',
     UPLOAD_VIRTUAL_KEYS = 'policy-engine-event-upload-virtual-keys',
     GET_TAG_BLOCK_MAP = 'policy-engine-event-get-tag-block-map',
+    ADD_POLICY_TEST = 'policy-engine-event-add-policy-test',
+    GET_POLICY_TEST= 'policy-engine-event-get-policy-test',
+    START_POLICY_TEST = 'policy-engine-event-start-policy-test',
+    STOP_POLICY_TEST = 'policy-engine-event-stop-policy-test',
+    DELETE_POLICY_TEST = 'policy-engine-event-delete-policy-test',
+    GET_POLICY_TEST_DETAILS = 'policy-engine-event-get-policy-test-details',
+    ACCESS_POLICY = 'policy-engine-event-access-policy'
 }

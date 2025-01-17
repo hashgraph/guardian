@@ -1,28 +1,42 @@
 {
-  "compileOnSave": true,
-  "compilerOptions": {
-    "baseUrl": "./src",
-    "declaration": true,
-    "emitDecoratorMetadata": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "inlineSourceMap": true,
-    "skipLibCheck": true,
-    "lib": [
-      "es5",
-      "es6"
+    "compileOnSave": true,
+    "compilerOptions": {
+        "baseUrl": "./src",
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "inlineSourceMap": true,
+        "skipLibCheck": true,
+        "lib": [
+            "es5",
+            "es6"
+        ],
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "outDir": "dist/",
+        "target": "es2022",
+        "paths": {
+            "#middlewares": [
+                "middlewares/index.js"
+            ],
+            "#helpers": [
+                "helpers/index.js"
+            ],
+            "#auth": [
+                "auth/index.js"
+            ],
+            "#constants": [
+              "constants/index.js"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "public",
+        "dist"
     ],
-    "module": "ESNext",
-    "moduleResolution": "node",
-    "outDir": "dist/",
-    "target": "es2022"
-  },
-  "exclude": [
-    "node_modules",
-    "public",
-    "dist"
-  ],
-  "include": [
-    "src/**/*"
-  ]
+    "include": [
+        "src/**/*"
+    ]
 }

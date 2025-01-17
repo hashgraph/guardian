@@ -9,6 +9,13 @@ import {
     TokenType,
 } from '@guardian/interfaces';
 
+export class ContractConfigDTO {
+    @ApiProperty()
+    type: ContractType;
+    @ApiProperty()
+    description: string;
+}
+
 export class ContractDTO implements IContract {
     @ApiProperty({ required: true })
     id: string;
@@ -35,6 +42,8 @@ export class ContractDTO implements IContract {
     lastSyncEventTimeStamp?: string;
     @ApiProperty({ required: true })
     wipeContractIds: string[];
+    @ApiProperty({ required: true })
+    wipeTokenIds: string[];
 }
 
 export class WiperRequestDTO {
@@ -44,6 +53,8 @@ export class WiperRequestDTO {
     contractId: string;
     @ApiProperty({ required: true })
     user: string;
+    @ApiProperty()
+    token?: string;
 }
 
 export class RetireRequestDTO implements IRetireRequest {

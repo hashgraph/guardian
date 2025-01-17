@@ -1,20 +1,20 @@
 import { Component, OnDestroy, OnInit, Inject } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { ProfileService } from 'src/app/services/profile.service';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { InformService } from 'src/app/services/inform.service';
 import { ModulesService } from 'src/app/services/modules.service';
-import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
 import { forkJoin } from 'rxjs';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { mobileDialog } from 'src/app/utils/mobile-utils';
 import { CONFIGURATION_ERRORS } from '../injectors/configuration.errors.injector';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 enum OperationMode {
     None,
@@ -35,6 +35,7 @@ enum OperationMode {
 })
 export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
+    public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public modules: any[] | null;
     public modulesCount: number;
@@ -98,6 +99,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             this.isConfirmed = !!(profile && profile.confirmed);
             this.owner = profile?.did;
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.user = new UserPermissions(profile);
 
             if (this.isConfirmed) {
                 this.loadAllModules();
@@ -116,8 +118,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.page(this.pageIndex, this.pageSize).subscribe((policiesResponse) => {
             this.modules = policiesResponse.body || [];
             this.modulesCount = Number(policiesResponse.headers.get('X-Total-Count') || this.modules.length);
+            this.loadTagsData();
+        }, (e) => {
+            this.loading = false;
+        });
+    }
 
-            const ids = this.modules.map(e => e.id);
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
+            const ids = this.modules?.map(e => e.id) || [];
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.modules) {
                     for (const policy of this.modules) {
@@ -131,9 +140,11 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 console.error(e.error);
                 this.loading = false;
             });
-        }, (e) => {
-            this.loading = false;
-        });
+        } else {
+            setTimeout(() => {
+                this.loading = false;
+            }, 500);
+        }
     }
 
     public onPage(event: any) {
@@ -147,10 +158,11 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.loadAllModules();
     }
 
-    private importDetails(result: any) {
+    private importDetails(result: IImportEntityResult) {
         const { type, data, module } = result;
         const dialogRef = this.dialog.open(PreviewPolicyDialog, {
-            width: '950px',
+            header: 'Import module',
+            width: '720px',
             closable: true,
             data: {
                 module,
@@ -180,16 +192,16 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     }
 
     public importModules(messageId?: string) {
-        const dialogRef = this.dialog.open(ImportPolicyDialog, {
-            header: 'Select action',
+        const dialogRef = this.dialog.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            closable: true,
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'module',
+                type: ImportEntityType.Module,
                 timeStamp: messageId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
             }
@@ -207,12 +219,23 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
-            if (result) {
+            if (result && result.itemId1 && result.itemId2) {
+                const items = btoa(JSON.stringify({
+                    parent: null,
+                    items: [
+                        result.itemId1,
+                        result.itemId2
+                    ].map((id) => {
+                        return {
+                            type: 'id',
+                            value: id
+                        }
+                    })
+                }));
                 this.router.navigate(['/compare'], {
                     queryParams: {
                         type: 'module',
-                        moduleId1: result.itemId1,
-                        moduleId2: result.itemId2
+                        items
                     }
                 });
             }
@@ -224,13 +247,15 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         this.modulesService.exportInMessage(element.uuid)
             .subscribe(module => {
                 this.loading = false;
-                this.dialog.open(ExportPolicyDialog, {
+                this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Module',
                     width: '700px',
+                    styleClass: 'guardian-dialog',
                     data: {
-                        module
+                        module,
                     },
-                    closable: true,
-                })
+                });
             });
     }
 
@@ -307,7 +332,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 }
                 this.informService.errorMessage(text.join(''), 'The module is invalid');
                 this._configurationErrors.set(element.uuid, errors);
-                this.router.navigate(['policy-configuration'], {
+                this.router.navigate(['module-configuration'], {
                     queryParams: {
                         moduleId: element.uuid,
                     },

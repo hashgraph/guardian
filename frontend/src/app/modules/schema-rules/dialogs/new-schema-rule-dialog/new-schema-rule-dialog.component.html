@@ -1,0 +1,70 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+
+        <form [formGroup]="dataForm">
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Name</label>
+                <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+            </div>
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">Description</label>
+                <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+            </div>
+
+            <div class="guardian-input-container">
+                <label class="form-label" htmlFor="version">* Policy</label>
+                <p-dropdown
+                    formControlName="policy"
+                    [options]="policies"
+                    [showClear]="false"
+                    class="guardian-dropdown"
+                    appendTo="body"
+                    placeholder="Not selected"
+                    panelStyleClass="guardian-dropdown-panel">
+                    <ng-template pTemplate="selectedItem">
+                        <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                            <span class="guardian-dropdown-label">Policy</span> 
+                            <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template let-policy pTemplate="item">
+                        <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
+                            <span>{{policy.name}}</span>
+                            <span class="dropdown-policy-version">({{policy.version}})</span> 
+                        </div>
+                        <div *ngIf="!policy.instanceTopicId" class="guardian-dropdown-item">
+                            <span></span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </form>
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="dataForm.invalid">{{action}}</button>
+        </div>
+    </div>
+</div>

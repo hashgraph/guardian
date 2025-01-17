@@ -1,5 +1,4 @@
-import { IAuthUser } from '@guardian/common';
-import { ISchema, SchemaCategory } from '@guardian/interfaces';
+import { IOwner, ISchema, SchemaCategory } from '@guardian/interfaces';
 
 /**
  * API Schema Utils
@@ -52,6 +51,20 @@ export class SchemaUtils {
     }
 
     /**
+     * Clear ids
+     * @param {ISchema} schema
+     * @returns {ISchema}
+     */
+    public static clearIds(schema: ISchema): ISchema {
+        delete schema.version;
+        delete schema.id;
+        delete schema.status;
+        delete schema.topicId;
+        delete schema._id;
+        return schema;
+    }
+
+    /**
      * Check schema permission
      * @param {ISchema} schema
      * @param {IAuthUser} user
@@ -59,16 +72,23 @@ export class SchemaUtils {
      *
      * @returns {string} error
      */
-    public static checkPermission(schema: ISchema, user: IAuthUser, type: SchemaCategory): string | null {
+    public static checkPermission(
+        schema: ISchema,
+        user: IOwner,
+        type: SchemaCategory
+    ): string | null {
         if (!schema) {
             return 'Schema does not exist.';
         }
         if (schema.system) {
-            if (schema.creator !== user.username) {
+            if (
+                schema.creator !== user.username &&
+                schema.creator !== user.creator
+            ) {
                 return 'Invalid creator.';
             }
         } else {
-            if (schema.creator !== user.did) {
+            if (schema.owner !== user.owner) {
                 return 'Invalid creator.';
             }
         }

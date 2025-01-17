@@ -1,10 +1,5 @@
-import { IAuthUser } from './auth.interface.js';
-import pkg from 'jsonwebtoken';
-
 import { User } from '../entity/user.js';
-import * as util from 'util';
-import crypto from 'crypto';
-import { DataBaseHelper, Logger, MessageError, MessageResponse, NatsService, ProviderAuthUser, SecretManager, Singleton } from '@guardian/common';
+import { DatabaseServer, MessageError, MessageResponse, NatsService, PinoLogger, ProviderAuthUser, Singleton } from '@guardian/common';
 import {
     AuthEvents,
     GenerateUUIDv4,
@@ -19,14 +14,12 @@ import {
     IGetUsersByIdMessage,
     IGetUsersByIRoleMessage,
     IRegisterNewUserMessage,
-    ISaveUserMessage,
     IStandardRegistryUserResponse,
     IUpdateUserMessage,
     IUser,
     UserRole
 } from '@guardian/interfaces';
-
-const { sign, verify } = pkg;
+import { UserUtils, UserPassword, PasswordType, UserAccessTokenService, UserProp } from '#utils';
 
 /**
  * Account service
@@ -48,301 +41,450 @@ export class AccountService extends NatsService {
     /**
      * Register listeners
      */
-    registerListeners(): void {
-        this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN, async (msg) => {
-            const { token } = msg;
-            const secretManager = SecretManager.New();
+    registerListeners(logger: PinoLogger): void {
 
-            const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
+        /**
+         * Get user by access token
+         * @param token - access token
+         */
+        this.getMessages<IGetUserByTokenMessage, User>(AuthEvents.GET_USER_BY_TOKEN,
+            async (msg: { token: string }) => {
+                const { token } = msg;
+                try {
+                    const userAccessTokenService = await UserAccessTokenService.New();
+                    const decryptedToken = await userAccessTokenService.verifyAccessToken(token);
 
-            try {
-                const decryptedToken = await util.promisify<string, any, Object, IAuthUser>(verify)(token, ACCESS_TOKEN_SECRET, {});
-                if (Date.now() > decryptedToken.expireAt) {
-                    throw new Error('Token expired');
+                    if (Date.now() > decryptedToken.expireAt) {
+                        throw new Error('Token expired');
+                    }
+
+                    const user = await UserUtils.getUser({ username: decryptedToken.username }, UserProp.REQUIRED);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    return new MessageError(error);
                 }
-                const user = await new DataBaseHelper(User).findOne({ username: decryptedToken.username });
-                return new MessageResponse(user);
-            } catch (error) {
-                return new MessageError(error);
-            }
-        });
+            });
 
-        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER, async (msg) => {
-            try {
-                const userRepository = new DataBaseHelper(User);
-
-                const { username, password, role } = msg;
-                const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
-
-                const checkUserName = await userRepository.count({ username });
-                if (checkUserName) {
-                    return new MessageError('An account with the same name already exists.');
+        /**
+         * Get user by DID
+         * @param did - DID
+         */
+        this.getMessages<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID,
+            async (msg: { did: string }) => {
+                const { did } = msg;
+                try {
+                    const user = await UserUtils.getUser({ did }, UserProp.WITH_KEYS);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
                 }
+            });
 
-                const user = userRepository.create({
-                    username,
-                    password: passwordDigest,
-                    role,
-                    // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-                    walletToken: '',
-                    parent: null,
-                    did: null
-                });
-                return new MessageResponse(await userRepository.save(user));
+        /**
+         * Get user by username
+         * @param username - username
+         */
+        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER,
+            async (msg: { username: string }) => {
+                const { username } = msg;
+                try {
+                    const user = await UserUtils.getUser({ username }, UserProp.WITH_KEYS);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
 
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error)
-            }
-        });
+        /**
+         * Get user by Hedera Account
+         * @param account - Hedera Account ID
+         */
+        this.getMessages<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT,
+            async (msg: { account: string }) => {
+                const { account } = msg;
+                try {
+                    const user = await UserUtils.getUser({ hederaAccountId: account }, UserProp.WITH_KEYS);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get user by provider
+         * @param provider - Provider
+         * @param providerId - Provider ID
+         */
+        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER_BY_PROVIDER_USER_DATA,
+            async (msg: { providerId: string, provider: string }) => {
+                const { providerId, provider } = msg;
+                try {
+                    const user = await UserUtils.getUser({ providerId, provider }, UserProp.WITH_KEYS);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get user by parent
+         * @param did - Parent DID
+         */
+        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_USERS_BY_SR_ID,
+            async (msg: { did: string }) => {
+                try {
+                    const { did } = msg;
+                    const users = await UserUtils.getUsers({ parent: did }, UserProp.WITH_KEYS);
+                    return new MessageResponse(users);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get users by DIDs
+         * @param dids - DIDs
+         */
+        this.getMessages<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID,
+            async (msg: { dids: string[] }) => {
+                const { dids } = msg;
+                try {
+                    const users = await UserUtils.getUsers({ did: { $in: dids } }, UserProp.WITH_KEYS);
+                    return new MessageResponse(users);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get users by Role (Category)
+         * @param role - Role (Category)
+         */
+        this.getMessages<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE,
+            async (msg: { role: UserRole }) => {
+                const { role } = msg;
+                try {
+                    const users = await UserUtils.getUsers({ role }, UserProp.WITH_KEYS);
+                    return new MessageResponse(users);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get All 'User'
+         */
+        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS,
+            async (_: any) => {
+                try {
+                    const userRepository = new DatabaseServer()
+
+                    const users = await userRepository.find(User, { role: UserRole.USER })
+
+                    const userAccounts = users.map((e) => ({
+                            username: e.username,
+                            parent: e.parent,
+                            did: e.did
+                        }));
+
+                    return new MessageResponse(userAccounts);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get All 'Standard Registry'
+         */
+        this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS,
+            async (_: any) => {
+                try {
+                    const userRepository = new DatabaseServer()
+
+                    const users = await userRepository.find(User, { role: UserRole.STANDARD_REGISTRY })
+
+                    const userAccounts = users.map((e) => ({
+                        username: e.username,
+                        did: e.did
+                    }));
+
+                    return new MessageResponse(userAccounts);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Get All
+         */
+        this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO,
+            async (_: any) => {
+                try {
+                    const userRepository = new DatabaseServer()
+
+                    const users = await userRepository.find(User, { template: { $ne: true } })
+
+                    const userAccounts = users.map((e) => ({
+                        parent: e.parent,
+                        did: e.did,
+                        username: e.username,
+                        role: e.role
+                    }));
+
+                    return new MessageResponse(userAccounts);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_USER,
+            async (msg: { username: string, password: string, role: UserRole }) => {
+                try {
+                    const { username, password, role } = msg;
+
+                    const checkUserName = await new DatabaseServer().count(User, { username })
+
+                    if (checkUserName) {
+                        return new MessageError('An account with the same name already exists.');
+                    }
+
+                    const passwordDigest = await UserPassword.generatePasswordV2(password);
+                    const user = await UserUtils.createNewUser({
+                        username,
+                        password: passwordDigest.password,
+                        salt: passwordDigest.salt,
+                        passwordVersion: passwordDigest.passwordVersion,
+                        role,
+                        walletToken: ''
+                    });
+
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error)
+                }
+            });
+
+        this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.REGISTER_NEW_TEMPLATE,
+            async (msg: { role: UserRole, did: string, parent: string }) => {
+                try {
+                    const { role, did, parent } = msg;
+                    const user = await UserUtils.createUserTemplate(role, parent, did);
+                    return new MessageResponse(user);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error)
+                }
+            });
 
         this.getMessages<IRegisterNewUserMessage, User>(AuthEvents.GENERATE_NEW_TOKEN_BASED_ON_USER_PROVIDER,
-          async (msg: ProviderAuthUser) => {
-            try {
-                const userRepository = new DataBaseHelper(User);
-                let user = await userRepository.findOne({
-                    username: msg.username
-                });
+            async (msg: ProviderAuthUser) => {
+                try {
+                    const { username, role, provider, providerId } = msg;
+                    let user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.REQUIRED)
+                    if (!user) {
+                        user = await UserUtils.createNewUser({
+                            username,
+                            role,
+                            provider,
+                            providerId,
+                            walletToken: ''
+                        })
+                    }
 
-                if (!user) {
-                    user = userRepository.create({
-                        username: msg.username,
-                        password: null,
-                        role: msg.role,
-                        // walletToken: crypto.createHash('sha1').update(Math.random().toString()).digest('hex'),
-                        walletToken: '',
-                        parent: null,
-                        did: null,
-                        provider: msg.provider,
-                        providerId: msg.providerId
-                    });
-                    await userRepository.save(user);
-                }
-                const secretManager = SecretManager.New();
-                const { ACCESS_TOKEN_SECRET } = await secretManager.getSecrets('secretkey/auth')
-                const accessToken = sign({
-                    username: user.username,
-                    did: user.did,
-                    role: user.role
-                }, ACCESS_TOKEN_SECRET);
-                return new MessageResponse({
-                    username: user.username,
-                    did: user.did,
-                    role: user.role,
-                    accessToken
-                })
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error)
-            }
-        });
-
-        this.getMessages<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN, async (msg) => {
-            try {
-                const { username, password } = msg;
-                const passwordDigest = crypto.createHash('sha256').update(password).digest('hex');
-
-                const secretManager = SecretManager.New();
-
-                const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth');
-
-                const REFRESH_TOKEN_UPDATE_INTERVAL = process.env.REFRESH_TOKEN_UPDATE_INTERVAL || '31536000000' // 1 year
-
-                const user = await new DataBaseHelper(User).findOne({ username });
-                if (user && passwordDigest === user.password) {
-                    const tokenId = GenerateUUIDv4();
-                    const refreshToken = sign({
-                        id: tokenId,
-                        name: user.username,
-                        expireAt: Date.now() + parseInt(REFRESH_TOKEN_UPDATE_INTERVAL, 10)
-                    }, ACCESS_TOKEN_SECRET);
-                    user.refreshToken = tokenId;
-                    await new DataBaseHelper(User).save(user);
+                    const userAccessTokenService = await UserAccessTokenService.New();
+                    const accessToken = userAccessTokenService.generateAccessToken(user, false);
                     return new MessageResponse({
                         username: user.username,
                         did: user.did,
                         role: user.role,
-                        refreshToken
+                        accessToken
                     })
-                } else {
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error)
+                }
+            });
+
+        this.getMessages<IGenerateTokenMessage, IGenerateTokenResponse>(AuthEvents.GENERATE_NEW_TOKEN,
+            async (msg: { username: string, password: string }) => {
+                try {
+                    const { username, password } = msg;
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
+                    if (user) {
+                        if (user.passwordVersion === PasswordType.V2) {
+                            if (await UserPassword.verifyPasswordV2(user, password)) {
+                                const userAccessTokenService = await UserAccessTokenService.New();
+                                const token = userAccessTokenService.generateRefreshToken(user);
+                                user.refreshToken = token.id;
+
+                                await new DatabaseServer().save(User, user);
+                                return new MessageResponse({
+                                    username: user.username,
+                                    did: user.did,
+                                    role: user.role,
+                                    refreshToken: token.token
+                                })
+                            }
+                        } else {
+                            if (await UserPassword.verifyPasswordV1(user, password)) {
+                                return new MessageError('UNSUPPORTED_PASSWORD_TYPE', 401);
+                            }
+                        }
+                    }
                     return new MessageError('Unauthorized request', 401);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.getMessages(AuthEvents.CHANGE_USER_PASSWORD,
+            async (msg: { username: string, oldPassword: string, newPassword: string }) => {
+                try {
+                    const { username, oldPassword, newPassword } = msg;
+                    const user = await UserUtils.getUser({ username, template: { $ne: true } }, UserProp.RAW);
+                    if (!(await UserPassword.verifyPassword(user, oldPassword))) {
+                        return new MessageError('Unauthorized request', 401);
+                    }
+
+                    const passwordDigest = await UserPassword.generatePasswordV2(newPassword);
+                    const userAccessTokenService = await UserAccessTokenService.New();
+                    const token = userAccessTokenService.generateRefreshToken(user);
+
+                    user.password = passwordDigest.password;
+                    user.salt = passwordDigest.salt;
+                    user.passwordVersion = passwordDigest.passwordVersion;
+                    user.refreshToken = token.id;
+
+                    await new DatabaseServer().save(User, user);
+
+                    return new MessageResponse({
+                        username: user.username,
+                        did: user.did,
+                        role: user.role,
+                        refreshToken: token.token
+                    })
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.getMessages(AuthEvents.GENERATE_NEW_ACCESS_TOKEN,
+            async (msg: { refreshToken: string }) => {
+                const { refreshToken } = msg;
+
+                const userAccessTokenService = await UserAccessTokenService.New();
+                const decryptedToken = await userAccessTokenService.verifyRefreshToken(refreshToken);
+
+                if (Date.now() > decryptedToken.expireAt) {
+                    return new MessageResponse({})
                 }
 
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
+                const user = await new DatabaseServer().findOne(User, {
+                    refreshToken: decryptedToken.id,
+                    username: decryptedToken.name,
+                    template: { $ne: true }
+                });
+                if (user) {
+                    const accessToken = userAccessTokenService.generateAccessToken(user, true);
+                    return new MessageResponse({ accessToken });
+                } else {
+                    return new MessageResponse({})
+                }
+            });
 
-        this.getMessages(AuthEvents.GENERATE_NEW_ACCESS_TOKEN, async (msg) => {
-            const {refreshToken} = msg;
-            const secretManager = SecretManager.New();
+        this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER,
+            async (msg: { username: string, item: any }) => {
+                const { username, item } = msg;
+                try {
+                    const usersRepository = new DatabaseServer();
 
-            const {ACCESS_TOKEN_SECRET} = await secretManager.getSecrets('secretkey/auth')
+                    const user = await usersRepository.findOne(User, { username })
 
-            const decryptedToken = await util.promisify<string, any, Object, any>(verify)(refreshToken, ACCESS_TOKEN_SECRET, {});
-            if (Date.now() > decryptedToken.expireAt) {
-                return new MessageResponse({})
-            }
-
-            const user = await new DataBaseHelper(User).findOne({refreshToken: decryptedToken.id, username: decryptedToken.name});
-            if (!user) {
-                return new MessageResponse({})
-            }
-
-            const ACCESS_TOKEN_UPDATE_INTERVAL = process.env.ACCESS_TOKEN_UPDATE_INTERVAL || '60000'
-
-            const accessToken = sign({
-                username: user.username,
-                did: user.did,
-                role: user.role,
-                expireAt: Date.now() + parseInt(ACCESS_TOKEN_UPDATE_INTERVAL, 10)
-            }, ACCESS_TOKEN_SECRET);
-
-            return new MessageResponse({accessToken});
-        });
-
-        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS, async (_) => {
-            try {
-                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.USER })).map((e) => ({
-                    username: e.username,
-                    parent: e.parent,
-                    did: e.did
-                }));
-                return new MessageResponse(userAccounts);
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<any, IGetAllUserResponse[]>(AuthEvents.GET_USERS_BY_SR_ID, async (msg) => {
-            try {
-                const { did } = msg;
-                return new MessageResponse(await new DataBaseHelper(User).find({ parent: did }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<any, IStandardRegistryUserResponse[]>(AuthEvents.GET_ALL_STANDARD_REGISTRY_ACCOUNTS, async (_) => {
-            try {
-                const userAccounts = (await new DataBaseHelper(User).find({ role: UserRole.STANDARD_REGISTRY })).map((e) => ({
-                    username: e.username,
-                    did: e.did
-                }));
-                return new MessageResponse(userAccounts);
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<any, IGetDemoUserResponse[]>(AuthEvents.GET_ALL_USER_ACCOUNTS_DEMO, async (_) => {
-            try {
-                const userAccounts = (await new DataBaseHelper(User).findAll()).map((e) => ({
-                    parent: e.parent,
-                    did: e.did,
-                    username: e.username,
-                    role: e.role
-                }));
-                return new MessageResponse(userAccounts);
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER, async (msg) => {
-            const { username } = msg;
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ username }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<IGetUserMessage, User>(AuthEvents.GET_USER_BY_PROVIDER_USER_DATA, async (msg) => {
-            const { providerId, provider } = msg;
-
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ providerId, provider }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<IGetUserByIdMessage, IUser>(AuthEvents.GET_USER_BY_ID, async (msg) => {
-            const { did } = msg;
-
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ did }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<IGetUsersByAccountMessage, IUser>(AuthEvents.GET_USER_BY_ACCOUNT, async (msg) => {
-            const { account } = msg;
-
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).findOne({ hederaAccountId: account }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<IGetUsersByIdMessage, IUser[]>(AuthEvents.GET_USERS_BY_ID, async (msg) => {
-            const { dids } = msg;
-
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).find({
-                    where: {
-                        did: { $in: dids }
+                    if (!user) {
+                        return new MessageResponse(null);
                     }
-                }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
 
-        this.getMessages<IGetUsersByIRoleMessage, IUser[]>(AuthEvents.GET_USERS_BY_ROLE, async (msg) => {
-            const { role } = msg;
+                    Object.assign(user, item);
+                    const template = await usersRepository.findOne(User,{ did: item.did, template: true });
+                    if (template) {
+                        user.permissions = template.permissions;
+                        user.permissionsGroup = template.permissionsGroup;
+                        await usersRepository.deleteEntity(User, template);
+                    }
+                    const result = await usersRepository.update(User, null, user);
 
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).find({ role }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
+                    return new MessageResponse(UserUtils.updateUserFields(result, UserProp.REQUIRED));
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
 
-        this.getMessages<IUpdateUserMessage, any>(AuthEvents.UPDATE_USER, async (msg) => {
-            const { username, item } = msg;
+        this.getMessages(AuthEvents.GET_USER_ACCOUNTS,
+            async (msg: {
+                filters?: any,
+                parent?: string,
+                pageIndex?: any,
+                pageSize?: any
+            }) => {
+                try {
+                    if (!msg) {
+                        return new MessageError('Invalid load users parameter');
+                    }
 
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).update(item, { username }));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
-
-        this.getMessages<ISaveUserMessage, IUser>(AuthEvents.SAVE_USER, async (msg) => {
-            const { user } = msg;
-
-            try {
-                return new MessageResponse(await new DataBaseHelper(User).save(user));
-            } catch (error) {
-                new Logger().error(error, ['AUTH_SERVICE']);
-                return new MessageError(error);
-            }
-        });
+                    const { filters, pageIndex, pageSize, parent } = msg;
+                    const otherOptions: any = {
+                        fields: [
+                            'username',
+                            'did',
+                            'hederaAccountId',
+                            'role',
+                            'permissionsGroup',
+                            'permissions',
+                            'template'
+                        ]
+                    };
+                    const _pageSize = parseInt(pageSize, 10);
+                    const _pageIndex = parseInt(pageIndex, 10);
+                    if (Number.isInteger(_pageSize) && Number.isInteger(_pageIndex)) {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = _pageSize;
+                        otherOptions.offset = _pageIndex * _pageSize;
+                    } else {
+                        otherOptions.orderBy = { createDate: 'DESC' };
+                        otherOptions.limit = 100;
+                    }
+                    const options: any = { parent };
+                    if (filters) {
+                        if (filters.role) {
+                            options['permissionsGroup.roleId'] = filters.role;
+                        }
+                        if (filters.username) {
+                            options.username = { $regex: '.*' + filters.username + '.*' };
+                        }
+                        if (filters.did) {
+                            options.did = filters.did;
+                        }
+                    }
+                    const [items, count] = await new DatabaseServer().findAndCount(User, options, otherOptions);
+                    return new MessageResponse({ items, count });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
     }
 }

@@ -2,7 +2,7 @@ import { ActionCallback, EventBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { IPolicyUser, PolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { DocumentCategoryType, GroupAccessType, GroupRelationshipType, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -310,7 +310,7 @@ export class PolicyRolesBlock {
      * @param group
      * @private
      */
-    private async createVC(ref: AnyBlockType, user: IPolicyUser, group: IUserGroup): Promise<string> {
+    private async createVC(ref: AnyBlockType, user: PolicyUser, group: IUserGroup): Promise<string> {
         const policySchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.USER_ROLE);
         if (!policySchema) {
             return null;
@@ -373,7 +373,7 @@ export class PolicyRolesBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const roles: string[] = Array.isArray(ref.options.roles) ? ref.options.roles : [];
         const groups: string[] = Array.isArray(ref.options.groups) ? ref.options.groups : [];
@@ -404,7 +404,7 @@ export class PolicyRolesBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.JoinGroup, PolicyOutputEventType.CreateGroup]
     })
-    async setData(user: IPolicyUser, data: any): Promise<any> {
+    async setData(user: PolicyUser, data: any): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const did = user?.did;
         const curUser = await PolicyUtils.getUser(ref, did);
@@ -434,8 +434,7 @@ export class PolicyRolesBlock {
         group.messageId = await this.createVC(ref, user, group);
 
         const userGroup = await ref.databaseServer.setUserInGroup(group);
-
-        const newUser = PolicyUser.create(userGroup, !!ref.dryRun);
+        const newUser = await PolicyComponentsUtils.GetPolicyUserByGroup(userGroup, ref);
         if (data.invitation) {
             ref.triggerEvents(PolicyOutputEventType.JoinGroup, newUser, null);
         } else {

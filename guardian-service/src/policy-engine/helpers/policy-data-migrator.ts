@@ -4,7 +4,6 @@ import {
     BlockState,
     Contract,
     ContractMessage,
-    DataBaseHelper,
     DatabaseServer,
     DidDocument,
     DocumentState,
@@ -33,37 +32,39 @@ import {
     VpDocumentDefinition,
     Wallet,
     Workers,
-    findAllEntities,
+    findAllEntities, PolicyCache,
 } from '@guardian/common';
 import {
     ContractAPI,
     ContractType,
     DocumentStatus,
     MigrationConfig,
-    PolicyType,
     Schema,
     SchemaCategory,
     SchemaHelper,
     TopicType,
     ISignOptions,
+    PolicyHelper,
 } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
-import { BlockStateLoader } from './policy-data/loaders/block-state.loader.js';
-import { RolesLoader } from './policy-data/loaders/roles.loader.js';
-import { DidLoader } from './policy-data/loaders/did.loader.js';
-import { MintRequestLoader } from './policy-data/loaders/mint-request.loader.js';
-import { MintTransactionLoader } from './policy-data/loaders/mint-transaction.loader.js';
-import { MultiSignDocumentLoader } from './policy-data/loaders/multi-sign-document.loader.js';
 import {
+    BlockStateLoader,
+    RolesLoader,
+    DidLoader,
+    MintRequestLoader,
     AggregateVCLoader,
+    MintTransactionLoader,
     DocumentStateLoader,
+    VcDocumentLoader,
+    VpDocumentLoader,
+    SplitDocumentLoader,
+    MultiSignDocumentLoader,
+    TokensLoader,
+    RetirePoolLoader
 } from './policy-data/loaders/index.js';
-import { SplitDocumentLoader } from './policy-data/loaders/split-document.loader.js';
-import { TokensLoader } from './policy-data/loaders/tokens.loader.js';
-import { RetirePoolLoader } from './policy-data/loaders/retire-pool.loader.js';
 import { createHederaToken } from '../../api/token.service.js';
 import { createContract } from '../../api/helpers/contract-api.js';
-import { setPoolContract } from '../../api/contract.service.js';
+import { getContractVersion, setPoolContract } from '../../api/contract.service.js';
 
 /**
  * Document error
@@ -214,73 +215,73 @@ export class PolicyDataMigrator {
                 policyRoles = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'roles',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 policyStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'states',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcSystemSchemas = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'schemas',
                     cachePolicyId: userPolicy.id,
                     category: SchemaCategory.SYSTEM,
-                });
+                } as Partial<PolicyCache>);
                 srcVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcRoleVcs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vcs',
                     cachePolicyId: userPolicy.id,
                     schema: '#UserRole',
-                });
+                } as Partial<PolicyCache>);
                 srcVPs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'vps',
                     cachePolicyId: userPolicy.id,
                     oldId: { $in: vps },
-                });
+                } as Partial<PolicyCache>);
                 srcDids = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'dids',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcMintRequests = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintRequests',
                     cachePolicyId: userPolicy.id,
                     vpMessageId: { $in: srcVPs.map((item) => item.messageId) },
-                });
+                } as Partial<PolicyCache>);
                 srcMintTransactions = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'mintTransactions',
                     cachePolicyId: userPolicy.id,
                     mintRequestId: {
                         $in: srcMintRequests.map((item) => item.id),
                     },
-                });
+                } as Partial<PolicyCache>);
                 srcMultiDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'multiDocuments',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcAggregateVCs = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'aggregateVCs',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcSplitDocuments = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'splitDocuments',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcDocumentStates = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'documentStates',
                     cachePolicyId: userPolicy.id,
                     documentId: { $in: vcs },
-                });
+                } as Partial<PolicyCache>);
                 srcTokens = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'tokens',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
                 srcRetirePools = await DatabaseServer.getPolicyCacheData({
                     cacheCollection: 'retirePools',
                     cachePolicyId: userPolicy.id,
-                });
+                } as Partial<PolicyCache>);
             } else {
                 srcModel = await DatabaseServer.getPolicy({
                     id: src,
@@ -289,82 +290,95 @@ export class PolicyDataMigrator {
                 if (!srcModel) {
                     throw new Error(`Can't find source policy`);
                 }
+                const srcModelDryRun = PolicyHelper.isDryRunMode(srcModel);
                 policyUsers = await users.getUsersBySrId(owner);
                 policyRoles = await new RolesLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 policyStates = await new BlockStateLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcSystemSchemas = await DatabaseServer.getSchemas({
                     category: SchemaCategory.SYSTEM,
                     topicId: srcModel.topicId,
                 });
-                srcVCs = await DatabaseServer.getVCs({
-                    policyId: src,
+                srcVCs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
                     id: { $in: vcs },
                 });
-                srcRoleVcs = await DatabaseServer.getVCs({
-                    policyId: src,
+                srcRoleVcs = await new VcDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
                     schema: '#UserRole',
                 });
-                srcVPs = await DatabaseServer.getVPs({
-                    policyId: src,
+                srcVPs = await await new VpDocumentLoader(
+                    srcModel.id,
+                    srcModel.topicId,
+                    srcModel.instanceTopicId,
+                    srcModelDryRun
+                ).get({
                     id: { $in: vps },
                 });
                 srcDids = await new DidLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcMintRequests = await new MintRequestLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(srcVPs.map((item) => item.messageId));
                 srcMintTransactions = await new MintTransactionLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(srcMintRequests.map((item) => item.id));
                 srcMultiDocuments = await new MultiSignDocumentLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(vcs);
                 srcAggregateVCs = await new AggregateVCLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcSplitDocuments = await new SplitDocumentLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 srcDocumentStates = await new DocumentStateLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(vcs);
                 srcTokens = await new TokensLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get();
                 const policyTokens = findAllEntities(srcModel.config, [
                     'tokenId',
@@ -373,7 +387,7 @@ export class PolicyDataMigrator {
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
-                    srcModel.status === PolicyType.DRY_RUN
+                    srcModelDryRun
                 ).get(
                     srcTokens.map((token) => token.tokenId).concat(policyTokens)
                 );
@@ -386,7 +400,7 @@ export class PolicyDataMigrator {
             if (!dstModel) {
                 throw new Error(`Can't find destination policy`);
             }
-
+            const dstModelDryRun = PolicyHelper.isDryRunMode(dstModel);
             const dstSystemSchemas = await DatabaseServer.getSchemas({
                 category: SchemaCategory.SYSTEM,
                 topicId: dstModel.topicId,
@@ -410,13 +424,10 @@ export class PolicyDataMigrator {
             const signOptions = await wallet.getUserSignOptions(root);
 
             const instanceTopicConfig = await TopicConfig.fromObject(
-                await new DatabaseServer(
-                    dstModel.status === PolicyType.DRY_RUN
-                        ? dstModel.id
-                        : undefined
-                ).getTopic({
-                    topicId: dstModel.instanceTopicId,
-                })
+                await new DatabaseServer(dstModelDryRun ? dstModel.id : undefined)
+                    .getTopic({
+                        topicId: dstModel.instanceTopicId,
+                    })
             );
 
             const policyDataMigrator = new PolicyDataMigrator(
@@ -440,7 +451,7 @@ export class PolicyDataMigrator {
                 tokensMap || {},
                 editedVCs || {},
                 srcDids,
-                dstModel.status === PolicyType.DRY_RUN ? dstModel.id : null,
+                dstModelDryRun ? dstModel.id : null,
                 notifier
             );
             const migrationErrors = await policyDataMigrator._migrateData(
@@ -647,6 +658,11 @@ export class PolicyDataMigrator {
         tokenTemplates: { [key: string]: string }
     ) {
         const result: any = {};
+
+        const tokenObjects = []
+
+        const dataBaseServer = new DatabaseServer();
+
         for (const [tokenTemplate, tokenId] of Object.entries(tokenTemplates)) {
             const newTokenTemplate = this._tokens[tokenTemplate];
             if (!newTokenTemplate) {
@@ -659,7 +675,8 @@ export class PolicyDataMigrator {
                 delete existingToken._id;
                 delete existingToken.id;
                 existingToken.policyId = this._policyId;
-                await new DataBaseHelper(Token).save(existingToken);
+
+                tokenObjects.push(existingToken);
                 continue;
             }
             const tokenConfig = dynamicTokens.find(
@@ -680,10 +697,14 @@ export class PolicyDataMigrator {
                 }) as any
             );
             tokenObject.policyId = this._policyId;
-            await new DataBaseHelper(Token).save(tokenObject);
+
+            tokenObjects.push(tokenObject);
             result[newTokenTemplate] = tokenObject.tokenId;
             this._createdTokens.set(tokenId, tokenObject.tokenId);
         }
+
+        await dataBaseServer.saveMany(Token, tokenObjects);
+
         return result;
     }
 
@@ -693,12 +714,15 @@ export class PolicyDataMigrator {
      * @returns Wipe contract identifier
      */
     async createWipeContract(wipeContractId: string) {
-        const existingWipeContract = await new DataBaseHelper(Contract).findOne(
+        const dataBaseServer = new DatabaseServer();
+
+        const existingWipeContract = await dataBaseServer.findOne(
+            Contract,
             {
                 type: ContractType.WIPE,
                 wipeContractId,
                 owner: this._owner,
-            }
+            } as Partial<Contract>
         );
         if (existingWipeContract) {
             return wipeContractId;
@@ -729,7 +753,7 @@ export class PolicyDataMigrator {
             }
         );
 
-        const contractId = await createContract(
+        const [contractId, log] = await createContract(
             ContractAPI.CREATE_CONTRACT,
             new Workers(),
             ContractType.WIPE,
@@ -741,14 +765,19 @@ export class PolicyDataMigrator {
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
 
-        const contract = await new DataBaseHelper(Contract).save({
+        const version = await getContractVersion(
+            log
+        );
+        const contract = await dataBaseServer.save(Contract, {
             contractId,
             owner: this._owner,
             description: `Migration ${this._policyId} wipe contract`,
-            permissions: 15,
+            permissions: (version === '1.0.0' ? 15 : 7),
             type: ContractType.WIPE,
             topicId: topic.topicId,
             wipeContractIds: [],
+            wipeTokenIds: [],
+            version,
         });
 
         const contractMessage = new ContractMessage(
@@ -923,7 +952,8 @@ export class PolicyDataMigrator {
                 user.username,
                 user.did,
                 user.hederaAccountId,
-                null
+                null,
+                false
             );
         }
     }

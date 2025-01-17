@@ -3,14 +3,14 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType, Token } from '@guardian/interfaces';
+import { IUser, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { noWhitespaceValidator } from '../../validators/no-whitespace-validator';
 
 enum OperationMode {
@@ -27,17 +27,18 @@ enum OperationMode {
     providers: [DialogService]
 })
 export class ListOfTokensUserComponent implements OnInit {
-    profile?: IUser | null;
-    tokens: any[] = [];
-    loading: boolean = true;
-    isConfirmed: boolean = false;
-    isFailed: boolean = false;
-    isNewAccount: boolean = false;
+    public user: UserPermissions = new UserPermissions();
+    public profile?: IUser | null;
+    public tokens: any[] = [];
+    public loading: boolean = true;
+    public isConfirmed: boolean = false;
+    public isFailed: boolean = false;
+    public isNewAccount: boolean = false;
 
-    value: any;
+    public value: any;
 
-    users: any[] = [];
-    usersColumns: string[] = [
+    public users: any[] = [];
+    public usersColumns: string[] = [
         'username',
         'associated',
         'tokenBalance',
@@ -46,37 +47,37 @@ export class ListOfTokensUserComponent implements OnInit {
         'refresh'
     ];
 
-    taskId: string | undefined = undefined;
-    expectedTaskMessages: number = 0;
-    operationMode: OperationMode = OperationMode.None;
-    user: any;
-    currentPolicy: any = '';
-    policies: any[] | null = null;
-    tagEntity = TagType.Token;
-    owner: any;
-    tagSchemas: any[] = [];
+    public taskId: string | undefined = undefined;
+    public expectedTaskMessages: number = 0;
+    public operationMode: OperationMode = OperationMode.None;
+    public selectedUser: any;
+    public currentPolicy: any = '';
+    public policies: any[] | null = null;
+    public tagEntity = TagType.Token;
+    public owner: any;
+    public tagSchemas: any[] = [];
 
-    tokenDialogVisible: boolean = false;
-    deleteTokenVisible: boolean = false;
-    currentTokenId: any;
-    dataForm = new FormGroup({
-        draftToken: new FormControl(true, [Validators.required]),
-        tokenName: new FormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
-        tokenSymbol: new FormControl('F', [Validators.required, noWhitespaceValidator()]),
-        tokenType: new FormControl('fungible', [Validators.required]),
-        decimals: new FormControl('2'),
-        initialSupply: new FormControl('0'),
-        enableAdmin: new FormControl(true, [Validators.required]),
-        changeSupply: new FormControl(true, [Validators.required]),
-        enableFreeze: new FormControl(false, [Validators.required]),
-        enableKYC: new FormControl(false, [Validators.required]),
-        enableWipe: new FormControl(true, [Validators.required])
+    public tokenDialogVisible: boolean = false;
+    public deleteTokenVisible: boolean = false;
+    public currentTokenId: any;
+    public dataForm = new UntypedFormGroup({
+        draftToken: new UntypedFormControl(true, [Validators.required]),
+        tokenName: new UntypedFormControl('Token Name', [Validators.required, noWhitespaceValidator()]),
+        tokenSymbol: new UntypedFormControl('F', [Validators.required, noWhitespaceValidator()]),
+        tokenType: new UntypedFormControl('fungible', [Validators.required]),
+        decimals: new UntypedFormControl('2'),
+        initialSupply: new UntypedFormControl('0'),
+        enableAdmin: new UntypedFormControl(true, [Validators.required]),
+        changeSupply: new UntypedFormControl(true, [Validators.required]),
+        enableFreeze: new UntypedFormControl(false, [Validators.required]),
+        enableKYC: new UntypedFormControl(false, [Validators.required]),
+        enableWipe: new UntypedFormControl(true, [Validators.required])
     });
-    dataFormPristine: any = this.dataForm.value;
-    readonlyForm: boolean = false;
-    hideType: boolean = false;
+    public dataFormPristine: any = this.dataForm.value;
+    public readonlyForm: boolean = false;
+    public hideType: boolean = false;
 
-    policyDropdownItem: any;
+    public policyDropdownItem: any;
 
     public innerWidth: any;
     public innerHeight: any;
@@ -117,7 +118,7 @@ export class ListOfTokensUserComponent implements OnInit {
 
         this.profileService.getProfile().subscribe((data) => {
             this.profile = data as IUser;
-
+            this.user = new UserPermissions(this.profile);
             this.isConfirmed = !!this.profile.confirmed;
             this.isFailed = !!this.profile.failed;
             this.isNewAccount = !this.profile.didDocument;
@@ -125,7 +126,7 @@ export class ListOfTokensUserComponent implements OnInit {
 
             this.loadTokenData();
 
-        }, ({message}) => {
+        }, ({ message }) => {
             this.loading = false;
             console.error(message);
         });
@@ -135,7 +136,12 @@ export class ListOfTokensUserComponent implements OnInit {
         this.loading = true;
 
         forkJoin([
-            this.tokenService.getTokensPage(undefined, this.pageIndex, this.pageSize),
+            this.tokenService.getTokensPage(
+                undefined, 
+                this.pageIndex, 
+                this.pageSize,
+                'Associated'
+            ),
             this.tagsService.getPublishedSchemas()
         ]).subscribe((value) => {
             const tokensResponse = value[0];
@@ -151,7 +157,18 @@ export class ListOfTokensUserComponent implements OnInit {
                 }
             });
             this.tagSchemas = SchemaHelper.map(tagSchemas);
+            this.tokensCount =
+                tokensResponse.headers.get('X-Total-Count') ||
+                this.tokens.length;
+            this.loadTagsData();
+        }, ({ message }) => {
+            this.loading = false;
+            console.error(message);
+        });
+    }
 
+    private loadTagsData() {
+        if (this.user.TAGS_TAG_READ) {
             const ids = this.tokens.map(e => e.id);
             this.tagsService.search(this.tagEntity, ids).subscribe((data) => {
                 if (this.tokens) {
@@ -166,18 +183,11 @@ export class ListOfTokensUserComponent implements OnInit {
                 console.error(e.error);
                 this.loading = false;
             });
-
+        } else {
             setTimeout(() => {
                 this.loading = false;
-            }, 200)
-
-            this.tokensCount =
-                tokensResponse.headers.get('X-Total-Count') ||
-                this.tokens.length;
-        }, ({message}) => {
-            this.loading = false;
-            console.error(message);
-        });
+            }, 500);
+        } 
     }
 
     associate(token: Token) {
@@ -186,7 +196,7 @@ export class ListOfTokensUserComponent implements OnInit {
             .pushAssociate(token.tokenId, token.associated != 'Yes')
             .subscribe(
                 (result) => {
-                    const {taskId, expectation} = result;
+                    const { taskId, expectation } = result;
                     this.taskId = taskId;
                     this.expectedTaskMessages = expectation;
                     this.operationMode = OperationMode.Associate;

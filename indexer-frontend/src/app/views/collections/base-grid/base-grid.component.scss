@@ -1,0 +1,44 @@
+.content {
+    padding: 45px 100px;
+    &__header, &__table {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    &__table {
+        padding-top: 5px;
+        flex: 1;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+}
+
+.filters {
+    display: grid;
+    overflow: visible;
+    grid-template-columns: minmax(400px, 1fr) 1fr;
+    column-gap: 10px;
+
+    &__keywords {
+        width: 100%;
+    }
+
+    &__fields {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+}
+
+.field-filters {
+    display: flex;
+    gap: 5px;
+}
+
+::ng-deep {
+    .p-chips {
+        width: 100%;
+        .p-chips-multiple-container {
+            width: 100%;
+        }
+    }
+}

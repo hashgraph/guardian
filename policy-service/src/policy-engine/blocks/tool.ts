@@ -1,7 +1,7 @@
 import { ContainerBlock } from '../helpers/decorators/container-block.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { IPolicyUser } from '../policy-user.js';
+import { PolicyUser } from '../policy-user.js';
 import { ActionCallback } from '../helpers/decorators/index.js';
 import { IPolicyEvent } from '../interfaces/index.js';
 import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
@@ -49,7 +49,7 @@ export class ToolBlock {
      * Get block data
      * @param user
      */
-    async getData(user: IPolicyUser): Promise<any> {
+    async getData(user: PolicyUser): Promise<any> {
         return {};
     }
 

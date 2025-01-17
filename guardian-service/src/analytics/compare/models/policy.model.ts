@@ -1,8 +1,5 @@
-import { Policy } from '@guardian/common';
 import { BlockModel } from './block.model.js';
-import { CompareOptions } from '../interfaces/compare-options.interface.js';
 import { SchemaModel } from './schema.model.js';
-import { IKeyMap } from '../interfaces/key-map.interface.js';
 import { PropertyModel } from './property.model.js';
 import { PropertyType } from '../types/property.type.js';
 import { TokenModel } from './token.model.js';
@@ -12,6 +9,7 @@ import { TemplateTokenModel } from './template-token.model.js';
 import { RoleModel } from './role.model.js';
 import { FileModel } from './file.model.js';
 import { CompareUtils } from '../utils/utils.js';
+import { CompareOptions, IKeyMap, IPolicyRawData } from '../interfaces/index.js';
 
 /**
  * Policy Model
@@ -107,7 +105,13 @@ export class PolicyModel {
      */
     private _tokens: TokenModel[];
 
-    constructor(policy: Policy, options: CompareOptions) {
+    /**
+     * Type
+     * @private
+     */
+    private _type: string;
+
+    constructor(policy: IPolicyRawData, options: CompareOptions) {
         this.options = options;
 
         this.id = policy.id;
@@ -127,6 +131,8 @@ export class PolicyModel {
         this.groups = this.createGroups(policy.policyGroups, this.options);
         this.topics = this.createTopics(policy.policyTopics, this.options);
         this.tokens = this.createTokens(policy.policyTokens, this.options);
+
+        this._type = 'id';
     }
 
     /**
@@ -259,6 +265,16 @@ export class PolicyModel {
     }
 
     /**
+     * Set source type
+     * @param type
+     * @public
+     */
+    public setType(type: string): PolicyModel {
+        this._type = type;
+        return this;
+    }
+
+    /**
      * Update all weight
      * @public
      */
@@ -301,7 +317,8 @@ export class PolicyModel {
             name: this.name,
             description: this.description,
             instanceTopicId: this.instanceTopicId,
-            version: this.version
+            version: this.version,
+            type: this._type
         };
     }
 
@@ -316,5 +333,19 @@ export class PolicyModel {
             prop = [...prop, ...block.getPropList(type)];
         }
         return prop;
+    }
+
+    /**
+     * Create model
+     * @param policy
+     * @param options
+     * @public
+     * @static
+     */
+    public static fromEntity(policy: IPolicyRawData, options: CompareOptions): PolicyModel {
+        if (!policy) {
+            throw new Error('Unknown policy');
+        }
+        return new PolicyModel(policy, options);
     }
 }
