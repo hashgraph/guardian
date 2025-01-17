@@ -2341,8 +2341,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags:
+      tags: &ref_2
         - analytics
+  /analytics/search/retire:
+    post:
+      operationId: AnalyticsApi_getRetireDocuments
+      summary: Search contract retirements
+      description: Returns contract retirements result
+      parameters: []
+      requestBody:
+        required: true
+        description: Search policy parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RawMessageDTO'
+      responses:
+        '200':
+          description: Search policy result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageDTO'
+        '422':
+          description: Unprocessable entity
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+  /analytics/checkAvailability:
+    get:
+      operationId: AnalyticsApi_getIndexerAvailability
+      summary: Get indexer availability
+      description: Returns indexer availability
+      parameters: []
+      responses:
+        '200':
+          description: Indexer availability result
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
 info:
   title: Guardian
   description: >-
@@ -2493,25 +2544,29 @@ components:
           description: Status message
         files:
           description: Files
-          example: &ref_2
+          example: &ref_3
             - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: &ref_3
+          example: &ref_4
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_4
+          example: &ref_5
             - 0.0.4481265
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2598,6 +2653,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2808,22 +2864,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2910,6 +2970,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2958,22 +3019,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3068,6 +3133,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3286,22 +3352,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3388,6 +3458,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3531,22 +3602,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3633,6 +3708,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3756,22 +3832,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3858,6 +3938,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3974,22 +4055,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4074,6 +4159,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4162,22 +4248,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4277,6 +4367,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4553,22 +4644,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4663,6 +4758,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4762,22 +4858,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4864,6 +4964,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4982,22 +5083,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5084,6 +5189,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5219,22 +5325,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5321,6 +5431,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5422,22 +5533,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5524,6 +5639,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5639,22 +5755,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5739,6 +5859,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5812,22 +5933,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5914,6 +6039,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5962,22 +6088,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6072,6 +6202,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -6146,22 +6277,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
       required:
         - id
         - topicId
@@ -6176,6 +6311,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
     RelationshipDTO:
       type: object
       properties:
@@ -6352,22 +6488,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6462,6 +6602,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -6720,22 +6861,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6822,6 +6967,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -7021,22 +7167,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -7123,6 +7273,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options

@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import {
     ContractType,
+    IRetirementMessage,
     RetireTokenPool,
     RetireTokenRequest,
 } from '@guardian/interfaces';
@@ -15,7 +16,7 @@ import {
 export class ContractService {
     private readonly url: string = `${API_BASE_URL}/contracts`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     //#region Common contract endpoints
     public getContracts(params: {
@@ -313,6 +314,15 @@ export class ContractService {
         if (pageIndex && pageSize) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`
         }
+        return this.http.get<any>(url, {
+            observe: 'response',
+        });
+    }
+
+    public getRetireVCsFromIndexer(
+        contractTopicId: string
+    ): Observable<HttpResponse<IRetirementMessage[]>> {
+        let url = `${this.url}/retireIndexer?contractTopicId=${contractTopicId}`;
         return this.http.get<any>(url, {
             observe: 'response',
         });

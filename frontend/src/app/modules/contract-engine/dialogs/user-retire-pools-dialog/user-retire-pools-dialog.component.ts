@@ -53,6 +53,7 @@ export class UserRetirePoolsDialogComponent implements OnInit {
 
     loadPools() {
         this.loading = true;
+        
         this.contractService
             .getRetirePools({
                 pageIndex: this.pageIndex,

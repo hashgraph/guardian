@@ -6,10 +6,11 @@ import {
     MessageError,
     DataBaseHelper,
     Message,
-    AnyResponse
+    AnyResponse,
+    MessageCache
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
-import { MessageAction, MessageType, SearchPolicyParams, SearchPolicyResult } from '@indexer/interfaces';
+import { MessageAction, MessageType, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
 import { HashComparator } from '../analytics/index.js';
 
 function createRegex(text: string) {
@@ -125,5 +126,56 @@ export class AnalyticsService {
         } catch (error) {
             return new MessageError(error);
         }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_RETIRE_DOCUMENTS)
+    async getRetireDocuments(
+        @Payload()
+        msg: RawMessage
+    ): Promise<AnyResponse<Message[]>> {
+        try {
+            const { topicId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const [messages, count] = (await em.findAndCount(
+                Message,
+                {
+                    topicId,
+                    action: MessageAction.CreateVC,
+                } as any
+            )) as any;
+
+            const [messagesCache] = (await em.findAndCount(
+                MessageCache,
+                {
+                    topicId,
+                } as any
+            )) as any;
+
+            for (const message of messages) {
+                let VCdocuments: VCDetails[] = [];
+                for (const fileName of message.files) {
+                    try {
+                        const file = await DataBaseHelper.loadFile(fileName);
+                        VCdocuments.push(JSON.parse(file) as VCDetails);
+                    } catch (error) {
+                    }
+                }
+                message.documents = VCdocuments;
+
+                var messageCache = messagesCache.find((cache: MessageCache) => cache.consensusTimestamp == message.consensusTimestamp);
+                if (messageCache) {
+                    message.sequenceNumber = messageCache.sequenceNumber;
+                }
+            }
+            
+            return new MessageResponse<Message[]>(messages);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_INDEXER_AVAILABILITY)
+    async checkAvailability(): Promise<AnyResponse<boolean>> {
+        return new MessageResponse<boolean>(true);
     }
 }
