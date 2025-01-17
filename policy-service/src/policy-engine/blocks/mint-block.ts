@@ -428,6 +428,11 @@ export class MintBlock {
     })
     @CatchErrors()
     async runAction(event: IPolicyEvent<IPolicyEventState>) {
+        console.log('event.isDraft', event.data.isDraft);
+
+        if (event.data.isDraft)
+            return;
+        
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyTokenBlock>(this);
 
         const docs = PolicyUtils.getArray<IPolicyDocument>(event.data.data);

@@ -163,7 +163,7 @@ export class BlockTreeGenerator extends NatsService {
         });
 
         this.getPolicyMessages(PolicyEvents.SET_BLOCK_DATA, policyId, async (msg: any) => {
-            const { user, blockId, data } = msg;
+            const { user, blockId, data, isDraft } = msg;
             const userFull = await this.getUser(policyInstance, user);
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyInterfaceBlock>(blockId);
 
@@ -177,7 +177,7 @@ export class BlockTreeGenerator extends NatsService {
                         'Block is not supporting set data functions'
                     );
                 }
-                const result = await block.setData(userFull, data);
+                const result = await block.setData(userFull, data, isDraft);
                 return new MessageResponse(result);
             } else {
                 return new MessageError('Block Unavailable', 503);

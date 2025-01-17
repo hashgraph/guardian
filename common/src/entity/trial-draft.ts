@@ -11,15 +11,15 @@ import ObjSet from 'lodash.set';
  */
 @Entity()
 @Index({
-    properties: ['trialDraftClass'],
+    properties: ['draftClass'],
     name: 'class_index'
 })
 @Index({
     properties: ['trialDraftId'],
-    name: 'dry_run_index'
+    name: 'trial_draft_index'
 })
 @Index({
-    properties: ['trialDraftId', 'trialDraftClass'],
+    properties: ['trialDraftId', 'draftClass'],
     name: 'full_index'
 })
 @Index({
@@ -27,7 +27,7 @@ import ObjSet from 'lodash.set';
     name: 'system_index'
 })
 @Index({
-    properties: ['trialDraftId', 'trialDraftClass', 'active'],
+    properties: ['trialDraftId', 'draftClass', 'active'],
     name: 'user_index'
 })
 export class TrialDraft extends BaseEntity {
@@ -41,7 +41,7 @@ export class TrialDraft extends BaseEntity {
      * Class
      */
     @Property({ nullable: true })
-    trialDraftClass?: string;
+    draftClass?: string;
 
     /**
      * Class

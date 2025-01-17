@@ -63,6 +63,11 @@ export interface IAddDryRunIdItem {
     systemMode: boolean
 }
 
+export interface IAddDraftIdItem {
+    draftClass: string,
+    systemMode: boolean
+}
+
 /**
  * Abstract database server
  */

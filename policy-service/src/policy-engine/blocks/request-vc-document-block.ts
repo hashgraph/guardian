@@ -166,8 +166,12 @@ export class RequestVcDocumentBlock {
     @ActionCallback({
         output: [PolicyOutputEventType.RunEvent, PolicyOutputEventType.RefreshEvent]
     })
-    async setData(user: PolicyUser, _data: IPolicyDocument): Promise<any> {
+    async setData(user: PolicyUser, _data: IPolicyDocument, isDraft?: boolean): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+
+        console.log(123);
+        console.log(isDraft);
+        
 
         if (this.state.hasOwnProperty(user.id)) {
             delete this.state[user.id].restoreData;
@@ -239,7 +243,7 @@ export class RequestVcDocumentBlock {
             item.accounts = accounts;
             item = PolicyUtils.setDocumentRef(item, documentRef);
 
-            const state: IPolicyEventState = { data: item };
+            const state: IPolicyEventState = { data: item, isDraft };
             const error = await this.validateDocuments(user, state);
             if (error) {
                 throw new BlockActionError(error, ref.blockType, ref.uuid);

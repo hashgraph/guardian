@@ -93,6 +93,10 @@ export class PolicyEngineService {
         return this.http.post<void>(`${this.url}/${policyId}/blocks/${blockId}`, data);
     }
 
+    public setBlockDraftData(blockId: string, policyId: string, data: any): Observable<any> {
+        return this.http.post<void>(`${this.url}/${policyId}/blocksDraft/${blockId}`, data);
+    }
+
     public getGetIdByName(blockName: string, policyId: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${policyId}/tag/${blockName}`);
     }

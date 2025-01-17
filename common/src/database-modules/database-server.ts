@@ -65,7 +65,7 @@ import { PolicyTool } from '../entity/tool.js';
 import { PolicyProperty } from '../entity/policy-property.js';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
-import { AbstractDatabaseServer, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
+import { AbstractDatabaseServer, IAddDraftIdItem, IAddDryRunIdItem, IAuthUser, IGetDocumentAggregationFilters } from '../interfaces/index.js';
 import { TopicId } from '@hashgraph/sdk';
 import { Message } from '../hedera-modules/index.js'
 import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
@@ -358,6 +358,48 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Add dry run id
+     * @param documentType
+     * @param item
+     */
+    private addDraftId(documentType: string, item: unknown): unknown | unknown[] {
+        return DatabaseServer.addDraftId(
+            item, documentType, this.systemMode
+        );
+    }
+
+    /**
+     * Add dry run id
+     * @param item
+     * @param dryRunId
+     * @param dryRunClass
+     * @param systemMode
+     */
+    private static addDraftId(
+        item: unknown | unknown[],
+        draftClass: string,
+        systemMode: boolean
+    ): unknown | unknown[] {
+        const getExtendedItem = (extendedItem: unknown & IAddDraftIdItem) => {
+            extendedItem.systemMode = systemMode;
+            extendedItem.draftClass = draftClass;
+            console.log(extendedItem.draftClass);
+        }
+        console.log("addDraftId");
+        console.log("draftClass", draftClass);
+        
+        if (Array.isArray(item)) {
+            for (const i of item) {
+                getExtendedItem(i)
+            }
+        } else {
+            getExtendedItem(item as unknown & IAddDraftIdItem)
+        }
+
+        return item;
+    }
+
+    /**
      * Overriding the create method
      * @param entityClass
      * @param item
@@ -375,8 +417,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param entityClass
      * @param item
      */
-    public createDraft<T extends BaseEntity>(entityClass: new () => T, item: Partial<T>): T {
-        return (new DataBaseHelper(TrialDraft).create(item)) as unknown as T;
+    public createDraft(item: Partial<TrialDraft>): TrialDraft {
+        return (new DataBaseHelper(TrialDraft).create(item)) as unknown as TrialDraft;
     }
 
     /**
@@ -438,17 +480,20 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
     /**
      * Overriding the save method
-     * @param entityClass
+     * @param documentType
      * @param item
      * @param filter
      */
-    async saveDraft<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: FilterObject<T>): Promise<T> {
+    async saveDraft(documentType: string, item: unknown | unknown[], filter?: FilterObject<TrialDraft>): Promise<TrialDraft> {
         if (Array.isArray(item)) {
-            return await this.saveManyDraft(entityClass, item, filter) as any
+            return await this.saveManyDraft(documentType, item, filter) as any
         }
 
-        // this.addDryRunId(entityClass, item); // Todo ?
-        return await new DataBaseHelper(TrialDraft).save(item, filter) as unknown as T;
+        this.addDraftId(documentType, item);
+        console.log(documentType);
+        console.log(item);
+        
+        return await new DataBaseHelper(TrialDraft).save(item, filter) as unknown as TrialDraft;
     }
 
     /**
@@ -457,9 +502,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param item
      * @param filter
      */
-    async saveManyDraft<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: FilterObject<T>): Promise<T[]> {
-        // this.addDryRunId(entityClass, item); // Todo ?
-        return await new DataBaseHelper(TrialDraft).saveMany(item, filter) as unknown as T[];
+    async saveManyDraft(documentType: string, item: unknown[], filter?: FilterObject<TrialDraft>): Promise<TrialDraft[]> {
+        this.addDraftId(documentType, item);
+        return await new DataBaseHelper(TrialDraft).saveMany(item, filter) as unknown as TrialDraft[];
     }
 
     /**
@@ -506,35 +551,35 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
     /**
      * Overriding the update method
-     * @param entityClass
+     * @param documentType
      * @param criteria
      * @param row
      */
-    async updateDraft<T extends BaseEntity>(
-        entityClass: new () => T,
-        criteria: FilterQuery<T>,
+    async updateDraft(
+        documentType: string,
+        criteria: FilterQuery<TrialDraft>,
         row: unknown | unknown[]
-    ): Promise<T> {
+    ): Promise<TrialDraft> {
         if (Array.isArray(criteria)) {
-            return await this.updateMany(entityClass, row as unknown as T[], criteria) as any
+            return await this.updateManyDraft(documentType, row as unknown as TrialDraft[], criteria) as any
         }
 
-        // this.addDryRunId(entityClass, row);
-        return (await new DataBaseHelper(TrialDraft).update(row as TrialDraft, criteria as FilterQuery<TrialDraft>)) as unknown as T;
+        this.addDraftId(documentType, row);
+        return (await new DataBaseHelper(TrialDraft).update(row as TrialDraft, criteria as FilterQuery<TrialDraft>)) as unknown as TrialDraft;
     }
 
     /**
      * Update many method
-     * @param entityClass
+     * @param documentType
      * @param entities
      * @param filter
      */
-    async updateManyDraft<T extends BaseEntity>(
-        entityClass: new () => T,
-        entities: T[],
-        filter?: FilterQuery<T>,
-    ): Promise<TrialDraft[] | T[]> {
-        // this.addDryRunId(entityClass, entities);
+    async updateManyDraft(
+        documentType: string,
+        entities: unknown[],
+        filter?: FilterQuery<TrialDraft>,
+    ): Promise<TrialDraft[]> {
+        this.addDraftId(documentType, entities);
         return (await new DataBaseHelper(TrialDraft).updateMany(entities as unknown as TrialDraft[], filter as FilterQuery<TrialDraft>));
     }
 
@@ -1027,9 +1072,9 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public async saveDraftDocument(row: Partial<TrialDraft>): Promise<TrialDraft> {
-        const doc = this.createDraft(TrialDraft, row);
-        return await this.saveDraft(TrialDraft, doc);
+    public async saveDraftDocument(documentType: string, row: Partial<any>): Promise<any> {
+        const doc = this.createDraft(row);
+        return await this.saveDraft(documentType, doc);
     }
 
     /**

@@ -4,7 +4,7 @@ import { DocumentStatus } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage } from '@guardian/common';
+import { DIDMessage, HederaDidDocument, Message, MessageAction, MessageMemo, MessageServer, VcDocument as VcDocumentCollection, VcDocumentDefinition as VcDocument, VCMessage, VpDocument as VpDocumentCollection, VpDocumentDefinition as VpDocument, VPMessage, TrialDraft } from '@guardian/common';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
 import { ChildrenType, ControlType } from '../interfaces/block-about.js';
@@ -132,6 +132,24 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Get VP record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async getDraftRecord(document: IPolicyDocument, operation: Operation, ref: AnyBlockType): Promise<any> {
+        let old: any = null;
+        if (document.hash) {
+            old = await ref.databaseServer.getDraftDocument({
+                policyId: { $eq: ref.policyId },
+                hash: { $eq: document.hash },
+                hederaStatus: { $not: { $eq: DocumentStatus.REVOKE } }
+            } as FilterQuery<TrialDraft>);
+        }
+        return old;
+    }
+
+    /**
      * Update Approval record
      * @param document
      * @param operation
@@ -162,7 +180,7 @@ export class SendToGuardianBlock {
     private async updateVCRecord(
         document: IPolicyDocument,
         operation: Operation,
-        ref: AnyBlockType
+        ref: AnyBlockType,
     ): Promise<IPolicyDocument> {
         let old = await this.getVCRecord(document, operation, ref);
         if (old) {
@@ -191,7 +209,7 @@ export class SendToGuardianBlock {
     private async updateDIDRecord(
         document: IPolicyDocument,
         operation: Operation,
-        ref: AnyBlockType
+        ref: AnyBlockType,
     ): Promise<IPolicyDocument> {
         let old = await this.getDIDRecord(document, operation, ref);
         if (old) {
@@ -213,7 +231,7 @@ export class SendToGuardianBlock {
     private async updateVPRecord(
         document: IPolicyDocument,
         operation: Operation,
-        ref: AnyBlockType
+        ref: AnyBlockType,
     ): Promise<IPolicyDocument> {
         let old = await this.getVPRecord(document, operation, ref);
         if (old) {
@@ -222,7 +240,30 @@ export class SendToGuardianBlock {
         } else {
             delete document.id;
             delete document._id;
-            return await ref.databaseServer.saveVP(document)
+            return await ref.databaseServer.saveVP(document);
+        }
+    }
+
+    /**
+     * Update Draft record
+     * @param document
+     * @param operation
+     * @param ref
+     */
+    private async updateDraftRecord(
+        document: IPolicyDocument,
+        operation: Operation,
+        ref: AnyBlockType,
+        type: DocumentType,
+    ): Promise<IPolicyDocument> {
+        let old = await this.getDraftRecord(document, operation, ref);
+        if (old) {
+            old = this.mapDocument(old, document);
+            return await ref.databaseServer.updateDraft(type, old.id, old);
+        } else {
+            delete document.id;
+            delete document._id;
+            return await ref.databaseServer.saveDraftDocument(type, document);
         }
     }
 
@@ -372,7 +413,8 @@ export class SendToGuardianBlock {
     private async sendToDatabase(
         document: IPolicyDocument,
         type: DocumentType,
-        ref: AnyBlockType
+        ref: AnyBlockType,
+        isDraft?: boolean,
     ): Promise<IPolicyDocument> {
         const operation: Operation = Operation.auto;
         document.documentFields = Array.from(
@@ -437,10 +479,29 @@ export class SendToGuardianBlock {
     }
 
     /**
+     * Send to database
+     * @param document
+     * @param currentUser
+     * @param ref
+     */
+    private async sendToDatabaseDraft(
+        document: IPolicyDocument,
+        type: DocumentType,
+        ref: AnyBlockType
+    ): Promise<IPolicyDocument> {
+        const operation: Operation = Operation.auto;
+        document.documentFields = Array.from(
+            PolicyComponentsUtils.getDocumentCacheFields(ref.policyId)
+        );
+
+        return await this.updateDraftRecord(document, operation, ref, type);
+    }
+
+    /**
      * Document sender
      * @param document
      */
-    private async documentSender(document: IPolicyDocument): Promise<IPolicyDocument> {
+    private async documentSender(document: IPolicyDocument, isDraft?: boolean): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
         const type = PolicyUtils.getDocumentType(document);
 
@@ -498,7 +559,14 @@ export class SendToGuardianBlock {
         //
         const hash = docObject.toCredentialHash();
         const messageHash = message.toHash();
-        if (ref.options.dataType) {
+
+        console.log(332);
+        console.log(isDraft);
+        
+        if (isDraft) {
+            document.hash = hash;
+            document = await this.sendToDatabaseDraft(document, type, ref);
+        } else if (ref.options.dataType) {
             if (ref.options.dataType === 'hedera') {
                 document = await this.sendToHedera(document, message, ref);
                 document.messageHash = messageHash;
@@ -544,16 +612,19 @@ export class SendToGuardianBlock {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyBlock>(this);
         ref.log(`runAction`);
 
+        console.log('event.isDraft-Send', event.data.isDraft);
+        
+
         const docs: IPolicyDocument | IPolicyDocument[] = event.data.data;
         if (Array.isArray(docs)) {
             const newDocs = [];
             for (const doc of docs) {
-                const newDoc = await this.documentSender(doc);
+                const newDoc = await this.documentSender(doc, event.data.isDraft);
                 newDocs.push(newDoc);
             }
             event.data.data = newDocs;
         } else {
-            event.data.data = await this.documentSender(docs);
+            event.data.data = await this.documentSender(docs, event.data.isDraft);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data);

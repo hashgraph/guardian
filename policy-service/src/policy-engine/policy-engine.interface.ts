@@ -415,7 +415,7 @@ export interface IPolicyInterfaceBlock extends IPolicyBlock {
      * @param user
      * @param data
      */
-    setData(user: PolicyUser | null, data: any): Promise<any>;
+    setData(user: PolicyUser | null, data: any, isDraft?: boolean): Promise<any>;
 
     /**
      * Get block data
@@ -949,6 +949,11 @@ export interface IPolicyEventState {
      * Source
      */
     source?: IPolicyDocument | IPolicyDocument[];
+    
+    /**
+     * Is Draft Mode
+     */
+    isDraft?: boolean;
 }
 
 /**
