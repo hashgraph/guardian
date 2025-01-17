@@ -24,6 +24,15 @@
     position: relative;
 }
 
+::ng-deep .p-overlaypanel-content .artifact-row {
+    padding: 5px 0;
+}
+
+.artifact-row ::ng-deep .p-button {
+    width: 274px;
+    color: rgba(0, 0, 0, 0.87);
+}
+
 .artifact-row.cdk-drag-preview {
     box-sizing: border-box;
     border-radius: 4px;
@@ -73,9 +82,16 @@
     height: 90%;
 }
 
-.artifact-container .add-artifact-button {
+.artifact-container ::ng-deep .add-artifact-button {
     width: 50%;
     margin-bottom: 10px;
     height: 50px;
     min-height: 50px;
+    border: 1px solid var(--color-grey-3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
+}
+
+.artifact-container ::ng-deep .add-artifact-button i {
+    color: var(--color-grey-6);
+    margin: 0 auto;
 }
