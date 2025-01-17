@@ -49,9 +49,7 @@ Block comparison structure can be expanded to view the comparison of their Prope
 
 ![image4.png](<../../../../../.gitbook/assets/3 (1) (1) (1) (1) (1) (1) (1) (1) (1).png>)
 
-*
-  *
-    1. **Формат данных**
+1. **Data Format**
 
 POST: /analytics/compare/modules
 
@@ -71,7 +69,7 @@ Input:
 
 "idLvl":"0" – depth (level) of uuid comparison (0/1)
 
-}\\
+}
 
 Output:
 
@@ -103,7 +101,7 @@ Input:
 
 "idLvl":"0" – depth (level) of uuid comparision (0/1)
 
-}\\
+}
 
 Output:
 

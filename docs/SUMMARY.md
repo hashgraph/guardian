@@ -669,6 +669,7 @@
       * [Adding Wipe for specific token](guardian/tokens/retirement-contract/retirement-apis/adding-wipe-for-specific-token.md)
       * [Remove Wipe request for specific token](guardian/tokens/retirement-contract/retirement-apis/remove-wipe-request-for-specific-token.md)
       * [Deleting Wipe request for Hedera Account](guardian/tokens/retirement-contract/retirement-apis/deleting-wipe-request-for-hedera-account.md)
+      * [Get Retirement VCs from Indexer](guardian/tokens/retirement-contract/retirement-apis/get-retirement-vcs-from-indexer.md)
 * [👾 Automation Testing](guardian/automation-testing/README.md)
   * [💻 Performing API Automation Testing](guardian/automation-testing/how-to-perform-api-automation-testing.md)
   * [💻 Performing UI Automation Testing](guardian/automation-testing/performing-ui-automation-testing.md)
