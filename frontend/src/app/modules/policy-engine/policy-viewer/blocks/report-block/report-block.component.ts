@@ -1,19 +1,12 @@
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatIconRegistry } from '@angular/material/icon';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { DomSanitizer } from '@angular/platform-browser';
-import { ContractType, IconType, IImpactReport, IPolicyReport, IReport, IReportItem, IRetirementMessage, ITokenReport, IVC, IVCReport, IVPReport } from '@guardian/interfaces';
+import { IconType, IImpactReport, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, Observable } from 'rxjs';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { ContractService } from 'src/app/services/contract.service';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { IconsArray } from './iconsArray';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -49,31 +42,13 @@ export class ReportBlockComponent implements OnInit {
                                    value: ['', Validators.required]
                                });
 
-    vpDocument: any;
-    mintTokenId: string;
-    mintTokenSerials: string[] = [];
-    groupedByContractRetirements: any = [];
-    indexerAvailable: boolean = false;
-
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private fb: UntypedFormBuilder,
-        public dialog: MatDialog,
         private dialogService: DialogService,
-        iconRegistry: MatIconRegistry,
-        sanitizer: DomSanitizer,
-        private ipfs: IPFSService,
-        private contractService: ContractService,
-        private analyticsService: AnalyticsService
+        private ipfs: IPFSService
     ) {
-        for (let i = 0; i < IconsArray.length; i++) {
-            const element = IconsArray[i];
-            iconRegistry.addSvgIconLiteral(
-                element.name,
-                sanitizer.bypassSecurityTrustHtml(element.icon)
-            );
-        }
     }
 
     private _onSuccess(data: any) {
@@ -111,134 +86,6 @@ export class ReportBlockComponent implements OnInit {
         if (Array.isArray(blocks) && blocks.includes(this.id)) {
             this.loadData();
         }
-    }
-
-    loadRetireData() {
-        this.loading = true;
-
-        this.contractService
-            .getContracts({
-                              type: ContractType.RETIRE
-                          })
-            .subscribe(
-                (policiesResponse) => {
-                    const contracts = policiesResponse.body || [];
-                    const tokenContractTopicIds: string[] = [];
-
-                    if (contracts && contracts.length > 0) {
-                        contracts.forEach(contract => {
-                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
-                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
-                                tokenContractTopicIds.push(contract.topicId);
-                            }
-                        });
-                    }
-
-                    this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
-                        this.indexerAvailable = indexerAvailable;
-                        if (indexerAvailable && tokenContractTopicIds.length > 0) {
-                            const indexerCalls: Observable<HttpResponse<any>>[] = [];
-                            tokenContractTopicIds.forEach(id => {
-                                indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
-                            })
-
-                            this.loading = true;
-                            forkJoin([this.contractService.getRetireVCs(), ...indexerCalls]).subscribe((results: any) => {
-                                this.loading = false;
-                                const retires = results.map((item: any) => item.body)
-
-                                const [retiresDb, ...retiresIndexer] = retires;
-                                const retiresDbMapped = retiresDb
-                                    .filter((item: any) => item.type == 'RETIRE')
-                                    .map((item: any) => item.document);
-
-                                const combinedRetirements = [...retiresDbMapped];
-                                retiresIndexer.forEach((retirements: IRetirementMessage[]) => {
-                                    retirements.forEach((item: IRetirementMessage) => {
-                                        const existInGuardianDocument = retiresDbMapped.find((retire: IVC) => retire.id === item.documents[0].id);
-                                        if (!existInGuardianDocument) {
-                                            item.documents[0].topicId = item.topicId;
-                                            item.documents[0].timestamp = item.consensusTimestamp;
-                                            item.documents[0].sequenceNumber = item.sequenceNumber;
-                                            item.documents[0].owner = item.owner;
-                                            combinedRetirements.push(item.documents[0]);
-                                        }
-                                        else {
-                                            existInGuardianDocument.topicId = item.topicId;
-                                            existInGuardianDocument.timestamp = item.consensusTimestamp;
-                                            existInGuardianDocument.sequenceNumber = item.sequenceNumber;
-                                            existInGuardianDocument.owner = item.owner;
-                                        }
-                                    });
-                                });
-
-                                const tokenRetirementDocuments = combinedRetirements
-                                    .filter((item: any) => item.credentialSubject.some((subject: any) =>
-                                                                                           subject.user === this.vpDocument.document.target
-                                                                                           && subject.tokens.some((token: any) =>
-                                                                                                                      token.tokenId === this.mintTokenId
-                                                                                                                      && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                                                                                                                    ))));
-
-                                this.groupedByContractRetirements = Array.from(
-                                    new Map(tokenRetirementDocuments
-                                                .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                    )).map(([contractId]) => ({
-                                    contractId,
-                                    selectedItemIndex: 0,
-                                    documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                }))
-                            })
-                        } else {
-                            this.contractService
-                                .getRetireVCs()
-                                .subscribe(
-                                    (policiesResponse) => {
-                                        const tokenRetirementDocuments = (policiesResponse.body || [])
-                                            .filter((item: any) => item.type == 'RETIRE'
-                                                                   && item.document.credentialSubject.some((subject: any) =>
-                                                                   subject.user === this.vpDocument.document.target
-                                                                   && subject.tokens.some((token: any) =>
-                                                                                              token.tokenId === this.mintTokenId
-                                                                                              && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                                                                                            )))).map((vc: any) => vc.document);
-
-                                        this.groupedByContractRetirements = Array.from(
-                                            new Map(tokenRetirementDocuments
-                                                        .map((item: any) => [item.credentialSubject[0].contractId, []])
-                                            )).map(([contractId]) => ({
-                                            contractId,
-                                            selectedItemIndex: 0,
-                                            documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                        }))
-
-                                        this.loading = false;
-                                    },
-                                    (e) => {
-                                        this.loading = false;
-                                    }
-                                );
-                        }
-                    })
-                },
-                (e) => {
-                    this.loading = false;
-                }
-            );
-    }
-
-    getSelectedRetirementVC(group: any): any {
-        return group.documents[group.selectedItemIndex];
-    }
-
-    onNextRetirementClick(event: any, group: any) {
-        event.stopPropagation();
-        group.selectedItemIndex = group.documents.length > (group.selectedItemIndex + 1) ? group.selectedItemIndex + 1 : 0;
-    }
-
-    onPrevRetirementClick(event: any, group: any) {
-        event.stopPropagation();
-        group.selectedItemIndex = (group.selectedItemIndex - 1) >= 0 ? (group.selectedItemIndex - 1) : (group.documents.length - 1);
     }
 
     loadData() {
@@ -279,11 +126,6 @@ export class ReportBlockComponent implements OnInit {
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
-
-        this.mintTokenId = report.mintDocument?.tokenId || '';
-        this.mintTokenSerials = (report.vpDocument?.document as any).serials.map((serialItem: any) => serialItem.serial);
-        this.vpDocument = report.vpDocument;
-        this.loadRetireData();
 
         const mainDocument = this.createAdditionalDocument(report);
         if (mainDocument) {
@@ -384,7 +226,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VC',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openVPDocument(item: any) {
@@ -403,7 +246,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'VP',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     openJsonDocument(item: ITokenReport) {
@@ -419,28 +263,8 @@ export class ReportBlockComponent implements OnInit {
                 type: 'JSON',
             }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
-    }
-
-    openRetireVCDocument(
-        item: any,
-        document?: any
-    ) {
-        const title = `Retire Document`;
-        const dialogRef = this.dialogService.open(VCViewerDialog, {
-            showHeader: false,
-            width: '1000px',
-            styleClass: 'guardian-dialog',
-            data: {
-                id: item.id,
-                row: item,
-                viewDocument: true,
-                document: item,
-                title: title,
-                type: 'VC',
-            }
+        dialogRef.onClose.subscribe(async (result) => {
         });
-        dialogRef.onClose.subscribe(async (result) => { });
     }
 
     mapData(data: any[]) {
@@ -480,7 +304,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, { filterValue: null })
+            .setBlockData(this.id, this.policyId, {filterValue: null})
             .subscribe(
                 () => {
                     this.loadData();

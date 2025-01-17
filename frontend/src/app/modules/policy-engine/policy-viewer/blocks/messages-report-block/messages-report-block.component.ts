@@ -1,17 +1,10 @@
-import { DatePipe } from '@angular/common';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatIconRegistry } from '@angular/material/icon';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DomSanitizer } from '@angular/platform-browser';
-import { ContractType } from '@guardian/interfaces';
-import * as moment from 'moment';
+import moment from 'moment';
 import { DialogService } from 'primeng/dynamicdialog';
-import { forkJoin, Observable } from 'rxjs';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { ContractService } from 'src/app/services/contract.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -226,12 +219,6 @@ export class MessagesReportBlockComponent implements OnInit {
     public searchForm = this.fb.group({
                                           value: ['', Validators.required]
                                       });
-    gridSize: number = 0;
-    mintTokenId: string;
-    mintTokenSerials: string[] = [];
-    groupedByContractRetirements: any = [];
-    indexerAvailable: boolean = false;
-    retirementMessages: any[] = [];
 
     constructor(
         private element: ElementRef,
@@ -239,19 +226,9 @@ export class MessagesReportBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
         private dialogService: DialogService,
-        private iconRegistry: MatIconRegistry,
-        private sanitizer: DomSanitizer,
-        private contractService: ContractService,
-        private analyticsService: AnalyticsService,
-        private datePipe: DatePipe
+        private sanitizer: DomSanitizer
     ) {
-        iconRegistry.addSvgIconLiteral('token', sanitizer.bypassSecurityTrustHtml(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-                <path id="Icon_awesome-coins" data-name="Icon awesome-coins" d="M0,28.5v3C0,33.982,6.047,36,13.5,36S27,33.982,27,31.5v-3c-2.9,2.046-8.212,3-13.5,3S2.9,30.544,0,28.5ZM22.5,9C29.953,9,36,6.982,36,4.5S29.953,0,22.5,0,9,2.018,9,4.5,15.047,9,22.5,9ZM0,21.122V24.75c0,2.482,6.047,4.5,13.5,4.5S27,27.232,27,24.75V21.122c-2.9,2.391-8.22,3.628-13.5,3.628S2.9,23.513,0,21.122Zm29.25.773C33.279,21.115,36,19.666,36,18V15a17.267,17.267,0,0,1-6.75,2.426ZM13.5,11.25C6.047,11.25,0,13.767,0,16.875S6.047,22.5,13.5,22.5,27,19.983,27,16.875,20.953,11.25,13.5,11.25Zm15.42,3.959c4.219-.759,7.08-2.25,7.08-3.959v-3c-2.5,1.765-6.785,2.714-11.3,2.939A7.874,7.874,0,0,1,28.92,15.209Z"/>
-            </svg>
-        `));
     }
 
     public get topics(): any[] {
@@ -344,7 +321,6 @@ export class MessagesReportBlockComponent implements OnInit {
             if (this.report) {
                 this.createReport(this.report);
                 this.createSmallReport();
-                this.loadRetirementMessages();
             }
         }
         this.removeLines();
@@ -354,94 +330,10 @@ export class MessagesReportBlockComponent implements OnInit {
         }, 100);
     }
 
-    private loadRetirementMessages() {
-        this._messages2.forEach(message => {
-            if (message.__ifMintMessage) {
-                this.mintTokenId = message.__tokenId;
-            }
-        });
-
-        this.contractService
-            .getContracts({
-                              type: ContractType.RETIRE
-                          })
-            .subscribe(
-                (policiesResponse) => {
-                    const contracts = policiesResponse.body || [];
-                    const tokenContractTopicIds: string[] = [];
-
-                    if (contracts && contracts.length > 0) {
-                        contracts.forEach(contract => {
-                            if (contract.wipeTokenIds && contract.wipeTokenIds.length > 0 &&
-                                contract.wipeTokenIds.some((tokenId: string) => tokenId == this.mintTokenId)) {
-                                tokenContractTopicIds.push(contract.topicId);
-                            }
-                        });
-                    }
-
-                    this.analyticsService.checkIndexer().subscribe(indexerAvailable => {
-                        this.indexerAvailable = indexerAvailable;
-                        if (indexerAvailable && tokenContractTopicIds.length > 0) {
-                            const indexerCalls: Observable<HttpResponse<any>>[] = [];
-                            tokenContractTopicIds.forEach(id => {
-                                indexerCalls.push(this.contractService.getRetireVCsFromIndexer(id))
-                            })
-
-                            this.loading = true;
-                            forkJoin(indexerCalls).subscribe((results: any) => {
-                                this.loading = false;
-                                const retires = results.map((item: any) => item.body)
-
-                                let allRetireMessages: any = [];
-                                retires.forEach((retirements: any[]) => {
-                                    retirements.forEach((item: any) => {
-                                        if (item.documents[0].credentialSubject[0].tokens.some((token: any) => token.tokenId === this.mintTokenId)) {
-                                            item.id = item.consensusTimestamp;
-                                            item.__ifRetireMessage = true;
-                                            item.__timestamp = this.datePipe.transform(new Date(item.documents[0].issuanceDate), 'yyyy-MM-dd, hh:mm:ss');
-                                            allRetireMessages.push(item);
-                                        }
-                                    });
-                                });
-
-                                allRetireMessages.sort((a: any, b: any) => new Date(a.documents[0].issuanceDate).getTime() - new Date(b.documents[0].issuanceDate).getTime());
-
-                                // For different topics different ordering
-                                let lastOrderMessageTopic1 = this._topics1?.[this._topics1.length - 1]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
-                                allRetireMessages.forEach((element: any) => {
-                                    var newElement = {...element, __order: lastOrderMessageTopic1}
-                                    this._messages1.push(newElement);
-                                    this._topics1[this._topics1.length - 1].messages.push(newElement);
-
-                                    lastOrderMessageTopic1++;
-                                });
-                                let lastOrderMessageTopic2 = this._topics2?.[0]?.messages.reduce((acc: number, item: any) => item.__order > acc ? item.__order : acc, 0) + 1;
-                                allRetireMessages.forEach((element: any) => {
-                                    var newElement = {...element, __order: lastOrderMessageTopic2}
-                                    this._messages2.push(newElement);
-                                    this._topics2[0].messages.push(newElement);
-                                    lastOrderMessageTopic2++;
-                                });
-
-                                // Todo: Need filtration by serials and token user
-                                this.retirementMessages = [...allRetireMessages];
-
-                                this._gridTemplateColumns1 = 'repeat(' + (this.gridSize + this.retirementMessages.length + 1) + ', 230px)';
-                                this._gridTemplateColumns2 = 'repeat(' + (this.gridSize + this.retirementMessages.length) + ', 230px)';
-                            })
-                        }
-                    })
-                },
-                (e) => {
-                    this.loading = false;
-                }
-            );
-    }
-
     private createSmallReport() {
         for (const topic of this._topics1) {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
-                const t = { ...topic };
+                const t = {...topic};
                 t.__parent = null;
                 t.__offset = 20;
                 t.__order = this._topics2.length + 1;
@@ -454,22 +346,21 @@ export class MessagesReportBlockComponent implements OnInit {
                 this._messages2.push(message);
             }
         }
-
-        this.gridSize = 0;
+        let gridSize = 0;
         this._messages2.sort((a, b) => a.__order > b.__order ? 1 : -1);
         for (let index = 0; index < this._messages2.length; index++) {
             const message = this._messages2[index];
             message.__order = index + 1;
-            this.gridSize = Math.max(this.gridSize, message.__order);
+            gridSize = Math.max(gridSize, message.__order);
         }
-        this._gridTemplateColumns2 = 'repeat(' + this.gridSize + ', 230px)';
+        this._gridTemplateColumns2 = 'repeat(' + gridSize + ', 230px)';
         this._gridTemplateRows2 = 'repeat(' + this._topics2.length + ', 100px) 30px';
     }
 
     private getAllMessages(topic: any, messages: any[]): any[] {
         if (topic.messages) {
             for (const message of topic.messages) {
-                messages.push({ ...message });
+                messages.push({...message});
             }
         }
         if (topic.children) {
@@ -508,7 +399,7 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private parseMessages() {
-        this.gridSize = 0;
+        let gridSize = 0;
         for (const topic of this._topics1) {
             if (topic.message) {
                 this.parseMessage(topic, topic.message);
@@ -516,7 +407,7 @@ export class MessagesReportBlockComponent implements OnInit {
             for (const message of topic.messages) {
                 this.parseMessage(topic, message);
                 this._messages1.push(message);
-                this.gridSize = Math.max(this.gridSize, message.__order);
+                gridSize = Math.max(gridSize, message.__order);
             }
             if (topic.__parent) {
                 topic.__start = 100 * topic.__parent.__order;
@@ -539,7 +430,7 @@ export class MessagesReportBlockComponent implements OnInit {
                 topic.message.__rationale = topic.__rationale;
             }
         }
-        this._gridTemplateColumns1 = 'repeat(' + this.gridSize + ', 230px)';
+        this._gridTemplateColumns1 = 'repeat(' + gridSize + ', 230px)';
         this._gridTemplateRows1 = 'repeat(' + this._topics1.length + ', 100px) 30px';
     }
 
@@ -685,13 +576,20 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private getStatusLabel(message: any) {
         switch (message.documentStatus) {
-            case 'NEW': return 'Create document';
-            case 'ISSUE': return 'Create document';
-            case 'REVOKE': return 'Revoke document';
-            case 'SUSPEND': return 'Suspend document';
-            case 'RESUME': return 'Resume document';
-            case 'FAILED': return 'Failed';
-            default: return message.documentStatus || 'Create document';
+            case 'NEW':
+                return 'Create document';
+            case 'ISSUE':
+                return 'Create document';
+            case 'REVOKE':
+                return 'Revoke document';
+            case 'SUSPEND':
+                return 'Suspend document';
+            case 'RESUME':
+                return 'Resume document';
+            case 'FAILED':
+                return 'Failed';
+            default:
+                return message.documentStatus || 'Create document';
         }
     }
 
@@ -761,7 +659,7 @@ export class MessagesReportBlockComponent implements OnInit {
         const documents: any[] = [];
         if (message.document && message.document.verifiableCredential) {
             for (const vc of message.document.verifiableCredential) {
-                const item: any = { document: vc };
+                const item: any = {document: vc};
                 item.__schema = this.searchSchema(item);
                 item.__issuer = this.getIssuer(item);
                 if (item.__schema) {
@@ -907,11 +805,14 @@ export class MessagesReportBlockComponent implements OnInit {
     public getTopicHeader(message: any): string {
         if (message) {
             switch (message.messageType) {
-                case 'USER_TOPIC': return 'Standard Registry';
-                case 'POLICY_TOPIC': return 'Policy';
+                case 'USER_TOPIC':
+                    return 'Standard Registry';
+                case 'POLICY_TOPIC':
+                    return 'Policy';
                 case 'INSTANCE_POLICY_TOPIC':
                     return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : message.name;
-                case 'DYNAMIC_TOPIC': return 'User defined';
+                case 'DYNAMIC_TOPIC':
+                    return 'User defined';
             }
         }
         return 'Global';
@@ -920,10 +821,14 @@ export class MessagesReportBlockComponent implements OnInit {
     public getTopicName(topic: any): string {
         if (topic.message) {
             switch (topic.message.messageType) {
-                case 'USER_TOPIC': return '';
-                case 'POLICY_TOPIC': return topic.message.name;
-                case 'INSTANCE_POLICY_TOPIC': return 'Version: ' + (topic.__rationale?.version || 'N/A');
-                case 'DYNAMIC_TOPIC': return topic.message.name;
+                case 'USER_TOPIC':
+                    return '';
+                case 'POLICY_TOPIC':
+                    return topic.message.name;
+                case 'INSTANCE_POLICY_TOPIC':
+                    return 'Version: ' + (topic.__rationale?.version || 'N/A');
+                case 'DYNAMIC_TOPIC':
+                    return topic.message.name;
             }
         }
         return '';
@@ -946,7 +851,7 @@ export class MessagesReportBlockComponent implements OnInit {
         this.loading = true;
         let filterValue = this.searchForm.value.value || '';
         filterValue = filterValue.trim();
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue }).subscribe(() => {
+        this.policyEngineService.setBlockData(this.id, this.policyId, {filterValue}).subscribe(() => {
             this.loadData();
         }, (e) => {
             console.error(e.error);
@@ -981,7 +886,8 @@ export class MessagesReportBlockComponent implements OnInit {
                     viewDocument: false
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         } else {
 
             const dialogRef = this.dialogService.open(VCViewerDialog, {
@@ -990,14 +896,15 @@ export class MessagesReportBlockComponent implements OnInit {
                 styleClass: 'guardian-dialog',
                 data: {
                     row: null,
-                    document: message.document || message.documents?.[0],
+                    document: message.document,
                     title: 'VC Document',
                     type: 'VC',
                     viewDocument: true,
                     schema: message.__schema,
                 }
             });
-            dialogRef.onClose.subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         }
     }
 
