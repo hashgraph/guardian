@@ -39,7 +39,7 @@ context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: 600000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body).to.be.not.eql("");

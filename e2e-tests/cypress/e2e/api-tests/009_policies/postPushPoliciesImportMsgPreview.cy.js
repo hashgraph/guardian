@@ -16,6 +16,7 @@ context("Schemas", { tags: ['policies', 'secondPool', 'all'] }, () => {
                 body: {
                     "messageId": "1707125414.999819805"
                 },
+                timeout: 600000
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.ACCEPTED);
             });

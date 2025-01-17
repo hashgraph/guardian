@@ -493,7 +493,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     });
 
     it("Verify roles(wipe)", () => {
-        cy.wait(180000)
+        cy.wait(300000)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,

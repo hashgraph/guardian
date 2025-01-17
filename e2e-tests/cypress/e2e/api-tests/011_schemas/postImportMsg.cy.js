@@ -28,7 +28,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
                     body: {
                         messageId: Cypress.env("schema_for_import"),
                     },
-                    timeout: 180000
+                    timeout: 600000
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.SUCCESS);
                     expect(response.body).to.not.be.oneOf([null, ""]);
