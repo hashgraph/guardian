@@ -1,31 +1,19 @@
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatIconRegistry } from '@angular/material/icon';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { DomSanitizer } from '@angular/platform-browser';
-import {
-    IImpactReport,
-    IconType,
-    IPolicyReport,
-    IReport,
-    IReportItem,
-    ITokenReport,
-    IVCReport,
-    IVPReport,
-    ContractType,
-    IRetirementMessage,
-    IVC,
-} from '@guardian/interfaces';
+import { ContractType, IconType, IImpactReport, IPolicyReport, IReport, IReportItem, IRetirementMessage, ITokenReport, IVC, IVCReport, IVPReport } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
+import { forkJoin, Observable } from 'rxjs';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { AnalyticsService } from 'src/app/services/analytics.service';
+import { ContractService } from 'src/app/services/contract.service';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { IconsArray } from './iconsArray';
-import { DialogService } from 'primeng/dynamicdialog';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
-import { ContractService } from 'src/app/services/contract.service';
-import { AnalyticsService } from 'src/app/services/analytics.service';
-import { forkJoin, Observable } from 'rxjs';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -39,10 +27,10 @@ interface IAdditionalDocument {
  * Component for display block of 'ReportBlock' types.
  */
 @Component({
-    selector: 'app-report-block',
-    templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.scss'],
-})
+               selector: 'app-report-block',
+               templateUrl: './report-block.component.html',
+               styleUrls: ['./report-block.component.scss']
+           })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
@@ -58,8 +46,8 @@ export class ReportBlockComponent implements OnInit {
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
-        value: ['', Validators.required],
-    });
+                                   value: ['', Validators.required]
+                               });
 
     vpDocument: any;
     mintTokenId: string;
@@ -85,6 +73,22 @@ export class ReportBlockComponent implements OnInit {
                 element.name,
                 sanitizer.bypassSecurityTrustHtml(element.icon)
             );
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -114,8 +118,8 @@ export class ReportBlockComponent implements OnInit {
 
         this.contractService
             .getContracts({
-                type: ContractType.RETIRE
-            })
+                              type: ContractType.RETIRE
+                          })
             .subscribe(
                 (policiesResponse) => {
                     const contracts = policiesResponse.body || [];
@@ -170,20 +174,20 @@ export class ReportBlockComponent implements OnInit {
 
                                 const tokenRetirementDocuments = combinedRetirements
                                     .filter((item: any) => item.credentialSubject.some((subject: any) =>
-                                        subject.user === this.vpDocument.document.target
-                                        && subject.tokens.some((token: any) =>
-                                            token.tokenId === this.mintTokenId
-                                            && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                            ))));
+                                                                                           subject.user === this.vpDocument.document.target
+                                                                                           && subject.tokens.some((token: any) =>
+                                                                                                                      token.tokenId === this.mintTokenId
+                                                                                                                      && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                                                                                                                    ))));
 
                                 this.groupedByContractRetirements = Array.from(
                                     new Map(tokenRetirementDocuments
-                                        .map((item: any) => [item.credentialSubject[0].contractId, []])
+                                                .map((item: any) => [item.credentialSubject[0].contractId, []])
                                     )).map(([contractId]) => ({
-                                        contractId,
-                                        selectedItemIndex: 0,
-                                        documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                    }))
+                                    contractId,
+                                    selectedItemIndex: 0,
+                                    documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                }))
                             })
                         } else {
                             this.contractService
@@ -192,21 +196,21 @@ export class ReportBlockComponent implements OnInit {
                                     (policiesResponse) => {
                                         const tokenRetirementDocuments = (policiesResponse.body || [])
                                             .filter((item: any) => item.type == 'RETIRE'
-                                                && item.document.credentialSubject.some((subject: any) =>
-                                                    subject.user === this.vpDocument.document.target
-                                                    && subject.tokens.some((token: any) =>
-                                                        token.tokenId === this.mintTokenId
-                                                        && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
-                                                        )))).map((vc: any) => vc.document);
+                                                                   && item.document.credentialSubject.some((subject: any) =>
+                                                                   subject.user === this.vpDocument.document.target
+                                                                   && subject.tokens.some((token: any) =>
+                                                                                              token.tokenId === this.mintTokenId
+                                                                                              && this.mintTokenSerials.length <= 0 || token.serials.some((serial: string) => this.mintTokenSerials.includes(serial)
+                                                                                                            )))).map((vc: any) => vc.document);
 
                                         this.groupedByContractRetirements = Array.from(
                                             new Map(tokenRetirementDocuments
-                                                .map((item: any) => [item.credentialSubject[0].contractId, []])
+                                                        .map((item: any) => [item.credentialSubject[0].contractId, []])
                                             )).map(([contractId]) => ({
-                                                contractId,
-                                                selectedItemIndex: 0,
-                                                documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
-                                            }))
+                                            contractId,
+                                            selectedItemIndex: 0,
+                                            documents: tokenRetirementDocuments.filter((item: any) => item.credentialSubject[0].contractId === contractId)
+                                        }))
 
                                         this.loading = false;
                                     },
@@ -252,22 +256,6 @@ export class ReportBlockComponent implements OnInit {
         }
     }
 
-    private _onSuccess(data: any) {
-        this.setData(data);
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    private _onError(e: HttpErrorResponse) {
-        console.error(e.error);
-        if (e.status === 503) {
-            this._onSuccess(null);
-        } else {
-            this.loading = false;
-        }
-    }
-
     setData(data: any) {
         if (data && data.data) {
             this.chainVisible = true;
@@ -286,8 +274,8 @@ export class ReportBlockComponent implements OnInit {
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
-            value: this.hash,
-        });
+                                       value: this.hash
+                                   });
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
@@ -316,15 +304,15 @@ export class ReportBlockComponent implements OnInit {
 
         if (this.policyDocument) {
             this.documents.push({
-                type: this.policyDocument.type,
-                title: 'Policy',
-                description: this.policyDocument.tag,
-                tag: this.policyDocument.tag,
-                visible: true,
-                issuer: this.policyDocument.issuer,
-                username: this.policyDocument.username,
-                document: this.policyDocument.document,
-            });
+                                    type: this.policyDocument.type,
+                                    title: 'Policy',
+                                    description: this.policyDocument.tag,
+                                    tag: this.policyDocument.tag,
+                                    visible: true,
+                                    issuer: this.policyDocument.issuer,
+                                    username: this.policyDocument.username,
+                                    document: this.policyDocument.document
+                                });
         }
         if (this.policyCreatorDocument) {
             this.documents.push(this.policyCreatorDocument);
@@ -467,9 +455,9 @@ export class ReportBlockComponent implements OnInit {
 
     onScrollButtonPress(target: HTMLDivElement, amount: number = 0) {
         target.scrollBy({
-            behavior: 'smooth',
-            left: amount,
-        });
+                            behavior: 'smooth',
+                            left: amount
+                        });
     }
 
     updateFilter() {
@@ -625,8 +613,8 @@ export class ReportBlockComponent implements OnInit {
         const indexDocument = itemDocuments.indexOf(document);
         const secondDocumentIndex =
             indexDocument - 1 < 0
-                ? itemDocuments.length + (indexDocument - 1)
-                : indexDocument - 1;
+            ? itemDocuments.length + (indexDocument - 1)
+            : indexDocument - 1;
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
 }
