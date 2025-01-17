@@ -1,14 +1,6 @@
-import {
-    Entity,
-    Property,
-    PrimaryKey,
-    SerializedPrimaryKey,
-    Unique,
-    Index,
-    Enum,
-} from '@mikro-orm/core';
-import { ObjectId } from '@mikro-orm/mongodb';
 import { Message as IMessage, MessageAction, MessageType } from '@indexer/interfaces';
+import { Entity, Enum, Index, PrimaryKey, Property, SerializedPrimaryKey, Unique } from '@mikro-orm/core';
+import { ObjectId } from '@mikro-orm/mongodb';
 
 @Entity()
 @Unique({ name: 'consensus_timestamp', properties: ['consensusTimestamp'] })
@@ -33,9 +25,6 @@ export class Message implements IMessage {
 
     @Property()
     consensusTimestamp: string;
-
-    @Property()
-    sequenceNumber: number;
 
     @Property()
     owner: string;
