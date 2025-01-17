@@ -159,6 +159,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                     routerLink: '/schema-rules'
                 });
             }
+            if (user.STATISTICS_LABEL_READ) {
+                childItems.push({
+                    title: 'Policy Labels',
+                    routerLink: '/policy-labels'
+                });
+            }
         }
         if (
             user.SCHEMAS_SCHEMA_READ ||

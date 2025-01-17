@@ -1,8 +1,9 @@
 import { DataBaseHelper, Message } from '@indexer/common';
-import { MessageType, MessageAction, IPFS_CID_PATTERN } from '@indexer/interfaces';
+import { MessageType, MessageAction, IPFS_CID_PATTERN, VPAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
 import { SynchronizationTask } from '../synchronization-task.js';
 import { loadFiles } from '../load-files.js';
+import { Collection } from 'mongodb';
 
 export class SynchronizationVPs extends SynchronizationTask {
     public readonly name: string = 'vps';
@@ -11,10 +12,7 @@ export class SynchronizationVPs extends SynchronizationTask {
         super('vps', mask);
     }
 
-    public override async sync(): Promise<void> {
-        const em = DataBaseHelper.getEntityManager();
-        const collection = em.getCollection<Message>('message');
-
+    private async loadPolicies(collection: Collection<Message>) {
         console.log(`Sync VPs: load policies`)
         const policyMap = new Map<string, Message>();
         const policies = collection.find({ type: MessageType.INSTANCE_POLICY });
@@ -24,7 +22,10 @@ export class SynchronizationVPs extends SynchronizationTask {
                 policyMap.set(policy.options.instanceTopicId, policy);
             }
         }
+        return policyMap;
+    }
 
+    private async loadTopics(collection: Collection<Message>) {
         console.log(`Sync VPs: load topics`)
         const topicMap = new Map<string, Message>();
         const topics = collection.find({
@@ -37,20 +38,10 @@ export class SynchronizationVPs extends SynchronizationTask {
                 topicMap.set(topic.topicId, topic);
             }
         }
+        return topicMap;
+    }
 
-        console.log(`Sync VPs: load documents`)
-        const documents = collection.find({
-            type: { $in: [MessageType.VP_DOCUMENT] },
-            ...this.filter(),
-        });
-        const allDocuments: Message[] = [];
-        const fileIds: Set<string> = new Set<string>();
-        while (await documents.hasNext()) {
-            const document = await documents.next();
-            allDocuments.push(document);
-            fileIds.add(document.files?.[0]);
-        }
-
+    private async loadSchemas(collection: Collection<Message>, fileIds: Set<string>) {
         console.log(`Sync VPs: load schemas`)
         const schemaMap = new Map<string, Message>();
         const schemas = collection.find({ type: MessageType.SCHEMA });
@@ -68,14 +59,68 @@ export class SynchronizationVPs extends SynchronizationTask {
                 }
             }
         }
+        return schemaMap;
+    }
 
+    private async loadLabelDocuments(collection: Collection<Message>) {
+        console.log(`Sync VPs: load label documents`)
+        const labels = collection.find({
+            action: MessageAction.CreateLabelDocument
+        });
+        const labelDocumentMap = new Map<string, string[]>();
+        while (await labels.hasNext()) {
+            const label = await labels.next();
+            const refs = labelDocumentMap.get(label.options?.target) || [];
+            refs.push(label.consensusTimestamp);
+            labelDocumentMap.set(label.options?.target, refs);
+        }
+        return labelDocumentMap;
+    }
+
+    private async loadDocuments(collection: Collection<Message>, fileIds: Set<string>) {
+        console.log(`Sync VPs: load documents`)
+        const documents = collection.find({
+            type: { $in: [MessageType.VP_DOCUMENT] },
+            ...this.filter(),
+        });
+        const allDocuments: Message[] = [];
+        while (await documents.hasNext()) {
+            const document = await documents.next();
+            allDocuments.push(document);
+            fileIds.add(document.files?.[0]);
+        }
+        return allDocuments;
+    }
+
+    private async loadFiles(fileIds: Set<string>) {
         console.log(`Sync VPs: load files`)
         const fileMap = await loadFiles(fileIds, false);
+        return fileMap;
+    }
+
+    public override async sync(): Promise<void> {
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+
+        const fileIds: Set<string> = new Set<string>();
+        const policyMap = await this.loadPolicies(collection);
+        const topicMap = await this.loadTopics(collection);
+        const schemaMap = await this.loadSchemas(collection, fileIds);
+        const labelDocumentMap = await this.loadLabelDocuments(collection);
+        const needUpdate = await this.loadDocuments(collection, fileIds);
+        const fileMap = await this.loadFiles(fileIds);
 
         console.log(`Sync VPs: update data`)
-        for (const document of allDocuments) {
+        for (const document of needUpdate) {
             const row = em.getReference(Message, document._id);
-            row.analytics = this.createAnalytics(document, policyMap, topicMap, schemaMap, fileMap);
+            row.analytics = this.createAnalytics(
+                document,
+                policyMap,
+                topicMap,
+                schemaMap,
+                fileMap,
+                labelDocumentMap
+            );
             em.persist(row);
         }
         console.log(`Sync VPs: flush`)
@@ -87,9 +132,10 @@ export class SynchronizationVPs extends SynchronizationTask {
         policyMap: Map<string, Message>,
         topicMap: Map<string, Message>,
         schemaMap: Map<string, Message>,
-        fileMap: Map<string, string>
-    ): any {
-        const documentAnalytics: any = {
+        fileMap: Map<string, string>,
+        labelDocumentMap: Map<string, string[]>
+    ): VPAnalytics {
+        const documentAnalytics: VPAnalytics = {
             textSearch: textSearch(document),
         };
         let policyMessage = policyMap.get(document.topicId);
@@ -108,41 +154,53 @@ export class SynchronizationVPs extends SynchronizationTask {
             const documentFileString = fileMap.get(documentFileId);
             const documentFile = this.parseFile(documentFileString);
             const vcs = this.getVcs(documentFile);
-            if (!vcs) {
-                return documentAnalytics;
-            }
-            for (const vc of vcs) {
-                const subject = this.getSubject(vc);
-                if (!subject) {
-                    return documentAnalytics;
-                }
-                const documentFields = new Set<string>();
-                this.parseDocumentFields(subject, documentFields);
-                if (documentFields.size > 0) {
-                    documentAnalytics.textSearch += `|${[...documentFields].join('|')}`;
-                }
-                const schemaContextCID = this.getContext(vc);
-                if (schemaContextCID) {
-                    const schemaMessage = schemaMap.get(schemaContextCID);
-                    if (schemaMessage) {
-                        if (!documentAnalytics.schemaIds) {
-                            documentAnalytics.schemaIds = [];
+            if (vcs) {
+                for (const vc of vcs) {
+                    const subject = this.getSubject(vc);
+                    if (subject) {
+                        if (subject.type === 'MintToken') {
+                            documentAnalytics.tokenId = subject.tokenId;
+                            documentAnalytics.tokenAmount = subject.amount;
                         }
-                        documentAnalytics.schemaIds.push(schemaMessage.consensusTimestamp);
-                        const schemaDocumentFileString = fileMap.get(schemaMessage.files?.[0]);
-                        const schemaDocumentFile = this.parseFile(schemaDocumentFileString);
-                        if (schemaDocumentFile?.title) {
-                            documentAnalytics.textSearch += `|${schemaDocumentFile.title}`;
-                            if (!documentAnalytics.schemaNames) {
-                                documentAnalytics.schemaNames = [];
+                        const documentFields = new Set<string>();
+                        this.parseDocumentFields(subject, documentFields);
+                        if (documentFields.size > 0) {
+                            documentAnalytics.textSearch += `|${[...documentFields].join('|')}`;
+                        }
+                        const schemaContextCID = this.getContext(vc);
+                        if (schemaContextCID) {
+                            const schemaMessage = schemaMap.get(schemaContextCID);
+                            if (schemaMessage) {
+                                if (!documentAnalytics.schemaIds) {
+                                    documentAnalytics.schemaIds = [];
+                                }
+                                documentAnalytics.schemaIds.push(schemaMessage.consensusTimestamp);
+                                const schemaDocumentFileString = fileMap.get(schemaMessage.files?.[0]);
+                                const schemaDocumentFile = this.parseFile(schemaDocumentFileString);
+                                if (schemaDocumentFile?.title) {
+                                    documentAnalytics.textSearch += `|${schemaDocumentFile.title}`;
+                                    if (!documentAnalytics.schemaNames) {
+                                        documentAnalytics.schemaNames = [];
+                                    }
+                                    documentAnalytics.schemaNames.push(schemaDocumentFile.title);
+                                }
                             }
-                            documentAnalytics.schemaNames.push(schemaDocumentFile.title);
                         }
                     }
                 }
             }
+            documentAnalytics.issuer = this.getIssuer(documentFile);
         }
+        documentAnalytics.labels = labelDocumentMap.get(document.consensusTimestamp);
+
         return documentAnalytics;
+    }
+
+    private getIssuer(documentFile: any) {
+        if (documentFile && documentFile.proof && typeof documentFile.proof.verificationMethod === 'string') {
+            return documentFile.proof.verificationMethod.split('#')[0];
+        }
+        return null;
     }
 
     private parseFile(file: string | undefined): any | null {

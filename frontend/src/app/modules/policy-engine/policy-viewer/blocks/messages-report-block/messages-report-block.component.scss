@@ -199,7 +199,8 @@
     text-overflow: ellipsis;
 }
 
-.topic-header mat-icon {
+.topic-header i,
+.topic-header svg {
     position: absolute;
     top: 0;
     left: 0;
@@ -274,7 +275,8 @@
     height: 22px;
 }
 
-.message-header mat-icon {
+.message-header i,
+.message-header svg {
     position: absolute;
     top: 0;
     left: 0;
@@ -376,7 +378,8 @@
     min-width: 22px;
 }
 
-.dashboard-right-header>span mat-icon {
+.dashboard-right-header>span i,
+.dashboard-right-header>span svg,{
     position: absolute;
     top: -3px;
     left: 0px;
@@ -392,7 +395,8 @@
     margin: 16px 4px;
 }
 
-.dashboard-right .document-header mat-icon {
+.dashboard-right .document-header i,
+.dashboard-right .document-header svg {
     position: absolute;
     top: 0px;
     left: 12px;
@@ -487,7 +491,8 @@
     border: 1px solid #404fb2;
 }
 
-.relationship-document mat-icon {
+.relationship-document i,
+.relationship-document svg {
     position: absolute;
     top: 9px;
     left: 9px;

@@ -16,6 +16,8 @@ import { Message as IMessage, MessageAction, MessageType } from '@indexer/interf
 @Index({ name: 'status', properties: ['status'] })
 @Index({ name: 'type', properties: ['type'] })
 @Index({ name: 'files', properties: ['files'] })
+@Index({ name: 'last_update', properties: ['lastUpdate'] })
+@Index({ name: 'loaded', properties: ['loaded'] })
 export class Message implements IMessage {
     @PrimaryKey()
     _id: ObjectId;
@@ -24,10 +26,16 @@ export class Message implements IMessage {
     id!: string;
 
     @Property()
+    lastUpdate: number;
+
+    @Property()
     topicId: string;
 
     @Property()
     consensusTimestamp: string;
+
+    @Property()
+    sequenceNumber: number;
 
     @Property()
     owner: string;
@@ -77,6 +85,9 @@ export class Message implements IMessage {
         hash?: string;
         hashMap?: any;
         properties?: string[];
+        tokenId?: string,
+        labels?: string[];
+        labelName?: string;
     };
 
     @Property({ nullable: true })
@@ -93,4 +104,7 @@ export class Message implements IMessage {
 
     @Property({ nullable: true })
     sequenceNumber?: number;
+
+    @Property({ nullable: true })
+    loaded: boolean;
 }

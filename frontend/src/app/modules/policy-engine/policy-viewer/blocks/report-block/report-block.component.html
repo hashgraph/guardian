@@ -391,9 +391,9 @@
                                             </div>
                                         </div>
                                     </ng-container>
-                                    
+
                                     <i class="pi pi-bars retirement-group-icon"></i>
-                                    
+
                                     <ng-container *ngIf="getSelectedRetirementVC(group) as selectedVC">
                                         <ng-container *ngIf="selectedVC.credentialSubject[0]?.tokens?.length > 1; else singleTokenRetirementTemplate">
                                             <div style="display: inline-block; position: relative; align-self: end;">
@@ -417,13 +417,13 @@
                                                             <p>Token <span>{{ selectedVC.credentialSubject[0]?.tokens[0].tokenId }}</span></p>
                                                             <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length > 0">Instance ID <span>{{ selectedVC.credentialSubject[0]?.tokens[0].serials.join(', ') }}</span></p>
                                                             <p *ngIf="selectedVC.credentialSubject[0]?.tokens[0].serials && selectedVC.credentialSubject[0]?.tokens[0].serials.length <= 0">Amount <span>{{ selectedVC.credentialSubject[0]?.tokens[0].count }}</span></p>
-                                                            
+
                                                             <p *ngIf="selectedVC.timestamp">Transaction
                                                                 <hedera-explorer type="topics" [params]="selectedVC.topicId" subType="messages"
                                                                 [subParams]="selectedVC.sequenceNumber">{{selectedVC.timestamp}}</hedera-explorer>
                                                             </p>
                                                             <p *ngIf="!selectedVC.timestamp">Transaction <span>-</span></p>
-                                                            
+
                                                             <p>User ID <span>{{ selectedVC.credentialSubject[0]?.user }}</span></p>
                                                         </div>
                                                         <div class="retire-info second-token">
@@ -432,15 +432,15 @@
                                                             <p *ngIf="selectedVC.credentialSubject[0]?.tokens[1].serials && selectedVC.credentialSubject[0]?.tokens[1].serials.length <= 0">Amount <span>{{ selectedVC.credentialSubject[0]?.tokens[1].count }}</span></p>
                                                         </div>
                                                     </div>
-                    
+
                                                     <div *ngIf="
                                                     selectedVC &&
                                                     group.documents.length > 1
                                                             " class="multiple-documents-count">
                                                         <mat-icon (click)="onPrevRetirementClick($event, group)">chevron_left</mat-icon>
-                    
+
                                                         {{ (group.selectedItemIndex + 1) }} of {{ group.documents.length }}
-                    
+
                                                         <mat-icon (click)="onNextRetirementClick($event, group)">chevron_right</mat-icon>
                                                     </div>
                                                 </div>
@@ -468,15 +468,15 @@
                                                         <p>Transaction <span>{{ selectedVC.timestamp }}</span></p>
                                                         <p>User ID <span>{{ selectedVC.credentialSubject[0]?.user }}</span></p>
                                                     </div>
-                    
+
                                                     <div *ngIf="
                                                     selectedVC &&
                                                     group.documents.length > 1
                                                             " class="multiple-documents-count">
                                                         <mat-icon (click)="onPrevRetirementClick($event, group)">chevron_left</mat-icon>
-                    
+
                                                         {{ (group.selectedItemIndex + 1) }} of {{ group.documents.length }}
-                    
+
                                                         <mat-icon (click)="onNextRetirementClick($event, group)">chevron_right</mat-icon>
                                                     </div>
                                                 </div>

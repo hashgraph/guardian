@@ -1,42 +1,79 @@
-<!--<mat-form-field appearance="outline" class="type-selector">-->
-<!--    <mat-label>Layers</mat-label>-->
-<!--    <mat-select [disabled]="isDisabled" required>-->
-<!--        <mat-option>NATURAL-COLOR</mat-option>-->
-<!--    </mat-select>-->
-<!--</mat-form-field>-->
-<!--<mat-form-field appearance="outline" class="type-selector">-->
-<!--    <mat-label>format</mat-label>-->
-<!--    <input matInput required/>-->
-<!--</mat-form-field>-->
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>Maxcc</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getControlByName('maxcc')" matInput required type="number"/>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>Width</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getControlByName('width')" matInput required type="number"/>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>Height</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getControlByName('height')" matInput required type="number"/>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>BBox</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getControlByName('bbox')" matInput pattern="\d+,\d+,\d+,\d+" placeholder="11111,22222,33333,44444"
-           required/>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>From</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getDateByName('from')" [ngxMatDatetimePicker]="dateTimePicker1"
-           matInput>
-    <mat-datepicker-toggle [for]="$any(dateTimePicker1)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker1 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
-</mat-form-field>
-<mat-form-field appearance="outline" class="type-selector">
-    <mat-label>To</mat-label>
-    <input [disabled]="isDisabled" [formControl]="getDateByName('to')" [ngxMatDatetimePicker]="dateTimePicker2"
-           matInput>
-    <mat-datepicker-toggle [for]="$any(dateTimePicker2)" matSuffix></mat-datepicker-toggle>
-    <ngx-mat-datetime-picker #dateTimePicker2 [enableMeridian]="true" [hideTime]="true"></ngx-mat-datetime-picker>
-</mat-form-field>
+<div class="form-group type-selector">
+    <label for="maxccInput" class="form-label">Maxcc</label>
+    <input
+        pInputText
+        id="maxccInput"
+        [disabled]="isDisabled"
+        [formControl]="getControlByName('maxcc')"
+        required
+        type="number"
+        class="full-width">
+</div>
+
+<div class="form-group type-selector">
+    <label for="widthInput" class="form-label">Width</label>
+    <input
+        pInputText
+        id="widthInput"
+        [disabled]="isDisabled"
+        [formControl]="getControlByName('width')"
+        required
+        type="number"
+        class="full-width">
+</div>
+
+<div class="form-group type-selector">
+    <label for="heightInput" class="form-label">Height</label>
+    <input
+        pInputText
+        id="heightInput"
+        [disabled]="isDisabled"
+        [formControl]="getControlByName('height')"
+        required
+        type="number"
+        class="full-width">
+</div>
+
+<div class="form-group type-selector">
+    <label for="bboxInput" class="form-label">BBox</label>
+    <input
+        pInputText
+        id="bboxInput"
+        [disabled]="isDisabled"
+        [formControl]="getControlByName('bbox')"
+        pattern="\d+,\d+,\d+,\d+"
+        placeholder="11111,22222,33333,44444"
+        required
+        class="full-width">
+</div>
+
+<div class="type-selector">
+    <div class="form-group">
+        <label for="fromDate" class="form-label">From</label>
+        <p-calendar
+            id="fromDate"
+            [formControl]="fromControl"
+            [disabled]="isDisabled"
+            [showTime]="false"
+            [appendTo]="'body'"
+            placeholder="Select date"
+            class="full-width">
+        </p-calendar>
+    </div>
+</div>
+
+<div class="type-selector">
+    <div class="form-group">
+        <label for="toDate" class="form-label">To</label>
+        <p-calendar
+            id="toDate"
+            [formControl]="toControl"
+            [disabled]="isDisabled"
+            [showTime]="false"
+            [appendTo]="'body'"
+            placeholder="Select date"
+            class="full-width">
+        </p-calendar>
+    </div>
+</div>
 <img *ngIf="formattedImageLink" [src]="formattedImageLink" class="image">

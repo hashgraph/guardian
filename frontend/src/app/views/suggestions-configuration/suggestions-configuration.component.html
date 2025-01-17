@@ -15,9 +15,13 @@
              [cdkDropListData]="policiesAndModules" cdkDropList
              class="draggable-elements-container">
             <div *ngFor="let item of policiesAndModules" [attr.type]="item.type" cdkDrag class="item">
-                <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                <span cdkDragHandle class="re-order-handler">
+                    <i class="pi pi-equals"></i>
+                </span>
                 <span>{{ item.name }}</span>
-                <span (click)="move(item)" class="move-right-btn"><mat-icon>arrow_right_alt</mat-icon></span>
+                <span (click)="move(item)" class="move-right-btn">
+                    <i class="pi  pi-arrow-right"></i>
+                </span>
             </div>
         </div>
     </div>
@@ -27,9 +31,13 @@
              [cdkDropListData]="suggestionsOrderPriority" cdkDropList
              class="draggable-elements-container">
             <div *ngFor="let item of suggestionsOrderPriority" [attr.type]="item.type" cdkDrag class="item">
-                <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
+                <span cdkDragHandle class="re-order-handler">
+                    <i class="pi pi-equals"></i>
+                </span>
                 <span>{{ item.name }}</span>
-                <span (click)="remove(item)" class="delete-btn"><mat-icon>delete</mat-icon></span>
+                <span (click)="remove(item)" class="delete-btn">
+                    <i class="pi pi-trash"></i>
+                </span>
             </div>
         </div>
     </div>
@@ -42,9 +50,13 @@
             <div cdkDropList #available="cdkDropList" [cdkDropListData]="policiesAndModules"
                  (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[result]" class="item-list">
                 <div class="item-list-box" [attr.type]="item.type" *ngFor="let item of policiesAndModules" cdkDrag>
-                    <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
-                    <span>{{item.name}}</span>
-                    <span class="move-right-btn" (click)="move(item)"><mat-icon>arrow_right_alt</mat-icon></span>
+                    <span cdkDragHandle class="re-order-handler">
+                    <i class="pi pi-trash"></i>
+                    </span>
+                    <span>{{ item.name }}</span>
+                    <span class="move-right-btn" (click)="move(item)">
+                        <i class="pi  pi-arrow-right"></i>
+                    </span>
                 </div>
             </div>
         </div>
@@ -54,7 +66,7 @@
                 <button (click)="apply()" color="primary" mat-flat-button>Apply settings</button>
             </div>
             <div>
-                <mat-icon class="arrow-icon">arrow_right_alt</mat-icon>
+                <i class="pi  pi-arrow-right arrow-icon"></i>
             </div>
             <div class="action-btn">
                 <button (click)="clear()" color="warn" mat-flat-button>Clear</button>
@@ -67,9 +79,13 @@
                  (cdkDropListDropped)="drop($event)" [cdkDropListConnectedTo]="[available]" class="item-list">
                 <div *ngFor="let item of suggestionsOrderPriority" [attr.type]="item.type" cdkDrag
                      class="item-list-box">
-                    <span cdkDragHandle class="re-order-handler"><mat-icon>drag_handle</mat-icon></span>
-                    <span>{{item.name}}</span>
-                    <span class="delete-btn" (click)="remove(item)"><mat-icon>delete</mat-icon></span>
+                    <span cdkDragHandle class="re-order-handler">
+                        <i class="pi pi-equals"></i>
+                    </span>
+                    <span>{{ item.name }}</span>
+                    <span class="delete-btn" (click)="remove(item)">
+                         <i class="pi pi-trash"></i>
+                    </span>
                 </div>
             </div>
         </div>

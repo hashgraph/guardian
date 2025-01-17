@@ -86,7 +86,7 @@ The workflow outlined in this policy replicates the procedural steps required fo
 
 ## Policy Workflow <a href="#toc705007519" id="toc705007519"></a>
 
-![](<../../../.gitbook/assets/1 (1) (1).png>)
+![](<../../../.gitbook/assets/1 (1) (1) (1) (1).png>)
 
 ## Policy Import <a href="#toc2064975104" id="toc2064975104"></a>
 
@@ -156,116 +156,116 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 1. Import the policy using IPFS or Policy File. Once imported, you will be redirected to the policy configurator.
 
-![](<../../../.gitbook/assets/2 (1) (1).png>)
+![](<../../../.gitbook/assets/2 (1) (1) (1) (1).png>)
 
 2. Any tools used within the policy can be seen in the policy workflow blocks.
 
-![](<../../../.gitbook/assets/3 (1) (1).png>)
+![](<../../../.gitbook/assets/3 (1) (1) (1).png>)
 
 3. Set the policy to Dry Run or Publish it using the dropdown. Then select “Go” or “Register”.
 
-![](<../../../.gitbook/assets/4 (1) (1).png>)
+![](<../../../.gitbook/assets/4 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/5 (1) (1).png>)
+![](<../../../.gitbook/assets/5 (1) (1) (1).png>)
 
 4. Create three new user accounts and assign each one a role: Project Owner, Verifier, and Steering Committee. Ensure that all user registration forms are completed.
 
-![](<../../../.gitbook/assets/6 (1) (1).png>)
+![](<../../../.gitbook/assets/6 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/7 (1) (1).png>)
+![](<../../../.gitbook/assets/7 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/8 (1) (1).png>)
+![](<../../../.gitbook/assets/8 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/9 (1) (1).png>)
+![](<../../../.gitbook/assets/9 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/10 (1) (1).png>)
+![](<../../../.gitbook/assets/10 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/11 (1) (1).png>)
+![](<../../../.gitbook/assets/11 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/12 (1) (1).png>)
+![](<../../../.gitbook/assets/12 (1) (1) (1).png>)
 
 5. Log in to the administrator account to review and approve the Project Owner and Verifier accounts. The administrator will have access to the submitted registration forms for each user and can choose to approve or reject them.
 
-![](<../../../.gitbook/assets/13 (1) (1).png>)
+![](<../../../.gitbook/assets/13 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/14 (1) (1).png>)
+![](<../../../.gitbook/assets/14 (1) (1) (1).png>)
 
 6. The Project Owner can click 'Create Project' to submit the Project Submission Form.
 
-![](<../../../.gitbook/assets/15 (1) (1).png>)
+![](<../../../.gitbook/assets/15 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/16 (1) (1).png>)
+![](<../../../.gitbook/assets/16 (1) (1) (1).png>)
 
 7. The Project Owner can also submit an Investment Analysis, though this is optional.
 
-![](<../../../.gitbook/assets/17 (1) (1).png>)
+![](<../../../.gitbook/assets/17 (1) (1) (1).png>)
 
 8. Return to the administrator account to review the Project Submission Form for completeness and assign a submission number after approving it.
 
-![](<../../../.gitbook/assets/18 (1) (1).png>)
+![](<../../../.gitbook/assets/18 (1) (1) (1).png>)
 
-![](<../../../.gitbook/assets/19 (1) (1).png>)
+![](<../../../.gitbook/assets/19 (1) (1) (1).png>)
 
 9. Log in to the Project Owner account and assign a Verifier to the project for third party verification.
 
-<figure><img src="../../../.gitbook/assets/20 (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/20 (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 10. Using the assigned Verifier account, they can now complete and submit the Project Verification Report.
 
-<figure><img src="../../../.gitbook/assets/image (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 11. The administrator must review the report for completeness and choose to approve, reject, or forward with comments. These comments will be visible to the Steering Committee to assist in their decision-making.
 
-<figure><img src="../../../.gitbook/assets/image (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 12. Log in as the Steering Committee and approve or reject the Project Verification Report. This approval will register the project. Any comments submitted by the administrator can be viewed by clicking on the history dropdown.
 
-<figure><img src="../../../.gitbook/assets/image (4).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. The project owner can now submit monitoring reports by clicking the monitoring report button and completing the form.
 
-<figure><img src="../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 14. Return to the administrator account to check the monitoring report for completeness and then approve or reject it.
 
-<figure><img src="../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 15. Now, we will create a new user to add a verifier account.
 
-<figure><img src="../../../.gitbook/assets/image (8).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (9) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (10).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (10) (1).png" alt=""><figcaption></figcaption></figure>
 
 16. Similar to the previous process, go to the administrator account to approve the new verifier.
 
-<figure><img src="../../../.gitbook/assets/image (11).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (11) (1).png" alt=""><figcaption></figcaption></figure>
 
 17. The project owner will now assign the monitoring report to the new verifier.
 
-<figure><img src="../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (12) (1).png" alt=""><figcaption></figcaption></figure>
 
 18. The new verifier will select "Add Verification Report" to complete the emission reduction verification report.
 
-<figure><img src="../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (13) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (14).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (14) (1).png" alt=""><figcaption></figcaption></figure>
 
 19. The administrator must review the report for completeness and choose to approve, reject, or forward with comments. These comments will be visible to the Steering Committee to assist in their decision-making.
 
-<figure><img src="../../../.gitbook/assets/image (16).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (1).png" alt=""><figcaption></figcaption></figure>
 
 20. Log in as the steering committee to review the emission reduction verification report and issue ACCs if all the information aligns with the approval.
 
-<figure><img src="../../../.gitbook/assets/image (17).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (17) (1).png" alt=""><figcaption></figcaption></figure>
 
 21. The project owner and administrator will have access to the Verifiable Presentation (VP) and Trust Chain.
 
-<figure><img src="../../../.gitbook/assets/image (18).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (18) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (19).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (19) (1).png" alt=""><figcaption></figcaption></figure>

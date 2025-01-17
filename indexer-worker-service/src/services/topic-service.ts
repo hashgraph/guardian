@@ -6,6 +6,7 @@ import { Parser } from '../utils/parser.js';
 import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
 import { TokenService } from './token-service.js';
+import { MessageStatus } from '@indexer/interfaces';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;
@@ -47,7 +48,7 @@ export class TopicService {
             if (!old) {
                 await em.persistAndFlush(em.create(TopicCache, {
                     topicId,
-                    status: '',
+                    status: MessageStatus.NONE,
                     lastUpdate: 0,
                     messages: 0,
                     hasNext: false
@@ -200,9 +201,9 @@ export class TopicService {
         item.data = null;
 
         if (item.chunkId && item.chunkTotal > 1) {
-            item.status = 'COMPRESSING';
+            item.status = MessageStatus.COMPRESSING;
         } else {
-            item.status = 'COMPRESSED';
+            item.status = MessageStatus.COMPRESSED;
             item.data = TopicService.compressData(item.message);
         }
         return item;
@@ -214,9 +215,9 @@ export class TopicService {
             const compressing = new Set<string>();
             const compressed = [];
             for (const message of messages) {
-                if (message.status === 'COMPRESSING') {
+                if (message.status === MessageStatus.COMPRESSING) {
                     compressing.add(message.chunkId);
-                } else if (message.status === 'COMPRESSED') {
+                } else if (message.status === MessageStatus.COMPRESSED) {
                     compressed.push(message);
                 }
             }
@@ -244,7 +245,7 @@ export class TopicService {
 
             const buffers: string[] = new Array(chunks.length);
             for (const row of chunks) {
-                row.status = 'COMPRESSED';
+                row.status = MessageStatus.COMPRESSED;
                 buffers[row.chunkNumber - 1] = row.message;
             }
 

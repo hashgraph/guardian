@@ -1,38 +1,70 @@
 <app-dialog-wrapper (cancel)="onNoClick()" (confirm)="onCreate()" [confirmDisabled]="loading || !this.form.valid"
-    confirmBtnLabel="Set" [title]="'Set pool'" [loading]="loading">
+                    confirmBtnLabel="Set" [title]="'Set pool'" [loading]="loading">
     <div class="content">
         <div class="content__tokens tokens">
             <div class="token-card" *ngFor="let tokenControl of tokenControls; let i=index;" [formGroup]="tokenControl">
                 <div class="token-card__token">
-                    <mat-icon>generating_tokens</mat-icon>
-                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
-                        <mat-label>Token</mat-label>
-                        <mat-select #select formControlName="token" placeholder="Choose Token">
-                            <mat-option *ngFor="let token of getTokenList(select.value)"
-                                [value]="token.tokenId">{{token.tokenSymbol}} ({{token.tokenId}})</mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
+                    <div
+                        class="p-fluid dropdown-container"
+                        style="transform: scale(0.9) translateX(6px) translateY(5px); width: 95px;"
+                    >
+                        <p-dropdown
+                            id="tokenDropdown"
+                            formControlName="token"
+                            [options]="getTokenList(selectedTokenId ?? '')"
+                            optionLabel="tokenSymbol"
+                            placeholder="Token"
+                            [required]="true"
+                        >
+                            <ng-template let-option pTemplate="selectedItem">
+                                {{ option.tokenSymbol }} ({{ option.tokenId }})
+                            </ng-template>
+                            <ng-template let-option pTemplate="item">
+                                {{ option.tokenSymbol }} ({{ option.tokenId }})
+                            </ng-template>
+                        </p-dropdown>
+                    </div>
                 </div>
                 <div class="token-card__count">
-                    <mat-icon>calculate</mat-icon>
-                    <mat-form-field appearance="outline" style="transform: scale(0.8) translateY(5px); width: 100px;">
-                        <mat-label>Count</mat-label>
-                        <input matInput formControlName="count" type="number" placeholder="1">
-                    </mat-form-field>
+                    <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
+                    <div class="p-fluid" style="transform: scale(0.8) translateY(5px); width: 110px;">
+                        <p-inputNumber
+                            id="countInput"
+                            formControlName="count"
+                            [placeholder]="'Count'"
+                            mode="decimal"
+                            [min]="1"
+                            [useGrouping]="false"
+                            [showButtons]="true"
+                            [step]="1"
+                       >
+                        </p-inputNumber>
+                    </div>
                 </div>
-
-                <button mat-flat-button color="primary" class="token-card__remove"
-                    (click)="removeToken(i)">remove</button>
+                <button
+                    pButton
+                    class="token-card__remove mat-flat-button"
+                    label="Remove"
+                    (click)="removeToken(i)"
+                ></button>
             </div>
 
             <div class="token-add-card" (click)="addToken()" *ngIf="tokens?.controls && tokens.controls.length < 2">
-                <mat-icon>add</mat-icon>
+                <i class="pi pi-plus toolbar-icons"></i>
             </div>
         </div>
         <div class="content__delimiter">
         </div>
         <div class="content__approval">
-            <mat-checkbox color="primary" [formControl]="immediately">Without approval</mat-checkbox>
+            <div class="p-field-checkbox">
+                <p-checkbox
+                    [binary]="true"
+                    [formControl]="immediately"
+                    label="Without approval"
+                >
+                </p-checkbox>
+            </div>
         </div>
 
     </div>

@@ -24,8 +24,12 @@
         <h1>{{ 'landing.overview' | transloco }}</h1>
         <div class="cards">
             @for (stat of stats; track $index) {
-            <app-stat-card [cardLabel]="stat.label" [chartData]="{ labels: stat.labels, data: stat.data}"
-                [link]="stat.link" [count]="stat.count" [upcount]="stat.upcount"></app-stat-card>
+            <app-stat-card 
+                [cardLabel]="stat.label" 
+                [chartData]="{ labels: stat.labels, data: stat.data}"
+                [link]="stat.link" 
+                [count]="stat.count" 
+                [upcount]="stat.upcount"></app-stat-card>
             }
 
         </div>

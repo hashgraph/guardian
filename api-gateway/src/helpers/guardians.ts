@@ -43,7 +43,13 @@ import {
     StatisticDefinitionRelationshipsDTO,
     SchemaRuleDTO,
     SchemaRuleRelationshipsDTO,
-    SchemaRuleDataDTO
+    SchemaRuleDataDTO,
+    PolicyLabelDTO,
+    PolicyLabelDocumentDTO,
+    PolicyLabelRelationshipsDTO,
+    PolicyLabelDocumentRelationshipsDTO,
+    PolicyLabelComponentsDTO,
+    PolicyLabelFiltersDTO
 } from '#middlewares';
 
 /**
@@ -3215,12 +3221,263 @@ export class Guardians extends NatsService {
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
-    
+
 
     /**
      * Get Indexer availability
      */
     public async getIndexerAvailability(): Promise<boolean> {
         return await this.sendMessage(MessageAPI.GET_INDEXER_AVAILABILITY, {});
+    }
+
+    /**
+     * Create policy label
+     *
+     * @param label
+     * @param owner
+     * @returns policy label
+     */
+    public async createPolicyLabel(label: PolicyLabelDTO, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_POLICY_LABEL, { label, owner });
+    }
+
+    /**
+     * Return policy labels
+     *
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDTO>}
+     */
+    public async getPolicyLabels(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABELS, { filters, owner });
+    }
+
+    /**
+     * Get policy label
+     *
+     * @param definitionId
+     * @param owner
+     * @returns Operation Success
+     */
+    public async getPolicyLabelById(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL, { definitionId, owner });
+    }
+
+    /**
+     * Get relationships
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Relationships
+     */
+    public async getPolicyLabelRelationships(definitionId: string, owner: IOwner): Promise<PolicyLabelRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_RELATIONSHIPS, { definitionId, owner });
+    }
+
+    /**
+     * Update policy label
+     *
+     * @param definitionId
+     * @param label
+     * @param owner
+     *
+     * @returns theme
+     */
+    public async updatePolicyLabel(
+        definitionId: string,
+        label: PolicyLabelDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_POLICY_LABEL, { definitionId, label, owner });
+    }
+
+    /**
+     * Delete policy label
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async deletePolicyLabel(definitionId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_POLICY_LABEL, { definitionId, owner });
+    }
+
+    /**
+     * Publish policy label
+     *
+     * @param definitionId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async publishPolicyLabel(definitionId: string, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL, { definitionId, owner });
+    }
+
+    /**
+     * Async publish policy
+     * @param definitionId
+     * @param owner
+     * @param task
+     */
+    public async publishPolicyLabelAsync(
+        definitionId: string,
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.PUBLISH_POLICY_LABEL_ASYNC, { definitionId, owner, task });
+    }
+
+    /**
+     * Load policy label file for import
+     * @param zip
+     * @param owner
+     */
+    public async importPolicyLabel(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_POLICY_LABEL_FILE, { zip, policyId, owner });
+    }
+
+    /**
+     * Get policy label export file
+     * @param definitionId
+     * @param owner
+     */
+    public async exportPolicyLabel(definitionId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_POLICY_LABEL_FILE, { definitionId, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Get policy label info from file
+     * @param zip
+     * @param owner
+     */
+    public async previewPolicyLabel(zip: any, owner: IOwner): Promise<PolicyLabelDTO> {
+        return await this.sendMessage(MessageAPI.PREVIEW_POLICY_LABEL_FILE, { zip, owner });
+    }
+
+    /**
+     * Search labels and statistics
+     * @param options
+     * @param owner
+     */
+    public async searchComponents(
+        options: PolicyLabelFiltersDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelComponentsDTO> {
+        return await this.sendMessage(MessageAPI.SEARCH_POLICY_LABEL_COMPONENTS, { options, owner });
+    }
+
+    /**
+     * Return documents
+     *
+     * @param definitionId
+     * @param owner
+     * @param pageIndex
+     * @param pageSize
+     *
+     * @returns {ResponseAndCount<any>}
+     */
+    public async getPolicyLabelTokens(
+        definitionId: string,
+        owner: IOwner,
+        pageIndex?: number,
+        pageSize?: number
+    ): Promise<ResponseAndCount<any>> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_TOKENS, { definitionId, owner, pageIndex, pageSize });
+    }
+
+    /**
+     * Return documents
+     *
+     * @param documentId
+     * @param definitionId
+     * @param owner
+     *
+     * @returns {any}
+     */
+    public async getPolicyLabelTokenDocuments(
+        documentId: string,
+        definitionId: string,
+        owner: IOwner,
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_TOKEN_DOCUMENTS, { documentId, definitionId, owner });
+    }
+
+    /**
+     * Create label document
+     *
+     * @param definitionId
+     * @param data
+     * @param owner
+     *
+     * @returns report
+     */
+    public async createLabelDocument(
+        definitionId: string,
+        data: PolicyLabelDocumentDTO,
+        owner: IOwner
+    ): Promise<PolicyLabelDocumentDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_POLICY_LABEL_DOCUMENT, { definitionId, data, owner });
+    }
+
+    /**
+     * Return label documents
+     *
+     * @param definitionId
+     * @param filters
+     * @param owner
+     *
+     * @returns {ResponseAndCount<PolicyLabelDocumentDTO>}
+     */
+    public async getLabelDocuments(
+        definitionId: string,
+        filters: IFilter,
+        owner: IOwner
+    ): Promise<ResponseAndCount<PolicyLabelDocumentDTO>> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENTS,
+            { definitionId, filters, owner }
+        );
+    }
+
+    /**
+     * Get label document
+     *
+     * @param definitionId
+     * @param documentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getLabelDocument(
+        definitionId: string,
+        documentId: string,
+        owner: IOwner
+    ): Promise<PolicyLabelDocumentDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT,
+            { definitionId, documentId, owner }
+        );
+    }
+
+    /**
+     * Get statistic assessment relationships
+     *
+     * @param definitionId
+     * @param documentId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getLabelDocumentRelationships(
+        definitionId: string,
+        documentId: string,
+        owner: IOwner
+    ): Promise<PolicyLabelDocumentRelationshipsDTO> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_LABEL_DOCUMENT_RELATIONSHIPS,
+            { definitionId, documentId, owner }
+        );
     }
 }

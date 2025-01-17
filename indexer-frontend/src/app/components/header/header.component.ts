@@ -82,6 +82,14 @@ export class HeaderComponent {
             label: 'header.roles',
             routerLink: '/roles',
         },
+        {
+            label: 'header.statistics',
+            routerLink: '/statistics',
+        },
+        {
+            label: 'header.labels',
+            routerLink: '/labels',
+        },
     ];
 
     public documentsMenu: MenuItem[] = [
@@ -96,6 +104,14 @@ export class HeaderComponent {
         {
             label: 'header.vps',
             routerLink: '/vp-documents',
+        },
+        {
+            label: 'header.statistic_documents',
+            routerLink: '/statistic-documents',
+        },
+        {
+            label: 'header.label_documents',
+            routerLink: '/label-documents',
         },
     ];
 

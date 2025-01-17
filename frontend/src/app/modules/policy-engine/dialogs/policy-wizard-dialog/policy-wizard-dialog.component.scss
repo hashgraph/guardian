@@ -413,3 +413,17 @@ form {
     font-weight: 500;
     line-height: 16px;
 }
+
+.pi-info-circle:before {
+    position: absolute;
+    content: "\e924";
+    font-size: 36px;
+    color: var(--color-primary);
+    top: -14px;
+    left: 10px;
+    cursor: pointer;
+}
+
+.pi-info-circle ::ng-deep button {
+    display: none
+}

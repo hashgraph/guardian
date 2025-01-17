@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables} from '../../../../structures';
 
 /**
  * Settings for block of 'mintDocument' and 'wipeDocument' types.
@@ -25,6 +25,12 @@ export class MintConfigComponent implements OnInit {
     properties!: any;
     tokens!: TokenVariables[];
     tokenTemplate!: TokenTemplateVariables[];
+
+    public accountTypeOptions = [
+        {label: 'Default', value: 'default'},
+        {label: 'Custom Account Field', value: 'custom'},
+        {label: 'Custom Account Value', value: 'custom-value'}
+    ];
 
     constructor() {
     }

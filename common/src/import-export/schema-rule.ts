@@ -144,7 +144,7 @@ export class SchemaRuleImportExport {
      *
      * @param data variable
      */
-    private static validateRule(
+    public static validateRule(
         data?: IFormulaRuleData | IConditionRuleData | IRangeRuleData
     ): IFormulaRuleData | IConditionRuleData | IRangeRuleData {
         if (data) {

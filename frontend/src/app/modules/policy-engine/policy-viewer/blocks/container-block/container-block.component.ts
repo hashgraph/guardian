@@ -143,6 +143,9 @@ export class ContainerBlockComponent implements OnInit, OnDestroy {
     }
 
     onBlockChange(event: any) {
+        if(typeof event === 'object') {
+            event = event.index
+        }
         this.selectedIndex = event;
         this.activeBlock = this.blocks[this.selectedIndex];
         this.activeBlockId = this.activeBlock ? this.activeBlock.id : null;

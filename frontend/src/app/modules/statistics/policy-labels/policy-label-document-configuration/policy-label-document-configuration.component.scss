@@ -1,0 +1,381 @@
+.guardian-page {
+    position: relative;
+    padding: 0px;
+    user-select: none;
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .header-container {
+        padding: 56px 48px 10px 48px;
+        background: var(--guardian-primary-color, #4169E2);
+        min-height: 178px;
+        height: 178px;
+
+        .guardian-user-back-button {
+            button {
+                border-color: var(--guardian-background, #FFFFFF);
+            }
+        }
+
+        .guardian-user-page-header {
+            color: var(--guardian-background, #FFFFFF);
+        }
+
+        .policy-name {
+            color: var(--guardian-background, #FFFFFF);
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 16px;
+            position: absolute;
+            top: 34px;
+            right: 0;
+
+            .policy-version {
+                padding-left: 16px;
+            }
+        }
+    }
+
+    .actions-container {
+        min-height: 64px;
+        height: 64px;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        padding: 12px 48px;
+        background: var(--guardian-background, #FFFFFF);
+        border-top: 1px solid var(--guardian-border-color, #E1E7EF);
+        position: relative;
+
+        button {
+            height: 40px;
+            width: 135px;
+            margin-left: 16px;
+        }
+    }
+
+    .body-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        position: relative;
+        padding: 24px 48px;
+
+        .left-side {
+            min-width: 260px;
+            width: 260px;
+            max-width: 260px;
+            height: 100%;
+            margin-right: 24px;
+        }
+
+        .config-menu {
+            border: 1px solid #E1E7EF;
+            border-radius: 8px;
+            padding: 8px 0px;
+            background: #FFFFFF;
+            box-shadow: 0px 4px 8px 0px #00000014;
+            overflow: hidden;
+
+            .config-menu-item {
+                width: 258px;
+                height: 56px;
+                display: flex;
+                flex-direction: row;
+                padding-left: 22px;
+                align-items: center;
+                position: relative;
+
+                &[highlighted="true"] {
+                    background: #F0F3FC;
+
+                    .config-menu-item-name {
+                        color: #4169E2;
+                    }
+                }
+
+                &[last="false"] {
+                    margin-bottom: 24px;
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        left: 53px;
+                        bottom: -22px;
+                        width: 3px;
+                        height: 20px;
+                        border-left: 2px solid #C4D0E1;
+                        pointer-events: none;
+                    }
+                }
+
+                .config-menu-item-status {
+                    width: 8px;
+                    height: 8px;
+                    overflow: hidden;
+                    border-radius: 50%;
+                    background: #AAB7C4;
+                    margin-right: 12px;
+
+                    &[status="true"] {
+                        background: #19BE47;
+                    }
+
+                    &[status="false"] {
+                        background: #FF432A;
+                    }
+                }
+
+                .config-menu-item-icon {
+                    width: 24px;
+                    height: 24px;
+                    overflow: hidden;
+                    margin-right: 8px;
+                }
+
+                .config-menu-item-name {
+                    width: 160px;
+                    overflow: hidden;
+                    font-family: Inter;
+                    font-size: 16px;
+                    font-weight: 500;
+                    line-height: 16px;
+                    text-align: left;
+                    color: #848FA9;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+        }
+
+        .config-result {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+
+            .config-result-item {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .config-result-icon {
+                width: 48px;
+                height: 48px;
+                padding: 8px;
+                overflow: hidden;
+            }
+
+            .config-result-text {
+                font-family: Inter;
+                font-size: 16px;
+                font-weight: 600;
+                text-align: center;
+                color: #848FA9;
+            }
+
+            &.config-result-valid {
+                .config-result-text {
+                    color: #19BE47;
+                }
+            }
+
+            &.config-result-invalid {
+                .config-result-text {
+                    color: #FF432A;
+                }
+            }
+        }
+
+        .config-node-container {
+            width: 100%;
+
+            .guardian-grid-container {
+                &::before {
+                    display: none !important;
+                }
+            }
+
+            .config-node-body {
+                padding: 24px;
+                position: relative;
+                border-radius: 8px;
+                background: #FFFFFF;
+                box-shadow: 0px 4px 8px 0px #00000014;
+                border: 1px solid #E1E7EF;
+
+                .config-node-header {
+                    font-size: 24px;
+                    font-weight: 600;
+                    line-height: 32px;
+                    text-align: left;
+                    color: var(--guardian-font-color, #23252E);
+                    margin-bottom: 24px;
+
+                    .config-node-prefix {
+                        margin-right: 12px;
+                    }
+                }
+            }
+
+            .sub-indexes {
+                width: 100%;
+                height: 48px;
+                min-height: 48px;
+                max-height: 48px;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                background: #fff;
+                align-items: center;
+                margin-bottom: 16px;
+
+                .sub-index {
+                    width: 24px;
+                    height: 24px;
+                    min-width: 24px;
+                    min-height: 24px;
+                    background: var(--guardian-grey-color-3, #AAB7C4);
+                    border-radius: 50%;
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 14px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    color: #fff;
+
+                    &[action="true"] {
+                        background: var(--guardian-primary-color, #4169E2);
+                    }
+                }
+
+                .sub-name {
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 500;
+                    line-height: 14px;
+                    text-align: left;
+                    color: var(--guardian-grey-color-3, #AAB7C4);
+                    padding-left: 8px;
+
+                    &[action="true"] {
+                        color: var(--guardian-primary-color, #4169E2);
+                    }
+                }
+
+                .sub-index-separator {
+                    width: 100%;
+                    height: 12px;
+                    position: relative;
+
+                    &::after {
+                        content: "";
+                        display: block;
+                        position: absolute;
+                        left: 15px;
+                        right: 16px;
+                        top: 5px;
+                        height: 3px;
+                        border-top: 1px solid #C4D0E1;
+                        pointer-events: none;
+                    }
+                }
+            }
+
+            .field-container {
+                margin-bottom: 16px;
+
+                .field-name {
+                    font-family: Inter;
+                    font-size: 12px;
+                    font-weight: 500;
+                    line-height: 14px;
+                    color: #181818;
+                    margin-bottom: 6px;
+                }
+
+                .field-value {
+                    width: 100%;
+                    height: 40px;
+                    border-radius: 8px;
+                    border: 1px solid #E1E7EF;
+                    background: #F9FAFC;
+                    padding: 12px 16px;
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 400;
+                    line-height: 14px;
+                    color: #23252E;
+                    margin-bottom: 8px;
+                }
+
+                .field-value-array {}
+            }
+
+            .score-container {
+                border: 1px solid #AAB7C4;
+                border-radius: 8px;
+                padding: 24px;
+                margin-bottom: 16px;
+
+                .fields-container {
+                    margin-bottom: 24px;
+                }
+
+                .score-name {
+                    font-family: Inter;
+                    font-size: 14px;
+                    font-weight: 700;
+                    line-height: 18px;
+                    text-align: left;
+                    color: #000000;
+                    margin-bottom: 24px;
+                }
+
+                .options-container {
+                    .option-container {
+                        display: flex;
+                        flex-direction: row;
+
+                        border-radius: 6px;
+
+                        &:not([disabled]) {
+                            cursor: pointer;
+                        }
+
+                        &:not([disabled]):hover {
+                            background: var(--guardian-hover, #F0F3FC);
+                        }
+
+                        .option-checkbox {
+                            cursor: pointer;
+                            min-height: 40px;
+                            width: 42px;
+                            min-width: 42px;
+                            display: flex;
+                            justify-content: flex-start;
+                            align-items: center;
+                            padding-left: 4px;
+                        }
+
+                        .option-name {
+                            cursor: pointer;
+                            min-height: 40px;
+                            width: 100%;
+                            display: flex;
+                            justify-content: flex-start;
+                            align-items: center;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

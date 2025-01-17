@@ -1,5 +1,5 @@
-import { MessageAction } from '../types/message-action.js';
-import { MessageType } from '../types/message-type.js';
+import { MessageAction } from '../types/message-action.type.js';
+import { MessageType } from '../types/message-type.type.js';
 
 /**
  * Parsed message

@@ -111,7 +111,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 5.  Once the project details are submitted, Verra can add it to the project pipeline.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (6) (1) (1).png" alt=""><figcaption></figcaption></figure>
 6. The Standard Registry can now add the project to the project pipeline by selecting “Add”.
 
 ![](<../../../.gitbook/assets/14 (10).png>)
@@ -140,20 +140,20 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 ![](<../../../.gitbook/assets/20 (4).png>)
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 13. Once the report is submitted, we now log in as the VVB and validate the monitoring report by clicking on the “Verify” button.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 14. Once the monitoring report is validated, we log in as the SR and click on “Mint” to mint the tokens.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 15. Once minting is completed, we can view tokens in the “VPs” tab.\
 
 
-    <figure><img src="../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
+    <figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 16. The Trust Chain can also be viewed by clicking on the “View Trust Chain” button:
 
-<figure><img src="../../../.gitbook/assets/image (5) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>

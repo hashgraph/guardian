@@ -214,7 +214,7 @@ export function DataSourceBlock(options: Partial<PolicyBlockDecoratorOptions>) {
                     $set: {
                         firstCredentialSubject: {
                             $ifNull: [{
-                                $arrayElemAt: ["$document.credentialSubject", 0]
+                                $arrayElemAt: ['$document.credentialSubject', 0]
                             }, null]
                         }
                     }
