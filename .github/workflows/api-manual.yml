@@ -117,6 +117,10 @@ jobs:
                   popd
                   pushd worker-service
                   npm start &
+                  npm start &
+                  npm start &
+                  npm start &
+                  npm start &
                   sleep 20
                   popd
                   pushd api-gateway
