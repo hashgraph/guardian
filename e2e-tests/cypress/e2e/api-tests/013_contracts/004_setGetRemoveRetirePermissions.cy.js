@@ -493,17 +493,35 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     });
 
     it("Verify roles(wipe)", () => {
-        cy.wait(300000)
+        cy.wait(60000)
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
+                url: API.ApiServer + "accounts/session",
                 headers: {
                     authorization
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql(0);
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + "notifications/progresses",
+                    headers: {
+                        authorization
+                    },
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    cy.request({
+                        method: METHOD.GET,
+                        url: API.ApiServer + API.ListOfContracts + idW2 + "/" + API.ContractPermissions,
+                        headers: {
+                            authorization
+                        },
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+                        expect(response.body).eql(0);
+                    });
+                })
             });
         })
     });
@@ -518,7 +536,16 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 },
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
-                expect(response.body).eql(0);
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.ListOfContracts + idR2 + "/" + API.ContractPermissions,
+                    headers: {
+                        authorization
+                    },
+                }).then((response) => {
+                    expect(response.status).eql(STATUS_CODE.OK);
+                    expect(response.body).eql(0);
+                });
             });
         })
     });

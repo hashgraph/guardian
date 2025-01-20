@@ -11,12 +11,8 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
-                body: {
-                    messageId: (Cypress.env('policy_with_artifacts')),
-                    metadata: {
-                        "tools": {}
-                    }
-                },
+                body: { 
+                    "messageId": "1707126227.976010003" },
                 headers: {
                     authorization,
                 },
