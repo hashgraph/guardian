@@ -77,6 +77,12 @@ export class RegistriesComponent extends BaseGridComponent {
         },
         {
             type: ColumnType.TEXT,
+            field: 'options.attributes.OrganizationName',
+            title: 'grid.name',
+            width: '150px',
+        },
+        {
+            type: ColumnType.TEXT,
             field: 'options.did',
             title: 'grid.did',
             width: '650px',

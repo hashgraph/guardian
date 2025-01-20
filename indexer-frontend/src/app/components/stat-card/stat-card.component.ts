@@ -89,7 +89,9 @@ export class StatCardComponent {
             scales: {
                 x: {
                     ticks: {
-                        display: false,
+                        display: true,
+                        minRotation: 45,
+                        maxRotation: 45,
                     },
                     grid: {
                         color: '#e3e3e3',
@@ -97,12 +99,12 @@ export class StatCardComponent {
                     },
                     title: {
                         display: true,
-                        text: this.translocoService.translate('stat.x')
-                    }
+                        text: this.translocoService.translate('stat.x'),
+                    },
                 },
                 y: {
                     ticks: {
-                        display: false,
+                        display: true,
                     },
                     grid: {
                         color: '#e3e3e3',
@@ -110,7 +112,7 @@ export class StatCardComponent {
                     },
                     title: {
                         display: true,
-                        text: this.translocoService.translate('stat.y')
+                        text: this.translocoService.translate('stat.y'),
                     }
                 },
             },
