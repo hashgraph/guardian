@@ -11,14 +11,20 @@
             </span>
         </div>
     </div>
-    <button (click)="menu.toggle($event)" class="add-artifact-button" mat-button>
+
+    <button pButton (click)="menu.toggle($event)" class="add-artifact-button p-button-rounded p-button-text">
         <i class="pi pi-plus toolbar-icons"></i>
     </button>
     <p-overlayPanel #menu>
-        <ng-container *ngFor="let artifact of policyArtifacts">
-            <button (click)="addArtifact(artifact)" [disabled]="readonly" mat-menu-item>
+        <div *ngFor="let artifact of policyArtifacts" class="artifact-row">
+            <button
+                pButton
+                class="p-button-text"
+                (click)="addArtifact(artifact)"
+                [disabled]="readonly"
+            >
                 {{ artifact.name }} ({{ artifact.type }})
             </button>
-        </ng-container>
+        </div>
     </p-overlayPanel>
 </div>

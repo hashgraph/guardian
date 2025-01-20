@@ -9,7 +9,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an issuer"
-                [options]="issuerOptions">
+                [options]="issuerOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -22,7 +24,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an actor"
-                [options]="actorOptions">
+                [options]="actorOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>

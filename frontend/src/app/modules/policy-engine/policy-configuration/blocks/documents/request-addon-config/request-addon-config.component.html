@@ -106,7 +106,9 @@
                         (onChange)="onSave()"
                         placeholder="Select a value"
                         [options]="getPresetOptions()"
-                        optionLabel="label">
+                        optionLabel="label"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </td>
             </tr>

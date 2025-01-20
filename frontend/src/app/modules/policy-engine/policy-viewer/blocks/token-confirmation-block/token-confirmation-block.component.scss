@@ -95,3 +95,23 @@
         }
     }
 }
+
+.input-group {
+    position: relative;
+    margin-top: 5px;
+
+    .full-width {
+        width: 100%;
+    }
+
+    ::ng-deep .p-button-icon-only {
+        position: absolute;
+        right: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        height: 100%;
+        width: 50px;
+        padding-left: 10px;
+    }
+}
