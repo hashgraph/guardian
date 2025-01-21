@@ -926,6 +926,16 @@ paths:
             did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
             type: string
+        - name: options.role
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.sr
+          required: true
+          in: query
+          schema:
+            type: string
         - name: topicId
           required: false
           in: query
@@ -2394,6 +2404,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
+  /settings/network:
+    get:
+      operationId: SettingsApi_getNetworkEnvironment
+      summary: Get Hedera network
+      description: Returns Hedera network
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_3
+        - settings
+  /settings/networkExplorer:
+    get:
+      operationId: SettingsApi_getNetworkExplorer
+      summary: Get Hedera network explorer settings
+      description: Returns Hedera network explorer settings
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network explorer settings result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
 info:
   title: Guardian
   description: >-
@@ -2544,21 +2595,21 @@ components:
           description: Status message
         files:
           description: Files
-          example: &ref_3
+          example: &ref_4
             - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: &ref_4
+          example: &ref_5
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_5
+          example: &ref_6
             - 0.0.4481265
           type: array
           items:
@@ -2864,19 +2915,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3019,19 +3070,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3352,19 +3403,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3602,19 +3653,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3832,19 +3883,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4055,19 +4106,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4248,19 +4299,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4644,19 +4695,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4858,19 +4909,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5083,19 +5134,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5325,19 +5376,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5533,19 +5584,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5755,19 +5806,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5933,19 +5984,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6088,19 +6139,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6277,19 +6328,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6488,19 +6539,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6861,19 +6912,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -7167,19 +7218,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
