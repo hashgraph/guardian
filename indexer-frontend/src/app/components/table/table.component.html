@@ -68,7 +68,10 @@
                     @if (column.link) {
                     <a [routerLink]="[column.link.url, getFieldValue(column.link.field, item)]">{{getFieldValue(column.field,
                         item)}}</a>
-                    } @else {
+                    } @else if (!!column.formatValue) {
+                    <span [title]="column.formatValue(getFieldValue(column.field, item))">{{column.formatValue(getFieldValue(column.field,
+                        item))}}</span>
+                    }@else {
                     <span [title]="getFieldValue(column.field, item)">{{getFieldValue(column.field,
                         item)}}</span>
                     }
@@ -80,9 +83,9 @@
                     <p-button [label]="column.btn_label | transloco" (onClick)="column.callback(item)" />
                     }
                     @case ('hedera') {
-                        <hedera-explorer [params]="getFieldValue(column.field, item)" type="transaction">
-                            {{ getDateFromHederaTimestamp(column.field, item) | date: 'yyyy-MM-dd h:mm a' }}
-                        </hedera-explorer>
+                    <hedera-explorer [params]="getFieldValue(column.field, item)" type="transaction">
+                        {{ getFieldValue(column.field, item) }}
+                    </hedera-explorer>
                     }
                     }
                 </div>

@@ -82,6 +82,8 @@
         "registrantTopicId": "User Topic Id",
         "open": "Open",
         "target": "Target",
+        "sr": "Registry",
+        "date": "Date",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",

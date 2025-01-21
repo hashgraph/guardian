@@ -30,6 +30,7 @@ export interface TextColumn extends BaseColumn {
         field: string;
         url: string;
     };
+    formatValue: (value: any) => string;
 }
 
 export interface ChipColumn extends BaseColumn {
@@ -136,17 +137,6 @@ export class TableComponent {
             }
             result = result[pathList[i]];
         }
-        return result;
-    }
-
-    getDateFromHederaTimestamp(paths: string, obj: any) {
-        let result = this.getFieldValue(paths, obj);
-
-        if (result) {
-            const fixedTimestamp = Math.floor(result * 1000);
-            result = new Date(fixedTimestamp);
-        }
-
         return result;
     }
 }
