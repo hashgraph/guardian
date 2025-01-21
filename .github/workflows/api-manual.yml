@@ -12,11 +12,6 @@ jobs:
         name: Build and Test (Manual)
         runs-on: ubuntu-latest
         services:
-            ipfs-node:
-                image: ipfs/kubo:latest
-                ports:
-                    - 8080:8080
-                    - 5001:5001
             cache:
                 image: registry.redict.io/redict
                 ports:
