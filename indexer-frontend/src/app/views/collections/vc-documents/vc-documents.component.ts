@@ -20,6 +20,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ChipsModule } from 'primeng/chips';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'vc-documents',
@@ -58,6 +59,7 @@ export class VcDocumentsComponent extends BaseGridComponent {
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
         },
         {
             type: ColumnType.TEXT,

@@ -3,6 +3,11 @@ import { SettingsService } from '@services/settings.service';
 import { environment } from '../../../environments/environment';
 import { NetworkExplorerSettings } from '@indexer/interfaces';
 
+export enum HederaType {
+    TRANSACTION = 'transaction',
+    ACCOUNT = 'account',
+}
+
 /**
  * Hedera explorer.
  */

@@ -8,7 +8,7 @@ import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
-import { HederaExplorer } from '@components/hedera-explorer/hedera-explorer.component';
+import { HederaExplorer, HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum ColumnType {
     TEXT = 'text',
@@ -49,6 +49,7 @@ export interface ButtonColumn extends BaseColumn {
 export interface HederaTimestampColumn extends BaseColumn {
     type: ColumnType.HEDERA;
     field: string;
+    hederaType: HederaType;
 }
 
 @Component({

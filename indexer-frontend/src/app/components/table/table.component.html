@@ -83,7 +83,7 @@
                     <p-button [label]="column.btn_label | transloco" (onClick)="column.callback(item)" />
                     }
                     @case ('hedera') {
-                    <hedera-explorer [params]="getFieldValue(column.field, item)" type="transaction">
+                    <hedera-explorer [params]="getFieldValue(column.field, item)" [type]="column.hederaType">
                         {{ getFieldValue(column.field, item) }}
                     </hedera-explorer>
                     }

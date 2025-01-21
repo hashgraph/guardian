@@ -19,6 +19,7 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ChipsModule } from 'primeng/chips';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'label-documents',
@@ -56,6 +57,7 @@ export class LabelDocumentsComponent extends BaseGridComponent {
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
         },
         {
             type: ColumnType.TEXT,

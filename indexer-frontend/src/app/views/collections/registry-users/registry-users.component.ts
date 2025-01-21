@@ -20,6 +20,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ColumnType, TableComponent } from '@components/table/table.component';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'registry-users',
@@ -58,6 +59,7 @@ export class RegistryUsersComponent extends BaseGridComponent {
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
         },
         {
             type: ColumnType.TEXT,
@@ -83,10 +85,11 @@ export class RegistryUsersComponent extends BaseGridComponent {
             },
         },
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'owner',
             title: 'grid.account_id',
             width: '150px',
+            hederaType: HederaType.ACCOUNT,
         },
         {
             type: ColumnType.TEXT,
