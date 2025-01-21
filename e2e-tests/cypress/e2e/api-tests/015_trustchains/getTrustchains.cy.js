@@ -15,7 +15,12 @@ context("Trustchains", { tags: ['trustchains', 'thirdPool', 'all'] }, () => {
                     authorization,
                 }
             }).then((response) => {
-                policyId = response.body.at(0).id;
+                expect(response.status).to.eq(STATUS_CODE.OK);
+				response.body.forEach(element => {
+					if (element.name == "iRec_4") {
+						policyId = element.id
+					}
+				})
                 expect(response.status).to.eq(STATUS_CODE.OK)
             })
         })
