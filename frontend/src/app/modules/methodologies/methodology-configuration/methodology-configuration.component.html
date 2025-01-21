@@ -1,4 +1,4 @@
-<div class="guardian-page" [attr.readonly]="readonly">
+<div class="guardian-page" [attr.readonly]="readonly" [attr.keyboard]="keyboard">
     <div *ngIf="loading" class="guardian-loading">
         <div class="guardian-loading-image"></div>
     </div>
@@ -31,60 +31,157 @@
             </div>
         </div>
     </div>
-    <div class="body-container">
-        <div class="formula-items">
 
-            <ng-container *ngFor="let item of items">
-                <div class="formula-item" *ngIf="item.type === 'constant'">
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Name</label>
-                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="isActionStep(0)"
+                    (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
                     </div>
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Description</label>
-                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
-                    </div>
+                    <div class="guardian-step-name">Overview</div>
                 </div>
-
-                <div class="formula-item" *ngIf="item.type === 'variable'">
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Name</label>
-                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="isActionStep(1)"
+                    (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/edit.svg">
+                        </svg-icon>
                     </div>
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Description</label>
-                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
-                    </div>
+                    <div class="guardian-step-name">Edit Formula</div>
                 </div>
-
-                <div class="formula-item" *ngIf="item.type === 'formula'">
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Name</label>
-                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
-                    </div>
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Description</label>
-                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
-                    </div>
-                    <math-live [(value)]="item.value"></math-live>
-                </div>
-                
-                <div class="formula-item" *ngIf="item.type === 'text'">
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Name</label>
-                        <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
-                    </div>
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">* Description</label>
-                        <input [(ngModel)]="item.description" pInputText type="text" [readonly]="readonly"/>
-                    </div>
-                </div>
-            </ng-container>
+            </div>
         </div>
+    </div>
 
-        <button (click)="addItem('constant')" class="guardian-button guardian-button-primary">Add Constant</button>
-        <button (click)="addItem('variable')" class="guardian-button guardian-button-primary">Add Variable</button>
-        <button (click)="addItem('formula')" class="guardian-button guardian-button-primary">Add Formula</button>
-        <button (click)="addItem('text')" class="guardian-button guardian-button-primary">Add Text</button>
+    <div #body class="body-container">
+        <ng-container *ngIf="isActionStep(0)">
+            <div class="overview-viewer">
+                <form [formGroup]="overviewForm">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Description</label>
+                        <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+        
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Policy</label>
+                        <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+                    </div>
+                </form>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(1)">
+            <div class="item-filters">
+                <div class="item-filters-header">Select Type</div>
+                <checkbox-button [(value)]="filters.constant" class="item-filter constant-filter" (change)="onFilter()">Constant</checkbox-button>
+                <checkbox-button [(value)]="filters.variable" class="item-filter variable-filter" (change)="onFilter()">Variable</checkbox-button>
+                <checkbox-button [(value)]="filters.formula" class="item-filter formula-filter" (change)="onFilter()">Formula</checkbox-button>
+                <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
+            </div>
+            <div class="formula-items">
+                <div *ngFor="let item of items.data" class="formula-item" [attr.type]="item.type" [attr.readonly]="readonly">
+                    <div class="formula-item-icon">
+                        <svg-icon *ngIf="!readonly" class="icon-btn svg-icon"
+                            src="/assets/images/icons/equal.svg"
+                            svgClass="icon-color-close">
+                        </svg-icon>
+                    </div>
+                    <div class="formula-item-container">
+                        <div class="formula-item-header">
+                            <div *ngIf="item.type === 'constant'" class="formula-item-header__name">Constant</div>
+                            <div *ngIf="item.type === 'variable'" class="formula-item-header__name">Variable</div>
+                            <div *ngIf="item.type === 'formula'" class="formula-item-header__name">Formula</div>
+                            <div *ngIf="item.type === 'text'" class="formula-item-header__name">Text</div>
+                            <div *ngIf="!readonly" class="formula-item-header__delete">
+                                <button
+                                    class="guardian-icon-button big"
+                                    (click)="deleteItem(item)"
+                                    [disabled]="readonly">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
+                                    </svg-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="formula-item-body">
+                            <div class="guardian-input-container">
+                                <label class="form-label">* Name</label>
+                                <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [(ngModel)]="item.description" pTextarea rows="3" [readonly]="readonly"></textarea>
+                            </div>
+    
+                            <ng-container *ngIf="item.type === 'constant'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Value</label>
+                                    <input [(ngModel)]="item.value" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                            </ng-container>
+    
+                            <ng-container *ngIf="item.type === 'variable'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link</label>
+                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                            </ng-container>
+    
+                            <ng-container *ngIf="item.type === 'formula'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link</label>
+                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Relationships</label>
+                                    <input [(ngModel)]="item.relationships" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                                <div class="guardian-input-container" style="height: auto">
+                                    <label class="form-label">Formula</label>
+                                    <math-live 
+                                        [(value)]="item.value" 
+                                        (keyboard)="onKeyboard($event)"
+                                        (focus)="onKeyboardFocus($event)"
+                                    ></math-live>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngIf="item.type === 'text'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link</label>
+                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Relationships</label>
+                                    <input [(ngModel)]="item.relationships" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                                <div class="guardian-input-container" style="height: auto">
+                                    <label class="form-label">Text</label>
+                                    <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+    <div class="action-container">
+        <ng-container *ngIf="isActionStep(0)">
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(1)">
+            <menu-button [options]="options" [immediately]="false" (action)="addItem($event)"></menu-button>
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
     </div>
 </div>

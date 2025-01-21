@@ -13,6 +13,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
     @Input('value') value!: string;
     @Output('valueChange') valueChange = new EventEmitter<string>();
     @Output('keyboard') keyboard = new EventEmitter<boolean>();
+    @Output('focus') focus = new EventEmitter<MathLiveComponent>();
 
     private readonly mfe: MathfieldElement;
 
@@ -34,10 +35,12 @@ export class MathLiveComponent implements OnInit, OnDestroy {
         this.mfe.mathVirtualKeyboardPolicy = "manual";
         this.mfe.addEventListener("focusin", () => {
             this.keyboard.emit(true);
+            this.focus.emit(this);
             return mathVirtualKeyboard.show();
         });
         this.mfe.addEventListener("focusout", () => {
             this.keyboard.emit(false);
+            this.focus.emit(this);
             return mathVirtualKeyboard.hide();
         });
         this.mfe.addEventListener('input', (ev: any) => {
@@ -53,5 +56,9 @@ export class MathLiveComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.mfe.remove();
+    }
+
+    public getElement(): ElementRef {
+        return this.mathLiveContent;
     }
 }

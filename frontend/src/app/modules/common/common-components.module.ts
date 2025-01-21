@@ -40,6 +40,8 @@ import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TabViewModule } from 'primeng/tabview';
 import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
+import { MenuButton } from './menu-button/menu-button.component';
+import { CheckboxButton } from './checkbox-button/checkbox-button.component';
 
 @NgModule({
     declarations: [
@@ -68,7 +70,9 @@ import { MathLiveComponent } from './mathlive/mathlive.component';
         TreeGraphComponent,
         GuardianSwitchButton,
         ImportEntityDialog,
-        MathLiveComponent
+        MathLiveComponent,
+        MenuButton,
+        CheckboxButton
     ],
     imports: [
         CommonModule,
@@ -117,7 +121,9 @@ import { MathLiveComponent } from './mathlive/mathlive.component';
         TreeGraphComponent,
         GuardianSwitchButton,
         ImportEntityDialog,
-        MathLiveComponent
+        MathLiveComponent,
+        MenuButton,
+        CheckboxButton
     ]
 })
 export class CommonComponentsModule {

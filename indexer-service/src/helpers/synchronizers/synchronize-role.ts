@@ -63,6 +63,9 @@ export class SynchronizationRoles extends SynchronizationTask {
                 {
                     'analytics.policyId': null,
                 },
+                {
+                    'analytics.sr': null,
+                },
             ],
         };
     }

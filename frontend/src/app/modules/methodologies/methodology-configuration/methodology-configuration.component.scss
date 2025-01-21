@@ -8,6 +8,8 @@
         background: var(--guardian-primary-color, #4169E2);
         min-height: 178px;
         height: 178px;
+        position: relative;
+        z-index: 2;
 
         .guardian-user-back-button {
             button {
@@ -35,18 +37,237 @@
         }
     }
 
+    .step-container {
+        min-height: 40px;
+        height: 40px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 0px;
+        background: var(--guardian-background, #FFFFFF);
+        border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+        position: relative;
+        box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+        position: relative;
+        z-index: 2;
+    }
+
+    .overview-viewer {
+        position: relative;
+        z-index: 0;
+        form {
+            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+            background: var(--guardian-background, #FFFFFF);
+            padding: 24px 24px 2px 24px;
+            border-radius: 8px;
+
+            .guardian-input-container {
+                margin-bottom: 24px;
+            }
+        }
+    }
+
     .body-container {
+        position: relative;
+        z-index: 0;
         width: 100%;
         height: 100%;
         user-select: none;
         position: relative;
+        padding: 32px 48px 16px 48px;
+        overflow: auto;
+
+        .item-filters {
+            display: flex;
+            flex-direction: row;
+            margin-bottom: 24px;
+
+            .item-filters-header {
+                font-family: Inter;
+                font-size: 14px;
+                font-weight: 400;
+                line-height: 16px;
+                color: #848FA9;
+                margin-right: 24px;
+                height: 24px;
+                padding: 6px 0px;
+            }
+
+            .item-filter {
+                margin-right: 8px;
+                height: 28px;
+                min-width: 108px;
+            }
+
+            .constant-filter {
+                --checkbox-button-on-first-color: #4169E2;
+                --checkbox-button-on-second-color: #e1e7fa;
+            }
+
+            .variable-filter {
+                --checkbox-button-on-first-color: #DA9B22;
+                --checkbox-button-on-second-color: #FFF6E3;
+            }
+
+            .formula-filter {
+                --checkbox-button-on-first-color: #c396fa;
+                --checkbox-button-on-second-color: #efe5fc;
+            }
+
+            .text-filter {
+                --checkbox-button-on-first-color: #4169E2;
+                --checkbox-button-on-second-color: #e1e7fa;
+            }
+        }
 
         .formula-item {
-            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, rgba(0, 0, 0, 0.0784313725));
+            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
             background: var(--guardian-background, #FFFFFF);
-            padding: 24px 24px 24px 24px;
             border-radius: 8px;
-            margin: 24px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+
+            .formula-item-icon {
+                width: 32px;
+                min-width: 32px;
+                width: 32px;
+                min-width: 32px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                cursor: move;
+
+                * {
+                    pointer-events: none;
+                }
+            }
+
+            .formula-item-container {
+                width: 100%;
+                padding: 16px;
+
+                .formula-item-header {
+                    height: 24px;
+                    width: 100%;
+                    margin-bottom: 16px;
+                    position: relative;
+
+                    &__name {
+                        font-family: Poppins;
+                        font-size: 16px;
+                        font-weight: 600;
+                        line-height: 20px;
+                    }
+
+                    &__delete {
+                        position: absolute;
+                        top: 0px;
+                        right: 0px;
+                        width: 24px;
+                        height: 24px;
+
+                        .guardian-icon-button {
+                            width: 24px;
+                            height: 24px;
+                        }
+                    }
+                }
+
+                .formula-item-body {}
+            }
+
+            &[type="constant"] {
+                border: 1px solid var(--guardian-primary-color, #4169E2);
+
+                .formula-item-icon {
+                    background: #e4eafa;
+                    border-right: 1px solid #E1E7EF;
+                }
+            }
+
+            &[type="variable"] {
+                border: 1px solid #DA9B22;
+
+                .formula-item-icon {
+                    background: #FFF6E3;
+                    border-right: 1px solid #E1E7EF;
+                }
+            }
+
+            &[type="formula"] {
+                border: 1px solid #c396fa;
+
+                .formula-item-icon {
+                    background: #efe5fc;
+                    border-right: 1px solid #E1E7EF;
+                }
+            }
+
+            &[type="text"] {
+                border: 1px solid var(--guardian-primary-color, #4169E2);
+
+                .formula-item-icon {
+                    background: #EFF3F7;
+                    border-right: 1px solid #E1E7EF;
+                }
+            }
+        }
+    }
+
+    &[keyboard="true"] {
+        .body-container {
+            // top: -270px;
+            margin-bottom: 265px;
+        }
+    }
+
+    .action-container {
+        position: relative;
+        z-index: 1;
+        height: 64px;
+        min-height: 64px;
+        display: flex;
+        flex-direction: row;
+        border-top: 1px solid #E1E7EF;
+        background: #fff;
+        padding: 12px 48px;
+        position: relative;
+
+        button {
+            height: 40px;
+            margin-right: 18px;
+            min-width: 140px;
+        }
+
+        menu-button {
+            height: 40px;
+            width: 210px;
+        }
+
+        .save-button {
+            position: absolute;
+            top: 12px;
+            right: 48px;
+            margin-right: 0px;
+        }
+    }
+}
+
+.guardian-input-container {
+    margin-bottom: 16px;
+}
+
+.guardian-textarea-container {
+    margin-bottom: 16px;
+}
+
+@media (max-height: 767px) {
+    .guardian-page[keyboard="true"] {
+        .body-container {
+            // top: -270px;
+            margin-bottom: 190px;
         }
     }
 }
