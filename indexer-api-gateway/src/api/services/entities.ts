@@ -719,6 +719,8 @@ export class EntityApi extends ApiClient {
         @Query('orderDir') orderDir?: string,
         @Query('keywords') keywords?: string,
         @Query('options.issuer') issuer?: string,
+        @Query('options.role') role?: string,
+        @Query('analytics.sr') sr?: string,
         @Query('topicId') topicId?: string,
         @Query('analytics.policyId') policyId?: string
     ) {
@@ -730,6 +732,8 @@ export class EntityApi extends ApiClient {
             keywords,
             topicId,
             'options.issuer': issuer,
+            'options.role': role,
+            'analytics.sr': sr,
             'analytics.policyId': policyId,
         });
     }

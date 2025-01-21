@@ -10,6 +10,7 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
+import { SettingsService } from './api/settings.service.js';
 import {
     SynchronizationAnalytics,
     SynchronizationContracts,
@@ -102,7 +103,8 @@ function getBoolean(flag: string | undefined): boolean {
         EntityService,
         FiltersService,
         LandingService,
-        AnalyticsService
+        AnalyticsService,
+        SettingsService,
     ],
 })
 class AppModule { }

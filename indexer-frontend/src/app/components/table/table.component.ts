@@ -4,15 +4,17 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
-import { NgStyle, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
+import { HederaExplorer } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum ColumnType {
     TEXT = 'text',
     BUTTON = 'button',
     CHIP = 'chip',
+    HEDERA = 'hedera',
 }
 
 export interface BaseColumn {
@@ -43,6 +45,11 @@ export interface ButtonColumn extends BaseColumn {
     btn_label: string;
 }
 
+export interface HederaTimestampColumn extends BaseColumn {
+    type: ColumnType.HEDERA;
+    field: string;
+}
+
 @Component({
     selector: 'app-table',
     standalone: true,
@@ -55,6 +62,8 @@ export interface ButtonColumn extends BaseColumn {
         NgStyle,
         NgTemplateOutlet,
         PaginatorComponent,
+        HederaExplorer,
+        DatePipe,
         TagModule,
         RouterModule,
     ],
@@ -62,7 +71,7 @@ export interface ButtonColumn extends BaseColumn {
     styleUrl: './table.component.scss',
 })
 export class TableComponent {
-    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[];
+    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[] | HederaTimestampColumn[];
     @Input() data!: any[];
     @Input() pageIndex: number = 0;
     @Input() pageSize: number = 5;
@@ -127,6 +136,17 @@ export class TableComponent {
             }
             result = result[pathList[i]];
         }
+        return result;
+    }
+
+    getDateFromHederaTimestamp(paths: string, obj: any) {
+        let result = this.getFieldValue(paths, obj);
+
+        if (result) {
+            const fixedTimestamp = Math.floor(result * 1000);
+            result = new Date(fixedTimestamp);
+        }
+
         return result;
     }
 }
