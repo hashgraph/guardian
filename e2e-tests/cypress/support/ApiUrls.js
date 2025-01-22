@@ -72,7 +72,7 @@ const API = {
 
     //TrustChains
     Trustchains: "trust-chains/",
-    TrustChainBlock: "/tag/trustChainBlock/blocks/",
+    TrustChainBlock: "tag/trustChainBlock/blocks/",
 
     //Settings
     SettingsEnv: "settings/environment",

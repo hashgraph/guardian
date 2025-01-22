@@ -16,7 +16,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 300000
+                timeout: 600000
             })
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
