@@ -1408,7 +1408,8 @@ export abstract class AbstractDatabaseServer {
             wasTransferNeeded: boolean,
             transferSerials: number[],
             transferAmount: number,
-            tokenIds: string[]
+            tokenIds: string[],
+            target: string,
         ]
     >
 
