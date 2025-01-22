@@ -1,0 +1,12 @@
+.propRowCell {
+    height: 38px;
+}
+
+.propRowCell.field {
+    display: block;
+    height: 44px;
+
+    ::ng-deep .container {
+        height: 40px;
+    }
+}

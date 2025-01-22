@@ -1,10 +1,7 @@
-import { MessageAction } from '../types/message-action.type.js';
-import { MessageType } from '../types/message-type.type.js';
-
 /**
- * Parsed message
+ * Contract
  */
-export interface Message<O = any, A = any> {
+export class IRetirementMessage {
     /**
      * Identifier
      */
@@ -34,14 +31,6 @@ export interface Message<O = any, A = any> {
      */
     statusReason: string;
     /**
-     * Type
-     */
-    type: MessageType;
-    /**
-     * Action
-     */
-    action: MessageAction;
-    /**
      * Lang
      */
     lang: string;
@@ -56,11 +45,11 @@ export interface Message<O = any, A = any> {
     /**
      * Options
      */
-    options: O;
+    options: any;
     /**
      * Analytics
      */
-    analytics?: A;
+    analytics?: any;
     /**
      * Files
      */
@@ -80,5 +69,5 @@ export interface Message<O = any, A = any> {
     /**
      * Sequence number
      */
-    sequenceNumber?: number;
+    sequenceNumber: string;
 }

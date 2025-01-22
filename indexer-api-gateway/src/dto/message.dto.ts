@@ -87,4 +87,9 @@ export class MessageDTO<O = any, A = any> implements Message<O, A> {
         example: ['0.0.4481265'],
     })
     tokens: string[];
+    @ApiProperty({
+        description: 'SequenceNumber',
+        example: 0,
+    })
+    sequenceNumber?: number;
 }

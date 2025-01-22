@@ -122,14 +122,14 @@ a[disabled="true"] {
     height: 25px;
 }
 
-.display-chain {}
+.display-chain {
+}
 
 .container {
     display: flex;
 }
 
-.container>i,
-.container>svg {
+.container>mat-icon {
     font-size: 50px;
     flex: 0 0 80px;
     align-self: center;
@@ -165,8 +165,8 @@ a[disabled="true"] {
 }
 
 .chain-item {
-    margin: 6px 23px;
-    padding: 22px 42px;
+    margin: 6px 8px;
+    padding: 16px;
     /* display: flex;
     flex-direction: column;
     align-content: center;
@@ -175,8 +175,8 @@ a[disabled="true"] {
     display: inline-block;
     box-sizing: border-box;
 
-    width: 493px;
-    height: 230px;
+    width: 282px;
+    height: 190px;
     background: #ffffff 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
@@ -209,14 +209,18 @@ a[disabled="true"] {
 
 .chain-document {
     position: absolute;
-    right: 42px;
-    top: 23px;
+    right: 16px;
+    top: 16px;
     font-family: Inter;
     font-size: 16px;
     color: #0b73f8;
     font-weight: bold;
     padding: 0px 0px 0px 10px;
     background: #fff;
+
+    .p-button {
+        padding: 6px 16px;
+    }
 }
 
 .chain-document a {
@@ -236,18 +240,21 @@ a[disabled="true"] {
 }
 
 .chain-title {
-    font-family: Inter;
-    font-size: 18px;
-    color: #707070;
+    margin-top: 8px;
     display: flex;
     align-items: center;
     grid-gap: 15px;
     gap: 15px;
     font-weight: bold;
+
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 14px;
+    color: #23252E;
 }
 
-.chain-title i,
-.chain-title svg {
+.chain-title mat-icon {
     font-size: 30px;
     color: #000;
     position: relative;
@@ -256,11 +263,16 @@ a[disabled="true"] {
 
 .chain-id {
     white-space: normal;
-    border-bottom: 1px solid rgb(112 112 112 / 64%);
-    margin: 0 0 25px 0;
-    padding: 25px 0;
+    border-bottom: 1px solid #E1E7EF;
+    margin: 0 0 16px 0;
+    padding: 16px 0;
+
     font-family: Inter;
-    font-size: 20px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+
     /* text-transform: capitalize; */
 }
 
@@ -281,8 +293,7 @@ a[disabled="true"] {
     height: 170px;
 }
 
-.empty-documents-description i,
-.empty-documents-description svg {
+.empty-documents-description mat-icon {
     font-size: 115px;
     height: 115px;
     width: 115px;
@@ -342,8 +353,7 @@ a.go-back-link {
     padding-right: 28px;
 }
 
-a.go-back-link i,
-a.go-back-link svg {
+a.go-back-link mat-icon {
     color: #707070;
     position: relative;
     top: -3px;
@@ -355,8 +365,7 @@ a.go-back-link svg {
     padding: 45px;
 }
 
-.header i,
-.header svg {
+.header mat-icon {
     color: #00d048;
     font-size: 24px;
     vertical-align: bottom;
@@ -453,18 +462,21 @@ a.open-vp {
 
 .parties-label {
     font-family: Inter;
-    font-size: 16px;
-    color: #707070;
-    padding: 3px 0;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    text-align: left;
+    color: #23252E;
 }
 
 .parties-value,
 .nested-documents-value {
     font-family: Inter;
-    font-size: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: left;
     color: #0c77ff;
-    font-weight: bold;
-    line-height: 25px;
 }
 
 .parties,
@@ -555,16 +567,18 @@ a.open-vp {
     position: absolute;
     right: 42px;
     bottom: 12px;
-    font-family: Inter;
-    font-size: 18px;
     color: #707070;
-    font-weight: bold;
     display: flex;
     align-items: center;
+
+    font-family: Inter;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 14px;
+    color: #23252E;
 }
 
-.multiple-documents-count i,
-.multiple-documents-count svg {
+.multiple-documents-count mat-icon {
     cursor: pointer;
 }
 
@@ -640,8 +654,7 @@ a.open-vp {
     border: 1px solid var(--grey-grey-3, #E1E7EF);
 }
 
-.card-item[main="true"] i,
-.card-item[main="true"] svg {
+.card-item[main="true"] mat-icon {
     color: #00a100;
 }
 
@@ -660,8 +673,7 @@ a.open-vp {
     line-height: 14px;
 }
 
-.card-icon i,
-.card-icon svg {
+.card-icon mat-icon {
     position: absolute;
     top: -3px;
     left: -3px;
@@ -770,4 +782,120 @@ h3 {
     flex-wrap: wrap;
     row-gap: 32px;
     column-gap: 16px
+}
+
+.item-type-RETIRE {
+    .chain-top-block {
+        padding-bottom: 14px;
+        margin-top: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #E1E7EF;
+    }
+
+    .chain-title {
+        margin-top: 0;
+    }
+
+    &.multiple-tokens {
+        margin: 6px 16px 6px 8px;
+        width: 450px;
+        height: 182px;
+    }
+}
+
+.retirements-container {
+    position: relative;
+    display: flex;
+
+    .chain-item.item-type-retire-group {
+        border: 1px solid var(--grey-grey-6, #848FA9);
+    }
+
+    .retirement-group-icon {
+        align-self: center;
+        color: var(--color-grey-4, #848FA9);
+    }
+
+    .multiple-documents-count {
+        bottom: auto;
+
+        .mat-icon {
+            color: var(--color-grey-5, #AAB7C4);
+        }
+    }
+}
+
+.retire-block {
+    .chain-title {
+        margin-top: 0;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #E1E7EF;
+    }
+}
+
+.retire-multiple-card-1 {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+}
+
+.retire-multiple-card-2 {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+}
+
+.retire-multiple-tokens {
+    display: flex;
+    justify-content: space-between;
+}
+
+.retire-info {
+    p {
+        margin-bottom: 8px;
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 14px;
+        color: #848FA9;
+
+        span {
+            margin-left: 8px;
+            font-family: Inter;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 14px;
+            color: #000000;
+        }
+    }
+
+    &.second-token {
+        p {
+            text-align: left;
+        }
+    }
+}
+
+.retire-no-indexer-info {
+    display: flex;
+    padding: 8px;
+    gap: 8px;
+    border-radius: 8px;
+    border: 1px solid #AAB7C4;
+    background-color: #F9FAFC;
+    color: #AAB7C4;
+
+    p {
+        margin: 0;
+        font-family: Inter;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 14px;
+        text-align: left;
+        text-underline-position: from-font;
+        text-decoration-skip-ink: none;
+        color: #6C7791;
+        white-space: break-spaces;
+    }
 }

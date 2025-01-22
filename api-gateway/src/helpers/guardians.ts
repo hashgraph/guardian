@@ -11,12 +11,14 @@ import {
     IContract,
     IDidObject,
     IOwner,
+    IRetirementMessage,
     IRetirePool,
     IRetireRequest,
     ISchema,
     IToken,
     ITokenInfo,
     IUser,
+    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -1852,6 +1854,22 @@ export class Guardians extends NatsService {
         });
     }
 
+    /**
+     * Get retire VCs from Indexer
+     * @param owner
+     * @param contractTopicId
+     * @returns Retire VCs from Indexer and count
+     */
+    public async getRetireVCsFromIndexer(
+        owner: IOwner,
+        contractTopicId: string
+    ): Promise<[IRetirementMessage[], number]> {
+        return await this.sendMessage(ContractAPI.GET_RETIRE_VCS_FROM_INDEXER, {
+            owner,
+            contractTopicId
+        });
+    }
+
     //#endregion
 
     /**
@@ -3202,6 +3220,14 @@ export class Guardians extends NatsService {
      */
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
+    }
+
+
+    /**
+     * Get Indexer availability
+     */
+    public async getIndexerAvailability(): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_INDEXER_AVAILABILITY, {});
     }
 
     /**

@@ -205,7 +205,9 @@
                                             [(ngModel)]="rule.borderWidth"
                                             [options]="dropdownBorderWidthOptions"
                                             optionLabel="label"
-                                            optionValue="value">
+                                            optionValue="value"
+                                            [appendTo]="'body'"
+                                        >
                                         </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
