@@ -100,7 +100,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         });
     });
 
-    it("Create wipe contract", () => {
+    it("Create wipe contract", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,
