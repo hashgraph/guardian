@@ -1719,5 +1719,57 @@ export class ContractsApi {
             await InternalException(error, this.logger);
         }
     }
+
+    /**
+     * Get a list of all retire vcs from Indexer
+     */
+    @Get('/retireIndexer')
+    @Auth(
+        Permissions.CONTRACTS_DOCUMENT_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
+    @ApiOperation({
+        summary: 'Return a list of all retire vcs from Indexer.',
+        description: 'Returns all retire vcs from Indexer.',
+    })
+    @ApiQuery({
+        name: 'contractTopicId',
+        type: String,
+        description: 'The topic id of contract',
+        required: true,
+        example: '0.0.0000000',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRetireVCsFromIndexer(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('contractTopicId') contractTopicId: string,
+    ): Promise<any[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, contractTopicId);
+            return res.header('X-Total-Count', count).send(vcs);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
     //#endregion
 }

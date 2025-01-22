@@ -84,3 +84,19 @@
     justify-content: center;
     align-content: center;
 }
+
+::ng-deep .p-dialog-header {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+::ng-deep .p-dialog-content {
+    .p-dialog-header {
+        margin-bottom: 14px
+    }
+}
+
+::ng-deep .raised-button .p-button {
+    border-radius: 10px;
+    margin: 5px 20px
+}

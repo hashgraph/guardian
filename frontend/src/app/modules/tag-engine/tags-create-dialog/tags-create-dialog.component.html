@@ -99,7 +99,9 @@
                     (onChange)="onSelectSchema()"
                     [options]="schemas"
                     optionLabel="name"
-                    placeholder="Select a schema">
+                    placeholder="Select a schema"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
                 <div *ngIf="schema" class="artifact-form">
                     <div class="artifact-form-label">

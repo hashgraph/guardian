@@ -9,7 +9,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select a data type"
-                [options]="dataTypeOptions">
+                [options]="dataTypeOptions"
+                appendTo="body"
+            >
             </p-dropdown>
 
         </td>
@@ -75,7 +77,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select order direction"
-                [options]="orderDirectionOptions">
+                [options]="orderDirectionOptions"
+                appendTo="body"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -119,14 +123,16 @@
                     [disabled]="readonly"
                     (onChange)="onSave()"
                     placeholder="Select a condition"
-                    [options]="fieldTypeOptions">
+                    [options]="fieldTypeOptions"
+                    appendTo="body"
+                >
                 </p-dropdown>
             </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field</td>
-            <td class="propRowCell">
+            <td class="propRowCell field">
                 <document-path [(value)]="field.field" [readonly]="readonly" (change)="onSave()"></document-path>
             </td>
         </tr>

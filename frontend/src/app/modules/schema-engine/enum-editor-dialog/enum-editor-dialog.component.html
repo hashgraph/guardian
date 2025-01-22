@@ -12,22 +12,18 @@
             </div>
 
             <button
+                pButton
+                label="Import by URL"
+                class="enum-import-button p-button-raised p-button-primary"
                 (click)="onImportByUrl()"
                 [disabled]="urlControl.value && !urlControl.valid"
-                class="enum-import-button"
-                color="primary"
-                mat-raised-button
-            >
-                Import by URL
-            </button>
+            ></button>
             <button
+                pButton
+                label="Import by file"
+                class="enum-import-button p-button-raised p-button-primary"
                 (click)="onImportByFile()"
-                class="enum-import-button"
-                color="primary"
-                mat-raised-button
-            >
-                Import by file
-            </button>
+            ></button>
         </div>
         <div class="enum-label">Enum</div>
         <div *ngIf="loadToIpfs" class="form-group enum-load-to-ipfs">

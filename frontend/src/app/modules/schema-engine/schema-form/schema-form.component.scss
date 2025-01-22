@@ -396,3 +396,11 @@ form {
         }
     }
 }
+
+.upload-btn {
+    background: var(--guardian-background);
+    border: none;
+    margin: 4px;
+    height: 34px;
+    cursor: pointer;
+}
