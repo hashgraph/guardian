@@ -1,14 +1,15 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { UserPermissions } from '@guardian/interfaces';
+import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { MethodologiesService } from 'src/app/services/methodologies.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormulaItemType, Formulas } from './formulas';
+import { FormulaItem, FormulaItemType, FormulaLink, Formulas } from './formulas';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
+import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 
 @Component({
     selector: 'app-methodology-configuration',
@@ -30,10 +31,12 @@ export class MethodologyConfigurationComponent implements OnInit {
 
     public item: any;
     public policy: any;
+    public schemas: Schema[];
+    public formulas: any[];
     public readonly: boolean = false;
     public keyboard: boolean = false;
 
-    public items: Formulas = new Formulas();
+    public config: Formulas = new Formulas();
     public readonly options = [
         {
             id: 'constant',
@@ -75,6 +78,11 @@ export class MethodologyConfigurationComponent implements OnInit {
         description: new FormControl<string>(''),
         policy: new FormControl<string>('', Validators.required),
     });
+
+    private schemasMap: Map<string, string> = new Map<string, string>();
+    private schemasFieldMap: Map<string, string> = new Map<string, string>();
+    private formulasMap: Map<string, string> = new Map<string, string>();
+    private formulasFieldMap: Map<string, string> = new Map<string, string>();
 
     constructor(
         private profileService: ProfileService,
@@ -124,14 +132,18 @@ export class MethodologyConfigurationComponent implements OnInit {
         this.loading = true;
         forkJoin([
             this.methodologiesService.getMethodology(this.methodologyId),
-        ]).subscribe(([item]) => {
+            this.methodologiesService.getRelationships(this.methodologyId),
+        ]).subscribe(([item, relationships]) => {
             this.item = item;
+            this.updateRelationships(relationships);
+
             this.overviewForm.setValue({
                 name: item.name || '',
                 description: item.description || '',
                 policy: this.policy?.name || '',
             });
-            this.items.fromData(item?.config);
+            this.config.fromData(item?.config);
+
             setTimeout(() => {
                 this.loading = false;
             }, 1000);
@@ -140,13 +152,55 @@ export class MethodologyConfigurationComponent implements OnInit {
         });
     }
 
+    private updateRelationships(relationships: any) {
+        this.policy = relationships?.policy || {};
+        const schemas = relationships?.schemas || [];
+        const formulas = relationships?.formulas || [];
+
+        this.schemas = [];
+        for (const schema of schemas) {
+            try {
+                const item = new Schema(schema);
+                this.schemas.push(item);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        this.schemasMap.clear();
+        this.schemasFieldMap.clear();
+        for (const schema of this.schemas) {
+            this.schemasMap.set(String(schema.iri), String(schema.name));
+            const fields = schema.getFields();
+            for (const field of fields) {
+                this.schemasFieldMap.set(`${schema.iri}.${field.path}`, String(field.description));
+            }
+        }
+
+        this.formulas = [];
+        for (const formula of formulas) {
+            this.formulas.push(formula);
+        }
+
+        this.formulasMap.clear();
+        this.formulasFieldMap.clear();
+        this.formulasMap.set(String(this.item.uuid), String(this.item.name));
+        for (const formula of this.formulas) {
+            this.formulasMap.set(String(formula.uuid), String(formula.name));
+            const fields = formula?.config?.formulas || [];
+            for (const field of fields) {
+                this.formulasFieldMap.set(`${formula.uuid}.${field.uuid}`, String(field.name));
+            }
+        }
+    }
+
     public onBack() {
         this.router.navigate(['/methodologies']);
     }
 
     public onSave() {
         this.loading = true;
-        const config = this.items.getJson();
+        const config = this.config.getJson();
         const value = this.overviewForm.value;
         const item = {
             ...this.item,
@@ -158,6 +212,7 @@ export class MethodologyConfigurationComponent implements OnInit {
             .updateMethodology(item)
             .subscribe((data) => {
                 this.item = data;
+                this.formulasMap.set(String(this.item.uuid), String(this.item.name));
                 setTimeout(() => {
                     this.loading = false;
                 }, 1000);
@@ -168,7 +223,7 @@ export class MethodologyConfigurationComponent implements OnInit {
 
     public addItem(option: any) {
         const type: FormulaItemType = option.id;
-        this.items.add(type);
+        this.config.add(type);
     }
 
     public deleteItem(item: any) {
@@ -190,13 +245,13 @@ export class MethodologyConfigurationComponent implements OnInit {
         });
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
-                this.items.delete(item);
+                this.config.delete(item);
             }
         });
     }
 
     public onFilter() {
-        this.items.setFilters(this.filters);
+        this.config.setFilters(this.filters);
     }
 
     public onStep(index: number) {
@@ -232,5 +287,56 @@ export class MethodologyConfigurationComponent implements OnInit {
                 }
             }
         });
+    }
+
+    public onLink(item: FormulaItem) {
+        const dialogRef = this.dialogService.open(LinkDialog, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                link: item.link,
+                schemas: this.schemas,
+                formulas: [
+                    this.item,
+                    ...this.formulas
+                ]
+            },
+        });
+        dialogRef.onClose.subscribe((result: FormulaLink | null) => {
+            if (result) {
+                item.link = result
+            }
+        });
+    }
+
+    public getEntityName(link: FormulaLink): string {
+        if (link.type === 'schema') {
+            return this.schemasMap.get(link.entityId) || '';
+        }
+        if (link.type === 'formula') {
+            return this.formulasMap.get(link.entityId) || '';
+        }
+        return '';
+    }
+
+    public getFieldName(link: FormulaLink): string {
+        if (link.type === 'schema') {
+            return this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';
+        }
+        if (link.type === 'formula') {
+            if (link.entityId === this.item?.uuid) {
+                return this.config.getItem(link.item)?.name || '';
+            } else {
+                return this.formulasFieldMap.get(`${link.entityId}.${link.item}`) || '';
+            }
+        }
+        return '';
+    }
+
+    public deleteLink(item: FormulaItem, $event:any) {
+        $event.preventDefault();
+        $event.stopPropagation();
+        item.link = null;
     }
 }

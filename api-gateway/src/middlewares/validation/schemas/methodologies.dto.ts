@@ -83,3 +83,7 @@ export class MethodologyDTO {
     @IsObject()
     config?: any;
 }
+
+export class MethodologyRelationshipsDTO {
+
+}

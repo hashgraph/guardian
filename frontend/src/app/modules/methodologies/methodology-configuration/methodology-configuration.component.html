@@ -87,7 +87,7 @@
                 <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
             </div>
             <div class="formula-items">
-                <div *ngFor="let item of items.data" class="formula-item" [attr.type]="item.type" [attr.readonly]="readonly">
+                <div *ngFor="let item of config.data" class="formula-item" [attr.type]="item.type" [attr.readonly]="readonly">
                     <div class="formula-item-icon">
                         <svg-icon *ngIf="!readonly" class="icon-btn svg-icon"
                             src="/assets/images/icons/equal.svg"
@@ -133,7 +133,24 @@
                             <ng-container *ngIf="item.type === 'variable'">
                                 <div class="guardian-input-container">
                                     <label class="form-label">Link</label>
-                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link" class="formula-link-remove">
+                                            <button
+                                                class="guardian-icon-button"
+                                                (click)="deleteLink(item, $event)"
+                                                [disabled]="readonly">
+                                                <svg-icon
+                                                    class="icon-btn svg-icon"
+                                                    src="/assets/images/icons/delete.svg"
+                                                    [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
+                                                </svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </ng-container>
     

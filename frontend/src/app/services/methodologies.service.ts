@@ -53,20 +53,24 @@ export class MethodologiesService {
         return this.http.post<any>(`${this.url}/`, item);
     }
 
-    public getMethodology(ruleId: string): Observable<any> {
-        return this.http.get<any>(`${this.url}/${ruleId}`);
+    public getMethodology(id: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${id}`);
     }
 
-    public deleteMethodology(ruleId: any): Observable<any> {
-        return this.http.delete<boolean>(`${this.url}/${ruleId}`);
+    public getRelationships(id: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/${id}/relationships`);
+    }
+
+    public deleteMethodology(id: any): Observable<any> {
+        return this.http.delete<boolean>(`${this.url}/${id}`);
     }
 
     public updateMethodology(item: any): Observable<any> {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 
-    public export(ruleId: string): Observable<ArrayBuffer> {
-        return this.http.get(`${this.url}/${ruleId}/export/file`, {
+    public export(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
             responseType: 'arraybuffer'
         });
     }

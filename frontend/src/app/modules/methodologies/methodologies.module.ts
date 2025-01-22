@@ -24,12 +24,14 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
 import { MethodologiesComponent } from './methodologies/methodologies.component';
 import { NewMethodologyDialog } from './dialogs/new-methodology-dialog/new-methodology-dialog.component';
 import { MethodologyConfigurationComponent } from './methodology-configuration/methodology-configuration.component';
+import { LinkDialog } from './dialogs/link-dialog/link-dialog.component';
 
 @NgModule({
     declarations: [
         MethodologiesComponent,
         MethodologyConfigurationComponent,
-        NewMethodologyDialog
+        NewMethodologyDialog,
+        LinkDialog
     ],
     imports: [
         CommonModule,

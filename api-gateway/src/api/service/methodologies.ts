@@ -2,7 +2,7 @@ import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, MethodologyDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, MethodologyDTO, MethodologyRelationshipsDTO, pageHeader } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -245,6 +245,49 @@ export class MethodologiesApi {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.deleteMethodology(methodologyId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+
+    /**
+     * Get relationships by id
+     */
+    @Get('/:methodologyId/relationships')
+    @Auth(Permissions.SCHEMAS_RULE_READ)
+    @ApiOperation({
+        summary: 'Retrieves Methodology relationships.',
+        description: 'Retrieves Methodology relationships for the specified ID.'
+    })
+    @ApiParam({
+        name: 'methodologyId',
+        type: String,
+        description: 'Methodology Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: MethodologyRelationshipsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(MethodologyRelationshipsDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaRuleRelationships(
+        @AuthUser() user: IAuthUser,
+        @Param('methodologyId') methodologyId: string
+    ): Promise<MethodologyRelationshipsDTO> {
+        try {
+            if (!methodologyId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardian = new Guardians();
+            return await guardian.getMethodologyRelationships(methodologyId, owner);
         } catch (error) {
             await InternalException(error, this.logger);
         }

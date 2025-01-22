@@ -1,0 +1,133 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">{{title}}</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div *ngIf="step === 1" class="context">
+        <div class="type-selector">
+            <div
+                class="selector-item"
+                [attr.selected]="type==='schema'"
+                (click)="onChangeType('schema')">Schemas</div>
+            <div
+                class="selector-item"
+                [attr.selected]="type==='formula'"
+                (click)="onChangeType('formula')">Formulas</div>
+        </div>
+
+        <div *ngIf="type==='schema'" class="entities">
+            <div *ngFor="let item of schemas" class="entity" (click)="onSelectEntity(item)">
+                <div class="entity-select">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.iri" 
+                        [ngModel]="entityId"></p-radioButton>
+                </div>
+                <div class="entity-name">
+                    {{item.name}}
+                </div>
+            </div>
+        </div>
+        <div *ngIf="type==='formula'" class="entities">
+            <div *ngFor="let item of formulas" class="entity" (click)="onSelectEntity(item)">
+                <div class="entity-select">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.uuid" 
+                        [ngModel]="entityId"></p-radioButton>
+                </div>
+                <div class="entity-name">
+                    {{item.name}}
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div *ngIf="step === 2" class="context">
+
+        <div *ngIf="items && type==='schema'" class="field-tree">
+            <div *ngFor="let item of items.data.items" class="field-item">
+                <div class="field-offset"
+                    [style.width.px]="24*item.lvl"
+                    [style.min-width.px]="24*item.lvl"></div>
+                <div class="field-collapse">
+                    <div
+                        *ngIf="item.expandable"
+                        class="guardian-collapse collapse-24"
+                        [attr.collapsed]="item.collapsed"
+                        (click)="onCollapseField(item)"
+                    >
+                    </div>
+                </div>
+                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.data.path" 
+                        [ngModel]="itemId"></p-radioButton>
+                </div>
+                <div class="field-name" (click)="onSelectField(item)">
+                    {{item.data.description}}
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="items && type==='formula'" class="field-tree">
+            <div *ngFor="let item of items.data.items" class="field-item">
+                <div class="field-offset"
+                    [style.width.px]="24*item.lvl"
+                    [style.min-width.px]="24*item.lvl"></div>
+                <div class="field-collapse">
+                    <div
+                        *ngIf="item.expandable"
+                        class="guardian-collapse collapse-24"
+                        [attr.collapsed]="item.collapsed"
+                        (click)="onCollapseField(item)"
+                    >
+                    </div>
+                </div>
+                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectVariable(item)">
+                    <p-radioButton 
+                        class="guardian-radio-button radio-button-24"
+                        [value]="item.data.uuid" 
+                        [ngModel]="itemId"></p-radioButton>
+                </div>
+                <div class="field-name" (click)="onSelectVariable(item)">
+                    {{item.data.name}}
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div *ngIf="step === 1" class="dialog-button">
+            <button 
+                (click)="onNext()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="!entityId">Next</button>
+        </div>
+        <div *ngIf="step === 2" class="dialog-button">
+            <button 
+                (click)="onPrev()" 
+                class="guardian-button guardian-button-secondary">Prev</button>
+        </div>
+        <div *ngIf="step === 2" class="dialog-button">
+            <button 
+                *ngIf="step === 2"
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary"
+                [disabled]="!itemId">Save</button>
+        </div>
+    </div>
+</div>

@@ -7,13 +7,19 @@ export enum FormulaItemType {
     Text = 'text'
 }
 
+export interface FormulaLink {
+    type: 'formula' | 'schema';
+    entityId: string;
+    item: string;
+}
+
 export interface FormulaItem {
     uuid: string;
     name: string;
     description: string;
     type: FormulaItemType,
     value?: any;
-    link?: any;
+    link?: FormulaLink | null;
     relationships?: any;
 }
 
@@ -102,5 +108,14 @@ export class Formulas {
 
     private _toJson(item: FormulaItem): any {
         return item;
+    }
+
+    public getItem(uuid: string): FormulaItem | null {
+        for (const item of this.items) {
+            if (item.uuid === uuid) {
+                return item;
+            }
+        }
+        return null;
     }
 }

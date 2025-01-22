@@ -3547,4 +3547,16 @@ export class Guardians extends NatsService {
     public async previewMethodology(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_METHODOLOGY_FILE, { zip, owner });
     }
+
+    /**
+     * Get methodology relationships
+     *
+     * @param methodologyId
+     * @param owner
+     *
+     * @returns Operation Success
+     */
+    public async getMethodologyRelationships(methodologyId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_METHODOLOGY_RELATIONSHIPS, { methodologyId, owner });
+    }
 }

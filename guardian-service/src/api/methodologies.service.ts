@@ -6,9 +6,10 @@ import {
     MessageResponse,
     PinoLogger,
     Methodology,
-    MethodologyImportExport
+    MethodologyImportExport,
+    PolicyImportExport
 } from '@guardian/common';
-import { EntityStatus, IOwner, MessageAPI, PolicyType } from '@guardian/interfaces';
+import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 
 /**
  * Connect to the message broker methods of working with methodology.
@@ -299,4 +300,46 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    /**
+     * Get methodology relationships
+     *
+     * @param {any} msg - methodology id
+     *
+     * @returns {any} relationships
+     */
+    ApiResponse(MessageAPI.GET_METHODOLOGY_RELATIONSHIPS,
+        async (msg: { methodologyId: any, owner: IOwner }) => {
+            try {
+                const { methodologyId, owner } = msg;
+                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                if (!(item && item.owner === owner.owner)) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const policyId = item.policyId;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('Item does not exist.');
+                }
+
+                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const all = [].concat(schemas, toolSchemas);
+
+                const formulas = await DatabaseServer.getMethodologies({ 
+                    id: { $ne: methodologyId },
+                    policyId: policy.id 
+                });
+
+                return new MessageResponse({
+                    policy,
+                    schemas: all,
+                    formulas: formulas
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
+
 }

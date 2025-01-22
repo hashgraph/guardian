@@ -349,8 +349,6 @@ export class StatisticDefinitionConfigurationComponent implements OnInit {
         }, 200)
     }
 
-
-
     public onCollapseField(field: TreeListItem<any>) {
         if (this.rootNode) {
             const rootView = this.rootNode.fields;
