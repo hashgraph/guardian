@@ -34,7 +34,7 @@ context("External", { tags: ['external', 'thirdPool', 'all'] }, () => {
         })
     });
 
-    it("Sends data from an external source", () => {
+    it("Sends data from an external source", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.External,

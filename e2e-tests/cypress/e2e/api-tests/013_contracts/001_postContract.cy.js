@@ -9,7 +9,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const contractNameW = "FirstAPIContractW";
     const contractNameNeg = "FirstAPIContractNeg";
 
-    it("Create retire contract", () => {
+    it("Create retire contract", { tags: ['smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.POST,

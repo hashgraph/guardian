@@ -694,7 +694,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 		});
 	});
 
-	it("Approve wipe contract requests", () => {
+	it("Approve wipe contract requests", { tags: ['smoke'] }, () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
