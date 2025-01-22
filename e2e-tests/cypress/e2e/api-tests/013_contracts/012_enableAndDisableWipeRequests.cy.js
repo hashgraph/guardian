@@ -719,7 +719,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 				});
 			});
 		})
-		cy.wait(30000)
+		cy.wait(60000)
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.GET,
