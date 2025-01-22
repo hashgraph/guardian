@@ -45,14 +45,12 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         })
 
         it("Reject wipe contract requests without auth token - Negative", () => {
-            Authorization.getAccessToken(SRUsername).then((authorization) => {
-                cy.request({
-                    method: METHOD.DELETE,
-                    url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
-                    failOnStatusCode: false,
-                }).then((response) => {
-                    expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                });
+            cy.request({
+                method: METHOD.DELETE,
+                url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Reject,
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
             });
         });
 

@@ -12,7 +12,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 	let waitForApproveApplicationBlockId, deviceGridBlockId, issueRequestGridBlockId;
 
 
-	before("Create contracts, policy and register new user", () => {
+	before("Get contracts, policy and register new user", () => {
 		//Create retire contract and save id
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
@@ -182,75 +182,75 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
 	before("Mint token", () => {
 		//Choose role
-				Authorization.getAccessToken(UserUsername).then((authorization) => {
-					cy.request({
-						method: METHOD.POST,
-						url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
-						headers: {
-							authorization
-						},
-						body: {
-							role: "Registrant"
-						}
-					})
-		
-					cy.wait(10000)
-		
-					//Create app and wait while it in progress
-					cy.request({
-						method: METHOD.POST,
-						url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
-						headers: {
-							authorization
-						},
-						body: {
-							document: {
-								field1: {},
-								field2: {},
-								field3: {}
-							},
-							ref: null
-						}
-					})
-		
-					let requestForApplicationCreationProgress = {
-						method: METHOD.GET,
-						url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + waitForApproveApplicationBlockId,
-						headers: {
-							authorization
-						}
-					}
-		
-					Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
+		Authorization.getAccessToken(UserUsername).then((authorization) => {
+			cy.request({
+				method: METHOD.POST,
+				url: API.ApiServer + API.Policies + policyId + "/" + API.ChooseRegistrantRole,
+				headers: {
+					authorization
+				},
+				body: {
+					role: "Registrant"
+				}
+			})
+
+			cy.wait(10000)
+
+			//Create app and wait while it in progress
+			cy.request({
+				method: METHOD.POST,
+				url: API.ApiServer + API.Policies + policyId + "/" + API.CreateApplication,
+				headers: {
+					authorization
+				},
+				body: {
+					document: {
+						field1: {},
+						field2: {},
+						field3: {}
+					},
+					ref: null
+				}
+			})
+
+			let requestForApplicationCreationProgress = {
+				method: METHOD.GET,
+				url: API.ApiServer + API.Policies + policyId + "/" + API.Blocks + waitForApproveApplicationBlockId,
+				headers: {
+					authorization
+				}
+			}
+
+			Checks.whileApplicationCreating("Submitted for Approval", requestForApplicationCreationProgress, 0)
+		})
+		//Get applications data and prepare body for approve
+		let applicationData
+		Authorization.getAccessToken(SRUsername).then((authorization) => {
+			cy.request({
+				method: METHOD.GET,
+				url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
+				headers: {
+					authorization
+				}
+			}).then((response) => {
+				applicationData = response.body.data[0];
+				applicationData.option.status = "Approved"
+				let appDataBody = JSON.stringify({
+					document: applicationData,
+					tag: "Button_0"
 				})
-				//Get applications data and prepare body for approve
-				let applicationData
-				Authorization.getAccessToken(SRUsername).then((authorization) => {
-					cy.request({
-						method: METHOD.GET,
-						url: API.ApiServer + API.Policies + policyId + "/" + API.GetApplications,
-						headers: {
-							authorization
-						}
-					}).then((response) => {
-						applicationData = response.body.data[0];
-						applicationData.option.status = "Approved"
-						let appDataBody = JSON.stringify({
-							document: applicationData,
-							tag: "Button_0"
-						})
-						//Approve app
-						cy.request({
-							method: METHOD.POST,
-							url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
-							headers: {
-								authorization,
-								"content-type": "application/json"
-							},
-							body: appDataBody
-						})
-					})
+				//Approve app
+				cy.request({
+					method: METHOD.POST,
+					url: API.ApiServer + API.Policies + policyId + "/" + API.ApproveApplication,
+					headers: {
+						authorization,
+						"content-type": "application/json"
+					},
+					body: appDataBody
 				})
+			})
+		})
 		//Wait while approve in progress
 		Authorization.getAccessToken(UserUsername).then((authorization) => {
 			let requestForApplicationApproveProgress = {
@@ -432,7 +432,9 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 			Checks.whileBalanceVerifying("10", requestForBalance, 91, tokenId)
 		})
 	})
-	
+
+
+
 	it("Disable wipe contract requests", () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
@@ -656,45 +658,6 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 		});
 	});
 
-	it("Approve wipe contract requests", () => {
-		Authorization.getAccessToken(SRUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.WipeRequests,
-				headers: {
-					authorization,
-				},
-				qs: {
-					contractId: contractUuidW
-				}
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				wipeRequestId = response.body.at(0).id;
-				cy.request({
-					method: METHOD.POST,
-					url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
-					headers: {
-						authorization,
-					}
-				}).then((response) => {
-					expect(response.status).eql(STATUS_CODE.OK);
-				});
-			});
-		})
-		Authorization.getAccessToken(UserUsername).then((authorization) => {
-			cy.request({
-				method: METHOD.GET,
-				url: API.ApiServer + API.RetirePools,
-				headers: {
-					authorization
-				}
-			}).then((response) => {
-				expect(response.status).eql(STATUS_CODE.OK);
-				expect(response.body.at(0)).to.have.property("id");
-			})
-		})
-	})
-
 	it("Approve wipe contract requests without auth token - Negative", () => {
 		cy.request({
 			method: METHOD.POST,
@@ -730,4 +693,44 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 			expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
 		});
 	});
+
+	it("Approve wipe contract requests", () => {
+		Authorization.getAccessToken(SRUsername).then((authorization) => {
+			cy.request({
+				method: METHOD.GET,
+				url: API.ApiServer + API.WipeRequests,
+				headers: {
+					authorization,
+				},
+				qs: {
+					contractId: contractUuidW
+				}
+			}).then((response) => {
+				expect(response.status).eql(STATUS_CODE.OK);
+				wipeRequestId = response.body.at(0).id;
+				cy.request({
+					method: METHOD.POST,
+					url: API.ApiServer + API.WipeRequests + wipeRequestId + "/" + API.Approve,
+					headers: {
+						authorization,
+					}
+				}).then((response) => {
+					expect(response.status).eql(STATUS_CODE.OK);
+				});
+			});
+		})
+		cy.wait(30000)
+		Authorization.getAccessToken(UserUsername).then((authorization) => {
+			cy.request({
+				method: METHOD.GET,
+				url: API.ApiServer + API.RetirePools,
+				headers: {
+					authorization
+				}
+			}).then((response) => {
+				expect(response.status).eql(STATUS_CODE.OK);
+				expect(response.body.at(0)).to.have.property("id");
+			})
+		})
+	})
 })
