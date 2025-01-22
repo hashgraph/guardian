@@ -23,10 +23,11 @@
                     appendTo="body"
                     class="type-dropdown"
                     formControlName="type"
-                    optionLabel="name" 
+                    optionLabel="name"
                     optionValue="value"
                     placeholder="Type"
-                    (onChange)="changeType()">
+                    (onChange)="changeType()"
+                >
                     <ng-template let-filterSelectedProperty pTemplate="selectedItem">
                         <span class="dropdown-type">Type:</span>
                         <span>{{ filterSelectedProperty.name }}</span>
@@ -80,7 +81,7 @@
                             appendTo="body"
                             class="type-dropdown"
                             formControlName="tokens"
-                            optionLabel="name" 
+                            optionLabel="name"
                             optionValue="value"
                             placeholder="Tokens">
                             <ng-template let-filterSelectedProperty pTemplate="selectedItem">
@@ -90,10 +91,10 @@
                         </p-dropdown>
                         <div [attr.hidden]="!filtersForm.value.tokens">
                             <span>Min Amount:</span>
-                            <p-inputNumber 
+                            <p-inputNumber
                                 class="type-number"
                                 formControlName="tokensCount"
-                                mode="decimal" 
+                                mode="decimal"
                                 [min]="1" ></p-inputNumber>
                         </div>
                     </div>
@@ -103,7 +104,7 @@
                             appendTo="body"
                             class="type-dropdown"
                             formControlName="vcDocuments"
-                            optionLabel="name" 
+                            optionLabel="name"
                             optionValue="value"
                             placeholder="VC Documents">
                             <ng-template let-filterSelectedProperty pTemplate="selectedItem">
@@ -113,10 +114,10 @@
                         </p-dropdown>
                         <div [attr.hidden]="!filtersForm.value.vcDocuments">
                             <span>Min Amount:</span>
-                            <p-inputNumber 
+                            <p-inputNumber
                                 class="type-number"
                                 formControlName="vcDocumentsCount"
-                                mode="decimal" 
+                                mode="decimal"
                                 [min]="1" ></p-inputNumber>
                         </div>
                     </div>
@@ -128,7 +129,7 @@
                             appendTo="body"
                             class="type-dropdown"
                             formControlName="vpDocuments"
-                            optionLabel="name" 
+                            optionLabel="name"
                             optionValue="value"
                             placeholder="VP Documents">
                             <ng-template let-filterSelectedProperty pTemplate="selectedItem">
@@ -138,10 +139,10 @@
                         </p-dropdown>
                         <div [attr.hidden]="!filtersForm.value.vpDocuments">
                             <span>Min Amount:</span>
-                            <p-inputNumber 
+                            <p-inputNumber
                                 class="type-number"
                                 formControlName="vpDocumentsCount"
-                                mode="decimal" 
+                                mode="decimal"
                                 [min]="1" ></p-inputNumber>
                         </div>
                     </div>
@@ -170,10 +171,10 @@
         <div *ngIf="list && list.length" class="grid-container">
             <div class="grid-header">
                 <div class="col-64">
-                    <input 
-                        class="checkbox-input" 
-                        type="checkbox" 
-                        [checked]="selectedAll"  
+                    <input
+                        class="checkbox-input"
+                        type="checkbox"
+                        [checked]="selectedAll"
                         (change)="onSelectAll()">
                 </div>
                 <div class="col-250">ID</div>
@@ -188,10 +189,10 @@
             <div class="grid-body">
                 <div *ngFor="let item of list" class="grid-row" (click)="onSelect(item)">
                     <div class="col-64">
-                        <input 
-                            class="checkbox-input" 
-                            type="checkbox" 
-                            [checked]="item._select" 
+                        <input
+                            class="checkbox-input"
+                            type="checkbox"
+                            [checked]="item._select"
                             (change)="select()">
                     </div>
                     <div class="col-250">{{item.messageId || item.id}}</div>
@@ -238,10 +239,10 @@
             <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
         </div>
         <div>
-            <button 
-                (click)="onCompare()" 
+            <button
+                (click)="onCompare()"
                 [disabled]="count<2"
-                class="button" 
+                class="button"
                 label="Compare with selected ({{count}})" pButton>
                 <svg-icon
                     class="icon2-btn"

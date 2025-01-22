@@ -95,6 +95,7 @@
                     [(ngModel)]="condition.type"
                     [disabled]="readonly"
                     (onChange)="onSave()"
+                    [appendTo]="'body'"
                     placeholder="Select a condition type"
                     [options]="conditionTypeOptions">
                 </p-dropdown>
