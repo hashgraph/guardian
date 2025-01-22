@@ -5,7 +5,6 @@ import {
     FormControl,
     FormsModule,
     ReactiveFormsModule,
-    Validators,
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,6 +16,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { LandingService } from '@services/landing.service';
+import { ProgressBarComponent } from "../../components/progress-bar/progress-bar.component";
 
 @Component({
     selector: 'app-home',
@@ -36,6 +36,7 @@ import { LandingService } from '@services/landing.service';
         InputTextModule,
         IconFieldModule,
         InputIconModule,
+        ProgressBarComponent
     ],
 })
 export class HomeComponent {
@@ -44,6 +45,9 @@ export class HomeComponent {
 
     public stats: any = [];
     public projectLocations: any[] = [];
+
+    public loadedMessagesCount: number = 0;
+    public messagesTotal: number = 0;
 
     constructor(
         private router: Router,
@@ -125,9 +129,18 @@ export class HomeComponent {
         this.landingService
             .getProjectsCoordinates()
             .subscribe((result) => (this.projectLocations = result));
+
+        this.landingService.startPollingDataLoadingProgress();
+
+        this.landingService.dataLoadingProgress$.subscribe((progress) => {
+            this.loadedMessagesCount = progress.loadedCount;
+            this.messagesTotal = progress.total;
+        });
     }
 
-    ngOnDestroy(): void { }
+    ngOnDestroy(): void {
+        this.landingService.stopPollingDataLoadingProgress();
+    }
 
     public onSearch() {
         if (this.searchControl.valid && this.searchControl.value) {
