@@ -13099,11 +13099,11 @@ paths:
       tags: *ref_28
       security:
         - bearer: []
-  /methodologies:
+  /formulas:
     post:
-      operationId: MethodologiesApi_createMethodology
-      summary: Creates a new methodology.
-      description: Creates a new methodology.
+      operationId: FormulasApi_createFormula
+      summary: Creates a new formula.
+      description: Creates a new formula.
       parameters: []
       requestBody:
         required: true
@@ -13111,14 +13111,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MethodologyDTO'
+              $ref: '#/components/schemas/FormulaDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyDTO'
+                $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13130,13 +13130,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: &ref_29
-        - methodologies
+        - formulas
       security:
         - bearer: []
     get:
-      operationId: MethodologiesApi_getMethodologies
-      summary: Return a list of all methodologies.
-      description: Returns all methodologies.
+      operationId: FormulasApi_getFormulas
+      summary: Return a list of all formulas.
+      description: Returns all formulas.
       parameters:
         - name: pageIndex
           required: false
@@ -13174,7 +13174,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/MethodologyDTO'
+                  $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13188,16 +13188,16 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /methodologies/{methodologyId}:
+  /formulas/{formulaId}:
     get:
-      operationId: MethodologiesApi_getMethodologyById
-      summary: Retrieves methodology.
-      description: Retrieves methodology for the specified ID.
+      operationId: FormulasApi_getFormulaById
+      summary: Retrieves formula.
+      description: Retrieves formula for the specified ID.
       parameters:
-        - name: methodologyId
+        - name: formulaId
           required: true
           in: path
-          description: Methodology Identifier
+          description: Formula Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -13207,7 +13207,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyDTO'
+                $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13222,14 +13222,14 @@ paths:
       security:
         - bearer: []
     put:
-      operationId: MethodologiesApi_updateMethodology
-      summary: Updates methodology.
-      description: Updates methodology configuration for the specified methodology ID.
+      operationId: FormulasApi_updateFormula
+      summary: Updates formula.
+      description: Updates formula configuration for the specified formula ID.
       parameters:
-        - name: methodologyId
+        - name: formulaId
           required: true
           in: path
-          description: Methodology Identifier
+          description: Formula Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -13239,14 +13239,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MethodologyDTO'
+              $ref: '#/components/schemas/FormulaDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyDTO'
+                $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13261,14 +13261,14 @@ paths:
       security:
         - bearer: []
     delete:
-      operationId: MethodologiesApi_deleteMethodology
-      summary: Deletes the methodology.
-      description: Deletes the methodology with the provided ID.
+      operationId: FormulasApi_deleteFormula
+      summary: Deletes the formula.
+      description: Deletes the formula with the provided ID.
       parameters:
-        - name: methodologyId
+        - name: formulaId
           required: true
           in: path
-          description: Methodology Identifier
+          description: Formula Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -13292,16 +13292,16 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /methodologies/{methodologyId}/relationships:
+  /formulas/{formulaId}/relationships:
     get:
-      operationId: MethodologiesApi_getSchemaRuleRelationships
-      summary: Retrieves Methodology relationships.
-      description: Retrieves Methodology relationships for the specified ID.
+      operationId: FormulasApi_getSchemaRuleRelationships
+      summary: Retrieves Formula relationships.
+      description: Retrieves Formula relationships for the specified ID.
       parameters:
-        - name: methodologyId
+        - name: formulaId
           required: true
           in: path
-          description: Methodology Identifier
+          description: Formula Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -13311,7 +13311,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyRelationshipsDTO'
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13325,11 +13325,11 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /methodologies/{policyId}/import/file:
+  /formulas/{policyId}/import/file:
     post:
-      operationId: MethodologiesApi_importMethodology
-      summary: Imports new methodology from a zip file.
-      description: Imports new methodology from the provided zip file into the local DB.
+      operationId: FormulasApi_importFormula
+      summary: Imports new formula from a zip file.
+      description: Imports new formula from the provided zip file into the local DB.
       parameters:
         - name: policyId
           required: true
@@ -13340,7 +13340,7 @@ paths:
             type: string
       requestBody:
         required: true
-        description: A zip file containing methodology to be imported.
+        description: A zip file containing formula to be imported.
         content:
           application/json:
             schema:
@@ -13351,7 +13351,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyDTO'
+                $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13365,16 +13365,16 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /methodologies/{methodologyId}/export/file:
+  /formulas/{formulaId}/export/file:
     get:
-      operationId: MethodologiesApi_exportMethodology
-      summary: Returns a zip file containing methodology.
-      description: Returns a zip file containing methodology.
+      operationId: FormulasApi_exportFormula
+      summary: Returns a zip file containing formula.
+      description: Returns a zip file containing formula.
       parameters:
-        - name: methodologyId
+        - name: formulaId
           required: true
           in: path
-          description: Methodology Identifier
+          description: Formula Identifier
           example: '000000000000000000000001'
           schema:
             type: string
@@ -13394,11 +13394,11 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
-  /methodologies/import/file/preview:
+  /formulas/import/file/preview:
     post:
-      operationId: MethodologiesApi_previewMethodology
-      summary: Imports a zip file containing methodology.
-      description: Imports a zip file containing methodology.
+      operationId: FormulasApi_previewFormula
+      summary: Imports a zip file containing formula.
+      description: Imports a zip file containing formula.
       parameters: []
       requestBody:
         required: true
@@ -13409,11 +13409,11 @@ paths:
               type: string
       responses:
         '200':
-          description: Methodology preview.
+          description: Formula preview.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MethodologyDTO'
+                $ref: '#/components/schemas/FormulaDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17291,8 +17291,8 @@ components:
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
             - SCHEMAS_RULE_EXECUTE
-            - METHODOLOGIES_METHODOLOGY_READ
-            - METHODOLOGIES_METHODOLOGY_CREATE
+            - FORMULAS_FORMULA_READ
+            - FORMULAS_FORMULA_CREATE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -17339,7 +17339,7 @@ components:
             - ACCESS
             - DELEGATION
             - STATISTICS
-            - METHODOLOGIES
+            - FORMULAS
           example: ANALYTIC
         entity:
           type: string
@@ -17380,7 +17380,7 @@ components:
             - STATISTIC
             - RULE
             - LABEL
-            - METHODOLOGY
+            - FORMULA
           example: POLICY
         action:
           type: string
@@ -17609,7 +17609,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VcDocumentDTO'
-    MethodologyDTO:
+    FormulaDTO:
       type: object
       properties:
         id:
@@ -17648,7 +17648,7 @@ components:
           nullable: true
       required:
         - name
-    MethodologyRelationshipsDTO:
+    FormulaRelationshipsDTO:
       type: object
       properties: {}
     PolicyLabelDTO:
