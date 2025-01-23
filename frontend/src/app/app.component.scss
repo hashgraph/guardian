@@ -467,6 +467,11 @@ body {
     padding-top: 12px;
 }
 
-::ng-deep td.propRowCell.cellName {
+::ng-deep td.propRowCell.cellName,
+::ng-deep .propRow .propRowCell{
     align-content: center;
+}
+
+::ng-deep .propRow .propRowCell .remove-prop {
+    top: 10px !important;
 }

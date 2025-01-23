@@ -8,6 +8,7 @@
                 [(ngModel)]="properties.documentType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
+                [appendTo]="'body'"
                 placeholder="Select a document type"
                 [options]="documentTypeOptions">
             </p-dropdown>
