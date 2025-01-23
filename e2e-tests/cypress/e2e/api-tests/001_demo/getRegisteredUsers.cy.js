@@ -1,7 +1,7 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Demo", { tags: ['demo', 'secondPool'] }, () => {
+context("Demo", { tags: ['demo', 'secondPool', 'all'] }, () => {
     
     it("Returns list of registered users", () => {
         cy.request({

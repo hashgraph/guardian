@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -10,7 +10,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             //grant kyc
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
                 headers: {
                     authorization
@@ -26,7 +26,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                             API.ListOfTokens +
                             tokenId +
                             "/" +
-                            user +
+                            UserUsername +
                             "/grant-kyc",
                         headers: {
                             authorization,
@@ -44,7 +44,7 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                                 API.ListOfTokens +
                                 tokenId +
                                 "/" +
-                                user +
+                                UserUsername +
                                 "/revoke-kyc",
                             headers: {
                                 authorization,

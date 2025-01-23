@@ -7,7 +7,9 @@
     "test": "npx cypress run",
     "e2e": "cypress run",
     "ui-only": "cypress run --headed --env grepTags=@ui,grepFilterSpecs=true",
-    "test-tag": "./run-test-by-tag.sh"
+    "test-tag": "./run-test-by-tag.sh",
+    "api-tests": "npx cypress run --env \"grepTags=all, grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome",
+    "smoke-pull": "npx cypress run --env \"grepTags=smoke, grepFilterSpecs=true\" --spec \"cypress/e2e/api-tests/**/*.cy.js\" --browser chrome"
   },
   "keywords": [
     "qa",
@@ -16,10 +18,9 @@
   "license": "ISC",
   "devDependencies": {
     "cy-verify-downloads": "^0.1.14",
-    "cypress": "^13.7.1",
+    "cypress": "^10.0.0",
     "cypress-grep": "^3.0.3",
-    "cypress-mochawesome-reporter": "^3.5.1",
-    "cypress-select-tests": "^1.7.1"
+    "cypress-mochawesome-reporter": "^3.5.1"
   },
   "dependencies": {
     "@bahmutov/cy-api": "^2.1.3",
