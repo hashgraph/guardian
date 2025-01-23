@@ -472,7 +472,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                     retireRequestId = response.body.at(0).id;
                 })
             })
-        })
+        });
 
         it("Approve retire request without auth token - Negative", () => {
             cy.request({
@@ -510,7 +510,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Approve retire request", { tags: ['smoke'] }, () => {
+        it("Approve retire request", () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
@@ -549,7 +549,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                     expect(response.status).eql(STATUS_CODE.OK);
                 })
             })
-        })
+        });
 
         it("Create retire request", { tags: ['smoke'] }, () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {

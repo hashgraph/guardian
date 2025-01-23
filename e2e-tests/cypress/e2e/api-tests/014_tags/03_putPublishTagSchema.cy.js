@@ -20,9 +20,9 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
                 schemaId = response.body.at(0).id;    
             })
         })
-    })
+    });
 
-    it("Publish the schema with the provided (internal) schema ID", { tags: ['smoke'] }, () => {
+    it("Publish the schema with the provided (internal) schema ID", () => {
         //publish tag schema
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
@@ -36,5 +36,5 @@ context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
                 expect(response.status).to.eq(STATUS_CODE.OK);
             });
         })
-    })
+    });
 })
