@@ -19,8 +19,8 @@ import { TranslocoModule, TranslocoService } from '@jsverse/transloco';
 })
 export class ProgressBarComponent {
     @ViewChild('counter') counter!: ElementRef<HTMLElement>;
-    @Input() count!: number;
-    @Input() total!: number;
+    @Input() title!: string;
+    @Input() progressText!: string;
     @Input() loading!: boolean;
     
     constructor(private router: Router, public translocoService: TranslocoService) {}

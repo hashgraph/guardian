@@ -6,6 +6,8 @@ import { NetworkExplorerSettings } from '@indexer/interfaces';
 export enum HederaType {
     TRANSACTION = 'transaction',
     ACCOUNT = 'account',
+    TOPIC = 'topic',
+    TOKEN = 'token',
 }
 
 /**
