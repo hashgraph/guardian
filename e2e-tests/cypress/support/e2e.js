@@ -30,6 +30,7 @@ import API from "./ApiUrls";
 const registerCypressGrep = require('cypress-grep')
 const SRUsername = Cypress.env('SRUser');
 const SR2Username = Cypress.env('SR2User');
+const SR3Username = Cypress.env('SR3User');
 const userUsername = Cypress.env('User');
 const password = Cypress.env('Password');
 let SRDid;
@@ -41,7 +42,7 @@ registerCypressGrep()
 
 //If neccessery users doesn't exist, creating them
 before(() => {
-    let SRExist, SR2Exist, UserExist;
+    let SRExist, SR2Exist, UserExist, SR3Exist;
     cy.request({
         method: METHOD.GET,
         url: API.ApiServer + API.RegUsers,
@@ -51,6 +52,8 @@ before(() => {
                 SRExist = true;
             else if (element.username == SR2Username)
                 SR2Exist = true;
+            else if (element.username == SR3Username)
+                SR3Exist = true;
             else if (element.username == userUsername)
                 UserExist = true;
         })
@@ -71,6 +74,17 @@ before(() => {
                 url: API.ApiServer + API.AccountRegister,
                 body: {
                     username: SR2Username,
+                    password: password,
+                    password_confirmation: password,
+                    role: 'STANDARD_REGISTRY'
+                }
+            })
+        if (!SR3Exist)
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccountRegister,
+                body: {
+                    username: SR3Username,
                     password: password,
                     password_confirmation: password,
                     role: 'STANDARD_REGISTRY'
@@ -105,7 +119,7 @@ before(() => {
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
-                    timeout:600000
+                    timeout: 600000
                 }).then((response) => {
                     cy.wait(3000)
                     let hederaAccountId = response.body.id
