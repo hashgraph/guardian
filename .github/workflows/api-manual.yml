@@ -1,4 +1,5 @@
 name: Guardian CI API Tests(Manual)
+run-name: Guardian CI API Tests(Manual) - ${{ inputs.tags }}
 on:
     workflow_dispatch:
         inputs:
