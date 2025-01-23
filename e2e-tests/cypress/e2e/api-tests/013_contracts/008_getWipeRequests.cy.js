@@ -40,7 +40,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
         })
     })
 
-    it("Get wipe request", { tags: ['smoke'] }, () => {
+    it("Get wipe request", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
                 method: METHOD.GET,

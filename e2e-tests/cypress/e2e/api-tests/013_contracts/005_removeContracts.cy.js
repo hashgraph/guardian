@@ -2,12 +2,12 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
+context("Contracts2", { tags: ['contracts', 'firstPool', 'all'] }, () => {
     const SR2Username = Cypress.env('SR2User');
     const UserUsername = Cypress.env('User');
 
     let contractIdR, contractIdW;
-    
+
     before(() => {
         Authorization.getAccessToken(SR2Username).then((authorization) => {
             cy.request({

@@ -587,7 +587,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 		})
 	})
 
-	it("Enable wipe contract requests", () => {
+	it("Enable wipe contract requests", { tags: ['smoke'] }, () => {
 		Authorization.getAccessToken(SRUsername).then((authorization) => {
 			cy.request({
 				method: METHOD.POST,

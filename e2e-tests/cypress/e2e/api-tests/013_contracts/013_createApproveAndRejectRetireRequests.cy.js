@@ -285,7 +285,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     describe("Get retire request", () => {
 
-        it("Create retire request", { tags: ['smoke'] }, () => {
+        it("Create retire request", () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -337,7 +337,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             })
         });
 
-        it("Get retire request", { tags: ['smoke'] }, () => {
+        it("Get retire request", () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -456,7 +456,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     describe("Approve retire request", () => {
 
-        it("Approve retire request without auth token - Negative", () => {
+        before("Get retire request id", () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -470,15 +470,18 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                 }).then((response) => {
                     expect(response.status).eql(STATUS_CODE.OK);
                     retireRequestId = response.body.at(0).id;
-                    cy.request({
-                        method: METHOD.POST,
-                        url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
-                        failOnStatusCode: false,
-                    }).then((response) => {
-                        expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
-                    });
-                });
+                })
             })
+        })
+
+        it("Approve retire request without auth token - Negative", () => {
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
+                failOnStatusCode: false,
+            }).then((response) => {
+                expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
+            });
         });
 
         it("Approve retire request with invalid auth token - Negative", () => {
@@ -507,7 +510,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Approve retire request", () => {
+        it("Approve retire request", { tags: ['smoke'] }, () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.POST,
@@ -548,7 +551,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             })
         })
 
-        it("Create retire request", () => {
+        it("Create retire request", { tags: ['smoke'] }, () => {
             Authorization.getAccessToken(UserUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -568,7 +571,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                         body: [{
                             token: tokenId,
                             count: 2,
-                            serials: [2,3]
+                            serials: [2, 3]
                         }]
                     }).then((response) => {
                         expect(response.status).eql(STATUS_CODE.OK);
@@ -613,7 +616,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
             });
         });
 
-        it("Verify balance decreased", () => {
+        it("Verify balance decreased", { tags: ['smoke'] }, () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
