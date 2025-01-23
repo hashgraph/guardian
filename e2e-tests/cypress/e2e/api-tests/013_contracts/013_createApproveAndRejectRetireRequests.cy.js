@@ -456,7 +456,7 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
 
     describe("Approve retire request", () => {
 
-        before("Get retire request id", () => {
+        it("Approve retire request without auth token - Negative", () => {
             Authorization.getAccessToken(SRUsername).then((authorization) => {
                 cy.request({
                     method: METHOD.GET,
@@ -472,9 +472,6 @@ context("Contracts", { tags: ['contracts', 'firstPool', 'all'] }, () => {
                     retireRequestId = response.body.at(0).id;
                 })
             })
-        });
-
-        it("Approve retire request without auth token - Negative", () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.RetireRequests + retireRequestId + "/" + API.Approve,
