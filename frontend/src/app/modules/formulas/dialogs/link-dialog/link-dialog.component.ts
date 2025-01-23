@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaLink } from '../../methodology-configuration/formulas';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
+import { FormulaLink } from '../../formula-configuration/formulas';
 
 @Component({
     selector: 'link-dialog',
@@ -14,7 +14,6 @@ export class LinkDialog {
     public schemas: any[];
     public formulas: any[];
     public type: 'schema' | 'formula';
-    public title: string = 'Select item';
     public step: number = 1;
     public entityId: string;
     public itemId: string | null;
@@ -34,8 +33,8 @@ export class LinkDialog {
         } else {
             this.type = 'schema';
         }
-        const link:FormulaLink = this.config.data?.link;
-        if(link) {
+        const link: FormulaLink = this.config.data?.link;
+        if (link) {
             this.type = link.type;
             this.entityId = link.entityId;
             this.itemId = link.item;

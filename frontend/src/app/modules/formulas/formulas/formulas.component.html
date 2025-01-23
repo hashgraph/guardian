@@ -8,21 +8,7 @@
         <a [routerLink]="['/profile']">here</a>
     </div>
 
-    <div class="guardian-user-back-button">
-        <button 
-            (click)="onBack()" 
-            class="guardian-button guardian-button-secondary">
-            <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                    src="/assets/images/icons/left-arrow.svg"
-                    svgClass="icon-color-primary">
-                </svg-icon>
-            </div>
-            <div class="guardian-button-label">Back to Policies</div>
-        </button>
-    </div>
-
-    <div class="guardian-user-page-header">
+    <div class="page-header">
         <span>{{title}}</span>
     </div>
 
@@ -59,7 +45,7 @@
         </div>
         <div class="guardian-user-page-buttons">
             <button 
-                *ngIf="user.METHODOLOGIES_METHODOLOGY_CREATE"
+                *ngIf="user.FORMULAS_FORMULA_CREATE"
                 (click)="onCreate()" 
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -72,7 +58,7 @@
             </button>
 
             <button 
-                *ngIf="user.METHODOLOGIES_METHODOLOGY_CREATE"
+                *ngIf="user.FORMULAS_FORMULA_CREATE"
                 (click)="onImport()" 
                 class="guardian-button guardian-button-primary">
                 <div class="guardian-button-icon">
@@ -116,14 +102,24 @@
                                     [showDelay]="1000"
                                     [ngSwitch]="column.id"
                                 >
+                                    <ng-container *ngSwitchCase="'topic'">
+                                        <hedera-explorer [params]="row.policyTopicId" type="topics">
+                                            {{ row.policyTopicId }}
+                                        </hedera-explorer>
+                                    </ng-container>
+                                    <ng-container *ngSwitchCase="'policy'">
+                                        <a
+                                            [queryParams]="{ policyId: row.policyId }"
+                                            [routerLink]="['/policy-configuration']"
+                                        >
+                                            {{ row.policy }}
+                                        </a>
+                                    </ng-container>
                                     <ng-container *ngSwitchCase="'status'">
-                                        <guardian-switch-button
-                                            [(value)]="row.status"
-                                            onValue="ACTIVE" 
-                                            offValue="DRAFT"
-                                            onLabel="Active" 
-                                            offLabel="Inactive"
-                                        ></guardian-switch-button>
+                                        <status-dropdown 
+                                            [status]="row.status" 
+                                            [value]="row.status"
+                                            [options]="statuses"></status-dropdown>
                                     </ng-container>
                                     <ng-container *ngSwitchCase="'edit'">
                                         <div 
@@ -184,8 +180,8 @@
                     class="svg-icon-32" 
                     src="/assets/images/icons/32/list.svg" 
                     svgClass="icon-color-disabled"></svg-icon>
-                <span class="guardian-user-not-data__text-strong">There were no methodology created yet</span>
-                <span class="guardian-user-not-data__text">Please create new methodology to see the data</span>
+                <span class="guardian-user-not-data__text-strong">There were no formula created yet</span>
+                <span class="guardian-user-not-data__text">Please create new formula to see the data</span>
             </div>
         </ng-template>
     </div>

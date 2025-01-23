@@ -50,7 +50,7 @@ import {
     PolicyLabelDocumentRelationshipsDTO,
     PolicyLabelComponentsDTO,
     PolicyLabelFiltersDTO,
-    MethodologyDTO
+    FormulaDTO
 } from '#middlewares';
 
 /**
@@ -3483,106 +3483,106 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Create methodology
+     * Create formula
      *
-     * @param methodology
+     * @param formula
      * @param owner
      *
-     * @returns methodology
+     * @returns formula
      */
-    public async createMethodology(methodology: MethodologyDTO, owner: IOwner): Promise<MethodologyDTO> {
-        return await this.sendMessage(MessageAPI.CREATE_METHODOLOGY, { methodology, owner });
+    public async createFormula(formula: FormulaDTO, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.CREATE_FORMULA, { formula, owner });
     }
 
     /**
-     * Return methodologies
+     * Return formulas
      *
      * @param filters
      * @param owner
      *
-     * @returns {ResponseAndCount<MethodologyDTO>}
+     * @returns {ResponseAndCount<FormulaDTO>}
      */
-    public async getMethodologies(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<MethodologyDTO>> {
-        return await this.sendMessage(MessageAPI.GET_METHODOLOGIES, { filters, owner });
+    public async getFormulas(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<FormulaDTO>> {
+        return await this.sendMessage(MessageAPI.GET_FORMULAS, { filters, owner });
     }
 
     /**
-     * Get methodology
+     * Get formula
      *
-     * @param methodologyId
+     * @param formulaId
      * @param owner
-     * @returns methodology
+     * @returns formula
      */
-    public async getMethodologyById(methodologyId: string, owner: IOwner): Promise<MethodologyDTO> {
-        return await this.sendMessage(MessageAPI.GET_METHODOLOGY, { methodologyId, owner });
+    public async getFormulaById(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.GET_FORMULA, { formulaId, owner });
     }
 
     /**
-     * Update methodology
+     * Update formula
      *
-     * @param methodologyId
+     * @param formulaId
      * @param definition
      * @param owner
      *
-     * @returns methodology
+     * @returns formula
      */
-    public async updateMethodology(
-        methodologyId: string,
-        methodology: MethodologyDTO,
+    public async updateFormula(
+        formulaId: string,
+        formula: FormulaDTO,
         owner: IOwner
-    ): Promise<MethodologyDTO> {
-        return await this.sendMessage(MessageAPI.UPDATE_METHODOLOGY, { methodologyId, methodology, owner });
+    ): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.UPDATE_FORMULA, { formulaId, formula, owner });
     }
 
     /**
-     * Delete methodology
+     * Delete formula
      *
-     * @param methodologyId
+     * @param formulaId
      * @param owner
      *
      * @returns Operation Success
      */
-    public async deleteMethodology(methodologyId: string, owner: IOwner): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.DELETE_METHODOLOGY, { methodologyId, owner });
+    public async deleteFormula(formulaId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_FORMULA, { formulaId, owner });
     }
 
     /**
-     * Load methodology file for import
+     * Load formula file for import
      * @param zip
      * @param owner
      */
-    public async importMethodology(zip: any, policyId: string, owner: IOwner): Promise<any> {
-        return await this.sendMessage(MessageAPI.IMPORT_METHODOLOGY_FILE, { zip, policyId, owner });
+    public async importFormula(zip: any, policyId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.IMPORT_FORMULA_FILE, { zip, policyId, owner });
     }
 
     /**
-     * Get methodology export file
-     * @param methodologyId
+     * Get formula export file
+     * @param formulaId
      * @param owner
      */
-    public async exportMethodology(methodologyId: string, owner: IOwner) {
-        const file = await this.sendMessage(MessageAPI.EXPORT_METHODOLOGY_FILE, { methodologyId, owner }) as any;
+    public async exportFormula(formulaId: string, owner: IOwner) {
+        const file = await this.sendMessage(MessageAPI.EXPORT_FORMULA_FILE, { formulaId, owner }) as any;
         return Buffer.from(file, 'base64');
     }
 
     /**
-     * Get methodology info from file
+     * Get formula info from file
      * @param zip
      * @param owner
      */
-    public async previewMethodology(zip: any, owner: IOwner) {
-        return await this.sendMessage(MessageAPI.PREVIEW_METHODOLOGY_FILE, { zip, owner });
+    public async previewFormula(zip: any, owner: IOwner) {
+        return await this.sendMessage(MessageAPI.PREVIEW_FORMULA_FILE, { zip, owner });
     }
 
     /**
-     * Get methodology relationships
+     * Get formula relationships
      *
-     * @param methodologyId
+     * @param formulaId
      * @param owner
      *
      * @returns Operation Success
      */
-    public async getMethodologyRelationships(methodologyId: string, owner: IOwner): Promise<boolean> {
-        return await this.sendMessage(MessageAPI.GET_METHODOLOGY_RELATIONSHIPS, { methodologyId, owner });
+    public async getFormulaRelationships(formulaId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.GET_FORMULA_RELATIONSHIPS, { formulaId, owner });
     }
 }

@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Artifact, Methodology, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';
@@ -18,7 +18,7 @@ export interface IPolicyComponents {
     policy: Policy;
     tokens: Token[];
     schemas: Schema[];
-    formulas: Methodology[];
+    formulas: Formula[];
     artifacts: IArtifact[];
     tags: Tag[];
     tools: PolicyTool[];
@@ -117,7 +117,7 @@ export class PolicyImportExport {
         const allCategories = await DatabaseServer.getPolicyCategories();
         policy.categoriesExport = policy.categories?.length ? PolicyImportExport.getPolicyCategoriesExport(policy, allCategories) : [];
 
-        const formulas = await dataBaseServer.find(Methodology, { policyId: policy.id });
+        const formulas = await dataBaseServer.find(Formula, { policyId: policy.id });
 
         return { policy, tokens, schemas, tools, artifacts, tags, tests, formulas };
     }

@@ -57,8 +57,9 @@ import { SchemaRulesComponent } from './modules/statistics/schema-rules/schema-r
 import { PolicyLabelDocumentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-document-configuration/policy-label-document-configuration.component';
 import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-labels/policy-label-documents/policy-label-documents.component';
 import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
-import { MethodologyConfigurationComponent } from './modules/methodologies/methodology-configuration/methodology-configuration.component';
-import { MethodologiesComponent } from './modules/methodologies/methodologies/methodologies.component';
+import { FormulasComponent } from './modules/formulas/formulas/formulas.component';
+import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
+
 
 @Injectable({
     providedIn: 'root'
@@ -673,11 +674,9 @@ const routes: Routes = [
             ]
         }
     },
-
-
     {
-        path: 'methodologies',
-        component: MethodologiesComponent,
+        path: 'formulas',
+        component: FormulasComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [
@@ -685,13 +684,13 @@ const routes: Routes = [
                 UserRole.USER
             ],
             permissions: [
-                Permissions.METHODOLOGIES_METHODOLOGY_READ
+                Permissions.FORMULAS_FORMULA_READ
             ]
         }
     },
     {
-        path: 'methodologies/:methodologyId',
-        component: MethodologyConfigurationComponent,
+        path: 'formulas/:formulaId',
+        component: FormulaConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
             roles: [
@@ -699,7 +698,7 @@ const routes: Routes = [
                 UserRole.USER
             ],
             permissions: [
-                Permissions.METHODOLOGIES_METHODOLOGY_READ
+                Permissions.FORMULAS_FORMULA_READ
             ]
         }
     },

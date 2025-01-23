@@ -679,3 +679,21 @@ svg-icon.svg-icon-32 {
     border-bottom-right-radius: 10px;
     border-bottom-left-radius: 10px;
 }
+
+.ML__keyboard {
+    &::before {
+        position: absolute;
+        content: "";
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        width: var(--header-width);
+        z-index: 99;
+        pointer-events: all;
+    }
+
+    .MLK__backdrop {
+        width: calc(100% - var(--header-width));
+        margin-left: var(--header-width);
+    }
+}

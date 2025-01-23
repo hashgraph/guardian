@@ -1,3 +1,12 @@
+.page-header {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--guardian-header-color, #000);
+    height: 72px;
+    padding: 8px 0px 26px 0px;
+    position: relative;
+}
+
 .policy-name {
     color: var(--guardian-disabled-color, #848FA9);
     font-size: 14px;
@@ -25,4 +34,10 @@
     &:last-child {
         margin-right: 0px; 
     }
+}
+
+a {
+    color: var(--color-primary);
+    cursor: pointer;
+    text-decoration: underline;
 }

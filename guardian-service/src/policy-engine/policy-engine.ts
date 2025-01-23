@@ -4,6 +4,7 @@ import {
     DatabaseServer,
     findAllEntities,
     getArtifactType,
+    IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
@@ -512,14 +513,15 @@ export class PolicyEngine extends NatsService {
 
         const tools = [];
 
-        const dataToCreate = {
+        const dataToCreate: IPolicyComponents = {
             policy,
             schemas,
             tokens,
             artifacts,
             tools,
             tags,
-            tests: []
+            tests: [],
+            formulas: []
         };
         return await PolicyImportExportHelper.importPolicy(
             dataToCreate,

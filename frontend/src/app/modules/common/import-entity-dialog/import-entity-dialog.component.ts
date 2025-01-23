@@ -11,7 +11,7 @@ import { ToolsService } from 'src/app/services/tools.service';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
-import { MethodologiesService } from 'src/app/services/methodologies.service';
+import { FormulasService } from 'src/app/services/formulas.service';
 
 export enum ImportEntityType {
     Policy = 'policy',
@@ -23,7 +23,7 @@ export enum ImportEntityType {
     Theme = 'theme',
     Statistic = 'statistic',
     PolicyLabel = 'policy-label',
-    Methodology = 'methodology',
+    Formula = 'formula',
 }
 
 export interface IImportEntityArray {
@@ -36,7 +36,7 @@ export interface IImportEntityArray {
     rule?: any,
     statistic?: any,
     label?: any,
-    methodology?: any,
+    formula?: any,
 }
 
 export interface IImportEntityMessage {
@@ -49,7 +49,7 @@ export interface IImportEntityMessage {
     rule?: any,
     statistic?: any,
     label?: any,
-    methodology?: any,
+    formula?: any,
 }
 
 export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
@@ -103,7 +103,7 @@ export class ImportEntityDialog {
         private schemaRulesService: SchemaRulesService,
         private policyStatisticsService: PolicyStatisticsService,
         private policyLabelsService: PolicyLabelsService,
-        private methodologiesService: MethodologiesService,
+        private formulasService: FormulasService,
     ) {
         const _config = this.config.data || {};
 
@@ -180,13 +180,13 @@ export class ImportEntityDialog {
                 this.fileExtension = 'label';
                 this.placeholder = 'Import Label .label file';
                 break;
-            case 'methodology':
-                this.type = ImportEntityType.Methodology;
+            case 'formula':
+                this.type = ImportEntityType.Formula;
                 this.canImportFile = true;
                 this.canImportMessage = false;
-                this.title = 'Import Methodology';
-                this.fileExtension = 'methodology';
-                this.placeholder = 'Import Methodology .methodology file';
+                this.title = 'Import Formula';
+                this.fileExtension = 'formula';
+                this.placeholder = 'Import Formula .formula file';
                 break;
             default:
                 this.type = ImportEntityType.Policy;
@@ -296,8 +296,8 @@ export class ImportEntityDialog {
                     this.labelFromFile(arrayBuffer);
                     break;
                 }
-                case ImportEntityType.Methodology: {
-                    this.methodologyFromFile(arrayBuffer);
+                case ImportEntityType.Formula: {
+                    this.formulaFromFile(arrayBuffer);
                     break;
                 }
                 default: {
@@ -344,7 +344,7 @@ export class ImportEntityDialog {
             case ImportEntityType.PolicyLabel: {
                 return;
             }
-            case ImportEntityType.Methodology: {
+            case ImportEntityType.Formula: {
                 return;
             }
             default: {
@@ -537,9 +537,9 @@ export class ImportEntityDialog {
     }
 
     //Label
-    private methodologyFromFile(arrayBuffer: any) {
+    private formulaFromFile(arrayBuffer: any) {
         this.loading = true;
-        this.methodologiesService
+        this.formulasService
             .previewByFile(arrayBuffer)
             .subscribe((result) => {
                 this.loading = false;

@@ -5,52 +5,52 @@ import {
     MessageError,
     MessageResponse,
     PinoLogger,
-    Methodology,
-    MethodologyImportExport,
+    Formula,
+    FormulaImportExport,
     PolicyImportExport
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
 
 /**
- * Connect to the message broker methods of working with methodology.
+ * Connect to the message broker methods of working with formula.
  */
-export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
+export async function formulasAPI(logger: PinoLogger): Promise<void> {
     /**
-     * Create new methodology
+     * Create new formula
      *
-     * @param payload - methodology
+     * @param payload - formula
      *
-     * @returns {any} new methodology
+     * @returns {any} new formula
      */
-    ApiResponse(MessageAPI.CREATE_METHODOLOGY,
-        async (msg: { methodology: Methodology, owner: IOwner }) => {
+    ApiResponse(MessageAPI.CREATE_FORMULA,
+        async (msg: { formula: Formula, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { methodology, owner } = msg;
+                const { formula, owner } = msg;
 
-                if (!methodology) {
+                if (!formula) {
                     return new MessageError('Invalid object.');
                 }
 
-                const policyId = methodology.policyId;
+                const policyId = formula.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
                 if (!policy || policy.status !== PolicyType.PUBLISH) {
                     return new MessageError('Item does not exist.');
                 }
 
-                delete methodology._id;
-                delete methodology.id;
-                delete methodology.status;
-                delete methodology.owner;
-                methodology.creator = owner.creator;
-                methodology.owner = owner.owner;
-                methodology.policyId = policy.id;
-                methodology.policyTopicId = policy.topicId;
-                methodology.status = EntityStatus.DRAFT;
-                methodology.config = MethodologyImportExport.validateConfig(methodology.config);
-                const row = await DatabaseServer.createMethodology(methodology);
+                delete formula._id;
+                delete formula.id;
+                delete formula.status;
+                delete formula.owner;
+                formula.creator = owner.creator;
+                formula.owner = owner.owner;
+                formula.policyId = policy.id;
+                formula.policyTopicId = policy.topicId;
+                formula.status = EntityStatus.DRAFT;
+                formula.config = FormulaImportExport.validateConfig(formula.config);
+                const row = await DatabaseServer.createFormula(formula);
                 return new MessageResponse(row);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -59,13 +59,13 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Get methodologies
+     * Get formulas
      *
      * @param {any} msg - filters
      *
-     * @returns {any} - methodologies
+     * @returns {any} - formulas
      */
-    ApiResponse(MessageAPI.GET_METHODOLOGIES,
+    ApiResponse(MessageAPI.GET_FORMULAS,
         async (msg: { filters: any, owner: IOwner }) => {
             try {
                 if (!msg) {
@@ -93,6 +93,7 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                     'description',
                     'status',
                     'policyId',
+                    'policyTopicId',
                     'config'
                 ];
                 const query: any = {
@@ -101,7 +102,7 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                 if (policyInstanceTopicId) {
                     query.policyInstanceTopicId = policyInstanceTopicId;
                 }
-                const [items, count] = await DatabaseServer.getMethodologiesAndCount(query, otherOptions);
+                const [items, count] = await DatabaseServer.getFormulasAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -110,20 +111,20 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Get methodology
+     * Get formula
      *
-     * @param {any} msg - methodology id
+     * @param {any} msg - formula id
      *
-     * @returns {any} - methodology
+     * @returns {any} - formula
      */
-    ApiResponse(MessageAPI.GET_METHODOLOGY,
-        async (msg: { methodologyId: string, owner: IOwner }) => {
+    ApiResponse(MessageAPI.GET_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { methodologyId, owner } = msg;
-                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                const { formulaId, owner } = msg;
+                const item = await DatabaseServer.getFormulaById(formulaId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -135,25 +136,25 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Update methodology
+     * Update formula
      *
-     * @param payload - methodology
+     * @param payload - formula
      *
-     * @returns methodology
+     * @returns formula
      */
-    ApiResponse(MessageAPI.UPDATE_METHODOLOGY,
+    ApiResponse(MessageAPI.UPDATE_FORMULA,
         async (msg: {
-            methodologyId: string,
-            methodology: Methodology,
+            formulaId: string,
+            formula: Formula,
             owner: IOwner
         }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { methodologyId, methodology, owner } = msg;
+                const { formulaId, formula, owner } = msg;
 
-                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                const item = await DatabaseServer.getFormulaById(formulaId);
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
@@ -161,10 +162,10 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item is active.');
                 }
 
-                item.name = methodology.name;
-                item.description = methodology.description;
-                item.config = MethodologyImportExport.validateConfig(methodology.config);
-                const result = await DatabaseServer.updateMethodology(item);
+                item.name = formula.name;
+                item.description = formula.description;
+                item.config = FormulaImportExport.validateConfig(formula.config);
+                const result = await DatabaseServer.updateFormula(item);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -173,27 +174,27 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Delete methodology
+     * Delete formula
      *
-     * @param {any} msg - methodology id
+     * @param {any} msg - formula id
      *
      * @returns {boolean} - Operation success
      */
-    ApiResponse(MessageAPI.DELETE_METHODOLOGY,
-        async (msg: { methodologyId: string, owner: IOwner }) => {
+    ApiResponse(MessageAPI.DELETE_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid parameters.');
                 }
-                const { methodologyId, owner } = msg;
-                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                const { formulaId, owner } = msg;
+                const item = await DatabaseServer.getFormulaById(formulaId);
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.ACTIVE) {
                     return new MessageError('Item is active.');
                 }
-                await DatabaseServer.removeMethodology(item);
+                await DatabaseServer.removeFormula(item);
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
@@ -202,26 +203,26 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Export methodology
+     * Export formula
      *
-     * @param {any} msg - Export methodology parameters
+     * @param {any} msg - Export formula parameters
      *
      * @returns {any} - zip file
      */
-    ApiResponse(MessageAPI.EXPORT_METHODOLOGY_FILE,
-        async (msg: { methodologyId: string, owner: IOwner }) => {
+    ApiResponse(MessageAPI.EXPORT_FORMULA_FILE,
+        async (msg: { formulaId: string, owner: IOwner }) => {
             try {
                 if (!msg) {
                     return new MessageError('Invalid export theme parameters');
                 }
-                const { methodologyId, owner } = msg;
+                const { formulaId, owner } = msg;
 
-                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                const item = await DatabaseServer.getFormulaById(formulaId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
 
-                const zip = await MethodologyImportExport.generate(item);
+                const zip = await FormulaImportExport.generate(item);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
                     compression: 'DEFLATE',
@@ -238,13 +239,13 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Import methodology
+     * Import formula
      *
-     * @param {any} msg - Import methodology parameters
+     * @param {any} msg - Import formula parameters
      *
-     * @returns {any} - new methodology
+     * @returns {any} - new formula
      */
-    ApiResponse(MessageAPI.IMPORT_METHODOLOGY_FILE,
+    ApiResponse(MessageAPI.IMPORT_FORMULA_FILE,
         async (msg: { zip: any, policyId: string, owner: IOwner }) => {
             try {
                 const { zip, policyId, owner } = msg;
@@ -257,19 +258,19 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const preview = await MethodologyImportExport.parseZipFile(Buffer.from(zip.data));
-                const { methodology } = preview;
+                const preview = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
+                const { formula } = preview;
 
-                delete methodology._id;
-                delete methodology.id;
-                delete methodology.status;
-                delete methodology.owner;
-                methodology.creator = owner.creator;
-                methodology.owner = owner.owner;
-                methodology.policyId = policyId;
-                methodology.status = EntityStatus.DRAFT;
-                methodology.config = MethodologyImportExport.validateConfig(methodology.config);
-                const row = await DatabaseServer.createMethodology(methodology);
+                delete formula._id;
+                delete formula.id;
+                delete formula.status;
+                delete formula.owner;
+                formula.creator = owner.creator;
+                formula.owner = owner.owner;
+                formula.policyId = policyId;
+                formula.status = EntityStatus.DRAFT;
+                formula.config = FormulaImportExport.validateConfig(formula.config);
+                const row = await DatabaseServer.createFormula(formula);
 
                 return new MessageResponse(row);
             } catch (error) {
@@ -279,22 +280,22 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Preview methodology
+     * Preview formula
      *
      * @param {any} msg - zip file
      *
      * @returns {any} Preview
      */
-    ApiResponse(MessageAPI.PREVIEW_METHODOLOGY_FILE,
+    ApiResponse(MessageAPI.PREVIEW_FORMULA_FILE,
         async (msg: { zip: any, owner: IOwner }) => {
             try {
                 const { zip } = msg;
                 if (!zip) {
                     throw new Error('file in body is empty');
                 }
-                const preview = await MethodologyImportExport.parseZipFile(Buffer.from(zip.data));
-                const { methodology } = preview;
-                return new MessageResponse(methodology);
+                const preview = await FormulaImportExport.parseZipFile(Buffer.from(zip.data));
+                const { formula } = preview;
+                return new MessageResponse(formula);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
@@ -302,17 +303,17 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
         });
 
     /**
-     * Get methodology relationships
+     * Get formula relationships
      *
-     * @param {any} msg - methodology id
+     * @param {any} msg - formula id
      *
      * @returns {any} relationships
      */
-    ApiResponse(MessageAPI.GET_METHODOLOGY_RELATIONSHIPS,
-        async (msg: { methodologyId: any, owner: IOwner }) => {
+    ApiResponse(MessageAPI.GET_FORMULA_RELATIONSHIPS,
+        async (msg: { formulaId: any, owner: IOwner }) => {
             try {
-                const { methodologyId, owner } = msg;
-                const item = await DatabaseServer.getMethodologyById(methodologyId);
+                const { formulaId, owner } = msg;
+                const item = await DatabaseServer.getFormulaById(formulaId);
                 if (!(item && item.owner === owner.owner)) {
                     return new MessageError('Item does not exist.');
                 }
@@ -326,8 +327,8 @@ export async function methodologiesAPI(logger: PinoLogger): Promise<void> {
                 const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
                 const all = [].concat(schemas, toolSchemas);
 
-                const formulas = await DatabaseServer.getMethodologies({ 
-                    id: { $ne: methodologyId },
+                const formulas = await DatabaseServer.getFormulas({ 
+                    id: { $ne: formulaId },
                     policyId: policy.id 
                 });
 

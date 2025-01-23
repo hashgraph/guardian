@@ -7,8 +7,8 @@ import { API_BASE_URL } from './api';
  * Services for working from statistics and separate blocks.
  */
 @Injectable()
-export class MethodologiesService {
-    private readonly url: string = `${API_BASE_URL}/methodologies`;
+export class FormulasService {
+    private readonly url: string = `${API_BASE_URL}/formulas`;
 
     constructor(private http: HttpClient) {
     }
@@ -40,20 +40,20 @@ export class MethodologiesService {
         return { page, count };
     }
 
-    public getMethodologies(
+    public getFormulas(
         pageIndex?: number,
         pageSize?: number,
         filters?: any
     ): Observable<HttpResponse<any[]>> {
-        const params = MethodologiesService.getOptions(filters, pageIndex, pageSize);
+        const params = FormulasService.getOptions(filters, pageIndex, pageSize);
         return this.http.get<any>(`${this.url}`, { observe: 'response', params });
     }
 
-    public createMethodologies(item: any): Observable<any> {
+    public createFormula(item: any): Observable<any> {
         return this.http.post<any>(`${this.url}/`, item);
     }
 
-    public getMethodology(id: string): Observable<any> {
+    public getFormula(id: string): Observable<any> {
         return this.http.get<any>(`${this.url}/${id}`);
     }
 
@@ -61,11 +61,11 @@ export class MethodologiesService {
         return this.http.get<any>(`${this.url}/${id}/relationships`);
     }
 
-    public deleteMethodology(id: any): Observable<any> {
+    public deleteFormula(id: any): Observable<any> {
         return this.http.delete<boolean>(`${this.url}/${id}`);
     }
 
-    public updateMethodology(item: any): Observable<any> {
+    public updateFormula(item: any): Observable<any> {
         return this.http.put<any>(`${this.url}/${item.id}`, item);
     }
 

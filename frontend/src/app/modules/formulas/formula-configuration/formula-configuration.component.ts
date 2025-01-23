@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
-import { MethodologiesService } from 'src/app/services/methodologies.service';
+import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
 import { FormulaItem, FormulaItemType, FormulaLink, Formulas } from './formulas';
@@ -12,11 +12,11 @@ import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 
 @Component({
-    selector: 'app-methodology-configuration',
-    templateUrl: './methodology-configuration.component.html',
-    styleUrls: ['./methodology-configuration.component.scss'],
+    selector: 'app-formula-configuration',
+    templateUrl: './formula-configuration.component.html',
+    styleUrls: ['./formula-configuration.component.scss'],
 })
-export class MethodologyConfigurationComponent implements OnInit {
+export class FormulaConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
 
     @ViewChild('body', { static: true }) body: ElementRef;
@@ -27,7 +27,7 @@ export class MethodologyConfigurationComponent implements OnInit {
     public owner: string;
 
     private subscription = new Subscription();
-    private methodologyId: string;
+    private formulaId: string;
 
     public item: any;
     public policy: any;
@@ -41,25 +41,25 @@ export class MethodologyConfigurationComponent implements OnInit {
         {
             id: 'constant',
             text: 'Add New Constant',
-            icon: 'add',
+            icon: 'const',
             color: 'icon-color-primary'
         },
         {
             id: 'variable',
             text: 'Add New Variable',
-            icon: 'add',
+            icon: 'variable',
             color: 'icon-color-primary'
         },
         {
             id: 'formula',
             text: 'Add New Formula',
-            icon: 'add',
+            icon: 'function',
             color: 'icon-color-primary'
         },
         {
             id: 'text',
             text: 'Add New Text',
-            icon: 'add',
+            icon: 'text',
             color: 'icon-color-primary'
         }
     ];
@@ -86,7 +86,7 @@ export class MethodologyConfigurationComponent implements OnInit {
 
     constructor(
         private profileService: ProfileService,
-        private methodologiesService: MethodologiesService,
+        private formulasService: FormulasService,
         private dialogService: DialogService,
         private router: Router,
         private route: ActivatedRoute
@@ -128,11 +128,11 @@ export class MethodologyConfigurationComponent implements OnInit {
     }
 
     private loadData() {
-        this.methodologyId = this.route.snapshot.params['methodologyId'];
+        this.formulaId = this.route.snapshot.params['formulaId'];
         this.loading = true;
         forkJoin([
-            this.methodologiesService.getMethodology(this.methodologyId),
-            this.methodologiesService.getRelationships(this.methodologyId),
+            this.formulasService.getFormula(this.formulaId),
+            this.formulasService.getRelationships(this.formulaId),
         ]).subscribe(([item, relationships]) => {
             this.item = item;
             this.updateRelationships(relationships);
@@ -195,7 +195,7 @@ export class MethodologyConfigurationComponent implements OnInit {
     }
 
     public onBack() {
-        this.router.navigate(['/methodologies']);
+        this.router.navigate(['/formulas']);
     }
 
     public onSave() {
@@ -208,8 +208,8 @@ export class MethodologyConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
-        this.methodologiesService
-            .updateMethodology(item)
+        this.formulasService
+            .updateFormula(item)
             .subscribe((data) => {
                 this.item = data;
                 this.formulasMap.set(String(this.item.uuid), String(this.item.name));
@@ -334,7 +334,7 @@ export class MethodologyConfigurationComponent implements OnInit {
         return '';
     }
 
-    public deleteLink(item: FormulaItem, $event:any) {
+    public deleteLink(item: FormulaItem, $event: any) {
         $event.preventDefault();
         $event.stopPropagation();
         item.link = null;

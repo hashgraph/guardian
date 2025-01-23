@@ -43,4 +43,24 @@
         fill: var(--guardian-font-color);
         color: var(--guardian-font-color);
     }
+
+    &-constant {
+        fill: var(--formula-constant-color);
+        color: var(--formula-constant-color);
+    }
+
+    &-variable {
+        fill: var(--formula-variable-color);
+        color: var(--formula-variable-color);
+    }
+
+    &-function {
+        fill: var(--formula-function-color);
+        color: var(--formula-function-color);
+    }
+
+    &-text {
+        fill: var(--formula-text-color);
+        color: var(--formula-text-color);
+    }
 }

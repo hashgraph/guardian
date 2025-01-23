@@ -529,13 +529,13 @@ export class UserPermissions {
         return this.check(Permissions.STATISTICS_LABEL_READ);
     }
 
-    //SCHEMA METHODOLOGIES
-    public get METHODOLOGIES_METHODOLOGY_CREATE(): boolean {
-        return this.check(Permissions.METHODOLOGIES_METHODOLOGY_CREATE);
+    //SCHEMA FORMULAS
+    public get FORMULAS_FORMULA_CREATE(): boolean {
+        return this.check(Permissions.FORMULAS_FORMULA_CREATE);
     }
 
-    public get METHODOLOGIES_METHODOLOGY_READ(): boolean {
-        return this.check(Permissions.METHODOLOGIES_METHODOLOGY_READ);
+    public get FORMULAS_FORMULA_READ(): boolean {
+        return this.check(Permissions.FORMULAS_FORMULA_READ);
     }
 
     public static isPolicyAdmin(user: any): boolean {

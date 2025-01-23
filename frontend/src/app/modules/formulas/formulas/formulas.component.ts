@@ -5,10 +5,10 @@ import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { MethodologiesService } from 'src/app/services/methodologies.service';
+import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { NewMethodologyDialog } from '../dialogs/new-methodology-dialog/new-methodology-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
+import { NewFormulaDialog } from '../dialogs/new-formula-dialog/new-formula-dialog.component';
 
 interface IColumn {
     id: string;
@@ -21,12 +21,12 @@ interface IColumn {
 }
 
 @Component({
-    selector: 'app-methodologies',
-    templateUrl: './methodologies.component.html',
-    styleUrls: ['./methodologies.component.scss'],
+    selector: 'app-formulas',
+    templateUrl: './formulas.component.html',
+    styleUrls: ['./formulas.component.scss'],
 })
-export class MethodologiesComponent implements OnInit {
-    public readonly title: string = 'Methodologies';
+export class FormulasComponent implements OnInit {
+    public readonly title: string = 'Formulas';
 
     public loading: boolean = true;
     public isConfirmed: boolean = false;
@@ -44,7 +44,7 @@ export class MethodologiesComponent implements OnInit {
 
     constructor(
         private profileService: ProfileService,
-        private methodologiesService: MethodologiesService,
+        private formulasService: FormulasService,
         private policyEngineService: PolicyEngineService,
         private dialogService: DialogService,
         private router: Router,
@@ -61,6 +61,12 @@ export class MethodologiesComponent implements OnInit {
             title: 'Policy',
             type: 'text',
             size: 'auto',
+            tooltip: false
+        }, {
+            id: 'topic',
+            title: 'Topic',
+            type: 'text',
+            size: '180',
             tooltip: false
         }, {
             id: 'status',
@@ -88,6 +94,23 @@ export class MethodologiesComponent implements OnInit {
             tooltip: false
         }]
     }
+
+    public statuses = [{
+        label: 'Draft',
+        value: EntityStatus.DRAFT,
+        description: 'Return to editing.',
+        disable: true
+    }, {
+        label: 'Published',
+        value: EntityStatus.PUBLISHED,
+        description: 'Release version into public domain.',
+        disable: true
+    }, {
+        label: 'Error',
+        value: EntityStatus.ERROR,
+        description: '',
+        disable: true
+    }]
 
     ngOnInit() {
         this.page = [];
@@ -146,14 +169,14 @@ export class MethodologiesComponent implements OnInit {
             filters.policyInstanceTopicId = this.currentPolicy?.instanceTopicId;
         }
         this.loading = true;
-        this.methodologiesService
-            .getMethodologies(
+        this.formulasService
+            .getFormulas(
                 this.pageIndex,
                 this.pageSize,
                 filters
             )
             .subscribe((response) => {
-                const { page, count } = this.methodologiesService.parsePage(response);
+                const { page, count } = this.formulasService.parsePage(response);
                 this.page = page;
                 this.pageCount = count;
                 for (const item of this.page) {
@@ -188,12 +211,12 @@ export class MethodologiesComponent implements OnInit {
         }
         this.pageIndex = 0;
         const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/methodologies'], { queryParams: { topic } });
+        this.router.navigate(['/formulas'], { queryParams: { topic } });
         this.loadData();
     }
 
     public onCreate() {
-        const dialogRef = this.dialogService.open(NewMethodologyDialog, {
+        const dialogRef = this.dialogService.open(NewFormulaDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -207,8 +230,8 @@ export class MethodologiesComponent implements OnInit {
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
-                this.methodologiesService
-                    .createMethodologies(result)
+                this.formulasService
+                    .createFormula(result)
                     .subscribe((newItem) => {
                         this.loadData();
                     }, (e) => {
@@ -219,7 +242,7 @@ export class MethodologiesComponent implements OnInit {
     }
 
     public onEdit(item: any) {
-        this.router.navigate(['/methodologies', item.id]);
+        this.router.navigate(['/formulas', item.id]);
     }
 
     public onImport() {
@@ -228,7 +251,7 @@ export class MethodologiesComponent implements OnInit {
             width: '720px',
             styleClass: 'guardian-dialog',
             data: {
-                type: ImportEntityType.Methodology,
+                type: ImportEntityType.Formula,
             }
         });
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
@@ -239,8 +262,8 @@ export class MethodologiesComponent implements OnInit {
     }
 
     private importDetails(result: IImportEntityResult) {
-        const { type, data, methodology } = result;
-        const dialogRef = this.dialogService.open(NewMethodologyDialog, {
+        const { type, data, formula } = result;
+        const dialogRef = this.dialogService.open(NewFormulaDialog, {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
@@ -249,13 +272,13 @@ export class MethodologiesComponent implements OnInit {
                 action: 'Import',
                 policies: this.allPolicies,
                 policy: this.currentPolicy,
-                methodology
+                formula
             }
         });
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyId) {
                 this.loading = true;
-                this.methodologiesService
+                this.formulasService
                     .import(result.policyId, data)
                     .subscribe((newItem) => {
                         this.loadData();
@@ -268,15 +291,15 @@ export class MethodologiesComponent implements OnInit {
 
     public onExport(item: any) {
         this.loading = true;
-        this.methodologiesService.export(item.id)
+        this.formulasService.export(item.id)
             .subscribe((fileBuffer) => {
                 const downloadLink = document.createElement('a');
                 downloadLink.href = window.URL.createObjectURL(
                     new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-methodology'
+                        type: 'application/guardian-formula'
                     })
                 );
-                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.methodology`);
+                downloadLink.setAttribute('download', `${item.name}_${Date.now()}.formula`);
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 downloadLink.remove();
@@ -297,8 +320,8 @@ export class MethodologiesComponent implements OnInit {
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
-                header: 'Delete Methodology',
-                text: `Are you sure want to delete methodology (${item.name})?`,
+                header: 'Delete formula',
+                text: `Are you sure want to delete formula (${item.name})?`,
                 buttons: [{
                     name: 'Close',
                     class: 'secondary'
@@ -311,8 +334,8 @@ export class MethodologiesComponent implements OnInit {
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
-                this.methodologiesService
-                    .deleteMethodology(item.id)
+                this.formulasService
+                    .deleteFormula(item.id)
                     .subscribe((result) => {
                         this.loadData();
                     }, (e) => {

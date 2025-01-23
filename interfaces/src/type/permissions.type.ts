@@ -25,7 +25,7 @@ export enum PermissionCategories {
     ACCESS = 'ACCESS',
     DELEGATION = 'DELEGATION',
     STATISTICS = 'STATISTICS',
-    METHODOLOGIES = 'METHODOLOGIES',
+    FORMULAS = 'FORMULAS',
 }
 
 /**
@@ -68,7 +68,7 @@ export enum PermissionEntities {
     STATISTIC = 'STATISTIC',
     RULE = 'RULE',
     LABEL = 'LABEL',
-    METHODOLOGY = 'METHODOLOGY',
+    FORMULA = 'FORMULA',
 }
 
 /**
@@ -230,9 +230,9 @@ export enum Permissions {
     SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
     SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ',
     SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE',
-    //METHODOLOGIES
-    METHODOLOGIES_METHODOLOGY_CREATE = 'METHODOLOGIES_METHODOLOGY_CREATE',
-    METHODOLOGIES_METHODOLOGY_READ = 'METHODOLOGIES_METHODOLOGY_READ'
+    //FORMULAS
+    FORMULAS_FORMULA_CREATE = 'FORMULAS_FORMULA_CREATE',
+    FORMULAS_FORMULA_READ = 'FORMULAS_FORMULA_READ'
 }
 
 /**
@@ -1204,20 +1204,20 @@ export const PermissionsArray: {
 
         //SCHEMA RULE
         {
-            name: Permissions.METHODOLOGIES_METHODOLOGY_READ,
-            category: PermissionCategories.METHODOLOGIES,
-            entity: PermissionEntities.METHODOLOGY,
+            name: Permissions.FORMULAS_FORMULA_READ,
+            category: PermissionCategories.FORMULAS,
+            entity: PermissionEntities.FORMULA,
             action: PermissionActions.READ,
             disabled: false
         },
         {
-            name: Permissions.METHODOLOGIES_METHODOLOGY_CREATE,
-            category: PermissionCategories.METHODOLOGIES,
-            entity: PermissionEntities.METHODOLOGY,
+            name: Permissions.FORMULAS_FORMULA_CREATE,
+            category: PermissionCategories.FORMULAS,
+            entity: PermissionEntities.FORMULA,
             action: PermissionActions.CREATE,
             disabled: false,
             dependOn: [
-                Permissions.METHODOLOGIES_METHODOLOGY_READ
+                Permissions.FORMULAS_FORMULA_READ
             ]
         },
         //ACCESS
@@ -1362,8 +1362,8 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.SCHEMAS_RULE_CREATE,
     Permissions.SCHEMAS_RULE_READ,
     Permissions.SCHEMAS_RULE_EXECUTE,
-    Permissions.METHODOLOGIES_METHODOLOGY_CREATE,
-    Permissions.METHODOLOGIES_METHODOLOGY_READ,
+    Permissions.FORMULAS_FORMULA_CREATE,
+    Permissions.FORMULAS_FORMULA_READ,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [

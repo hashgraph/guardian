@@ -3,7 +3,7 @@ import { Examples } from '../examples.js';
 import { IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
 
-export class MethodologyDTO {
+export class FormulaDTO {
     @ApiProperty({
         type: 'string',
         required: false,
@@ -84,6 +84,6 @@ export class MethodologyDTO {
     config?: any;
 }
 
-export class MethodologyRelationshipsDTO {
+export class FormulaRelationshipsDTO {
 
 }

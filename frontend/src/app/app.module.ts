@@ -38,7 +38,7 @@ import { PermissionsService } from './services/permissions.service';
 import { WorkerTasksService } from './services/worker-tasks.service';
 import { SchemaRulesService } from './services/schema-rules.service';
 import { PolicyLabelsService } from './services/policy-labels.service';
-import { MethodologiesService } from './services/methodologies.service';
+import { FormulasService } from './services/formulas.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
@@ -77,7 +77,7 @@ import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
 import { StatisticsModule } from './modules/statistics/statistics.module';
-import { MethodologiesModule } from './modules/methodologies/methodologies.module';
+import { FormulasModule } from './modules/formulas/formulas.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -189,7 +189,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         SchemaEngineModule,
         PolicyEngineModule,
         StatisticsModule,
-        MethodologiesModule,
+        FormulasModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
@@ -253,7 +253,7 @@ import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.componen
         RecordService,
         CompareStorage,
         ProjectComparisonService,
-        MethodologiesService,
+        FormulasService,
         PermissionsService,
         PermissionsGuard,
         {

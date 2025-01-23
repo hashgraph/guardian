@@ -1,12 +1,12 @@
 import { BeforeCreate, Entity, Property } from '@mikro-orm/core';
 import { BaseEntity } from '../models/index.js';
-import { EntityStatus, GenerateUUIDv4, IMethodology, IMethodologyConfig } from '@guardian/interfaces';
+import { EntityStatus, GenerateUUIDv4, IFormula, IFormulaConfig } from '@guardian/interfaces';
 
 /**
- * Methodology collection
+ * Formula collection
  */
 @Entity()
-export class Methodology extends BaseEntity implements IMethodology {
+export class Formula extends BaseEntity implements IFormula {
     /**
      * ID
      */
@@ -68,7 +68,7 @@ export class Methodology extends BaseEntity implements IMethodology {
      * Config
      */
     @Property({ nullable: true, type: 'unknown' })
-    config?: IMethodologyConfig;
+    config?: IFormulaConfig;
 
     /**
      * Set defaults

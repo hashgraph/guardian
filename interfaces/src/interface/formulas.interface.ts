@@ -1,8 +1,8 @@
-export interface IMethodologyConfig {
+export interface IFormulaConfig {
 
 }
 
-export interface IMethodology {
+export interface IFormula {
     id?: string;
     name?: string;
     description?: string;
@@ -10,5 +10,5 @@ export interface IMethodology {
     policyTopicId?: string;
     owner?: string;
     status?: string;
-    config?: IMethodologyConfig;
+    config?: IFormulaConfig;
 }

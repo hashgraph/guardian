@@ -96,6 +96,19 @@
                     </div>
                     <div class="formula-item-container">
                         <div class="formula-item-header">
+                            <div *ngIf="item.type === 'constant'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/const.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'variable'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/variable.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'formula'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/function.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'text'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/text.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+
                             <div *ngIf="item.type === 'constant'" class="formula-item-header__name">Constant</div>
                             <div *ngIf="item.type === 'variable'" class="formula-item-header__name">Variable</div>
                             <div *ngIf="item.type === 'formula'" class="formula-item-header__name">Formula</div>
@@ -132,22 +145,15 @@
     
                             <ng-container *ngIf="item.type === 'variable'">
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link</label>
+                                    <label class="form-label">Link (Input)</label>
                                     <div class="formula-link" (click)="onLink(item)">
                                         <div *ngIf="item.link" class="formula-link-value">
                                             <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
                                             <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
                                         </div>
-                                        <div *ngIf="item.link" class="formula-link-remove">
-                                            <button
-                                                class="guardian-icon-button"
-                                                (click)="deleteLink(item, $event)"
-                                                [disabled]="readonly">
-                                                <svg-icon
-                                                    class="icon-btn svg-icon"
-                                                    src="/assets/images/icons/delete.svg"
-                                                    [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
-                                                </svg-icon>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
                                             </button>
                                         </div>
                                     </div>
@@ -156,13 +162,44 @@
     
                             <ng-container *ngIf="item.type === 'formula'">
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link</label>
-                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label">Relationships</label>
-                                    <input [(ngModel)]="item.relationships" pInputText type="text" [readonly]="readonly"/>
+                                    <p-multiSelect
+                                        [(ngModel)]="item.relationships"
+                                        [options]="config.data"
+                                        class="guardian-multiselect relationships-multiselect"
+                                        appendTo="body"
+                                        optionLabel="name"
+                                        optionValue="uuid"
+                                        panelStyleClass="guardian-multiselect-panel"
+                                        [readonly]="readonly">
+                                        <ng-template let-value pTemplate="selectedItems">
+                                            <div *ngFor="let option of value" class="multiselect-selected-value">
+                                                {{ option.name || 'N/A' }}
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div class="multiselect-option-value">
+                                                <span>{{ option.name || 'N/A' }}</span>
+                                                <span *ngIf="option.description"> - {{ option.description }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
                                 </div>
+
                                 <div class="guardian-input-container" style="height: auto">
                                     <label class="form-label">Formula</label>
                                     <math-live 
@@ -174,14 +211,24 @@
                             </ng-container>
                             <ng-container *ngIf="item.type === 'text'">
                                 <div class="guardian-input-container">
-                                    <label class="form-label">Link</label>
-                                    <input [(ngModel)]="item.link" pInputText type="text" [readonly]="readonly"/>
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label">Relationships</label>
                                     <input [(ngModel)]="item.relationships" pInputText type="text" [readonly]="readonly"/>
                                 </div>
-                                <div class="guardian-input-container" style="height: auto">
+                                <div class="guardian-textarea-container">
                                     <label class="form-label">Text</label>
                                     <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
                                 </div>

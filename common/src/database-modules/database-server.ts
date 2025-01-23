@@ -43,7 +43,7 @@ import {
     SchemaRule,
     PolicyLabel,
     PolicyLabelDocument,
-    Methodology
+    Formula
 } from '../entity/index.js';
 import { Binary } from 'bson';
 import {
@@ -4081,61 +4081,61 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
-     * Create Methodology
-     * @param methodology
+     * Create Formula
+     * @param formula
      */
-    public static async createMethodology(
-        methodology: FilterObject<Methodology>
-    ): Promise<Methodology> {
-        const item = new DataBaseHelper(Methodology).create(methodology);
-        return await new DataBaseHelper(Methodology).save(item);
+    public static async createFormula(
+        formula: FilterObject<Formula>
+    ): Promise<Formula> {
+        const item = new DataBaseHelper(Formula).create(formula);
+        return await new DataBaseHelper(Formula).save(item);
     }
 
     /**
-     * Get Methodologies
+     * Get Formulas
      * @param filters
      * @param options
      */
-    public static async getMethodologiesAndCount(
-        filters?: FilterObject<Methodology>,
+    public static async getFormulasAndCount(
+        filters?: FilterObject<Formula>,
         options?: FindOptions<unknown>
-    ): Promise<[Methodology[], number]> {
-        return await new DataBaseHelper(Methodology).findAndCount(filters, options);
+    ): Promise<[Formula[], number]> {
+        return await new DataBaseHelper(Formula).findAndCount(filters, options);
     }
 
     /**
-     * Get Methodologies
+     * Get Formulas
      * @param filters
      * @param options
      */
-    public static async getMethodologies(
-        filters?: FilterObject<Methodology>,
+    public static async getFormulas(
+        filters?: FilterObject<Formula>,
         options?: unknown
-    ): Promise<Methodology[]> {
-        return await new DataBaseHelper(Methodology).find(filters, options);
+    ): Promise<Formula[]> {
+        return await new DataBaseHelper(Formula).find(filters, options);
     }
 
     /**
-     * Get Methodology By ID
+     * Get Formula By ID
      * @param id
      */
-    public static async getMethodologyById(id: string): Promise<Methodology | null> {
-        return await new DataBaseHelper(Methodology).findOne(id);
+    public static async getFormulaById(id: string): Promise<Formula | null> {
+        return await new DataBaseHelper(Formula).findOne(id);
     }
 
     /**
-     * Update Methodology
-     * @param methodology
+     * Update Formula
+     * @param formula
      */
-    public static async updateMethodology(methodology: Methodology): Promise<Methodology> {
-        return await new DataBaseHelper(Methodology).update(methodology);
+    public static async updateFormula(formula: Formula): Promise<Formula> {
+        return await new DataBaseHelper(Formula).update(formula);
     }
 
     /**
-     * Delete Methodology
-     * @param methodology
+     * Delete Formula
+     * @param formula
      */
-    public static async removeMethodology(methodology: Methodology): Promise<void> {
-        return await new DataBaseHelper(Methodology).remove(methodology);
+    public static async removeFormula(formula: Formula): Promise<void> {
+        return await new DataBaseHelper(Formula).remove(formula);
     }
 }

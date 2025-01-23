@@ -21,16 +21,16 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { TreeModule } from 'primeng/tree';
 import { TreeDragDropService } from 'primeng/api';
 import { TieredMenuModule } from 'primeng/tieredmenu';
-import { MethodologiesComponent } from './methodologies/methodologies.component';
-import { NewMethodologyDialog } from './dialogs/new-methodology-dialog/new-methodology-dialog.component';
-import { MethodologyConfigurationComponent } from './methodology-configuration/methodology-configuration.component';
 import { LinkDialog } from './dialogs/link-dialog/link-dialog.component';
+import { FormulasComponent } from './formulas/formulas.component';
+import { FormulaConfigurationComponent } from './formula-configuration/formula-configuration.component';
+import { NewFormulaDialog } from './dialogs/new-formula-dialog/new-formula-dialog.component';
 
 @NgModule({
     declarations: [
-        MethodologiesComponent,
-        MethodologyConfigurationComponent,
-        NewMethodologyDialog,
+        FormulasComponent,
+        FormulaConfigurationComponent,
+        NewFormulaDialog,
         LinkDialog
     ],
     imports: [
@@ -62,4 +62,4 @@ import { LinkDialog } from './dialogs/link-dialog/link-dialog.component';
         TreeDragDropService
     ],
 })
-export class MethodologiesModule { }
+export class FormulasModule { }

@@ -101,23 +101,23 @@
             }
 
             .constant-filter {
-                --checkbox-button-on-first-color: #4169E2;
-                --checkbox-button-on-second-color: #e1e7fa;
+                --checkbox-button-on-first-color: var(--formula-constant-color, #4169E2);
+                --checkbox-button-on-second-color: var(--formula-constant-background, #e1e7fa);
             }
 
             .variable-filter {
-                --checkbox-button-on-first-color: #DA9B22;
-                --checkbox-button-on-second-color: #FFF6E3;
+                --checkbox-button-on-first-color: var(--formula-variable-color, #DA9B22);
+                --checkbox-button-on-second-color: var(--formula-variable-background, #FFF6E3);
             }
 
             .formula-filter {
-                --checkbox-button-on-first-color: #c396fa;
-                --checkbox-button-on-second-color: #efe5fc;
+                --checkbox-button-on-first-color: var(--formula-function-color, #E50299);
+                --checkbox-button-on-second-color: var(--formula-function-background, #fbd9ef);
             }
 
             .text-filter {
-                --checkbox-button-on-first-color: #4169E2;
-                --checkbox-button-on-second-color: #e1e7fa;
+                --checkbox-button-on-first-color: var(--formula-text-color, #19BE47);
+                --checkbox-button-on-second-color: var(--formula-text-background, #d7f5e2);
             }
         }
 
@@ -154,12 +154,18 @@
                     width: 100%;
                     margin-bottom: 16px;
                     position: relative;
+                    display: flex;
+
+                    &__icon {
+                        margin-right: 8px;
+                    }
 
                     &__name {
                         font-family: Poppins;
                         font-size: 16px;
                         font-weight: 600;
-                        line-height: 20px;
+                        height: 24px;
+                        line-height: 24px;
                     }
 
                     &__delete {
@@ -180,37 +186,37 @@
             }
 
             &[type="constant"] {
-                border: 1px solid var(--guardian-primary-color, #4169E2);
+                border: 1px solid var(--formula-constant-color, #4169E2);
 
                 .formula-item-icon {
-                    background: #e4eafa;
+                    background: var(--formula-constant-background, #e1e7fa);
                     border-right: 1px solid #E1E7EF;
                 }
             }
 
             &[type="variable"] {
-                border: 1px solid #DA9B22;
+                border: 1px solid var(--formula-variable-color, #DA9B22);
 
                 .formula-item-icon {
-                    background: #FFF6E3;
+                    background: var(--formula-variable-background, #FFF6E3);
                     border-right: 1px solid #E1E7EF;
                 }
             }
 
             &[type="formula"] {
-                border: 1px solid #c396fa;
+                border: 1px solid var(--formula-function-color, #E50299);
 
                 .formula-item-icon {
-                    background: #efe5fc;
+                    background: var(--formula-function-background, #fbd9ef);
                     border-right: 1px solid #E1E7EF;
                 }
             }
 
             &[type="text"] {
-                border: 1px solid var(--guardian-primary-color, #4169E2);
+                border: 1px solid var(--formula-text-color, #19BE47);
 
                 .formula-item-icon {
-                    background: #EFF3F7;
+                    background: var(--formula-text-background, #d7f5e2);
                     border-right: 1px solid #E1E7EF;
                 }
             }
@@ -231,7 +237,7 @@
         min-height: 64px;
         display: flex;
         flex-direction: row;
-        border-top: 1px solid #E1E7EF;
+        border-top: 1px solid var(--guardian-grey-color-2, #E1E7EF);
         background: #fff;
         padding: 12px 48px;
         position: relative;
@@ -269,6 +275,10 @@
     position: relative;
     cursor: pointer;
 
+    &:hover {
+        border: 1px solid var(--guardian-primary-color, #4169E2);
+    }
+
     .formula-link-remove {
         position: absolute;
         top: 4px;
@@ -291,7 +301,7 @@
             font-size: 14px;
             font-weight: 500;
             line-height: 16px;
-            color: #DA9B22;
+            color: var(--guardian-entity-color, #DA9B22);
             margin-right: 8px;
         }
 
@@ -310,6 +320,33 @@
 
 .guardian-textarea-container {
     margin-bottom: 16px;
+}
+
+.multiselect-selected-value {
+    width: auto;
+    height: 30px;
+    padding: 7px 12px 7px 12px;
+    border-radius: 6px;
+    background: var(--guardian-grey-color, #EFF3F7);
+    color: var(--guardian-disabled-color, #848FA9);
+    font-family: Inter;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+    margin-right: 8px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-flex;
+}
+
+.multiselect-selected-value:last-child {
+    margin-right: 0px;
+}
+
+.relationships-multiselect::ng-deep .p-multiselect-label {
+    padding: 4px 8px !important;
 }
 
 @media (max-height: 767px) {

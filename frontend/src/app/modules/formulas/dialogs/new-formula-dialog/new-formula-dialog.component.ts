@@ -3,11 +3,11 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
-    selector: 'new-methodology-dialog',
-    templateUrl: './new-methodology-dialog.component.html',
-    styleUrls: ['./new-methodology-dialog.component.scss'],
+    selector: 'new-formula-dialog',
+    templateUrl: './new-formula-dialog.component.html',
+    styleUrls: ['./new-formula-dialog.component.scss'],
 })
-export class NewMethodologyDialog {
+export class NewFormulaDialog {
     public loading = true;
     public policy: any;
     public policies: any[];
@@ -29,14 +29,14 @@ export class NewMethodologyDialog {
         this.action = this.config.data?.action || '';
         this.policies = this.config.data?.policies || [];
         this.policies = this.policies.filter((p) => p.instanceTopicId);
-        const methodology = this.config.data?.methodology;
+        const formula = this.config.data?.formula;
         const instanceTopicId = this.config.data?.policy?.instanceTopicId;
         this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
-        if (methodology) {
+        if (formula) {
             this.readonly = true;
             this.dataForm.setValue({
-                name: methodology.name || 'N\\A',
-                description: methodology.description || 'N\\A',
+                name: formula.name || 'N\\A',
+                description: formula.description || 'N\\A',
                 policy: this.policy
             })
         } else {

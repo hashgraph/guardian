@@ -1,6 +1,8 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div class="header-text">{{title}}</div>
+        <div *ngIf="step === 1" class="header-text">Select item</div>
+        <div *ngIf="step === 2 &&  type==='schema'" class="header-text">Select field</div>
+        <div *ngIf="step === 2 &&  type==='formula'" class="header-text">Select variable</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
