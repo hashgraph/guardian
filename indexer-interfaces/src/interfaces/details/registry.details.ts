@@ -30,7 +30,7 @@ export interface RegistryAnalytics {
     /**
      * Text search
      */
-    textSearch: string;
+    textSearch?: string;
 }
 
 /**
@@ -69,6 +69,10 @@ export interface RegistryActivity {
      * Users
      */
     users: number;
+    /**
+     * Contracts
+     */
+    contracts: number;
 }
 
 /**

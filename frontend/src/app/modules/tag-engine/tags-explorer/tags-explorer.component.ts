@@ -1,5 +1,4 @@
 import { Component, Input, SimpleChanges } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { TagsService } from 'src/app/services/tag.service';
 import { TagCreateDialog } from '../tags-create-dialog/tags-create-dialog.component';
 import { TagsExplorerDialog } from '../tags-explorer-dialog/tags-explorer-dialog.component';

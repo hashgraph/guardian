@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 //helpers
-import { CACHE_CLIENT, CacheClient } from './cache-provider.js';
+import { CACHE_CLIENT, CacheClient } from './providers/cache-provider.js';
 
 @Injectable()
 export class CacheService {
@@ -35,4 +35,16 @@ export class CacheService {
       await this.client.del(tag);
     }
   }
+
+    async getAllTagsByPrefix(prefix: string): Promise<string[]> {
+        return this.client.keys(`${prefix}*`);
+    }
+
+    async invalidateAllTagsByPrefixes(prefixes: string[]): Promise<void> {
+        for (const prefix of prefixes) {
+            const tags = await this.getAllTagsByPrefix(prefix);
+
+            await this.invalidate(tags);
+        }
+    }
 }

@@ -1,6 +1,6 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { ContractService } from 'src/app/services/contract.service';
+import {Component, OnInit, Inject} from '@angular/core';
+import {ContractService} from 'src/app/services/contract.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-wipe-requests-dialog',
@@ -12,18 +12,25 @@ export class WipeRequestsDialogComponent implements OnInit {
     requests: {
         id: string;
         user: string;
+        token?: string;
     }[];
     loading: boolean = false;
     pageIndex = 0;
     pageSize = 5;
     length = 0;
+    version!: string
+
+    contract: any
 
     constructor(
-        public dialogRef: MatDialogRef<WipeRequestsDialogComponent>,
         public contractService: ContractService,
-        @Inject(MAT_DIALOG_DATA) public contract: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
-        this.contractId = contract.contractId;
+        this.contract = this.config.data ?? {};
+
+        this.contractId = this.contract.contractId;
+        this.version = this.contract.version;
     }
 
     ngOnInit(): void {

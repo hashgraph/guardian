@@ -45,13 +45,21 @@ export class SearchViewComponent {
     public results: SearchItem[] = [];
 
     pageIndex: number = 0;
+    pageSize: number = 10;
     total: number = 0;
+    pageSizeOptions = [5, 10, 25, 100];
 
     columns: any = [
         {
             type: ColumnType.CHIP,
             title: 'grid.type',
             field: 'type',
+            width: '200px',
+        },
+        {
+            type: ColumnType.TEXT,
+            title: 'grid.topicId',
+            field: 'topicId',
             width: '200px',
         },
         {
@@ -81,6 +89,7 @@ export class SearchViewComponent {
             this.setSearch(params['search']);
             if (params.pageIndex) {
                 this.pageIndex = Number(params.pageIndex);
+                this.pageSize = Number(params.pageSize);
             }
             this.onSearch();
         });
@@ -88,20 +97,25 @@ export class SearchViewComponent {
 
     ngOnDestroy(): void {}
 
-    public onPage(event: { pageIndex: number }) {
+    public onPage(event: { pageIndex: number, pageSize: number }) {
         this.pageIndex = event.pageIndex;
+        this.pageSize = event.pageSize;
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: {
                 search: this.searchControl.value,
                 pageIndex: this.pageIndex,
+                pageSize: this.pageSize,
             },
         });
     }
 
     public onSubmit() {
         this.pageIndex = 0;
-        this.onSearch();
+        this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { search: this.searchControl.value },
+        });
     }
 
     public setSearch(search: string) {
@@ -114,7 +128,10 @@ export class SearchViewComponent {
         if (this.searchControl.valid && this.searchControl.value) {
             this.loading = true;
             this.searchService
-                .search(this.searchControl.value, this.pageIndex)
+                .search(this.searchControl.value, {
+                    pageIndex: this.pageIndex,
+                    pageSize: this.pageSize
+                })
                 .subscribe({
                     next: (result) => {
                         const { items, total } = result;
@@ -132,10 +149,6 @@ export class SearchViewComponent {
         } else {
             this.results = [];
         }
-        this.router.navigate([], {
-            relativeTo: this.route,
-            queryParams: { search: this.searchControl.value },
-        });
     }
 
     public onOpen(item: any) {
@@ -186,6 +199,8 @@ export class SearchViewComponent {
                 ]);
                 break;
             }
+            case 'NON_FUNGIBLE_UNIQUE':
+            case 'FUNGIBLE_COMMON':
             case 'Token': {
                 this.router.navigate([`/tokens/${item.tokenId}`]);
                 break;

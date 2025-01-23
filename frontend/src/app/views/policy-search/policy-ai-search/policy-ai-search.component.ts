@@ -1,5 +1,5 @@
 import { Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { AISearchMessage, AISearchRequest, MOCK_AI_SEARCH_MESSAGE } from './ai-search.model';
 import { AISearchService } from '../../../services/ai-search.service';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { Router } from '@angular/router';
 })
 export class PolicyAISearchComponent implements OnInit {
     loading: boolean = false;
-    requestTextControl: FormControl = new FormControl(null, Validators.required);
+    requestTextControl: UntypedFormControl = new UntypedFormControl(null, Validators.required);
     messages: AISearchMessage[] = MOCK_AI_SEARCH_MESSAGE;
 
     @ViewChild('containerMessages') containerMessages: ElementRef;

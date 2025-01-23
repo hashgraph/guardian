@@ -1,5 +1,5 @@
 import {
-    DataBaseHelper,
+    DatabaseServer,
     Message,
     MessageType,
     TagMessage,
@@ -56,14 +56,17 @@ export class AnalyticsTokenService {
      * @param skip
      */
     public static async getTokenCache(uuid: string, tokenId: string, skip: boolean = false): Promise<TokenCache | null> {
-        const tokenCache = await new DataBaseHelper(TokenCache).findOne({ uuid, tokenId });
+        const databaseServer = new DatabaseServer();
+
+        const tokenCache = await databaseServer.findOne(TokenCache, { uuid, tokenId });
+
         if (tokenCache) {
             if (skip) {
                 return null;
             }
             return tokenCache;
         } else {
-            return new DataBaseHelper(TokenCache).create({
+            return databaseServer.create(TokenCache, {
                 uuid,
                 tokenId,
                 balance: 0
@@ -76,7 +79,7 @@ export class AnalyticsTokenService {
      * @param tokenCache
      */
     public static async updateTokenCache(tokenCache: TokenCache): Promise<TokenCache> {
-        return await new DataBaseHelper(TokenCache).save(tokenCache);
+        return await new DatabaseServer().save(TokenCache, tokenCache);
     }
 
     /**
@@ -142,22 +145,26 @@ export class AnalyticsTokenService {
                 const data: any = AnalyticsTokenService.parsTagMessage(message);
                 if (data) {
                     if (data.type === MessageType.Tag) {
-                        const row = new DataBaseHelper(Tag).create({
-                            uuid: report.uuid,
-                            root: report.root,
-                            account: data.payer,
-                            timeStamp: data.id,
-                            tagUUID: data.uuid,
-                            name: data.name,
-                            description: data.description,
-                            owner: data.owner,
-                            target: data.target,
-                            operation: data.operation,
-                            entity: data.entity,
-                            date: data.date,
-                            action: data.action
-                        });
-                        await new DataBaseHelper(Tag).save(row);
+                        const row = {
+                                uuid: report.uuid,
+                                root: report.root,
+                                account: data.payer,
+                                timeStamp: data.id,
+                                tagUUID: data.uuid,
+                                name: data.name,
+                                description: data.description,
+                                owner: data.owner,
+                                target: data.target,
+                                operation: data.operation,
+                                entity: data.entity,
+                                date: data.date,
+                                action: data.action
+                        };
+                        const databaseServer = new DatabaseServer();
+
+                        const entity = await databaseServer.create(Tag, row);
+
+                        await databaseServer.save(Tag, entity);
                     }
                 }
             });
@@ -175,8 +182,10 @@ export class AnalyticsTokenService {
     public static async search(report: Status, skip: boolean = false): Promise<Status> {
         await AnalyticsUtils.updateStatus(report, ReportSteep.TOKENS, ReportStatus.PROGRESS);
 
+        const databaseServer = new DatabaseServer();
+
         //Balance
-        const row = await new DataBaseHelper(Token).find({
+        const row = await databaseServer.find(Token, {
             uuid: report.uuid
         });
         const tokens = AnalyticsUtils.unique(row, 'tokenId')
@@ -190,7 +199,7 @@ export class AnalyticsTokenService {
         await tasks.run(AnalyticsTokenService.CHUNKS_COUNT);
 
         //Tags
-        const row2 = await new DataBaseHelper(TokenCache).find({
+        const row2 = await databaseServer.find(TokenCache, {
             uuid: report.uuid
         });
 

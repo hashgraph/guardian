@@ -28,7 +28,7 @@ Standard Registry user with the corresponding permission (_PERMISSIONS\_ROLE\_CR
 \
 Roles consist of a set of permissions which allow uses corresponding actions in the Guardian instance.
 
-![Рисунок 6](<../../../.gitbook/assets/2 (19).png>)
+![](<../../../.gitbook/assets/2 (19).png>)
 
 ### **1.2. Edit**
 
@@ -42,7 +42,7 @@ Roles consist of a set of permissions which allow uses corresponding actions in 
 
 Default role would be applied to all new users automatically upon their registration.
 
-![Рисунок 8](<../../../.gitbook/assets/5 (17).png>)
+![](<../../../.gitbook/assets/5 (17).png>)
 
 ### **2.5 Access**
 
@@ -60,7 +60,7 @@ Special configuration option (permission) which controls user access access to s
 Special permission option which enables uses to transfer their roles (i.e. to delegate, preserving their own rights as per the role as well) to other users.\
 Any user with the permission _**DELEGATION\_ROLE\_MANAGE**_ can enable access to all or a subset of roles and/or policies (but only for those the user has access to), for other users.
 
-![Рисунок 10](<../../../.gitbook/assets/7 (16).png>)
+![](<../../../.gitbook/assets/7 (16).png>)
 
 ## **2. Assigning roles and policies**
 
@@ -128,4 +128,4 @@ The messages are accompanied by assigned VC document with the list of permission
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/4bCrxd\_EbTs)
+[Youtube](https://youtu.be/4bCrxd_EbTs)

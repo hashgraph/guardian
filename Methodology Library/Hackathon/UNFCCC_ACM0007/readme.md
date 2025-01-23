@@ -26,7 +26,7 @@ Entities operating single cycle power plants can use ACM0007 to develop carbon o
 **Verification and Validation Body (VVB)** - The VVB plays a critical role in independently verifying and validating the project data submitted by the project participant. They thoroughly assess the project's emission reduction potential, methodologies, and adherence to the policy guidelines. Based on their evaluation, the VVB either approves or rejects the project for registration. \
 **Registry (UNFCCC)** - The United Nations Framework Convention on Climate Change (UNFCCC) serves as the registry for the CDM. They oversee the multiple workflow steps involved in the project's approval, including the verification and validation process by the VVB and the endorsement by the DNA. The UNFCCC's approval is necessary for the project's successful registration and issuance of CER tokens.
 ## Technical Aspects of the Project (Policy Guide):
-This policy can be imported to hedera guardian via the Github file(.policy) or IPSF timestamp(1706881469.628524368). \
+This policy can be imported to hedera guardian via the Github file(.policy) or IPFS timestamp(1706881469.628524368). \
 **Policy Workflow**:
 ![image](https://github.com/ankurgupta007/guardian/assets/98680735/ae68213a-d1a3-4b78-848b-1b69b0e215ec)
 
@@ -96,6 +96,14 @@ User Page:
  
 15) Finally the TrustChain contains all the important transaction data.
 ![image](https://github.com/ankurgupta007/guardian/assets/98680735/68322998-b1ef-4608-83e9-cad62a860402)
+
+## Comparison with a existing policy:
+1) ACM0007 already exists, this was created by Envision BlockChain.
+2) This is a improved version of the same, the differences are enlisted below:
+3) This enhanced version has a more complete documentation & a video presentation too.
+4) This enhanced version has more suggestive example fillouts.
+5) This enhanced version has a new role "Token Manager" which simplies the process of viewing and managing tokens.
+6) This enhanced version has a new token called CCPT (Combined Cycle Power Token).
  
 ## Epilogue:
 This project and documentation made by a contestant during the DLT Climate Hackathon. Therefore contains a few bugs. A few changes can be done to improve the system: 

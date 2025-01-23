@@ -1,0 +1,179 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Preview</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div *ngIf="loading" class="guardian-loading">
+            <div class="guardian-loading-image"></div>
+        </div>
+        <div class="preview-container">
+
+            <div class="preview-menu">
+                <div *ngFor="let item of menu; let last = last" 
+                    class="preview-menu-item" 
+                    [attr.highlighted]="isSelected(item)"
+                    [attr.last]="last"
+                    [pTooltip]="item.name"
+                    [tooltipOptions]="{showDelay: 300}"
+                    tooltipPosition="top"
+                >
+                    <div class="preview-menu-item-status" [attr.status]="item.item.status"></div>
+                    <div class="preview-menu-item-icon">
+                        <svg-icon
+                            *ngIf="!item.selectable"
+                            class="icon-btn"
+                            src="/assets/images/icons/folder.svg"
+                            [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
+                        </svg-icon>
+                        <svg-icon
+                            *ngIf="item.selectable"
+                            class="icon-btn"
+                            src="/assets/images/icons/file.svg"
+                            [svgClass]="isSelected(item) ? 'icon-color-primary' : 'icon-color-disabled'">
+                        </svg-icon>
+                    </div>
+                    <div class="preview-menu-item-name">{{item.name}}</div>
+                </div>
+            </div>
+            <div class="preview-node-container">
+                <div class="preview-node-body fields-container">
+                    <div *ngIf="current" class="preview-node-header">{{current.title}}</div>
+
+                    <div *ngIf="current && current.subIndexes && current.subIndexes.length > 1" class="sub-indexes">
+                        <ng-container *ngFor="let item of current.subIndexes; let last = last;">
+                            <div class="sub-index" [attr.action]="item.selected">{{item.index}}</div>
+                            <div class="sub-name" [attr.action]="item.selected">{{item.name}}</div>
+                            <div *ngIf="!last" class="sub-index-separator"></div>
+                        </ng-container>
+                    </div>
+
+                    <ng-container *ngIf="current && current.type === 'variables'">
+                        <div *ngFor="let variable of current.config" class="field-container">
+                            <div class="field-name">
+                                {{variable.fieldDescription}}
+                            </div>
+                            <div class="field-input">
+                                <input 
+                                    class="guardian-input"
+                                    [(ngModel)]="variable.value"
+                                    pInputText 
+                                    type="text"
+                                />
+                            </div>
+                        </div>
+                    </ng-container>
+
+                    <ng-container *ngIf="current && current.type === 'scores'">
+                        <div *ngFor="let score of current.config" class="field-container">
+                            <div *ngIf="score.relationships" class="fields-container">
+                                <div *ngFor="let variable of score._relationships" class="field-container">
+                                    <div class="field-name">
+                                        {{variable.fieldDescription}}
+                                    </div>
+                                    <ng-container *ngIf="variable.isArray">
+                                        <div class="field-value-array">
+                                            <div *ngFor="let v of variable.value" class="field-value">
+                                                {{getVariableValue(v)}}
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                    <ng-container *ngIf="!variable.isArray">
+                                        <div class="field-value">
+                                            {{getVariableValue(variable.value)}}
+                                        </div>
+                                    </ng-container>
+                                </div>
+                            </div>
+                            <div class="field-name">
+                                {{score.description}}
+                            </div>
+                            <div *ngIf="score._options" class="options-container">
+                                <div *ngFor="let option of score._options" class="option-container">
+                                    <div class="option-checkbox">
+                                        <p-radioButton 
+                                            class="guardian-radio-button radio-button-24"
+                                            [name]="score.id" 
+                                            [value]="option.value" 
+                                            [(ngModel)]="score.value"
+                                            [inputId]="option.id"
+                                            (onClick)="updateStep()"
+                                        ></p-radioButton>
+                                    </div>
+                                    <label class="option-name" [for]="option.id">
+                                        {{option.description}}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="current && current.type === 'formulas'">
+                        <div *ngFor="let formula of current.config" class="field-container">
+                            <div class="field-name">
+                                {{formula.description}}
+                            </div>
+                            <div class="field-value">
+                                {{formula.value}}
+                            </div>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="result && current && current.type === 'result'">
+                        <div class="preview-result">
+                            <div *ngIf="result.valid" class="preview-result-item">
+                                <div class="preview-result-icon">
+                                    <svg-icon 
+                                        class="svg-icon-32" 
+                                        src="/assets/images/icons/32/list.svg" 
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div class="preview-result-text">Label created successfully.</div>
+                            </div>
+                            <div *ngIf="!result.valid" class="preview-result-item">
+                                <div class="preview-result-icon">
+                                    <svg-icon 
+                                        class="svg-icon-32" 
+                                        src="/assets/images/icons/32/list.svg" 
+                                        svgClass="icon-color-disabled">
+                                    </svg-icon>
+                                </div>
+                                <div class="preview-result-text">Sorry, but your document does not meet the requirements.</div>
+                            </div>
+                        </div>
+                    </ng-container> 
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+        <div class="dialog-button">
+            <button 
+                (click)="onPrev()" 
+                [disabled]="!validator.isPrev()"
+                class="guardian-button guardian-button-secondary">Prev</button>
+        </div>
+        <div *ngIf="validator.isNext()" class="dialog-button">
+            <button 
+                (click)="onNext()" 
+                [disabled]="current?.disabled"
+                class="guardian-button guardian-button-primary">Next</button>
+        </div>
+        <div *ngIf="!validator.isNext()" class="dialog-button">
+            <button 
+                (click)="onSubmit()" 
+                class="guardian-button guardian-button-primary">Finish</button>
+        </div>
+    </div>
+</div>

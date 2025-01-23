@@ -1,0 +1,141 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title" id="title">
+            Multi Policy
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <div *ngIf="loading" class="loading">
+                <div class="preloader-image preloader-image-l-size"></div>
+            </div>
+
+            <div>
+
+                <div *ngIf="!exists">
+                    <div class="radio-group">
+                        <div>
+                            <div class="group-name">
+                                <p-radioButton
+                                    name="policyType"
+                                    [ngModel]="policyType"
+                                    [value]="'Main'"
+                                    (onClick)="onChange($event)"
+                                    class="p-radiobutton">
+                                </p-radioButton>
+                                <label>Create new multi policy</label>
+                            </div>
+                            <div class="group-value" [ngClass]="{'disabled': policyType !== 'Main'}">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Type: </span>
+                                    <span>Main Policy</span>
+                                </div>
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Main Policy: </span>
+                                    <span>{{ mainPolicyTopicId1 }}</span>
+                                </div>
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Topic for synchronization: </span>
+                                    <span>{{ synchronizationTopicId1 }}</span>
+                                </div>
+                                <div class="table-container">
+                                    <input
+                                        pInputText
+                                        type="text"
+                                        [value]="link1"
+                                        readonly="true"
+                                        class="form-control"
+                                        style="margin-bottom: 15px;">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="group-name">
+                                <p-radioButton
+                                    name="policyType"
+                                    [ngModel]="policyType"
+                                    [value]="'Sub'"
+                                    (onClick)="onChange($event)"
+                                    class="p-radiobutton">
+                                </p-radioButton>
+                                <label>Join an existing policy</label>
+                            </div>
+                            <div class="group-value" [ngClass]="{'disabled': policyType !== 'Sub'}">
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Type: </span>
+                                    <span>Sub Policy</span>
+                                </div>
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Main Policy: </span>
+                                    <span>{{ mainPolicyTopicId2 }}</span>
+                                </div>
+                                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                                    <span>Topic for synchronization: </span>
+                                    <span>{{ synchronizationTopicId2 }}</span>
+                                </div>
+                                <div class="table-container">
+                                    <input
+                                        pInputText
+                                        type="text"
+                                        [(ngModel)]="link2"
+                                        (ngModelChange)="onParse($event)"
+                                        class="form-control"
+                                        style="margin-bottom: 15px;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div *ngIf="exists">
+                    <div style="margin-left: 10px;" class="group-name">
+                        Policy is already bound
+                    </div>
+                    <div class="group-value">
+                        <div style="margin-bottom: 15px;color: #707070">
+                            <span>Type: </span>
+                            <span>{{ policyType }} Policy</span>
+                        </div>
+                        <div style="margin-bottom: 15px;color: #707070">
+                            <span>Main Policy: </span>
+                            <span>{{ mainPolicyTopicId1 }}</span>
+                        </div>
+                        <div style="margin-bottom: 15px;color: #707070">
+                            <span>Topic for synchronization: </span>
+                            <span>{{ synchronizationTopicId1 }}</span>
+                        </div>
+                        <div style="margin-bottom: 15px;color: #707070">
+                            <span>Current Policy: </span>
+                            <span>{{ instanceTopicId }}</span>
+                        </div>
+                        <div class="p-fluid">
+                            <label for="link1">Link</label>
+                            <input
+                                id="link1"
+                                pInputText
+                                [value]="link1"
+                                readonly
+                                class="p-inputtext p-component"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div mat-dialog-actions>
+        <div class="cancel-button">
+            <p-button
+                (click)="onOk()"
+                label="Cancel"
+                [outlined]=true
+            ></p-button>
+        </div>
+        <div *ngIf="!exists">
+            <p-button (click)="onCreate()" [disabled]="!(valid && initDialog)"
+                      [label]="policyType=='Main' ? 'Create' : 'Join'"></p-button>
+        </div>
+    </div>
+</div>

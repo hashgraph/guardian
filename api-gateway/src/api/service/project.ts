@@ -4,6 +4,7 @@ import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse,
 import { ProjectDTO, PropertiesDTO, CompareDocumentsDTO, CompareDocumentsV2DTO, FilterDocumentsDTO, InternalServerErrorDTO, Examples } from '#middlewares';
 import { CACHE } from '#constants';
 import { UseCache, Guardians, InternalException, ProjectService } from '#helpers';
+import { PinoLogger } from '@guardian/common';
 
 /**
  * Projects route
@@ -11,7 +12,7 @@ import { UseCache, Guardians, InternalException, ProjectService } from '#helpers
 @Controller('projects')
 @ApiTags('projects')
 export class ProjectsAPI {
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -52,7 +53,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.search(categoryIds, policyIds);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -139,7 +140,7 @@ export class ProjectsAPI {
                 refLvl
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -197,38 +198,30 @@ export class ProjectsAPI {
             throw new HttpException('Invalid parameters', HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
+        const rowDocuments = await guardians.getVcDocuments({ id: ids });
+        let samePolicy: boolean = true;
+        const policyIds: string[] = [];
+        for (const id of ids) {
+            const doc = rowDocuments.find((e) => e.id === id);
+            if (doc) {
+                policyIds.push(doc.policyId);
+            } else {
+                policyIds.push(null);
+            }
+            if (policyIds.length > 1 && policyIds[policyIds.length - 2] !== policyIds[policyIds.length - 1]) {
+                samePolicy = false;
+            }
+        }
+
         const idLvl = 0;
         const eventsLvl = 0;
         const propLvl = 2;
         const childrenLvl = 0;
         const user = null;
-
-        let samePolicy: boolean = true;
-        const _data = await guardians.getVcDocuments({ id: ids });
-        for (let index = 1; index < _data.length; index++) {
-            if (_data[index - 1].policyId !== _data[index].policyId) {
-                samePolicy = false;
-                break;
-            }
-        }
-
-        const policyIds = _data.map((p: any) => p.policyId);
-
         const refLvl = samePolicy ? 'Revert' : 'Merge';
         const keyLvl = samePolicy ? 'Default' : 'Property';
 
         try {
-            const comparationVpArray = await guardians.compareVPDocuments(
-                user,
-                null,
-                policyIds,
-                '1',
-                '2',
-                '2',
-                '0',
-                0,
-                'Direct'
-            );
             const comparationVc = await guardians.compareDocuments(
                 user,
                 null,
@@ -240,12 +233,23 @@ export class ProjectsAPI {
                 keyLvl,
                 refLvl
             );
+            const comparationVpArray = await guardians.compareVPDocuments(
+                user,
+                null,
+                policyIds,
+                '1',
+                '2',
+                '2',
+                '0',
+                0,
+                'Direct'
+            );
             return {
                 projects: comparationVc,
                 presentations: comparationVpArray
             }
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -273,7 +277,7 @@ export class ProjectsAPI {
             const projectService = new ProjectService();
             return await projectService.getPolicyProperties();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

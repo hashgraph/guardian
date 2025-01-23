@@ -1,12 +1,12 @@
 import { ApiResponse, ApiResponseSubscribe } from '../api/helpers/api-response.js';
-import { DataBaseHelper, DryRunFiles, IPFS, Logger, MessageError, MessageResponse } from '@guardian/common';
+import { DatabaseServer, DryRunFiles, IPFS, MessageError, MessageResponse, PinoLogger } from '@guardian/common';
 import { ExternalMessageEvents, MessageAPI } from '@guardian/interfaces';
 import { IPFSTaskManager } from '../helpers/ipfs-task-manager.js';
 
 /**
  * TODO
  */
-export async function ipfsAPI(): Promise<void> {
+export async function ipfsAPI(logger: PinoLogger): Promise<void> {
     ApiResponseSubscribe(ExternalMessageEvents.IPFS_ADDED_FILE, async (msg) => {
         try {
             if (!msg) {
@@ -22,7 +22,7 @@ export async function ipfsAPI(): Promise<void> {
                 }
             }
         } catch (error) {
-            new Logger().error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE']);
         }
     });
 
@@ -41,7 +41,7 @@ export async function ipfsAPI(): Promise<void> {
                 }
             }
         } catch (error) {
-            new Logger().error(error, ['IPFS_SERVICE']);
+            await logger.error(error, ['IPFS_SERVICE']);
         }
     });
 
@@ -51,7 +51,7 @@ export async function ipfsAPI(): Promise<void> {
             return new MessageResponse(result);
         }
         catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
     })
@@ -61,19 +61,21 @@ export async function ipfsAPI(): Promise<void> {
             const policyId = msg.policyId;
             const fileBuffer = Buffer.from(msg.buffer.data);
 
-            const entity = new DataBaseHelper(DryRunFiles).create({
+            const dataBaseServer = new DatabaseServer();
+
+            const entity = dataBaseServer.create(DryRunFiles, {
                 policyId,
                 file: fileBuffer
             });
 
-            await new DataBaseHelper(DryRunFiles).save(entity)
+            await dataBaseServer.save(DryRunFiles, entity)
 
             return new MessageResponse({
                 cid: entity.id,
                 url: IPFS.IPFS_PROTOCOL + entity.id
             });
         } catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageError(error);
         }
     })
@@ -93,7 +95,7 @@ export async function ipfsAPI(): Promise<void> {
             return new MessageResponse(await IPFS.getFile(msg.cid, msg.responseType, msg.userId));
         }
         catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageResponse({ error: error.message });
         }
     })
@@ -110,11 +112,11 @@ export async function ipfsAPI(): Promise<void> {
                 throw new Error('Invalid response type');
             }
 
-            const file = await new DataBaseHelper(DryRunFiles).findOne({id: msg.cid});
+            const file = await new DatabaseServer().findOne(DryRunFiles, {id: msg.cid});
 
             return new MessageResponse(file.file);
         } catch (error) {
-            new Logger().error(error, ['IPFS_CLIENT']);
+            await logger.error(error, ['IPFS_CLIENT']);
             return new MessageResponse({error: error.message});
         }
     })

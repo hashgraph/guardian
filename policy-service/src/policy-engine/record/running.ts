@@ -6,10 +6,23 @@ import { RecordMethod } from './method.type.js';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
-import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcHelper } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, IRecordResult, RecordImportExport, VcDocument as VcDocumentCollection, VcDocument, VcHelper, VpDocument } from '@guardian/common';
 import { RecordItem } from './record-item.js';
-import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, Utils } from './utils.js';
+import { GenerateDID, GenerateUUID, IGenerateValue, RecordItemStack, RowDocument, Utils } from './utils.js';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
+
+interface RecordOptions {
+    mode?: string;
+    index?: string | number;
+}
+
+interface IActionResult {
+    index: number;
+    delay: number;
+    code: number;
+    error: string;
+    action: RecordAction;
+};
 
 /**
  * Running controller
@@ -34,7 +47,7 @@ export class Running {
     /**
      * Options
      */
-    public readonly options: any;
+    public readonly options: RecordOptions;
     /**
      * Block messenger
      */
@@ -56,9 +69,17 @@ export class Running {
      */
     private readonly _results: IRecordResult[];
     /**
+     * Mode
+     */
+    private readonly _mode: string;
+    /**
+     * Event delay
+     */
+    private readonly _eventIterationDelay = [2, 4, 6, 8, 10]; //30s
+    /**
      * Record ID
      */
-    private _id: number;
+    private _id: string;
     /**
      * Status
      */
@@ -94,16 +115,17 @@ export class Running {
         owner: string,
         actions: RecordItem[],
         results: IRecordResult[],
-        options: any
+        options: RecordOptions
     ) {
         this.policyInstance = policyInstance;
         this.policyId = policyId;
         this.owner = owner;
-        this.options = options;
+        this.options = options || {};
         this.tree = new BlockTreeGenerator();
+        this._mode = this.options.mode;
         this._status = RunningStatus.New;
         this._lastError = null;
-        this._id = -1;
+        this._id = null;
         this._actions = new RecordItemStack();
         this._generateUUID = new RecordItemStack();
         this._generateDID = new RecordItemStack();
@@ -129,19 +151,19 @@ export class Running {
      * Start running
      * @public
      */
-    public start(): boolean {
+    public start(): string {
         this._status = RunningStatus.Running;
         this._lastError = null;
-        this._id = Date.now();
+        this._id = GenerateUUIDv4();
         this._generatedItems = [];
         this._generatedDIDs = [];
-        this._actions.clearIndex();
-        this._generateUUID.clearIndex();
-        this._generateDID.clearIndex();
+        this._actions.clear();
+        this._generateUUID.clear();
+        this._generateDID.clear();
         this._startTime = Date.now();
-        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        this._updateStatus(this._id).then();
         this._run(this._id).then();
-        return true;
+        return this._id;
     }
 
     /**
@@ -152,7 +174,7 @@ export class Running {
         this._status = RunningStatus.Stopped;
         this._lastError = null;
         this._endTime = Date.now();
-        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        this._updateStatus(this._id).then();
         return true;
     }
 
@@ -161,11 +183,12 @@ export class Running {
      * @public
      */
     public finished(): boolean {
-        this._id = -1;
+        const oldID = this._id;
+        this._id = null;
         this._status = RunningStatus.Finished;
         this._lastError = null;
         this._endTime = Date.now();
-        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        this._updateStatus(oldID).then();
         return true;
     }
 
@@ -178,7 +201,21 @@ export class Running {
         this._status = RunningStatus.Error;
         this._lastError = message;
         this._endTime = Date.now();
-        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        this._updateStatus(this._id).then();
+        return true;
+    }
+
+    /**
+     * Destroy
+     * @public
+     */
+    public async destroy(): Promise<boolean> {
+        const oldID = this._id;
+        this._id = null;
+        this._status = RunningStatus.Finished;
+        this._lastError = null;
+        this._endTime = Date.now();
+        await this._updateStatus(oldID);
         return true;
     }
 
@@ -189,14 +226,14 @@ export class Running {
     public async run(): Promise<IRecordResult[]> {
         this._status = RunningStatus.Running;
         this._lastError = null;
-        this._id = Date.now();
+        this._id = GenerateUUIDv4();
         this._generatedItems = [];
         this._generatedDIDs = [];
-        this._actions.clearIndex();
-        this._generateUUID.clearIndex();
-        this._generateDID.clearIndex();
+        this._actions.clear();
+        this._generateUUID.clear();
+        this._generateDID.clear();
         this._startTime = Date.now();
-        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        this._updateStatus(this._id).then();
         await this._run(this._id);
         return await this.results();
     }
@@ -206,7 +243,7 @@ export class Running {
      * @param options
      * @public
      */
-    public async fastForward(options: any): Promise<boolean> {
+    public async fastForward(options: RecordOptions): Promise<boolean> {
         try {
             const skipIndex = Number(options?.index);
             if (this._currentDelay) {
@@ -233,7 +270,7 @@ export class Running {
             if (this._status === RunningStatus.Error) {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
-                this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+                this._updateStatus(this._id).then();
                 this._run(this._id).then();
                 return true;
             } else {
@@ -254,7 +291,7 @@ export class Running {
                 this._status = RunningStatus.Running;
                 this._lastError = null;
                 this._actions.next();
-                this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+                this._updateStatus(this._id).then();
                 this._run(this._id).then();
                 return true;
             } else {
@@ -275,12 +312,13 @@ export class Running {
         }
         const results: IRecordResult[] = [];
         const db = new DatabaseServer(this.policyId);
-        const vcs = await db.getVcDocuments<any[]>({
+        const vcs = await db.getVcDocuments<VcDocumentCollection>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        } ) as VcDocumentCollection[];
+
         for (const vc of vcs) {
             results.push({
                 id: vc.document.id,
@@ -288,12 +326,13 @@ export class Running {
                 document: vc.document
             });
         }
-        const vps = await db.getVpDocuments<any[]>({
+        const vps = await db.getVpDocuments<VpDocument>({
             updateDate: {
                 $gte: new Date(this._startTime),
                 $lt: new Date(this._endTime)
             }
-        });
+        }) as VpDocument[];
+
         for (const vp of vps) {
             results.push({
                 id: vp.document.id,
@@ -305,11 +344,32 @@ export class Running {
     }
 
     /**
+     * Update status
+     * @private
+     */
+    private async _updateStatus(id: string): Promise<void> {
+        try {
+            const status: any = this.getStatus(id);
+            this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, status);
+            if (this._mode === 'test') {
+                if (this._status === RunningStatus.Running) {
+                    this.tree.sendMessage(PolicyEvents.TEST_UPDATE_BROADCAST, status);
+                } else {
+                    status.result = await this.getResults();
+                    this.tree.sendMessage(PolicyEvents.TEST_UPDATE_BROADCAST, status);
+                }
+            }
+        } catch (error) {
+            return;
+        }
+    }
+
+    /**
      * Run
      * @param id
      * @private
      */
-    private async _run(id: number): Promise<void> {
+    private async _run(id: string): Promise<void> {
         while (this.isRunning(id)) {
             const result = await this.next();
             if (!this.isRunning(id)) {
@@ -323,7 +383,7 @@ export class Running {
                 this.error(result.error);
                 return;
             }
-            this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+            this._updateStatus(id).then();
             await this.delay(result.delay, result.index);
         }
     }
@@ -333,7 +393,7 @@ export class Running {
      * @param id
      * @private
      */
-    private isRunning(id: number): boolean {
+    private isRunning(id: string): boolean {
         return this._id === id && this._status === RunningStatus.Running;
     }
 
@@ -341,6 +401,7 @@ export class Running {
      * Create delay
      * @param time
      * @param index
+     * @param action
      * @private
      */
     private async delay(time: number, index: number): Promise<void> {
@@ -394,15 +455,14 @@ export class Running {
                     return null;
                 }
                 case RecordAction.SetBlockData: {
-                    const doc = await this.getActionDocument(action);
                     const block = PolicyComponentsUtils.GetBlockByTag<any>(this.policyId, action.target);
-                    if (block && (await block.isAvailable(userFull))) {
-                        if (typeof block.setData === 'function') {
-                            await block.setData(userFull, doc);
-                            return null;
-                        }
+                    if (await this.isAvailable(block, userFull)) {
+                        const doc = await this.getActionDocument(action);
+                        await block.setData(userFull, doc);
+                        return null;
+                    } else {
+                        return `Block (${action.target}) not available.`;
                     }
-                    return `Block (${action.target}) not available.`;
                 }
                 case RecordAction.SetExternalData: {
                     const doc = await this.getActionDocument(action);
@@ -433,7 +493,8 @@ export class Running {
                         username,
                         userDID,
                         newAccountId.toString(),
-                        newPrivateKey.toString()
+                        newPrivateKey.toString(),
+                        false
                     );
 
                     const instanceDB = this.policyInstance.components.databaseServer;
@@ -499,6 +560,25 @@ export class Running {
     }
 
     /**
+     * Check available
+     * @param block
+     * @param user
+     * @private
+     */
+    private async isAvailable(block: any, user: PolicyUser): Promise<boolean> {
+        if (!block || typeof block.setData !== 'function') {
+            return false;
+        }
+        for (const i of this._eventIterationDelay) {
+            if (await block.isAvailable(user)) {
+                return true;
+            }
+            await this.delay(i * 1000, this._actions?.index);
+        }
+        return false;
+    }
+
+    /**
      * Replace DID
      * @param did
      * @private
@@ -532,16 +612,41 @@ export class Running {
     private async replaceRow(obj: any): Promise<any> {
         const result = Utils.findAllDocuments(obj);
         for (const row of result) {
-            if (row.type === 'vc') {
-                const item = await this.policyInstance.databaseServer.getVcDocument(row.filters);
-                obj = row.replace(obj, item);
-            }
-            if (row.type === 'vp') {
-                const item = await this.policyInstance.databaseServer.getVpDocument(row.filters);
-                obj = row.replace(obj, item);
-            }
+            const item = await this.findRowDocument(row);
+            obj = row.replace(obj, item);
         }
         return obj;
+    }
+
+    /**
+     * Find row document
+     * @param row
+     * @private
+     */
+    private async findRowDocument(row: RowDocument): Promise<VcDocument | VpDocument> {
+        for (const i of this._eventIterationDelay) {
+            const item = await this.getRowDocument(row);
+            if (item) {
+                return item;
+            }
+            await this.delay(i * 1000, this._actions?.index);
+        }
+        return undefined;
+    }
+
+    /**
+     * Find row document
+     * @param row
+     * @private
+     */
+    private async getRowDocument(row: RowDocument): Promise<VcDocument | VpDocument> {
+        if (row.type === 'vc') {
+            return await this.policyInstance.databaseServer.getVcDocument(row.filters);
+        } else if (row.type === 'vp') {
+            return await this.policyInstance.databaseServer.getVpDocument(row.filters);
+        } else {
+            return undefined;
+        }
     }
 
     /**
@@ -549,17 +654,19 @@ export class Running {
      * @private
      */
     private async next() {
-        const result = {
+        const result: IActionResult = {
             index: -1,
             delay: -1,
             code: 0,
-            error: null
+            error: null,
+            action: null
         };
         try {
             const action = this._actions.current;
             if (!action) {
                 return result;
             }
+            result.action = action.action;
 
             const error = await this.runAction(action);
             if (error) {
@@ -644,9 +751,9 @@ export class Running {
      * Get full status
      * @public
      */
-    public getStatus() {
+    public getStatus(id?: string) {
         return {
-            id: this._id,
+            id: id || this._id,
             type: this.type,
             policyId: this.policyId,
             status: this._status,
@@ -670,7 +777,8 @@ export class Running {
      */
     public async getResults(): Promise<any> {
         if (this._id) {
-            const results = await RecordImportExport.loadRecordResults(this.policyId, this._startTime, this._endTime);
+            const results = await RecordImportExport
+                .loadRecordResults(this.policyId, this._startTime, this._endTime);
             return {
                 documents: results,
                 recorded: this._results

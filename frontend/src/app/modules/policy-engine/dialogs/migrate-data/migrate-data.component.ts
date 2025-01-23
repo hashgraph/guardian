@@ -8,7 +8,7 @@ import {
 import { forkJoin } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { SchemaService } from 'src/app/services/schema.service';
-import { JsonEditorDialogComponent } from '../../helpers/json-editor-dialog/json-editor-dialog.component';
+import { JsonEditorDialogComponent } from '../json-editor-dialog/json-editor-dialog.component';
 
 function findAllEntities(
     obj: { [key: string]: any },

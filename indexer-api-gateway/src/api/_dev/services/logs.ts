@@ -1,7 +1,5 @@
 import { Controller, HttpCode, HttpStatus, Get, Query } from '@nestjs/common';
-import { InternalServerErrorDTO } from '../../../middlewares/validation/schemas/index.js';
 import {
-    ApiInternalServerErrorResponse,
     ApiForbiddenResponse,
     ApiOkResponse,
     ApiOperation,
@@ -66,10 +64,6 @@ export class LogsApi extends ApiClient {
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
     @HttpCode(HttpStatus.OK)
     async getAllMessages(
         @Query('timestamp') timestamp?: string,
@@ -129,10 +123,6 @@ export class LogsApi extends ApiClient {
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
     @HttpCode(HttpStatus.OK)
     async getAllTopics(
         @Query('pageIndex') pageIndex?: number,
@@ -186,10 +176,6 @@ export class LogsApi extends ApiClient {
     @ApiForbiddenResponse({
         description: 'Forbidden.',
     })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
-    })
     @HttpCode(HttpStatus.OK)
     async getAllDocuments(
         @Query('timestamp') timestamp?: string,
@@ -226,10 +212,6 @@ export class LogsApi extends ApiClient {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getDocumentFilters(): Promise<any> {
@@ -273,10 +255,6 @@ export class LogsApi extends ApiClient {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllTokens(
@@ -334,10 +312,6 @@ export class LogsApi extends ApiClient {
     })
     @ApiForbiddenResponse({
         description: 'Forbidden.',
-    })
-    @ApiInternalServerErrorResponse({
-        description: 'Internal server error.',
-        type: InternalServerErrorDTO,
     })
     @HttpCode(HttpStatus.OK)
     async getAllNfts(

@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
 
 /**
  * Settings for block of 'interfaceDocumentsSource' type.
@@ -28,6 +28,22 @@ export class DocumentSourceComponent implements OnInit {
     properties!: any;
     allBlocks!: any[];
 
+    fieldTypeOptions = [
+        {label: 'Text', value: 'text'},
+        {label: 'Issuer', value: 'issuer'},
+        {label: 'Button', value: 'button'},
+        {label: 'Block', value: 'block'},
+        {label: 'Blocks', value: 'blocks'},
+        {label: 'Array', value: 'array'},
+        {label: 'Serials', value: 'serials'}
+    ];
+
+    actionOptions = [
+        {label: 'LINK', value: 'link'},
+        {label: 'DIALOG', value: 'dialog'},
+        {label: 'DOWNLOAD', value: 'download'}
+    ];
+
     constructor() {
     }
 
@@ -41,7 +57,7 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     parseField(document: any, fields: any[], prefix?: string) {
-        const context = document['@context'] || "";
+        const context = document['@context'] || '';
         const keys = Object.keys(context);
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
@@ -88,12 +104,13 @@ export class DocumentSourceComponent implements OnInit {
     }
 
     onSelectFieldType(field: any) {
-        field.action = "";
-        field.url = "";
-        field.dialogContent = "";
-        field.dialogClass = "";
-        field.dialogType = "";
-        field.bindBlock = "";
+        field.action = '';
+        field.url = '';
+        field.dialogContent = '';
+        field.dialogClass = '';
+        field.dialogType = '';
+        field.bindBlock = '';
+        field.bindBlocks = [];
     }
 
     getFieldName(field: any, i: number): string {

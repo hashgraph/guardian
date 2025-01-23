@@ -1,7 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { IconType } from '@guardian/interfaces';
-import { IPFSService } from 'src/app/services/ipfs.service';
+import {Component, Inject} from '@angular/core';
+import {IconType} from '@guardian/interfaces';
+import {IPFSService} from 'src/app/services/ipfs.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for icon preview.
@@ -17,21 +17,24 @@ export class IconPreviewDialog {
     loading: boolean = false;
 
     constructor(
-        public dialogRef: MatDialogRef<IconPreviewDialog>,
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
         private ipfs: IPFSService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
-            this.iconType = data.iconType;
-            if (this.iconType == IconType.CUSTOM) {
-                this.loading = true;
-                this.ipfs
-                    .getImageByLink(data.icon)
-                    .then((res) => {
-                        this.icon = res;
-                    })
-                    .finally(() => (this.loading = false));
-            } else {
-                this.icon = data.icon;
-            }
+    ) {
+        const data = this.config.data
+
+        this.iconType = data.iconType;
+        if (this.iconType == IconType.CUSTOM) {
+            this.loading = true;
+            this.ipfs
+                .getImageByLink(data.icon)
+                .then((res) => {
+                    this.icon = res;
+                })
+                .finally(() => (this.loading = false));
+        } else {
+            this.icon = data.icon;
+        }
     }
 
     onClose(): void {

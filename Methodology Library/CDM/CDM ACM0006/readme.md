@@ -60,7 +60,7 @@ In the modern landscape of emission reduction initiatives, the value of transpar
 
 ## Policy Guide
 
-This policy is published to Hedera network and can either be imported via Github (.policy file) or IPSF timestamp.IPFS timestamp is coming soon.
+This policy is published to Hedera network and can either be imported via Github (.policy file) or IPFS timestamp.IPFS timestamp is coming soon.
 
 ### Available Roles 
  

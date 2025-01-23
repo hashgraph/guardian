@@ -22,16 +22,17 @@ import {
     SchemaLoader
 } from '../analytics/index.js';
 import {
-    DataBaseHelper,
     DatabaseServer,
     IAuthUser,
-    Logger,
     MessageError,
     MessageResponse,
     Policy,
     VpDocument as VpDocumentCollection,
     VcDocument as VcDocumentCollection,
     Workers,
+    PinoLogger,
+    VpDocument,
+    getVCField
 } from '@guardian/common';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { IOwner, MessageAPI, PolicyType, UserRole, WorkerTaskType } from '@guardian/interfaces';
@@ -55,6 +56,13 @@ interface ISearchResult {
     tokensCount: number,
     rate: number,
     tags: string[]
+}
+
+function getAmount(vp: VpDocument): number {
+    const vcs = vp.document.verifiableCredential || [];
+    const mintIndex = Math.max(1, vcs.length - 1);
+    const mint = vcs[mintIndex];
+    return Number(getVCField(mint, 'amount')) || 0;
 }
 
 async function localSearch(
@@ -83,7 +91,14 @@ async function localSearch(
         });
     } else {
         filter.$and.push({
-            owner: user.creator,
+            $or: [
+                {
+                    owner: user.creator,
+                },
+                {
+                    creator: user.creator,
+                },
+            ],
             hash: { $exists: true, $ne: null }
         });
     }
@@ -104,21 +119,24 @@ async function localSearch(
         });
     }
 
-    let policies: any[] = await new DataBaseHelper(Policy).find(filter);
+    const dataBaseServer = new DatabaseServer();
+
+    let policies: any[] = await dataBaseServer.find(Policy, filter);
     for (const policy of policies) {
-        policy.vcCount = await new DataBaseHelper(VcDocumentCollection).count({ policyId: policy.id });
+        policy.vcCount = await dataBaseServer.count(VcDocumentCollection, { policyId: policy.id });
     }
     if (options.minVcCount) {
         policies = policies.filter((policy) => policy.vcCount >= options.minVcCount);
     }
     for (const policy of policies) {
-        policy.vpCount = await new DataBaseHelper(VpDocumentCollection).count({ policyId: policy.id });
+        policy.vpCount = await dataBaseServer.count(VpDocumentCollection, { policyId: policy.id });
     }
     if (options.minVpCount) {
         policies = policies.filter((policy) => policy.vpCount >= options.minVpCount);
     }
     for (const policy of policies) {
-        policy.tokensCount = 0;
+        const vps = await dataBaseServer.find(VpDocumentCollection, { policyId: policy.id });
+        policy.tokensCount = vps.map((vp) => getAmount(vp)).reduce((sum, amount) => sum + amount, 0);
     }
     if (options.minTokensCount) {
         policies = policies.filter((policy) => policy.tokensCount >= options.minTokensCount);
@@ -210,7 +228,7 @@ export class AnalyticsController {
  * API analytics
  * @constructor
  */
-export async function analyticsAPI(): Promise<void> {
+export async function analyticsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse<any>(MessageAPI.COMPARE_POLICIES,
         async (msg: {
             user: IOwner,
@@ -246,7 +264,7 @@ export async function analyticsAPI(): Promise<void> {
                 const result = comparator.to(results, type);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -306,7 +324,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -359,7 +377,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageResponse(result);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -446,7 +464,7 @@ export async function analyticsAPI(): Promise<void> {
                 }
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -517,7 +535,7 @@ export async function analyticsAPI(): Promise<void> {
                     return new MessageError('Invalid size');
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -591,7 +609,7 @@ export async function analyticsAPI(): Promise<void> {
             return new MessageResponse(comparisonVpArray);
 
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -657,7 +675,7 @@ export async function analyticsAPI(): Promise<void> {
                 return new MessageError('Invalid size');
             }
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -683,7 +701,7 @@ export async function analyticsAPI(): Promise<void> {
                         const model = new PolicySearchModel(row);
                         policyModels.push(model);
                     } catch (error) {
-                        new Logger().error(error, ['GUARDIAN_SERVICE']);
+                        await logger.error(error, ['GUARDIAN_SERVICE']);
                     }
                 }
 
@@ -709,8 +727,22 @@ export async function analyticsAPI(): Promise<void> {
                 result.sort((a, b) => a.hash > b.hash ? -1 : 1);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_INDEXER_AVAILABILITY,
+        async () => {
+            try {
+                const result = await new Workers().addNonRetryableTask({
+                    type: WorkerTaskType.ANALYTICS_GET_INDEXER_AVAILABILITY,
+                    data: {}
+                }, 2);
+
+                return new MessageResponse(result);
+            } catch (error) {
+                return new MessageResponse(false);
             }
         });
 }

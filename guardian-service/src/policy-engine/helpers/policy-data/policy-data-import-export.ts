@@ -17,13 +17,13 @@ import {
     RetirePoolLoader
 } from './loaders/index.js';
 import { GuardiansService } from '../../../helpers/guardians.js';
-import { IOwner, PolicyEvents, PolicyType, TopicType } from '@guardian/interfaces';
+import { IOwner, PolicyEvents, PolicyHelper, TopicType } from '@guardian/interfaces';
 import {
     DatabaseServer,
     DidDocument,
     Policy,
     Users,
-    findAllEntities,
+    findAllEntities, DryRun,
 } from '@guardian/common';
 import { ObjectId } from 'bson';
 
@@ -76,7 +76,7 @@ export class PolicyDataImportExport {
     private readonly _loaderInstances = new Map<string, PolicyDataLoader>();
 
     constructor(private readonly _policy: Policy) {
-        this._isDryRun = _policy.status === PolicyType.DRY_RUN;
+        this._isDryRun = PolicyHelper.isDryRunMode(_policy);
         for (const [name, Loader] of PolicyDataImportExport._loaders) {
             if (
                 ![
@@ -244,7 +244,7 @@ export class PolicyDataImportExport {
         const zip = new JSZip();
         const virtualKeys = await new DatabaseServer(dryRunId).getVirtualKeys({
             did: { $ne: user.owner },
-        });
+        } as DryRun);
         zip.folder('virtualKeys');
         for (const virtualKey of virtualKeys) {
             zip.file(

@@ -1,7 +1,7 @@
 import { Notification } from '../entity/notification.entity.js';
 import { Progress } from '../entity/progress.entity.js';
 import {
-    DataBaseHelper,
+    DatabaseServer,
     MessageError,
     MessageResponse,
 } from '@guardian/common';
@@ -29,15 +29,12 @@ export class NotificationService {
         NotificationService.deleteNotificationsInterval = setInterval(
             async () => {
                 try {
-                    const dbHelperNotifications = new DataBaseHelper(
-                        Notification
-                    );
+                    const dataBaseServer = new DatabaseServer();
+
                     const now = new Date();
                     const updatedNotifications =
-                        await dbHelperNotifications.update(
-                            {
-                                old: true,
-                            },
+                        await dataBaseServer.update(
+                            Notification,
                             {
                                 updateDate: {
                                     $lt: new Date(
@@ -45,7 +42,10 @@ export class NotificationService {
                                     ),
                                 },
                                 read: true,
-                            }
+                            },
+                            {
+                                old: true,
+                            },
                         );
                     if (updatedNotifications) {
                         const notifications = Array.isArray(
@@ -58,13 +58,12 @@ export class NotificationService {
                         }
                     }
 
-                    const dbHelperProgresses = new DataBaseHelper(Progress);
-                    const progresses = await dbHelperProgresses.find({
+                    const progresses = await dataBaseServer.find(Progress, {
                         updateDate: {
                             $lt: new Date(now.getTime() - 60 * 60 * 1000),
                         },
                     });
-                    await dbHelperProgresses.remove(progresses);
+                    await dataBaseServer.remove(Progress, progresses);
                     if (progresses.length) {
                         for (const progress of progresses) {
                             await this.deleteProgressWS(progress);
@@ -181,9 +180,9 @@ export class NotificationService {
         userId: string
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
             return new MessageResponse(
-                await notificationRepo.find(
+                await new DatabaseServer().find(
+                    Notification,
                     {
                         userId,
                         old: false,
@@ -215,7 +214,6 @@ export class NotificationService {
         }
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
             const { userId, pageIndex, pageSize } = msg;
             const options =
                 typeof pageIndex === 'number' && typeof pageSize === 'number'
@@ -232,7 +230,8 @@ export class NotificationService {
                           },
                       };
             return new MessageResponse(
-                await notificationRepo.findAndCount(
+                await new DatabaseServer().findAndCount(
+                    Notification,
                     {
                         userId,
                     },
@@ -258,9 +257,10 @@ export class NotificationService {
         }
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
-            const notification = await notificationRepo.findOne(msg);
-            const notificationsToDelete = await notificationRepo.find({
+            const dataBaseServer = new DatabaseServer();
+
+            const notification = await dataBaseServer.findOne(Notification, msg);
+            const notificationsToDelete = await dataBaseServer.find(Notification, {
                 $or: [
                     {
                         createDate: { $lt: notification.createDate },
@@ -270,7 +270,7 @@ export class NotificationService {
                     },
                 ],
             });
-            await notificationRepo.remove(notificationsToDelete);
+            await dataBaseServer.remove(Notification, notificationsToDelete);
             for (const notificationToDelete of notificationsToDelete) {
                 await this.deleteNotificationWS(notificationToDelete);
             }
@@ -291,14 +291,14 @@ export class NotificationService {
         notificationId: string
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
-            const notification = await notificationRepo.update(
+            const notification = await new DatabaseServer().update(
+                Notification,
+                {
+                    id: notificationId,
+                },
                 {
                     read: true,
                 },
-                {
-                    id: notificationId,
-                }
             );
             if (notification) {
                 await this.updateNotificationWS(notification);
@@ -320,13 +320,13 @@ export class NotificationService {
         userId: string
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
-            await notificationRepo.update(
-                {
-                    read: true,
-                },
+            await new DatabaseServer().update(
+                Notification,
                 {
                     userId,
+                },
+                {
+                    read: true,
                 }
             );
             return await this.getNotifications(userId);
@@ -346,9 +346,9 @@ export class NotificationService {
         userId: string
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Progress);
             return new MessageResponse(
-                await notificationRepo.find(
+                await new DatabaseServer().find(
+                    Progress,
                     {
                         userId,
                     },
@@ -375,11 +375,10 @@ export class NotificationService {
         msg: Partial<Notification>
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
             if (!msg) {
                 throw new Error('Invalid notification create message');
             }
-            const notification = await notificationRepo.save(msg);
+            const notification = await new DatabaseServer().save(Notification, msg);
             await this.updateNotificationWS(notification);
             return new MessageResponse(notification);
         } catch (error) {
@@ -398,11 +397,10 @@ export class NotificationService {
         msg: Partial<Notification>
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Notification);
             if (!msg) {
                 throw new Error('Invalid notification update message');
             }
-            const notification = await notificationRepo.update(msg);
+            const notification = await new DatabaseServer().update(Notification, null, msg);
             await this.updateNotificationWS(notification);
             return new MessageResponse(notification);
         } catch (error) {
@@ -421,11 +419,10 @@ export class NotificationService {
         msg: Partial<Progress>
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Progress);
             if (!msg) {
                 throw new Error('Invalid progress create message');
             }
-            const notification = await notificationRepo.save(msg);
+            const notification = await new DatabaseServer().save(Progress, msg);
             await this.createProgressWS(notification);
             return new MessageResponse(notification);
         } catch (error) {
@@ -444,12 +441,11 @@ export class NotificationService {
         msg: Partial<Progress>
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Progress);
             if (!msg) {
                 throw new Error('Invalid progress update message');
             }
             const progress = Math.floor(msg.progress);
-            const notification = await notificationRepo.update(msg, {
+            const notification = await new DatabaseServer().update(Progress,{
                 $or: [
                     {
                         id: msg.id,
@@ -460,7 +456,8 @@ export class NotificationService {
                         progress,
                     },
                 ],
-            });
+            },
+                msg);
             if (notification) {
                 await this.updateProgressWS(notification);
             }
@@ -481,16 +478,17 @@ export class NotificationService {
         id: string
     ) {
         try {
-            const notificationRepo = new DataBaseHelper(Progress);
+            const dataBaseServer = new DatabaseServer();
+
             if (!id) {
                 throw new Error('Invalid notification id');
             }
-            const notification = await notificationRepo.findOne({
+            const notification = await dataBaseServer.findOne(Progress, {
                 id,
             });
 
             if (notification) {
-                await notificationRepo.remove(notification);
+                await dataBaseServer.remove(Progress, notification);
                 await this.deleteProgressWS(notification);
             }
 

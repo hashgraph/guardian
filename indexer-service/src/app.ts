@@ -1,44 +1,86 @@
 import * as process from 'process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import {
-    ClientsModule,
-    MicroserviceOptions,
-    Transport,
-} from '@nestjs/microservices';
-import {
-    COMMON_CONNECTION_CONFIG,
-    Migration,
-    Utils,
-    DataBaseHelper,
-    entities,
-} from '@indexer/common';
+import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';
+import { COMMON_CONNECTION_CONFIG, DataBaseHelper, entities, GenerateTLSOptionsNats, Migration, Utils } from '@indexer/common';
 import { ChannelService } from './api/channel.service.js';
 import { LogService } from './_dev/api/log.service.js';
-import { ElasticService } from './_dev/api/elastic.service.js';
 import { SearchService } from './api/search.service.js';
 import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
-import { SynchronizationTask } from './helpers/synchronization-task.js';
 import {
-    syncAnalytics,
-    sychronizeSchemas,
-    sychronizeVCs,
-    synchronizePolicies,
-    syncDidDocuments,
-    sychronizeVPs,
-    syncModules,
-    syncRegistries,
-    syncRoles,
-    syncTools,
-    syncTopics,
+    SynchronizationAnalytics,
+    SynchronizationContracts,
+    SynchronizationDid,
+    SynchronizationModules,
+    SynchronizationPolicy,
+    SynchronizationProjects,
+    SynchronizationRegistries,
+    SynchronizationRoles,
+    SynchronizationSchemas,
+    SynchronizationTools,
+    SynchronizationTopics,
+    SynchronizationVCs,
+    SynchronizationVPs,
+    SynchronizationLabels,
+    SynchronizationAll
 } from './helpers/synchronizers/index.js';
+import { fixtures } from './helpers/fixtures.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
 ).toUpperCase();
+
+async function updateIndexes() {
+    const em = DataBaseHelper.getEntityManager();
+    const collection = em.getCollection('message');
+    const textSearchIndex = await collection.indexExists('text_search');
+    if (!textSearchIndex) {
+        await collection.createIndex(
+            {
+                'analytics.textSearch': 'text',
+            },
+            {
+                name: 'text_search',
+                sparse: true,
+            }
+        );
+    }
+    const instanceTopicIdIndex = await collection.indexExists('instance_topic_id');
+    if (!instanceTopicIdIndex) {
+        await collection.createIndex(
+            {
+                'options.instanceTopicId': 1,
+            },
+            {
+                name: 'instance_topic_id',
+                sparse: true,
+            }
+        );
+    }
+    const childIdIndex = await collection.indexExists('child_id');
+    if (!childIdIndex) {
+        await collection.createIndex(
+            {
+                'options.childId': 1,
+            },
+            {
+                name: 'child_id',
+                sparse: true,
+            }
+        );
+    }
+}
+
+function getMask(mask: string | undefined): string {
+    return (mask || '0 * * * *');
+}
+
+function getBoolean(flag: string | undefined): boolean {
+    return (flag?.toLowerCase() === 'true');
+}
 
 @Module({
     imports: [
@@ -56,7 +98,6 @@ const channelName = (
     controllers: [
         ChannelService,
         LogService,
-        ElasticService,
         SearchService,
         EntityService,
         FiltersService,
@@ -76,9 +117,6 @@ Promise.all([
                 path: 'dist/migrations',
                 transactional: false,
             },
-            driverOptions: {
-                useUnifiedTopology: true,
-            },
             ensureIndexes: true,
             entities,
         },
@@ -90,6 +128,7 @@ Promise.all([
             name: channelName,
             queue: 'INDEXER_SERVICES',
             servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
+            tls: GenerateTLSOptionsNats()
         },
     }),
 ]).then(
@@ -103,46 +142,11 @@ Promise.all([
         /**
          * Indexes
          */
-        const em = await DataBaseHelper.getEntityManager();
-        const collection = await em.getCollection('message');
-        const textSearchIndex = await collection.indexExists('text_search');
-        if (!textSearchIndex) {
-            await collection.createIndex(
-                {
-                    'analytics.textSearch': 'text',
-                },
-                {
-                    name: 'text_search',
-                    sparse: true,
-                }
-            );
-        }
-        const instanceTopicIdIndex = await collection.indexExists(
-            'instance_topic_id'
-        );
-        if (!instanceTopicIdIndex) {
-            await collection.createIndex(
-                {
-                    'options.instanceTopicId': 1,
-                },
-                {
-                    name: 'instance_topic_id',
-                    sparse: true,
-                }
-            );
-        }
-        const childIdIndex = await collection.indexExists('child_id');
-        if (!childIdIndex) {
-            await collection.createIndex(
-                {
-                    'options.childId': 1,
-                },
-                {
-                    name: 'child_id',
-                    sparse: true,
-                }
-            );
-        }
+        await updateIndexes();
+        /**
+         * Fixtures
+         */
+        fixtures();
         /**
          * Listen
          */
@@ -150,90 +154,52 @@ Promise.all([
         /**
          * Sync tasks
          */
-        const analytics = new SynchronizationTask(
-            'analytics',
-            syncAnalytics,
-            process.env.SYNC_ANALYTICS_MASK || '0 * * * *'
-        );
-        analytics.start(
-            process.env.START_SYNC_ANALYTICS?.toLowerCase() === 'true'
-        );
-        const modulesSync = new SynchronizationTask(
-            'modules',
-            syncModules,
-            process.env.SYNC_MODULES_MASK || '0 * * * *'
-        );
-        modulesSync.start(
-            process.env.START_SYNC_MODULES?.toLowerCase() === 'true'
-        );
-        const registriesSync = new SynchronizationTask(
-            'registries',
-            syncRegistries,
-            process.env.SYNC_REGISTRIES_MASK || '0 * * * *'
-        );
-        registriesSync.start(
-            process.env.START_SYNC_REGISTRIES?.toLowerCase() === 'true'
-        );
-        const rolesSync = new SynchronizationTask(
-            'roles',
-            syncRoles,
-            process.env.SYNC_ROLES_MASK || '0 * * * *'
-        );
-        rolesSync.start(process.env.START_SYNC_ROLES?.toLowerCase() === 'true');
-        const toolsSync = new SynchronizationTask(
-            'tools',
-            syncTools,
-            process.env.SYNC_TOOLS_MASK || '0 * * * *'
-        );
-        toolsSync.start(process.env.START_SYNC_TOOLS?.toLowerCase() === 'true');
-        const topicsSync = new SynchronizationTask(
-            'topics',
-            syncTopics,
-            process.env.SYNC_TOPICS_MASK || '0 * * * *'
-        );
-        topicsSync.start(
-            process.env.START_SYNC_TOPICS?.toLowerCase() === 'true'
-        );
-        const schemasSync = new SynchronizationTask(
-            'schemas',
-            sychronizeSchemas,
-            process.env.SYNC_SCHEMAS_MASK || '0 * * * *'
-        );
-        schemasSync.start(
-            process.env.START_SYNC_SCHEMAS?.toLowerCase() === 'true'
-        );
-        const didDocumentsSync = new SynchronizationTask(
-            'dids',
-            syncDidDocuments,
-            process.env.SYNC_DID_DOCUMENTS_MASK || '0 * * * *'
-        );
-        didDocumentsSync.start(
-            process.env.START_SYNC_DID_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const vcDocumentsSync = new SynchronizationTask(
-            'vcs',
-            sychronizeVCs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
-        );
-        vcDocumentsSync.start(
-            process.env.START_SYNC_VC_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const vpDocumentsSync = new SynchronizationTask(
-            'vps',
-            sychronizeVPs,
-            process.env.SYNC_VC_DOCUMENTS_MASK || '0 * * * *'
-        );
-        vpDocumentsSync.start(
-            process.env.START_SYNC_VP_DOCUMENTS?.toLowerCase() === 'true'
-        );
-        const policy = new SynchronizationTask(
-            'policy',
-            synchronizePolicies,
-            process.env.SYNC_POLICIES_MASK || '0 * * * *'
-        );
-        policy.start(process.env.START_SYNC_POLICIES?.toLowerCase() === 'true');
+        if (process.env.SYNC_ALL_MASK) {
+            (new SynchronizationAll(getMask(process.env.SYNC_ALL_MASK)))
+                .start(getBoolean(process.env.START_SYNC_ALL));
+        } else {
+            (new SynchronizationAnalytics(getMask(process.env.SYNC_ANALYTICS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_ANALYTICS));
 
-        // synchronizePolicies()
+            (new SynchronizationProjects(getMask(process.env.SYNC_ANALYTICS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_ANALYTICS));
+
+            (new SynchronizationModules(getMask(process.env.SYNC_MODULES_MASK)))
+                .start(getBoolean(process.env.START_SYNC_MODULES));
+
+            (new SynchronizationRegistries(getMask(process.env.SYNC_REGISTRIES_MASK)))
+                .start(getBoolean(process.env.START_SYNC_REGISTRIES));
+
+            (new SynchronizationRoles(getMask(process.env.SYNC_ROLES_MASK)))
+                .start(getBoolean(process.env.START_SYNC_ROLES));
+
+            (new SynchronizationTools(getMask(process.env.SYNC_TOOLS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_TOOLS));
+
+            (new SynchronizationTopics(getMask(process.env.SYNC_TOPICS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_TOPICS));
+
+            (new SynchronizationSchemas(getMask(process.env.SYNC_SCHEMAS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_SCHEMAS));
+
+            (new SynchronizationDid(getMask(process.env.SYNC_DID_DOCUMENTS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_DID_DOCUMENTS));
+
+            (new SynchronizationVCs(getMask(process.env.SYNC_VC_DOCUMENTS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_VC_DOCUMENTS));
+
+            (new SynchronizationVPs(getMask(process.env.SYNC_VP_DOCUMENTS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_VP_DOCUMENTS));
+
+            (new SynchronizationPolicy(getMask(process.env.SYNC_POLICIES_MASK)))
+                .start(getBoolean(process.env.START_SYNC_POLICIES));
+
+            (new SynchronizationContracts(getMask(process.env.SYNC_CONTRACTS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_CONTRACTS));
+
+            (new SynchronizationLabels(getMask(process.env.SYNC_LABELS_MASK)))
+                .start(getBoolean(process.env.START_SYNC_LABELS));
+        }
     },
     (reason) => {
         console.log(reason);

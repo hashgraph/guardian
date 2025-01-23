@@ -1,49 +1,64 @@
-FROM node:20 AS interfacesModuleBuilder
-WORKDIR /usr/local/indexer-interfaces
-COPY ./indexer-interfaces/package.json ./
-COPY ./indexer-interfaces/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
-ADD ./indexer-interfaces/src ./src/.
-RUN yarn install
+# syntax=docker/dockerfile:1
+# Stage 0: Use node image for base image for all stages
+ARG NODE_VERSION=20.18-alpine
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
+WORKDIR /usr/local/app
+# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
+ARG YARN_CACHE_FOLDER=/root/.yarn
+
+# Stage 1: Build interfaces module
+FROM base AS interfaces
+COPY --link indexer-interfaces/package.json indexer-interfaces/tsconfig*.json yarn.lock ./
+# Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install --immutable
+COPY --link indexer-interfaces/src src/
 RUN yarn pack
 
-FROM node:20 AS commonModuleBuilder
-WORKDIR /usr/local/indexer-common
-COPY --from=interfacesModuleBuilder /usr/local/indexer-interfaces/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
-COPY ./indexer-common/package.json ./
-COPY ./indexer-common/tsconfig*.json ./
-COPY ./yarn.lock ./
-COPY ./package-lock.json ./
+# Stage 2: Build common module
+FROM base AS common
+COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
+COPY --link indexer-common/package.json indexer-common/tsconfig*.json yarn.lock ./
 RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN yarn install
-ADD ./indexer-common/src ./src/.
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install
+COPY --link indexer-common/src src/
 RUN yarn pack
 
-FROM node:20 AS serviceBuilder
-WORKDIR /usr/local/indexer-service
-COPY --from=interfacesModuleBuilder /usr/local/indexer-interfaces/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
-COPY --from=commonModuleBuilder /usr/local/indexer-common/indexer-common-*.tgz /tmp/indexer-common.tgz
-COPY ./indexer-service/package.json ./
-COPY ./indexer-service/tsconfig*.json ./
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/common']='file:/tmp/indexer-common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN yarn install
-ADD ./indexer-service/src ./src/.
+# Stage 3: Installing production dependecies
+FROM base AS deps
+COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
+COPY --link --from=common /usr/local/app/indexer-common-*.tgz /tmp/indexer-common.tgz
+COPY --link indexer-service/package.json indexer-service/tsconfig*.json yarn.lock ./
+RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; input.dependencies['@indexer/common']='file:/tmp/indexer-common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
+    yarn install --prod
+
+# Stage 4: Build service
+FROM base AS build
+COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
+COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
+COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
+RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+    yarn install --immutable
+COPY --link indexer-service/src src/
 RUN yarn run build:prod
 
-FROM node:20
-ENV PLATFORM="docker"
-ENV NODE_ENV="production"
-WORKDIR /usr/local/indexer-service
-COPY --from=interfacesModuleBuilder /usr/local/indexer-interfaces/indexer-interfaces-*.tgz /tmp/indexer-interfaces.tgz
-COPY --from=commonModuleBuilder /usr/local/indexer-common/indexer-common-*.tgz /tmp/indexer-common.tgz
-COPY --from=serviceBuilder  /usr/local/indexer-service/yarn.lock ./
-COPY ./indexer-service/package.json ./
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:/tmp/indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/common']='file:/tmp/indexer-common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN yarn install
-COPY --from=serviceBuilder /usr/local/indexer-service/dist ./dist
-RUN rm /tmp/indexer-interfaces.tgz /tmp/indexer-common.tgz
+# Stage 5: Create the final image
+FROM node:${NODE_VERSION} AS image
+WORKDIR /usr/local/app
+ENV NODE_ENV=production
 
-CMD yarn start
+# Copy the production dependencies from the deps stage and the built application from the build stage into the image
+COPY --link --from=deps /usr/local/app/node_modules node_modules/
+COPY --link --from=deps /usr/local/app/package.json ./
+COPY --link --from=build /usr/local/app/dist dist/
+
+# Create necessary directories and set permissions
+RUN mkdir -p /usr/local/app/dist/migrations && \
+    chown -R node:node /usr/local/app
+
+# Change the user to node
+USER node
+
+CMD [ "node", "dist/index.js" ]

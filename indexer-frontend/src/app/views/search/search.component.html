@@ -40,8 +40,15 @@
         </div>
     </div>
     <div class="result">
-        <app-table (onPage)="onPage($event)" [total]="total" [data]="results" [columns]="columns"
-            [pageSizeOptions]="[10]" [pageIndex]="pageIndex" [pageSize]="10" [loading]="loading"></app-table>
+        <app-table 
+            (onPage)="onPage($event)" 
+            [total]="total" 
+            [data]="results" 
+            [columns]="columns"
+            [pageSizeOptions]="pageSizeOptions" 
+            [pageIndex]="pageIndex" 
+            [pageSize]="pageSize" 
+            [loading]="loading"></app-table>
     </div>
     <div class="overview">
 

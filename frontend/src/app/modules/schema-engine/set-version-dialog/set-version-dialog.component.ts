@@ -1,6 +1,6 @@
-import { Component, Inject } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {Component, Inject} from '@angular/core';
+import {UntypedFormControl, Validators} from '@angular/forms';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog allowing you to select a file and load schemas.
@@ -11,14 +11,14 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./set-version-dialog.component.scss'],
 })
 export class SetVersionDialog {
-    versionControl: FormControl = new FormControl('', [
+    versionControl: UntypedFormControl = new UntypedFormControl('', [
         Validators.required,
         Validators.pattern(/^[\d]+([\\.][\d]+){0,2}$/),
     ]);
 
     constructor(
-        public dialogRef: MatDialogRef<SetVersionDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
         console.log(3);
     }

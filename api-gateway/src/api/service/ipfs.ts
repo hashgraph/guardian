@@ -1,13 +1,18 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, StreamableFile } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Req, StreamableFile } from '@nestjs/common';
 import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { Permissions } from '@guardian/interfaces';
 import { Auth } from '#auth';
 import { Examples, InternalServerErrorDTO } from '#middlewares';
-import { Guardians, InternalException } from '#helpers';
+import { CacheService, getCacheKey, Guardians, InternalException, UseCache } from '#helpers';
+import { PinoLogger } from '@guardian/common';
+import { CACHE, PREFIXES } from '#constants';
 
 @Controller('ipfs')
 @ApiTags('ipfs')
 export class IpfsApi {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
+    }
+
     /**
      * Add file from ipfs
      */
@@ -37,7 +42,8 @@ export class IpfsApi {
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async postFile(
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<string> {
         try {
             if (!Object.values(body).length) {
@@ -50,9 +56,15 @@ export class IpfsApi {
                 throw new HttpException('File is not uploaded', HttpStatus.BAD_REQUEST);
             }
 
+            const invalidedCacheTags = [
+                `${PREFIXES.IPFS}file/${cid}`,
+                `${PREFIXES.IPFS}file/${cid}/dry-run`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -93,7 +105,8 @@ export class IpfsApi {
     @HttpCode(HttpStatus.CREATED)
     async postFileDryRun(
         @Param('policyId') policyId: string,
-        @Body() body: any
+        @Body() body: any,
+        @Req() req
     ): Promise<string> {
         try {
             if (!Object.values(body).length) {
@@ -103,9 +116,15 @@ export class IpfsApi {
             const guardians = new Guardians();
             const { cid } = await guardians.addFileToDryRunStorage(body, policyId);
 
+            const invalidedCacheTags = [
+                `${PREFIXES.IPFS}file/${cid}`,
+                `${PREFIXES.IPFS}file/${cid}/dry-run`,
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return JSON.stringify(cid);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -141,7 +160,7 @@ export class IpfsApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    // @UseCache({ ttl: CACHE.LONG_TTL })
+    @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFile(
         @Param('cid') cid: string
@@ -154,7 +173,7 @@ export class IpfsApi {
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -190,7 +209,7 @@ export class IpfsApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(InternalServerErrorDTO)
-    // @UseCache({ ttl: CACHE.LONG_TTL })
+    @UseCache({ ttl: CACHE.LONG_TTL })
     @HttpCode(HttpStatus.OK)
     async getFileDryRun(
         @Param('cid') cid: string
@@ -203,7 +222,7 @@ export class IpfsApi {
             }
             return new StreamableFile(Buffer.from(result));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

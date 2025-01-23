@@ -15,6 +15,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ColumnType, TableComponent } from '@components/table/table.component';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
     selector: 'vp-document-details',
@@ -35,10 +36,13 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         TabViewModule,
         TableComponent,
         ProgressSpinnerModule,
-        InputTextareaModule
+        InputTextareaModule,
+        ButtonModule
     ]
 })
 export class VpDocumentDetailsComponent extends BaseDetailsComponent {
+    public labels: any[] = [];
+
     public chartOption: EChartsOption = createChart();
 
     overviewFields: OverviewFormField[] = [{
@@ -48,24 +52,31 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
     }, {
         label: 'details.hedera.consensus_timestamp',
         path: 'consensusTimestamp'
-    },{
+    }, {
         label: 'details.hedera.uuid',
         path: 'uuid'
-    },{
+    }, {
         label: 'details.hedera.type',
         path: 'type'
-    },{
+    }, {
         label: 'details.hedera.action',
         path: 'action'
-    },{
+    }, {
         label: 'details.hedera.status',
         path: 'status'
-    },{
+    }, {
         label: 'details.hedera.status_reason',
         path: 'statusReason'
     }, {
         label: 'details.hedera.issuer',
         path: 'options.issuer'
+    }, {
+        label: 'details.hedera.token_id',
+        path: 'analytics.tokenId',
+        link: '/tokens'
+    }, {
+        label: 'details.hedera.token_amount',
+        path: 'analytics.tokenAmount',
     }]
 
     historyColumns: any[] = [
@@ -101,12 +112,43 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
         }
     ]
 
+    labelColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+            link: {
+                field: 'consensusTimestamp',
+                url: '/label-documents',
+            },
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.name',
+            field: 'analytics.labelName',
+            type: ColumnType.TEXT,
+            width: '200px'
+        },
+        {
+            title: 'details.hedera.issuer',
+            field: 'analytics.issuer',
+            type: ColumnType.TEXT,
+            width: '300px'
+        }
+    ]
+
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -126,6 +168,15 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
             });
         } else {
             this.setResult();
+        }
+    }
+
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result) {
+            this.labels = result.labels || [];
+        } else {
+            this.labels = [];
         }
     }
 
@@ -155,7 +206,8 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
                 case 'documents': return 1;
                 case 'history': return 2;
                 case 'relationships': return 3;
-                case 'raw': return 4;
+                case 'labels': return 4;
+                case 'raw': return 5;
                 default: return 0;
             }
         } else {
@@ -170,7 +222,8 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
                 case 1: return 'documents';
                 case 2: return 'history';
                 case 3: return 'relationships';
-                case 4: return 'raw';
+                case 4: return 'labels';
+                case 5: return 'raw';
                 default: return 'raw';
             }
         } else {
@@ -194,9 +247,5 @@ export class VpDocumentDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 }

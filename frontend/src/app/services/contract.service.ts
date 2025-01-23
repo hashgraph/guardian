@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import {
     ContractType,
+    IRetirementMessage,
     RetireTokenPool,
     RetireTokenRequest,
 } from '@guardian/interfaces';
@@ -15,7 +16,7 @@ import {
 export class ContractService {
     private readonly url: string = `${API_BASE_URL}/contracts`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     //#region Common contract endpoints
     public getContracts(params: {
@@ -112,8 +113,8 @@ export class ContractService {
         );
     }
 
-    public clearWipeRequests(contractId: string) {
-        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests`);
+    public clearWipeRequests(contractId: string, accountId?: string) {
+        return this.http.delete<any>(`${this.url}/wipe/${contractId}/requests/${accountId}`);
     }
 
     public wipeAddAdmin(hederaId: string, contractId: string): Observable<any> {
@@ -151,29 +152,32 @@ export class ContractService {
         );
     }
 
-    public wipeAddWiper(hederaId: string, contractId: string): Observable<any> {
+    public wipeAddWiper(hederaId: string, contractId: string, tokenId?: string): Observable<any> {
         return this.http.post<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`,
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`,
             null
         );
     }
 
     public wipeRemoveWiper(
         hederaId: string,
-        contractId: string
+        contractId: string,
+        tokenId?: string
     ): Observable<any> {
         return this.http.delete<any>(
-            `${this.url}/wipe/${contractId}/wiper/${hederaId}`
+            `${this.url}/wipe/${contractId}/wiper/${hederaId}/${tokenId}`
         );
     }
 
     //#endregion
     //#region Retire contract endpoints
 
-    public retireSyncPools(contractId: string) {
-        return this.http.post<any>(
+    public retireSyncPools(contractId: string): Observable<string> {
+        return this.http.post(
             `${this.url}/retire/${contractId}/pools/sync`,
-            null
+            null, {
+                responseType: 'text'
+            }
         );
     }
 
@@ -310,6 +314,15 @@ export class ContractService {
         if (pageIndex && pageSize) {
             url += `?pageIndex=${pageIndex}&pageSize=${pageSize}`
         }
+        return this.http.get<any>(url, {
+            observe: 'response',
+        });
+    }
+
+    public getRetireVCsFromIndexer(
+        contractTopicId: string
+    ): Observable<HttpResponse<IRetirementMessage[]>> {
+        let url = `${this.url}/retireIndexer?contractTopicId=${contractTopicId}`;
         return this.http.get<any>(url, {
             observe: 'response',
         });

@@ -1,4 +1,4 @@
-import { findOptions, getVCIssuer } from '@guardian/common';
+import { findOptions, getVCIssuer, VcDocument } from '@guardian/common';
 import { ReportItem } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyReportItemBlock } from '../policy-engine.interface.js';
@@ -124,8 +124,8 @@ export class ReportItemBlock {
         }
         resultFields.push(item);
 
-        const _documents: any[] = multiple
-            ? await ref.databaseServer.getVcDocuments(filtersToVc)
+        const _documents = multiple
+            ? await ref.databaseServer.getVcDocuments(filtersToVc) as VcDocument[]
             : [await ref.databaseServer.getVcDocument(filtersToVc)];
 
         const vcDocuments: any[] = _documents.filter((vc) => vc);

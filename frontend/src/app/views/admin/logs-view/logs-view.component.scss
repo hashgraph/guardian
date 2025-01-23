@@ -65,8 +65,16 @@
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    align-items: start;
+    align-items: flex-start;
     row-gap: 10px;
+}
+
+:host ::ng-deep .message-type-container div span span.ng-star-inserted {
+    display: none;
+}
+
+:host ::ng-deep .message-type-container .selected-type-value {
+    padding-top: 2px;
 }
 
 :host ::ng-deep .p-dropdown {
@@ -77,12 +85,13 @@
 }
 
 .grey-6 {
-    color: var(--color-grey-6, #848FA9);
+    color: var(--color-grey-6, #6c757d);
     font-family: Inter, sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     font-style: normal;
     font-weight: 400;
     line-height: 16px;
+    padding-top: 2px;
     /* 114.286% */
 }
 
@@ -422,3 +431,4 @@ button[disabled] {
 .color-search {
     fill: #B0B5BA;
 }
+

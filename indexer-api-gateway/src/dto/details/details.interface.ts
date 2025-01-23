@@ -20,10 +20,6 @@ export class DetailsDTO<
         example: '1706823227.586179534',
     })
     id: string;
-    @ApiProperty({
-        description: 'UUID',
-        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
-    })
     uuid?: string;
     item?: T;
     row?: RT;

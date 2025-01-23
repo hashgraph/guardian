@@ -1,15 +1,25 @@
-import { DataBaseHelper, Token } from '@guardian/common';
+import { DatabaseServer, Token } from '@guardian/common';
 import { GenerateUUIDv4, IOwner } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
 /**
+ * Import token mapping
+ */
+export interface ImportTokenMap {
+    oldID: string;
+    oldTokenID: string;
+    newID: string;
+    newTokenID: string;
+}
+
+/**
  * Import Result
  */
-interface ImportResult {
+export interface ImportTokenResult {
     /**
      * New token uuid
      */
-    tokenMap: any[];
+    tokenMap: ImportTokenMap[];
     /**
      * Errors
      */
@@ -26,14 +36,17 @@ export async function importTokensByFiles(
     user: IOwner,
     tokens: any[] = [],
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportTokenResult> {
     const errors: any[] = [];
-    const tokenMap: any[] = [];
+    const tokenMap: ImportTokenMap[] = [];
     notifier.start('Import tokens');
 
-    const tokenRepository = new DataBaseHelper(Token);
+    const dataBaseServer = new DatabaseServer();
+
+    const tokensObject = []
+
     for (const token of tokens) {
-        const tokenObject = tokenRepository.create({
+        const tokenObject = dataBaseServer.create(Token, {
             tokenId: GenerateUUIDv4(),
             tokenName: token.tokenName,
             tokenSymbol: token.tokenSymbol,
@@ -51,7 +64,8 @@ export async function importTokensByFiles(
             policyId: null,
             draftToken: true
         });
-        await tokenRepository.save(tokenObject);
+
+        tokensObject.push(tokenObject);
 
         tokenMap.push({
             oldID: token.id,
@@ -60,6 +74,8 @@ export async function importTokensByFiles(
             newTokenID: tokenObject.tokenId,
         })
     }
+
+    await dataBaseServer.saveMany(Token, tokensObject);
 
     notifier.completed();
     return { tokenMap, errors };

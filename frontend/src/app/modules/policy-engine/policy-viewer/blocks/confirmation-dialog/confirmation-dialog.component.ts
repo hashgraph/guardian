@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
+import { UntypedFormControl, Validators } from '@angular/forms';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 /**
@@ -11,7 +11,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     styleUrls: ['./confirmation-dialog.component.scss'],
 })
 export class ConfirmationDialog {
-    value: FormControl = new FormControl('', Validators.required);
+    value: UntypedFormControl = new UntypedFormControl('', Validators.required);
     title: string = '';
     description?: string;
     descriptions?: string[];

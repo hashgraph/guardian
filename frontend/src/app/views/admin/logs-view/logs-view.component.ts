@@ -1,16 +1,17 @@
-import { Component, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
-import { MatAutocompleteSelectedEvent, MatAutocompleteTrigger } from '@angular/material/autocomplete';
-import { MatChipInputEvent } from '@angular/material/chips';
+import { Component, ElementRef, EventEmitter, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormBuilder, UntypedFormControl } from '@angular/forms';
+// import { MatLegacyAutocompleteSelectedEvent as MatAutocompleteSelectedEvent, MatLegacyAutocompleteTrigger as MatAutocompleteTrigger } from '@angular/material/legacy-autocomplete';
+// import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
 import { saveAs } from 'file-saver';
 import { ILog } from '@guardian/interfaces';
-import * as moment from 'moment';
+import moment from 'moment';
 import { merge, of, Subscription } from 'rxjs';
 import { catchError, debounceTime, map, startWith, switchMap } from 'rxjs/operators';
 import { LoggerService } from 'src/app/services/logger.service';
 import { DetailsLogDialog } from '../details-log-dialog/details-log-dialog.component';
 import { ActivatedRoute } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
+import { WebSocketService } from '../../../services/web-socket.service';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -22,6 +23,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 })
 export class LogsViewComponent implements OnInit, OnDestroy {
     @ViewChild('searchInput') searchInput: any;
+    @ViewChild('seqButton', { static: false }) seqButton: ElementRef;
 
     loading: boolean = true;
     logs: ILog[] = [];
@@ -45,7 +47,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     filters: any = {};
     attributes?: any;
 
-    dateRangeForm: FormControl = new FormControl('');
+    dateRangeForm: UntypedFormControl = new UntypedFormControl('');
 
     types: any = [
         { id: '', label: 'All' },
@@ -54,7 +56,7 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         { id: 'INFO', label: 'Info' },
     ];
 
-    @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
+    // @ViewChild(MatAutocompleteTrigger) autocomplete: MatAutocompleteTrigger;
     onSearch: EventEmitter<any> = new EventEmitter();
     pageSize: number = 10;
     pageIndex: number = 0;
@@ -62,16 +64,18 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     dateRange: any;
 
     private subscriptions = new Subscription();
+    public seqUrl: string | null
 
     get currentDate() {
         return new Date();
     };
 
     constructor(
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private logService: LoggerService,
         public dialog: DialogService,
         private route: ActivatedRoute,
+        private wsService: WebSocketService
     ) {
     }
 
@@ -132,6 +136,20 @@ export class LogsViewComponent implements OnInit, OnDestroy {
     }
 
     ngAfterViewInit() {
+        this.subscriptions.add(
+            this.wsService.getServiceStateObservable('LOGGER_SERVICE').subscribe((isReady) => {
+                if (isReady) {
+                    this.initializeLogs();
+                }
+            })
+        );
+
+        this.logService.getUrlSeq().subscribe((data: { seq_url: string | null }) => {
+            this.seqUrl = data.seq_url;
+        });
+    }
+
+    initializeLogs() {
         this.subscriptions.add(merge(this.onSearch)
             .pipe(
                 startWith({}),
@@ -174,27 +192,27 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         this.onApply();
     }
 
-    add(event: MatChipInputEvent, auto: any): void {
-        const value = (event.value || '').trim();
-        const attributes = this.searchForm.get('attributes')!.value;
-
-        if (value) {
-            const attrList = this.logService.getAttributes(value, this.searchForm?.get('attributes')?.value).subscribe(attrs => {
-                const firstAttr = attrs[0];
-                if (firstAttr) {
-                    attributes.push(firstAttr);
-                }
-                event.chipInput!.clear();
-                this.autocomplete.closePanel();
-                this.autoCompleteControl.patchValue('');
-                this.onApply();
-                attrList.unsubscribe();
-            })
-        } else {
-            event.chipInput!.clear();
-            this.onApply();
-        }
-    }
+    // add(event: MatChipInputEvent, auto: any): void {
+    //     const value = (event.value || '').trim();
+    //     const attributes = this.searchForm.get('attributes')!.value;
+    //
+    //     if (value) {
+    //         const attrList = this.logService.getAttributes(value, this.searchForm?.get('attributes')?.value).subscribe(attrs => {
+    //             const firstAttr = attrs[0];
+    //             if (firstAttr) {
+    //                 attributes.push(firstAttr);
+    //             }
+    //             event.chipInput!.clear();
+    //             this.autocomplete.closePanel();
+    //             this.autoCompleteControl.patchValue('');
+    //             this.onApply();
+    //             attrList.unsubscribe();
+    //         })
+    //     } else {
+    //         event.chipInput!.clear();
+    //         this.onApply();
+    //     }
+    // }
 
     onApply() {
         const value = this.searchForm.value;
@@ -245,7 +263,8 @@ export class LogsViewComponent implements OnInit, OnDestroy {
         );
     }
 
-    selected(event: MatAutocompleteSelectedEvent): void {
+    selected(event: any): void {
+        // MatAutocompleteSelectedEvent
         const value = (event.option.viewValue || '').trim();
         const attributes = this.searchForm.get('attributes')!.value;
 
@@ -292,5 +311,12 @@ export class LogsViewComponent implements OnInit, OnDestroy {
             this.pageSize = event.pageSize;
         }
         this.onApply();
+    }
+
+    onSeq(): void {
+        if (this.seqUrl) {
+            window.open(this.seqUrl, '_blank');
+        }
+        this.seqButton.nativeElement.blur()
     }
 }

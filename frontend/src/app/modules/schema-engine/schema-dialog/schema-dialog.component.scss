@@ -39,7 +39,8 @@ textarea {
     background-color: unset;
 }
 
-:host .restore-data button mat-icon {
+:host .restore-data button i,
+:host .restore-data button svg {
     margin-left: 5px;
 }
 
@@ -77,13 +78,7 @@ textarea {
 }
 
 .tabview-label {
-    padding: 10px 25px 10px 25px;
-    color: var(--color-primary);
-    text-align: center;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 600;
+    padding: 1rem;
 }
 
 :host ::ng-deep {

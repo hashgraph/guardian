@@ -70,11 +70,11 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
     ];
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -125,10 +125,6 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 
     public override onOpenUsers() {
@@ -199,6 +195,14 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
         this.router.navigate(['/roles'], {
             queryParams: {
                 'options.issuer': this.target.options.did,
+            },
+        });
+    }
+
+    public override onOpenContracts(): void {
+        this.router.navigate(['/contracts'], {
+            queryParams: {
+                owner: this.target.owner,
             },
         });
     }

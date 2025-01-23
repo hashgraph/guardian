@@ -15,45 +15,45 @@
             <div class="tag-container">
                 <div (click)="onSelect(item)"
                      *ngFor="let item of selectedTags"
-                    [class.selected]="item === select"
-                    class="item"
+                     [class.selected]="item === select"
+                     class="item"
                 >
-                    <svg-icon 
+                    <svg-icon
                         class="svg-icon-16"
                         src="/assets/images/icons/16/label.svg"
                         [svgClass]="item === select ? 'white-color' : 'primary-color'"></svg-icon>
                     <div class="name">
-                        {{item.name}}
+                        {{ item.name }}
                     </div>
                     <div *ngIf="item.count > 1" class="count">
-                        {{item.count}}
+                        {{ item.count }}
                     </div>
                 </div>
             </div>
 
             <button (click)="onAdd()"
-                *ngIf="this.tab === 1 && canCreate"
-                [label]="'Create a Tag'"
-                class="button secondary"
-                icon="pi pi-plus"
-                pButton>
+                    *ngIf="this.tab === 1 && canCreate"
+                    [label]="'Create a Tag'"
+                    class="button secondary"
+                    icon="pi pi-plus"
+                    pButton>
             </button>
 
             <div *ngIf="select" class="details-container">
                 <div *ngFor="let item of select.items"
-                    [attr.open]="item.open"
-                    [attr.owner]="item.owner === owner"
-                    [attr.status]="item.status"
-                    class="item"
+                     [attr.open]="item.open"
+                     [attr.owner]="item.owner === owner"
+                     [attr.status]="item.status"
+                     class="item"
                 >
                     <div (click)="onOpen(item)" [class.collapsed]="!item.open" class="header">
-                        <svg-icon 
+                        <svg-icon
                             class="svg-icon-16"
                             [class.rotate-180]="!item.open"
                             src="/assets/images/icons/16/top-arrow.svg"
                             svgClass="collapse-color"></svg-icon>
-                        <span>{{item.owner}}</span>
-                        <svg-icon 
+                        <span>{{ item.owner }}</span>
+                        <svg-icon
                             (click)="onDelete($event, item)"
                             class="svg-icon-16"
                             *ngIf="item.owner === owner"
@@ -71,7 +71,8 @@
                                  [class.p-tag-grey]="item.status === 'Draft'"
                                  [class.p-tag-success]="item.status === 'Published'"
                                  class="p-tag"
-                            >{{ item.status }}</div>
+                            >{{ item.status }}
+                            </div>
                         </div>
                         <div *ngIf="item.description" class="item">
                             <h6>Description</h6>
@@ -107,7 +108,7 @@
                         never
                     </div>
                     <div (click)="onUpdate()" class="synchronization-time-update">
-                        <mat-icon>sync</mat-icon>
+                        <i class="pi pi-sync"></i>
                     </div>
                 </div>
             </div>
@@ -121,9 +122,9 @@
     <div *ngIf="canCreate" class="empty-container">
         <svg-icon class="svg-icon-32"
                   src="/assets/images/icons/32/list.svg"
-            svgClass="grey-color">
+                  svgClass="grey-color">
         </svg-icon>
-        <span>There were no Tags created yet</span>
+        <span>There are no tags created yet</span>
         <button (click)="onAdd()" [label]="'Create a Tag'" class="button secondary" icon="pi pi-plus" pButton></button>
     </div>
 </ng-template>

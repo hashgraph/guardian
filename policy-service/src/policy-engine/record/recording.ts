@@ -1,4 +1,4 @@
-import { DatabaseServer, HederaDidDocument } from '@guardian/common';
+import { DatabaseServer, HederaDidDocument, Record } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
 import { BlockTreeGenerator } from '../block-tree-generator.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -7,6 +7,8 @@ import { RecordingStatus } from './status.type.js';
 import { RecordAction } from './action.type.js';
 import { RecordMethod } from './method.type.js';
 import { RecordItem } from './record-item.js';
+import { FilterObject } from '@mikro-orm/core';
+import { PopulatePath } from '@mikro-orm/mongodb';
 
 /**
  * Recording controller
@@ -68,7 +70,7 @@ export class Recording {
             user,
             target,
             document
-        });
+        } as FilterObject<Record>);
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
     }
 
@@ -86,7 +88,7 @@ export class Recording {
             user: this.owner,
             target: null,
             document: null
-        });
+        } as FilterObject<Record>);
         this._status = RecordingStatus.Recording;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
@@ -106,7 +108,17 @@ export class Recording {
             user: null,
             target: null,
             document: null
-        });
+        } as FilterObject<Record>);
+        this._status = RecordingStatus.Stopped;
+        this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
+        return true;
+    }
+
+    /**
+     * Destroy recording
+     * @public
+     */
+    public async destroy(): Promise<boolean> {
         this._status = RecordingStatus.Stopped;
         this.tree.sendMessage(PolicyEvents.RECORD_UPDATE_BROADCAST, this.getStatus());
         return true;
@@ -176,7 +188,7 @@ export class Recording {
             user: null,
             target: null,
             document: { uuid }
-        });
+        } as FilterObject<Record>);
     }
 
     /**
@@ -195,7 +207,7 @@ export class Recording {
             user: null,
             target: null,
             document: { did }
-        });
+        } as FilterObject<Record>);
     }
 
     /**
@@ -224,7 +236,7 @@ export class Recording {
                     'time',
                     'user',
                     'target'
-                ]
+                ] as unknown as PopulatePath.ALL[]
             }
         ) as any;
     }

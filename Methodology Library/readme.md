@@ -15,7 +15,7 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - PWRM0002
    - VM0041
    - VMR0006 (Coming Soon)
-4. DOVU Template Methodologies (10) - DOVU
+3. DOVU Template Methodologies (10) - DOVU
    - Agrecalc
    - Cool Farm Tool
    - Carbon Space
@@ -26,29 +26,35 @@ This folder contains sub folders for each Methodology and their authors (with ma
    - RothC
    - Microbial-Mineral Carbon Stabilization (MIMICS)
    - Agricultural soils of Western Australia
+   - MMCM
+     
+4. CDM Methodologies (18) - Envision
+
+   - ACM0007
+   - AMS-II.G
+   - AMS-III.AR
+   - AMS-III.BB
+   - AMS-III.D
+   - AMS-I.D
+   - AR-ACM0003
+   - AMS-II.J
+   - ACM0002
+   - AMS-III.F
+   - AMS-III.AV
+   - AMS-III.H
+   - AMS-I.F
+   - AMS-I.C
+   - ACM0001
+   - ACM0018
+   - AMS-I.A
+   - AMS-I.E
+
 5. Tolam Earth - OCI
 6. Improved Cookstove - OCI
-7. GCC - KrypC
+7. GCC- Amana - KrypC
 8. Gold Standard Afforestation / Reforestation - Envision
 9. Gold Standard Carbon Sequestration through Accelerated Carbonation of Concrete Aggregate - Envision
-10. MMCM - Dovu
-11. CDM ACM0007 - Envision
-12. CDM AMS-II.G - Envision
-13. CDM AMS-III.AR - Envision
-14. CDM AMS-III.BB - Envision
-15. CDM AMS-III.D - Envision
-16. CDM AMS-I.D - Envision
-17. CDM AR-ACM0003 - Envision
-18. CDM AMS-II.J - Envision
-19. CDM ACM0002 - Envision
-20. CDM AMS-III.F - Envision
-21. CDM AMS-III.AV - Envision
-22. CDM AMS-III.H - Envision
-23. CDM AMS-I.F - Envision
-24. CDM AMS-I.C - Envision
-25. CDM ACM0001 - Envision
-26. CDM ACM0018 - Envision
-27. CDM AMS-I.A - Envision
+10. GCCM001 - Envision
     
 ### Emission Policies
 
@@ -57,9 +63,10 @@ This folder contains sub folders for each Methodology and their authors (with ma
 3. GHG Scope II - Atma
 4. GHG Scope 3 - Atma
 5. GHGP Corporate Standard - Envision
-6. GHGP Product Standard - Avery Dennison (Coming soon)
-7. E-Mission (Coming soon)
-8. EPA CFR 40 p75 - Serapis (Coming soon)
+6. Climate Action Reserve’s U.S. Landfill Protocol Version 6.0 - Envision
+7. GHGP Product Standard - Avery Dennison (Coming soon)
+8. E-Mission (Coming soon)
+9. EPA CFR 40 p75 - Serapis (Coming soon)
 
 ### Hackathon Policies (Under Testing)
 
@@ -69,22 +76,21 @@ This folder contains sub folders for each Methodology and their authors (with ma
 4. Puro.Earth Biochar
 5. SaniChain
 6. Verra VM0047 with Forward Module
-7. VErra VMR0006
-8. Verra VM0038 ( Electrical vehicle charging systems )
-9. CDM AMS-III.Z - Sustainable Brick Manufacturing Methodology
-10. SmartCookStove
-11. CDM AMS-III.C
-12. CDM AM0124
-13. SDVISTa SDVM001 - Improved Cookstoves (ICS)
-14. CDM ACM0014
-15. Improved-Waste-Collection-Segregation-and-Handling (IWCSH)
-16. GreenTrace
-17. M/CE-R01 Circular Economy Methodology for Encouraging Plastic Recycling (MCER01)
-18. Solar Positive Household Methodology
-19. ZEV Ledger: Tokenization & management of ZEV credits in alignment with the "VM0038 Methodology for Electric Vehicle Charging Systems" and "Two and Three Wheeled Personal Transportation" methodologies
-20. Agrify Regenerative Methodology
-21. Sector-Specific Food Loss & Waste GHG Reduction Policy 1.0 (SSFLWGRP001)
-22. Food Loss & Waste (International) 1.0 Methodology
-23. ESG Verifier
-24. Verra VM0019 Methodology
-25. EcoRegen Alliance
+7. Verra VM0038 ( Electrical vehicle charging systems )
+8. CDM AMS-III.Z - Sustainable Brick Manufacturing Methodology
+9. SmartCookStove
+10. CDM AMS-III.C
+11. CDM AM0124
+12. SDVISTa SDVM001 - Improved Cookstoves (ICS)
+13. CDM ACM0014
+14. Improved-Waste-Collection-Segregation-and-Handling (IWCSH)
+15. GreenTrace
+16. M/CE-R01 Circular Economy Methodology for Encouraging Plastic Recycling (MCER01)
+17. Solar Positive Household Methodology
+18. ZEV Ledger: Tokenization & management of ZEV credits in alignment with the "VM0038 Methodology for Electric Vehicle Charging Systems" and "Two and Three Wheeled Personal Transportation" methodologies
+19. Agrify Regenerative Methodology
+20. Sector-Specific Food Loss & Waste GHG Reduction Policy 1.0 (SSFLWGRP001)
+21. Food Loss & Waste (International) 1.0 Methodology
+22. ESG Verifier
+23. Verra VM0019 Methodology
+24. EcoRegen Alliance

@@ -30,4 +30,5 @@ export enum TaskAction {
     IMPORT_TOOL_FILE = 'Import tool file',
     IMPORT_TOOL_MESSAGE = 'Import tool message',
     MIGRATE_DATA = 'Migrate data',
+    PUBLISH_POLICY_LABEL = 'Publish policy label'
 }

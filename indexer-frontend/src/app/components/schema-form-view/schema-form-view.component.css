@@ -66,14 +66,18 @@ form {
 }
 
 .delimiter {
+    height: 24px;
+}
+
+/* .delimiter {
     padding: 10px 25px 10px 25px;
     width: 100%;
     height: 80px;
     box-sizing: border-box;
     position: relative;
-}
+} */
 
-.delimiter::after {
+/* .delimiter::after {
     content: '';
     position: absolute;
     height: 2px;
@@ -81,7 +85,7 @@ form {
     left: 0px;
     right: 0px;
     border-top: 1px solid #c8c8c8;
-}
+} */
 
 .short-delimiter-container {
     width: 50%;

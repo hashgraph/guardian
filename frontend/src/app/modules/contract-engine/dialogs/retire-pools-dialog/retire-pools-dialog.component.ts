@@ -1,8 +1,8 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { RetireTokenPool, Token } from '@guardian/interfaces';
-import { ContractService } from 'src/app/services/contract.service';
-import { TokenService } from 'src/app/services/token.service';
+import {Component, Inject, OnInit} from '@angular/core';
+import {RetireTokenPool, Token} from '@guardian/interfaces';
+import {ContractService} from 'src/app/services/contract.service';
+import {TokenService} from 'src/app/services/token.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-retire-pools-dialog',
@@ -20,14 +20,18 @@ export class RetirePoolsDialogComponent implements OnInit {
     tokens: Token[] = [];
     selectedTokens: any = [];
 
+    contract: any = {}
+
     constructor(
-        public dialogRef: MatDialogRef<RetirePoolsDialogComponent>,
         public contractService: ContractService,
         public tokenService: TokenService,
-        @Inject(MAT_DIALOG_DATA) public contract: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig,
     ) {
-        if (contract) {
-            this.syncDate = contract.syncPoolsDate;
+        this.contract = this.config.data ?? {};
+
+        if (this.contract) {
+            this.syncDate = this.contract.syncPoolsDate;
         }
     }
 
@@ -114,5 +118,12 @@ export class RetirePoolsDialogComponent implements OnInit {
 
     hasPermissions(permissions: number, index: number) {
         return (permissions >> index) % 2 != 0;
+    }
+
+    getTransformedTokens(): any[] {
+        return this.tokens.map(token => ({
+            label: `${token.tokenSymbol} (${token.tokenId})`,
+            value: token.tokenId
+        }));
     }
 }

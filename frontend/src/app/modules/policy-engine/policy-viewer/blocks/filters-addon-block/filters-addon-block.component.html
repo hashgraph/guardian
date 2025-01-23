@@ -2,14 +2,70 @@
     <div class="btn-link" (click)="onFilters()">{{content}}</div>
 </div> -->
 
-<div *ngIf="type == 'dropdown'" class="content">
+<div class="content">
     <div class="content-name">
-        {{content}}:
+        {{content}}
     </div>
-    <div class="content-select">
-        <mat-select [(value)]="currentValue" (selectionChange)="onFilters()">
-            <mat-option *ngFor="let item of options" [value]="item.value">{{item.name}}</mat-option>
-        </mat-select>
+    <div class="grouped-content">
+        <div *ngIf="queryType === 'user_defined'" class="type-select user-defined-select">
+            <p-dropdown
+                [options]="userDefinedOptions"
+                optionLabel="name"
+                optionValue="value"
+                [(ngModel)]="currentType"
+                [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
+                class="w-full"
+                (onChange)="onFilters($event)">
+                    <ng-template pTemplate="selectedItem" let-selectedOption>
+                        <span class="prefix-dropdown">Type</span>
+                        <span *ngIf="selectedOption">{{ selectedOption.name }}</span>
+                        <span *ngIf="!selectedOption">Not selected</span>
+                    </ng-template>
+            </p-dropdown>
+        </div>
+        <div *ngIf="queryType !== 'user_defined'" class="content-type readonly-type">
+            <span *ngIf="!currentType" class="common-prefix-dropdown">Equal</span>
+            <span *ngIf="currentType === 'equal' || currentType === 'eq'" class="common-prefix-dropdown">Equal</span>
+            <span *ngIf="currentType === 'not_equal' || currentType === 'ne'" class="common-prefix-dropdown">Not Equal</span>
+            <span *ngIf="currentType === 'in'" class="common-prefix-dropdown">In</span>
+            <span *ngIf="currentType === 'not_in' || currentType === 'nin'" class="common-prefix-dropdown">Not In</span>
+            <span *ngIf="currentType === 'gt'" class="common-prefix-dropdown">Greater Than</span>
+            <span *ngIf="currentType === 'gte'" class="common-prefix-dropdown">Greater Than or Equal</span>
+            <span *ngIf="currentType === 'lt'" class="common-prefix-dropdown">Less Than</span>
+            <span *ngIf="currentType === 'lte'" class="common-prefix-dropdown">Less Than or Equal</span>
+        </div>
+
+        <div *ngIf="type == 'dropdown'" class="content-select">
+            <p-dropdown
+                autoWidth="false"
+                [(ngModel)]="currentValue"
+                [options]="options"
+                optionLabel="name"
+                optionValue="value"
+                (onChange)="onFilters($event)"
+                [style]="{'width':'100%', 'height': '100%'}"
+                class="w-full filter-dropdown"
+            >
+                <ng-template pTemplate="selectedItem" let-selectedOption>
+                    <span *ngIf="selectedOption"> {{ selectedOption.name }}</span>
+                    <span *ngIf="!selectedOption">Not selected</span>
+                </ng-template>
+            </p-dropdown>
+        </div>
+        <div *ngIf="type == 'datepicker'" class="content-select">
+            <p-calendar
+                [style]="{'border-left': '0', 'border-radius': '0 8px 8px 0'}"
+                [(ngModel)]="currentValue"
+                (onSelect)="onFilters($event)"
+                class="calendar-filter"
+                [showIcon]="true"
+                placeholder="Select date"
+                dateFormat="yy-mm-dd">
+            </p-calendar>
+        </div>
+        <div *ngIf="type == 'input'" class="content-select">
+            <input class="input-filter" [(ngModel)]="currentValue" (change)="onFilters($event)">
+        </div>
     </div>
 </div>
 

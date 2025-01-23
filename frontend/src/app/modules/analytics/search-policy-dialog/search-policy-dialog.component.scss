@@ -75,10 +75,21 @@
                 }
 
                 & > *:nth-child(2) {
-                    width: 56px;
-                    min-width: 56px;
-                    max-width: 56px;
+                    // width: 56px;
+                    // min-width: 56px;
+                    // max-width: 56px;
+                    // margin-left: 16px;
+                    width: 160px;
+                    min-width: 160px;
+                    max-width: 160px;
                     margin-left: 16px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                *[hidden="true"] {
+                    display: none !important;
                 }
             }
         }
@@ -292,15 +303,6 @@
     }
 
     .p-dialog-content {
-        border-bottom-left-radius: 16px;
-        border-bottom-right-radius: 16px;
-    }
-}
-
-::ng-deep .custom-header-dialog {
-    .p-dialog-content {
-        border-top-left-radius: 16px;
-        border-top-right-radius: 16px;
         border-bottom-left-radius: 16px;
         border-bottom-right-radius: 16px;
     }

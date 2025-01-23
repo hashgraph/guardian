@@ -1,96 +1,102 @@
 <div class="content">
     <div *ngIf="loading" class="loading">
-        <mat-spinner></mat-spinner>
+        <p-progressSpinner></p-progressSpinner>
     </div>
-
     <ng-container *ngIf="!isConfirmed">
         <div class="not-exist">
             Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
         </div>
     </ng-container>
-
     <ng-container *ngIf="isConfirmed && contracts">
         <div class="actions">
-            <div style="padding: 6px 0px">
-                <mat-button-toggle-group [(ngModel)]="type" (change)="onChangeType($event)">
-                    <mat-button-toggle value="WIPE">Token wiping contracts</mat-button-toggle>
-                    <mat-button-toggle value="RETIRE">Token retirement contracts</mat-button-toggle>
-                </mat-button-toggle-group>
+            <div class="select-btn__container">
+                <p-selectButton class="p-select-button" [(ngModel)]="type" (onChange)="onChangeType($event)" [options]="[
+                    { label: 'Token wiping contracts', value: 'WIPE' },
+                     { label: 'Token retirement contracts', value: 'RETIRE' }
+                ]"></p-selectButton>
             </div>
-            <div style="text-align: end">
-                <button mat-raised-button color="primary" class="toolbar-btn add" (click)="createContract()">
-                    <mat-icon>add</mat-icon>
-                    <span>Create Contract</span>
-                </button>
-                <button (click)="importContract()" class="toolbar-btn" color="primary"
-                        mat-raised-button>
-                    <mat-icon>file_open</mat-icon>
-                    <span>Import Contract</span>
-                </button>
+            <div class="toolbar-btn__container">
+                <p-button label="Create Contract" icon="pi pi-plus" class="p-toolbar-btn add"
+                          (onClick)="createContract()"
+                          styleClass="p-button-raised p-button-primary toolbar-btn p-toolbar-btn"></p-button>
+
+                <p-button label="Import Contract" icon="pi pi-file-import" class="p-toolbar-btn import"
+                          (onClick)="importContract()"
+                          styleClass="p-button-raised p-button-primary toolbar-btn p-toolbar-btn"></p-button>
             </div>
         </div>
+
         <div class="table-container">
-            <table mat-table [dataSource]="contracts" class="table">
-                <ng-container matColumnDef="contractId">
-                    <th mat-header-cell *matHeaderCellDef> Hedera Contract Id </th>
-                    <td mat-cell *matCellDef="let element">
-                        <hedera-explorer type="contracts"
-                            [params]="element.contractId">{{element.contractId}}</hedera-explorer>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Description </th>
-                    <td mat-cell *matCellDef="let element">
-                        {{ element.description }}
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="tags">
-                    <th mat-header-cell *matHeaderCellDef> Tags </th>
-                    <td mat-cell *matCellDef="let element">
-                        <tags-explorer 
-                            *ngIf="user.TAGS_TAG_READ"
-                            [user]="user"
-                            [data]="element._tags" 
-                            [owner]="owner" 
-                            [target]="element.id" 
-                            [entity]="tagEntity"
-                            [schemas]="tagSchemas" 
-                            [service]="tagsService"></tags-explorer>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="permissions">
-                    <th mat-header-cell *matHeaderCellDef> Permissons </th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="permissions">
-                            <div class="permissions__roles">
-                                <span class="role" matTooltip="Owner" [attr.has]="hasPermissions(element.permissions, 0)">O</span>
-                                <span class="role" matTooltip="Admin" [attr.has]="hasPermissions(element.permissions, 1)">A</span>
-                                <span class="role" matTooltip="Manager" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 2)">M</span>
-                                <span class="role" matTooltip="Wiper" *ngIf="type == 'WIPE'" [attr.has]="hasPermissions(element.permissions, 3)">W</span>
+            <p-table [value]="contracts" class="table" [scrollable]="true">
+                <ng-template pTemplate="header">
+                    <tr class="header">
+                        <th class="mat-column-contractId mat-header-cell">Hedera Contract Id</th>
+                        <th class="mat-column-description mat-header-cell">Description</th>
+                        <th class="mat-column-tags mat-header-cell">Tags</th>
+                        <th class="mat-column-permissions mat-header-cell">Permissions</th>
+                        <th class="mat-column-operations mat-header-cell">Operations</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-element>
+                    <tr class="body">
+                        <td class="mat-column-contractId">
+                            <hedera-explorer type="contracts" [params]="element.contractId">
+                                {{ element.contractId }}
+                            </hedera-explorer>
+                        </td>
+
+                        <td class="mat-column-description">
+                            {{ element.description }}
+                        </td>
+
+                        <td class="mat-column-tags">
+                            <tags-explorer *ngIf="user.TAGS_TAG_READ"
+                                           [user]="user"
+                                           [data]="element._tags"
+                                           [owner]="owner"
+                                           [target]="element.id"
+                                           [entity]="tagEntity"
+                                           [schemas]="tagSchemas"
+                                           [service]="tagsService"></tags-explorer>
+                        </td>
+                        <td class="mat-column-permissions">
+                            <div class="permissions">
+                                <div class="permissions__roles">
+                                    <span class="role" pTooltip="Owner"
+                                          [attr.has]="hasPermissions(element.permissions, 0)">O</span>
+                                    <span class="role" pTooltip="Admin"
+                                          [attr.has]="hasPermissions(element.permissions, 1)">A</span>
+                                    <span class="role" pTooltip="Manager" *ngIf="type === 'WIPE'"
+                                          [attr.has]="hasPermissions(element.permissions, 2)">M</span>
+                                    <span class="role" pTooltip="Wiper"
+                                          *ngIf="type === 'WIPE' && element.version === '1.0.0'"
+                                          [attr.has]="hasPermissions(element.permissions, 3)">W</span>
+                                </div>
+                                <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
                             </div>
-                            <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
-                        </div>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="operations">
-                    <th mat-header-cell *matHeaderCellDef>Operations</th>
-                    <td mat-cell *matCellDef="let element">
-                        <div class="contract-operations">
-                            <select-menu-button class="btn-publish" (action)="onOperationAction($event, element)"
-                                [options]="type === 'WIPE' ? wipeOperations: retireOperations" [permissions]="element.permissions">
-                                Operations
-                            </select-menu-button>
-                        </div>
-                    </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
-                <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-            </table>
+                        </td>
+
+                        <td class="mat-column-operations">
+                            <div class="contract-operations">
+                                <select-menu-button class="btn-publish" (action)="onOperationAction($event, element)"
+                                                    [options]="type === 'WIPE' ? wipeOperations : retireOperations"
+                                                    [permissions]="element.permissions">
+                                    Operations
+                                </select-menu-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
         </div>
         <div class="table-paginator">
-            <mat-paginator [length]="contractsCount" [pageIndex]="pageIndex" [pageSize]="pageSize"
-                [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)" aria-label="Select page">
-            </mat-paginator>
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [length]="contractsCount"
+                (page)="onPage($event)"
+            ></app-paginator>
         </div>
     </ng-container>
 </div>

@@ -4,7 +4,6 @@ import process from 'process';
 import express from 'express';
 import {
     // _DEV
-    ElasticApi,
     LogsApi,
     StatusApi,
     // PROD
@@ -33,7 +32,6 @@ const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
     controllers: [
         StatusApi,
         LogsApi,
-        ElasticApi,
         SearchApi,
         FiltersApi,
         EntityApi,

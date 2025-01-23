@@ -10,8 +10,7 @@ import {
     ContractFunctionParameters,
     ContractFunctionResult,
     ContractId,
-    ContractInfo,
-    ContractInfoQuery,
+    ContractLogInfo,
     DelegateContractId,
     FileId,
     Hbar,
@@ -51,7 +50,7 @@ import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode,
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
 import process from 'process';
-import { FireblocksHelper } from './fireblocks-helper';
+import { FireblocksHelper } from './fireblocks-helper.js';
 
 export const MAX_FEE = Math.abs(+process.env.MAX_TRANSACTION_FEE) || 30;
 export const INITIAL_BALANCE = 30;
@@ -134,6 +133,10 @@ export class HederaSDKHelper {
      * Max timeout
      */
     public static readonly MAX_TIMEOUT: number = (process.env.MAX_HEDERA_TIMEOUT) ? parseInt(process.env.MAX_HEDERA_TIMEOUT, 10) * 1000 : 10 * 60 * 1000;
+    /**
+     * Rest API max limit
+     */
+    public static readonly REST_API_MAX_LIMIT: number = 100;
     /**
      * Callback
      * @private
@@ -1034,7 +1037,7 @@ export class HederaSDKHelper {
         }
         const result = [];
         const p = {
-            params: { limit: Number.MAX_SAFE_INTEGER },
+            params: { limit: HederaSDKHelper.REST_API_MAX_LIMIT },
             responseType: 'json'
         }
 
@@ -1365,7 +1368,7 @@ export class HederaSDKHelper {
         parameters: ContractFunctionParameters,
         gas: number = 1000000,
         contractMemo?: string
-    ): Promise<string> {
+    ): Promise<[string, ContractLogInfo]> {
         const client = this.client;
         const contractInstantiateTx = new ContractCreateTransaction()
             .setBytecodeFileId(bytecodeFileId)
@@ -1379,7 +1382,10 @@ export class HederaSDKHelper {
         const contractInstantiateRx =
             await contractInstantiateSubmit.getReceipt(client);
         const contractId = contractInstantiateRx.contractId;
-        return `${contractId}`;
+        const contractRecord =
+            await contractInstantiateSubmit.getRecord(client);
+
+        return [`${contractId}`, contractRecord.contractFunctionResult.logs?.[0]];
     }
 
     /**
@@ -1528,22 +1534,6 @@ export class HederaSDKHelper {
     }
 
     /**
-     * Get Contract Info
-     *
-     * @param {string | ContractId} contractId - Contract Id
-     *
-     * @returns {any} - Contract Info
-     */
-    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
-    public async getContractInfo(
-        contractId: string | ContractId,
-    ): Promise<ContractInfo> {
-        const client = this.client;
-        const query = new ContractInfoQuery().setContractId(contractId);
-        return await query.execute(client);
-    }
-
-    /**
      * Hedera REST api
      * @param url Url
      * @param options Options
@@ -1556,7 +1546,7 @@ export class HederaSDKHelper {
         options: { params?: any },
         type: 'nfts' | 'transactions' | 'logs',
         filters?: { [key: string]: any },
-        findOne = false,
+        limit?: number,
     ) {
         const params: any = {
             ...options,
@@ -1573,29 +1563,54 @@ export class HederaSDKHelper {
             }
 
             const typedData = res.data[type];
-            if (typedData.length === 0) {
-                return result;
-            }
 
             if (filters) {
                 for (const item of typedData) {
                     for (const filter of Object.keys(filters)) {
                         if (item[filter] === filters[filter]) {
                             result.push(item);
-                            if (findOne) {
+                            if (result.length === limit) {
                                 return result;
                             }
                         }
                     }
                 }
             } else {
-                result.push(...typedData);
+                for (const item of typedData) {
+                    result.push(item);
+                    if (result.length === limit) {
+                        return result;
+                    }
+                }
             }
             url = `${res.request.protocol}//${res.request.host}${res.data.links?.next}`;
             hasNext = !!res.data.links?.next;
         }
 
         return result;
+    }
+
+    /**
+     * Get Contract Info
+     *
+     * @param {string | ContractId} contractId - Contract Id
+     *
+     * @returns {any} - Contract Info
+     */
+    @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Contract info query timeout exceeded')
+    public static async getContractInfo(
+        contractId: string | ContractId,
+    ): Promise<{ memo: string }> {
+        const url = `${Environment.HEDERA_CONTRACT_API}${contractId}`;
+        const res = await axios.get(url, {
+            responseType: 'json',
+        });
+
+        if (!res || !res.data) {
+            throw new Error(`Invalid response`);
+        }
+
+        return res.data;
     }
 
     /**
@@ -1611,10 +1626,9 @@ export class HederaSDKHelper {
         contractId: string,
         timestamp?: string,
         order?: string,
-        limit: number = 100,
     ): Promise<any[]> {
         const params: any = {
-            limit,
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
             order: order || 'asc',
         };
         if (timestamp) {
@@ -1637,7 +1651,7 @@ export class HederaSDKHelper {
     public async getSerialsNFT(tokenId?: string): Promise<any[]> {
         const client = this.client;
         const params = {
-            limit: Number.MAX_SAFE_INTEGER,
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
         }
         if (tokenId) {
             params['token.id'] = tokenId;
@@ -1663,7 +1677,7 @@ export class HederaSDKHelper {
     @timeout(HederaSDKHelper.MAX_TIMEOUT, 'Get token serials request timeout exceeded')
     public static async getNFTTokenSerials(tokenId: string, accountId?: string, serialnumber?: string, order = 'asc', filter?: any, limit?: number): Promise<any[]> {
         const params: any = {
-            limit: Number.MAX_SAFE_INTEGER,
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
             order,
         }
         if (accountId) {
@@ -1672,15 +1686,12 @@ export class HederaSDKHelper {
         if (serialnumber) {
             params.serialnumber = serialnumber;
         }
-        if (Number.isInteger(limit)) {
-            params.limit = limit;
-        }
         const p: any = {
             params,
             responseType: 'json',
         };
         const url = `${Environment.HEDERA_TOKENS_API}/${tokenId}/nfts`;
-        return await HederaSDKHelper.hederaRestApi(url, p, 'nfts', filter);
+        return await HederaSDKHelper.hederaRestApi(url, p, 'nfts', filter, limit);
     }
 
     /**
@@ -1701,10 +1712,9 @@ export class HederaSDKHelper {
         order = 'asc',
         filter?: any,
         limit?: number,
-        findOne = false
     ): Promise<any[]> {
         const params: any = {
-            limit: Number.MAX_SAFE_INTEGER,
+            limit: HederaSDKHelper.REST_API_MAX_LIMIT,
             order,
         }
         if (accountId) {
@@ -1716,15 +1726,12 @@ export class HederaSDKHelper {
         if (timestamp) {
             params.timestamp = timestamp;
         }
-        if (Number.isInteger(limit)) {
-            params.limit = limit;
-        }
         const p: any = {
             params,
             responseType: 'json',
         };
         const url = `${Environment.HEDERA_TRANSACTIONS_API}`;
-        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter, findOne);
+        return await HederaSDKHelper.hederaRestApi(url, p, 'transactions', filter, limit);
     }
 
     /**
@@ -1836,7 +1843,7 @@ export class HederaSDKHelper {
             if (startTimestamp) {
                 requestParams = {
                     params: {
-                        limit: Number.MAX_SAFE_INTEGER,
+                        limit: HederaSDKHelper.REST_API_MAX_LIMIT,
                         timestamp: `gt:${startTimestamp}`
                     },
                     responseType: 'json'
@@ -1844,7 +1851,7 @@ export class HederaSDKHelper {
             } else {
                 requestParams = {
                     params: {
-                        limit: Number.MAX_SAFE_INTEGER
+                        limit: HederaSDKHelper.REST_API_MAX_LIMIT
                     },
                     responseType: 'json'
                 }

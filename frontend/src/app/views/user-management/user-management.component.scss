@@ -113,7 +113,7 @@
             padding: 10px 76px 10px 16px;
         }
 
-        i {
+        i, svg {
             padding-right: 16px;
             color: #B0B5BA;
         }
@@ -152,7 +152,6 @@
 
 .grid-container {
     margin-top: 20px;
-    overflow-x: auto;
     padding: 5px;
 
     table {

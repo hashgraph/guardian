@@ -1,0 +1,44 @@
+.guardian-collapse {
+    position: relative;
+    cursor: pointer;
+
+    &::before {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border: 6px solid var(--guardian-primary-color, #4169E2);
+        width: 0px;
+        height: 0px;
+        pointer-events: none;
+    }
+
+    &[collapsed="true"] {
+        &::before {
+            border-top-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            border-right-width: 0;
+        }
+    }
+
+    &[collapsed="false"] {
+        &::before {
+            border-left-color: transparent;
+            border-right-color: transparent;
+            border-bottom-color: transparent;
+            border-bottom-width: 0;
+        }
+    }
+
+    &.collapse-24 {
+        width: 24px;
+        height: 24px;
+
+        &::before {
+            border-width: 6;
+        }
+    }
+}

@@ -1,6 +1,6 @@
-<div 
-    *ngIf="!readonly" 
-    [formGroup]="form" 
+<div
+    *ngIf="!readonly"
+    [formGroup]="form"
     cdkDrag
     cdkDragLockAxis="y"
     class="custom-field"
@@ -27,8 +27,8 @@
 
         <div *ngIf="error" class="extended-config">
             <div class="input-field-container error-text">
-                <div>{{error.text}}</div>
-                <div *ngIf="error.message" class="error-text-message">{{error.message}}</div>
+                <div>{{ error.text }}</div>
+                <div *ngIf="error.message" class="error-text-message">{{ error.message }}</div>
             </div>
         </div>
 
@@ -131,9 +131,9 @@
                 >
                     <ng-template let-item pTemplate="item">
                         <div class="flex align-items-center gap-2">
-                            <span *ngIf="item.component" class="sub-schema-component">{{item.component}}:</span>
-                            <span class="sub-schema-name">{{item.label}}</span>
-                            <span *ngIf="item.version" class="sub-schema-version">{{item.version}}</span>
+                            <span *ngIf="item.component" class="sub-schema-component">{{ item.component }}:</span>
+                            <span class="sub-schema-name">{{ item.label }}</span>
+                            <span *ngIf="item.version" class="sub-schema-version">{{ item.version }}</span>
                         </div>
                     </ng-template>
                 </p-dropdown>
@@ -151,7 +151,7 @@
 
             <ng-container *ngIf="helpText; else notHelpText">
                 <div class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlBold"></mat-checkbox>
+                    <p-checkbox [formControl]="field.controlBold"></p-checkbox>
                     <label class="checkbox-label">Bold</label>
                 </div>
 
@@ -175,7 +175,7 @@
                     />
                 </div>
                 <div (click)="onHepTextReset()" class="reset-btn">
-                    <mat-icon>restart_alt</mat-icon>
+                    <svg-icon src="/assets/images/icons/restart_alt.svg" svgClass="icon-style-restart_alt"></svg-icon>
                     <span class="reset-btn-label">Reset</span>
                 </div>
             </ng-container>
@@ -193,50 +193,79 @@
                     ></p-dropdown>
                 </div>
 
-                <div class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlArray"></mat-checkbox>
+                <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
+                    <p-checkbox [formControl]="field.controlArray" [binary]="true"></p-checkbox>
                     <label class="checkbox-label">Allow multiple answers</label>
                 </div>
 
+                <div *ngIf="field.autocalculated.value" class="checkbox-field-container">
+                    <button
+                        (click)="onEditExpression()"
+                        class=".edit-button button secondary"
+                        label="Edit expression"
+                        pButton>
+                    </button>
+                </div>
+
                 <div *ngIf="canBePrivate" class="checkbox-field-container">
-                    <mat-checkbox [formControl]="field.controlPrivate"></mat-checkbox>
+                    <p-checkbox [formControl]="field.controlPrivate"></p-checkbox>
                     <label class="checkbox-label">Private</label>
                 </div>
             </ng-template>
         </div>
         <div *ngIf="enum && !loading" class="enum-options-container">
-            <mat-form-field
-                *ngIf="this.field.controlEnum.value.length"
-                appearance="outline"
-                class="enum-form-field"
-            >
-                <mat-label>Enum data</mat-label>
-                <mat-chip-list #chipList aria-label="Enum values">
-                    <mat-chip
-                        *ngFor="let keyword of keywords"
-                        class="mat-chip-value"
-                    >
-                        <div class="mat-chip-value-label">
-                            {{ keyword }}
+            <div *ngIf="field.controlEnum.value.length" class="form-group enum-form-field">
+                <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
+                <div class="p-chips" aria-label="Enum values">
+                    <div class="p-chips-container">
+                        <div
+                            class="p-chips-token"
+                            *ngFor="let keyword of keywords">
+                            <span class="p-chips-token-label">{{ keyword }}</span>
                         </div>
-                    </mat-chip>
-                    <mat-chip *ngIf="keywords.length < field.enum.length">
-                        ...
-                    </mat-chip>
-                </mat-chip-list>
-            </mat-form-field>
+                        <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">
+                            <span class="p-chips-token-label">...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div
                 (click)="onEditEnum()"
                 [ngClass]="{ 'enum-edit-button-only': !field.enum.length }"
                 class="enum-edit-button"
             >
-                <mat-icon>edit</mat-icon>
+                <i class="pi pi-pencil"></i>
                 <span class="enum-edit-button-label">Edit values</span>
+            </div>
+        </div>
+        <div *ngIf="!helpText && presetFormFields && defaultValues" class="selected-values">
+            <div>
+                <span class="selected-values__title">Selected values</span>
+            </div>
+            <div class="selected-values__action">
+                <button
+                    [label]="isShowMore ? 'Show Less' : 'Show More'"
+                    pButton
+                    class="selected-values__show-button button secondary"
+                    (click)="isShowMore=!isShowMore">
+                </button>
+            </div>
+            <div class="default-values" [attr.hide]="!isShowMore">
+                <div class="default-values__content">
+                    <app-schema-form
+                        [fields]="presetFormFields"
+                        [formGroup]="defaultValues"
+                        [preset]="presetValues"
+                        [showButtons]="false"
+                    ></app-schema-form>
+                </div>
             </div>
         </div>
     </div>
     <div *ngIf="loading" class="loading">
-        <mat-spinner [diameter]="65"></mat-spinner>
+        <p-progressSpinner
+            [style]="{ width: '65px', height: '65px' }">
+        </p-progressSpinner>
     </div>
 </div>
 
@@ -294,23 +323,26 @@
             />
         </div>
         <div class="checkbox-field-container">
-            <mat-checkbox
-                [checked]="value?.required"
+            <p-checkbox
+                [ngModel]="value?.required"
                 [disabled]="readonly"
-                color="primary"
+                [binary]="true"
+                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
             >
-            </mat-checkbox>
+            </p-checkbox>
+
             <label class="checkbox-label" htmlFor="requiredField">
                 Required Field
             </label>
         </div>
         <div class="checkbox-field-container">
-            <mat-checkbox
-                [checked]="value?.isArray"
+            <p-checkbox
+                [ngModel]="value?.required"
                 [disabled]="readonly"
-                color="primary"
+                [binary]="true"
+                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
             >
-            </mat-checkbox>
+            </p-checkbox>
             <label class="checkbox-label" htmlFor="isArray">
                 Allow multiple answers
             </label>

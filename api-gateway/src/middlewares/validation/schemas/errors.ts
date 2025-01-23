@@ -21,3 +21,23 @@ export class InternalServerErrorDTO {
     @Expose()
     message: string;
 }
+
+export class ServiceUnavailableErrorDTO {
+    @ApiProperty({
+        type: 'number',
+        required: true,
+        example: 503
+    })
+    @IsNumber()
+    @Expose()
+    code: number;
+
+    @ApiProperty({
+        type: 'string',
+        required: true,
+        example: 'Error message'
+    })
+    @IsString()
+    @Expose()
+    message: string;
+}

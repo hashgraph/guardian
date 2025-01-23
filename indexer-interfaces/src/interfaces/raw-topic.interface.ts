@@ -5,10 +5,6 @@ export class RawTopic {
     /**
      * Identifier
      */
-    _id: any;
-    /**
-     * Identifier
-     */
     id!: string;
     /**
      * Topic identifier

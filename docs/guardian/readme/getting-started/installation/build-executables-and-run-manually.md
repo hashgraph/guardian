@@ -107,6 +107,10 @@ To start the service:
 yarn workspace auth-service start
 ```
 
+{% hint style="info" %}
+**Note:** For correct start of auth-service it is necessary to fill in JWT\_PRIVATE\_KEY and JWT\_PUBLIC\_KEY, which are RSA key pair. You can generate it in any convenient way, for example, using this service [https://travistidwell.com/jsencrypt/demo/](https://travistidwell.com/jsencrypt/demo/).
+{% endhint %}
+
 7. Build and start _**policy-service**_ service
 
 To build the service:

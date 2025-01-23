@@ -1,5 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin } from 'rxjs';
@@ -8,13 +7,12 @@ import { InformService } from 'src/app/services/inform.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
-import { CompareModulesDialogComponent } from '../helpers/compare-modules-dialog/compare-modules-dialog.component';
-import { ExportPolicyDialog } from '../helpers/export-policy-dialog/export-policy-dialog.component';
-import { ImportPolicyDialog } from '../helpers/import-policy-dialog/import-policy-dialog.component';
-import { NewModuleDialog } from '../helpers/new-module-dialog/new-module-dialog.component';
-import { PreviewPolicyDialog } from '../helpers/preview-policy-dialog/preview-policy-dialog.component';
-import { mobileDialog } from 'src/app/utils/mobile-utils';
+import { CompareModulesDialogComponent } from '../dialogs/compare-modules-dialog/compare-modules-dialog.component';
+import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
+import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
+import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../common/import-entity-dialog/import-entity-dialog.component';
 
 enum OperationMode {
     None,
@@ -63,7 +61,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         public tagsService: TagsService,
         private profileService: ProfileService,
         private toolsService: ToolsService,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
         private informService: InformService,
         private router: Router,
@@ -157,7 +155,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         this.loadAllTools();
     }
 
-    private importDetails(result: any) {
+    private importDetails(result: IImportEntityResult) {
         const { type, data, tool } = result;
         const dialogRef = this.dialogService.open(PreviewPolicyDialog, {
             header: 'Import tool',
@@ -196,17 +194,16 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     }
 
     public importTool(messageId?: string) {
-        const dialogRef = this.dialogService.open(ImportPolicyDialog, {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
             width: '720px',
-            header: 'Select action',
-            styleClass: 'custom-dialog',
-            closable: true,
+            styleClass: 'guardian-dialog',
             data: {
-                type: 'tool',
+                type: ImportEntityType.Tool,
                 timeStamp: messageId
             }
         });
-        dialogRef.onClose.subscribe(async (result) => {
+        dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
             }
@@ -254,13 +251,13 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             .subscribe(tool => {
                 this.loading = false;
                 this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Tool',
                     width: '700px',
-                    header: 'Export',
-                    styleClass: 'custom-dialog',
+                    styleClass: 'guardian-dialog',
                     data: {
                         tool
                     },
-                    closable: true
                 })
             });
     }
@@ -303,10 +300,10 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 dialogTitle: 'Delete tool',
                 dialogText: 'Are you sure to delete tool?'
             },
-            disableClose: true,
-            autoFocus: false
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }

@@ -1,17 +1,17 @@
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiCreatedResponse, ApiQuery } from '@nestjs/swagger';
 import { Examples, InternalServerErrorDTO, SchemaDTO, TagDTO, TagFilterDTO, TagMapDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
-import { SCHEMA_REQUIRED_PROPS } from '#constants';
+import { ONLY_SR, SchemaUtils, Guardians, InternalException, EntityOwner, CacheService, getCacheKey, UseCache } from '#helpers';
+import { PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 
 @Controller('tags')
 @ApiTags('tags')
 export class TagsApi {
 
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -45,13 +45,18 @@ export class TagsApi {
     async setTags(
         @AuthUser() user: IAuthUser,
         @Body() body: TagDTO,
+        @Req() req: Request
     ): Promise<TagDTO> {
         try {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.createTag(body, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -102,6 +107,7 @@ export class TagsApi {
     @HttpCode(HttpStatus.OK)
     async searchTags(
         @Body() body: TagFilterDTO,
+        @Req() req
     ): Promise<{ [localTarget: string]: TagMapDTO }> {
         try {
             const { entity, target, targets } = body;
@@ -148,9 +154,13 @@ export class TagsApi {
                     };
                 }
             }
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return tagMap;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -187,6 +197,7 @@ export class TagsApi {
     async deleteTag(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             if (!uuid) {
@@ -194,9 +205,13 @@ export class TagsApi {
             }
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardian.deleteTag(uuid, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -238,6 +253,7 @@ export class TagsApi {
     @HttpCode(HttpStatus.OK)
     async synchronizationTags(
         @Body() body: TagFilterDTO,
+        @Req() req
     ): Promise<TagMapDTO> {
         try {
             const { entity, target } = body;
@@ -250,6 +266,10 @@ export class TagsApi {
 
             const guardians = new Guardians();
             const tags = await guardians.synchronizationTags(entity, target);
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], req.user));
+
             return {
                 entity,
                 target,
@@ -257,7 +277,7 @@ export class TagsApi {
                 refreshDate: (new Date()).toISOString(),
             };
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -298,10 +318,11 @@ export class TagsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getSchemas(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -313,12 +334,14 @@ export class TagsApi {
             items.forEach((s) => {
                 s.readonly = s.readonly || s.owner !== owner.creator;
             });
-            // res.locals.data = SchemaUtils.toOld(items)
+
+            req.locals = SchemaUtils.toOld(items)
+
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -359,11 +382,12 @@ export class TagsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
+    @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     @Version('2')
     async getSchemasV2(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
@@ -375,12 +399,14 @@ export class TagsApi {
 
             const { items, count } = await guardians.getTagSchemasV2(fields, owner, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.creator });
-            // res.locals.data = SchemaUtils.toOld(items)
+
+            req.locals = SchemaUtils.toOld(items)
+
             return res
                 .header('X-Total-Count', count)
                 .send(SchemaUtils.toOld(items));
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -427,13 +453,14 @@ export class TagsApi {
             SchemaUtils.clearIds(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
 
-            await this.cacheService.invalidate(getCacheKey([req.url], user));
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
 
             const schemas = await guardians.createTagSchema(newSchema, owner);
 
             return SchemaUtils.toOld(schemas);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -469,6 +496,7 @@ export class TagsApi {
     async deleteSchema(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
+        @Req() req: Request
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
@@ -479,9 +507,13 @@ export class TagsApi {
                 throw new HttpException(error, HttpStatus.FORBIDDEN);
             }
             await guardians.deleteSchema(schemaId, owner);
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return true;
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -523,6 +555,7 @@ export class TagsApi {
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
         @Body() newSchema: SchemaDTO,
+        @Req() req
     ): Promise<SchemaDTO[]> {
         try {
             const owner = new EntityOwner(user);
@@ -535,9 +568,13 @@ export class TagsApi {
             SchemaUtils.fromOld(newSchema);
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.updateSchema(newSchema, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -574,6 +611,7 @@ export class TagsApi {
     async publishTag(
         @AuthUser() user: IAuthUser,
         @Param('schemaId') schemaId: string,
+        @Req() req
     ): Promise<SchemaDTO> {
         try {
             const owner = new EntityOwner(user);
@@ -584,9 +622,13 @@ export class TagsApi {
                 throw new HttpException(error, HttpStatus.FORBIDDEN)
             }
             const version = '1.0.0';
+
+            const invalidedCacheTags = [`${PREFIXES.TAGS}schemas`];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], user));
+
             return await guardians.publishTagSchema(schemaId, version, owner);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -614,7 +656,7 @@ export class TagsApi {
             const guardians = new Guardians();
             return await guardians.getPublishedTagSchemas();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

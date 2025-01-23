@@ -27,7 +27,7 @@ import { ThemesApi } from './api/service/themes.js';
 import { BrandingApi } from './api/service/branding.js';
 import { SuggestionsApi } from './api/service/suggestions.js';
 import { MatchConstraint } from './helpers/decorators/match.validator.js';
-import { NotificationService } from '@guardian/common';
+import { GenerateTLSOptionsNats, NotificationService } from '@guardian/common';
 import { NotificationsApi } from './api/service/notifications.js';
 import { ApplicationEnvironment } from './environment.js';
 import { AuthGuard } from './auth/auth-guard.js';
@@ -36,10 +36,14 @@ import { RolesGuard } from './auth/roles-guard.js';
 import { RecordApi } from './api/service/record.js';
 import { ProjectsAPI } from './api/service/project.js';
 import { AISuggestionsAPI } from './api/service/ai-suggestions.js';
-import { cacheProvider } from './helpers/cache-provider.js';
+import { cacheProvider } from './helpers/providers/cache-provider.js';
 import { CacheService } from './helpers/cache-service.js';
 import { PermissionsApi } from './api/service/permissions.js';
 import { WorkerTasksController } from './api/service/worker-tasks.js';
+import { PolicyStatisticsApi } from './api/service/policy-statistics.js';
+import { SchemaRulesApi } from './api/service/schema-rules.js';
+import { loggerMongoProvider, pinoLoggerProvider } from './helpers/providers/index.js';
+import { PolicyLabelsApi } from './api/service/policy-labels.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -54,6 +58,7 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
                 servers: [
                     `nats://${process.env.MQ_ADDRESS}:4222`
                 ],
+                tls: GenerateTLSOptionsNats()
                 // serializer: new LogClientSerializer(),
                 // deserializer: new LogClientDeserializer()
             }
@@ -90,6 +95,9 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
         RecordApi,
         AISuggestionsAPI,
         PermissionsApi,
+        PolicyStatisticsApi,
+        SchemaRulesApi,
+        PolicyLabelsApi,
         WorkerTasksController
     ],
     providers: [
@@ -101,7 +109,10 @@ import { WorkerTasksController } from './api/service/worker-tasks.js';
         UsersService,
         cacheProvider,
         CacheService,
-    ]
+        loggerMongoProvider,
+        pinoLoggerProvider,
+    ],
+    exports: [pinoLoggerProvider],
 })
 export class AppModule {
     configure(consumer: MiddlewareConsumer) {

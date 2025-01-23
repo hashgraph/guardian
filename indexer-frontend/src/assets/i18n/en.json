@@ -35,14 +35,16 @@
         "nfts": "NFTs",
         "vps": "Verifiable Presentation (VPs)",
         "vcs": "Verifiable Credentials (VCs)",
+        "statistic_documents": "Statistic Documents (VCs)",
+        "label_documents": "Label Documents (VPs)",
         "dids": "Decentralized Identifiers (DIDs)",
         "others": "Others",
-        "search_placeholder": "Search by keyword"
+        "search_placeholder": "Search by keyword",
+        "statistics": "Statistics",
+        "labels": "Labels"
     },
     "home": {
-        "header": "Indexer",
-        "description": "Guardian Indexer by",
-        "bold_description": "Managed Guardian Service"
+        "header": "Indexer"
     },
     "filter": {
         "placeholder": "placeholder",
@@ -76,8 +78,10 @@
         "issuer": "Issuer",
         "account": "Account",
         "did": "DID",
+        "topicId": "Topic Id",
         "registrantTopicId": "User Topic Id",
         "open": "Open",
+        "target": "Target",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -87,7 +91,9 @@
             "topic_id": "Topic Id",
             "policy_id": "Policy Id",
             "schema_id": "Schema Id",
-            "relationship": "Relationship"
+            "relationship": "Relationship",
+            "target": "Target",
+            "token_id": "Token Id"
         },
         "paginator": {
             "items_per_page": "Items per page",
@@ -102,8 +108,10 @@
         "overview": "Overview",
         "documents": "Document",
         "history": "History",
+        "view": "View",
         "relationships": "Relationships",
         "raw_data": "Raw data",
+        "labels": "Labels",
         "tabs": {
             "activity": "Activity"
         },
@@ -120,7 +128,7 @@
             "tools": "Tools",
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
-            "vps": "Veriaible Presentations"
+            "vps": "Verifiable Presentations"
         },
         "hedera": {
             "topic_id": "Topic Id",
@@ -130,17 +138,22 @@
             "action": "Action",
             "status": "Status",
             "status_reason": "Reason",
+            "name": "Name",
             "issuer": "Issuer",
             "transaction_id": "Transaction Id",
             "sender_account_id": "Sender",
-            "receiver_account_id": "Receiver"
+            "receiver_account_id": "Receiver",
+            "token_id": "Token Id",
+            "token_amount": "Token Amount",
+            "target": "Target"
         },
         "ipfs": "IPFS",
         "header": {
             "registry": "Standard Registry",
             "registry_user": "Registry User",
             "vc": "Verifiable Credential",
-            "vp": "Verifiable Presentation"
+            "vp": "Verifiable Presentation",
+            "label": "Label (Verifiable Presentation)"
         },
         "topic": {
             "header": "Topic",
@@ -180,7 +193,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner"
             }
         },
@@ -194,7 +207,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "hash": "Hash"
             }
@@ -209,11 +222,39 @@
                 "topic_id": "Topic Id",
                 "instance_topic_id": "Instance Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
                 "policy_tag": "Policy Tag",
                 "registry": "Standard Registry"
+            }
+        },
+        "label": {
+            "header": "Label",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner"
+            }
+        },
+        "statistic": {
+            "header": "Statistic",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner"
             }
         },
         "schema": {
@@ -228,7 +269,7 @@
             "overview": {
                 "topic_id": "Topic Id",
                 "name": "Name",
-                "description": "Desription",
+                "description": "Description",
                 "owner": "Owner",
                 "version": "Version",
                 "policy": "Policy"
@@ -292,6 +333,31 @@
                 "view_serials": "View serials"
             }
         },
-        "not_found": "Not found"
+        "contract": {
+            "header": "Contract",
+            "tabs": {
+                "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "contract_id": "Contract Id",
+                "topic_id": "Topic Id",
+                "type": "Type",
+                "description": "Description",
+                "owner": "Owner",
+                "owner_did": "Owner DID"
+            }
+        },
+        "not_found": "Not found",
+        "not_loaded": "Not loaded",
+        "json": "JSON",
+        "cid": "Document CID",
+        "document": "Document",
+        "try_load": "Check Availability",
+        "local_node": "Local Node",
+        "document_not_loaded_header": "The document has not loaded yet.",
+        "documents_not_loaded_header": "The documents have not loaded yet.",
+        "document_not_loaded_message": "The file is stored in the local repository, and if the repository is closed, upload will not be possible.",
+        "documents_not_loaded_message": "The files are stored in the local repository, and if the repository is closed, upload will not be possible."
     }
 }

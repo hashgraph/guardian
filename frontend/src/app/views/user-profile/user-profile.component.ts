@@ -1,22 +1,22 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators, } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { forkJoin } from 'rxjs';
-import { IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity, } from '@guardian/interfaces';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {UntypedFormControl, UntypedFormGroup, Validators,} from '@angular/forms';
+import {forkJoin} from 'rxjs';
+import {IPolicy, IStandardRegistryResponse, IUser, Schema, SchemaEntity,} from '@guardian/interfaces';
+import {ActivatedRoute, Router} from '@angular/router';
 //services
-import { AuthService } from '../../services/auth.service';
-import { ProfileService } from '../../services/profile.service';
-import { DemoService } from '../../services/demo.service';
-import { SchemaService } from '../../services/schema.service';
-import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
-import { TasksService } from '../../services/tasks.service';
+import {AuthService} from '../../services/auth.service';
+import {ProfileService} from '../../services/profile.service';
+import {DemoService} from '../../services/demo.service';
+import {SchemaService} from '../../services/schema.service';
+import {HeaderPropsService} from '../../services/header-props.service';
+import {InformService} from '../../services/inform.service';
+import {TasksService} from '../../services/tasks.service';
 //modules
-import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
-import { DialogService } from 'primeng/dynamicdialog';
-import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator';
+import {DialogService} from 'primeng/dynamicdialog';
+import {ValidateIfFieldEqual} from '../../validators/validate-if-field-equal';
+import {ChangePasswordComponent} from '../login/change-password/change-password.component';
 
 enum OperationMode {
     None,
@@ -73,9 +73,9 @@ export class UserProfileComponent implements OnInit {
         );
     }
 
-    public filtersForm = new FormGroup({
-        policyName: new FormControl(''),
-        geography: new FormControl(''),
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl(''),
+        geography: new UntypedFormControl(''),
     });
 
     private get filters(): { policyName: string; geography: string } {
@@ -89,16 +89,16 @@ export class UserProfileComponent implements OnInit {
         return this.steps.filter((s) => s.visibility());
     }
 
-    public privateFields: any = { id: true };
+    public privateFields: any = {id: true};
     public schema!: Schema | null;
-    public fullForm!: FormGroup;
-    public hederaCredentialsForm!: FormGroup;
-    public standardRegistryForm!: FormControl;
-    public didDocumentType!: FormControl;
-    public didDocumentForm!: FormControl;
-    public didKeysForm!: FormGroup;
-    public vcDocumentType!: FormControl;
-    public vcDocumentForm!: FormGroup;
+    public fullForm!: UntypedFormGroup;
+    public hederaCredentialsForm!: UntypedFormGroup;
+    public standardRegistryForm!: UntypedFormControl;
+    public didDocumentType!: UntypedFormControl;
+    public didDocumentForm!: UntypedFormControl;
+    public didKeysForm!: UntypedFormGroup;
+    public vcDocumentType!: UntypedFormControl;
+    public vcDocumentForm!: UntypedFormGroup;
     public didKeys: any[] = [];
 
     private interval: any;
@@ -115,32 +115,31 @@ export class UserProfileComponent implements OnInit {
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog,
         public dialogService: DialogService,
         private headerProps: HeaderPropsService,
         private cdRef: ChangeDetectorRef
     ) {
-        this.standardRegistryForm = new FormControl('', [Validators.required]);
-        this.hederaCredentialsForm = new FormGroup({
-            id: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            key: new FormControl('', [Validators.required, noWhitespaceValidator()]),
-            useFireblocksSigning: new FormControl(false),
-            fireBlocksVaultId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksAssetId: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksApiKey: new FormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
-            fireBlocksPrivateiKey: new FormControl('', [
+        this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
+        this.hederaCredentialsForm = new UntypedFormGroup({
+            id: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            key: new UntypedFormControl('', [Validators.required, noWhitespaceValidator()]),
+            useFireblocksSigning: new UntypedFormControl(false),
+            fireBlocksVaultId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksAssetId: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksApiKey: new UntypedFormControl('', [ValidateIfFieldEqual('useFireblocksSigning', true, [])]),
+            fireBlocksPrivateiKey: new UntypedFormControl('', [
                 ValidateIfFieldEqual('useFireblocksSigning', true,
                     [
                         Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
                     ])])
         });
-        this.didDocumentType = new FormControl(false, [Validators.required]);
-        this.didDocumentForm = new FormControl('', [Validators.required]);
-        this.didKeysForm = new FormGroup({});
-        this.vcDocumentType = new FormControl(false, [Validators.required]);
-        this.vcDocumentForm = new FormGroup({});
+        this.didDocumentType = new UntypedFormControl(false, [Validators.required]);
+        this.didDocumentForm = new UntypedFormControl('', [Validators.required]);
+        this.didKeysForm = new UntypedFormGroup({});
+        this.vcDocumentType = new UntypedFormControl(false, [Validators.required]);
+        this.vcDocumentForm = new UntypedFormGroup({});
 
-        this.fullForm = new FormGroup({});
+        this.fullForm = new UntypedFormGroup({});
         this.fullForm.addControl('standardRegistry', this.standardRegistryForm);
         this.fullForm.addControl('hederaCredentials', this.hederaCredentialsForm);
         this.fullForm.addControl('didDocumentType', this.didDocumentType);
@@ -165,90 +164,90 @@ export class UserProfileComponent implements OnInit {
                 this.changeStep(1);
             }
         },
-        {
-            label: 'Hedera Credentials',
-            index: 1,
-            visibility: () => {
-                return true;
-            },
-            isFinish: () => {
-                return false;
-            },
-            canNext: () => {
-                return this.hederaCredentialsForm.valid;
-            },
-            next: () => {
-                this.changeStep(2);
-            }
-        },
-        {
-            label: 'DID Document',
-            index: 2,
-            visibility: () => {
-                return true;
-            },
-            isFinish: () => {
-                return !this.didDocumentType.value && !this.vcDocumentType.value;
-            },
-            canNext: () => {
-                if (this.didDocumentType.value) {
-                    return this.didDocumentForm.valid;
-                } else {
+            {
+                label: 'Hedera Credentials',
+                index: 1,
+                visibility: () => {
                     return true;
+                },
+                isFinish: () => {
+                    return false;
+                },
+                canNext: () => {
+                    return this.hederaCredentialsForm.valid;
+                },
+                next: () => {
+                    this.changeStep(2);
                 }
             },
-            next: () => {
-                if (this.didDocumentType.value) {
-                    this.parseDidDocument(() => {
-                        this.changeStep(3);
+            {
+                label: 'DID Document',
+                index: 2,
+                visibility: () => {
+                    return true;
+                },
+                isFinish: () => {
+                    return !this.didDocumentType.value && !this.vcDocumentType.value;
+                },
+                canNext: () => {
+                    if (this.didDocumentType.value) {
+                        return this.didDocumentForm.valid;
+                    } else {
+                        return true;
+                    }
+                },
+                next: () => {
+                    if (this.didDocumentType.value) {
+                        this.parseDidDocument(() => {
+                            this.changeStep(3);
+                        });
+                    } else {
+                        if (this.vcDocumentType.value) {
+                            this.changeStep(4);
+                        } else {
+                            this.onSubmit();
+                        }
+                    }
+                }
+            },
+            {
+                label: 'DID Document signing keys',
+                index: 3,
+                visibility: () => {
+                    return this.didDocumentType.value;
+                },
+                isFinish: () => {
+                    return !this.vcDocumentType.value;
+                },
+                canNext: () => {
+                    return this.didKeysForm.valid;
+                },
+                next: () => {
+                    this.parseDidKeys(() => {
+                        if (this.vcDocumentType.value) {
+                            this.changeStep(4);
+                        } else {
+                            this.onSubmit();
+                        }
                     });
-                } else {
-                    if (this.vcDocumentType.value) {
-                        this.changeStep(4);
-                    } else {
-                        this.onSubmit();
-                    }
                 }
-            }
-        },
-        {
-            label: 'DID Document signing keys',
-            index: 3,
-            visibility: () => {
-                return this.didDocumentType.value;
             },
-            isFinish: () => {
-                return !this.vcDocumentType.value;
-            },
-            canNext: () => {
-                return this.didKeysForm.valid;
-            },
-            next: () => {
-                this.parseDidKeys(() => {
-                    if (this.vcDocumentType.value) {
-                        this.changeStep(4);
-                    } else {
-                        this.onSubmit();
-                    }
-                });
-            }
-        },
-        {
-            label: 'VC Document',
-            index: 4,
-            visibility: () => {
-                return this.vcDocumentType.value;
-            },
-            isFinish: () => {
-                return true;
-            },
-            canNext: () => {
-                return this.vcDocumentForm.valid;
-            },
-            next: () => {
-                this.onSubmit();
-            }
-        }];
+            {
+                label: 'VC Document',
+                index: 4,
+                visibility: () => {
+                    return this.vcDocumentType.value;
+                },
+                isFinish: () => {
+                    return true;
+                },
+                canNext: () => {
+                    return this.vcDocumentForm.valid;
+                },
+                next: () => {
+                    this.onSubmit();
+                }
+            }];
     }
 
     ngOnInit() {
@@ -308,7 +307,7 @@ export class UserProfileComponent implements OnInit {
                     this.headerProps.setLoading(false);
                 }, 200);
             },
-            ({ message }) => {
+            ({message}) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);
@@ -331,7 +330,7 @@ export class UserProfileComponent implements OnInit {
             switch (operationMode) {
                 case OperationMode.Generate:
                     this.taskService.get(taskId).subscribe((task) => {
-                        const { id, key } = task.result;
+                        const {id, key} = task.result;
                         this.hederaCredentialsForm.patchValue({id, key});
                         this.loading = false;
                     });
@@ -348,35 +347,39 @@ export class UserProfileComponent implements OnInit {
 
     public openVCDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title: title,
                 type: 'VC',
                 viewDocument: true,
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     public openDIDDocument(document: any, title: string) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'DID',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'JSON',
-            },
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     private changeStep(step: number): void {
@@ -438,7 +441,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public clearFilters(): void {
-        this.filtersForm.reset({ policyName: '', geography: '' });
+        this.filtersForm.reset({policyName: '', geography: ''});
         this.filteredRegistries = [];
         this.noFilterResults = false;
         this.selectStandardRegistry('');
@@ -490,13 +493,13 @@ export class UserProfileComponent implements OnInit {
         this.loading = true;
         this.otherService.pushGetRandomKey().subscribe(
             (result) => {
-                const { taskId, expectation } = result;
+                const {taskId, expectation} = result;
                 this.taskId = taskId;
                 this.operationMode = OperationMode.Generate;
             },
             (e) => {
                 this.loading = false;
-                this.hederaCredentialsForm.setValue({ id: '', key: '' });
+                this.hederaCredentialsForm.setValue({id: '', key: ''});
             }
         );
     }
@@ -560,15 +563,15 @@ export class UserProfileComponent implements OnInit {
                             return;
                         }
                         this.didKeys = [];
-                        this.didKeysForm = new FormGroup({});
+                        this.didKeysForm = new UntypedFormGroup({});
                         this.fullForm.removeControl('didKeys');
                         this.fullForm.addControl('didKeys', this.didKeysForm);
 
                         const names = Object.keys(result.keys);
                         for (const name of names) {
-                            const keyNameControl = new FormControl('', [Validators.required]);
-                            const keyValueControl = new FormControl('', [Validators.required]);
-                            const keyControl = new FormGroup({
+                            const keyNameControl = new UntypedFormControl('', [Validators.required]);
+                            const keyValueControl = new UntypedFormControl('', [Validators.required]);
+                            const keyControl = new UntypedFormGroup({
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
@@ -649,7 +652,7 @@ export class UserProfileComponent implements OnInit {
         }
     }
 
-    private setErrors(form: FormControl | FormGroup, type?: string): void {
+    private setErrors(form: UntypedFormControl | UntypedFormGroup, type?: string): void {
         const errors: any = {};
         errors[type || 'incorrect'] = true;
         form.setErrors(errors);
@@ -690,7 +693,7 @@ export class UserProfileComponent implements OnInit {
         }
         this.profileService.pushSetProfile(profile).subscribe(
             (result) => {
-                const { taskId, expectation } = result;
+                const {taskId, expectation} = result;
                 this.taskId = taskId;
                 this.router.navigate(['task', taskId], {
                     queryParams: {
@@ -698,11 +701,24 @@ export class UserProfileComponent implements OnInit {
                     },
                 });
             },
-            ({ message }) => {
+            ({message}) => {
                 this.loading = false;
                 this.headerProps.setLoading(false);
                 console.error(message);
             }
         );
+    }
+
+    public changePassword(profile: any) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Change password',
+            width: '640px',
+            modal: true,
+            data: {
+                login: profile?.username,
+            }
+        }).onClose.subscribe((data) => {
+            this.loadDate();
+        });
     }
 }

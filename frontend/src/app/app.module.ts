@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { HTTP_INTERCEPTORS, HttpClientJsonpModule, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ToastrModule } from 'ngx-toastr';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
@@ -17,6 +17,7 @@ import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
 import { AuditService } from './services/audit.service';
 import { PolicyEngineService } from './services/policy-engine.service';
+import { PolicyStatisticsService } from './services/policy-statistics.service';
 import { DemoService } from './services/demo.service';
 import { PolicyHelper } from './services/policy-helper.service';
 import { IPFSService } from './services/ipfs.service';
@@ -34,9 +35,13 @@ import { MapService } from './services/map.service';
 import { WizardService } from './modules/policy-engine/services/wizard.service';
 import { NotificationService } from './services/notify.service';
 import { PermissionsService } from './services/permissions.service';
+import { WorkerTasksService } from './services/worker-tasks.service';
+import { SchemaRulesService } from './services/schema-rules.service';
+import { PolicyLabelsService } from './services/policy-labels.service';
 //Views
 import { UserProfileComponent } from './views/user-profile/user-profile.component';
 import { LoginComponent } from './views/login/login.component';
+import { ChangePasswordComponent } from './views/login/change-password/change-password.component';
 import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
@@ -50,7 +55,6 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
-import { BrandingDialogComponent } from './components/branding-dialog/branding-dialog.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -71,6 +75,7 @@ import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
 import { RecordService } from './services/record.service';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 // Injectors
 import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
@@ -123,13 +128,13 @@ import '../prototypes/date-prototype';
 import { OnlyForDemoDirective } from './directives/onlyfordemo.directive';
 import { UseWithServiceDirective } from './directives/use-with-service.directive';
 import { WorkerTasksComponent } from './views/worker-tasks/worker-tasks.component';
-import { WorkerTasksService } from './services/worker-tasks.service';
 
 @NgModule({
     declarations: [
         AppComponent,
         UserProfileComponent,
         LoginComponent,
+        ChangePasswordComponent,
         HomeComponent,
         HeaderComponent,
         RegisterComponent,
@@ -146,7 +151,6 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         InfoComponent,
         SchemaConfigComponent,
         BrandingComponent,
-        BrandingDialogComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
         NotificationComponent,
@@ -171,21 +175,21 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         UsersManagementDetailComponent,
         WorkerTasksComponent
     ],
-    imports: [
-        BrowserModule,
+    exports: [],
+    bootstrap: [AppComponent],
+    imports: [BrowserModule,
         CommonModule,
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
         BrowserAnimationsModule,
-        HttpClientModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
+        StatisticsModule,
         TagEngineModule,
         CompareModule,
         ToastrModule.forRoot(),
-        HttpClientJsonpModule,
         QRCodeModule,
         ButtonModule,
         InputTextModule,
@@ -211,9 +215,7 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
-        AngularSvgIconModule.forRoot()
-    ],
-    exports: [],
+        AngularSvgIconModule.forRoot()],
     providers: [
         WebSocketService,
         AuthService,
@@ -223,6 +225,9 @@ import { WorkerTasksService } from './services/worker-tasks.service';
         AnalyticsService,
         AuditService,
         PolicyEngineService,
+        PolicyStatisticsService,
+        SchemaRulesService,
+        PolicyLabelsService,
         PolicyHelper,
         IPFSService,
         ArtifactService,
@@ -264,8 +269,9 @@ import { WorkerTasksService } from './services/worker-tasks.service';
             provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
             multi: true,
-        }
-    ],
-    bootstrap: [AppComponent],
+        },
+        provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
+    ]
 })
-export class AppModule { }
+export class AppModule {
+}

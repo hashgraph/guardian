@@ -3,7 +3,6 @@ import { NestFactory } from '@nestjs/core';
 import { HttpStatus, ValidationPipe } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import * as extraModels from './middlewares/validation/schemas/index.js';
 import { SwaggerConfig } from './helpers/swagger-config.js';
 import { json } from 'express';
 import process from 'process';
@@ -30,6 +29,7 @@ Promise.all([
                     queue: 'INDEXER_API_SERVICES',
                     servers: [`nats://${process.env.MQ_ADDRESS}:4222`],
                 },
+                // tls: GenerateTLSOptionsNats()
             });
             app.useGlobalPipes(
                 new ValidationPipe({
@@ -40,17 +40,7 @@ Promise.all([
             app.use(json({ limit: '10mb' }));
 
             const document = SwaggerModule.createDocument(app, SwaggerConfig, {
-                extraModels: Object.values(extraModels).filter(
-                    (constructor: new (...args: any[]) => any) => {
-                        try {
-                            // tslint:disable-next-line:no-unused-expression
-                            new constructor();
-                            return true;
-                        } catch {
-                            return false;
-                        }
-                    }
-                ),
+                extraModels: [],
             });
             console.log(document.toString())
             SwaggerModule.setup('api-docs', app, document);

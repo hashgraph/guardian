@@ -6,20 +6,15 @@ export class RawTopicDTO implements RawTopic {
         description: 'Identifier',
         example: '667c240639282050117a1985',
     })
-    _id: string;
-    @ApiProperty({
-        description: 'Identifier',
-        example: '667c240639282050117a1985',
-    })
     id: string;
     @ApiProperty({
         description: 'Topic identifier',
         example: '0.0.4481265',
     })
     topicId: string;
-    @ApiProperty({
-        description: 'Status',
-    })
+    // @ApiProperty({
+    //     description: 'Status',
+    // })
     status: string;
     @ApiProperty({
         description: 'Last update',

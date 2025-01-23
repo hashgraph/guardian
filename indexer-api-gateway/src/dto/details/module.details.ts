@@ -3,6 +3,8 @@ import {
     ModuleOptions,
     Module,
     ModuleDetails,
+    MessageAction,
+    MessageType,
 } from '@indexer/interfaces';
 import { ApiProperty } from '@nestjs/swagger';
 import { MessageDTO } from '../message.dto.js';
@@ -50,19 +52,36 @@ export class ModuleDTO
     implements Module
 {
     @ApiProperty({
+        description: 'Type',
+        enum: MessageType,
+        example: MessageType.MODULE
+    })
+    declare type: MessageType;
+    @ApiProperty({
+        description: 'Action',
+        enum: MessageAction,
+        example: MessageAction.PublishModule
+    })
+    declare action: MessageAction;
+    @ApiProperty({
         type: ModuleOptionsDTO,
     })
     declare options: ModuleOptionsDTO;
     @ApiProperty({
         type: ModuleAnalyticsDTO,
     })
-    declare analytics: ModuleAnalyticsDTO;
+    declare analytics?: ModuleAnalyticsDTO;
 }
 
 export class ModuleDetailsDTO
     extends DetailsDTO<ModuleDTO>
     implements ModuleDetails
 {
+    @ApiProperty({
+        description: 'UUID',
+        example: '93938a10-d032-4a9b-9425-092e58bffbf7',
+    })
+    declare uuid?: string;
     @ApiProperty({
         type: ModuleDTO,
     })

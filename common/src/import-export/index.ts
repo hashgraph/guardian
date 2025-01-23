@@ -5,3 +5,6 @@ export * from './tool.js';
 export * from './theme.js';
 export * from './record.js';
 export * from './utils.js';
+export * from './schema-rule.js';
+export * from './policy-statistic.js';
+export * from './policy-label.js';

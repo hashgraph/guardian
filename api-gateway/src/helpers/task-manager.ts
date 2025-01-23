@@ -61,8 +61,8 @@ export class TaskManager {
         [TaskAction.CREATE_POLICY, 8],
         [TaskAction.WIZARD_CREATE_POLICY, 8],
         [TaskAction.PUBLISH_POLICY, 13],
-        [TaskAction.IMPORT_POLICY_FILE, 10],
-        [TaskAction.IMPORT_POLICY_MESSAGE, 12],
+        [TaskAction.IMPORT_POLICY_FILE, 15],
+        [TaskAction.IMPORT_POLICY_MESSAGE, 17],
         [TaskAction.PUBLISH_SCHEMA, 8],
         [TaskAction.IMPORT_SCHEMA_FILE, 3],
         [TaskAction.IMPORT_SCHEMA_MESSAGE, 3],
@@ -81,7 +81,8 @@ export class TaskManager {
         [TaskAction.CREATE_TOOL, 8],
         [TaskAction.IMPORT_TOOL_FILE, 9],
         [TaskAction.IMPORT_TOOL_MESSAGE, 11],
-        [TaskAction.MIGRATE_DATA, 4]
+        [TaskAction.MIGRATE_DATA, 4],
+        [TaskAction.PUBLISH_POLICY_LABEL, 4]
     ]);
 
     /**

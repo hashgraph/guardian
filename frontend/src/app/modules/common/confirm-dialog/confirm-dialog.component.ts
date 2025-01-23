@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {Component, Inject} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog allowing you to select a file and load schemes.
@@ -16,9 +16,11 @@ export class ConfirmDialog {
     public cancelButton: string = 'Cancel';
 
     constructor(
-        public dialogRef: MatDialogRef<ConfirmDialog>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
     ) {
+        const data = this.config.data
+
         this.title = data.title;
         this.submitButton = data.submitButton || 'Ok';
         this.cancelButton = data.cancelButton || 'Cancel';

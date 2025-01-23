@@ -1,13 +1,12 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { AuditService } from '../../services/audit.service';
-import { AuthService } from '../../services/auth.service';
-import { forkJoin } from 'rxjs';
-import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
-import { PolicyEngineService } from '../../services/policy-engine.service';
-import { HttpResponse } from '@angular/common/http';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {AuditService} from '../../services/audit.service';
+import {AuthService} from '../../services/auth.service';
+import {forkJoin} from 'rxjs';
+import {VCViewerDialog} from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
+import {PolicyEngineService} from '../../services/policy-engine.service';
+import {HttpResponse} from '@angular/common/http';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Page with the list of VP Documents.
@@ -45,7 +44,6 @@ export class AuditComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private policyEngineService: PolicyEngineService,
-        public dialog: MatDialog,
         private dialogService: DialogService,
     ) {
         this.dataCount = 0;
@@ -124,7 +122,7 @@ export class AuditComponent implements OnInit {
             setTimeout(() => {
                 this.loading = false;
             }, 500);
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -141,15 +139,15 @@ export class AuditComponent implements OnInit {
 
     openVP(element: any) {
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: element.id,
+                row: element,
                 dryRun: !!element.dryRunId,
                 document: element.document,
-                title: 'VP',
+                title: 'VP Document',
                 type: 'VP',
                 viewDocument: true
             }
@@ -161,14 +159,14 @@ export class AuditComponent implements OnInit {
     setFilter(type: string, value: string) {
         if (type == 'policyId') {
             this.currentPolicy = value;
-            this.router.navigate(['/audit'], { queryParams: { policyId: value } });
+            this.router.navigate(['/audit'], {queryParams: {policyId: value}});
             this.onFilter();
         }
         if (type == 'id') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
+            this.router.navigate(['/trust-chain'], {queryParams: {search: value}});
         }
         if (type == 'hash') {
-            this.router.navigate(['/trust-chain'], { queryParams: { search: value } });
+            this.router.navigate(['/trust-chain'], {queryParams: {search: value}});
         }
     }
 }

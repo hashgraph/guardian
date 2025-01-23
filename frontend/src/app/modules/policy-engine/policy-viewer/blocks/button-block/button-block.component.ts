@@ -1,10 +1,10 @@
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'Buttons' type.
@@ -33,7 +33,6 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        public dialog: MatDialog,
         private dialogService: DialogService,
         private cdref: ChangeDetectorRef
     ) {
@@ -88,22 +87,28 @@ export class ButtonBlockComponent implements OnInit, AfterContentChecked {
             this.setData(this.static);
             setTimeout(() => {
                 this.loading = false;
+                this.cdref.detectChanges();
             }, 500);
         } else {
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        setTimeout(() => {
-                            this.loading = false;
-                        }, 1000);
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 

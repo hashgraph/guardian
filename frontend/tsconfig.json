@@ -6,17 +6,16 @@
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
+    "esModuleInterop": true,
     "strictPropertyInitialization": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2017",
+    "target": "ES2022",
     "module": "es2020",
     "lib": [
       "es2018",
@@ -24,10 +23,17 @@
       "dom.iterable"
     ],
     "paths": {
-      "crypto": ["./node_modules/crypto-browserify/index.js"],
-      "process": ["./node_modules/process/browser.js"],
-      "stream": ["./node_modules/stream-browserify/index.js"]
-    }
+      "crypto": [
+        "./node_modules/crypto-browserify/index.js"
+      ],
+      "process": [
+        "./node_modules/process/browser.js"
+      ],
+      "stream": [
+        "./node_modules/stream-browserify/index.js"
+      ]
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

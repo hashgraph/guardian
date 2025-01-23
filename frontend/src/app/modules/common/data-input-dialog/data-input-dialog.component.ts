@@ -1,6 +1,7 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+
+import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating policy.
@@ -11,16 +12,20 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
     styleUrls: ['./data-input-dialog.component.css'],
 })
 export class DataInputDialogComponent {
-    dataForm = new FormGroup({});
+    dataForm = new UntypedFormGroup({});
     loading: boolean = false;
 
     title: string = '';
     fieldsConfig: any = [];
 
+    isVisible: boolean = true;
+
     constructor(
-        public dialogRef: MatDialogRef<DataInputDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
     ) {
+        const data = config.data;
+
         if (!data) {
             return;
         }
@@ -29,7 +34,7 @@ export class DataInputDialogComponent {
         this.fieldsConfig.forEach((item: any) => {
             this.dataForm.addControl(
                 item.name,
-                new FormControl(
+                new UntypedFormControl(
                     item.initialValue,
                     item.validators
                 )

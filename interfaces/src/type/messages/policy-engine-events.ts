@@ -62,6 +62,11 @@ export enum PolicyEngineEvents {
     UPLOAD_POLICY_DATA = 'policy-engine-event-upload-policy-data',
     UPLOAD_VIRTUAL_KEYS = 'policy-engine-event-upload-virtual-keys',
     GET_TAG_BLOCK_MAP = 'policy-engine-event-get-tag-block-map',
-
+    ADD_POLICY_TEST = 'policy-engine-event-add-policy-test',
+    GET_POLICY_TEST= 'policy-engine-event-get-policy-test',
+    START_POLICY_TEST = 'policy-engine-event-start-policy-test',
+    STOP_POLICY_TEST = 'policy-engine-event-stop-policy-test',
+    DELETE_POLICY_TEST = 'policy-engine-event-delete-policy-test',
+    GET_POLICY_TEST_DETAILS = 'policy-engine-event-get-policy-test-details',
     ACCESS_POLICY = 'policy-engine-event-access-policy'
 }

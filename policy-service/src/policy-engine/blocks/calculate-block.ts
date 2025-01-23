@@ -1,4 +1,4 @@
-import { SchemaHelper } from '@guardian/interfaces';
+import { IVC, SchemaHelper } from '@guardian/interfaces';
 import { ActionCallback, CalculateBlock } from '../helpers/decorators/index.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
@@ -62,10 +62,19 @@ export class CalculateContainerBlock {
      * @param ref
      * @private
      */
-    private async calculate(documents: any | any[], ref: IPolicyCalculateBlock): Promise<VcDocumentCollection> {
+    private async calculate(
+        documents: IVC | IVC[],
+        ref: IPolicyCalculateBlock,
+        parents: IPolicyDocument | IPolicyDocument[],
+    ): Promise<VcDocumentCollection> {
         const fields = ref.options.inputFields;
         let scope = {};
         let docOwner: PolicyUser;
+        if (Array.isArray(parents)) {
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents[0]);
+        } else {
+            docOwner = await PolicyUtils.getDocumentOwner(ref, parents);
+        }
         if (fields) {
             if (Array.isArray(documents)) {
                 for (const field of fields) {
@@ -75,12 +84,10 @@ export class CalculateContainerBlock {
                     }
                     scope[field.value] = value;
                 }
-                docOwner = await PolicyUtils.getDocumentOwner(ref, documents[0]);
             } else {
                 for (const field of fields) {
                     scope[field.value] = documents[field.name];
                 }
-                docOwner = await PolicyUtils.getDocumentOwner(ref, documents);
             }
         }
         const addons = ref.getAddons();
@@ -128,7 +135,7 @@ export class CalculateContainerBlock {
         }
         // -->
 
-        const newJson = await this.calculate(json, ref);
+        const newJson = await this.calculate(json, ref, documents);
         if (ref.options.unsigned) {
             return await this.createUnsignedDocument(newJson, ref);
         } else {

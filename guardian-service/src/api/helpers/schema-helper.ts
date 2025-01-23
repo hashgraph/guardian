@@ -1,161 +1,8 @@
-import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
-import path from 'path';
-import fs from 'fs-extra';
-
-import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users, } from '@guardian/common';
+import { GenerateUUIDv4, IOwner, IRootConfig, ISchema, ModuleStatus, Schema, SchemaCategory, SchemaHelper, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { DatabaseServer, MessageAction, MessageServer, Schema as SchemaCollection, SchemaConverterUtils, SchemaMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { INotifier } from '../../helpers/notifier.js';
 import { importTag } from '../../api/helpers/tag-import-export-helper.js';
-
-const { readJSON } = fs;
-
-/**
- * Import Result
- */
-export interface SchemaImportResult {
-    /**
-     * Old schema id
-     */
-    oldID: string,
-    /**
-     * New schema id
-     */
-    newID: string,
-    /**
-     * Old schema uuid
-     */
-    oldUUID: string,
-    /**
-     * New schema uuid
-     */
-    newUUID: string,
-    /**
-     * Old schema iri
-     */
-    oldIRI: string,
-    /**
-     * New schema iri
-     */
-    newIRI: string,
-    /**
-     * Old schema message id
-     */
-    oldMessageID: string
-    /**
-     * Old schema message id
-     */
-    newMessageID: string
-}
-
-/**
- * Import Result
- */
-export interface ImportResult {
-    /**
-     * New schema uuid
-     */
-    schemasMap: SchemaImportResult[];
-    /**
-     * Errors
-     */
-    errors: any[];
-}
-
-/**
- * Creation of default schemas.
- */
-export async function setDefaultSchema() {
-    const fileConfig = path.join(process.cwd(), 'system-schemas', 'system-schemas.json');
-    let fileContent: any;
-    try {
-        fileContent = await readJSON(fileConfig);
-    } catch (error) {
-        throw new Error('you need to create a file \'system-schemas.json\'');
-    }
-
-    const map: any = {};
-    for (const schema of fileContent) {
-        map[schema.entity] = schema;
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.MINT_NFTOKEN)) {
-        throw new Error(`You need to fill ${SchemaEntity.MINT_NFTOKEN} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.MINT_TOKEN)) {
-        throw new Error(`You need to fill ${SchemaEntity.MINT_TOKEN} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.POLICY)) {
-        throw new Error(`You need to fill ${SchemaEntity.POLICY} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.STANDARD_REGISTRY)) {
-        throw new Error(`You need to fill ${SchemaEntity.STANDARD_REGISTRY} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.WIPE_TOKEN)) {
-        throw new Error(`You need to fill ${SchemaEntity.WIPE_TOKEN} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.ROLE)) {
-        throw new Error(`You need to fill ${SchemaEntity.ROLE} field in system-schemas.json file`);
-    }
-
-    if (!map.hasOwnProperty(SchemaEntity.USER_PERMISSIONS)) {
-        throw new Error(`You need to fill ${SchemaEntity.USER_PERMISSIONS} field in system-schemas.json file`);
-    }
-
-    const fn = async (schema: any) => {
-        const existingSchemas = await DatabaseServer.getSchema({
-            uuid: schema.uuid,
-            system: true
-        });
-        if (existingSchemas) {
-            console.log(`Skip schema: ${schema.uuid}`);
-            return;
-        }
-        schema.owner = null;
-        schema.creator = null;
-        schema.readonly = true;
-        schema.system = true;
-        schema.active = true;
-        await DatabaseServer.createAndSaveSchema(schema);
-        console.log(`Created schema: ${schema.uuid}`);
-    }
-
-    await fn(map[SchemaEntity.MINT_NFTOKEN]);
-    await fn(map[SchemaEntity.MINT_TOKEN]);
-    await fn(map[SchemaEntity.RETIRE_TOKEN]);
-    await fn(map[SchemaEntity.POLICY]);
-    await fn(map[SchemaEntity.STANDARD_REGISTRY]);
-    await fn(map[SchemaEntity.WIPE_TOKEN]);
-    await fn(map[SchemaEntity.ISSUER]);
-    await fn(map[SchemaEntity.USER_ROLE]);
-    await fn(map[SchemaEntity.CHUNK]);
-    await fn(map[SchemaEntity.ACTIVITY_IMPACT]);
-    await fn(map[SchemaEntity.TOKEN_DATA_SOURCE]);
-    await fn(map[SchemaEntity.ROLE]);
-    await fn(map[SchemaEntity.USER_PERMISSIONS]);
-}
-
-/**
- * Get defs
- * @param schema
- */
-export function getDefs(schema: ISchema): string[] {
-    try {
-        let document: any = schema.document;
-        if (typeof document === 'string') {
-            document = JSON.parse(document);
-        }
-        if (!document.$defs) {
-            return [];
-        }
-        return Object.keys(document.$defs);
-    } catch (error) {
-        return [];
-    }
-}
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Only unique
@@ -329,14 +176,13 @@ export function fixSchemaDefsOnImport(
  * @param topic Topic
  * @param action
  * @param schema Schema
- * @param userId
  */
 export async function sendSchemaMessage(
+    owner: IOwner,
     root: IRootConfig,
     topic: TopicConfig,
     action: MessageAction,
     schema: SchemaCollection,
-    userId?: string
 ) {
     const messageServer = new MessageServer(
         root.hederaAccountId,
@@ -347,7 +193,7 @@ export async function sendSchemaMessage(
     message.setDocument(schema);
     await messageServer
         .setTopicObject(topic)
-        .sendMessage(message, true, null, userId);
+        .sendMessage(message, true, null, owner.id);
 }
 
 export async function copyDefsSchemas(
@@ -373,8 +219,6 @@ export async function copySchemaAsync(
 ) {
     const users = new Users();
     const root = await users.getHederaAccount(user.creator);
-    const userAccount = await users.getUser(user.username);
-    const userId = userAccount.id.toString();
 
     let item = await DatabaseServer.getSchema({ iri });
 
@@ -419,11 +263,11 @@ export async function copySchemaAsync(
 
     if (topic) {
         await sendSchemaMessage(
+            user,
             root,
             topic,
             MessageAction.CreateSchema,
-            item,
-            userId
+            item
         );
     }
     return item;
@@ -498,8 +342,7 @@ export async function createSchema(
     const users = new Users();
     notifier.start('Resolve Hedera account');
     const root = await users.getHederaAccount(user.creator);
-    const userAccount = await users.getUser(user.username);
-    const userId = userAccount.id.toString();
+
     notifier.completedAndStart('Save in DB');
     if (newSchema) {
         delete newSchema.status;
@@ -524,7 +367,7 @@ export async function createSchema(
         });
         await topic.saveKeys();
         await DatabaseServer.saveTopic(topic.toObject());
-        await topicHelper.twoWayLink(topic, null, null, userId);
+        await topicHelper.twoWayLink(topic, null, null, user.id);
     }
 
     const errors = SchemaHelper.checkErrors(newSchema as Schema)
@@ -535,35 +378,34 @@ export async function createSchema(
     schemaObject.iri = schemaObject.iri || `${schemaObject.uuid}`;
     schemaObject.codeVersion = SchemaConverterUtils.VERSION;
     const errorsCount = await DatabaseServer.getSchemasCount({
-        where: {
             iri: {
-                $eq: schemaObject.iri
+                $eq: schemaObject.iri,
             },
             $or: [
                 {
                     topicId: {
-                        $ne: schemaObject.topicId
-                    }
+                        $ne: schemaObject.topicId,
+                    },
                 },
                 {
                     uuid: {
-                        $ne: schemaObject.uuid
-                    }
-                }
-            ]
-        }
-    });
+                        $ne: schemaObject.uuid,
+                    },
+                },
+            ],
+        } as FilterObject<SchemaCollection>,
+    );
     if (errorsCount > 0) {
         throw new Error('Schema identifier already exist');
     }
     notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
         await sendSchemaMessage(
+            user,
             root,
             topic,
             MessageAction.CreateSchema,
-            schemaObject,
-            userId
+            schemaObject
         );
     }
     notifier.completedAndStart('Update schema in DB');
@@ -577,7 +419,6 @@ export async function createSchema(
  * @param schemaId Schema ID
  * @param owner
  * @param notifier Notifier
- * @param userId
  */
 export async function deleteSchema(
     schemaId: any,
@@ -602,16 +443,38 @@ export async function deleteSchema(
         if (topic) {
             const users = new Users();
             const root = await users.getHederaAccount(owner.creator);
-            const userAccount = await users.getUser(owner.username);
-            const userId = userAccount.id.toString();
             await sendSchemaMessage(
+                owner,
                 root,
                 topic,
                 MessageAction.DeleteSchema,
-                item,
-                userId
+                item
             );
         }
     }
+    await DatabaseServer.deleteSchemas(item.id);
+}
+
+/**
+ * Delete schema
+ * @param schemaId Schema ID
+ * @param owner
+ * @param notifier Notifier
+ */
+export async function deleteDemoSchema(
+    schemaId: any,
+    owner: IOwner,
+    notifier: INotifier,
+) {
+    if (!schemaId) {
+        return;
+    }
+
+    const item = await DatabaseServer.getSchema(schemaId);
+    if (!item) {
+        throw new Error('Schema not found');
+    }
+
+    notifier.info(`Delete schema ${item.name}`);
     await DatabaseServer.deleteSchemas(item.id);
 }

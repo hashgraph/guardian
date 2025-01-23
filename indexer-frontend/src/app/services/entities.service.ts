@@ -36,6 +36,10 @@ import {
     VP,
     VPDetails,
     Relationships,
+    Statistic,
+    StatisticDetails,
+    Label,
+    LabelDetails,
 } from '@indexer/interfaces';
 
 /**
@@ -45,7 +49,7 @@ import {
 export class EntitiesService {
     private readonly url: string = `${API_BASE_URL}/entities`;
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     //#region ACCOUNTS
     //#region REGISTRIES
@@ -319,5 +323,65 @@ export class EntitiesService {
         ) as any;
     }
     //#endregion
+    //#region LABELS
+    public getLabels(filters: PageFilters): Observable<Page<Label>> {
+        const entity = 'labels';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Label>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getLabel(messageId: string): Observable<LabelDetails> {
+        const entity = 'labels';
+        return this.http.get<LabelDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getLabelDocuments(filters: PageFilters): Observable<Page<VP>> {
+        const entity = 'label-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VP>>(`${this.url}/${entity}`, options) as any;
+    }
+
+    public getLabelDocument(messageId: string): Observable<VPDetails> {
+        const entity = 'label-documents';
+        return this.http.get<VPDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
     //#endregion
+    //#region STATISTICS
+    public getStatistics(filters: PageFilters): Observable<Page<Statistic>> {
+        const entity = 'statistics';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Statistic>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getStatistic(messageId: string): Observable<StatisticDetails> {
+        const entity = 'statistics';
+        return this.http.get<StatisticDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getStatisticDocuments(filters: PageFilters): Observable<Page<VC>> {
+        const entity = 'statistic-documents';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<VC>>(`${this.url}/${entity}`, options) as any;
+    }
+    //#endregion
+    //#endregion
+
+    public updateFiles<T>(messageId: string): Observable<T> {
+        return this.http.post<T>(`${this.url}/update-files`, {
+            messageId
+        }) as any;
+    }
 }

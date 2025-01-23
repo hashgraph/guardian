@@ -1,14 +1,15 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     DatabaseServer,
-    Logger,
     MessageError,
     MessageResponse,
     Policy,
     VcDocument,
-    VcDocumentDefinition
+    VcDocumentDefinition,
+    PinoLogger,
 } from '@guardian/common';
 import { MessageAPI, Schema, SchemaField } from '@guardian/interfaces';
+import { FilterObject } from '@mikro-orm/core';
 
 export const CompanyNameField = 'AccountableImpactOrganization.name';
 export const SectoralScopeField = 'ActivityImpactModule.projectScope';
@@ -25,9 +26,10 @@ export async function getProjectSchema(iri: string, schemas: Map<string, any>): 
     } else {
         const schema = await new DatabaseServer().getSchemaByIRI(iri);
         if (schema) {
-            const fieldCompanyName = (new Schema(schema)).searchFields((f) => f.title === CompanyNameField);
-            const fieldSectoralScope = (new Schema(schema)).searchFields((f) => f.title === SectoralScopeField);
-            const fieldTitle = (new Schema(schema)).searchFields((f) => f.title === ProjectTitleField);
+            const _schema = new Schema(schema);
+            const fieldCompanyName = _schema.searchFields((f) => f.property === CompanyNameField);
+            const fieldSectoralScope = _schema.searchFields((f) => f.property === SectoralScopeField);
+            const fieldTitle = _schema.searchFields((f) => f.property === ProjectTitleField);
             schemas.set(iri, {
                 fieldCompanyName,
                 fieldSectoralScope,
@@ -80,7 +82,7 @@ export async function getProjectsData(documents: VcDocument[], allPolicies: Poli
 /**
  * Connect to the message broker methods of working with projects.
  */
-export async function projectsAPI(): Promise<void> {
+export async function projectsAPI(logger: PinoLogger): Promise<void> {
     ApiResponse(MessageAPI.SEARCH_PROJECTS,
         async (msg: { categoryIds: string[], policyIds: string[] }) => {
             try {
@@ -98,7 +100,7 @@ export async function projectsAPI(): Promise<void> {
                 const fetchedPolicies = await DatabaseServer.getPolicies({
                     id: { $in: msg.policyIds },
                     status: { $eq: 'PUBLISH' }
-                });
+                } as FilterObject<Policy>);
                 const allPolicies = policies.concat(fetchedPolicies);
 
                 const resultSchemas: Set<string> = new Set<string>();
@@ -134,7 +136,7 @@ export async function projectsAPI(): Promise<void> {
 
                 return new MessageResponse(projects);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -144,7 +146,7 @@ export async function projectsAPI(): Promise<void> {
             const policyCategories = await DatabaseServer.getPolicyCategories();
             return new MessageResponse(policyCategories);
         } catch (error) {
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });
@@ -155,7 +157,7 @@ export async function projectsAPI(): Promise<void> {
             return new MessageResponse(policyProperties);
         } catch (error) {
             console.log(error);
-            new Logger().error(error, ['GUARDIAN_SERVICE']);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

@@ -6,11 +6,6 @@ export class RawNFT {
     /**
      * Identifier
      */
-    _id: any;
-
-    /**
-     * Identifier
-     */
     id!: string;
 
     /**

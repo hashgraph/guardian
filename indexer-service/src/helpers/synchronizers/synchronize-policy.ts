@@ -1,112 +1,125 @@
 import { DataBaseHelper, Message, TokenCache } from '@indexer/common';
 import { MessageType, MessageAction, PolicyAnalytics } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
-import { safetyRunning } from '../../utils/safety-running.js';
 import { parsePolicyFile } from '../parsers/policy.parser.js';
 import { HashComparator, PolicyLoader } from '../../analytics/index.js';
+import { SynchronizationTask } from '../synchronization-task.js';
+import { loadFiles } from '../load-files.js';
 
 enum TokenType {
     FT = 'FUNGIBLE_COMMON',
     NFT = 'NON_FUNGIBLE_UNIQUE',
 }
 
-async function findSR(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
-    const em = DataBaseHelper.getEntityManager();
-    const topicDescription = await em.findOne(Message, {
-        type: MessageType.TOPIC,
-        action: MessageAction.CreateTopic,
-        topicId: policyRow.topicId,
-    } as any);
+export class SynchronizationPolicy extends SynchronizationTask {
+    public readonly name: string = 'policy';
 
-    if (!topicDescription) {
-        return analytics;
+    constructor(mask: string) {
+        super('policy', mask);
     }
 
-    const parentTopicId = topicDescription.options?.parentId;
-    const registry = await em.findOne(Message, {
-        type: MessageType.STANDARD_REGISTRY,
-        'options.registrantTopicId': parentTopicId
-    } as any);
+    public override async sync(): Promise<void> {
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+        const collection2 = em.getCollection<TokenCache>('token_cache');
 
-    if (!registry) {
-        return analytics;
-    }
-
-    analytics.registryId = registry.consensusTimestamp;
-    analytics.owner = registry.options?.did;
-}
-
-async function findDocuments(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
-    const em = DataBaseHelper.getEntityManager();
-    const topics = new Set<string>();
-    topics.add(policyRow.options?.instanceTopicId);
-
-    const dynamicTopics = await em.find(Message, {
-        topicId: policyRow.options?.instanceTopicId,
-        type: MessageType.TOPIC,
-        action: MessageAction.CreateTopic,
-        'options.messageType': 'DYNAMIC_TOPIC'
-    } as any);
-
-    for (const dynamicTopic of dynamicTopics) {
-        topics.add(dynamicTopic.options?.childId)
-    }
-
-    const vc = await em.count(Message, {
-        topicId: { $in: Array.from(topics) },
-        type: { $in: [MessageType.VC_DOCUMENT, MessageType.EVC_DOCUMENT] },
-    } as any);
-
-    const vp = await em.count(Message, {
-        topicId: { $in: Array.from(topics) },
-        type: MessageType.VP_DOCUMENT,
-    } as any);
-
-    analytics.vcCount = vc;
-    analytics.vpCount = vp;
-
-    return analytics;
-}
-
-async function findNFTs(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
-    if (!analytics.tokens || !analytics.tokens.length) {
-        analytics.tokensCount = 0;
-        return analytics;
-    }
-    const em = DataBaseHelper.getEntityManager();
-    const tokens = await em.find(TokenCache, {
-        tokenId: { $in: analytics.tokens }
-    } as any);
-    let tokensCount = 0;
-    for (const token of tokens) {
-        if (token.type === TokenType.NFT) {
-            tokensCount += Number(token.serialNumber);
-        } else {
-            tokensCount += Number(token.totalSupply);
+        console.log(`Sync Policies: load policies`)
+        const policies = collection.find({
+            type: MessageType.INSTANCE_POLICY,
+            action: MessageAction.PublishPolicy
+        });
+        const fileIds: Set<string> = new Set<string>();
+        const allPolicies: Message[] = [];
+        while (await policies.hasNext()) {
+            const policy = await policies.next();
+            allPolicies.push(policy);
+            fileIds.add(policy.files?.[0]);
         }
+
+        console.log(`Sync Policies: load files`)
+        const fileMap = await loadFiles(fileIds, true);
+
+        console.log(`Sync Policies: load SRs`)
+        const srMap = new Map<string, Message>();
+        const srs = collection.find({ type: MessageType.STANDARD_REGISTRY });
+        while (await srs.hasNext()) {
+            const sr = await srs.next();
+            if (sr.options?.registrantTopicId) {
+                srMap.set(sr.options.registrantTopicId, sr);
+            }
+        }
+
+        console.log(`Sync Policies: load topics`)
+        const topicMap = new Map<string, Message[]>();
+        const topics = collection.find({
+            type: MessageType.TOPIC,
+            action: MessageAction.CreateTopic
+        });
+        while (await topics.hasNext()) {
+            const topic = await topics.next();
+            if (topicMap.has(topic.topicId)) {
+                topicMap.get(topic.topicId).push(topic);
+            } else {
+                topicMap.set(topic.topicId, [topic]);
+            }
+        }
+
+        console.log(`Sync Policies: load documents`)
+        const documentMap = new Map<string, { vc: number, vp: number, evc: number }>();
+        const documents = collection.find({
+            type: { $in: [MessageType.VC_DOCUMENT, MessageType.EVC_DOCUMENT, MessageType.VP_DOCUMENT] },
+        });
+        while (await documents.hasNext()) {
+            const document = await documents.next();
+            let data: { vc: number, vp: number, evc: number };
+            if (documentMap.has(document.topicId)) {
+                data = documentMap.get(document.topicId);
+            } else {
+                data = { vc: 0, vp: 0, evc: 0 };
+            }
+            if (document.type === MessageType.VC_DOCUMENT) {
+                data.vc++;
+            } else if (document.type === MessageType.EVC_DOCUMENT) {
+                data.evc++;
+            } else {
+                data.vp++;
+            }
+            documentMap.set(document.topicId, data);
+        }
+
+        console.log(`Sync Policies: load token`)
+        const tokenMap = new Map<string, TokenCache>();
+        const tokens = collection2.find();
+        while (await tokens.hasNext()) {
+            const token = await tokens.next();
+            tokenMap.set(token.tokenId, token);
+        }
+
+        console.log(`Sync Policies: update data`)
+        for (const policyRow of allPolicies) {
+            const row = em.getReference(Message, policyRow._id);
+            row.analytics = await this.createAnalytics(
+                policyRow,
+                topicMap,
+                srMap,
+                documentMap,
+                tokenMap,
+                fileMap
+            );
+            em.persist(row);
+        }
+        console.log(`Sync Policies: flush`)
+        await em.flush();
     }
-    analytics.tokensCount = tokensCount;
-    return analytics;
-}
 
-async function findTags(policyRow: any, analytics: PolicyAnalytics): Promise<PolicyAnalytics> {
-    analytics.tags = [];
-    return analytics;
-}
-
-export async function synchronizePolicies() {
-    const em = DataBaseHelper.getEntityManager();
-    const collection = em.getCollection('message');
-    const policies = collection.find({
-        type: MessageType.INSTANCE_POLICY,
-        action: MessageAction.PublishPolicy
-    });
-    let index = 0;
-    const count = await policies.count();
-    while (await policies.hasNext()) {
-        index++;
-        console.log(`Sync policies: ${index}/${count}`);
-        const policyRow = await policies.next();
+    private async createAnalytics(
+        policyRow: Message,
+        topicMap: Map<string, Message[]>,
+        srMap: Map<string, Message>,
+        documentMap: Map<string, { vc: number, vp: number, evc: number }>,
+        tokenMap: Map<string, TokenCache>,
+        fileMap: Map<string, Buffer>,
+    ): Promise<any> {
         const analytics: PolicyAnalytics = {
             owner: undefined,
             textSearch: textSearch(policyRow),
@@ -120,47 +133,113 @@ export async function synchronizePolicies() {
             hash: null,
             hashMap: null
         };
+        await this.findZip(policyRow, fileMap, analytics);
+        this.findSR(policyRow, topicMap, srMap, analytics);
+        this.findDocuments(policyRow, topicMap, documentMap, analytics);
+        this.findNFTs(policyRow, tokenMap, analytics);
+        this.findTags(policyRow, analytics);
+        return analytics;
+    }
 
-        await safetyRunning(async () => {
-            try {
-                const policyFileId = policyRow.files[0];
-                const policyFileBuffer = await DataBaseHelper.loadFile(policyFileId, true);
-                if (!policyFileBuffer) {
-                    return;
+    private async findZip(
+        policyRow: any,
+        fileMap: Map<string, Buffer>,
+        analytics: PolicyAnalytics
+    ): Promise<void> {
+        const policyFileId = policyRow.files[0];
+        const policyFileBuffer = fileMap.get(policyFileId);
+        if (!policyFileBuffer) {
+            return;
+        }
+        const policyData = await parsePolicyFile(policyFileBuffer, false);
+        if (!policyData) {
+            return;
+        }
+        analytics.tools = policyData.tools?.map((tool: any) => tool.messageId) || [];
+        for (const tool of analytics.tools) {
+            analytics.textSearch += `|${tool}`;
+        }
+        analytics.tokens = policyData.tokens?.map((token: any) => token.tokenId) || [];
+
+        const compareModel = await PolicyLoader.create(policyData, HashComparator.options);
+        const { hash, hashMap } = await HashComparator.createHashMap(compareModel);
+        analytics.hash = hash;
+        analytics.hashMap = hashMap;
+    }
+
+    private findSR(
+        policyRow: any,
+        topicMap: Map<string, Message[]>,
+        srMap: Map<string, Message>,
+        analytics: PolicyAnalytics
+    ): void {
+        const topicDescription = topicMap.get(policyRow.topicId)?.[0];
+        if (!topicDescription) {
+            return;
+        }
+
+        const parentTopicId = topicDescription.options?.parentId;
+        const registry = srMap.get(parentTopicId);
+        if (!registry) {
+            return;
+        }
+
+        analytics.registryId = registry.consensusTimestamp;
+        analytics.owner = registry.options?.did;
+    }
+
+    private findDocuments(
+        policyRow: any,
+        topicMap: Map<string, Message[]>,
+        documentMap: Map<string, { vc: number, vp: number, evc: number }>,
+        analytics: PolicyAnalytics
+    ): void {
+        const topics = new Set<string>();
+        topics.add(policyRow.options?.instanceTopicId);
+
+        const dynamicTopics = topicMap.get(policyRow.options?.instanceTopicId);
+        if (dynamicTopics) {
+            for (const dynamicTopic of dynamicTopics) {
+                if (dynamicTopic.options?.messageType === 'DYNAMIC_TOPIC') {
+                    topics.add(dynamicTopic.options?.childId)
                 }
-                const policyData = await parsePolicyFile(policyFileBuffer, false);
-                analytics.tools = policyData.tools?.map((tool: any) => tool.messageId) || [];
-                for (const tool of analytics.tools) {
-                    analytics.textSearch += `|${tool}`;
+            }
+        }
+
+        analytics.vcCount = 0;
+        analytics.vpCount = 0;
+        for (const topicId of topics) {
+            const documents = documentMap.get(topicId);
+            if (documents) {
+                analytics.vcCount = analytics.vcCount + documents.vc + documents.evc;
+                analytics.vpCount = analytics.vpCount + documents.vp;
+            }
+        }
+    }
+
+    private findNFTs(
+        policyRow: any,
+        tokenMap: Map<string, TokenCache>,
+        analytics: PolicyAnalytics
+    ): void {
+        if (!analytics.tokens || !analytics.tokens.length) {
+            analytics.tokensCount = 0;
+            return;
+        }
+        analytics.tokensCount = 0;
+        for (const tokenId of analytics.tokens) {
+            const token = tokenMap.get(tokenId);
+            if (token) {
+                if (token.type === TokenType.NFT) {
+                    analytics.tokensCount += Number(token.serialNumber);
+                } else {
+                    analytics.tokensCount += Number(token.totalSupply);
                 }
-                analytics.tokens = policyData.tokens?.map((token: any) => token.tokenId) || [];
-
-                const compareModel = await PolicyLoader.create(policyData, HashComparator.options);
-                const { hash, hashMap } = await HashComparator.createHashMap(compareModel);
-                analytics.hash = hash;
-                analytics.hashMap = hashMap;
-            } catch (error) {
-                console.log(error)
             }
-        });
+        }
+    }
 
-        await findSR(policyRow, analytics);
-        await findDocuments(policyRow, analytics);
-        await findNFTs(policyRow, analytics);
-        await findTags(policyRow, analytics);
-
-        await collection.updateOne(
-            {
-                _id: policyRow._id,
-            },
-            {
-                $set: {
-                    analytics,
-                },
-            },
-            {
-                upsert: false,
-            }
-        );
+    private findTags(policyRow: any, analytics: PolicyAnalytics): void {
+        analytics.tags = [];
     }
 }

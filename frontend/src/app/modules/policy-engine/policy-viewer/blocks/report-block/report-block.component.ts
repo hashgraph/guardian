@@ -1,24 +1,12 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIconRegistry } from '@angular/material/icon';
-import { DomSanitizer } from '@angular/platform-browser';
-import {
-    IImpactReport,
-    IconType,
-    IPolicyReport,
-    IReport,
-    IReportItem,
-    ITokenReport,
-    IVCReport,
-    IVPReport,
-} from '@guardian/interfaces';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { IconType, IImpactReport, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
-import { IconsArray } from './iconsArray';
-import { DialogService } from 'primeng/dynamicdialog';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -32,10 +20,10 @@ interface IAdditionalDocument {
  * Component for display block of 'ReportBlock' types.
  */
 @Component({
-    selector: 'app-report-block',
-    templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.scss'],
-})
+               selector: 'app-report-block',
+               templateUrl: './report-block.component.html',
+               styleUrls: ['./report-block.component.scss']
+           })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
@@ -51,25 +39,31 @@ export class ReportBlockComponent implements OnInit {
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
-        value: ['', Validators.required],
-    });
+                                   value: ['', Validators.required]
+                               });
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
-        private fb: FormBuilder,
-        public dialog: MatDialog,
+        private fb: UntypedFormBuilder,
         private dialogService: DialogService,
-        iconRegistry: MatIconRegistry,
-        sanitizer: DomSanitizer,
         private ipfs: IPFSService
     ) {
-        for (let i = 0; i < IconsArray.length; i++) {
-            const element = IconsArray[i];
-            iconRegistry.addSvgIconLiteral(
-                element.name,
-                sanitizer.bypassSecurityTrustHtml(element.icon)
-            );
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -105,16 +99,7 @@ export class ReportBlockComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        this.loading = false;
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
 
@@ -136,8 +121,8 @@ export class ReportBlockComponent implements OnInit {
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
-            value: this.hash,
-        });
+                                       value: this.hash
+                                   });
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
@@ -161,15 +146,15 @@ export class ReportBlockComponent implements OnInit {
 
         if (this.policyDocument) {
             this.documents.push({
-                type: this.policyDocument.type,
-                title: 'Policy',
-                description: this.policyDocument.tag,
-                tag: this.policyDocument.tag,
-                visible: true,
-                issuer: this.policyDocument.issuer,
-                username: this.policyDocument.username,
-                document: this.policyDocument.document,
-            });
+                                    type: this.policyDocument.type,
+                                    title: 'Policy',
+                                    description: this.policyDocument.tag,
+                                    tag: this.policyDocument.tag,
+                                    visible: true,
+                                    issuer: this.policyDocument.issuer,
+                                    username: this.policyDocument.username,
+                                    document: this.policyDocument.document
+                                });
         }
         if (this.policyCreatorDocument) {
             this.documents.push(this.policyCreatorDocument);
@@ -226,54 +211,57 @@ export class ReportBlockComponent implements OnInit {
         item: any,
         document?: any
     ) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VC',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
+                row: item,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: document || item.document.document,
-                title: item.type,
+                title: title,
                 type: 'VC',
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
 
     openVPDocument(item: any) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'VP',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: item.document.id,
+                row: item,
                 dryRun: !!item.document.dryRunId,
                 viewDocument: true,
                 document: item.document.document,
-                title: item.type,
+                title: title,
                 type: 'VP',
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
 
     openJsonDocument(item: ITokenReport) {
+        const title = `${item.type?.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'Json',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
+                row: item,
                 document: item.document.document,
-                title: item.type,
+                title: title,
                 type: 'JSON',
-            },
+            }
         });
         dialogRef.onClose.subscribe(async (result) => {
         });
@@ -291,9 +279,9 @@ export class ReportBlockComponent implements OnInit {
 
     onScrollButtonPress(target: HTMLDivElement, amount: number = 0) {
         target.scrollBy({
-            behavior: 'smooth',
-            left: amount,
-        });
+                            behavior: 'smooth',
+                            left: amount
+                        });
     }
 
     updateFilter() {
@@ -316,7 +304,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, { filterValue: null })
+            .setBlockData(this.id, this.policyId, {filterValue: null})
             .subscribe(
                 () => {
                     this.loadData();
@@ -449,8 +437,8 @@ export class ReportBlockComponent implements OnInit {
         const indexDocument = itemDocuments.indexOf(document);
         const secondDocumentIndex =
             indexDocument - 1 < 0
-                ? itemDocuments.length + (indexDocument - 1)
-                : indexDocument - 1;
+            ? itemDocuments.length + (indexDocument - 1)
+            : indexDocument - 1;
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
 }

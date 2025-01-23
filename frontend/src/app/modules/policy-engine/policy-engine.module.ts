@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { MaterialModule } from 'src/app/modules/common/material.module';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -50,6 +50,10 @@ import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
 import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
+import { ButtonBlockAddonComponent } from './policy-viewer/blocks/button-block-addon/button-block-addon.component';
+import { DropdownBlockAddonComponent } from './policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
+import { RequestAddonConfigComponent } from './policy-configuration/blocks/documents/request-addon-config/request-addon-config.component';
+import { RequestDocumentBlockAddonComponent } from './policy-viewer/blocks/request-document-block-addon/request-document-block-addon.component';
 //Viewer
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
 import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
@@ -77,30 +81,31 @@ import { ExternalTopicBlockComponent } from './policy-viewer/blocks/external-top
 import { UploadDocumentBlockComponent } from './policy-viewer/blocks/upload-document-block/upload-document-block.component';
 //Helpers
 import { HelpIcon } from './helpers/help-icon/help-icon.component';
-import { SavePolicyDialog } from './helpers/save-policy-dialog/save-policy-dialog.component';
-import { ImportPolicyDialog } from './helpers/import-policy-dialog/import-policy-dialog.component';
-import { PreviewPolicyDialog } from './helpers/preview-policy-dialog/preview-policy-dialog.component';
-import { ExportPolicyDialog } from './helpers/export-policy-dialog/export-policy-dialog.component';
-import { CronConfigDialog } from './helpers/cron-config-dialog/cron-config-dialog.component';
-import { CodeEditorDialogComponent } from './helpers/code-editor-dialog/code-editor-dialog.component';
-import { SaveBeforeDialogComponent } from './helpers/save-before-dialog/save-before-dialog.component';
-import { InviteDialogComponent } from './helpers/invite-dialog/invite-dialog.component';
+import { SavePolicyDialog } from './dialogs/save-policy-dialog/save-policy-dialog.component';
+import { PreviewPolicyDialog } from './dialogs/preview-policy-dialog/preview-policy-dialog.component';
+import { ExportPolicyDialog } from './dialogs/export-policy-dialog/export-policy-dialog.component';
+import { CronConfigDialog } from './dialogs/cron-config-dialog/cron-config-dialog.component';
+import { CodeEditorDialogComponent } from './dialogs/code-editor-dialog/code-editor-dialog.component';
+import { SaveBeforeDialogComponent } from './dialogs/save-before-dialog/save-before-dialog.component';
+import { InviteDialogComponent } from './dialogs/invite-dialog/invite-dialog.component';
 import { DocumentPath } from './helpers/document-path/document-path.component';
 import { SelectBlock } from './helpers/select-block/select-block.component';
-import { MultiPolicyDialogComponent } from './helpers/multi-policy-dialog/multi-policy-dialog.component';
-import { ComparePolicyDialog } from './helpers/compare-policy-dialog/compare-policy-dialog.component';
-import { NewModuleDialog } from './helpers/new-module-dialog/new-module-dialog.component';
-import { PolicyWizardDialogComponent } from './helpers/policy-wizard-dialog/policy-wizard-dialog.component';
-import { NewPolicyDialog } from './helpers/new-policy-dialog/new-policy-dialog.component';
-import { ImportFileDialog } from './helpers/import-file-dialog/import-file-dialog.component';
-import { NewThemeDialog } from './helpers/new-theme-dialog/new-theme-dialog.component';
-import { ViewerDialog } from './helpers/viewer-dialog/viewer-dialog.component';
-import { CompareModulesDialogComponent } from './helpers/compare-modules-dialog/compare-modules-dialog.component';
+import { MultiPolicyDialogComponent } from './dialogs/multi-policy-dialog/multi-policy-dialog.component';
+import { ComparePolicyDialog } from './dialogs/compare-policy-dialog/compare-policy-dialog.component';
+import { NewModuleDialog } from './dialogs/new-module-dialog/new-module-dialog.component';
+import { PolicyWizardDialogComponent } from './dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
+import { NewPolicyDialog } from './dialogs/new-policy-dialog/new-policy-dialog.component';
+import { NewThemeDialog } from './dialogs/new-theme-dialog/new-theme-dialog.component';
+import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
+import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
+import { TestResultsComponent } from './record/test-results/test-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
 import { SelectSchema } from './helpers/select-schema/select-schema.component';
+import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
+import { PublishPolicyDialog } from './dialogs/publish-policy-dialog/publish-policy-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -125,19 +130,23 @@ import { TooltipModule } from 'primeng/tooltip';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
-import { DeletePolicyDialogComponent } from './helpers/delete-policy-dialog/delete-policy-dialog.component';
+import { DeletePolicyDialogComponent } from './dialogs/delete-policy-dialog/delete-policy-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AngularSvgIconModule } from 'angular-svg-icon';
+import { RadioButtonModule } from 'primeng/radiobutton';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
 // Dialogs
 import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
 import { MigrateData } from './dialogs/migrate-data/migrate-data.component';
-import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-editor-dialog.component';
+import { JsonEditorDialogComponent } from './dialogs/json-editor-dialog/json-editor-dialog.component';
+import { PolicyTestDialog } from './dialogs/policy-test-dialog/policy-test-dialog.component';
+import { NewImportFileDialog } from './dialogs/new-import-file-dialog/new-import-file-dialog.component';
+import { RequestDocumentBlockDialog } from './policy-viewer/blocks/request-document-block/dialog/request-document-block-dialog.component';
 
 @NgModule({
     declarations: [
@@ -173,7 +182,6 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         FiltersAddonBlockComponent,
         HelpIcon,
         SavePolicyDialog,
-        ImportPolicyDialog,
         PreviewPolicyDialog,
         ExportPolicyDialog,
         CalculateConfigComponent,
@@ -205,6 +213,8 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         MultiSignBlockComponent,
         SelectBlock,
         SelectSchema,
+        PolicyTestResult,
+        PublishPolicyDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
@@ -220,7 +230,6 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         TagsManagerBlockComponent,
         NewPolicyDialog,
         PolicySettingsComponent,
-        ImportFileDialog,
         NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
@@ -232,10 +241,18 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         RecordControllerComponent,
         RecordResultDialog,
         RecordResultsComponent,
+        TestResultsComponent,
         ResizingDirective,
         DiscontinuePolicy,
         MigrateData,
         JsonEditorDialogComponent,
+        PolicyTestDialog,
+        NewImportFileDialog,
+        ButtonBlockAddonComponent,
+        DropdownBlockAddonComponent,
+        RequestAddonConfigComponent,
+        RequestDocumentBlockAddonComponent,
+        RequestDocumentBlockDialog
     ],
     imports: [
         CommonModule,
@@ -260,6 +277,7 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         TooltipModule,
         SplitButtonModule,
         TabViewModule,
+        RadioButtonModule,
         InputSwitchModule,
         AppRoutingModule,
         DialogModule,
@@ -277,6 +295,7 @@ import { JsonEditorDialogComponent } from './helpers/json-editor-dialog/json-edi
         WizardService,
         DialogService,
         PolicyProgressService,
+        DatePipe,
         {
             provide: CONFIGURATION_ERRORS,
             useValue: new Map()

@@ -1,8 +1,9 @@
-import { Component, ElementRef, Input, OnInit } from '@angular/core';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {Component, ElementRef, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 
 /**
  * Component for display block of 'tokenConfirmationBlock' types.
@@ -27,14 +28,14 @@ export class TokenConfirmationBlockComponent implements OnInit {
     tokenName: string | null = null;
     tokenId: string | null = null;
 
-    dataForm: FormGroup;
+    dataForm: UntypedFormGroup;
 
     constructor(
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private elRef: ElementRef,
-        private fb: FormBuilder
+        private fb: UntypedFormBuilder
     ) {
         this.dataForm = this.fb.group({
             privateKey: ['', Validators.required],
@@ -79,16 +80,23 @@ export class TokenConfirmationBlockComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        this.loading = false;
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -118,7 +126,8 @@ export class TokenConfirmationBlockComponent implements OnInit {
                     action: 'confirm',
                 })
                 .subscribe(
-                    () => { },
+                    () => {
+                    },
                     (e) => {
                         console.error(e.error);
                         this.loading = false;
@@ -142,5 +151,9 @@ export class TokenConfirmationBlockComponent implements OnInit {
                     this.loading = false;
                 }
             );
+    }
+
+    togglePasswordVisibility(inputElement: HTMLInputElement): void {
+        inputElement.type = inputElement.type === 'password' ? 'text' : 'password';
     }
 }

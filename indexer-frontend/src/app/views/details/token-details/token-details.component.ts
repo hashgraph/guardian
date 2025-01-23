@@ -19,6 +19,7 @@ import {
 import { TagModule } from 'primeng/tag';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { ColumnType, TableComponent } from '@components/table/table.component';
 
 export enum TokenType {
     FT = 'FUNGIBLE_COMMON',
@@ -46,11 +47,15 @@ export enum TokenType {
         OverviewFormComponent,
         ActivityComponent,
         TagModule,
-        InputTextareaModule
+        InputTextareaModule,
+        TableComponent
     ],
 })
 export class TokenDetailsComponent extends BaseDetailsComponent {
-    tabs: any[] = ['overview', 'raw'];
+    public labels: any[] = [];
+
+    tabs: any[] = ['overview', 'labels', 'raw'];
+
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.token.overview.token_id',
@@ -74,14 +79,45 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         },
     ];
 
+    labelColumns: any[] = [
+        {
+            title: 'details.hedera.consensus_timestamp',
+            field: 'consensusTimestamp',
+            type: ColumnType.TEXT,
+            width: '250px',
+            link: {
+                field: 'consensusTimestamp',
+                url: '/label-documents',
+            },
+        },
+        {
+            title: 'details.hedera.topic_id',
+            field: 'topicId',
+            type: ColumnType.TEXT,
+            width: '100px'
+        },
+        {
+            title: 'details.hedera.name',
+            field: 'analytics.labelName',
+            type: ColumnType.TEXT,
+            width: '200px'
+        },
+        {
+            title: 'details.hedera.issuer',
+            field: 'analytics.issuer',
+            type: ColumnType.TEXT,
+            width: '300px'
+        }
+    ]
+
     additionalOveriviewFormFields: OverviewFormField[] = [];
 
     constructor(
-        private entitiesService: EntitiesService,
+        entitiesService: EntitiesService,
         route: ActivatedRoute,
         router: Router
     ) {
-        super(route, router);
+        super(entitiesService, route, router);
     }
 
     protected override loadData(): void {
@@ -124,7 +160,16 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override onNavigate(): void {}
+    protected override setResult(result?: any) {
+        super.setResult(result);
+        if (result) {
+            this.labels = result.labels || [];
+        } else {
+            this.labels = [];
+        }
+    }
+
+    protected override onNavigate(): void { }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {
@@ -147,10 +192,6 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
 
     public getJson(item: any): string {
         return JSON.stringify(item, null, 4);
-    }
-
-    public getDocument(item: any): string {
-        return JSON.stringify(JSON.parse(item), null, 4);
     }
 
     public override onOpenTopics() {

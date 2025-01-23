@@ -60,13 +60,13 @@
                                 <div class="policies-info">{{ getPoliciesInfo(token.policies) }}</div>
                             </td>
                             <td>
-                                <tags-explorer 
+                                <tags-explorer
                                         *ngIf="user.TAGS_TAG_READ"
                                         [user]="user"
-                                        [data]="token._tags" 
-                                        [entity]="tagEntity" 
+                                        [data]="token._tags"
+                                        [entity]="tagEntity"
                                         [owner]="owner"
-                                        [schemas]="tagSchemas" 
+                                        [schemas]="tagSchemas"
                                         [service]="tagsService"
                                         [target]="token.id"></tags-explorer>
                             </td>
@@ -75,9 +75,9 @@
                 </table>
             </div>
 
-            <app-paginator 
-                [pageIndex]="pageIndex" 
-                [pageSize]="pageSize" 
+            <app-paginator
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
                 [length]="tokensCount"
                 (page)="onPage($event)"
             ></app-paginator>
@@ -90,8 +90,8 @@
     <div class="not-exist">
         <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
         </svg-icon>
-        <span class="info-text-strong">There were no Tokens created yet</span>
-        <span class="info-text">Please create new token to see the data</span>
+        <span class="info-text-strong">There are no tokens created yet</span>
+        <span class="info-text">Please create a new token to see the data</span>
     </div>
 </ng-template>
 

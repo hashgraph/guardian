@@ -1,14 +1,13 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { forkJoin } from 'rxjs';
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { ViewerDialog } from '../../../helpers/viewer-dialog/viewer-dialog.component';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Component, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {DialogBlock} from '../../dialog-block/dialog-block.component';
+import {animate, state, style, transition, trigger} from '@angular/animations';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {ViewerDialog} from '../../../dialogs/viewer-dialog/viewer-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
+import {HttpErrorResponse} from '@angular/common/http';
 
 /**
  * Component for display block of 'interfaceDocumentsSource' types.
@@ -19,8 +18,8 @@ import { DialogService } from 'primeng/dynamicdialog';
     styleUrls: ['./documents-source-block.component.scss'],
     animations: [
         trigger('statusExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
+            state('collapsed', style({height: '0px', minHeight: '0'})),
+            state('expanded', style({height: '*'})),
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
     ]
@@ -56,7 +55,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
+        private dialog: DialogService,
         private dialogService: DialogService,
     ) {
         this.fields = [];
@@ -94,19 +93,26 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 this.loading = false;
             }, 500);
         } else {
-            forkJoin([
-                this.policyEngineService.getBlockData(this.id, this.policyId)
-            ]).subscribe((value) => {
-                const data: any = value[0];
-                this.setData(data).then(() => {
-                    setTimeout(() => {
-                        this.loading = false;
-                    }, 500);
-                });
-            }, (e) => {
-                console.error(e.error);
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data).then(() => {
+            setTimeout(() => {
                 this.loading = false;
-            });
+            }, 500);
+        });
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -120,8 +126,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 element.names = element.name.split('.');
                 element.index = String(i);
                 if (element.bindBlock) {
-                    element._block = await this.getBindBlock(element);
+                    element._block = await this.getBindBlock(element.bindBlock);
                 }
+
+                element._blocks = element.bindBlocks ? await Promise.all(
+                    element.bindBlocks.map(
+                        async (item: any) => await this.getBindBlock(item)
+                    )
+                ) : [];
+
                 if (_fieldMap[element.title]) {
                     _fieldMap[element.title].push(element);
                 } else {
@@ -188,12 +201,12 @@ export class DocumentsSourceBlockComponent implements OnInit {
         }
     }
 
-    async getBindBlock(element: any) {
+    async getBindBlock(blockTag: any) {
         return new Promise<any>(async (resolve, reject) => {
-            this.policyEngineService.getBlockDataByName(element.bindBlock, this.policyId).subscribe((data: any) => {
+            this.policyEngineService.getBlockDataByName(blockTag, this.policyId).subscribe((data: any) => {
                 resolve(data);
             }, (e) => {
-                reject();
+                resolve(null);
             });
         });
     }
@@ -216,23 +229,26 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     dryRun: this.dryRun
                 }
             });
-            dialogRef.afterClosed().subscribe(async (result) => { });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         } else {
             const dialogRef = this.dialogService.open(VCViewerDialog, {
-                header: field.dialogContent,
-                width: '850px',
-                styleClass: 'custom-dialog',
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
                 data: {
                     id: row.id,
-                    dryRun: !!row.dryRunId,
+                    row: row,
                     document: document,
+                    dryRun: !!row.dryRunId,
                     title: field.dialogContent,
                     type: 'VC',
                     viewDocument: true
-                },
+                }
             });
             dialogRef.onClose.subscribe(async (result) => {
             });
+
         }
     }
 
@@ -353,7 +369,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
             config.data = row;
             return config;
         } else {
-            const config = { ...block };
+            const config = {...block};
             config.data = row;
             return config;
         }
@@ -363,13 +379,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         const text = this.getText(row, field);
+
+
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'Text',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: row.id,
+                row: row,
                 dryRun: !!row.dryRunId,
                 document: text,
                 title: field.title,
@@ -405,7 +423,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 value: links,
             }
         });
-        dialogRef.afterClosed().subscribe(async (result) => { });
+        dialogRef.onClose.subscribe(async (result) => {
+        });
     }
 
     onButton(event: MouseEvent, row: any, field: any) {
@@ -430,9 +449,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
         const data = row;
         const value = this.getObjectValue(row, field.name);
         this.loading = true;
-        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({ id }: any) => {
+        this.policyEngineService.getGetIdByName(field.bindBlock, this.policyId).subscribe(({id}: any) => {
             this.policyEngineService.getParents(id, this.policyId).subscribe((parents: any[]) => {
-                this.policyEngineService.setBlockData(id, this.policyId, { filterValue: value }).subscribe(() => {
+                this.policyEngineService.setBlockData(id, this.policyId, {filterValue: value}).subscribe(() => {
                     this.loading = false;
                     const filters: any = {};
                     for (let index = parents.length - 1; index > 0; index--) {
@@ -467,5 +486,15 @@ export class DocumentsSourceBlockComponent implements OnInit {
 
     parseArrayValue(value: string | string[]): string {
         return Array.isArray(value) ? value.join(', ') : value;
+    }
+
+    hasHistory(): boolean {
+        return !!this.documents?.some(doc => doc.history && doc.history.length > 0);
+    }
+
+    onRowClick(element: any) {
+        if (element.history && element.history.length) {
+            this.statusDetailed = this.statusDetailed === element ? null : element;
+        }
     }
 }

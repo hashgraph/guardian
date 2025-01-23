@@ -30,6 +30,16 @@ export class ModulePropertiesComponent implements OnInit {
     public inputs: ModuleEvent[] = [];
     public outputs: ModuleEvent[] = [];
 
+    public typeOptions = [
+        { label: 'Schema', value: 'Schema' },
+        { label: 'Token', value: 'Token' },
+        { label: 'Token Template', value: 'TokenTemplate' },
+        { label: 'Role', value: 'Role' },
+        { label: 'Group', value: 'Group' },
+        { label: 'Topic', value: 'Topic' },
+        { label: 'String', value: 'String' }
+    ];
+
     constructor() {
     }
 
@@ -41,6 +51,7 @@ export class ModulePropertiesComponent implements OnInit {
         this.outputs = this.module.outputEvents;
         this.variables = this.module.variables;
         const baseSchemas: any[] = this.module.getSchemas() || [];
+        console.log(baseSchemas)
         this.baseSchemas = baseSchemas.map(s => new SchemaVariables(s));
     }
 

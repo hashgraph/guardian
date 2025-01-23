@@ -91,7 +91,7 @@ export class MintFT extends TypedMint {
                             filter: {
                                 memo_base64: btoa(this._mintRequest.memo),
                             },
-                            findOne: true,
+                            limit: 1,
                         },
                     },
                     1,
@@ -125,7 +125,7 @@ export class MintFT extends TypedMint {
                                 filter: {
                                     memo_base64: btoa(this._mintRequest.memo),
                                 },
-                                findOne: true,
+                                limit: 1,
                             },
                         },
                         1,
@@ -170,7 +170,7 @@ export class MintFT extends TypedMint {
 
         if (!this._ref?.dryRun) {
             try {
-                const startTransactions = await workers.addRetryableTask(
+                workers.addRetryableTask(
                     {
                         type: WorkerTaskType.GET_TRANSACTIONS,
                         data: {
@@ -183,11 +183,15 @@ export class MintFT extends TypedMint {
                     1,
                     10,
                     userId
-                );
-
-                this._mintRequest.startTransaction =
-                    startTransactions[0]?.consensus_timestamp;
-                await this._db.saveMintRequest(this._mintRequest);
+                ).then(async startTransactions => {
+                    try {
+                        this._mintRequest.startTransaction =
+                        startTransactions[0]?.consensus_timestamp;
+                        await this._db.saveMintRequest(this._mintRequest);
+                    } catch (error) {
+                        this.error(error);
+                    }
+                }).catch(error => this.error(error));
             } catch (error) {
                 this.error(error);
             }
@@ -243,7 +247,7 @@ export class MintFT extends TypedMint {
 
         if (!this._ref?.dryRun) {
             try {
-                const startTransactions = await workers.addRetryableTask(
+                workers.addRetryableTask(
                     {
                         type: WorkerTaskType.GET_TRANSACTIONS,
                         data: {
@@ -256,10 +260,15 @@ export class MintFT extends TypedMint {
                     1,
                     10,
                     userId
-                );
-                this._mintRequest.startTransaction =
-                    startTransactions[0]?.consensus_timestamp;
-                await this._db.saveMintRequest(this._mintRequest);
+                ).then(async startTransactions => {
+                    try {
+                        this._mintRequest.startTransaction =
+                        startTransactions[0]?.consensus_timestamp;
+                        await this._db.saveMintRequest(this._mintRequest);
+                    } catch (error) {
+                        this.error(error);
+                    }
+                }).catch(error => this.error(error));
             } catch (error) {
                 this.error(error);
             }

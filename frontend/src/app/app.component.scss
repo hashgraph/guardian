@@ -36,39 +36,39 @@ body {
     overflow: auto;
     padding-top: 210px;
 
-    &>div {
-        position: absolute !important;
-        bottom: 0px;
-    }
+    // &>div {
+    //     position: absolute !important;
+    //     bottom: 0px;
+    // }
 
-    &>div:nth-last-child(6) {
-        position: absolute !important;
-        bottom: 200px;
-    }
+    // &>div:nth-last-child(6) {
+    //     position: absolute !important;
+    //     bottom: 200px;
+    // }
 
-    &>div:nth-last-child(5) {
-        position: absolute !important;
-        bottom: 160px;
-    }
+    // &>div:nth-last-child(5) {
+    //     position: absolute !important;
+    //     bottom: 160px;
+    // }
 
-    &>div:nth-last-child(4) {
-        position: absolute !important;
-        bottom: 120px;
-    }
+    // &>div:nth-last-child(4) {
+    //     position: absolute !important;
+    //     bottom: 120px;
+    // }
 
-    &>div:nth-last-child(3) {
-        position: absolute !important;
-        bottom: 80px;
-    }
+    // &>div:nth-last-child(3) {
+    //     position: absolute !important;
+    //     bottom: 80px;
+    // }
 
-    &>div:nth-last-child(2) {
-        position: absolute !important;
-        bottom: 40px;
-    }
+    // &>div:nth-last-child(2) {
+    //     position: absolute !important;
+    //     bottom: 40px;
+    // }
 
-    &>div:nth-last-child(1) {
-        position: relative !important;
-    }
+    // &>div:nth-last-child(1) {
+    //     position: relative !important;
+    // }
 }
 
 .app {
@@ -194,7 +194,7 @@ body {
                 background: #f7f7f7;
             }
 
-            mat-icon {
+            i, svg {
                 height: 28px;
                 width: 28px;
                 margin: 4px;
@@ -329,7 +329,7 @@ body {
         .cell-last {
             border-right: 1px solid #E1E7EF;
         }
-    
+
         .grid-table-header {
             .header-cell-text {
                 color: #848fa9 !important;
@@ -339,7 +339,12 @@ body {
                 font-weight: 400 !important;
                 border: none !important;
             }
+
+            .p-frozen-column {
+                background: #f9fafc;
+            }
         }
+
         .grid-table-row {
             font-family: Inter, sans-serif;
             box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
@@ -347,38 +352,50 @@ body {
         }
 
         .cell-310 {
-            min-width: 310px; 
-            width: 310px; 
-            max-width: 310px;   
+            min-width: 310px;
+            width: 310px;
+            max-width: 310px;
         }
-    
+
+        .cell-210 {
+            min-width: 210px;
+            width: 210px;
+            max-width: 210px;
+        }
+
         .cell-190 {
-            min-width: 190px; 
-            width: 190px; 
-            max-width: 190px;   
+            min-width: 190px;
+            width: 190px;
+            max-width: 190px;
+        }
+
+        .cell-170 {
+            min-width: 170px;
+            width: 170px;
+            max-width: 170px;
         }
 
         .cell-150 {
-            min-width: 150px; 
-            width: 150px; 
+            min-width: 150px;
+            width: 150px;
             max-width: 150px;
         }
 
         .cell-140 {
-            min-width: 140px; 
-            width: 140px; 
+            min-width: 140px;
+            width: 140px;
             max-width: 140px;
         }
 
         .cell-130 {
-            min-width: 130px; 
-            width: 130px; 
+            min-width: 130px;
+            width: 130px;
             max-width: 130px;
         }
 
         .cell-120 {
-            min-width: 120px; 
-            width: 120px; 
+            min-width: 120px;
+            width: 120px;
             max-width: 120px;
         }
 
@@ -389,6 +406,7 @@ body {
         }
     }
 }
+
 ::ng-deep body .grid-table-paginator .table-paginator {
     display: flex;
     align-items: center;
@@ -408,4 +426,26 @@ body {
     background: #fff;
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
     position: relative;
+}
+
+::ng-deep body .custom-header-dialog {
+    .p-dialog-content {
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border-bottom-left-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+}
+
+::ng-deep body .CodeMirror-hint {
+    padding: 4px 8px;
+    min-width: 60px;
+}
+
+::ng-deep body .CodeMirror-hint.CodeMirror-hint-active {
+    background: #4169E2 !important;
+}
+
+::ng-deep .p-tooltip {
+    z-index: 9999 !important;
 }

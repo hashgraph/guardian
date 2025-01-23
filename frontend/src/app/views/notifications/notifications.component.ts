@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { HttpResponse } from '@angular/common/http';
-import { NotificationService } from 'src/app/services/notify.service';
+import {Component, OnInit} from '@angular/core';
+import {HttpResponse} from '@angular/common/http';
+import {NotificationService} from 'src/app/services/notify.service';
 
 /**
  * Notifications
@@ -24,7 +23,6 @@ export class NotificationsComponent implements OnInit {
 
     constructor(
         private notificationService: NotificationService,
-        public dialog: MatDialog,
     ) {
         this.pageIndex = 0;
         this.pageSize = 10;

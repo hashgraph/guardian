@@ -1,8 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import { RecordService } from 'src/app/services/record.service';
-import { DialogService } from 'primeng/dynamicdialog';
+import {Component, Inject} from '@angular/core';
+import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import {RecordService} from 'src/app/services/record.service';
+import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Dialog for creating theme.
@@ -24,11 +23,12 @@ export class RecordResultDialog {
     public info: any;
 
     constructor(
-        public dialog: MatDialog,
-        public dialogRef: MatDialogRef<RecordResultDialog>,
-        private dialogService: DialogService,
         private recordService: RecordService,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        public dialogService: DialogService,
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
+    ) {
+        const data = this.config.data
 
         this.title = 'Playback completed';
         this.text = 'Playback completed';
@@ -71,20 +71,17 @@ export class RecordResultDialog {
         const document = item.document;
         const title = `${item.type.toUpperCase()} Document`;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
-            width: '850px',
-            closable: true,
-            header: 'Document',
-            styleClass: 'custom-dialog',
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: item,
                 dryRun: true,
                 document: document,
                 title: title,
                 type: 'JSON',
             }
-        });
-
-        dialogRef.onClose.subscribe(async (result) => {
         });
     }
 

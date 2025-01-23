@@ -1,6 +1,5 @@
 import JSZip from 'jszip';
 import { Artifact, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
-import { DataBaseHelper } from '../helpers/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport } from '@guardian/interfaces';
@@ -22,6 +21,7 @@ export interface IPolicyComponents {
     artifacts: IArtifact[];
     tags: Tag[];
     tools: PolicyTool[];
+    tests: IArtifact[];
 }
 
 /**
@@ -38,7 +38,7 @@ export class PolicyImportExport {
         schemasIds: string[]
     ): Promise<Schema[]> {
         const result = new Map<string, Schema>();
-        const schemas = await new DataBaseHelper(Schema).find({ iri: { $in: schemasIds }, topicId, readonly: false });
+        const schemas = await new DatabaseServer().find(Schema, { iri: { $in: schemasIds }, topicId, readonly: false });
         for (const schema of schemas) {
             result.set(schema.iri, schema);
         }
@@ -54,7 +54,7 @@ export class PolicyImportExport {
             }
 
         }
-        const defSchemas = await new DataBaseHelper(Schema).find({ iri: { $in: Array.from(defIds) }, topicId, readonly: false });
+        const defSchemas = await new DatabaseServer().find(Schema, { iri: { $in: Array.from(defIds) }, topicId, readonly: false });
         for (const schema of defSchemas) {
             result.set(schema.iri, schema);
         }
@@ -74,17 +74,31 @@ export class PolicyImportExport {
         const schemasIds = ImportExportUtils.findAllSchemas(policy.config);
         const toolIds = ImportExportUtils.findAllTools(policy.config);
 
-        const tokens = await new DataBaseHelper(Token).find({ tokenId: { $in: tokenIds } });
+        const dataBaseServer = new DatabaseServer();
+
+        const tokens = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds } });
         const schemas = await PolicyImportExport.loadSchemas(topicId, schemasIds);
-        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: toolIds } });
+        const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
         const artifacts: IArtifact[] = [];
-        const row = await new DataBaseHelper(Artifact).find({ policyId: policy.id });
-        for (const item of row) {
+        const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
+        for (const item of artifactRows) {
             const data = await DatabaseServer.getArtifactFileByUUID(item.uuid);
             artifacts.push({
                 name: item.name,
                 uuid: item.uuid,
                 extention: item.extention,
+                data
+            });
+        }
+
+        const tests: IArtifact[] = [];
+        const testRows = await DatabaseServer.getPolicyTests(policy.id);
+        for (const item of testRows) {
+            const data = await DatabaseServer.loadFile(item.file);
+            tests.push({
+                name: item.uuid,
+                uuid: item.uuid,
+                extention: 'record',
                 data
             });
         }
@@ -102,7 +116,7 @@ export class PolicyImportExport {
         const allCategories = await DatabaseServer.getPolicyCategories();
         policy.categoriesExport = policy.categories?.length ? PolicyImportExport.getPolicyCategoriesExport(policy, allCategories) : [];
 
-        return { policy, tokens, schemas, tools, artifacts, tags };
+        return { policy, tokens, schemas, tools, artifacts, tags, tests };
     }
 
     /**
@@ -122,7 +136,7 @@ export class PolicyImportExport {
                 }
             }
         }
-        const tools = await new DataBaseHelper(PolicyTool).find({ messageId: { $in: Array.from(toolsMap) } });
+        const tools = await new DatabaseServer().find(PolicyTool, { messageId: { $in: Array.from(toolsMap) } });
         const toolsTopicMap = tools.map((t) => t.topicId);
         const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
         const schemas = components.schemas;
@@ -215,6 +229,11 @@ export class PolicyImportExport {
             zip.file(`tags/${index}.json`, JSON.stringify(tag));
         }
 
+        zip.folder('tests');
+        for (const test of components.tests) {
+            zip.file(`tests/${test.uuid}.record`, test.data);
+        }
+
         zip.file(PolicyImportExport.policyFileName, JSON.stringify(policyObject));
         return zip;
     }
@@ -253,15 +272,15 @@ export class PolicyImportExport {
         let artifacts: any;
         if (includeArtifactsData) {
             const data = fileEntries.filter(file => /^artifacts\/.+/.test(file[0]) && file[0] !== 'artifacts/metadata.json').map(async file => {
-                    const uuid = file[0].split('/')[1];
-                    const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
-                    return {
-                        name: artifactMetaData.name,
-                        extention: artifactMetaData.extention,
-                        uuid: artifactMetaData.uuid,
-                        data: await file[1].async('nodebuffer')
-                    }
-                })
+                const uuid = file[0].split('/')[1];
+                const artifactMetaData = metaDataBody.find(item => item.uuid === uuid);
+                return {
+                    name: artifactMetaData.name,
+                    extention: artifactMetaData.extention,
+                    uuid: artifactMetaData.uuid,
+                    data: await file[1].async('nodebuffer')
+                }
+            })
             artifacts = await Promise.all(data);
         } else {
             artifacts = metaDataBody.map((artifactMetaData) => {
@@ -274,13 +293,23 @@ export class PolicyImportExport {
             });
         }
 
+        const tests = await Promise.all(fileEntries.filter(file => /^tests\/.+/.test(file[0])).map(async file => {
+            const uuid = file[0].split('/')[1].replace(/\.record$/, '');
+            return {
+                name: uuid,
+                extention: 'record',
+                uuid,
+                data: await file[1].async('nodebuffer')
+            }
+        }));
+
         if (policy.categoriesExport?.length) {
             const allCategories = await DatabaseServer.getPolicyCategories();
             policy.categories = PolicyImportExport.parsePolicyCategories(policy, allCategories);
             policy.categoriesExport = [];
         }
 
-        return { policy, tokens, schemas, artifacts, tags, tools };
+        return { policy, tokens, schemas, artifacts, tags, tools, tests };
     }
 
     /**

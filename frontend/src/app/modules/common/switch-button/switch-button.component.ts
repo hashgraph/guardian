@@ -11,6 +11,7 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 export class SwitchButton {
     @Input('on-label') on!: string;
     @Input('off-label') off!: string;
+    @Input('disalbed') disabled: boolean = false;
 
     @Input('value') value!: boolean;
     @Output('valueChange') valueChange = new EventEmitter<boolean>();

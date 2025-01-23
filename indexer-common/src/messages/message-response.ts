@@ -1,3 +1,15 @@
+
+/**
+ * Custom error
+ */
+export class CustomError extends Error {
+    public code: number;
+    constructor(message: any, code?: number) {
+        super(message);
+        this.code = code;
+    }
+}
+
 /**
  * Message response interface
  */
@@ -72,7 +84,7 @@ export class MessageError implements IMessageResponse<any>, Error {
             if (typeof error === 'string') {
                 this.error = error;
             } else {
-                this.error = error.message;
+                this.error = error.message || 'Unknown error.';
             }
         } else {
             this.error = 'Unknown error.';
@@ -89,7 +101,7 @@ export type AnyResponse<T> = MessageError | MessageResponse<T>;
  */
 export function responseFrom<T>(response: AnyResponse<T>): T {
     if (response.error) {
-        throw response.error;
+        throw new CustomError(response.error, response.code);
     }
     return response.body;
 }

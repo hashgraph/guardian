@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AnalyticsService } from 'src/app/services/analytics.service';
@@ -16,16 +16,16 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 export class SearchPolicyDialog {
     public loading = false;
     public policy: any = null;
-    public filtersForm = new FormGroup({
-        policyName: new FormControl(''),
-        type: new FormControl('Owned'),
-        owner: new FormControl(''),
-        tokens: new FormControl(false),
-        vcDocuments: new FormControl(false),
-        vpDocuments: new FormControl(false),
-        tokensCount: new FormControl(0),
-        vcDocumentsCount: new FormControl(0),
-        vpDocumentsCount: new FormControl(0),
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl(''),
+        type: new UntypedFormControl('Owned'),
+        owner: new UntypedFormControl(''),
+        tokens: new UntypedFormControl(false),
+        vcDocuments: new UntypedFormControl(false),
+        vpDocuments: new UntypedFormControl(false),
+        tokensCount: new UntypedFormControl(1),
+        vcDocumentsCount: new UntypedFormControl(1),
+        vpDocumentsCount: new UntypedFormControl(1),
     });
     public types = [{
         name: 'Search only imported',
@@ -91,15 +91,15 @@ export class SearchPolicyDialog {
             this.filtersCount++;
         }
         if (filters.tokens) {
-            options.minTokensCount = filters.tokensCount || 0;
+            options.minTokensCount = filters.tokensCount || 1;
             this.filtersCount++;
         }
         if (filters.vcDocuments) {
-            options.minVcCount = filters.vcDocumentsCount || 0;
+            options.minVcCount = filters.vcDocumentsCount || 1;
             this.filtersCount++;
         }
         if (filters.vpDocuments) {
-            options.minVpCount = filters.vpDocumentsCount || 0;
+            options.minVpCount = filters.vpDocumentsCount || 1;
             this.filtersCount++;
         }
         this.error = null;
@@ -180,9 +180,9 @@ export class SearchPolicyDialog {
                 tokens: false,
                 vcDocuments: false,
                 vpDocuments: false,
-                tokensCount: 0,
-                vcDocumentsCount: 0,
-                vpDocumentsCount: 0
+                tokensCount: 1,
+                vcDocumentsCount: 1,
+                vpDocumentsCount: 1
             })
             this.load();
         }, 0);
@@ -197,9 +197,9 @@ export class SearchPolicyDialog {
             tokens: false,
             vcDocuments: false,
             vpDocuments: false,
-            tokensCount: 0,
-            vcDocumentsCount: 0,
-            vpDocumentsCount: 0
+            tokensCount: 1,
+            vcDocumentsCount: 1,
+            vpDocumentsCount: 1
         })
         this.select();
         this.load();

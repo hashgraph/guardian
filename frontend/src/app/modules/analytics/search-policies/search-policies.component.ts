@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
-import { ProfileService } from 'src/app/services/profile.service';
-import { TagsService } from 'src/app/services/tag.service';
-import { forkJoin } from 'rxjs';
-import { FormControl, FormGroup } from '@angular/forms';
-import { AnalyticsService } from 'src/app/services/analytics.service';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {IUser, SchemaHelper, TagType, UserPermissions} from '@guardian/interfaces';
+import {ProfileService} from 'src/app/services/profile.service';
+import {TagsService} from 'src/app/services/tag.service';
+import {forkJoin} from 'rxjs';
+import {UntypedFormControl, UntypedFormGroup} from '@angular/forms';
+import {AnalyticsService} from 'src/app/services/analytics.service';
 
 /**
  * Component for choosing a policy and
@@ -32,11 +32,11 @@ export class SearchPoliciesComponent implements OnInit {
     public tagEntity = TagType.Policy;
     public tagSchemas: any[] = [];
     public tagOptions: string[] = [];
-    public filtersForm = new FormGroup({
-        policyName: new FormControl('', {
+    public filtersForm = new UntypedFormGroup({
+        policyName: new UntypedFormControl('', {
             updateOn: 'change'
         }),
-        tag: new FormControl('', {
+        tag: new UntypedFormControl('', {
             updateOn: 'change'
         }),
     });
@@ -240,7 +240,7 @@ export class SearchPoliciesComponent implements OnInit {
     public clearFilters(): void {
         this.lastFilters = null;
         this.applyFilters('', '');
-        this.filtersForm.reset({ policyName: '', tag: '' });
+        this.filtersForm.reset({policyName: '', tag: ''});
     }
 
     private onSelect() {
@@ -295,5 +295,12 @@ export class SearchPoliciesComponent implements OnInit {
                 }
             });
         }
+    }
+
+    getTagOptions(): any[] {
+        return this.tagOptions.map(tag => ({
+            label: tag,
+            value: tag
+        }));
     }
 }

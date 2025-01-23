@@ -8,7 +8,7 @@ import {
     PolicyOutputEventType,
     PolicyTagMap
 } from './interfaces/index.js';
-import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyType } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, ModuleStatus, PolicyEvents, PolicyHelper, PolicyType } from '@guardian/interfaces';
 import {
     AnyBlockType,
     IPolicyBlock,
@@ -741,6 +741,9 @@ export class PolicyComponentsUtils {
                 if (field.bindBlock) {
                     field.bindBlock = tagHelper.getTag(field.bindBlock);
                 }
+                if (field.bindBlocks) {
+                    field.bindBlocks = field.bindBlocks.map(item => tagHelper.getTag(item));
+                }
             }
         }
         if (block.finalBlocks) {
@@ -762,7 +765,7 @@ export class PolicyComponentsUtils {
         policy: Policy,
         components: ComponentsService
     ) {
-        const dryRun = policy.status === PolicyType.DRY_RUN ? policyId : null;
+        const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
         const policyInstance: IPolicyInstance = {
             policyId,
             dryRun,
@@ -1089,7 +1092,7 @@ export class PolicyComponentsUtils {
     public static async GetGroups(
         policy: IPolicyInstance | IPolicyInterfaceBlock,
         user: PolicyUser
-    ): Promise<any[]> {
+    ): Promise<PolicyRoles[]> {
         return await policy.components.databaseServer.getGroupsByUser(
             policy.policyId,
             user.did,
@@ -1116,10 +1119,10 @@ export class PolicyComponentsUtils {
             result.userGroup = null;
 
             const policyId = policy.id.toString();
-            if (policy.status === PolicyType.DRY_RUN) {
-                const activeUser = await DatabaseServer.getVirtualUser(
-                    policyId
-                );
+            const dryRun = PolicyHelper.isDryRunMode(policy) ? policyId : null;
+
+            if (dryRun) {
+                const activeUser = await DatabaseServer.getVirtualUser(policyId);
                 if (activeUser) {
                     did = activeUser.did;
                 }
@@ -1130,8 +1133,6 @@ export class PolicyComponentsUtils {
                 result.userRole = 'Administrator';
             }
 
-            const dryRun =
-                policy.status === PolicyType.DRY_RUN ? policyId : null;
             const db = new DatabaseServer(dryRun);
             const groups = await db.getGroupsByUser(policyId, did, {
                 fields: ['uuid', 'role', 'groupLabel', 'groupName', 'active'],

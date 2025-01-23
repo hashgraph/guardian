@@ -1,7 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { UserRole } from '@guardian/interfaces';
-import { WebSocketService } from 'src/app/services/web-socket.service';
+import {Component, Inject} from '@angular/core';
+import {UserRole} from '@guardian/interfaces';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 interface VCSubmitDialogData {
     document: any;
@@ -42,14 +42,16 @@ export class MeecoVCSubmitDialogComponent {
     selectedRole: UserRole;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) private data: VCSubmitDialogData,
-        private dialogRef: MatDialogRef<MeecoVCSubmitDialogComponent>,
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
         private wsService: WebSocketService
     ) {
-        this.vcSubject = Object.entries(this.data.document);
-        this.presentationRequestId = this.data.presentationRequestId;
-        this.submissionId = this.data.submissionId;
-        this.userRole = this.data.userRole;
+        const data = this.config.data as VCSubmitDialogData;
+
+        this.vcSubject = Object.entries(data.document);
+        this.presentationRequestId = data.presentationRequestId;
+        this.submissionId = data.submissionId;
+        this.userRole = data.userRole;
     }
 
     private closeDialog(): void {

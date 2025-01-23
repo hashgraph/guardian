@@ -23,7 +23,8 @@ export enum PermissionCategories {
     TOOLS = 'TOOLS',
     PERMISSIONS = 'PERMISSIONS',
     ACCESS = 'ACCESS',
-    DELEGATION = 'DELEGATION'
+    DELEGATION = 'DELEGATION',
+    STATISTICS = 'STATISTICS',
 }
 
 /**
@@ -62,7 +63,10 @@ export enum PermissionEntities {
     THEME = 'THEME',
     TOKEN = 'TOKEN',
     TRUST_CHAIN = 'TRUST_CHAIN',
-    ROLE = 'ROLE'
+    ROLE = 'ROLE',
+    STATISTIC = 'STATISTIC',
+    RULE = 'RULE',
+    LABEL = 'LABEL'
 }
 
 /**
@@ -215,6 +219,15 @@ export enum Permissions {
     ACCESS_POLICY_ASSIGNED_AND_PUBLISHED = 'ACCESS_POLICY_ASSIGNED_AND_PUBLISHED',
     //DELEGATION
     DELEGATION_ROLE_MANAGE = 'DELEGATION_ROLE_MANAGE',
+    //STATISTICS
+    STATISTICS_STATISTIC_CREATE = 'STATISTICS_STATISTIC_CREATE',
+    STATISTICS_STATISTIC_READ = 'STATISTICS_STATISTIC_READ',
+    STATISTICS_LABEL_CREATE = 'STATISTICS_LABEL_CREATE',
+    STATISTICS_LABEL_READ = 'STATISTICS_LABEL_READ',
+    //SCHEMA RULES
+    SCHEMAS_RULE_CREATE = 'SCHEMAS_RULE_CREATE',
+    SCHEMAS_RULE_READ = 'SCHEMAS_RULE_READ',
+    SCHEMAS_RULE_EXECUTE = 'SCHEMAS_RULE_EXECUTE'
 }
 
 /**
@@ -339,7 +352,7 @@ export const PermissionsArray: {
             category: PermissionCategories.CONTRACTS,
             entity: PermissionEntities.CONTRACT,
             action: PermissionActions.MANAGE,
-            disabled: false,
+            disabled: true,
             dependOn: [
                 Permissions.CONTRACTS_CONTRACT_READ,
                 Permissions.CONTRACTS_CONTRACT_CREATE,
@@ -1120,6 +1133,57 @@ export const PermissionsArray: {
                 Permissions.PERMISSIONS_ROLE_READ
             ]
         },
+        //STATISTIC
+        {
+            name: Permissions.STATISTICS_STATISTIC_READ,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.STATISTIC,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.STATISTICS_STATISTIC_CREATE,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.STATISTIC,
+            action: PermissionActions.CREATE,
+            disabled: false
+        },
+        {
+            name: Permissions.STATISTICS_LABEL_READ,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.STATISTICS_LABEL_CREATE,
+            category: PermissionCategories.STATISTICS,
+            entity: PermissionEntities.LABEL,
+            action: PermissionActions.CREATE,
+            disabled: false
+        },
+        //SCHEMA RULE
+        {
+            name: Permissions.SCHEMAS_RULE_READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.SCHEMAS_RULE_CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.CREATE,
+            disabled: false
+        },
+        {
+            name: Permissions.SCHEMAS_RULE_EXECUTE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.RULE,
+            action: PermissionActions.EXECUTE,
+            disabled: false
+        },
         //ACCESS
         {
             name: Permissions.ACCESS_POLICY_ALL,
@@ -1258,7 +1322,10 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.PERMISSIONS_ROLE_UPDATE,
     Permissions.PERMISSIONS_ROLE_DELETE,
     Permissions.PERMISSIONS_ROLE_MANAGE,
-    Permissions.ACCESS_POLICY_ALL
+    Permissions.ACCESS_POLICY_ALL,
+    Permissions.SCHEMAS_RULE_CREATE,
+    Permissions.SCHEMAS_RULE_READ,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 
 export const AuditDefaultPermission: Permissions[] = [
@@ -1281,7 +1348,12 @@ export const DefaultRoles: Permissions[] = [
     Permissions.TOKENS_TOKEN_EXECUTE,
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
-    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
+    Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED,
+    Permissions.STATISTICS_STATISTIC_READ,
+    Permissions.STATISTICS_STATISTIC_CREATE,
+    Permissions.STATISTICS_LABEL_READ,
+    Permissions.STATISTICS_LABEL_CREATE,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];
 
 export const OldRoles: Permissions[] = [
@@ -1299,4 +1371,5 @@ export const OldRoles: Permissions[] = [
     Permissions.TAGS_TAG_READ,
     Permissions.TAGS_TAG_CREATE,
     Permissions.ACCESS_POLICY_PUBLISHED,
+    Permissions.SCHEMAS_RULE_EXECUTE,
 ];

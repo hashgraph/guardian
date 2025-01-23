@@ -47,3 +47,19 @@ textarea[readonly] {
 .remove-prop[readonly="true"] {
     display: none;
 } */
+
+::ng-deep p-dropdown .p-dropdown,
+::ng-deep p-multiselect .p-multiselect {
+    width: 100% !important;
+}
+
+::ng-deep input {
+    height: 38px !important;
+    font-size: 1rem !important;
+    color: var(--color-grey-6);
+    font-family: 'Roboto', sans-serif;
+}
+
+::ng-deep .policy-configuration .tab-header {
+    display: inline-block !important
+}

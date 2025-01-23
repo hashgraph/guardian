@@ -1,4 +1,5 @@
-<li class="standard-registry__card" (click)="onCardClick()" [ngClass]="{ 'standard-registry__card--selected': isRegistrySelected }">
+<li class="standard-registry__card" (click)="onCardClick()"
+    [ngClass]="{ 'standard-registry__card--selected': isRegistrySelected }">
     <div class="standard-registry__header">
         <div class="standard-registry__topic">
             <label class="standard-registry-label">Standard Registry</label>
@@ -6,30 +7,32 @@
         </div>
 
         <ng-container *ngIf="registry.policies.length > 0; else noPolicies">
+
             <div
                 class="policies-menu-trigger"
-                [matMenuTriggerFor]="policiesList"
-                (click)="stopPropagation($event)"
-                [ngClass]="{ 'policies-menu-trigger--opened': isPoliciesMenuOpened }"
+                (click)="togglePoliciesMenu($event)"
             >
+
+
                 <span>
                     {{ registry.policies.length }} {{ getPoliciesLabel(registry.policies.length) }}
                 </span>
-                <mat-icon
-                    class="policies-menu-icon"
+
+                <i
+                    class="pi pi-chevron-down policies-menu-icon"
                     [ngClass]="{ 'policies-menu-icon--opened': isPoliciesMenuOpened }"
-                    svgIcon="chevron_down"
-                ></mat-icon>
+                ></i>
             </div>
 
-            <mat-menu #policiesList="matMenu">
+            <p-overlayPanel #policiesOverlay>
                 <ul class="policies-list">
-                    <li *ngFor="let policy of registry.policies" class="policies-list__item" value="policy.name">
-                        <span>{{ policy.name }} </span>
+                    <li *ngFor="let policy of registry.policies" class="policies-list__item">
+                        <span>{{ policy.name }}</span>
                         <span *ngIf="policy.version">({{ policy.version }})</span>
                     </li>
                 </ul>
-            </mat-menu>
+            </p-overlayPanel>
+
         </ng-container>
 
         <ng-template #noPolicies>
@@ -48,25 +51,10 @@
             <span>{{ registry.username }}</span>
         </li>
 
-        <ng-container *ngIf="registry.vcDocument.document">
-            <li class="standard-registry__detail">
-                <label>Law</label>
-                <span>{{ registry.vcDocument.document.credentialSubject[0].law }}</span>
-            </li>
-
-            <li class="standard-registry__detail">
-                <label>Geography</label>
-                <span>{{ registry.vcDocument.document.credentialSubject[0].geography }}</span>
-            </li>
-
-            <li *ngIf="registry.vcDocument.document.credentialSubject[0].ISIC" class="standard-registry__detail">
-                <label>ISIC</label>
-                <span>{{ registry.vcDocument.document.credentialSubject[0].ISIC }}</span>
-            </li>
-
-            <li *ngIf="registry.vcDocument.document.credentialSubject[0].tags" class="standard-registry__detail">
-                <label>Tags</label>
-                <span>{{ registry.vcDocument.document.credentialSubject[0].tags }}</span>
+        <ng-container *ngIf="fields.length">
+            <li *ngFor="let item of fields" class="standard-registry__detail">
+                <label>{{ item.name }}</label>
+                <span>{{ item.value }}</span>
             </li>
         </ng-container>
     </ul>

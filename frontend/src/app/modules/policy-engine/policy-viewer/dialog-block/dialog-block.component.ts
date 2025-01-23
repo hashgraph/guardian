@@ -1,5 +1,5 @@
-import { Component, OnInit, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {Component, OnInit, Inject} from '@angular/core';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 /**
  * Component for display a block inside a dialog.
@@ -10,15 +10,19 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
     styleUrls: ['./dialog-block.component.scss']
 })
 export class DialogBlock {
-    title: string = "";
+    title: string = '';
     block: any = null;
     static: any = null;
     policyId: any = null;
     dryRun: any = null;
 
+    public data: any
+
     constructor(
-        public dialogRef: MatDialogRef<DialogBlock>,
-        @Inject(MAT_DIALOG_DATA) public data: any) {
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig
+    ) {
+        this.data = this.config.data;
     }
 
     ngOnInit() {

@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables } from '../../structures';
-import { PolicyCategoryType } from '@guardian/interfaces';
+import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
+import {IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables} from '../../structures';
+import {IContract, PolicyCategoryType} from '@guardian/interfaces';
 
 /**
  * Settings for policy.
@@ -16,6 +16,7 @@ export class PolicyPropertiesComponent implements OnInit {
     @Input('policyCategories') policyCategories!: IPolicyCategory[];
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
+    @Input('wipeContracts') wipeContracts: IContract[] = [];
 
     @Output() onInit = new EventEmitter();
 
@@ -54,6 +55,57 @@ export class PolicyPropertiesComponent implements OnInit {
     appliedTechnologyTypeSelected: IPolicyCategory | undefined;
     migrationActivityTypeSelected: IPolicyCategory[] = [];
     subTypeSelected: IPolicyCategory[] = [];
+
+    public groupAccessTypeOptions = [
+        {label: 'Private', value: 'Private'},
+        {label: 'Global', value: 'Global'}
+    ];
+
+    public groupDocumentOptions = [
+        {label: 'Any', value: 'any'},
+        {label: 'VC', value: 'vc'},
+        {label: 'VP', value: 'vp'}
+    ];
+
+    public memoObjOptions = [
+        {label: 'Topic Config', value: 'topic'},
+        {label: 'Document', value: 'doc'}
+    ];
+
+    public groupRelationshipTypeOptions = [
+        {label: 'Single', value: 'Single'},
+        {label: 'Multiple', value: 'Multiple'}
+    ];
+
+    public tokenTypeOptions = [
+        {label: 'To be specified by user', value: null},
+        {label: 'Non Fungible', value: 'non-fungible'},
+        {label: 'Fungible', value: 'fungible'}
+    ];
+
+    public enableAdminOptions = [
+        {label: 'To be specified by user', value: null},
+        {label: 'Yes', value: true},
+        {label: 'No', value: false}
+    ];
+
+    public enableFreezeOptions = [
+        {label: 'To be specified by user', value: null},
+        {label: 'Yes', value: true},
+        {label: 'No', value: false}
+    ];
+
+    public enableWipeOptions = [
+        {label: 'To be specified by user', value: null},
+        {label: 'Yes', value: true},
+        {label: 'No', value: false}
+    ];
+
+    public enableKYCOptions = [
+        {label: 'To be specified by user', value: null},
+        {label: 'Yes', value: true},
+        {label: 'No', value: false}
+    ];
 
     constructor(private cd: ChangeDetectorRef) {
     }
@@ -140,7 +192,7 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     addRoles() {
-        this.policy.createRole("");
+        this.policy.createRole('');
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -178,9 +230,9 @@ export class PolicyPropertiesComponent implements OnInit {
 
     addTopic() {
         this.policy.createTopic({
-            name: "",
-            description: "",
-            type: "any",
+            name: '',
+            description: '',
+            type: 'any',
             static: false
         });
     }
@@ -213,5 +265,22 @@ export class PolicyPropertiesComponent implements OnInit {
 
     onTokenTypeChange(item: any) {
         item.decimals = '';
+    }
+
+    onEnableWipeChange(template: PolicyToken) {
+        if (template.enableWipe !== true) {
+            template.wipeContractId = undefined;
+        }
+    }
+
+    getWipeContractOptions() {
+        return [
+            {label: 'To be specified by user', value: null},
+            {label: 'Empty', value: ''},
+            ...this.wipeContracts.map(contract => ({
+                label: `${contract.contractId} (${contract.description})`,
+                value: contract.contractId
+            }))
+        ];
     }
 }

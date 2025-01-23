@@ -29,7 +29,7 @@
                 {{ schema.name }}
             </div>
             <div (click)="onDeleteArtifact()" class="delete-artifact">
-                <mat-icon>delete</mat-icon>
+                <i class="pi pi-trash"></i>
             </div>
             <form [formGroup]="schemaForm">
                 <app-schema-form [formGroup]="schemaForm" [schema]="schema" [showButtons]="false"></app-schema-form>
@@ -48,11 +48,11 @@
     <div class="g-dialog-header">
         <div class="g-dialog-cancel">
             <div class="g-dialog-cancel-btn" (click)="onNoClick()">
-                <mat-icon>close</mat-icon>
+                <i class="pi pi-times"></i>
             </div>
         </div>
         <div class="g-dialog-title">
-            {{title}}
+            {{ title }}
         </div>
         <div class="g-dialog-actions">
             <div class="g-dialog-actions-btn" (click)="onCreate()" [attr.disabled]="disabled">
@@ -63,50 +63,56 @@
     <div class="g-dialog-body">
         <div style="padding: 20px 35px 30px 35px">
             <form [formGroup]="dataForm">
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>* Label</mat-label>
-                    <input matInput type="text" placeholder="Label" formControlName="name">
-                </mat-form-field>
-
-                <mat-form-field class="example-full-width" appearance="outline">
-                    <mat-label>Description</mat-label>
-                    <input matInput type="text" placeholder="Description" formControlName="description">
-                </mat-form-field>
+                <div class="form-group example-full-width">
+                    <label for="labelInput" class="form-label">* Label</label>
+                    <input
+                        pInputText
+                        id="labelInput"
+                        type="text"
+                        placeholder="Label"
+                        formControlName="name"
+                        class="full-width">
+                </div>
+                <div class="form-group example-full-width">
+                    <label for="descriptionInput" class="form-label">Description</label>
+                    <input
+                        pInputText
+                        id="descriptionInput"
+                        type="text"
+                        placeholder="Description"
+                        formControlName="description"
+                        class="full-width">
+                </div>
             </form>
 
             <div *ngIf="schemas && schemas.length" class="artifact-container">
                 <div *ngIf="!schema" class="add-artifact" (click)="onAddArtifact(selector)">
-                    <mat-icon class="add-icon">add</mat-icon>
+                    <i class="pi pi-plus add-icon"></i>
                     <div class="btn-name">
                         Add Document
                     </div>
                 </div>
-
-                <mat-select #selector class="artifact-selector" [(value)]="schema" (selectionChange)="onSelectSchema()">
-                    <mat-option *ngFor="let schema of schemas" [value]="schema">
-                        <span>{{schema.name}}</span>
-                    </mat-option>
-                </mat-select>
-
-                <!-- <div *ngIf="schema" class="selected-artifact">
-                    <div class="selected-artifact-name">
-                        <span class="selected-artifact-label">Artifact</span>
-                        <span>{{schema.name}}</span>
-                    </div>
-                    <div class="delete-artifact" (click)="onDeleteArtifact()">
-                        <mat-icon>delete</mat-icon>
-                    </div>
-                </div> -->
-
+                <p-dropdown
+                    #selector
+                    class="artifact-selector"
+                    [(ngModel)]="schema"
+                    (onChange)="onSelectSchema()"
+                    [options]="schemas"
+                    optionLabel="name"
+                    placeholder="Select a schema"
+                    [appendTo]="'body'"
+                >
+                </p-dropdown>
                 <div *ngIf="schema" class="artifact-form">
                     <div class="artifact-form-label">
-                        {{schema.name}}
+                        {{ schema.name }}
                     </div>
                     <div class="delete-artifact" (click)="onDeleteArtifact()">
-                        <mat-icon>delete</mat-icon>
+                        <i class="pi pi-times"></i>
                     </div>
                     <form [formGroup]="schemaForm">
-                        <app-schema-form [formGroup]="schemaForm" [schema]="schema" [showButtons]="false"></app-schema-form>
+                        <app-schema-form [formGroup]="schemaForm" [schema]="schema"
+                                         [showButtons]="false"></app-schema-form>
                     </form>
                 </div>
             </div>

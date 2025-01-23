@@ -6,6 +6,19 @@ import { TokenId, TopicId } from '@hashgraph/sdk';
 import { IHederaCredentials, PolicyUser, UserCredentials } from '../policy-user.js';
 import { DocumentType } from '../interfaces/document.type.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
+import { FilterQuery } from '@mikro-orm/core';
+
+export enum QueryType {
+    eq = 'equal',
+    ne = 'not_equal',
+    in = 'in',
+    nin = 'not_in',
+    gt = 'gt',
+    gte = 'gte',
+    lt = 'lt',
+    lte = 'lte',
+    regex = 'regex'
+}
 
 /**
  * Policy engine utils
@@ -1020,14 +1033,12 @@ export class PolicyUtils {
             let documentRef: any = null;
             if (typeof (refId) === 'string') {
                 documentRef = await ref.databaseServer.getVcDocument({
-                    where: {
-                        'policyId': { $eq: policyId },
-                        $or: [
-                            {'document.credentialSubject.id': {$eq: refId}},
-                            {'document.credentialSubject.0.id': {$eq: refId}}
-                        ]
-                    }
-                });
+                    'policyId': { $eq: policyId },
+                    $or: [
+                        { 'document.credentialSubject.id': { $eq: refId } },
+                        { 'document.credentialSubject.0.id': { $eq: refId } }
+                    ]
+                } as unknown as FilterQuery<VcDocumentCollection>);
             } else if (typeof (refId) === 'object') {
                 const objectId = refId.id || refId._id;
                 if (objectId) {
@@ -1038,11 +1049,9 @@ export class PolicyUtils {
                 } else {
                     const id = PolicyUtils.getSubjectId(refId);
                     documentRef = await ref.databaseServer.getVcDocument({
-                        where: {
-                            'policyId': { $eq: policyId },
-                            'document.credentialSubject.id': { $eq: id }
-                        }
-                    });
+                        'policyId': { $eq: policyId },
+                        'document.credentialSubject.id': { $eq: id }
+                    } as FilterQuery<VcDocumentCollection>);
                 }
             }
             if (!documentRef) {
@@ -1318,5 +1327,184 @@ export class PolicyUtils {
      */
     public static getRoleTemplate<T>(ref: AnyBlockType, name: string): T {
         return ref.components.getRoleTemplate<T>(name);
+    }
+
+    public static getQueryFilter(key: string, value: any) {
+        const queryKey = String(key).replace('document.credentialSubject.0', 'firstCredentialSubject');
+        let queryOperation: string = '$eq';
+        let queryValue: any = value;
+        if (typeof value === 'object') {
+            [queryOperation, queryValue] = Object.entries(value)[0];
+        }
+
+        //Check number value
+        const numberValue = PolicyUtils.parseQueryNumberValue(queryValue);
+        if (numberValue) {
+            if (queryOperation === '$nin') {
+                return {
+                    $and: [
+                        { $not: { $in: [`\$${queryKey}`, numberValue[0]] } },
+                        { $not: { $in: [`\$${queryKey}`, numberValue[1]] } }
+                    ]
+                }
+            } else if (queryOperation === '$ne') {
+                return {
+                    $and: [
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[0]] },
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[1]] }
+                    ]
+                }
+            } else {
+                return {
+                    $or: [
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[0]] },
+                        { [`${queryOperation}`]: [`\$${queryKey}`, numberValue[1]] }
+                    ]
+                }
+            }
+        } else {
+            if (queryOperation === '$nin') {
+                return { $not: { $in: [`\$${queryKey}`, queryValue] } }
+            } else {
+                return { [`${queryOperation}`]: [`\$${queryKey}`, queryValue] };
+            }
+        }
+    }
+
+    public static parseQueryNumberValue(value: any) {
+        if (Array.isArray(value)) {
+            if (value.length) {
+                const stringValue: string[] = [];
+                const numberValue: number[] = [];
+                for (const v of value) {
+                    if (isNaN(v)) {
+                        return null;
+                    } else {
+                        stringValue.push(String(value));
+                        numberValue.push(Number(value));
+                    }
+                }
+                return [stringValue, numberValue];
+            } else {
+                return null;
+            }
+        } else {
+            if (isNaN(value)) {
+                return null;
+            } else {
+                return [String(value), Number(value)];
+            }
+        }
+    }
+
+    public static parseQuery(type: string, value: string) {
+        let queryType: QueryType;
+        let queryValue: any;
+        if (type === 'user_defined') {
+            const [userType, userValue] = PolicyUtils.parseFilterValue(value);
+            queryType = userType;
+            queryValue = PolicyUtils.getQueryValue(queryType, userValue);
+        } else {
+            queryType = type as QueryType;
+            queryValue = PolicyUtils.getQueryValue(queryType, value);
+        }
+        const queryExpression = PolicyUtils.getQueryExpression(queryType, queryValue);
+        return {
+            type: queryType,
+            value: queryValue,
+            expression: queryExpression
+        }
+    }
+
+    public static parseFilterValue(value: string): [QueryType, string] {
+        if (typeof value === 'string') {
+            if (value.startsWith('eq:')) {
+                return [QueryType.eq, value.substring('eq'.length + 1)];
+            }
+            if (value.startsWith('ne:')) {
+                return [QueryType.ne, value.substring('ne'.length + 1)];
+            }
+            if (value.startsWith('in:')) {
+                return [QueryType.in, value.substring('in'.length + 1)];
+            }
+            if (value.startsWith('nin:')) {
+                return [QueryType.nin, value.substring('nin'.length + 1)];
+            }
+            if (value.startsWith('gt:')) {
+                return [QueryType.gt, value.substring('gt'.length + 1)];
+            }
+            if (value.startsWith('gte:')) {
+                return [QueryType.gte, value.substring('gte'.length + 1)];
+            }
+            if (value.startsWith('lt:')) {
+                return [QueryType.lt, value.substring('lt'.length + 1)];
+            }
+            if (value.startsWith('lte:')) {
+                return [QueryType.lte, value.substring('lte'.length + 1)];
+            }
+            if (value.startsWith('regex:')) {
+                return [QueryType.regex, value.substring('regex'.length + 1)];
+            }
+        }
+        return [null, value];
+    }
+
+    public static getQueryValue(queryType: QueryType, value: any): any {
+        if (typeof value === 'number') {
+            value = String(value);
+        }
+        if (typeof value !== 'string') {
+            return null;
+        }
+        switch (queryType) {
+            case QueryType.eq:
+                return value;
+            case QueryType.ne:
+                return value;
+            case QueryType.in:
+                return value.split(',');
+            case QueryType.nin:
+                return value.split(',');
+            case QueryType.gt:
+                return value;
+            case QueryType.gte:
+                return value;
+            case QueryType.lt:
+                return value;
+            case QueryType.lte:
+                return value;
+            case QueryType.regex:
+                return '.*' + value + '.*'
+            default:
+                return null;
+        }
+    }
+
+    public static getQueryExpression(queryType: QueryType, value: any): any {
+        if (!value) {
+            return null;
+        }
+        switch (queryType) {
+            case QueryType.eq:
+                return { $eq: value }
+            case QueryType.ne:
+                return { $ne: value }
+            case QueryType.in:
+                return { $in: value }
+            case QueryType.nin:
+                return { $nin: value }
+            case QueryType.gt:
+                return { $gt: value }
+            case QueryType.gte:
+                return { $gte: value }
+            case QueryType.lt:
+                return { $lt: value }
+            case QueryType.lte:
+                return { $lte: value }
+            case QueryType.regex:
+                return { $regex: value }
+            default:
+                return null;
+        }
     }
 }

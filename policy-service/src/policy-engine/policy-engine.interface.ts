@@ -1,4 +1,4 @@
-import { BlockCacheType, PolicyOutputEventType, EventConfig, IPolicyEvent } from './interfaces/index.js';
+import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from './interfaces/index.js';
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
@@ -269,7 +269,7 @@ export interface IPolicyBlock {
      * @param data
      */
     triggerEvents<T>(
-        eventType: PolicyOutputEventType,
+        eventType: PolicyOutputEventType | string,
         user: PolicyUser,
         data: T
     ): void;
@@ -533,6 +533,22 @@ export interface IPolicySourceBlock extends IPolicyBlock {
      * Get common addons
      */
     getCommonAddons(): IPolicyBlock[];
+
+    /**
+     * On addon event
+     * @param user
+     * @param tag
+     * @param documentId
+     * @param handler
+     */
+    onAddonEvent(
+        user: PolicyUser,
+        tag: string,
+        documentId: string,
+        handler: (
+            document: any
+        ) => Promise<IPolicyEventState> | IPolicyEventState
+    ): Promise<void>;
 }
 
 /**
@@ -558,6 +574,13 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
      * @param queryParams
      */
     getData(user: PolicyUser | null, uuid: string, queryParams?: any): Promise<any>;
+
+    /**
+     * Set filter state
+     * @param user
+     * @param data
+     */
+    setFilterState(user: PolicyUser | null, data: any): Promise<void>;
 
     /**
      * Get sources
@@ -595,9 +618,32 @@ export interface IPolicyAddonBlock extends IPolicyBlock {
     getState(user: PolicyUser): any;
 
     /**
+     * Set block state
+     * @param user
+     * @param state
+     */
+    setState(user: PolicyUser, state: any): Promise<void>;
+
+    /**
      * Get selective attributes addons
      */
     getSelectiveAttributes(): IPolicyAddonBlock[];
+
+    /**
+     * Set strict filters
+     */
+    setFiltersStrict(user: PolicyUser | null, data: any): Promise<void>;
+
+    /**
+     * Restore filters
+     */
+    resetFilters(user: PolicyUser): Promise<void>;
+
+    /**
+     * Restore pagination
+     * @param user
+     */
+    resetPagination(user: PolicyUser): Promise<void>;
 }
 
 /**
@@ -674,6 +720,11 @@ export interface IPolicyReportItemBlock extends IPolicyBlock {
  * Policy request block interface
  */
 export interface IPolicyRequestBlock extends IPolicyBlock {
+    /**
+     * Is block active
+     */
+    isBlockActive(user: PolicyUser): Promise<boolean>;
+
     /**
      * Get block data
      * @param user

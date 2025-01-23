@@ -1,6 +1,6 @@
 # Guardian
 
-[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![Discord chat](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545)
+[![Apache 2.0 License](https://img.shields.io/hexpm/l/apa)](LICENSE) ![Build results](https://github.com/hashgraph/guardian/actions/workflows/main.yml/badge.svg?branch=main) ![GitHub package.json version (branch)](https://img.shields.io/github/package-json/v/hashgraph/guardian/master/guardian-service?label=version) [![Discord chat](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/898264469786988545) [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9216/badge)](https://www.bestpractices.dev/projects/9216)
 
 ## Overview
 
@@ -11,7 +11,7 @@ Guardian is a modular open-source solution that includes best-in-class identity 
 ## Discovering Digital Environmental Assets assets on Hedera
 
 
-As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens. 
+As identified in Hedera Improvement Proposal 19 (HIP-19), each entity on the Hedera network may contain a specific identifier in the memo field for discoverability. Guardian demonstrates this when every Hedera Consensus Service transaction is logged to a Hedera Consensus Service (HCS) Topic. Observing the Hedera Consensus Service Topic, you can discover newly minted tokens.
 
 In the memo field of each token mint transaction you will find a unique Hedera message timestamp. This message contains the url of the Verifiable Presentation (VP) associated with the token. The VP can serve as a starting point from which you can traverse the entire sequence of documents produced by Guardian policy workflow, which led to the creation of the token. This includes a digital Methodology (Policy) HCS Topic, an associated Registry HCS Topic for that Policy, and a Project HCS Topic.
 
@@ -52,7 +52,8 @@ The following steps need to be executed in order to start Guardian using docker:
 3. Update BC access variables
 4. Setup IPFS
 5. Build and launch with Docker
-6. Browse to [http://localhost:3000](http://localhost:3000)
+6. Browse to http://localhost:3000
+7. For increased security remove credentials from .env file
 
 Here the steps description follows:
 
@@ -64,8 +65,7 @@ Here the steps description follows:
 
 #### 2. Configure project level .env file.
 
-The main configuration file that needs to be provided to the Guardian system is the `.env` file.
-Cut and paste the `.env.template` renaming it as `.env` here you may choose the name of the Guardian platform. Leave the field empty or unspecified if you update a production environment to keep previous data ( for more details read [here](https://docs.hedera.com/guardian/guardian/readme/environments/ecosystem-environments)).
+The main configuration file that needs to be provided to the Guardian system is the .env file. Note that these files contain sensitive configuration such as keys and access credentials which are only used at the initial start of Guardian. For increased security it is recommended to disable inbound network access until after the first run of Guardian, when the credentials configuration has been removed from .env file (see p8 below).
 
 For this example purpose let's name the Guardian platform as "develop"
 
@@ -73,7 +73,7 @@ For this example purpose let's name the Guardian platform as "develop"
    GUARDIAN_ENV="develop"
 ```
 
-> **_NOTE:_**  Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation. 
+> **_NOTE:_**  Every single service is provided in its folder with a `.env.template` file, this set of files are only needed for the case of Manual installation.
 
 #### 3. Update BC access variables.
 
@@ -87,7 +87,7 @@ There will be other steps in the Demo Usage Guide that will be required for the 
 The parameter `HEDERA_NET` may assume the following values: `mainnet`, `testnet`, `previewnet`, `localnode`. choose the right value depending on your target Hedera network on which the `OPERATOR_ID` has been defined.
 
    As examples:
- 
+
    following the previous example, the file to configure should be named: `./configs/.env.develop.guardian.system`, this file is already provided in the folder as an example, only update the variables OPERATOR_ID, OPERATOR_KEY and HEDERA_NET.
 
    ```plaintext
@@ -97,7 +97,7 @@ The parameter `HEDERA_NET` may assume the following values: `mainnet`, `testnet`
    ```
 
 Starting from Multi-environment release (2.13.0) it has been introduced a new parameter `PREUSED_HEDERA_NET`.
-Multienvironemnt is a breaking change and the configuration of this parameter intend to smooth the upgrading. 
+Multienvironemnt is a breaking change and the configuration of this parameter intend to smooth the upgrading.
 `PREUSED_HEDERA_NET` configuration depends on the installation context.
 
 - If the installation is a completely new one just remove the parameter and feel free to jump to the next paragraph.
@@ -107,15 +107,15 @@ Multienvironemnt is a breaking change and the configuration of this parameter in
 ##### 3.1. PREUSED_HEDERA_NET configuration
 
 The `PREUSED_HEDERA_NET` parameter is intended to hold the target Hedera network that the system already started to notarize data to. PREUSED\_HEDERA\_NET is the reference to the HEDERA_NET that was in use before the upgrade.
-To let the Multi-environment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while  the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.  
+To let the Multi-environment transition happen in a transparent way the `GUARDIAN_ENV` parameter in the `.env` file has to be configured as empty while  the `PREUSED_HEDERA_NET` has to be set with the same value configured in the `HEDERA_NET` parameter in the previous configuration file.
 
 `PREUSED_HEDERA_NET` never needs to be changed after the first initialization. On the contrary it will be possible to change `HEDERA_NET` to dials with all the Hedera different networks.
 
-   - as first Example: 
+   - as first Example:
 
    in case of the upgrading from a release minor then 2.13.0 to a bigger one and keep using the same HEDERA_NET="Mainnet"(as example)
 
-   configure the name the Guardian platform as empty in the `.env` file 
+   configure the name the Guardian platform as empty in the `.env` file
 
    ```shell
       GUARDIAN_ENV=""
@@ -138,7 +138,7 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 
    - As a second example: to test the new release change the HEDERA_NET to "testnet". This is the complete configuration:
 
-   Set the name of the Guardian platform to whatever descripting name in the `.env` file 
+   Set the name of the Guardian platform to whatever description name in the `.env` file
 
    ```shell
       GUARDIAN_ENV="testupgrading"
@@ -158,12 +158,16 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
    PREUSED_HEDERA_NET="mainnet"
    ```
 
-   This configuration allows you to leave untouched all the data referring to Mainnet in the Database while testing on Testnet. Refer to Guardian 
+   This configuration allows you to leave untouched all the data referring to Mainnet in the Database while testing on Testnet. Refer to Guardian
    [documentation](https://docs.hedera.com/guardian/guardian/readme/environments/multi-session-consistency-according-to-environment) for more details.
 
 > **_NOTE:_**  You can use the Schema Topic ID (`INITIALIZATION_TOPIC_ID`) already present in the configuration files, or you can specify your own.
 
 > **_NOTE:_**  for any other GUARDIAN\_ENV name of your choice just copy and paste the file `./configs/.env.template.guardian.system` and rename as `./configs/.env.<choosen name>.guardian.system`
+
+##### 3.2. Setting up JWT keys in /.env file
+
+To start of auth-service it is necessary to fill in `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY`, which are RSA key pair. You can generate it in any convenient way, for example, using this service https://travistidwell.com/jsencrypt/demo/.
 
 #### 4. Now, we have two options to setup IPFS node :  1. Local node 2. IPFS Web3Storage node 3. Filebase Bucket.
 
@@ -185,25 +189,25 @@ To let the Multi-environment transition happen in a transparent way the `GUARDIA
 To select this option ensure that `IPFS_PROVIDER="web3storage"` setting exists in your `./configs/.env.<environment>.guardian.system` file.
 
 To configure access to the [w3up](https://github.com/web3-storage/w3up) IPFS upload API from web3.storage for your Guardian instance you need to set correct values to the following variables in the `./configs/.env.<environment>.guardian.system` file:
-   
+
    ```
    IPFS_STORAGE_KEY="..."
    IPFS_STORAGE_PROOF="..."
    ```
 
 > **_NOTE:_**  When Windows OS is used for creating the IPFS values, please use bash shell to prevent issues with base64 encoding.
- 
+
 To obtain the values for these variables please follow the steps below:
 - Create an account on https://web3.storage, please specify the email you have access to as the account authentication is based on the email validation. Make sure to follow through the registration process to the end, choose an appropriate billing plan for your needs (e.g. 'starter') and enter your payment details.
 - Install w3cli as described in the [corresponding section](https://web3.storage/docs/w3cli/#install) of the web3.storage documentation.
 - Create your 'space' as described in the ['Create your first space'](https://web3.storage/docs/w3cli/#create-your-first-space) section of the documentation.
-- Execute the following to set the Space you intend on delegating access to: 
+- Execute the following to set the Space you intend on delegating access to:
   `w3 space use`.
-- Execute the following command to retrieve your Agent private key and DID: 
-`npx ucan-key ed`. 
+- Execute the following command to retrieve your Agent private key and DID:
+`npx ucan-key ed`.
 The private key (starting with `Mg...`) is the value to be used in the environment variable `IPFS_STORAGE_KEY`.
 - Retrieve the PROOF by executing the following:
-  ```w3 delegation create <did_from_ucan-key_command_above> | base64```. 
+  ```w3 delegation create <did_from_ucan-key_command_above> | base64```.
   The output of this command is the value to be used in the environment variable `IPFS_STORAGE_PROOF`.
 
 To summarise, the process of configuring delegated access to the w3up API consists of execution the following command sequence:
@@ -230,7 +234,7 @@ configuration.
 
 For detailed setup instructions, refer to the
 official <https://docs.filebase.com/api-documentation/ipfs-pinning-service-api>.
-  
+
 #### 5. Setting up Chat GPT API KEY to enable AI Search and Guided Search:
 
 For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `./configs/.env*` files.
@@ -239,20 +243,51 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
 OPENAI_API_KEY="..."
 ```
 
-#### 6. Build and launch with Docker. Please note that this build is meant to be used in production and will not contain any debug information. From the project's root folder:
+#### 6. Build and launch with Docker.
 
-   ```shell
-   docker compose up -d --build
-   ```
-   
-> **_NOTE:_** About docker-compose: from the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
+The following list outlines various Docker Compose configurations for different purposes. Choose the one that best suits your needs.
 
-#### 7. Browse to <http://localhost:3000> and complete the setup.
+| Configuration | Description | Command to Run |
+|---------------|-------------|----------------|
+| Guardian (Demo Mode) | Guardian using pre-built images | `docker-compose up -d --build` |
+| Guardian Build (Demo Mode) | Builds Guardian from source code | `docker-compose -f docker-compose-build.yml up -d --build` |
+| Production Guardian | Guardian using pre-built images, no demo mode | `docker-compose -f docker-compose-production.yml up -d --build` |
+| Production Guardian Build | Builds Guardian from source code, no demo mode | `docker-compose -f docker-compose-production-build.yml up -d --build` |
+| Indexer | Indexer using pre-built images | `docker-compose -f docker-compose-indexer.yml up -d --build` |
+| Indexer Build | Builds Indexer from source code | `docker-compose -f docker-compose-indexer-build.yml up -d --build` |
+| Analytics Service | Analytics Service using pre-built images | `docker-compose -f docker-compose-analytics.yml up -d --build` |
+| Analytics Service Build | Builds Analytics Service from source code | `docker-compose -f docker-compose-analytics-build.yml up -d --build` |
+
+To proceed:
+
+1. Choose the configuration that matches your requirements.
+2. Open a terminal in the project root folder.
+3. Run the corresponding command from the "Command to Run" column.
+
+For example, to run the standard Guardian in demo mode:
+
+```shell
+docker-compose up -d --build
+```
+
+This will start the containers in detached mode (-d) and build them if necessary.
+
+> **_NOTE:_** Configurations with "Build" in their name compile the application from source code, which may take longer but allows for customization.
+
+> **_NOTE:_** Production configurations do not include demo features and will not contain any debug information.
+
+> **_NOTE:_** From the end of June 2023 Compose V1 won’t be supported anymore and will be removed from all Docker Desktop versions. Make sure you use Docker Compose V2 (comes with Docker Desktop > 3.6.0) as at https://docs.docker.com/compose/install/
+
+#### 7. Browse to http://localhost:3000 and complete the setup.
 
 for other examples go to:
-* [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop.md)
-* [Steps to deploy Guardian using a specific Environment ( QA)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa.md)
-* [Steps to deploy Guardian using default Environment](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment.md)
+* [Deploying Guardian using a specific environment( DEVELOP)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-develop)
+* [Steps to deploy Guardian using a specific Environment ( QA)](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-a-specific-environment-qa)
+* [Steps to deploy Guardian using default Environment](https://docs.hedera.com/guardian/guardian/readme/getting-started/installation/building-from-source-and-run-using-docker/deploying-guardian-using-default-environment)
+
+#### 8. For increased security remove credentials from .env file and enable network access
+
+On first state the credentials from .env file are copied into the secure storage as configured (e.g. Vault). After that Guardian does not use any credentials stored in the .env file, thus they should be removed for security reasons.
 
 
 ## Manual installation
@@ -266,14 +301,15 @@ If you want to manually build every component with debug information, then build
 * [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 * [Nats 1.12.2](https://nats.io/)
 * [Redict 7.3.0](https://redict.io/)
+* [Seq 2024.3 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
 
 Install, configure and start all the prerequisites, then build and start each component.
 
-#### Services Configuration: 
+#### Services Configuration:
 
--  for each of the services create the file `./<service_name>/.env` to do this copy, paste and rename  the file `./<service_name>/.env.template` 
+-  for each of the services create the file `./<service_name>/.env` to do this copy, paste and rename  the file `./<service_name>/.env.template`
 
    For example:
 
@@ -284,11 +320,11 @@ Install, configure and start all the prerequisites, then build and start each co
 
    If need to configure OVERRIDE uncomment the variable in file `./guardian-service/.env`:
    ```plaintext
-       OVERRIDE="false" 
+       OVERRIDE="false"
    ```
 
--  configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy, 
-   paste and rename the file  `./<service_name>/.env.<service>.template` 
+-  configure the file `./<service_name>/configs/.env.<service>.<GUARDIAN_ENV>` file: to do this copy,
+   paste and rename the file  `./<service_name>/.env.<service>.template`
 
    following previous example:
 
@@ -320,7 +356,7 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
    Npm:
    ```
    npm install
-   ```   
+   ```
 #### 3. From the **interfaces** folder
 
    Yarn:
@@ -398,7 +434,7 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
    ```
    npm --workspace=auth-service start
    ```
-   
+
 #### 7. From the **policy-service** folder
 
    To build the service:
@@ -424,7 +460,7 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
    Npm:
    ```
    npm --workspace=policy-service start
-   ```   
+   ```
 #### 8. Build and start **worker-service** service
 
    Yarn:
@@ -464,7 +500,7 @@ For setting up AI and Guided Search, we need to set OPENAI_API_KEY variable in `
    ```
    Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values in `./guardian-service/configs/.env.worker` file as in the example above.
 
-   To start the service (found on <http://localhost:3002>):
+   To start the service (found on http://localhost:3002):
 
    Yarn:
    ```shell
@@ -491,7 +527,7 @@ npm --workspace=guardian-service run build
 Configure the service as previously described. Update **OPERATOR_ID** and **OPERATOR_KEY** values
 in `./guardian-service/configs/.env.worker` file as in the example above.
 
-To start the service (found on <http://localhost:3002>):
+To start the service (found on http://localhost:3002):
 
 Yarn:
 ```shell
@@ -519,7 +555,7 @@ npm --workspace=api-gateway run build
 
 Configure the service as previously described. Do not need special configuration variables.
 
-To start the service (found on <http://localhost:3002>):
+To start the service (found on http://localhost:3002):
 
 Yarn:
    ```shell
@@ -542,7 +578,7 @@ npm --workspace=api-gateway start
 
     Configure the service as previously described. Do not need special configuration variables.
 
-    To start the service (found on <http://localhost:3005>):
+    To start the service (found on http://localhost:3005):
 
     ```shell
     npm start
@@ -583,7 +619,7 @@ npm --workspace=ai-service start
     npm run build
     ```
 
-    To start the service (found on <http://localhost:4200>):
+    To start the service (found on http://localhost:4200):
 
     ```shell
     npm start
@@ -616,11 +652,11 @@ npm --workspace=ai-service start
    ```
     VAULT_PROVIDER = "hashicorp"
    ```
- 
+
     Note: VAULT_PROVIDER can be set to "database" or "hashicorp" to select Database instance or a hashicorp vault instance correspondingly.
-    
-   If the VAULT_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in the auth-service folder.   
-   
+
+   If the VAULT_PROVIDER value is set to "hashicorp" the following 3 parameters should be configured in the auth-service folder.
+
    1. HASHICORP_ADDRESS : http://localhost:8200 for using local vault. For remote vault, we need to use the value from the configuration settings of    Hashicorp vault service.
    2. HASHICORP_TOKEN : the token from the Hashicorp vault.
    3. HASHICORP_WORKSPACE : this is only needed when we are using cloud vault for Hashicorp. Default value is "admin".
@@ -629,18 +665,18 @@ npm --workspace=ai-service start
     1. OPERATOR_ID
     2. OPERATOR_KEY
     3. IPFS_STORAGE_API_KEY
-    
+
     Note: These records in the vault will be created automatically if there are environment variables with the matching names.
-    
+
  **How to import existing user keys from DB into the vault:**
- 
+
  During Guardian services initialization, we need to set the following configuration settings in **auth-service** folder:
- 
+
   ```
     IMPORT_KEYS_FROM_DB = 1
     VAULT_PROVIDER = "hashicorp"
    ```
- 
+
 ## Local development using Docker
 
 #### 1. create .env file at the root level and update all variable requires for docker
@@ -655,7 +691,7 @@ npm --workspace=ai-service start
    docker compose -f docker-compose-dev.yml up --build
    ```
 
-#### 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
+#### 3. Access local development using http://localhost:3000 or http://localhost:4200
 
 ## Troubleshoot
 
@@ -678,7 +714,7 @@ npm --workspace=ai-service start
 To run **guardian-service** unit tests, following commands needs to be executed:
 
 ```shell
-cd guardian-service 
+cd guardian-service
 npm run test
 ```
 

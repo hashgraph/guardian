@@ -1,9 +1,10 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, ISignOptions, NotificationAction, WorkerTaskType } from '@guardian/interfaces';
-import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
+import { DatabaseServer, ExternalEventChannel, KeyType, MessageAction, MessageServer, MultiPolicy, MultiPolicyTransaction, NotificationHelper, PinoLogger, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Token Config
@@ -48,7 +49,7 @@ export class MintService {
     /**
      * Logger service
      */
-    private static readonly logger = new Logger();
+    private static readonly logger = new PinoLogger();
 
     /**
      * Mint
@@ -112,7 +113,7 @@ export class MintService {
                     amount: tokenValue,
                     target: targetAccount,
                     status: 'Waiting'
-                });
+                } as FilterObject<MultiPolicyTransaction>);
             }
         } else {
             const tokenConfig = await MintService.getTokenConfig(ref, token);
@@ -583,9 +584,9 @@ export class MintService {
     private static async updateDocuments(ids: string | string[], value: any, ref: AnyBlockType) {
         const dryRunId = ref ? ref.dryRun : null;
         const filter = Array.isArray(ids) ? {
-            where: { messageId: { $in: ids } }
+            messageId: { $in: ids }
         } : {
-            where: { messageId: { $eq: ids } }
+            messageId: { $eq: ids }
         }
         await DatabaseServer.updateVpDocuments(value, filter, dryRunId);
     }

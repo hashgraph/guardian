@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
-import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
-import { HttpResponse } from '@angular/common/http';
-import { forkJoin } from 'rxjs';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ProfileService } from 'src/app/services/profile.service';
-import { ArtifactService } from 'src/app/services/artifact.service';
-import { ArtifactImportDialog } from '../artifact-import-dialog/artifact-import-dialog.component';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {IUser, PolicyType, UserPermissions} from '@guardian/interfaces';
+import {HttpResponse} from '@angular/common/http';
+import {forkJoin} from 'rxjs';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {ProfileService} from 'src/app/services/profile.service';
+import {ArtifactService} from 'src/app/services/artifact.service';
+import {ArtifactImportDialog} from '../artifact-import-dialog/artifact-import-dialog.component';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Page for creating, editing, importing and exporting schemas.
@@ -46,7 +46,7 @@ export class ArtifactConfigComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private route: ActivatedRoute,
         private router: Router,
-        public dialog: MatDialog,
+        private dialog: DialogService,
         private artifact: ArtifactService) {
         this.policies = [];
         this.filterOptions = [];
@@ -94,7 +94,7 @@ export class ArtifactConfigComponent implements OnInit {
             this.pageIndex = 0;
             this.pageSize = 10;
             this.loadArtifacts();
-        }, ({ message }) => {
+        }, ({message}) => {
             this.loading = false;
             console.error(message);
         });
@@ -157,10 +157,11 @@ export class ArtifactConfigComponent implements OnInit {
                 policyId: this.currentPolicy?.id,
                 policies: this.policies
             },
-            disableClose: true,
+            modal: true,
+            closable: false,
         });
 
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
             }

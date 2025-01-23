@@ -1,0 +1,34 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-cancel">
+            <div class="g-dialog-cancel-btn" (click)="onNoClick()">
+                <i class="pi pi-times"></i>
+            </div>
+        </div>
+        <div class="g-dialog-title">
+            {{ title }}
+        </div>
+        <div class="g-dialog-actions">
+            <div class="g-dialog-actions-btn" (click)="onSubmit()" [attr.disabled]="!dataForm.valid">
+                {{ button }}
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div class="context">
+            <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+                <div class="example-full-width">
+                    <label for="name">* NAME:</label>
+                    <input
+                        id="name"
+                        pInputText
+                        type="text"
+                        placeholder="Theme name"
+                        formControlName="name"
+                        class="p-inputtext p-component"
+                    />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

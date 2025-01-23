@@ -1,7 +1,14 @@
-version: "3.8"
+# YAML anchor that contains common configuration elements for our services
+x-service-template: &service-template
+  init: true
+  env_file:
+    - ./configs/.env.${GUARDIAN_ENV}.indexer.system
+  environment:
+    - GUARDIAN_ENV=${GUARDIAN_ENV}
+
 services:
   mongo:
-    image: mongo:6.0.13
+    image: mongo:6.0.16
     command: "--setParameter allowDiskUseByDefault=true"
     restart: always
     expose:
@@ -19,43 +26,43 @@ services:
       - mongo
 
   ipfs-node:
-    image: ipfs/kubo:latest
+    image: ipfs/kubo:v0.31.0
+
+  ipfs-check:
+    image: ghcr.io/ipfs/ipfs-check:main-latest
+    expose:
+      - 3333
+    ports:
+      - 3333:3333
 
   message-broker:
-    image: nats:2.9.24
+    image: nats:2.9.25
     expose:
       - 4222
     ports:
       - '8222:8222'
-    command: '--http_port 8222'
+    command: '-c /etc/nats/nats.conf --http_port 8222'
+    volumes:
+      - ./configs/nats.conf:/etc/nats/nats.conf
 
   indexer-worker-service:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-worker-service/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-worker-service:${GUARDIAN_VERSION:-latest}
     depends_on:
       - mongo
       - message-broker
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
+      - indexer-service
     expose:
       - 6555
     volumes:
-      - ./indexer-worker-service/tls:/usr/local/indexer-worker-service/tls:ro
-      - ./indexer-worker-service/configs:/usr/local/indexer-worker-service/configs:ro
+      - ./indexer-worker-service/tls:/usr/local/app/tls:ro
+      - ./indexer-worker-service/configs:/usr/local/app/configs:ro
     deploy:
-      replicas: 5
+      replicas: 3
 
   indexer-api-gateway:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-api-gateway/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-api-gateway:${GUARDIAN_VERSION:-latest}
     expose:
       - 3021
       - 6555
@@ -63,34 +70,24 @@ services:
       - mongo
       - message-broker
       - indexer-service
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
     volumes:
-      - ./indexer-api-gateway/configs:/usr/local/indexer-api-gateway/configs:ro
+      - ./indexer-api-gateway/configs:/usr/local/app/configs:ro
 
   indexer-service:
-    env_file:
-      - ./configs/.env.${GUARDIAN_ENV}.indexer.system
-    build:
-      context: .
-      dockerfile: ./indexer-service/Dockerfile
-    init: true
+    <<: *service-template
+    image: gcr.io/hedera-registry/indexer-service:${GUARDIAN_VERSION:-latest}
     volumes:
-      - ./indexer-service/tls:/usr/local/indexer-service/tls:ro
-      - ./indexer-service/configs:/usr/local/indexer-service/configs:ro
+      - ./indexer-service/tls:/usr/local/app/tls:ro
+      - ./indexer-service/configs:/usr/local/app/configs:ro
     depends_on:
       - mongo
       - message-broker
-    environment:
-      - GUARDIAN_ENV=${GUARDIAN_ENV}
     expose:
       - 6555
       - 5007
 
   indexer-web-proxy:
-    build:
-      context: .
-      dockerfile: ./indexer-web-proxy/Dockerfile
+    image: gcr.io/hedera-registry/indexer-web-proxy:${GUARDIAN_VERSION:-latest}
     init: true
     ports:
       - "3005:80"

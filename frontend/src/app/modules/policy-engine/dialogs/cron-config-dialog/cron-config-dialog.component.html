@@ -1,0 +1,158 @@
+<h1 class="dialog-title">Custom Period</h1>
+<div class="dialog-content" [attr.started]="started">
+    <form [formGroup]="dataForm" (ngSubmit)="onSubmit()">
+        <div class="c1">
+            <div class="f1">
+                <label for="startDate">Start Date:</label>
+                <p-calendar
+                    id="startDate"
+                    formControlName="startDate"
+                    dateFormat="dd/mm/yy"
+                    [appendTo]="'body'"
+                    [hourFormat]="'12'"
+                    [showTime]="true"
+                    [stepHour]="true"
+                    [stepMinute]="true"
+                ></p-calendar>
+            </div>
+
+            <div class="f1">
+                <label for="interval">Interval:</label>
+                <input
+                    id="interval"
+                    pInputText
+                    type="number"
+                    min="1"
+                    max="100"
+                    formControlName="interval"
+                    (change)="selectPeriod()">
+            </div>
+
+            <div class="f1">
+                <label for="period">Period:</label>
+                <p-dropdown
+                    id="period"
+                    formControlName="period"
+                    [options]="periodOptions"
+                    placeholder="Select a period"
+                    (onChange)="selectPeriod()"
+                    [appendTo]="'body'"
+                ></p-dropdown>
+            </div>
+        </div>
+
+            <div class="delimiter"></div>
+
+        <div *ngIf="period=='week'" style="height: 80px;width: 100%;"></div>
+        <div *ngIf="period=='month'" style="height: 120px;width: 100%;"></div>
+        <div>
+            {{ timeString }}
+        </div>
+
+        <div class="delimiter"></div>
+        <p-accordion [multiple]="true">
+            <p-accordionTab header="Cron Mask (advanced)">
+                <div class="form-group input-mask-container">
+                    <label>* Mask: minute hour day(month) month day(week)</label>
+                    <input pInputText type="text" placeholder="* * * * *" formControlName="mask"
+                           class="example-full-width"/>
+                </div>
+            </p-accordionTab>
+        </p-accordion>
+
+        <div class="dialog-actions">
+            <p-button label="Ok" icon="pi pi-check" type="submit" [attr.started]="started"
+                      [disabled]="!dataForm.valid" styleClass="p-button-ok p-button-primary"></p-button>
+            <p-button label="Cancel" icon="pi pi-times" type="button" (click)="onNoClick()"
+                      styleClass="p-button-cancel"></p-button>
+        </div>
+    </form>
+
+    <div class="c-config" *ngIf="period=='week' || period=='month'">
+        <div *ngIf="period=='week'" style="display: flex;height: 26px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Mo" (change)="onWeekChange()">
+                <span class="control">Mo</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Tu" (change)="onWeekChange()">
+                <span class="control">Tu</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.We" (change)="onWeekChange()">
+                <span class="control">We</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Th" (change)="onWeekChange()">
+                <span class="control">Th</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Fr" (change)="onWeekChange()">
+                <span class="control">Fr</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Sa" (change)="onWeekChange()">
+                <span class="control">Sa</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="weekDay.Su" (change)="onWeekChange()">
+                <span class="control">Su</span>
+            </label>
+        </div>
+
+        <div *ngIf="period=='month'" style="display: flex;height: 26px;margin-bottom: 14px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.January" (change)="onMonthChange()">
+                <span class="control">Jan</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.February" (change)="onMonthChange()">
+                <span class="control">Feb</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.March" (change)="onMonthChange()">
+                <span class="control">Mar</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.April" (change)="onMonthChange()">
+                <span class="control">Apr</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.May" (change)="onMonthChange()">
+                <span class="control">May</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.June" (change)="onMonthChange()">
+                <span class="control">Jun</span>
+            </label>
+        </div>
+        <div *ngIf="period=='month'" style="display: flex;height: 26px;">
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.July" (change)="onMonthChange()">
+                <span class="control">Jul</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.August" (change)="onMonthChange()">
+                <span class="control">Aug</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.September" (change)="onMonthChange()">
+                <span class="control">Sep</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.October" (change)="onMonthChange()">
+                <span class="control">Oct</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.November" (change)="onMonthChange()">
+                <span class="control">Nov</span>
+            </label>
+            <label class="toggle-control">
+                <input type="checkbox" [(ngModel)]="month.December" (change)="onMonthChange()">
+                <span class="control">Dec</span>
+            </label>
+        </div>
+
+        <div class="delimiter"></div>
+    </div>
+</div>

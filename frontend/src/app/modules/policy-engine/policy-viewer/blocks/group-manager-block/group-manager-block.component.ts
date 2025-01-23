@@ -1,11 +1,12 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { FormBuilder } from '@angular/forms';
-import { PolicyHelper } from 'src/app/services/policy-helper.service';
-import { WebSocketService } from 'src/app/services/web-socket.service';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmationDialog } from '../confirmation-dialog/confirmation-dialog.component';
-import { InviteDialogComponent } from '../../../helpers/invite-dialog/invite-dialog.component';
+import {Component, Input, OnInit} from '@angular/core';
+import {PolicyEngineService} from 'src/app/services/policy-engine.service';
+import {UntypedFormBuilder} from '@angular/forms';
+import {PolicyHelper} from 'src/app/services/policy-helper.service';
+import {WebSocketService} from 'src/app/services/web-socket.service';
+import {ConfirmationDialog} from '../confirmation-dialog/confirmation-dialog.component';
+import {InviteDialogComponent} from '../../../dialogs/invite-dialog/invite-dialog.component';
+import {HttpErrorResponse} from '@angular/common/http';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Component for display block of 'policyRolesBlock' types.
@@ -49,8 +50,8 @@ export class GroupManagerBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private fb: FormBuilder,
-        private dialog: MatDialog
+        private fb: UntypedFormBuilder,
+        private dialog: DialogService,
     ) {
     }
 
@@ -86,16 +87,23 @@ export class GroupManagerBlockComponent implements OnInit {
             this.loading = true;
             this.policyEngineService
                 .getBlockData(this.id, this.policyId)
-                .subscribe(
-                    (data: any) => {
-                        this.setData(data);
-                        this.loading = false;
-                    },
-                    (e) => {
-                        console.error(e.error);
-                        this.loading = false;
-                    }
-                );
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -140,8 +148,6 @@ export class GroupManagerBlockComponent implements OnInit {
     onInvite(group: any) {
         const dialogRef = this.dialog.open(InviteDialogComponent, {
             width: '500px',
-            panelClass: 'g-dialog',
-            disableClose: true,
             data: {
                 header: 'Invitation',
                 blockId: this.id,
@@ -149,8 +155,11 @@ export class GroupManagerBlockComponent implements OnInit {
                 group: group.id,
                 roles: group.roles,
             },
+            styleClass: 'g-dialog',
+            modal: true,
+            closable: false,
         });
-        dialogRef.afterClosed().subscribe(async () => {
+        dialogRef.onClose.subscribe(async () => {
         });
     }
 
@@ -165,11 +174,12 @@ export class GroupManagerBlockComponent implements OnInit {
         ];
         const dialogRef = this.dialog.open(ConfirmationDialog, {
             width: '550px',
-            disableClose: true,
-            data: { title, description },
+            data: {title, description},
+            modal: true,
+            closable: false,
         });
 
-        dialogRef.afterClosed().subscribe((result) => {
+        dialogRef.onClose.subscribe((result) => {
             if (result) {
                 this.delete(user, result);
             }

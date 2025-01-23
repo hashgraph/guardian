@@ -13,3 +13,5 @@ export * from './contract.details.js';
 export * from './topic.details.js';
 export * from './token.details.js';
 export * from './nft.details.js';
+export * from './statistic.details.js';
+export * from './label.details.js';

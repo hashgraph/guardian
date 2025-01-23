@@ -1,18 +1,18 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {
     AbstractControl,
-    FormArray,
-    FormControl,
+    UntypedFormArray,
+    UntypedFormControl,
     FormControlDirective,
-    FormGroup,
+    UntypedFormGroup,
     ValidationErrors,
     ValidatorFn,
     Validators,
 } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { RetireTokenPool, Token, TokenType } from '@guardian/interfaces';
-import { ContractService } from 'src/app/services/contract.service';
-import { TokenService } from 'src/app/services/token.service';
+import {RetireTokenPool, Token, TokenType} from '@guardian/interfaces';
+import {ContractService} from 'src/app/services/contract.service';
+import {TokenService} from 'src/app/services/token.service';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-user-retire-pools-dialog',
@@ -33,16 +33,17 @@ export class UserRetirePoolsDialogComponent implements OnInit {
 
     retireMod: boolean = false;
 
-    retireForm: FormArray = new FormArray(
+    retireForm: UntypedFormArray = new UntypedFormArray(
         [],
         [Validators.required, this.rationValidator()]
     );
 
     constructor(
-        public dialogRef: MatDialogRef<UserRetirePoolsDialogComponent>,
+        private dialogRef: DynamicDialogRef,
         public contractService: ContractService,
         public tokenService: TokenService
-    ) {}
+    ) {
+    }
 
     ngOnInit(): void {
         setTimeout(() => {
@@ -52,6 +53,7 @@ export class UserRetirePoolsDialogComponent implements OnInit {
 
     loadPools() {
         this.loading = true;
+        
         this.contractService
             .getRetirePools({
                 pageIndex: this.pageIndex,
@@ -118,11 +120,11 @@ export class UserRetirePoolsDialogComponent implements OnInit {
         );
         this.selectedPool = pool;
         for (const token of pool.tokens) {
-            const tokenControl = new FormControl(token.token);
-            const countControl = new FormControl(0);
-            const serialsControl = new FormControl([]);
+            const tokenControl = new UntypedFormControl(token.token);
+            const countControl = new UntypedFormControl(0);
+            const serialsControl = new UntypedFormControl([]);
             this.retireForm.push(
-                new FormGroup({
+                new UntypedFormGroup({
                     token: tokenControl,
                     count: countControl,
                     serials: serialsControl,
@@ -155,7 +157,7 @@ export class UserRetirePoolsDialogComponent implements OnInit {
     }
 
     getRetireForm(index: number) {
-        return this.retireForm.controls[index] as FormGroup;
+        return this.retireForm.controls[index] as UntypedFormGroup;
     }
 
     rationValidator(): ValidatorFn {
@@ -173,14 +175,14 @@ export class UserRetirePoolsDialogComponent implements OnInit {
                     this.selectedPool.tokens[1].count /
                     Math.pow(10, this.selectedPool.tokens[1].decimals);
                 return token1Count < token1RatioCount ||
-                    token2Count < token2RatioCount ||
-                    token1Count * token2RatioCount !==
-                        token1RatioCount * token2Count
+                token2Count < token2RatioCount ||
+                token1Count * token2RatioCount !==
+                token1RatioCount * token2Count
                     ? {
-                          ratio: {
-                              valid: false,
-                          },
-                      }
+                        ratio: {
+                            valid: false,
+                        },
+                    }
                     : null;
             } else if (form.length === 1) {
                 const tokenCount = form[0].count || form[0].serials.length || 0;
@@ -188,12 +190,12 @@ export class UserRetirePoolsDialogComponent implements OnInit {
                     this.selectedPool.tokens[0].count /
                     Math.pow(10, this.selectedPool.tokens[0].decimals);
                 return tokenCount < tokenRatioCount ||
-                    tokenCount % tokenRatioCount !== 0
+                tokenCount % tokenRatioCount !== 0
                     ? {
-                          ratio: {
-                              valid: false,
-                          },
-                      }
+                        ratio: {
+                            valid: false,
+                        },
+                    }
                     : null;
             }
             return {
@@ -202,5 +204,19 @@ export class UserRetirePoolsDialogComponent implements OnInit {
                 },
             };
         };
+    }
+
+    getTokenOptions() {
+        return this.tokens.map(token => ({
+            label: `${token.tokenSymbol} (${token.tokenId})`,
+            value: token.tokenId,
+        }));
+    }
+
+    getSerialOptions(serials: number[] = []) {
+        return (serials).map((serial: number) => ({
+            label: serial.toString(),
+            value: serial,
+        }));
     }
 }

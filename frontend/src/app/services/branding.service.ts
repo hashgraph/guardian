@@ -105,14 +105,17 @@ export class BrandingService {
             }
             if (companyLogo) {
                 companyLogo.style.display = 'none';
-            }
-            if (brandingData.companyLogoUrl) {
-                companyLogo.style.display = 'block';
-                companyLogo.src = brandingData.companyLogoUrl;
+                if (brandingData.companyLogoUrl) {
+                    companyLogo.style.display = 'block';
+                    companyLogo.src = brandingData.companyLogoUrl;
+                }
             }
             if (this.brandingData?.companyLogoUrl) {
                 favicon[0].href = this.brandingData.companyLogoUrl;
             }
+            // if (this.brandingData?.faviconUrl) {
+            //     favicon[0].href = this.brandingData.faviconUrl;
+            // }
         } finally {
             disableGlobalLoader();
         }

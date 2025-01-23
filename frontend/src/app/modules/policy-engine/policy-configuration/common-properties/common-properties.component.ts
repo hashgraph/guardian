@@ -1,14 +1,14 @@
-import { Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core';
-import { BlockErrorActions, GenerateUUIDv4 } from '@guardian/interfaces';
-import { RegisteredService } from '../../services/registered.service';
+import {Component, ComponentFactoryResolver, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef} from '@angular/core';
+import {BlockErrorActions, GenerateUUIDv4} from '@guardian/interfaces';
+import {RegisteredService} from '../../services/registered.service';
 import {
     IBlockAbout,
     PolicyEvent,
     IModuleVariables,
     RoleVariables,
-    PolicyFolder, 
+    PolicyFolder,
     PolicyItem
-} from "../../structures";
+} from '../../structures';
 
 /**
  * Settings for all blocks.
@@ -19,7 +19,7 @@ import {
     styleUrls: ['./common-properties.component.scss']
 })
 export class CommonPropertiesComponent implements OnInit {
-    @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
+    @ViewChild('configContainer', {read: ViewContainerRef}) configContainer!: ViewContainerRef;
 
     @Input('block') currentBlock!: PolicyItem;
     @Input('module') module!: PolicyFolder;
@@ -99,8 +99,8 @@ export class CommonPropertiesComponent implements OnInit {
             const s = item.source;
             item.source = item.target;
             item.target = s;
-            item.output = "";
-            item.input = "";
+            item.output = '';
+            item.input = '';
         }
         this.onSave();
     }
@@ -120,10 +120,10 @@ export class CommonPropertiesComponent implements OnInit {
             id: GenerateUUIDv4(),
             source: this.block,
             target: null,
-            output: "",
-            input: "",
+            output: '',
+            input: '',
             disabled: false,
-            actor: ""
+            actor: ''
         }
         this.block.createEvent(event);
     }
@@ -250,6 +250,12 @@ export class CommonPropertiesComponent implements OnInit {
         if (block === currentBlock) {
             this.module.emitUpdate();
         }
+    }
+
+    getPreparedInputEvents(item: PolicyEvent): { label: string, value: string }[] {
+        const inputEvents = this.getInputEvents(item);
+
+        return [{label: 'None', value: ''}, ...inputEvents.map(event => ({label: event, value: event}))];
     }
 }
 

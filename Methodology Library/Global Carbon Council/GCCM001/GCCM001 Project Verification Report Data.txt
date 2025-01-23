@@ -1,0 +1,172 @@
+var _pp = {
+  "field0": "\"GreenCheck Verifications Ltd. Reference No.: PV-2024-00123\"",
+  "field1": "CDM Accreditation",
+  "field2": "www.greencheckverifications.com/credentials/12345",
+  "field3": "\"GHG Sectoral Scope 1 - Energy Industries (renewable / nonrenewable sources) GCC scopes – GHG-SS #1 - Energy Industries (renewable / nonrenewable sources) Environmental no-net harm (E+) Social no-net harm (S+) UN Sustainability Development Goals (SDG+)\"",
+  "field4": {
+    "field0": "2023-10-08",
+    "field1": "2025-08-01"
+  },
+  "field5": "Large-Scale Solar PV Plant in Uzbekistan by Eco Soluions LLC, 12/18/2023, Version 7",
+  "field6": "Large-Scale Solar PV Plant in Uzbekistan by Eco Soluions LLC",
+  "field7": [
+    "S102"
+  ],
+  "field8": [
+    "A1"
+  ],
+  "field9": [
+    "2023-12-30"
+  ],
+  "field10": "2023-12-30",
+  "field11": "Global Stakeholder Consultation was conducted from 12/01/2023 to 12/30/2023 and has been confirmed by visiting GCC Global Stakeholder Consultation webpage https://globalcarboncouncil.com/global-stakeholdersconsultation.html No comments were received for this project",
+  "field12": "Eco Soluions LLC",
+  "field13": "contact@ecosolutions.com",
+  "field14": "Republic of Uzbekistan",
+  "field15": [
+    {
+      "type": "Point",
+      "coordinates": [
+        69.2797,
+        41.3111
+      ]
+    }
+  ],
+  "field16": "GCCM001 Methodology for Renewable Energy Generation Projects Supplying Electricity to Grid or Captive Consumers, version 4.0",
+  "field17": "GHG-SS 1 (Energy (renewable/non-renewable sources)",
+  "field20": "The GCC Project Verifier Earthood Services Private Limited, certifies the following with respect to the GCC Project Activity First Large-Scale Solar PV Plant in Uzbekistan by Nur Navoi Solar FE LLC. The Project Owner has correctly described the Project Activity",
+  "field21": "Reference number: GCC.PVR.00.01",
+  "field22": "2023-12-30",
+  "field23": "ipfs://66e30153622a64ecb87f484d",
+  "field24": "The project activity involves the installation of 100 MW solar power plant/unit in Region of Navoi, Karmana district in Republic of Uzbekistan",
+  "field25": [
+    {
+      "field0": "Team Leader",
+      "field1": "IR",
+      "field2": "Doe",
+      "field3": "Jane",
+      "field4": "Central Office ",
+      "field5": "Y",
+      "field6": "Y",
+      "field7": "Y",
+      "field8": "Y"
+    }
+  ],
+  "field26": [
+    {
+      "field0": "Technical reviewer",
+      "field1": "IR",
+      "field2": "Doe",
+      "field3": "John",
+      "field4": "Central Office"
+    }
+  ],
+  "field27": "A desk review was conducted by the verification team that included: • A review of data and information presented to assess its completeness • A review of the PSF/1/, estimated emission reduction calculation sheet/3/, applied methodology including applicable tools",
+  "field28": [
+    {
+      "field0": {
+        "field0": "2023-11-02",
+        "field1": "2023-11-02"
+      },
+      "field1": "Interviews with representative of project owner, plant personnel, local stakeholders",
+      "field2": "Solar Park",
+      "field3": "2023-11-02",
+      "field4": "Tom Hall"
+    }
+  ],
+  "field29": [
+    {
+      "field0": "Doe",
+      "field1": "Jane",
+      "field2": "Eco Solutions LLC",
+      "field3": "2023-11-02",
+      "field4": "Project implementation, monitoring plan, monitoring of SDG parameters, training, grievance mechanism and its implementation, operation and maintenance of procedures, calibration, data management procedure, double counting, and the project ownership ",
+      "field5": "John Doe"
+    }
+  ],
+  "field30": "No sampling approach has been required or undertaken as the project activity is of solar energy technology and having single location. The information regarding project design, specifications of equipment installed like solar PV panels, inverters, electricity meters and transformers and monitoring mechanism was checked at the time of site visit. The verification team visited the project site to check the project implementation, technical details of solar modules, inverters, transformers, substation and verified the details mentioned in the PSF including targets of SDGs, E+ and S+ labels. The photographic documents shared by PO of technical specification of metering devices and other equipment were cross-checked during the site visit.",
+  "field31": "N/A",
+  "field32": {
+    "field0": "Eligibility Check",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field33": {
+    "field0": "The project activity involves the installation of 100 MW solar power plant in Republic of Uzbekistan.",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field34": {
+    "field0": "The applicability of Project activity was verified against GCC approved methodology GCCM001 Methodology for Grid Connected Renewable Energy Generation Projects, version 4.0/11/. ",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field35": {
+    "field0": "As per para 12 of applied methodology GCCM001/11/, “The spatial extent of the project boundary includes the project power plant and all power plants connected physically to the electricity system that the GCC project power plant or distributed type power generation devices are connected to.” The project boundary mentioned in the PSF was found to be in-line with above condition of applied methodology/11/.",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field36": {
+    "field0": "As per para 13 of applied methodology/11/, “The rationale as per Baseline Guideline for determination of baseline scenario is that the electricity delivered to the grid by the project activity would be generated by the operation of grid-connected power plants and by the addition of new generation sources into the grid.”",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field37": {
+    "field0": "As per para 13 of applied methodology/11/, “The rationale as per Baseline Guideline for determination of baseline scenario is that the electricity delivered to the grid by the project activity would be generated by the operation of grid-connected power plants and by the addition of new generation sources into the grid.”",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field38": {
+    "field0": "The additionality of the project is demonstrated in this project using tool 01",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field39": {
+    "field0": "As per the applied methodology /11/ para 28, the emission reduction has been calculated as: ERy = BEy – PEy – LEy",
+    "field1": "No findings were raised",
+    "field2": "The type of the project activity was found eligible."
+  },
+  "field40": {
+    "field0": "The monitoring methodology GCCM001, version 4.0 has been applied in this project activity. The monitoring plan provide procedures for the collection and archiving of all the relevant data necessary for estimation or measuring the emission reduction within the project boundary during the crediting period",
+    "field1": "No findings were raised.",
+    "field2": "The monitoring plan described in the section B.7 of the PSF/1/ takes into account all the relevant parameters prescribed in the applied monitoring methodology/1/, GCC Project Sustainability standard/10/, and GCC Project Environmental and social safeguard standard/9/. • The compliance of the monitoring plan has been checked against the applied methodology. The monitoring plan also consider sufficient details about the monitoring parameters being monitored and takes enough measures for the correct estimation of the same."
+  },
+  "field41": {
+    "field0": "12/10/2021",
+    "field1": "12/10/2031",
+    "field2": "The verification team confirms that the project activity complies with the requirements of para 38-40 of GCC Project standard "
+  },
+  "field42": {
+    "field0": "The project owner has mentioned in the PSF/1/ that the present project activity Environment Impact Assessment were carried out for the project which met the national regulations. PO has carried out the EIA in accordance with the Law of the Republic of Uzbekistan",
+    "field1": "No findings were raised.",
+    "field2": "The verification team confirms that PO has taken took all possible mitigation measures in compliance with these laws and standards to reduce any potential negative impact on environment by the project. The team is of the opinion that the project complies with environmental regulations."
+  },
+  "field43": {
+    "field0": "The local stakeholder consultation for the project activity has been conducted in Navoi and Uzumzor regions of Uzbekistan",
+    "field1": "No findings were raised.",
+    "field2": "The verification team confirms that the local stakeholder concerns/ comments summarized in the PSF is complete."
+  },
+  "field44": {
+    "field0": "As per the para 14(c) of Project Standard v3.1/6/, the submission of HCA on double counting is required by CORSIA labelled project after 31/12/2020 as verified under section D.13 of this report. For carbon credits issued during 01/01/2016 to 31/12/2020 the HC approval is not required. PO will provide HCLOA document to GCC at the time of request for issuance.",
+    "field1": "No findings were raised.",
+    "field2": "No label requirements for this project activity will be needed."
+  },
+  "field45": {
+    "field0": "The information and contact details of the representation of the project owner and project owners themselves has been appropriately incorporated",
+    "field1": "No findings were raised.",
+    "field2": "The verification team confirms that the information of the project owner has been appended"
+  },
+  "field46": {
+    "field0": "PSF was published on the GCC website (https://www.globalcarboncouncil.com/global-stakeholders-consultation/) and invited comments by affected parties, stakeholders, and non-governmental organizations",
+    "field1": "No Findings were raised.",
+    "field2": "The verification team confirm that no comments were received during the Global stakeholder consultation. "
+  },
+  "field47": "The draft verification report prepared by the verification team was reviewed by an independent technical review team to confirm if the internal procedures established and implemented by GreenCheck were duly complied with and such opinion/conclusion is reached in an objective manner that complies with the applicable GCC rules/requirements.",
+  "field48": " the project is being recommended to GCC Steering Committee for request for registration.",
+  "field51": [],
+  "field52": [],
+  "field53": [],
+  "field54": [],
+  "field55": "S102"
+}
+Object.values(__request).forEach(r=>r.preset(_pp));

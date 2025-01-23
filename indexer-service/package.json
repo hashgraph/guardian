@@ -1,9 +1,8 @@
 {
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
-        "@elastic/elasticsearch": "^8.12.2",
-        "@indexer/common": "^2.26.2",
-        "@indexer/interfaces": "^2.26.2",
+        "@indexer/common": "^3.0.0",
+        "@indexer/interfaces": "^3.0.0",
         "mongodb": "6.5.0",
         "@mikro-orm/core": "6.2.2",
         "@mikro-orm/mongodb": "6.2.2",
@@ -12,7 +11,7 @@
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
         "axios": "^1.7.2",
-        "bs58": "^4.0.1",
+        "bs58": "^6.0.0",
         "axios-retry": "^3.2.4",
         "cron": "^3.1.7",
         "cross-blob": "^2.0.1",
@@ -22,7 +21,8 @@
         "module-alias": "^2.2.2",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
-        "imurmurhash": "^0.1.4"
+        "imurmurhash": "^0.1.4",
+        "cids": "^1.1.9"
     },
     "description": "",
     "devDependencies": {
@@ -60,5 +60,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.26.2"
+    "version": "3.0.0"
 }

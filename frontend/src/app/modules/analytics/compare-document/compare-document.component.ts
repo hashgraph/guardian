@@ -137,9 +137,10 @@ export class CompareDocumentComponent implements OnInit {
 
         if (!this.customColumnSize) {
             const k = (this.customColumnSize) ? this.customColumnSize : Math.round(100 / this.size);
-            this._gridStyle = `max(calc(${k}vw - 80px), 680px)`;
+            const m = Math.round(280 / this.size);
+            this._gridStyle = `max(calc(${k}vw - 120px - ${m}px), 695px)`;
             for (let i = 1; i < this.size; i++) {
-                this._gridStyle += ` 35px max(calc(${k}vw - 45px), 720px)`;
+                this._gridStyle += ` 35px max(calc(${k}vw - 90px - ${m}px), 725px)`;
             }
         }
 

@@ -1,8 +1,8 @@
-import { Component, Inject, OnInit } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Token } from '@guardian/interfaces';
-import { ContractService } from 'src/app/services/contract.service';
-import { TokenService } from 'src/app/services/token.service';
+import {Component, Inject, OnInit} from '@angular/core';
+import {Token} from '@guardian/interfaces';
+import {ContractService} from 'src/app/services/contract.service';
+import {TokenService} from 'src/app/services/token.service';
+import {DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-user-retire-requests-dialog',
@@ -20,10 +20,9 @@ export class UserRetireRequestsDialogComponent implements OnInit {
     selectedTokens: any = [];
 
     constructor(
-        public dialogRef: MatDialogRef<UserRetireRequestsDialogComponent>,
         public contractService: ContractService,
         public tokenService: TokenService,
-        @Inject(MAT_DIALOG_DATA) public contract: any
+        private dialogRef: DynamicDialogRef,
     ) {
     }
 

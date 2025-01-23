@@ -5,6 +5,14 @@ import { SchemaCondition } from '../index.js';
  */
 export interface SchemaField {
     /**
+     * Expression
+     */
+    expression?: string;
+    /**
+     * Autocalculate type
+     */
+    autocalculate?: boolean;
+    /**
      * Name
      */
     name: string;
@@ -87,6 +95,11 @@ export interface SchemaField {
     path?: string;
 
     /**
+     * Full field path
+     */
+    fullPath?: string;
+
+    /**
      * Remote link
      */
     remoteLink?: string;
@@ -150,4 +163,14 @@ export interface SchemaField {
      * Formulae
      */
     formulae?: string;
+
+    /**
+     * Default value
+     */
+    default?: any;
+
+    /**
+     * Suggest value
+     */
+    suggest?: any;
 }

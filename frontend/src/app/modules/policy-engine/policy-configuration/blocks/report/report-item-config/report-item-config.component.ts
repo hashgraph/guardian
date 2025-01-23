@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { IconPreviewDialog } from 'src/app/modules/common/icon-preview-dialog/icon-preview-dialog.component';
-import { IPFS_SCHEMA } from 'src/app/services/api';
-import { IPFSService } from 'src/app/services/ipfs.service';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation} from '@angular/core';
+import {IconPreviewDialog} from 'src/app/modules/common/icon-preview-dialog/icon-preview-dialog.component';
+import {IPFS_SCHEMA} from 'src/app/services/api';
+import {IPFSService} from 'src/app/services/ipfs.service';
+import {IModuleVariables, PolicyBlock} from '../../../../structures';
+import {DialogService} from 'primeng/dynamicdialog';
 
 /**
  * Settings for block of 'reportItemBlock' type.
@@ -38,10 +38,28 @@ export class ReportItemConfigComponent implements OnInit {
 
     properties!: any;
 
+    public iconTypeOptions = [
+        {label: 'Common Library', value: 'common'},
+        {label: 'Custom', value: 'custom'}
+    ];
+
+    public filterTypeOptions = [
+        {label: 'Equal', value: 'equal'},
+        {label: 'Not Equal', value: 'not_equal'},
+        {label: 'In', value: 'in'},
+        {label: 'Not In', value: 'not_in'}
+    ];
+
+    public typeValueOptions = [
+        {label: 'Value', value: 'value'},
+        {label: 'Variable', value: 'variable'}
+    ];
+
     constructor(
         private ipfs: IPFSService,
-        public dialog: MatDialog
-    ) { }
+        private dialog: DialogService,
+    ) {
+    }
 
     ngOnInit(): void {
         this.onInit.emit(this);

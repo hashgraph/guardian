@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { IUser, PolicyType } from '@guardian/interfaces';
-import { forkJoin, Subscription } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { IUser, PolicyType, UserPermissions } from '@guardian/interfaces';
+import { forkJoin, interval, Subscription } from 'rxjs';
 import { HttpResponse } from '@angular/common/http';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -11,6 +11,7 @@ import { IStep } from '../../structures';
 import { PolicyProgressService } from '../../services/policy-progress.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { RecordControllerComponent } from '../../record/record-controller/record-controller.component';
+import { audit } from 'rxjs/operators';
 
 /**
  * Component for choosing a policy and
@@ -50,9 +51,16 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public prevButtonDisabled = false;
     public nextButtonDisabled = false;
     private subscription = new Subscription();
+    public permissions: UserPermissions;
 
     public get isDryRun(): boolean {
-        return this.policyInfo && this.policyInfo.status === 'DRY-RUN';
+        return (
+            this.policyInfo &&
+            (
+                this.policyInfo.status === PolicyType.DRY_RUN ||
+                this.policyInfo.status === PolicyType.DEMO
+            )
+        );
     }
 
     @ViewChild('recordController')
@@ -69,6 +77,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private dialogService: DialogService,
         private policyProgressService: PolicyProgressService,
         private changeDetector: ChangeDetectorRef,
+        private router: Router
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -124,6 +133,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.recordingActive = false;
         this.profileService.getProfile().subscribe(
             (profile: IUser | null) => {
+                this.permissions = new UserPermissions(profile);
                 this.isConfirmed = !!(profile && profile.confirmed);
                 this.role = profile ? profile.role : null;
                 if (this.isConfirmed) {
@@ -165,10 +175,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.policyProgressService.updateData({ role: this.policyInfo.userRole });
 
-                this.policyProgressService.data$.subscribe((data: any) => {
+                this.policyProgressService.data$.pipe(audit(ev => interval(1000))).subscribe(() => {
                     this.policyEngineService.getPolicyNavigation(policyId).subscribe((data: any) => {
                         this.updatePolicyProgress(data);
-
                         if (data && data.length > 0) {
                             this.policyProgressService.setHasNavigation(true);
                         } else {
@@ -298,33 +307,19 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
     }
 
-    openDocument(element: any) {
-        let dialogRef;
-
-        if (window.innerWidth <= 810) {
-            const bodyStyles = window.getComputedStyle(document.body);
-            const headerHeight: number = parseInt(bodyStyles.getPropertyValue('--header-height'));
-            dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: `${window.innerWidth.toString()}px`,
-                header: 'Document',
-                styleClass: 'custom-dialog',
-                data: this,
-            });
-        } else {
-            dialogRef = this.dialogService.open(VCViewerDialog, {
-                header: 'Document',
-                width: '900px',
-                styleClass: 'custom-dialog',
-                data: {
-                    document: element,
-                    title: 'Document',
-                    type: 'JSON',
-                },
-            });
-        }
+    public openDocument(element: any) {
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
+            data: {
+                document: element,
+                title: 'Document',
+                type: 'JSON',
+            }
+        });
         dialogRef.onClose.subscribe(async (result) => { });
     }
-
 
     public onPage(event: any): void {
         if (this.pageSize != event.pageSize) {
@@ -394,7 +389,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         const currentStepIndex = this.policyProgressService.getCurrentStepIndex();
         for (let i = (currentStepIndex - 1); i >= 0; i--) {
             const step = this.steps[i];
-            if (!step.blockId) {
+            if (!step || !step.blockId) {
                 continue;
             }
             const hasAction = this.policyProgressService.stepHasAction(step.blockId);
@@ -470,5 +465,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public runRecord() {
         this.recordingActive = true;
         this._recordController?.runRecord();
+    }
+
+    public onBack() {
+        this.router.navigate(['/policy-viewer']);
     }
 }

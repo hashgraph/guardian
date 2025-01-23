@@ -1,6 +1,17 @@
 import { NatsConnection, headers, Subscription } from 'nats';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { ZipCodec } from './zip-codec.js';
+import { IMessageResponse } from '../models/index.js';
+
+type CallbackFunction = (body: any, error?: string, code?: number) => void;
+
+class MessageError extends Error {
+    public code: number;
+    constructor(message: any, code?: number) {
+        super(message);
+        this.code = code;
+    }
+}
 
 /**
  * Nats service
@@ -29,7 +40,7 @@ export abstract class NatsService {
     /**
      * responseCallbacksMap
      */
-    protected responseCallbacksMap: Map<string, Function> = new Map();
+    protected responseCallbacksMap: Map<string, CallbackFunction> = new Map();
 
     constructor() {
         this.codec = ZipCodec();
@@ -49,11 +60,11 @@ export abstract class NatsService {
                     const messageId = msg.headers.get('messageId');
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        const message = await this.codec.decode(msg.data) as any;
+                        const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
                         if (!message) {
                             fn(null)
                         } else {
-                            fn(message.body, message.error);
+                            fn(message.body, message.error, message.code);
                         }
                         this.responseCallbacksMap.delete(messageId)
                     }
@@ -114,20 +125,20 @@ export abstract class NatsService {
      * @param subject
      * @param data
      */
-    public sendMessage<T>(subject: string, data?: unknown): Promise<T>{
+    public sendMessage<T>(subject: string, data?: unknown): Promise<T> {
         const messageId = GenerateUUIDv4();
-        return new Promise( async (resolve, reject) => {
+        return new Promise(async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
-            this.responseCallbacksMap.set(messageId, (d: T, error?) => {
+            this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
                 if (error) {
-                    reject(new Error(error));
-                    return
+                    reject(new MessageError(error, code));
+                } else {
+                    resolve(body);
                 }
-                resolve(d);
             })
 
-            this.connection.publish(subject, await this.codec.encode(data) , {
+            this.connection.publish(subject, await this.codec.encode(data), {
                 reply: this.replySubject,
                 headers: head
             })
@@ -154,22 +165,22 @@ export abstract class NatsService {
      * @param subject
      * @param data
      */
-    public sendRawMessage<T>(subject: string, data?: unknown): Promise<T>{
+    public sendRawMessage<T>(subject: string, data?: unknown): Promise<T> {
         const messageId = GenerateUUIDv4();
         return new Promise(async (resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             // head.append('rawMessage', 'true');
 
-            this.responseCallbacksMap.set(messageId, (d: T, error?) => {
+            this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
                 if (error) {
                     reject(error);
-                    return
+                } else {
+                    resolve(body);
                 }
-                resolve(d);
             })
 
-            this.connection.publish(subject, await this.codec.encode(data) , {
+            this.connection.publish(subject, await this.codec.encode(data), {
                 reply: this.replySubject,
                 headers: head
             })
@@ -195,7 +206,7 @@ export abstract class NatsService {
                     }
                     // head.append('rawMessage', isRaw);
                     if (!noRespond) {
-                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), {headers: head});
+                        msg.respond(await this.codec.encode(await cb(await this.codec.decode(msg.data), msg.headers)), { headers: head });
                     } else {
                         cb(await this.codec.decode(msg.data), msg.headers);
                     }

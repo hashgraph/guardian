@@ -83,11 +83,11 @@ At Monitoring Periods:
 
 ### Demo Video
 
-[Youtube ](https://www.youtube.com/watch?v=QiH0R3NVKJo\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG\_\&index=3)&#x20;
+[Youtube ](https://www.youtube.com/watch?v=QiH0R3NVKJo\&list=PLnld0e1pwLho3M7uAzcbyzyJobn-X9wG_\&index=3)&#x20;
 
 ### Policy Workflow  <a href="#toc160021932" id="toc160021932"></a>
 
-<figure><img src="../../../.gitbook/assets/0.jpeg" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/0 (1).jpeg" alt=""><figcaption></figcaption></figure>
 
 ### Policy Guide  <a href="#toc160021933" id="toc160021933"></a>
 
@@ -137,7 +137,7 @@ Certified Emission Reduction (CER) credits, each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (539).png" alt=""><figcaption></figcaption></figure>
 
-5. Сreate a new user again and assign their role as VVB.
+5. Create a new user again and assign their role as VVB.
 
 <figure><img src="../../../.gitbook/assets/image (540).png" alt=""><figcaption></figcaption></figure>
 

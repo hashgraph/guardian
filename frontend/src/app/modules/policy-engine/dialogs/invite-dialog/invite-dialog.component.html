@@ -1,0 +1,45 @@
+<div class="g-dialog-content">
+    <div class="g-dialog-header">
+        <div class="g-dialog-title">
+            {{ header }}
+        </div>
+        <div mat-dialog-actions>
+            <div class="g-dialog-title-btn" (click)="onOk()">
+                <i class="pi pi-times"></i>
+            </div>
+        </div>
+    </div>
+    <div class="g-dialog-body">
+        <div *ngIf="roles && roles.length" class="link-content">
+            <div class="p-fluid">
+                <label for="roleDropdown">Role</label>
+                <p-dropdown
+                    id="roleDropdown"
+                    [(ngModel)]="role"
+                    [options]="roles"
+                    placeholder="Select a role"
+                    appendTo="body"
+                >
+                </p-dropdown>
+            </div>
+
+            <div class="generate-btn" (click)="onInvite()">
+                Generate invite
+            </div>
+        </div>
+        <div *ngIf="invitation" class="link-content">
+            <input type="text" [value]="invitation" readonly>
+            <div (click)="copyToClipboard(invitation)" class="link-btn">
+                <i class="pi pi-link"></i>
+                Copy invitation
+            </div>
+        </div>
+        <div *ngIf="invitation" class="link-content">
+            <input type="text" [value]="link" readonly>
+            <div (click)="copyToClipboard(invitation)" class="link-btn">
+                <i class="pi pi-link"></i>
+                Copy link
+            </div>
+        </div>
+    </div>
+</div>

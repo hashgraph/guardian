@@ -207,6 +207,16 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        this._fieldHeaders.set(Dictionary.DEFAULT,
+            new TableHeader(Dictionary.DEFAULT, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
+        this._fieldHeaders.set(Dictionary.SUGGEST,
+            new TableHeader(Dictionary.SUGGEST, false)
+                .setStyle(this.fieldHeadersStyle)
+                .setWidth(50)
+        );
 
         this._schemaHeaders = new Map<string, TableHeader>();
         this._schemaHeaders.set(Dictionary.SCHEMA_NAME,
@@ -240,6 +250,10 @@ export class Table {
 
     public get schemaHeaders(): IterableIterator<TableHeader> {
         return this._schemaHeaders.values();
+    }
+
+    public hasCol(name: Dictionary): boolean {
+        return this._fieldHeaders.get(name)?.column !== -1;
     }
 
     public getCol(name: Dictionary): number {
@@ -281,6 +295,8 @@ export class Table {
         this._fieldHeaders.get(Dictionary.QUESTION).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.ALLOW_MULTIPLE_ANSWERS).setPoint(col++, row);
         this._fieldHeaders.get(Dictionary.ANSWER).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.DEFAULT).setPoint(col++, row);
+        this._fieldHeaders.get(Dictionary.SUGGEST).setPoint(col++, row);
 
         this.end = {
             c: this.start.c + this._fieldHeaders.size,

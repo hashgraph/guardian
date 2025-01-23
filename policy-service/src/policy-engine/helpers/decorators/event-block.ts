@@ -25,6 +25,15 @@ export function EventBlock(options: Partial<PolicyBlockDecoratorOptions>) {
             private readonly _accessMap = new Map<string, boolean>();
 
             /**
+             * Is block active
+             * @param user User
+             * @returns Block is active
+             */
+            async isBlockActive(user: PolicyUser) {
+                return !this._accessMap.get(user.did);
+            }
+
+            /**
              * Get block data
              * @param args
              */

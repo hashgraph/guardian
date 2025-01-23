@@ -2,9 +2,9 @@
     "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
     "dependencies": {
         "@filebase/client": "^0.0.5",
-        "@guardian/common": "^2.26.2",
-        "@guardian/interfaces": "^2.26.2",
-        "@hashgraph/sdk": "2.46.0",
+        "@guardian/common": "^3.0.0",
+        "@guardian/interfaces": "^3.0.0",
+        "@hashgraph/sdk": "2.52.0",
         "@nestjs/common": "^9.4.1",
         "@nestjs/core": "^9.4.1",
         "@nestjs/microservices": "^9.4.1",
@@ -21,12 +21,13 @@
         "axios-retry": "^3.2.4",
         "cross-blob": "^2.0.1",
         "dotenv": "^16.0.0",
-        "ipfs-client": "^0.10.1",
+        "kubo-rpc-client": "^5.0.2",
         "jsonwebtoken": "^8.5.1",
         "module-alias": "^2.2.2",
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
-        "fireblocks-sdk": "^5.20.0"
+        "fireblocks-sdk": "^5.20.0",
+        "undici": "^7.1.0"
     },
     "description": "",
     "devDependencies": {
@@ -54,6 +55,9 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "name": "worker-service",
+    "imports": {
+      "#constants": "./dist/constants/index.js"
+    },
     "scripts": {
         "build": "tsc && tsc-alias",
         "build:prod": "tsc --project tsconfig.production.json && tsc-alias",
@@ -66,5 +70,5 @@
     },
     "type": "module",
     "types": "dist/index.d.ts",
-    "version": "2.26.2"
+    "version": "3.0.0"
 }

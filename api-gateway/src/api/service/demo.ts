@@ -1,4 +1,4 @@
-import { Logger, RunFunctionAsync } from '@guardian/common';
+import { PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Permissions, TaskAction } from '@guardian/interfaces';
@@ -9,6 +9,9 @@ import { Guardians, InternalException, NewTask, ServiceError, TaskManager, Users
 @Controller('demo')
 @ApiTags('demo')
 export class DemoApi {
+    constructor(private readonly logger: PinoLogger) {
+    }
+
     /**
      * Returns list of registered users
      */
@@ -26,7 +29,6 @@ export class DemoApi {
         type: InternalServerErrorDTO
     })
     @ApiExtraModels(RegisteredUsersDTO, InternalServerErrorDTO)
-    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async registeredUsers(): Promise<RegisteredUsersDTO> {
         const users = new Users();
@@ -44,7 +46,7 @@ export class DemoApi {
 
             return demoUsers
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -80,7 +82,7 @@ export class DemoApi {
 
             return await guardians.generateDemoKey(role, user.id.toString());
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
         // try {
         //     const guardians = new Guardians();
@@ -137,7 +139,7 @@ export class DemoApi {
             const guardians = new Guardians();
             await guardians.generateDemoKeyAsync(user?.role, task, user.id.toString());
         }, async (error) => {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             taskManager.addError(task.taskId, { code: 500, message: error.message });
         });
         return task;

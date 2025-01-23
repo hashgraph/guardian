@@ -6,8 +6,8 @@ import {
     ElementRef,
     HostListener,
 } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SchemaService } from 'src/app/services/schema.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-schema-tree',
@@ -34,19 +34,20 @@ export class SchemaTreeComponent implements OnInit {
     loading = false;
     isMoving: boolean = false;
 
+    schema: { id: string; name: string }
+
     constructor(
-        public dialogRef: MatDialogRef<SchemaTreeComponent>,
-        @Inject(MAT_DIALOG_DATA)
-        public schema: {
-            id: string;
-            name: string;
-        },
+        public dialogRef: DynamicDialogRef,
+        public config: DynamicDialogConfig,
         private schemaService: SchemaService
-    ) {}
+    ) {
+        this.schema = this.config.data;
+    }
 
     ngOnInit(): void {
         this._ctx = this.canvas.nativeElement.getContext('2d') as any;
         this.loading = true;
+        console.log('this.schema',this.schema)
         this.schemaService
             .getSchemaTree(this.schema.id)
             .subscribe((result: any) => {

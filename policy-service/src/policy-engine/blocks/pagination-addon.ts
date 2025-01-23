@@ -32,9 +32,14 @@ export class PaginationAddon {
     @StateField()
     private state;
 
+    private readonly prevState;
+
     constructor() {
         if (!this.state) {
             this.state = {}
+        }
+        if (!this.prevState) {
+            this.prevState = {}
         }
     }
 
@@ -58,6 +63,32 @@ export class PaginationAddon {
         }
 
         return this.state[user.id];
+    }
+
+    /**
+     * Set pagination state
+     * @param user
+     * @param data
+     */
+    public async setState(user: PolicyUser, data: any): Promise<any> {
+        this.prevState[user.id] = {...this.state[user.id]};
+
+        const {size, itemsPerPage, page} = data;
+        this.state[user.id] = {size, itemsPerPage, page};
+
+        const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const totalCount = await (ref.parent as IPolicySourceBlock).getGlobalSources(user, null, true);
+
+        if (this.state[user.id].size !== totalCount) {
+            this.state[user.id].size = totalCount;
+        }
+    }
+
+    async resetPagination(user: PolicyUser): Promise<void> {
+        if (this.prevState[user.id]) {
+            this.state[user.id] = this.prevState[user.id];
+            delete this.prevState[user.id];
+        }
     }
 
     /**

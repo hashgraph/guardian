@@ -1,4 +1,4 @@
-import { FormControl } from "@angular/forms";
+import { UntypedFormControl } from "@angular/forms";
 import { Permissions, PermissionActions, PermissionCategories, PermissionEntities } from "@guardian/interfaces";
 
 export interface IPermission {
@@ -15,7 +15,7 @@ export interface IAction {
     readonly parent: IEntity;
     readonly id: PermissionActions | string;
     readonly permission: Permissions;
-    readonly control: FormControl;
+    readonly control: UntypedFormControl;
     readonly refs: IAction[];
     tooltip: string;
 
@@ -66,7 +66,7 @@ export interface IEntity {
     readonly type: string;
     readonly actions: IAction[];
     readonly map: Map<PermissionActions, IAction>;
-    readonly control: FormControl;
+    readonly control: UntypedFormControl;
     readonly canAll: boolean;
     all: boolean;
 
@@ -98,6 +98,7 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.TOOL, 'Tool'],
     [PermissionEntities.DOCUMENT, 'Document'],
     [PermissionEntities.SCHEMA, 'Schema'],
+    [PermissionEntities.RULE, 'Schema Rule'],
     [PermissionEntities.MODULE, 'Module'],
     [PermissionEntities.FILE, 'File'],
     [PermissionEntities.CONFIG, 'Config'],
@@ -120,7 +121,9 @@ export const entityNames = new Map<PermissionEntities, string>([
     [PermissionEntities.THEME, 'Theme'],
     [PermissionEntities.TOKEN, 'Token'],
     [PermissionEntities.TRUST_CHAIN, 'Trust Chain'],
-    [PermissionEntities.ROLE, 'Role']
+    [PermissionEntities.ROLE, 'Role'],
+    [PermissionEntities.STATISTIC, 'Statistic'],
+    [PermissionEntities.LABEL, 'Label']
 ])
 
 export const actionIndexes = new Map<PermissionActions, number>([
@@ -164,6 +167,7 @@ export const categoryNames = new Map<PermissionCategories, string>([
     [PermissionCategories.AUDIT, 'Audit'],
     [PermissionCategories.TOOLS, 'Tools'],
     [PermissionCategories.PERMISSIONS, 'Permissions'],
+    [PermissionCategories.STATISTICS, 'Policy Statistics'],
     [PermissionCategories.ACCESS, 'Access']
 ])
 

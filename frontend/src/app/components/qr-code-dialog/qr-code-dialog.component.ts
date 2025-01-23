@@ -1,9 +1,9 @@
 import { Component, Inject, OnDestroy } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { ToastrService } from 'ngx-toastr';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { WebSocketService } from 'src/app/services/web-socket.service';
+import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 
 @Component({
     selector: 'app-qr-code-dialog',
@@ -17,12 +17,14 @@ export class QrCodeDialogComponent implements OnDestroy {
     isMobile: boolean = window.innerWidth <= 810;
 
     constructor(
-        @Inject(MAT_DIALOG_DATA) private data: any,
-        private dialogRef: MatDialogRef<QrCodeDialogComponent>,
+        private dialogRef: DynamicDialogRef,
+        private config: DynamicDialogConfig,
         private toastr: ToastrService,
         private wsService: WebSocketService
     ) {
-        this.qrCodeData = this.data.qrCodeData;
+        const data = this.config.data
+
+        this.qrCodeData = data.qrCodeData;
         this.handleNoQRCodeData();
         this.handleMeecoVerificationFail();
     }

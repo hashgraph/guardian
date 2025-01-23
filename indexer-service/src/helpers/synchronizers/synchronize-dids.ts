@@ -1,45 +1,50 @@
-import { DataBaseHelper } from '@indexer/common';
+import { DataBaseHelper, Message } from '@indexer/common';
 import { MessageType } from '@indexer/interfaces';
 import { textSearch } from '../text-search-options.js';
+import { SynchronizationTask } from '../synchronization-task.js';
 
-function filter() {
-    return {
-        $or: [
-            {
-                'analytics.textSearch': null,
-            },
-        ],
-    };
-}
+export class SynchronizationDid extends SynchronizationTask {
+    public readonly name: string = 'dids';
 
-export async function syncDidDocuments() {
-    const em = DataBaseHelper.getEntityManager();
-    const collection = em.getCollection('message');
-    const documents = await collection.find({
-        type: { $in: [MessageType.DID_DOCUMENT] },
-        ...filter(),
-    });
-    let index = 0;
-    const count = await documents.count();
-    while (await documents.hasNext()) {
-        index++;
-        console.log(`Sync did-documents ${index}/${count}`);
-        const document = await documents.next();
+    constructor(mask: string) {
+        super('dids', mask);
+    }
+
+    public override async sync(): Promise<void> {
+        const em = DataBaseHelper.getEntityManager();
+        const collection = em.getCollection<Message>('message');
+
+        console.log(`Sync DIDs: update data`)
+        const documents = collection.find({
+            type: { $in: [MessageType.DID_DOCUMENT] },
+            ...this.filter(),
+        });
+        while (await documents.hasNext()) {
+            const document = await documents.next();
+            const row = em.getReference(Message, document._id);
+            row.analytics = this.createAnalytics(document);
+            em.persist(row);
+        }
+        console.log(`Sync DIDs: flush`)
+        await em.flush();
+    }
+
+    private createAnalytics(
+        document: Message
+    ): any {
         const analytics: any = {
             textSearch: textSearch(document)
         };
-        await collection.updateOne(
-            {
-                _id: document._id,
-            },
-            {
-                $set: {
-                    analytics,
+        return analytics;
+    }
+
+    private filter() {
+        return {
+            $or: [
+                {
+                    'analytics.textSearch': null,
                 },
-            },
-            {
-                upsert: false,
-            }
-        );
+            ],
+        };
     }
 }

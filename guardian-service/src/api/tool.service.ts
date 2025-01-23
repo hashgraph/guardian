@@ -1,15 +1,16 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, Hashing, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, PinoLogger, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { IOwner, IRootConfig, MessageAPI, ModuleStatus, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, initNotifier, INotifier } from '../helpers/notifier.js';
 import { findAndPublishSchema } from '../api/helpers/schema-publish-helper.js';
-import { incrementSchemaVersion } from '../api/helpers/schema-helper.js';
+import { deleteSchema, incrementSchemaVersion } from '../api/helpers/schema-helper.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { ToolValidator } from '../policy-engine/block-validators/tool-validator.js';
 import { PolicyConverterUtils } from '../policy-engine/policy-converter-utils.js';
 import { importToolByFile, importToolByMessage, importToolErrors, updateToolConfig } from './helpers/index.js';
 import * as crypto from 'crypto';
 import { publishToolTags } from './tag.service.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Sha256
@@ -72,11 +73,13 @@ export async function preparePreviewMessage(
  * @param id
  * @param owner
  * @param notifier
+ * @param logger
  */
 export async function validateAndPublish(
     id: string,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ) {
     notifier.start('Find and validate tool');
     const item = await DatabaseServer.getToolById(id);
@@ -95,7 +98,7 @@ export async function validateAndPublish(
     notifier.completed();
 
     if (isValid) {
-        const newTool = await publishTool(item, user, notifier);
+        const newTool = await publishTool(item, user, notifier, logger);
         return { tool: newTool, isValid, errors };
     } else {
         return { tool: item, isValid, errors };
@@ -118,21 +121,20 @@ export async function validateTool(tool: PolicyTool): Promise<ISerializedErrors>
  * @param tool
  * @param user
  * @param notifier
+ * @param logger
  */
 export async function publishTool(
     tool: PolicyTool,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<PolicyTool> {
     try {
-        const logger = new Logger();
-        logger.info('Publish tool', ['GUARDIAN_SERVICE']);
+        await logger.info('Publish tool', ['GUARDIAN_SERVICE']);
 
         notifier.start('Resolve Hedera account');
         const users = new Users();
         const root = await users.getHederaAccount(user.creator);
-        const userAccount = await users.getUser(user.username);
-        const userId = userAccount.id.toString();
 
         notifier.completedAndStart('Find topic');
         const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(tool.topicId), true);
@@ -140,7 +142,7 @@ export async function publishTool(
             .setTopicObject(topic);
 
         notifier.completedAndStart('Publish schemas');
-        tool = await publishSchemas(tool, user, root, notifier, userId);
+        tool = await publishSchemas(tool, user, root, notifier);
 
         notifier.completedAndStart('Create tags topic');
         const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
@@ -172,13 +174,13 @@ export async function publishTool(
         const message = new ToolMessage(MessageType.Tool, MessageAction.PublishTool);
         message.setDocument(tool, buffer);
         const result = await messageServer
-            .sendMessage(message, true, null, userId);
+            .sendMessage(message, true, null, user.id);
 
         notifier.completedAndStart('Publish tags');
         try {
-            await publishToolTags(tool, root, userId);
+            await publishToolTags(tool, user, root);
         } catch (error) {
-            logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
+            await logger.error(error, ['GUARDIAN_SERVICE, TAGS']);
         }
 
         notifier.completedAndStart('Saving in DB');
@@ -188,7 +190,7 @@ export async function publishTool(
 
         notifier.completed();
 
-        logger.info('Published tool', ['GUARDIAN_SERVICE']);
+        await logger.info('Published tool', ['GUARDIAN_SERVICE']);
 
         return retVal
     } catch (error) {
@@ -230,8 +232,7 @@ export async function publishSchemas(
             schema.version,
             owner,
             root,
-            emptyNotifier(),
-            userId
+            emptyNotifier()
         );
         if (Array.isArray(tool.config?.variables)) {
             for (const variable of tool.config?.variables) {
@@ -260,14 +261,15 @@ export async function publishSchemas(
  * @param owner
  * @param version
  * @param notifier
+ * @param logger
  */
 export async function createTool(
     json: PolicyTool,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<PolicyTool> {
-    const logger = new Logger();
-    logger.info('Create Policy', ['GUARDIAN_SERVICE']);
+    await logger.info('Create Policy', ['GUARDIAN_SERVICE']);
     notifier.start('Save in DB');
     if (json) {
         delete json._id;
@@ -291,7 +293,7 @@ export async function createTool(
             const root = await users.getHederaAccount(user.creator);
 
             notifier.completedAndStart('Create topic');
-            logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE']);
+            await logger.info('Create Tool: Create New Topic', ['GUARDIAN_SERVICE']);
             const parent = await TopicConfig.fromObject(
                 await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
             );
@@ -333,7 +335,7 @@ export async function createTool(
 /**
  * Connect to the message broker methods of working with tools.
  */
-export async function toolsAPI(): Promise<void> {
+export async function toolsAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create new tool
      *
@@ -348,10 +350,10 @@ export async function toolsAPI(): Promise<void> {
                     throw new Error('Invalid Params');
                 }
                 const { tool, owner } = msg;
-                const item = await createTool(tool, owner, emptyNotifier());
+                const item = await createTool(tool, owner, emptyNotifier(), logger);
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -371,7 +373,7 @@ export async function toolsAPI(): Promise<void> {
             const { tool, owner, task } = msg;
             const notifier = await initNotifier(task);
             RunFunctionAsync(async () => {
-                const item = await createTool(tool, owner, notifier);
+                const item = await createTool(tool, owner, notifier, logger);
                 notifier.result(item.id);
             }, async (error) => {
                 notifier.error(error);
@@ -417,10 +419,10 @@ export async function toolsAPI(): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -456,11 +458,11 @@ export async function toolsAPI(): Promise<void> {
                     }, {
                         status: ModuleStatus.PUBLISHED
                     }]
-                }, otherOptions);
+                } as FilterObject<PolicyTool>, otherOptions);
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -480,9 +482,18 @@ export async function toolsAPI(): Promise<void> {
                     throw new Error('Tool published');
                 }
                 await DatabaseServer.removeTool(item);
+                const schemasToDelete = await DatabaseServer.getSchemas({
+                    topicId: item.topicId,
+                    readonly: false
+                });
+                for (const schema of schemasToDelete) {
+                    if (schema.status === SchemaStatus.DRAFT) {
+                        await deleteSchema(schema.id, owner, emptyNotifier());
+                    }
+                }
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -539,7 +550,7 @@ export async function toolsAPI(): Promise<void> {
                 }
                 return new MessageResponse(tools);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -567,7 +578,7 @@ export async function toolsAPI(): Promise<void> {
                 const result = await DatabaseServer.updateTool(item);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -588,7 +599,7 @@ export async function toolsAPI(): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -620,7 +631,7 @@ export async function toolsAPI(): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -647,7 +658,7 @@ export async function toolsAPI(): Promise<void> {
                     owner: item.owner
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -662,7 +673,7 @@ export async function toolsAPI(): Promise<void> {
                 const preview = await ToolImportExport.parseZipFile(Buffer.from(zip.data));
                 return new MessageResponse(preview);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -674,7 +685,7 @@ export async function toolsAPI(): Promise<void> {
                 const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
                 return new MessageResponse(preview);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -690,13 +701,13 @@ export async function toolsAPI(): Promise<void> {
                 const { tool, errors } = await importToolByFile(owner, preview, emptyNotifier(), metadata);
                 if (errors?.length) {
                     const message = importToolErrors(errors);
-                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE']);
                     return new MessageError(message);
                 } else {
                     return new MessageResponse(tool);
                 }
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -720,7 +731,7 @@ export async function toolsAPI(): Promise<void> {
                 notifier.completed();
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -738,7 +749,7 @@ export async function toolsAPI(): Promise<void> {
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     notifier.error(message);
-                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE']);
                 } else {
                     notifier.result({
                         toolId: tool.id,
@@ -771,7 +782,7 @@ export async function toolsAPI(): Promise<void> {
                 if (errors?.length) {
                     const message = importToolErrors(errors);
                     notifier.error(message);
-                    new Logger().warn(message, ['GUARDIAN_SERVICE']);
+                    await logger.warn(message, ['GUARDIAN_SERVICE']);
                 } else {
                     notifier.result({
                         toolId: tool.id,
@@ -788,10 +799,10 @@ export async function toolsAPI(): Promise<void> {
         async (msg: { id: string, owner: IOwner, tool: PolicyTool }) => {
             try {
                 const { id, owner } = msg;
-                const result = await validateAndPublish(id, owner, emptyNotifier());
+                const result = await validateAndPublish(id, owner, emptyNotifier(), logger);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -803,16 +814,16 @@ export async function toolsAPI(): Promise<void> {
                 const notifier = await initNotifier(task);
 
                 RunFunctionAsync(async () => {
-                    const result = await validateAndPublish(id, owner, notifier);
+                    const result = await validateAndPublish(id, owner, notifier, logger);
                     notifier.result(result);
                 }, async (error) => {
-                    new Logger().error(error, ['GUARDIAN_SERVICE']);
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
                     notifier.error(error);
                 });
 
                 return new MessageResponse(task);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -827,7 +838,7 @@ export async function toolsAPI(): Promise<void> {
                     tool
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

@@ -1,5 +1,5 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Logger, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, ModuleImportExport, ModuleMessage, PinoLogger, PolicyModule, TagMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, MessageAPI, ModuleStatus, SchemaCategory, TagType, TopicType } from '@guardian/interfaces';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
@@ -68,11 +68,13 @@ export async function preparePreviewMessage(
  * @param policyId
  * @param owner
  * @param notifier
+ * @param logger
  */
 export async function validateAndPublish(
     uuid: string,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ) {
     notifier.start('Find and validate module');
     const item = await DatabaseServer.getModuleByUUID(uuid);
@@ -90,7 +92,7 @@ export async function validateAndPublish(
     const isValid = !errors.blocks.some(block => !block.isValid);
     notifier.completed();
     if (isValid) {
-        const newModule = await publishModule(item, user, notifier);
+        const newModule = await publishModule(item, user, notifier, logger);
         return { item: newModule, isValid, errors };
     } else {
         return { item, isValid, errors };
@@ -114,22 +116,22 @@ export async function validateModel(module: PolicyModule): Promise<ISerializedEr
  * @param owner
  * @param version
  * @param notifier
+ * @param logger
  */
 export async function publishModule(
     model: PolicyModule,
     user: IOwner,
-    notifier: INotifier
+    notifier: INotifier,
+    logger: PinoLogger
 ): Promise<PolicyModule> {
-    const logger = new Logger();
-
     logger.info('Publish module', ['GUARDIAN_SERVICE']);
     notifier.start('Resolve Hedera account');
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator);
+    const root = await users.getHederaAccount(user.owner);
     notifier.completedAndStart('Find topic');
 
     const userTopic = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic),
+        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic),
         true
     );
     const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
@@ -141,7 +143,7 @@ export async function publishModule(
         type: TopicType.ModuleTopic,
         name: model.name || TopicType.ModuleTopic,
         description: TopicType.ModuleTopic,
-        owner: user.creator,
+        owner: user.owner,
         policyId: null,
         policyUUID: null
     });
@@ -184,7 +186,7 @@ export async function publishModule(
 /**
  * Connect to the message broker methods of working with modules.
  */
-export async function modulesAPI(): Promise<void> {
+export async function modulesAPI(logger: PinoLogger): Promise<void> {
     /**
      * Create new module
      *
@@ -208,7 +210,7 @@ export async function modulesAPI(): Promise<void> {
                 const item = await DatabaseServer.createModules(module);
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -242,7 +244,7 @@ export async function modulesAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -281,7 +283,7 @@ export async function modulesAPI(): Promise<void> {
 
                 return new MessageResponse({ items, count });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -300,7 +302,7 @@ export async function modulesAPI(): Promise<void> {
                 await DatabaseServer.removeModule(item);
                 return new MessageResponse(true);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -326,7 +328,7 @@ export async function modulesAPI(): Promise<void> {
                 }
                 return new MessageResponse(items);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -354,7 +356,7 @@ export async function modulesAPI(): Promise<void> {
                 const result = await DatabaseServer.updateModule(item);
                 return new MessageResponse(result);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -372,7 +374,7 @@ export async function modulesAPI(): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -401,7 +403,7 @@ export async function modulesAPI(): Promise<void> {
                 });
                 return new BinaryMessageResponse(file);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -427,7 +429,7 @@ export async function modulesAPI(): Promise<void> {
                     owner: item.owner
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -442,7 +444,7 @@ export async function modulesAPI(): Promise<void> {
                 const preview = await ModuleImportExport.parseZipFile(Buffer.from(zip.data));
                 return new MessageResponse(preview);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -454,7 +456,7 @@ export async function modulesAPI(): Promise<void> {
                 const preview = await preparePreviewMessage(messageId, owner, emptyNotifier());
                 return new MessageResponse(preview);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -490,16 +492,20 @@ export async function modulesAPI(): Promise<void> {
                 }
 
                 if (Array.isArray(schemas)) {
+                    const schemaObjects = []
+
                     for (const schema of schemas) {
                         const schemaObject = DatabaseServer.createSchema(schema);
                         schemaObject.category = SchemaCategory.MODULE;
-                        await DatabaseServer.saveSchema(schemaObject);
+
+                        schemaObjects.push(schemaObject);
                     }
+                    await DatabaseServer.saveSchemas(schemaObjects);
                 }
 
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -521,9 +527,9 @@ export async function modulesAPI(): Promise<void> {
                 delete module.messageId;
                 delete module.createDate;
                 module.uuid = GenerateUUIDv4();
-                module.creator = owner;
-                module.owner = owner;
-                module.status = 'DRAFT';
+                module.creator = owner.creator;
+                module.owner = owner.owner;
+                module.status = ModuleStatus.DRAFT;
                 module.type = 'CUSTOM';
                 if (await DatabaseServer.getModule({ name: module.name })) {
                     module.name = module.name + '_' + Date.now();
@@ -563,7 +569,7 @@ export async function modulesAPI(): Promise<void> {
                 }
                 return new MessageResponse(item);
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -572,14 +578,14 @@ export async function modulesAPI(): Promise<void> {
         async (msg: { uuid: string, owner: IOwner, module: PolicyModule }) => {
             try {
                 const { uuid, owner } = msg;
-                const result = await validateAndPublish(uuid, owner, emptyNotifier());
+                const result = await validateAndPublish(uuid, owner, emptyNotifier(), logger);
                 return new MessageResponse({
                     module: result.item,
                     isValid: result.isValid,
                     errors: result.errors,
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });
@@ -594,7 +600,7 @@ export async function modulesAPI(): Promise<void> {
                     module
                 });
             } catch (error) {
-                new Logger().error(error, ['GUARDIAN_SERVICE']);
+                await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);
             }
         });

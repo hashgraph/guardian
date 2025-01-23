@@ -1,9 +1,8 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, HostListener, Input, OnInit } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
-import { MatIconRegistry } from '@angular/material/icon';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
-import * as moment from 'moment';
+import moment from 'moment';
 import { DialogService } from 'primeng/dynamicdialog';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -19,11 +18,10 @@ enum DashboardType {
 }
 
 class LineContainer {
-    public readonly elementId1: string;
-    public readonly elementId2: string;
-
     private container1: HTMLElement | null;
     private container2: HTMLElement | null;
+    public readonly elementId1: string;
+    public readonly elementId2: string;
 
     constructor(
         elementId1: string,
@@ -73,19 +71,20 @@ class LineContainer {
 }
 
 class Line {
+    private readonly offset: number;
+    private _parent: HTMLElement | null;
+    private _container: LineContainer | null;
+    private readonly color1 = 'rgba(30, 130, 250, 0.8)';
+    private readonly color2 = 'rgba(255, 152, 0, 0.9)';
     public readonly elementId1: string;
     public readonly elementId2: string;
-    private readonly offset: number;
     public line: any;
     public anchor1: any;
     public anchor2: any;
     public leaderLine: Element | null;
     public leaderAnchor1: Element | null;
     public leaderAnchor2: Element | null;
-    private _parent: HTMLElement | null;
-    private _container: LineContainer | null;
-    private readonly color1 = 'rgba(30, 130, 250, 0.8)';
-    private readonly color2 = 'rgba(255, 152, 0, 0.9)';
+
     constructor(
         elementId1: string,
         elementId2: string,
@@ -185,32 +184,53 @@ class Line {
  * Component for display block of 'messagesReportBlock' types.
  */
 @Component({
-    selector: 'app-messages-report-block',
-    templateUrl: './messages-report-block.component.html',
-    styleUrls: ['./messages-report-block.component.scss']
-})
+               selector: 'app-messages-report-block',
+               templateUrl: './messages-report-block.component.html',
+               styleUrls: ['./messages-report-block.component.scss']
+           })
 export class MessagesReportBlockComponent implements OnInit {
+    private _topics1!: any[];
+    private _topics2!: any[];
+    private _messages1!: any[];
+    private _messages2!: any[];
+    private _gridTemplateRows1!: string;
+    private _gridTemplateRows2!: string;
+    private _gridTemplateColumns1!: string;
+    private _gridTemplateColumns2!: string;
+    private lineContainer = new LineContainer(
+        'leader-line-container-1', 'leader-line-container-2'
+    );
+    private lines!: Line[] | null;
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
-
     public isActive = false;
     public loading: boolean = true;
     public socket: any;
     public content: string | null = null;
     public report!: any;
     public target!: any;
-
     public dashboardType = DashboardType.Simplified;
     public status!: any;
     public schemas!: any[];
     public tokens!: any[];
     public roles!: any[];
-
     public selected: any;
+    public searchForm = this.fb.group({
+                                          value: ['', Validators.required]
+                                      });
 
-    private _topics1!: any[];
-    private _topics2!: any[];
+    constructor(
+        private element: ElementRef,
+        private fb: UntypedFormBuilder,
+        private policyEngineService: PolicyEngineService,
+        private wsService: WebSocketService,
+        private policyHelper: PolicyHelper,
+        private dialogService: DialogService,
+        private sanitizer: DomSanitizer
+    ) {
+    }
+
     public get topics(): any[] {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._topics1;
@@ -219,8 +239,6 @@ export class MessagesReportBlockComponent implements OnInit {
         }
     }
 
-    private _messages1!: any[];
-    private _messages2!: any[];
     public get messages(): any[] {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._messages1;
@@ -229,8 +247,6 @@ export class MessagesReportBlockComponent implements OnInit {
         }
     }
 
-    private _gridTemplateRows1!: string;
-    private _gridTemplateRows2!: string;
     public get gridTemplateRows(): string {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._gridTemplateRows1;
@@ -239,61 +255,11 @@ export class MessagesReportBlockComponent implements OnInit {
         }
     }
 
-    private _gridTemplateColumns1!: string;
-    private _gridTemplateColumns2!: string;
     public get gridTemplateColumns(): string {
         if (this.dashboardType === DashboardType.Advanced) {
             return this._gridTemplateColumns1;
         } else {
             return this._gridTemplateColumns2;
-        }
-    }
-
-    public searchForm = this.fb.group({
-        value: ['', Validators.required],
-    });
-
-    private lineContainer = new LineContainer(
-        'leader-line-container-1', 'leader-line-container-2'
-    );
-    private lines!: Line[] | null;
-
-    constructor(
-        private element: ElementRef,
-        private fb: FormBuilder,
-        private policyEngineService: PolicyEngineService,
-        private wsService: WebSocketService,
-        private policyHelper: PolicyHelper,
-        private dialog: MatDialog,
-        private dialogService: DialogService,
-        private iconRegistry: MatIconRegistry,
-        private sanitizer: DomSanitizer
-    ) {
-        iconRegistry.addSvgIconLiteral('token', sanitizer.bypassSecurityTrustHtml(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-                <path id="Icon_awesome-coins" data-name="Icon awesome-coins" d="M0,28.5v3C0,33.982,6.047,36,13.5,36S27,33.982,27,31.5v-3c-2.9,2.046-8.212,3-13.5,3S2.9,30.544,0,28.5ZM22.5,9C29.953,9,36,6.982,36,4.5S29.953,0,22.5,0,9,2.018,9,4.5,15.047,9,22.5,9ZM0,21.122V24.75c0,2.482,6.047,4.5,13.5,4.5S27,27.232,27,24.75V21.122c-2.9,2.391-8.22,3.628-13.5,3.628S2.9,23.513,0,21.122Zm29.25.773C33.279,21.115,36,19.666,36,18V15a17.267,17.267,0,0,1-6.75,2.426ZM13.5,11.25C6.047,11.25,0,13.767,0,16.875S6.047,22.5,13.5,22.5,27,19.983,27,16.875,20.953,11.25,13.5,11.25Zm15.42,3.959c4.219-.759,7.08-2.25,7.08-3.959v-3c-2.5,1.765-6.785,2.714-11.3,2.939A7.874,7.874,0,0,1,28.92,15.209Z"/>
-            </svg>
-        `));
-    }
-
-    public ngOnInit(): void {
-        if (!this.static) {
-            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
-        }
-        this.onResize();
-        this.loadData();
-    }
-
-    public ngOnDestroy(): void {
-        if (this.socket) {
-            this.socket.unsubscribe();
-        }
-        this.removeLines();
-    }
-
-    public onUpdate(blocks: string[]): void {
-        if (Array.isArray(blocks) && blocks.includes(this.id)) {
-            this.loadData();
         }
     }
 
@@ -306,16 +272,25 @@ export class MessagesReportBlockComponent implements OnInit {
             }, 500);
         } else {
             this.loading = true;
-            this.policyEngineService.getBlockData(
-                this.id,
-                this.policyId
-            ).subscribe((data: any) => {
-                this.setData(data);
-                this.loading = false;
-            }, (e) => {
-                console.error(e.error);
-                this.loading = false;
-            });
+            this.policyEngineService
+                .getBlockData(this.id, this.policyId)
+                .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
+        }
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
         }
     }
 
@@ -358,7 +333,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private createSmallReport() {
         for (const topic of this._topics1) {
             if (topic.message?.messageType === 'INSTANCE_POLICY_TOPIC') {
-                const t = { ...topic };
+                const t = {...topic};
                 t.__parent = null;
                 t.__offset = 20;
                 t.__order = this._topics2.length + 1;
@@ -385,7 +360,7 @@ export class MessagesReportBlockComponent implements OnInit {
     private getAllMessages(topic: any, messages: any[]): any[] {
         if (topic.messages) {
             for (const message of topic.messages) {
-                messages.push({ ...message });
+                messages.push({...message});
             }
         }
         if (topic.children) {
@@ -601,13 +576,20 @@ export class MessagesReportBlockComponent implements OnInit {
 
     private getStatusLabel(message: any) {
         switch (message.documentStatus) {
-            case 'NEW': return 'Create document';
-            case 'ISSUE': return 'Create document';
-            case 'REVOKE': return 'Revoke document';
-            case 'SUSPEND': return 'Suspend document';
-            case 'RESUME': return 'Resume document';
-            case 'FAILED': return 'Failed';
-            default: return message.documentStatus || 'Create document';
+            case 'NEW':
+                return 'Create document';
+            case 'ISSUE':
+                return 'Create document';
+            case 'REVOKE':
+                return 'Revoke document';
+            case 'SUSPEND':
+                return 'Suspend document';
+            case 'RESUME':
+                return 'Resume document';
+            case 'FAILED':
+                return 'Failed';
+            default:
+                return message.documentStatus || 'Create document';
         }
     }
 
@@ -677,7 +659,7 @@ export class MessagesReportBlockComponent implements OnInit {
         const documents: any[] = [];
         if (message.document && message.document.verifiableCredential) {
             for (const vc of message.document.verifiableCredential) {
-                const item: any = { document: vc };
+                const item: any = {document: vc};
                 item.__schema = this.searchSchema(item);
                 item.__issuer = this.getIssuer(item);
                 if (item.__schema) {
@@ -692,118 +674,6 @@ export class MessagesReportBlockComponent implements OnInit {
         return documents;
     }
 
-    public onSelect(message: any) {
-        this.selected = message;
-        this.update();
-    }
-
-    public onSelectById(relationship: any) {
-        for (const message of this.messages) {
-            if (message.id === relationship.id) {
-                this.selected = message;
-            }
-        }
-        this.update();
-    }
-
-    public getTopicHeader(message: any): string {
-        if (message) {
-            switch (message.messageType) {
-                case 'USER_TOPIC': return 'Standard Registry';
-                case 'POLICY_TOPIC': return 'Policy';
-                case 'INSTANCE_POLICY_TOPIC':
-                    return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : message.name;
-                case 'DYNAMIC_TOPIC': return 'User defined';
-            }
-        }
-        return 'Global';
-    }
-
-    public getTopicName(topic: any): string {
-        if (topic.message) {
-            switch (topic.message.messageType) {
-                case 'USER_TOPIC': return '';
-                case 'POLICY_TOPIC': return topic.message.name;
-                case 'INSTANCE_POLICY_TOPIC': return 'Version: ' + (topic.__rationale?.version || 'N/A');
-                case 'DYNAMIC_TOPIC': return topic.message.name;
-            }
-        }
-        return '';
-    }
-
-    public onClear() {
-        this.setData(null);
-        // this.loading = true;
-        // this.policyEngineService.setBlockData(this.id, this.policyId, {
-        //     filterValue: null
-        // }).subscribe(() => {
-        //     this.loadData();
-        // }, (e) => {
-        //     console.error(e.error);
-        //     this.loading = false;
-        // });
-    }
-
-    public onSearch() {
-        this.loading = true;
-        let filterValue = this.searchForm.value.value || '';
-        filterValue = filterValue.trim();
-        this.policyEngineService.setBlockData(this.id, this.policyId, { filterValue }).subscribe(() => {
-            this.loadData();
-        }, (e) => {
-            console.error(e.error);
-            this.loading = false;
-        });
-    }
-
-    public onDashboardType(event: any) {
-        if (event) {
-            this.dashboardType = DashboardType.Advanced;
-        } else {
-            this.dashboardType = DashboardType.Simplified;
-        }
-        this.removeLines();
-        setTimeout(() => {
-            this.onResize();
-            this.renderLines(this.messages);
-        }, 0);
-    }
-
-    public onOpenDocument(message: any) {
-        if (message.type === 'DID-Document') {
-            const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'DID',
-                styleClass: 'custom-dialog',
-                data: {
-                    document: message.document,
-                    title: 'Document',
-                    type: 'JSON',
-                    viewDocument: false
-                }
-            });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
-        } else {
-            const dialogRef = this.dialogService.open(VCViewerDialog, {
-                width: '850px',
-                closable: true,
-                header: 'VC',
-                styleClass: 'custom-dialog',
-                data: {
-                    document: message.document,
-                    title: 'Document',
-                    type: 'VC',
-                    viewDocument: true,
-                    schema: message.__schema,
-                }
-            });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
-        }
-    }
-
     private getRelationship(messages: any[], id: string): any {
         for (const message of messages) {
             if (message.id === id) {
@@ -812,7 +682,6 @@ export class MessagesReportBlockComponent implements OnInit {
         }
         return null;
     }
-
 
     private ifTopicMessage(message: any): boolean {
         return message.type === 'Topic';
@@ -895,6 +764,147 @@ export class MessagesReportBlockComponent implements OnInit {
                 this.selected.id === item.elementId1 ||
                 this.selected.id === item.elementId2
             ));
+        }
+    }
+
+    public ngOnInit(): void {
+        if (!this.static) {
+            this.socket = this.wsService.blockSubscribe(this.onUpdate.bind(this));
+        }
+        this.onResize();
+        this.loadData();
+    }
+
+    public ngOnDestroy(): void {
+        if (this.socket) {
+            this.socket.unsubscribe();
+        }
+        this.removeLines();
+    }
+
+    public onUpdate(blocks: string[]): void {
+        if (Array.isArray(blocks) && blocks.includes(this.id)) {
+            this.loadData();
+        }
+    }
+
+    public onSelect(message: any) {
+        this.selected = message;
+        this.update();
+    }
+
+    public onSelectById(relationship: any) {
+        for (const message of this.messages) {
+            if (message.id === relationship.id) {
+                this.selected = message;
+            }
+        }
+        this.update();
+    }
+
+    public getTopicHeader(message: any): string {
+        if (message) {
+            switch (message.messageType) {
+                case 'USER_TOPIC':
+                    return 'Standard Registry';
+                case 'POLICY_TOPIC':
+                    return 'Policy';
+                case 'INSTANCE_POLICY_TOPIC':
+                    return this.dashboardType === DashboardType.Advanced ? 'Policy instance' : message.name;
+                case 'DYNAMIC_TOPIC':
+                    return 'User defined';
+            }
+        }
+        return 'Global';
+    }
+
+    public getTopicName(topic: any): string {
+        if (topic.message) {
+            switch (topic.message.messageType) {
+                case 'USER_TOPIC':
+                    return '';
+                case 'POLICY_TOPIC':
+                    return topic.message.name;
+                case 'INSTANCE_POLICY_TOPIC':
+                    return 'Version: ' + (topic.__rationale?.version || 'N/A');
+                case 'DYNAMIC_TOPIC':
+                    return topic.message.name;
+            }
+        }
+        return '';
+    }
+
+    public onClear() {
+        this.setData(null);
+        // this.loading = true;
+        // this.policyEngineService.setBlockData(this.id, this.policyId, {
+        //     filterValue: null
+        // }).subscribe(() => {
+        //     this.loadData();
+        // }, (e) => {
+        //     console.error(e.error);
+        //     this.loading = false;
+        // });
+    }
+
+    public onSearch() {
+        this.loading = true;
+        let filterValue = this.searchForm.value.value || '';
+        filterValue = filterValue.trim();
+        this.policyEngineService.setBlockData(this.id, this.policyId, {filterValue}).subscribe(() => {
+            this.loadData();
+        }, (e) => {
+            console.error(e.error);
+            this.loading = false;
+        });
+    }
+
+    public onDashboardType(event: any) {
+        if (event) {
+            this.dashboardType = DashboardType.Advanced;
+        } else {
+            this.dashboardType = DashboardType.Simplified;
+        }
+        this.removeLines();
+        setTimeout(() => {
+            this.onResize();
+            this.renderLines(this.messages);
+        }, 0);
+    }
+
+    public onOpenDocument(message: any) {
+        if (message.type === 'DID-Document') {
+            const dialogRef = this.dialogService.open(VCViewerDialog, {
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    row: null,
+                    document: message.document,
+                    title: 'DID Document',
+                    type: 'JSON',
+                    viewDocument: false
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
+        } else {
+
+            const dialogRef = this.dialogService.open(VCViewerDialog, {
+                showHeader: false,
+                width: '1000px',
+                styleClass: 'guardian-dialog',
+                data: {
+                    row: null,
+                    document: message.document,
+                    title: 'VC Document',
+                    type: 'VC',
+                    viewDocument: true,
+                    schema: message.__schema,
+                }
+            });
+            dialogRef.onClose.subscribe(async (result) => {
+            });
         }
     }
 

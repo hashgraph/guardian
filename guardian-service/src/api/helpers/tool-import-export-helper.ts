@@ -2,12 +2,22 @@ import { DatabaseServer, IToolComponents, MessageAction, MessageServer, MessageT
 import { BlockType, GenerateUUIDv4, IOwner, IRootConfig, ModuleStatus, PolicyToolMetadata, SchemaCategory, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 import { importTag } from './tag-import-export-helper.js';
-import { importSchemaByFiles } from './schema-import-export-helper.js';
+import { SchemaImportExportHelper } from './schema-import-export-helper.js';
+
+/**
+ * Import tool mapping
+ */
+export interface ImportToolMap {
+    oldMessageId: string;
+    messageId: string;
+    oldHash: string;
+    newHash?: string;
+}
 
 /**
  * Import Result
  */
-interface ImportResult {
+export interface ImportToolResult {
     /**
      * Tool
      */
@@ -21,7 +31,7 @@ interface ImportResult {
 /**
  * Import Results
  */
-interface ImportResults {
+export interface ImportToolResults {
     /**
      * Tool
      */
@@ -40,7 +50,7 @@ interface ImportResults {
 export async function replaceConfig(
     tool: PolicyTool,
     schemasMap: any[],
-    tools: { oldMessageId: string, messageId: string, oldHash: string, newHash?: string }[]
+    tools: ImportToolMap[]
 ) {
     if (await DatabaseServer.getTool({ name: tool.name })) {
         tool.name = tool.name + '_' + Date.now();
@@ -74,7 +84,7 @@ export async function importSubTools(
     }[],
     user: IOwner,
     notifier: INotifier,
-): Promise<ImportResults> {
+): Promise<ImportToolResults> {
     if (!messages?.length) {
         return { tools: [], errors: [] };
     }
@@ -161,7 +171,7 @@ export async function importToolByMessage(
     messageId: string,
     user: IOwner,
     notifier: INotifier
-): Promise<ImportResult> {
+): Promise<ImportToolResult> {
     notifier.completedAndStart('Load tool file');
 
     const messageServer = new MessageServer(
@@ -225,6 +235,8 @@ export async function importToolByMessage(
     notifier.completedAndStart('Import tool schemas');
 
     if (Array.isArray(components.schemas)) {
+        const schemaObjects = []
+
         for (const schema of components.schemas) {
             const schemaObject = DatabaseServer.createSchema(schema);
             components.tool.creator = message.owner;
@@ -232,8 +244,11 @@ export async function importToolByMessage(
             components.tool.topicId = message.topicId.toString();
             schemaObject.status = SchemaStatus.PUBLISHED;
             schemaObject.category = SchemaCategory.TOOL;
-            await DatabaseServer.saveSchema(schemaObject);
+
+            schemaObjects.push(schemaObject);
         }
+
+        await DatabaseServer.saveSchemas(schemaObjects);
     }
 
     const toolTags = components.tags?.filter((t: any) => t.entity === TagType.Tool) || [];
@@ -319,7 +334,7 @@ export async function importToolByFile(
     components: IToolComponents,
     notifier: INotifier,
     metadata?: PolicyToolMetadata
-): Promise<ImportResult> {
+): Promise<ImportToolResult> {
     notifier.start('Import tool');
 
     const {
@@ -369,14 +384,14 @@ export async function importToolByFile(
 
     notifier.completedAndStart('Create topic');
     const parent = await TopicConfig.fromObject(
-        await DatabaseServer.getTopicByType(user.creator, TopicType.UserTopic), true
+        await DatabaseServer.getTopicByType(user.owner, TopicType.UserTopic), true
     );
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.ToolTopic,
         name: tool.name || TopicType.ToolTopic,
         description: tool.description || TopicType.ToolTopic,
-        owner: user.creator,
+        owner: user.owner,
         targetId: null,
         targetUUID: null
     }, { admin: true, submit: true });
@@ -420,17 +435,19 @@ export async function importToolByFile(
         {
             fields: ['name', 'iri'],
         }
-    )) as { name: string; iri: string }[];
+    ));
 
     // Import Schemas
-    const schemasResult = await importSchemaByFiles(
-        SchemaCategory.TOOL,
-        user,
+    const schemasResult = await SchemaImportExportHelper.importSchemaByFiles(
         schemas,
-        tool.topicId,
-        notifier,
-        false,
-        toolsSchemas
+        user,
+        {
+            category: SchemaCategory.TOOL,
+            topicId: tool.topicId,
+            skipGenerateId: false,
+            outerSchemas: toolsSchemas as { name: string; iri: string }[]
+        },
+        notifier
     );
     const schemasMap = schemasResult.schemasMap;
 

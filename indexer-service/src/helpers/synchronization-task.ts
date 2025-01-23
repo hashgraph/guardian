@@ -8,7 +8,7 @@ import { safetyRunning } from '../utils/safety-running.js';
 /**
  * Synchronization task
  */
-export class SynchronizationTask {
+export abstract class SynchronizationTask {
     /**
      * Cron job
      */
@@ -17,15 +17,19 @@ export class SynchronizationTask {
     /**
      * Create synchronization task
      * @param name Name
-     * @param fn Function
      * @param mask Mask
-     * @param channel Channel
      */
     constructor(
         private readonly _name: string,
-        private readonly _fn: () => void,
         private readonly _mask: string
-    ) {}
+    ) { }
+
+    /**
+     * Name
+     */
+    public get taskName(): string {
+        return this._name;
+    }
 
     /**
      * Start synchronization task
@@ -33,15 +37,17 @@ export class SynchronizationTask {
     public start(firstExecution: boolean = false) {
         const taskExecution = async () => {
             try {
-                const em = await DataBaseHelper.getEntityManager();
-                const runningTask = await em.create(SyncTaskEntity, {
+                const em = DataBaseHelper.getEntityManager();
+                const runningTask = em.create(SyncTaskEntity, {
                     taskName: this._name,
                     date: new Date(),
                 });
                 await em.persistAndFlush(runningTask);
                 console.log(`${this._name} task is started`);
                 try {
-                    await this._fn();
+                    console.time(`----- sync ${this._name} -----`);
+                    await this.sync();
+                    console.timeEnd(`----- sync ${this._name} -----`);
                 } catch (error) {
                     console.log(error);
                 } finally {
@@ -51,7 +57,7 @@ export class SynchronizationTask {
             } catch (error) {
                 console.log(error);
                 await safetyRunning(async () => {
-                    const em = await DataBaseHelper.getEntityManager();
+                    const em = DataBaseHelper.getEntityManager();
                     const runningTask = await em.findOne(SyncTaskEntity, {
                         taskName: this._name,
                     });
@@ -77,4 +83,6 @@ export class SynchronizationTask {
     public stop() {
         this._job?.stop();
     }
+
+    public abstract sync(): Promise<void>;
 }

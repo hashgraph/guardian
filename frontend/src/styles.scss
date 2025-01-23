@@ -1,10 +1,11 @@
 /* You can add global styles to this file, and also import other style files */
-@import './variables.scss';
-@import '~codemirror/lib/codemirror';
-@import '~codemirror/theme/material';
-@import '~codemirror/addon/fold/foldgutter.css';
-@import '~codemirror/addon/lint/lint.css';
-@import "~primeicons/primeicons.css";
+@import "./variables.scss";
+@import "codemirror/lib/codemirror";
+@import "codemirror/theme/material";
+@import "codemirror/addon/fold/foldgutter.css";
+@import "codemirror/addon/lint/lint.css";
+@import "codemirror/addon/hint/show-hint.css";
+@import "primeicons/primeicons.css";
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined");
 
 html,
@@ -53,7 +54,8 @@ body>.leader-line-areaAnchor {
             cursor: pointer;
         }
 
-        .example-icon mat-icon {
+        .example-icon i,
+        .example-icon svg {
             color: rgba(255, 255, 255, 0.54);
         }
     }
@@ -109,6 +111,43 @@ body>.leader-line-areaAnchor {
                 padding-bottom: 3px;
                 font-weight: normal;
                 text-transform: capitalize;
+            }
+        }
+    }
+}
+
+p-table {
+    tbody {
+        tr.header {
+            box-shadow: 0 3px 6px rgb(0 0 0 / 16%);
+            position: relative;
+        }
+
+        tr.body {
+            height: var(--table-row-height);
+
+            &:hover {
+                background-color: rgba(112, 112, 112, 0.04);
+            }
+
+            td {
+                font-size: 20px;
+                line-height: 23px;
+                padding: 0 10px;
+
+                a,
+                .btn-field,
+                .btn-link {
+                    width: auto;
+                    font-size: 20px;
+                    color: #0B73F8;
+                    text-decoration: none;
+                    display: inline-block;
+                    border-bottom: 3px solid #0C77FF !important;
+                    padding-bottom: 3px;
+                    font-weight: normal;
+                    text-transform: capitalize;
+                }
             }
         }
     }
@@ -614,4 +653,28 @@ svg-icon.svg-icon-32 {
 
 #ngx-colors-overlay .circle.button {
     padding: unset;
+}
+
+.p-datatable-scrollable .p-frozen-column {
+    position: sticky;
+    background: inherit;
+    z-index: 1;
+}
+
+// Dropdown option of Angular material is overlap by PrimeNG dialog
+.cdk-overlay-container {
+    z-index: 9000;
+}
+
+.pre {
+    max-width: fit-content;
+
+    .p-tooltip-text {
+        white-space: pre;
+    }
+}
+
+.p-dialog .p-dialog-content:last-of-type {
+    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 10px;
 }

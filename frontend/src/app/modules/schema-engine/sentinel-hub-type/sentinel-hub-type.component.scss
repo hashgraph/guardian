@@ -1,27 +1,36 @@
 .type-selector {
-  width: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 15px;
 }
 
 .google-map-container {
-  margin-bottom: 20px;
-  margin-top: 5px;
-  box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
-  border-radius: 5px;
+    margin-bottom: 20px;
+    margin-top: 5px;
+    box-shadow: 0px 0px 21px 0px rgba(34, 60, 80, 0.2);
+    border-radius: 5px;
 }
 
 :host .google-map-container ::ng-deep .map-container {
-  border-radius: 5px;
+    border-radius: 5px;
 }
 
 .switch-btn {
-  width: 180px;
-  height: 32px;
-  margin-bottom: 15px;
+    width: 180px;
+    height: 32px;
+    margin-bottom: 15px;
 }
 
 .image {
-  width: 70%;
-  height: auto;
-  display: block;
-  margin: auto;
+    width: 70%;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
+::ng-deep .p-datepicker {
+    background: #ffffff;
+    border: 0 none;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 4px 5px 0 rgba(0, 0, 0, 0.14), 0 1px 10px 0 rgba(0, 0, 0, 0.12);
 }

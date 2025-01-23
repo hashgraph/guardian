@@ -4,8 +4,6 @@ import { Routes } from '@angular/router';
 import { StatusComponent } from '@dev/status/status.component';
 import { MessagesComponent } from '@dev/logs/messages/messages.component';
 import { DocumentsComponent } from '@dev/logs/documents/documents.component';
-import { NftsComponent } from '@dev/logs/nfts/nfts.component';
-import { ElasticComponent } from '@dev/elastic/elastic.component';
 
 //Home
 import { SearchViewComponent } from '@views/search/search.component';
@@ -41,11 +39,18 @@ import { TokenDetailsComponent } from '@views/details/token-details/token-detail
 import { NFTsComponent } from '@views/collections/nfts/nfts.component';
 import { NFTDetailsComponent } from '@views/details/nft-details/nft-details.component';
 import { DidDocumentDetailsComponent } from '@views/details/did-document-details/did-document-details.component';
+import { ContractDetailsComponent } from '@views/details/contract-details/contract-details.component';
+import { StatisticsComponent } from '@views/collections/statistics/statistics.component';
+import { LabelsComponent } from '@views/collections/labels/labels.component';
+import { StatisticDetailsComponent } from '@views/details/statistic-details/statistic-details.component';
+import { LabelDetailsComponent } from '@views/details/label-details/label-details.component';
+import { LabelDocumentsComponent } from '@views/collections/label-documents/label-documents.component';
+import { StatisticDocumentsComponent } from '@views/collections/statistic-documents/statistic-documents.component';
+import { LabelDocumentDetailsComponent } from '@views/details/label-document-details/label-document-details.component';
 
 export const routes: Routes = [
     // _DEV
     { path: 'status', component: StatusComponent },
-    { path: 'elastic', component: ElasticComponent },
     { path: 'messages', component: MessagesComponent },
     { path: 'documents', component: DocumentsComponent },
     { path: 'tokens', component: TokensComponent },
@@ -70,6 +75,10 @@ export const routes: Routes = [
     { path: 'nfts', component: NFTsComponent },
     { path: 'topics', component: TopicsComponent },
     { path: 'contracts', component: ContractsComponent },
+    { path: 'statistics', component: StatisticsComponent },
+    { path: 'labels', component: LabelsComponent },
+    { path: 'label-documents', component: LabelDocumentsComponent },
+    { path: 'statistic-documents', component: StatisticDocumentsComponent },
 
     //Details
     { path: 'registries/:id', component: RegistryDetailsComponent },
@@ -85,4 +94,9 @@ export const routes: Routes = [
     { path: 'did-documents/:id', component: DidDocumentDetailsComponent },
     { path: 'vc-documents/:id', component: VcDocumentDetailsComponent },
     { path: 'vp-documents/:id', component: VpDocumentDetailsComponent },
+    { path: 'contracts/:id', component: ContractDetailsComponent },
+    { path: 'statistics/:id', component: StatisticDetailsComponent },
+    { path: 'labels/:id', component: LabelDetailsComponent },
+    { path: 'label-documents/:id', component: LabelDocumentDetailsComponent },
+    { path: 'statistic-documents/:id', component: VcDocumentDetailsComponent },
 ];

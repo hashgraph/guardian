@@ -1,12 +1,13 @@
 import { AnyBlockType } from '../policy-engine.interface.js';
 import { ContractParamType, ExternalMessageEvents, GenerateUUIDv4, IRootConfig, ISignOptions, NotificationAction, TokenType, WorkerTaskType, } from '@guardian/interfaces';
-import { DatabaseServer, ExternalEventChannel, KeyType, Logger, MessageAction, MessageServer, MintRequest, MultiPolicy, NotificationHelper, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers, } from '@guardian/common';
+import { DatabaseServer, ExternalEventChannel, KeyType, MessageAction, MessageServer, MintRequest, MultiPolicy, MultiPolicyTransaction, NotificationHelper, PinoLogger, SynchronizationMessage, Token, TopicConfig, Users, VcDocumentDefinition as VcDocument, Wallet, Workers } from '@guardian/common';
 import { AccountId, PrivateKey, TokenId } from '@hashgraph/sdk';
 import { PolicyUtils } from '../helpers/utils.js';
 import { IHederaCredentials, PolicyUser } from '../policy-user.js';
 import { TokenConfig } from './configs/token-config.js';
 import { MintNFT } from './types/mint-nft.js';
 import { MintFT } from './types/mint-ft.js';
+import { FilterObject } from '@mikro-orm/core';
 
 /**
  * Mint Service
@@ -19,7 +20,7 @@ export class MintService {
     /**
      * Logger service
      */
-    private static readonly logger = new Logger();
+    private static readonly logger = new PinoLogger();
 
     /**
      * Active mint processes
@@ -142,7 +143,7 @@ export class MintService {
                     amount: tokenValue,
                     target: targetAccount,
                     status: 'Waiting',
-                });
+                } as FilterObject<MultiPolicyTransaction>);
             }
             notifier.success(
                 `Multi mint`,
@@ -242,7 +243,7 @@ export class MintService {
                     vpMessageId,
                 },
             ],
-        });
+        } as FilterObject<MintRequest>);
         if (requests.length === 0) {
             throw new Error('There are no requests to retry');
         }

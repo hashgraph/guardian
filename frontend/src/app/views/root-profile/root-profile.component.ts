@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup, Validators, } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormControl, UntypedFormGroup, Validators, } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from '../../services/profile.service';
@@ -13,6 +13,8 @@ import { TasksService } from '../../services/tasks.service';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ValidateIfFieldEqual } from '../../validators/validate-if-field-equal';
+import { ChangePasswordComponent } from '../login/change-password/change-password.component';
+import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 
 enum OperationMode {
     None,
@@ -28,7 +30,7 @@ enum OperationMode {
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
 })
-export class RootProfileComponent implements OnInit, OnDestroy{
+export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
 
     public loading: boolean = true;
@@ -56,12 +58,12 @@ export class RootProfileComponent implements OnInit, OnDestroy{
                     Validators.pattern(/^-----BEGIN PRIVATE KEY-----[\s\S]+-----END PRIVATE KEY-----$/gm)
                 ])]
     });
-    public selectedTokenId = new FormControl(null, Validators.required);
-    public vcForm = new FormGroup({});
-    public didDocumentForm = new FormControl(null, Validators.required);
-    public didDocumentType = new FormControl(false, Validators.required);
+    public selectedTokenId = new UntypedFormControl(null, Validators.required);
+    public vcForm = new UntypedFormGroup({});
+    public didDocumentForm = new UntypedFormControl(null, Validators.required);
+    public didDocumentType = new UntypedFormControl(false, Validators.required);
     public didKeys: any[] = [];
-    public didKeysControl = new FormGroup({});
+    public didKeysControl = new UntypedFormGroup({});
     public hidePrivateFields = {
         id: true
     };
@@ -77,22 +79,21 @@ export class RootProfileComponent implements OnInit, OnDestroy{
     constructor(
         private router: Router,
         private auth: AuthService,
-        private fb: FormBuilder,
+        private fb: UntypedFormBuilder,
         private profileService: ProfileService,
         private schemaService: SchemaService,
         private otherService: DemoService,
         private informService: InformService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
-        public dialog: DialogService,
+        private dialogService: DialogService,
         private cdRef: ChangeDetectorRef
     ) {
-        console.log(this);
         this.profile = null;
         this.balance = null;
         this.vcForm.statusChanges.subscribe((result) => {
             setTimeout(() => {
-                this.validVC = result == 'VALID';
+                this.validVC = result === 'VALID';
             });
         });
     }
@@ -161,41 +162,7 @@ export class RootProfileComponent implements OnInit, OnDestroy{
         );
     }
 
-    private prepareDataFrom(data: any) {
-        if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-                let dataArrayElem = data[j];
-                if (dataArrayElem === '' || dataArrayElem === null) {
-                    data.splice(j, 1);
-                    j--;
-                }
-                if (
-                    Object.getPrototypeOf(dataArrayElem) === Object.prototype ||
-                    Array.isArray(dataArrayElem)
-                ) {
-                    this.prepareDataFrom(dataArrayElem);
-                }
-            }
-        }
-
-        if (Object.getPrototypeOf(data) === Object.prototype) {
-            let dataKeys = Object.keys(data);
-            for (let i = 0; i < dataKeys.length; i++) {
-                const dataElem = data[dataKeys[i]];
-                if (dataElem === '' || dataElem === null) {
-                    delete data[dataKeys[i]];
-                }
-                if (
-                    Object.getPrototypeOf(dataElem) === Object.prototype ||
-                    Array.isArray(dataElem)
-                ) {
-                    this.prepareDataFrom(dataElem);
-                }
-            }
-        }
-    }
-
-    private setErrors(form: FormControl | FormGroup, type?: string): void {
+    private setErrors(form: UntypedFormControl | UntypedFormGroup, type?: string): void {
         const errors: any = {};
         errors[type || 'incorrect'] = true;
         form.setErrors(errors);
@@ -226,12 +193,12 @@ export class RootProfileComponent implements OnInit, OnDestroy{
                             return;
                         }
                         this.didKeys = [];
-                        this.didKeysControl = new FormGroup({});
+                        this.didKeysControl = new UntypedFormGroup({});
                         const names = Object.keys(result.keys);
                         for (const name of names) {
-                            const keyNameControl = new FormControl('', [Validators.required]);
-                            const keyValueControl = new FormControl('', [Validators.required]);
-                            const keyControl = new FormGroup({
+                            const keyNameControl = new UntypedFormControl('', [Validators.required]);
+                            const keyValueControl = new UntypedFormControl('', [Validators.required]);
+                            const keyControl = new UntypedFormGroup({
                                 name: keyNameControl,
                                 value: keyValueControl
                             }, [Validators.required]);
@@ -546,7 +513,7 @@ export class RootProfileComponent implements OnInit, OnDestroy{
                     key: didKey.keyValueControl.value
                 })
             }
-            this.prepareDataFrom(vcDocument);
+            prepareVcData(vcDocument);
             const data: any = {
                 hederaAccountId: hederaForm.hederaAccountId?.trim(),
                 hederaAccountKey: hederaForm.hederaAccountKey?.trim(),
@@ -624,38 +591,51 @@ export class RootProfileComponent implements OnInit, OnDestroy{
     }
 
     public openVCDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'VC',
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: document,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'VC',
                 viewDocument: true,
-            },
+                getByUser: true
+            }
         });
-        dialogRef.onClose.subscribe(async (result) => {
-        });
+        dialogRef.onClose.subscribe(async (result) => {});
     }
 
     public openDIDDocument(document: any, title: string) {
-        const dialogRef = this.dialog.open(VCViewerDialog, {
-            width: '65vw',
-            closable: true,
-            header: 'DID',
+        const dialogRef = this.dialogService.open(VCViewerDialog, {
+            showHeader: false,
+            width: '1000px',
+            styleClass: 'guardian-dialog',
             data: {
                 id: document.id,
+                row: null,
                 dryRun: !!document.dryRunId,
                 document: document.document,
                 title,
                 type: 'JSON',
-            },
+            }
         });
+        dialogRef.onClose.subscribe(async (result) => {});
+    }
 
-        dialogRef.onClose.subscribe(async (result) => {
+    public changePassword(profile: any) {
+        this.dialogService.open(ChangePasswordComponent, {
+            header: 'Change password',
+            width: '640px',
+            modal: true,
+            data: {
+                login: profile?.username,
+            }
+        }).onClose.subscribe((data) => {
+            this.loadProfile();
         });
     }
 }

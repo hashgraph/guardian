@@ -1,15 +1,15 @@
-import { IAuthUser, Logger, NotificationHelper } from '@guardian/common';
+import { IAuthUser, NotificationHelper, PinoLogger } from '@guardian/common';
 import { Permissions, PolicyType, SchemaEntity, UserRole } from '@guardian/interfaces';
 import { ClientProxy } from '@nestjs/microservices';
 import { Body, Controller, Get, Headers, HttpCode, HttpException, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
+import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccountsResponseDTO, AccountsSessionResponseDTO, AggregatedDTOItem, BalanceResponseDTO, ChangePasswordDTO, InternalServerErrorDTO, LoginUserDTO, RegisterUserDTO } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, UseCache, Users } from '#helpers';
-import { PolicyListResponse } from '../../entities/policy.js';
-import { StandardRegistryAccountResponse } from '../../entities/account.js';
+import { PolicyListResponse } from '../../entities/policy';
+import { StandardRegistryAccountResponse } from '../../entities/account';
 import { ApplicationEnvironment } from '../../environment.js';
-import { CACHE } from '../../constants/index.js';
+import { CACHE } from '#constants';
 
 /**
  * User account route
@@ -18,7 +18,7 @@ import { CACHE } from '../../constants/index.js';
 @ApiTags('accounts')
 export class AccountApi {
 
-    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy) {
+    constructor(@Inject('GUARDIANS') public readonly client: ClientProxy, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -51,7 +51,7 @@ export class AccountApi {
             const token = authHeader?.split(' ')[1];
             return await users.getUserByToken(token) as any;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             return null;
         }
     }
@@ -95,7 +95,7 @@ export class AccountApi {
             try {
                 await checkPermission(UserRole.STANDARD_REGISTRY)(user);
             } catch (error) {
-                await InternalException(error);
+                await InternalException(error, this.logger);
             }
         }
         try {
@@ -108,7 +108,7 @@ export class AccountApi {
             );
             return user;
         } catch (error) {
-            new Logger().error(error, ['API_GATEWAY']);
+            await this.logger.error(error, ['API_GATEWAY']);
             if (error.message.includes('already exists')) {
                 throw new HttpException(error.message, HttpStatus.CONFLICT);
             }
@@ -139,10 +139,44 @@ export class AccountApi {
         try {
             const { username, password } = body;
             const users = new Users();
-            return await users.generateNewToken(username, password) as any;
+            return await users.generateNewToken(username, password);
         } catch (error) {
-            new Logger().warn(error.message, ['API_GATEWAY']);
-            throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
+            await this.logger.warn(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    /**
+     * Change password
+     */
+    @Post('/change-password')
+    @ApiOperation({
+        summary: 'Change user password.',
+    })
+    @ApiBody({
+        description: 'User credentials.',
+        type: ChangePasswordDTO
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: AccountsSessionResponseDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(AccountsSessionResponseDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async changePassword(
+        @Body() body: ChangePasswordDTO
+    ): Promise<AccountsSessionResponseDTO> {
+        try {
+            const { username, oldPassword, newPassword } = body;
+            const users = new Users();
+            return await users.changeUserPassword(username, oldPassword, newPassword);
+        } catch (error) {
+            await this.logger.warn(error.message, ['API_GATEWAY']);
+            throw new HttpException(error.message, error.code || HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -204,7 +238,7 @@ export class AccountApi {
         try {
             return await (new Users()).getAllUserAccounts();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -231,13 +265,12 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AccountsResponseDTO, InternalServerErrorDTO)
-    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getStandardRegistries(): Promise<any> {
         try {
             return await (new Users()).getAllStandardRegistryAccounts();
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -265,7 +298,6 @@ export class AccountApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(AggregatedDTOItem, InternalServerErrorDTO)
-    // @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAggregatedStandardRegistries(): Promise<any> {
         const engineService = new PolicyEngine();
@@ -293,7 +325,7 @@ export class AccountApi {
                             },
                             userDid: did
                         },
-                        EntityOwner.sr(did)
+                        EntityOwner.sr(null, did)
                     ) as PolicyListResponse;
                     return {
                         did,
@@ -305,7 +337,7 @@ export class AccountApi {
                 });
             return await Promise.all(promises);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -340,7 +372,7 @@ export class AccountApi {
         try {
             return await (new Guardians()).getBalance(user.username);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 }

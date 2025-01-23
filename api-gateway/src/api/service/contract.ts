@@ -1,5 +1,5 @@
 import { ContractType, Permissions } from '@guardian/interfaces';
-import { IAuthUser } from '@guardian/common';
+import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Req, Response } from '@nestjs/common';
 import { ApiInternalServerErrorResponse, ApiOkResponse, ApiCreatedResponse, ApiOperation, ApiExtraModels, ApiTags, ApiBody, ApiQuery, ApiParam, } from '@nestjs/swagger';
 import { ContractConfigDTO, ContractDTO, RetirePoolDTO, RetirePoolTokenDTO, RetireRequestDTO, RetireRequestTokenDTO, WiperRequestDTO, InternalServerErrorDTO, pageHeader } from '#middlewares';
@@ -12,7 +12,7 @@ import { Guardians, UseCache, InternalException, EntityOwner, CacheService, getC
 @Controller('contracts')
 @ApiTags('contracts')
 export class ContractsApi {
-    constructor(private readonly cacheService: CacheService) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     //#region Common contract endpoints
@@ -80,7 +80,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -123,7 +123,7 @@ export class ContractsApi {
 
             return await guardians.createContract(owner, description, type);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -175,7 +175,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.importContract(owner, contractId, description);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -218,7 +218,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.checkContractPermissions(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -260,7 +260,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeContract(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
     //#endregion
@@ -307,7 +307,6 @@ export class ContractsApi {
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
     })
-    // @UseCache({ isExpress: true })
     @ApiExtraModels(ContractDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getWipeRequests(
@@ -328,7 +327,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -370,7 +369,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.enableWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -412,7 +411,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.disableWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -454,7 +453,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.approveWipeRequest(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -508,7 +507,7 @@ export class ContractsApi {
                 String(ban).toLowerCase() === 'true'
             );
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -550,7 +549,57 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.clearWipeRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Remove all wipe requests
+     */
+    @Delete('/wipe/:contractId/requests/:hederaId')
+    @Auth(
+        Permissions.CONTRACTS_WIPE_REQUEST_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Clear wipe requests for hedera account.',
+        description: 'Clear wipe contract requests for specific hedera account. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        description: 'Hedera identifier',
+        type: String,
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async clearWipeRequestsWithHederaId(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.clearWipeRequests(owner, contractId, hederaId);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
 
@@ -600,7 +649,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -650,7 +699,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -700,7 +749,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.addWipeManager(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -750,7 +799,7 @@ export class ContractsApi {
             const guardians = new Guardians();
             return await guardians.removeWipeManager(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -793,14 +842,72 @@ export class ContractsApi {
     async wipeAddWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.addWipeWiper(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Add wipe wiper
+     */
+    @Post('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Auth(
+        Permissions.CONTRACTS_WIPER_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Add wipe wiper for token.',
+        description: 'Add wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async wipeAddWiperWithToken(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.addWipeWiper(owner, contractId, hederaId, tokenId);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
 
@@ -843,14 +950,72 @@ export class ContractsApi {
     async wipeRemoveWiper(
         @AuthUser() user: IAuthUser,
         @Param('contractId') contractId: string,
-        @Param('hederaId') hederaId: string
+        @Param('hederaId') hederaId: string,
     ): Promise<boolean> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             return await guardians.removeWipeWiper(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Remove wipe wiper
+     */
+    @Delete('/wipe/:contractId/wiper/:hederaId/:tokenId')
+    @Auth(
+        Permissions.CONTRACTS_WIPER_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Remove wipe wiper for token.',
+        description: 'Remove wipe contract wiper for specific token. Only users with the Standard Registry role are allowed to make the request.',
+    })
+    @ApiParam({
+        name: 'contractId',
+        type: String,
+        description: 'Contract identifier',
+        required: true,
+        example: '652745597a7b53526de37c05',
+    })
+    @ApiParam({
+        name: 'hederaId',
+        type: String,
+        description: 'Hedera identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiParam({
+        name: 'tokenId',
+        type: String,
+        description: 'Token identifier',
+        required: true,
+        example: '0.0.1',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: Boolean
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async wipeRemoveWiperWithToken(
+        @AuthUser() user: IAuthUser,
+        @Param('contractId') contractId: string,
+        @Param('hederaId') hederaId: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<boolean> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            return await guardians.removeWipeWiper(owner, contractId, hederaId, tokenId);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
 
@@ -893,9 +1058,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.syncRetirePools(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -942,7 +1108,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetireRequestDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireRequests(
         @AuthUser() user: IAuthUser,
@@ -962,7 +1127,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1015,7 +1180,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetirePools(
         @AuthUser() user: IAuthUser,
@@ -1037,7 +1201,7 @@ export class ContractsApi {
             );
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1077,9 +1241,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.clearRetireRequests(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1119,9 +1284,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.clearRetirePools(owner, contractId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1165,9 +1331,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.setRetirePool(owner, contractId, body);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1207,9 +1374,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.unsetRetirePool(owner, poolId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1249,9 +1417,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.unsetRetireRequest(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1296,9 +1465,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.retire(owner, poolId, body);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1338,9 +1508,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.approveRetire(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1381,9 +1552,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.cancelRetire(owner, requestId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1431,9 +1603,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.addRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1481,9 +1654,10 @@ export class ContractsApi {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
+
             return await guardians.removeRetireAdmin(owner, contractId, hederaId);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
         }
     }
 
@@ -1529,7 +1703,6 @@ export class ContractsApi {
         type: InternalServerErrorDTO,
     })
     @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
-    // @UseCache({ isExpress: true })
     @HttpCode(HttpStatus.OK)
     async getRetireVCs(
         @AuthUser() user: IAuthUser,
@@ -1543,7 +1716,59 @@ export class ContractsApi {
             const [vcs, count] = await guardians.getRetireVCs(owner, pageIndex, pageSize);
             return res.header('X-Total-Count', count).send(vcs);
         } catch (error) {
-            await InternalException(error);
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get a list of all retire vcs from Indexer
+     */
+    @Get('/retireIndexer')
+    @Auth(
+        Permissions.CONTRACTS_DOCUMENT_READ,
+        // UserRole.STANDARD_REGISTRY,
+        // UserRole.USER
+    )
+    @ApiOperation({
+        summary: 'Return a list of all retire vcs from Indexer.',
+        description: 'Returns all retire vcs from Indexer.',
+    })
+    @ApiQuery({
+        name: 'contractTopicId',
+        type: String,
+        description: 'The topic id of contract',
+        required: true,
+        example: '0.0.0000000',
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        schema: {
+            type: 'array',
+            items: {
+                type: 'object'
+            }
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(RetirePoolDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getRetireVCsFromIndexer(
+        @AuthUser() user: IAuthUser,
+        @Response() res: any,
+        @Query('contractTopicId') contractTopicId: string,
+    ): Promise<any[]> {
+        try {
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const [vcs, count] = await guardians.getRetireVCsFromIndexer(owner, contractTopicId);
+            return res.header('X-Total-Count', count).send(vcs);
+        } catch (error) {
+            await InternalException(error, this.logger);
         }
     }
     //#endregion

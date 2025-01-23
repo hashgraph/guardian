@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
-import { Schema } from '@guardian/interfaces';
-import { Subject } from 'rxjs';
+import { DocumentValidators, Schema, SchemaRuleValidateResult } from '@guardian/interfaces';
+import { forkJoin, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 
 /**
@@ -15,25 +15,33 @@ import { SchemaService } from 'src/app/services/schema.service';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DocumentViewComponent implements OnInit {
+    @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('hide-fields') hideFields!: { [x: string]: boolean };
     @Input('type') type!: 'VC' | 'VP';
     @Input('schema') schema!: any;
-    @Input() dryRun?: boolean = false;
 
-    subjects: any[] = [];
-    proofJson!: string;
-    evidenceJson!: string;
-    schemaMap: any = {};
-    loading: number = 0;
-    isIssuerObject: boolean = false;
-    issuerOptions: any[] = [];
-    pageEvent?: PageEvent;
-    pageSize: number = 5;
-    destroy$: Subject<boolean> = new Subject<boolean>();
+    @Input() dryRun?: boolean = false;
+    @Input() policyId?: string;
+    @Input() documentId?: string;
+    @Input() schemaId?: string;
+
+    public loading: boolean = false;
+    public isIssuerObject: boolean = false;
+    public issuerOptions: any[] = [];
+    public subjects: any[] = [];
+    public proofJson!: string;
+    public evidenceJson!: string;
+    public pageIndex: number = 0;
+    public pageSize: number = 5;
+    public schemaMap: { [x: string]: Schema | null } = {};
+    public rules: DocumentValidators;
+    public rulesResults: SchemaRuleValidateResult;
+    private destroy$: Subject<boolean> = new Subject<boolean>();
 
     constructor(
         private schemaService: SchemaService,
+        private schemaRulesService: SchemaRulesService,
         private ref: ChangeDetectorRef
     ) {
 
@@ -45,12 +53,8 @@ export class DocumentViewComponent implements OnInit {
         }
 
         this.issuerOptions = [];
-        this.proofJson = this.document.proof
-            ? JSON.stringify(this.document.proof, null, 4)
-            : "";
-        this.evidenceJson = this.document.evidence
-            ? JSON.stringify(this.document.evidence, null, 4)
-            : "";
+        this.proofJson = this.document.proof ? JSON.stringify(this.document.proof, null, 4) : '';
+        this.evidenceJson = this.document.evidence ? JSON.stringify(this.document.evidence, null, 4) : '';
         this.isIssuerObject = typeof this.document.issuer === 'object';
         if (this.isIssuerObject) {
             for (const key in this.document.issuer) {
@@ -59,84 +63,125 @@ export class DocumentViewComponent implements OnInit {
                 }
             }
         }
-        switch (this.type) {
-            case 'VC':
-                if (Object.getPrototypeOf(this.document.credentialSubject) === Object.prototype) {
-                    this.subjects.push(this.document.credentialSubject);
-                } else {
-                    for (let i = 0; i < this.document.credentialSubject.length; i++) {
-                        this.subjects.push(this.document.credentialSubject[i]);
-                    }
+        if (this.type === 'VC') {
+            if (Array.isArray(this.document.credentialSubject)) {
+                for (const s of this.document.credentialSubject) {
+                    this.subjects.push(s);
                 }
-                for (const credentialSubject of this.subjects) {
-                    this.loading++;
-                    this.loadSchema(credentialSubject.type);
-                }
-                break;
-            case 'VP':
-                if (Object.getPrototypeOf(this.document.verifiableCredential) === Object.prototype) {
-                    this.subjects.push(this.document.verifiableCredential);
-                } else {
-                    for (let i = 0; i < this.document.verifiableCredential.length; i++) {
-                        this.subjects.push(this.document.verifiableCredential[i]);
-                    }
-                }
-                break;
-        }
-    }
-
-    loadSchema(type: string) {
-        if (this.schema) {
-            this.schemaMap[type] = new Schema(this.schema);
-            this.loading--;
-            this.ref.detectChanges();
-        }
-        if (type) {
-            this.schemaService.getSchemasByType(type)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe((result) => {
-                    if (result) {
-                        try {
-                            this.schemaMap[type] = new Schema(result);
-                        } catch (error) {
-                            this.schemaMap[type] = null;
-                        }
-                    } else {
-                        this.schemaMap[type] = null;
-                    }
-                    this.loading--;
-                    this.ref.detectChanges();
-                }, (error) => {
-                    this.schemaMap[type] = null;
-                    this.loading--;
-                    this.ref.detectChanges();
-                });
-        } else {
-            this.schemaMap[type] = null;
-            this.loading--;
-            this.ref.detectChanges();
-        }
-    }
-
-    getItemsPage(items: any[], pageEvent?: PageEvent) {
-        const result = [];
-        if (!pageEvent) {
-            for (let i = 0; i < this.pageSize && i < items.length; i++) {
-                result.push(items[i]);
+            } else {
+                this.subjects.push(this.document.credentialSubject);
             }
-            return result;
+        } else if (this.type === 'VP') {
+            if (Array.isArray(this.document.verifiableCredential)) {
+                for (const s of this.document.verifiableCredential) {
+                    this.subjects.push(s);
+                }
+            } else {
+                this.subjects.push(this.document.verifiableCredential);
+            }
+        }
+        if (this.type === 'VC') {
+            this.loadSchema();
+        }
+    }
+
+    ngOnDestroy() {
+        this.destroy$.next(true);
+        this.destroy$.unsubscribe();
+    }
+
+    private loadSchema() {
+        for (const credentialSubject of this.subjects) {
+            const type: string = credentialSubject.type;
+            if (!this.schemaMap[type]) {
+                this.schemaMap[type] = null;
+            }
+        }
+        const requests: any[] = [];
+        for (const [type, schema] of Object.entries(this.schemaMap)) {
+            if (!schema) {
+                if (this.getByUser) {
+                    requests.push(
+                        this.schemaService
+                            .getSchemasByTypeAndUser(type)
+                            .pipe(takeUntil(this.destroy$))
+                    )
+                } else {
+                    requests.push(
+                        this.schemaService
+                            .getSchemasByType(type)
+                            .pipe(takeUntil(this.destroy$))
+                    )
+                }
+            }
         }
 
-        const startIndex = pageEvent.pageIndex * pageEvent.pageSize;
-        const endIndex = startIndex + pageEvent.pageSize;
+        requests.push(
+            this.schemaRulesService
+                .getSchemaRuleData({
+                    policyId: this.policyId,
+                    schemaId: this.schemaId,
+                    documentId: this.documentId
+                })
+                .pipe(takeUntil(this.destroy$))
+        )
+
+        this.loading = true;
+        forkJoin(requests).subscribe((results: any[]) => {
+            const rules = results.pop();
+            this.rules = new DocumentValidators(rules);
+            for (const result of results) {
+                if (result) {
+                    try {
+                        let type = (result.iri || '');
+                        if (type.startsWith('#')) {
+                            type = type.substr(1);
+                        }
+                        this.schemaMap[type] = new Schema(result);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+            this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
+            setTimeout(() => {
+                this.loading = false;
+                this.ref.detectChanges();
+            }, 500);
+        }, (e) => {
+            this.loading = false;
+            this.ref.detectChanges();
+        });
+    }
+
+    getItemsPage(items: any[]) {
+        const result = [];
+        const startIndex = this.pageIndex * this.pageSize;
+        const endIndex = startIndex + this.pageSize;
         for (let i = startIndex; i < endIndex && i < items.length; i++) {
             result.push(items[i]);
         }
         return result;
     }
 
-    ngOnDestroy() {
-        this.destroy$.next(true);
-        this.destroy$.unsubscribe();
+    public getCredentialSubject(item: any): string {
+        if (this.subjects.length > 1) {
+            return `Credential Subject #${this.subjects.indexOf(item) + 1}`;
+        } else {
+            return 'Credential Subject';
+        }
+    }
+
+    public getVerifiableCredential(item: any): string {
+        if (this.subjects.length > 1) {
+            return `Verifiable Credential #${this.subjects.indexOf(item) + 1}`;
+        } else {
+            return 'Verifiable Credential';
+        }
+    }
+
+    public onPage(event: any): void {
+        this.pageIndex = event.pageIndex;
+        this.pageSize = event.pageSize;
     }
 }

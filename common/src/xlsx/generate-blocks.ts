@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, SchemaEntity } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
 import { PolicyTool } from '../entity/index.js';
 import { IBlock } from './interfaces/block-interface.js';
@@ -205,6 +205,19 @@ export class GenerateBlocks {
         }
     }
 
+    private static addExpression(field: SchemaField, expressions: Expression[]) {
+        console.log('---', field.name, field.formulae);
+        if (field.formulae) {
+            expressions.push(new Expression(field.name, field.formulae));
+        }
+        if (Array.isArray(field.fields)) {
+            for (const sub of field.fields) {
+                GenerateBlocks.addExpression(sub, expressions);
+            }
+        }
+        return expressions;
+    }
+
     /**
      * Generate Expression
      * @param schema
@@ -216,9 +229,7 @@ export class GenerateBlocks {
         //Create
         const expressions: Expression[] = [];
         for (const field of xlsxSchema.fields) {
-            if (field.formulae) {
-                expressions.push(new Expression(field.name, field.formulae));
-            }
+            GenerateBlocks.addExpression(field, expressions);
         }
         if (!expressions.length) {
             return null;
@@ -372,6 +383,8 @@ export class GenerateBlocks {
         body += `        main(document.document.credentialSubject[0])\r\n`;
         body += `    ));\r\n`;
         body += `})();`;
+
+        console.log(body)
 
         return body;
     }

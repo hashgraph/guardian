@@ -36,6 +36,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Manage Tools',
                 routerLink: '/tools'
             },
+            {
+                title: 'Manage Schema Rules',
+                routerLink: '/schema-rules'
+            },
         ],
     },
     {
@@ -141,6 +145,24 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 childItems.push({
                     title: 'List of Policies',
                     routerLink: '/policy-viewer'
+                });
+            }
+            if (user.STATISTICS_STATISTIC_READ) {
+                childItems.push({
+                    title: 'Statistics',
+                    routerLink: '/policy-statistics'
+                });
+            }
+            if (user.SCHEMAS_RULE_READ) {
+                childItems.push({
+                    title: 'Schema Rules',
+                    routerLink: '/schema-rules'
+                });
+            }
+            if (user.STATISTICS_LABEL_READ) {
+                childItems.push({
+                    title: 'Policy Labels',
+                    routerLink: '/policy-labels'
                 });
             }
         }

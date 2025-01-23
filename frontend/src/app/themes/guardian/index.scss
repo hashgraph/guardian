@@ -1,0 +1,27 @@
+::ng-deep body {
+    @import 'variables.scss';
+    @import 'helpers.scss';
+    @import 'icon.scss';
+    @import 'button.scss';
+    @import 'grid.scss';
+    @import 'dialog.scss';
+    @import 'progress.scss';
+    @import 'label.scss';
+    @import 'page.scss';
+    @import 'input.scss';
+    @import 'dropdown.scss';
+    @import 'tabs.scss';
+    @import 'checkbox.scss';
+    @import 'collapse.scss';
+    @import 'separator.scss';
+    @import 'multi-select.scss';
+    @import 'scroll.scss';
+    @import 'menu.scss';
+    @import 'formula.scss';
+    @import 'datepicker.scss';
+    @import 'textarea.scss';
+    @import 'select-button.scss';
+    @import 'accordion.scss';
+    @import 'tree.scss';
+    @import 'menu-button.scss';
+}

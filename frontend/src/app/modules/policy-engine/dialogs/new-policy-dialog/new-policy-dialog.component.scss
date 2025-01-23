@@ -1,0 +1,28 @@
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: visible;
+    padding-bottom: 25px;
+    padding-right: 8px;
+}
+
+.form-label {
+    margin-bottom: 6px;
+    color: var(--color-grey-black-1, #181818);
+    font-family: Inter;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 14px;
+}
+
+.dialog-body {
+    height: 45vh;
+    overflow-y: auto;
+    margin-bottom: 8px;
+}
+
+.guardian-input-container {
+    margin-bottom: 24px;
+}

@@ -236,6 +236,21 @@ export class Schema implements ISchema {
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
+        this.setPaths(this.fields, '', this.iri + '/');
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setPaths(fields: SchemaField[], path: string, fullPath: string): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            f.fullPath = fullPath + f.name;
+            if (Array.isArray(f.fields)) {
+                this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
     }
 
     /**
@@ -413,5 +428,25 @@ export class Schema implements ISchema {
                 return property;
             });
         }
+    }
+
+    /**
+     * Get all fields
+     */
+    public getFields(): SchemaField[] {
+        return this._getFields([], this.fields);
+    }
+
+    /**
+     * Get all fields
+     */
+    private _getFields(result: SchemaField[], fields?: SchemaField[]): SchemaField[] {
+        if (Array.isArray(fields)) {
+            for (const field of fields) {
+                result.push(field);
+                this._getFields(result, field.fields);
+            }
+        }
+        return result;
     }
 }
