@@ -1,114 +1,138 @@
 <div class="dialog-header">
     <div class="header-container">
-        <div *ngIf="step === 1" class="header-text">Select item</div>
-        <div *ngIf="step === 2 &&  type==='schema'" class="header-text">Select field</div>
-        <div *ngIf="step === 2 &&  type==='formula'" class="header-text">Select variable</div>
+        <div class="header-text">Set Link</div>
     </div>
     <div class="header-icon" (click)="onClose()">
         <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
     </div>
 </div>
 <div class="dialog-body">
+    <div class="nav-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper vertical-stepper">
+                <div class="guardian-step" [attr.action]="step === 1" [attr.highlighted]="step === 1">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Schema \ Formula</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="step === 2" [attr.highlighted]="step === 2">
+                    <div class="guardian-step-marker">
+                        <svg-icon
+                            class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/right-arrow.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Field \ Variable</div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div *ngIf="step === 1" class="context">
-        <div class="type-selector">
-            <div
-                class="selector-item"
-                [attr.selected]="type==='schema'"
-                (click)="onChangeType('schema')">Schemas</div>
-            <div
-                class="selector-item"
-                [attr.selected]="type==='formula'"
-                (click)="onChangeType('formula')">Formulas</div>
-        </div>
-
-        <div *ngIf="type==='schema'" class="entities">
-            <div *ngFor="let item of schemas" class="entity" (click)="onSelectEntity(item)">
-                <div class="entity-select">
-                    <p-radioButton 
-                        class="guardian-radio-button radio-button-24"
-                        [value]="item.iri" 
-                        [ngModel]="entityId"></p-radioButton>
+        <div class="context-header">Select Schema \ Formula</div>
+        <div class="context-body">
+            <div class="type-selector">
+                <div
+                    class="selector-item"
+                    [attr.selected]="type==='schema'"
+                    (click)="onChangeType('schema')">Schemas</div>
+                <div
+                    class="selector-item"
+                    [attr.selected]="type==='formula'"
+                    (click)="onChangeType('formula')">Formulas</div>
+            </div>
+            <div *ngIf="type==='schema'" class="entities">
+                <div *ngFor="let item of schemas" class="entity" (click)="onSelectEntity(item)">
+                    <div class="entity-select">
+                        <p-radioButton 
+                            class="guardian-radio-button radio-button-24"
+                            [value]="item.iri" 
+                            [ngModel]="entityId"></p-radioButton>
+                    </div>
+                    <div class="entity-name">
+                        {{item.name}}
+                    </div>
                 </div>
-                <div class="entity-name">
-                    {{item.name}}
+            </div>
+            <div *ngIf="type==='formula'" class="entities">
+                <div *ngFor="let item of formulas" class="entity" (click)="onSelectEntity(item)">
+                    <div class="entity-select">
+                        <p-radioButton 
+                            class="guardian-radio-button radio-button-24"
+                            [value]="item.uuid" 
+                            [ngModel]="entityId"></p-radioButton>
+                    </div>
+                    <div class="entity-name">
+                        {{item.name}}
+                    </div>
                 </div>
             </div>
         </div>
-        <div *ngIf="type==='formula'" class="entities">
-            <div *ngFor="let item of formulas" class="entity" (click)="onSelectEntity(item)">
-                <div class="entity-select">
-                    <p-radioButton 
-                        class="guardian-radio-button radio-button-24"
-                        [value]="item.uuid" 
-                        [ngModel]="entityId"></p-radioButton>
-                </div>
-                <div class="entity-name">
-                    {{item.name}}
-                </div>
-            </div>
-        </div>
-
     </div>
     <div *ngIf="step === 2" class="context">
-
-        <div *ngIf="items && type==='schema'" class="field-tree">
-            <div *ngFor="let item of items.data.items" class="field-item">
-                <div class="field-offset"
-                    [style.width.px]="24*item.lvl"
-                    [style.min-width.px]="24*item.lvl"></div>
-                <div class="field-collapse">
-                    <div
-                        *ngIf="item.expandable"
-                        class="guardian-collapse collapse-24"
-                        [attr.collapsed]="item.collapsed"
-                        (click)="onCollapseField(item)"
-                    >
+        <div class="context-header" *ngIf="type==='schema'">Select Field</div>
+        <div class="context-header" *ngIf="type==='formula'">Select Variable</div>
+        <div class="context-body">
+            <div *ngIf="items && type==='schema'" class="field-tree">
+                <div *ngFor="let item of items.data.items" class="field-item">
+                    <div class="field-offset"
+                        [style.width.px]="24*item.lvl"
+                        [style.min-width.px]="24*item.lvl"></div>
+                    <div class="field-collapse">
+                        <div
+                            *ngIf="item.expandable"
+                            class="guardian-collapse collapse-24"
+                            [attr.collapsed]="item.collapsed"
+                            (click)="onCollapseField(item)"
+                        >
+                        </div>
+                    </div>
+                    <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
+                        <p-radioButton 
+                            class="guardian-radio-button radio-button-24"
+                            [value]="item.data.path" 
+                            [ngModel]="itemId"></p-radioButton>
+                    </div>
+                    <div class="field-name" (click)="onSelectField(item)">
+                        {{item.data.description}}
                     </div>
                 </div>
-                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectField(item)">
-                    <p-radioButton 
-                        class="guardian-radio-button radio-button-24"
-                        [value]="item.data.path" 
-                        [ngModel]="itemId"></p-radioButton>
-                </div>
-                <div class="field-name" (click)="onSelectField(item)">
-                    {{item.data.description}}
+            </div>
+            <div *ngIf="items && type==='formula'" class="field-tree">
+                <div *ngFor="let item of items.data.items" class="field-item">
+                    <div class="field-offset"
+                        [style.width.px]="24*item.lvl"
+                        [style.min-width.px]="24*item.lvl"></div>
+                    <div class="field-collapse">
+                        <div
+                            *ngIf="item.expandable"
+                            class="guardian-collapse collapse-24"
+                            [attr.collapsed]="item.collapsed"
+                            (click)="onCollapseField(item)"
+                        >
+                        </div>
+                    </div>
+                    <div *ngIf="!item.expandable" class="field-select" (click)="onSelectVariable(item)">
+                        <p-radioButton 
+                            class="guardian-radio-button radio-button-24"
+                            [value]="item.data.uuid" 
+                            [ngModel]="itemId"></p-radioButton>
+                    </div>
+                    <div class="field-name" (click)="onSelectVariable(item)">
+                        {{item.data.name}}
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div *ngIf="items && type==='formula'" class="field-tree">
-            <div *ngFor="let item of items.data.items" class="field-item">
-                <div class="field-offset"
-                    [style.width.px]="24*item.lvl"
-                    [style.min-width.px]="24*item.lvl"></div>
-                <div class="field-collapse">
-                    <div
-                        *ngIf="item.expandable"
-                        class="guardian-collapse collapse-24"
-                        [attr.collapsed]="item.collapsed"
-                        (click)="onCollapseField(item)"
-                    >
-                    </div>
-                </div>
-                <div *ngIf="!item.expandable" class="field-select" (click)="onSelectVariable(item)">
-                    <p-radioButton 
-                        class="guardian-radio-button radio-button-24"
-                        [value]="item.data.uuid" 
-                        [ngModel]="itemId"></p-radioButton>
-                </div>
-                <div class="field-name" (click)="onSelectVariable(item)">
-                    {{item.data.name}}
-                </div>
-            </div>
-        </div>
-
-
     </div>
 </div>
 <div class="dialog-footer">
     <div class="action-buttons">
-        <div class="dialog-button">
+        <div class="dialog-button close-btn">
             <button 
                 (click)="onClose()" 
                 class="guardian-button guardian-button-secondary">Close</button>
@@ -129,7 +153,7 @@
                 *ngIf="step === 2"
                 (click)="onSubmit()" 
                 class="guardian-button guardian-button-primary"
-                [disabled]="!itemId">Save</button>
+                [disabled]="!itemId">Confirm</button>
         </div>
     </div>
 </div>

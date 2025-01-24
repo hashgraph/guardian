@@ -47,6 +47,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             this.value = ev?.target?.value;
             this.valueChange.emit(this.value);
         });
+        this.mfe.value = this.value || '';
     }
 
     ngAfterViewInit() {

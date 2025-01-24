@@ -292,7 +292,7 @@ export class FormulaConfigurationComponent implements OnInit {
     public onLink(item: FormulaItem) {
         const dialogRef = this.dialogService.open(LinkDialog, {
             showHeader: false,
-            width: '640px',
+            width: '800px',
             styleClass: 'guardian-dialog',
             data: {
                 link: item.link,
