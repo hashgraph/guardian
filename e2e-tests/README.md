@@ -102,6 +102,34 @@ To run a UI test for specific policy you can open Cypress dashboard by running t
 
 and then select test under ui-tests/specs/policies 
 
+## Smoke pull of API-tests
+
+The pull runs after any commit in guardian repository automatically.
+
+This command from /e2e-tests directory
+
+   ```shell
+    npm run smoke-pull
+   ```
+
+runs smoke pull locally. 
+
+Functionality testing by this pull:
+
+- login by Standard Registry user
+- register and login as new user
+- sends data from an external source(IPFS external node)
+- get current settings
+- set settings
+- get, import(file and IPFS) and delete modules
+- get, upload and delete artifacts
+- get, import, delete, dry-run and publish policies(i-Rec2, i-Rec4, Remote GHG Policy)
+- get, create, publish, freeze\unfreeze, associate\disassociate and grant\revoke KYC tokens
+- get, import(file and IPFS), publish, delete schemas
+- compare modules, policies, schemas and tools
+- create contracts, create retire pools, approve wipe contrat requests, create retire requests
+- create contract, module, policy and schema tags
+
 ## Report 
 
 After launching the tests a folder `cypress/reports` will be generated in which you can find the `index.html` file, after opening it in the browser, you can see the details of the launch of the tests.
