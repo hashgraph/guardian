@@ -66,7 +66,7 @@
                     @switch (column.type) {
                     @case ('text') {
                     @if (column.link) {
-                    <a [routerLink]="[column.link.url, getFieldValue(column.link.field, item)]">{{getFieldValue(column.field,
+                    <a [routerLink]="getLink(column, item)" [queryParams]="getFilterParams(column, item)">{{getFieldValue(column.field,
                         item)}}</a>
                     } @else if (!!column.formatValue) {
                     <span [title]="column.formatValue(getFieldValue(column.field, item))">{{column.formatValue(getFieldValue(column.field,

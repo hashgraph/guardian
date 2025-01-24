@@ -20,10 +20,6 @@
         </div>
     </div>
 
-    <div class="progress-bar" *ngIf="messagesTotal > 0">
-        <app-progress-bar [loading]="true" [count]="loadedMessagesCount" [total]="messagesTotal"></app-progress-bar>
-    </div>
-
     <div class="result">
         <h1>{{ 'landing.overview' | transloco }}</h1>
         <div class="cards">

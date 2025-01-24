@@ -18,6 +18,7 @@ import {
     OverviewFormField,
 } from '@components/overview-form/overview-form.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'registry-details',
@@ -48,6 +49,7 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.registry.overview.account_id',
             path: 'owner',
+            hederaExplorerType: HederaType.ACCOUNT,
         },
         {
             label: 'details.registry.overview.topic_id',

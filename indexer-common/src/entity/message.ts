@@ -66,6 +66,7 @@ export class Message implements IMessage {
         textSearch?: string;
         childSchemas?: any[];
         owner?: string;
+        issuer?: string;
         tools?: any[];
         tokens?: string[];
         vcCount?: number;

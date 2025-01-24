@@ -140,4 +140,26 @@ export class TableComponent {
         }
         return result;
     }
+
+    getLink(column: any, obj: any): string[] {
+        if (column.link?.filters) {
+            return [column.link.url];
+        } else if (column.link?.url) {
+            return [column.link.url, this.getFieldValue(column.link.field, obj)];
+        }
+        return [];
+    }
+
+    getFilterParams(column: any, obj: any) {
+        if (column.link?.filters) {
+            const queryParams: any = {};
+            for (const [key, path] of Object.entries(column.link.filters)) {
+              const value = this.getFieldValue(path as string, obj);
+              if (value !== null && value !== undefined) {
+                queryParams[key] = value;
+              }
+            }
+            return queryParams;
+        }
+    }
 }

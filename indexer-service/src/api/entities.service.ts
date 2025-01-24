@@ -1693,8 +1693,34 @@ export class EntityService {
                 filters,
                 options
             );
+
+            const nftsConsensusTimestamps = rows.map((row) => row.metadata);
+
+            let messagesMap = new Map();
+
+            if (nftsConsensusTimestamps.length > 0) {
+                const messagesRows = await em.find(Message, {
+                    consensusTimestamp: { $in: nftsConsensusTimestamps },
+                });
+
+                messagesMap = new Map(
+                    messagesRows.map((message) => [
+                        message.consensusTimestamp,
+                        {
+                            policyId: message.analytics.policyId,
+                            sr: message.analytics.issuer,
+                        },
+                    ])
+                );
+            }
+
+            const newRows = rows.map((row) => ({
+                ...row,
+                analytics: messagesMap.get(row.metadata),
+            }));
+
             const result = {
-                items: rows,
+                items: newRows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,

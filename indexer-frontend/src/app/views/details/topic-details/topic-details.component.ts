@@ -18,6 +18,7 @@ import {
 } from '@components/overview-form/overview-form.component';
 import { TagModule } from 'primeng/tag';
 import { ActivityComponent } from '@components/activity/activity.component';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum TopicType {
     UserTopic = 'USER_TOPIC',
@@ -79,6 +80,7 @@ export class TopicDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.topic.overview.topic_id',
             path: 'topicId',
+            hederaExplorerType: HederaType.TOPIC,
         },
         {
             label: 'details.topic.overview.name',

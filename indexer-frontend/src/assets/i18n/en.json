@@ -41,7 +41,9 @@
         "others": "Others",
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
-        "labels": "Labels"
+        "labels": "Labels",
+        "loading_progress": "Loading data...",
+        "left": "left"
     },
     "home": {
         "header": "Indexer"
@@ -83,7 +85,10 @@
         "open": "Open",
         "target": "Target",
         "sr": "Registry",
+        "policy": "Policy",
         "date": "Date",
+        "createdTimestamp": "Created Date",
+        "modifiedTimestamp": "Modified Date",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",

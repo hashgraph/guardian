@@ -35,8 +35,7 @@ import { ProgressBarComponent } from "../../components/progress-bar/progress-bar
         ProjectLocationsComponent,
         InputTextModule,
         IconFieldModule,
-        InputIconModule,
-        ProgressBarComponent
+        InputIconModule
     ],
 })
 export class HomeComponent {
@@ -45,9 +44,6 @@ export class HomeComponent {
 
     public stats: any = [];
     public projectLocations: any[] = [];
-
-    public loadedMessagesCount: number = 0;
-    public messagesTotal: number = 0;
 
     constructor(
         private router: Router,
@@ -129,13 +125,6 @@ export class HomeComponent {
         this.landingService
             .getProjectsCoordinates()
             .subscribe((result) => (this.projectLocations = result));
-
-        this.landingService.startPollingDataLoadingProgress();
-
-        this.landingService.dataLoadingProgress$.subscribe((progress) => {
-            this.loadedMessagesCount = progress.loadedCount;
-            this.messagesTotal = progress.total;
-        });
     }
 
     ngOnDestroy(): void {
