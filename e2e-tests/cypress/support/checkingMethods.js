@@ -18,17 +18,55 @@ export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
     }
 }
 
-export const whileRetireRequestCreating = (dataToCompare, request, attempts) => {
+export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
+    let request  = {
+        method: METHOD.GET,
+        url: API.ApiServer + API.WipeRequests,
+        headers: {
+            authorization,
+        },
+        qs: {
+            contractId: dataToCompare
+        }
+    }
     if (attempts < 100) {
         attempts++
         cy.wait(3000)
         cy.request(request).then((response) => {
-            if (!response?.body?.at(0)?.contractId)
-                whileRetireRequestCreating(dataToCompare, request, attempts)
+            if (!response.body?.at(0)?.contractId)
+                whileRetireRequestCreating(dataToCompare, authorization, attempts)
             else {
                 let data = response.body.at(0).contractId
                 if (data !== dataToCompare)
-                    whileRetireRequestCreating(dataToCompare, request, attempts)
+                    whileRetireRequestCreating(dataToCompare, authorization, attempts)
+            }
+        })
+    }
+}
+
+export const whileRetireRRequestCreating = (dataToCompare, authorization, attempts) => {
+
+    let request  = {
+        method: METHOD.GET,
+        url: API.ApiServer + API.RetireRequests,
+        headers: {
+            authorization,
+        },
+        qs: {
+            contractId: dataToCompare
+        }
+    }
+
+    if (attempts < 100) {
+        attempts++
+        cy.wait(3000)
+        cy.request(request).then((response) => {
+            if (!response.body?.at(0)?.contractId)
+                whileRetireRRequestCreating(dataToCompare, authorization, attempts)
+            else {
+                let data = response.body.at(0).contractId
+                if (data !== dataToCompare)
+                    whileRetireRRequestCreating(dataToCompare, authorization, attempts)
             }
         })
     }
@@ -37,7 +75,7 @@ export const whileRetireRequestCreating = (dataToCompare, request, attempts) => 
 export const whileApplicationCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.uiMetaData?.title)
                 whileApplicationCreating(dataToCompare, request, attempts)
@@ -53,7 +91,7 @@ export const whileApplicationCreating = (dataToCompare, request, attempts) => {
 export const whileApplicationApproving = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.fields)
                 whileApplicationApproving(dataToCompare, request, attempts)
@@ -69,7 +107,7 @@ export const whileApplicationApproving = (dataToCompare, request, attempts) => {
 export const whileDeviceCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.data)
                 whileDeviceCreating(dataToCompare, request, attempts)
@@ -85,7 +123,7 @@ export const whileDeviceCreating = (dataToCompare, request, attempts) => {
 export const whileDeviceApproving = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.data)
                 whileDeviceApproving(dataToCompare, request, attempts)
@@ -101,7 +139,7 @@ export const whileDeviceApproving = (dataToCompare, request, attempts) => {
 export const whileIssueRequestCreating = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.data)
                 whileIssueRequestCreating(dataToCompare, request, attempts)
@@ -117,7 +155,7 @@ export const whileIssueRequestCreating = (dataToCompare, request, attempts) => {
 export const whileIssueRequestApproving = (dataToCompare, request, attempts) => {
     if (attempts < 100) {
         attempts++
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body?.data)
                 whileIssueRequestApproving(dataToCompare, request, attempts)
@@ -134,7 +172,7 @@ export const whileBalanceVerifying = (dataToCompare, request, attempts, tokenId)
     if (attempts < 100) {
         attempts++
         let balance
-        cy.wait(3000)
+        cy.wait(30000)
         cy.request(request).then((response) => {
             if (!response?.body)
                 whileBalanceVerifying(dataToCompare, request, attempts)

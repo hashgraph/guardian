@@ -3,13 +3,13 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it('Get Hedera account balance', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             const options = {
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'profiles/' + SRUsername + '/balance',
                 headers: {
                     authorization

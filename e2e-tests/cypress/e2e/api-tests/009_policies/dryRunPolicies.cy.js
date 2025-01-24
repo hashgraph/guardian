@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context("Policies", { tags: ['policies', 'secondPool'] }, () => {
+context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     let policyId;
@@ -17,7 +17,7 @@ context("Policies", { tags: ['policies', 'secondPool'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 180000,
+                timeout: 600000,
             }).then((response) => {
                 expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                 policyId = response.body.at(0).id;

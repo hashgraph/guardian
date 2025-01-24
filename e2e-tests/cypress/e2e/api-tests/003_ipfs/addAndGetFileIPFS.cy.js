@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
+context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let cid
 
@@ -25,7 +25,6 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
                             "cypress/fixtures/testJsonCid",
                             response.body
                         );
-
                     });
                 });
         })

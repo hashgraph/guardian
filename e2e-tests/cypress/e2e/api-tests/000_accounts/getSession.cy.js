@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context('Accounts', { tags: ['accounts', 'firstPool'] }, () => {
+context('Get session', { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -50,9 +50,6 @@ context('Accounts', { tags: ['accounts', 'firstPool'] }, () => {
             },
             failOnStatusCode: false
         }).then((response) => {
-            //Question
-            //200 or 401?
-            //expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
             expect(response.status).to.eq(STATUS_CODE.OK)
             expect(response.body).to.eq(null)
         })
@@ -79,9 +76,6 @@ context('Accounts', { tags: ['accounts', 'firstPool'] }, () => {
             },
             failOnStatusCode: false
         }).then((response) => {
-            //Question
-            //200 or 401?
-            //expect(response.status).to.eq(STATUS_CODE.UNAUTHORIZED)
             expect(response.status).to.eq(STATUS_CODE.OK)
             expect(response.body).to.eq(null)
         })

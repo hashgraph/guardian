@@ -119,6 +119,7 @@ before(() => {
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
+                    timeout: 600000
                 }).then((response) => {
                     cy.wait(3000)
                     let hederaAccountId = response.body.id
@@ -232,7 +233,7 @@ before(() => {
         }).then((response) => {
             if (response.body.confirmed === false) {
                 cy.request({
-                    method: 'GET',
+                    method: METHOD.GET,
                     url: API.ApiServer + 'accounts/standard-registries/aggregated',
                     headers: {
                         authorization

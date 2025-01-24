@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
 
@@ -10,12 +10,13 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
         //associate token
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
-                method: 'GET',
+                method: METHOD.GET,
                 url: API.ApiServer + 'tokens',
                 headers: {
                     authorization
                 }
-            }).then((response) => {
+            })
+            .then((response) => {
                 let tokenId = response.body.at(-1).tokenId
                 cy.request({
                     method: 'PUT',
@@ -23,8 +24,29 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                     headers: {
                         authorization
                     }
-                }).then(() => {
-                    Authorization.getAccessToken(SRUsername).then((authorization) => {
+                })
+                Authorization.getAccessToken(SRUsername).then((authorization) => {
+                    cy.request({
+                        method: METHOD.PUT,
+                        url:
+                            API.ApiServer +
+                            API.ListOfTokens +
+                            tokenId +
+                            "/" +
+                            UserUsername +
+                            "/freeze",
+                        headers: {
+                            authorization,
+                        },
+                    }).then((response) => {
+                        expect(response.status).eql(STATUS_CODE.OK);
+
+                        let token = response.body.tokenId;
+                        let frozen = response.body.frozen;
+
+                        expect(token).to.deep.equal(tokenId);
+                        expect(frozen).to.be.true;
+
                         cy.request({
                             method: METHOD.PUT,
                             url:
@@ -32,8 +54,8 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                                 API.ListOfTokens +
                                 tokenId +
                                 "/" +
-                                user +
-                                "/freeze",
+                                UserUsername +
+                                "/unfreeze",
                             headers: {
                                 authorization,
                             },
@@ -44,32 +66,10 @@ context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
                             let frozen = response.body.frozen;
 
                             expect(token).to.deep.equal(tokenId);
-                            expect(frozen).to.be.true;
-
-                            cy.request({
-                                method: METHOD.PUT,
-                                url:
-                                    API.ApiServer +
-                                    API.ListOfTokens +
-                                    tokenId +
-                                    "/" +
-                                    user +
-                                    "/unfreeze",
-                                headers: {
-                                    authorization,
-                                },
-                            }).then((response) => {
-                                expect(response.status).eql(STATUS_CODE.OK);
-
-                                let token = response.body.tokenId;
-                                let frozen = response.body.frozen;
-
-                                expect(token).to.deep.equal(tokenId);
-                                expect(frozen).to.be.false;
-                            });
+                            expect(frozen).to.be.false;
                         });
+                    });
 
-                    })
                 })
             })
         })
