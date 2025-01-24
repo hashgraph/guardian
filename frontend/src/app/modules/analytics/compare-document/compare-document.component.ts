@@ -1,8 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { IResultContext } from '../interfaces/result-context.interface';
-import { ITreeContext } from '../interfaces/tree-context.interface';
-import { ITableColumns } from '../interfaces/table-columns.interface';
-import { ITreeItemContext } from '../interfaces/tree-item-context.interface';
+import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@angular/core';
+import {IResultContext} from '../interfaces/result-context.interface';
+import {ITreeContext} from '../interfaces/tree-context.interface';
+import {ITableColumns} from '../interfaces/table-columns.interface';
+import {ITreeItemContext} from '../interfaces/tree-item-context.interface';
+import BlockIcons from '../../policy-engine/services/block-icons';
 
 interface IInfoContext {
     id: string;
@@ -81,6 +82,8 @@ export class CompareDocumentComponent implements OnInit {
     public _gridStyle = '';
     public _systemProp = true;
     private _pOffset = 30;
+
+    public icons: any = Object.assign({}, BlockIcons);
 
     get comparationLabels(): any {
         switch (this.comparationType) {
@@ -523,5 +526,9 @@ export class CompareDocumentComponent implements OnInit {
         document.querySelectorAll('.left-tree').forEach(el => {
             el.scrollLeft = event.target.scrollLeft;
         })
+    }
+
+    isObject(value: any): boolean {
+        return value !== null && typeof value === 'object';
     }
 }

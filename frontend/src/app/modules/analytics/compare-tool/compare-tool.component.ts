@@ -649,4 +649,8 @@ export class CompareToolComponent implements OnInit {
             el.scrollLeft = event.target.scrollLeft;
         })
     }
+
+    isObject(value: any): boolean {
+        return value !== null && typeof value === 'object';
+    }
 }
