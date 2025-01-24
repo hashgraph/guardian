@@ -2321,6 +2321,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
+  /landing/data-loading-progress:
+    get:
+      operationId: LandingApi_getDataLoadingProgress
+      summary: Get data loading progress
+      description: Returns the number of messages loaded and the total number of messages
+      parameters: []
+      responses:
+        '200':
+          description: Data loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
   /analytics/search/policy:
     post:
       operationId: AnalyticsApi_search
@@ -7411,6 +7433,9 @@ components:
       required:
         - coordinates
         - projectId
+    DataLoadingProgress:
+      type: object
+      properties: {}
     SearchPolicyBlocksDTO:
       type: object
       properties:
