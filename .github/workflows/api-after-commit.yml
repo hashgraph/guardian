@@ -1,16 +1,12 @@
-name: Guardian CI API Tests(Manual)
-run-name: Guardian CI API Tests(Manual) - ${{ inputs.tags }}
+name: Guardian CI API Tests(after commit)
 on:
-    workflow_dispatch:
-        inputs:
-            tags:
-                type: string
-                description: Tags for run(smoke, accounts, firstPool and etc.)
-                default: 'all'
-        description: 'Manual run'
+    push:
+        branches-ignore:
+            - 'dependabot/**'
+
 jobs:
     buildAndTest:
-        name: Build and Test (Manual)
+        name: Build and Test
         runs-on: ubuntu-latest
         services:
             cache:
@@ -38,7 +34,7 @@ jobs:
             - name: Setup Yarn
               uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
               with:
-                  cmd: install
+                cmd: install
 
             - name: Install dependencies
               run: yarn install
@@ -77,6 +73,7 @@ jobs:
                   pushd api-gateway
                   yarn run build
                   popd
+
             - name: Start NatsMQ
               uses: step-security/nats-action@0306fc1c4e4f49dbe4db5865a3135ab1516a5aee # v0.1.0
               with:
@@ -143,8 +140,9 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=${{ inputs.tags }},grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome         
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=smoke,grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome            
                   popd
+
             - name: Publish API Test Results
               uses: EnricoMi/publish-unit-test-result-action@170bf24d20d201b842d7a52403b73ed297e6645b # v2.18.0
               if: always()
