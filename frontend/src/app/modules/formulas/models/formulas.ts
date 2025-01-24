@@ -1,33 +1,10 @@
-import { GenerateUUIDv4 } from '@guardian/interfaces';
-
-export enum FormulaItemType {
-    Constant = 'constant',
-    Variable = 'variable',
-    Formula = 'formula',
-    Text = 'text'
-}
-
-export interface FormulaLink {
-    type: 'formula' | 'schema';
-    entityId: string;
-    item: string;
-}
-
-export interface FormulaItem {
-    uuid: string;
-    name: string;
-    description: string;
-    type: FormulaItemType,
-    value?: any;
-    link?: FormulaLink | null;
-    relationships?: any;
-}
+import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
 
 export class Formulas {
-    private items: FormulaItem[];
+    private items: IFormulaItem[];
     private filterMap: Map<FormulaItemType, boolean>;
 
-    public data: FormulaItem[];
+    public data: IFormulaItem[];
 
     constructor() {
         this.items = [];
@@ -38,8 +15,8 @@ export class Formulas {
         this.filterMap.set(FormulaItemType.Text, true);
     }
 
-    private create(type: FormulaItemType): FormulaItem {
-        const item: FormulaItem = {
+    private create(type: FormulaItemType): IFormulaItem {
+        const item: IFormulaItem = {
             uuid: GenerateUUIDv4(),
             name: '',
             description: '',
@@ -73,7 +50,7 @@ export class Formulas {
         this.update();
     }
 
-    public delete(item: FormulaItem): void {
+    public delete(item: IFormulaItem): void {
         this.items = this.items.filter((e) => e.uuid !== item?.uuid);
         this.update();
     }
@@ -90,27 +67,27 @@ export class Formulas {
         this.data = this.items.filter((e) => this.filterMap.get(e.type));
     }
 
-    public fromData(config: any) {
-        const items: any[] = config?.formulas || [];
+    public fromData(config: IFormulaConfig) {
+        const items: IFormulaItem[] = config?.formulas || [];
         this.items = items.map((e) => this._fromJson(e));
         this.update();
     }
 
-    public getJson(): any {
+    public getJson(): IFormulaConfig {
         return {
             formulas: this.items.map((e) => this._toJson(e))
         };
     }
 
-    private _fromJson(item: any): FormulaItem {
+    private _fromJson(item: IFormulaItem): IFormulaItem {
         return item;
     }
 
-    private _toJson(item: FormulaItem): any {
+    private _toJson(item: IFormulaItem): IFormulaItem {
         return item;
     }
 
-    public getItem(uuid: string): FormulaItem | null {
+    public getItem(uuid: string): IFormulaItem | null {
         for (const item of this.items) {
             if (item.uuid === uuid) {
                 return item;

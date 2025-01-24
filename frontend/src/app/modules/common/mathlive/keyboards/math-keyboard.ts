@@ -109,59 +109,59 @@ export const mathKeyboard = {
             "|#0|",
             "\\sqrt[#0]{#0}",
             {
-                class: 'small',
+                class: "small",
                 latex: "\\log_{#0}#0",
                 shift: "\\ln",
                 variants: [
-                    { class: 'small', latex: "\\log_{#0}#0" },
-                    { class: 'small', latex: "\\ln#0" },
-                    { class: 'small', latex: "\\log_{10}#0" },
+                    { class: "small", latex: "\\log_{#0}#0" },
+                    { class: "small", latex: "\\ln#0" },
+                    { class: "small", latex: "\\log_{10}#0" },
                 ]
             },
             {
                 latex: "\\exponentialE",
                 shift: "\\exp",
                 variants: [
-                    { class: 'small', latex: "\\exponentialE" },
-                    { class: 'small', latex: "\\exp\\left(#0\\right)" },
-                    { class: 'small', latex: "\\times10^{#0}" },
+                    { class: "small", latex: "\\exponentialE" },
+                    { class: "small", latex: "\\exp\\left(#0\\right)" },
+                    { class: "small", latex: "\\times10^{#0}" },
                 ]
             },
             "\\lim_{#0}",
             {
-                class: 'small',
+                class: "small",
                 latex: "\\sum_{#0}^{#0}#0",
                 shift: "\\Sigma",
                 variants: [
-                    { class: 'small', latex: "\\sum_{#0}^{#0}#0" },
-                    { class: 'small', latex: "\\sum #0" },
+                    { class: "small", latex: "\\sum_{#0}^{#0}#0" },
+                    { class: "small", latex: "\\sum #0" },
                 ]
             },
             {
-                class: 'small',
+                class: "small",
                 latex: "\\prod_{#0}^{#0}#0",
                 shift: "\\Pi",
                 variants: [
-                    { class: 'small', latex: "\\prod_{#0}^{#0}#0", },
-                    { class: 'small', latex: "\\prod#0", },
+                    { class: "small", latex: "\\prod_{#0}^{#0}#0", },
+                    { class: "small", latex: "\\prod#0", },
                 ]
             },
             {
-                class: 'small',
+                class: "small",
                 latex: "\\int_{#0}^{#0}#0",
                 shift: "\\smallint",
                 variants: [
-                    { class: 'small', latex: "\\int_{#0}^{#0}#0" },
-                    { class: 'small', latex: "\\int#0" },
-                    { class: 'small', latex: "\\iint #0" },
-                    { class: 'small', latex: "\\iiint#0" },
-                    { class: 'small', latex: "\\oint#0" },
-                    { class: 'small', latex: "\\intclockwise#0" },
-                    { class: 'small', latex: "\\varointclockwise#0" },
-                    { class: 'small', latex: "\\ointctrclockwise#0" },
-                    { class: 'small', latex: "\\intctrclockwise#0" },
-                    { class: 'small', latex: "\\oiint#0" },
-                    { class: 'small', latex: "\\oiiint#0" },
+                    { class: "small", latex: "\\int_{#0}^{#0}#0" },
+                    { class: "small", latex: "\\int#0" },
+                    { class: "small", latex: "\\iint #0" },
+                    { class: "small", latex: "\\iiint#0" },
+                    { class: "small", latex: "\\oint#0" },
+                    { class: "small", latex: "\\intclockwise#0" },
+                    { class: "small", latex: "\\varointclockwise#0" },
+                    { class: "small", latex: "\\ointctrclockwise#0" },
+                    { class: "small", latex: "\\intctrclockwise#0" },
+                    { class: "small", latex: "\\oiint#0" },
+                    { class: "small", latex: "\\oiiint#0" },
                 ]
             },
         ],
@@ -213,7 +213,7 @@ export const mathKeyboard = {
                 ]
             },
             {
-                class: 'small',
+                class: "small",
                 latex: "\\mathrm{abs}\\left(#0\\right)",
             },
             {
@@ -323,34 +323,34 @@ export const mathKeyboard = {
                 latex: "\\sin",
                 shift: "\\sin^{-1}",
                 variants: [
-                    { class: 'small', latex: "\\sin" },
-                    { class: 'small', latex: "\\sinh" },
-                    { class: 'small', latex: "\\sin^{-1}" },
-                    { class: 'small', latex: "\\arsinh" },
+                    { class: "small", latex: "\\sin" },
+                    { class: "small", latex: "\\sinh" },
+                    { class: "small", latex: "\\sin^{-1}" },
+                    { class: "small", latex: "\\arsinh" },
                 ]
             },
             {
                 latex: "\\cos",
                 shift: "\\cos^{-1}",
                 variants: [
-                    { class: 'small', latex: "\\cos" },
-                    { class: 'small', latex: "\\cosh" },
-                    { class: 'small', latex: "\\cos^{-1}" },
-                    { class: 'small', latex: "\\arcosh" },
+                    { class: "small", latex: "\\cos" },
+                    { class: "small", latex: "\\cosh" },
+                    { class: "small", latex: "\\cos^{-1}" },
+                    { class: "small", latex: "\\arcosh" },
                 ]
             },
             {
                 latex: "\\tan",
                 shift: "\\tan^{-1}",
                 variants: [
-                    { class: 'small', latex: "\\tan" },
-                    { class: 'small', latex: "\\tg" },
-                    { class: 'small', latex: "\\tan^{-1}" },
-                    { class: 'small', latex: "\\tanh" },
-                    { class: 'small', latex: "\\artanh" },
-                    { class: 'small', latex: "\\arctan" },
-                    { class: 'small', latex: "\\arctg" },
-                    { class: 'small', latex: "\\cot" },
+                    { class: "small", latex: "\\tan" },
+                    { class: "small", latex: "\\tg" },
+                    { class: "small", latex: "\\tan^{-1}" },
+                    { class: "small", latex: "\\tanh" },
+                    { class: "small", latex: "\\artanh" },
+                    { class: "small", latex: "\\arctan" },
+                    { class: "small", latex: "\\arctg" },
+                    { class: "small", latex: "\\cot" },
                 ]
             },
             "\\Delta",
@@ -368,8 +368,8 @@ export const mathKeyboard = {
                 latex: "f(#0)",
                 shift: "x_{i}",
                 variants: [
-                    { class: 'small', latex: "f(#0)" },
-                    { class: 'small', latex: "g(#0)" },
+                    { class: "small", latex: "f(#0)" },
+                    { class: "small", latex: "g(#0)" },
                     { latex: "x^{n}" },
                     { latex: "x^{#0}" },
                     { latex: "x_{n}" },
@@ -407,39 +407,60 @@ export const mathKeyboard = {
                 ]
             },
             {
-                latex: '+',
-                class: 'action',
-                command: ['performWithFeedback', 'addRowAfter'],
+                latex: "+",
+                aside: "New Line",
+                class: "action",
+                command: ["performWithFeedback", "addRowAfter"],
                 shift: {
-                    latex: '-',
-                    class: 'action',
-                    command: ['performWithFeedback', 'removeRow'],
-                },
-            },
-            {
-                label: "Text",
-                class: 'action',
-                command: ['switchMode', 'text'],
-                shift: {
-                    label: "Math",
-                    class: 'small action',
-                    command: ['switchMode', 'math'],
+                    latex: "-",
+                    class: "action",
+                    aside: "Delete Line",
+                    command: ["performWithFeedback", "removeRow"],
                 },
                 variants: [
                     {
-                        label: "Text",
-                        class: 'small',
-                        command: ['switchMode', 'text'],
+                        latex: "+",
+                        aside: "New Line",
+                        class: "small",
+                        command: ["performWithFeedback", "addRowAfter"],
                     },
                     {
-                        label: "Math",
-                        class: 'small',
-                        command: ['switchMode', 'math'],
+                        latex: "-",
+                        aside: "Delete Line",
+                        class: "small",
+                        command: ["performWithFeedback", "removeRow"],
+                    },
+                ]
+            },
+            {
+                label: "T",
+                aside: "Text Mode",
+                class: "action",
+                command: ["switchMode", "text"],
+                shift: {
+                    label: "M",
+                    aside: "Math Mode",
+                    class: "small action",
+                    command: ["switchMode", "math"],
+                },
+                variants: [
+                    {
+                        label: "T",
+                        class: "small",
+                        aside: "Math Mode",
+                        command: ["switchMode", "text"],
                     },
                     {
-                        label: "LaTeX",
-                        class: 'small',
-                        command: ['switchMode', 'latex'],
+                        label: "M",
+                        class: "small",
+                        aside: "Math Mode",
+                        command: ["switchMode", "math"],
+                    },
+                    {
+                        label: "L",
+                        class: "small",
+                        aside: "LaTeX Mode",
+                        command: ["switchMode", "latex"],
                     },
                 ]
             },

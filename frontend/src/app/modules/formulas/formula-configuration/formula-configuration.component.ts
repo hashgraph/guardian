@@ -1,15 +1,16 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Schema, UserPermissions } from '@guardian/interfaces';
+import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
-import { FormulaItem, FormulaItemType, FormulaLink, Formulas } from './formulas';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
+import { Formulas } from '../models/formulas';
+import { FormulasTree } from '../models/formula-tree';
 
 @Component({
     selector: 'app-formula-configuration',
@@ -208,6 +209,14 @@ export class FormulaConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
+
+
+        const test = new FormulasTree();
+        test.setFormulas([item]);
+        test.setSchemas(this.schemas);
+        test.update();
+        debugger;
+
         this.formulasService
             .updateFormula(item)
             .subscribe((data) => {
@@ -289,7 +298,7 @@ export class FormulaConfigurationComponent implements OnInit {
         });
     }
 
-    public onLink(item: FormulaItem) {
+    public onLink(item: IFormulaItem) {
         const dialogRef = this.dialogService.open(LinkDialog, {
             showHeader: false,
             width: '800px',
@@ -303,14 +312,14 @@ export class FormulaConfigurationComponent implements OnInit {
                 ]
             },
         });
-        dialogRef.onClose.subscribe((result: FormulaLink | null) => {
+        dialogRef.onClose.subscribe((result: IFormulaLink | null) => {
             if (result) {
                 item.link = result
             }
         });
     }
 
-    public getEntityName(link: FormulaLink): string {
+    public getEntityName(link: IFormulaLink): string {
         if (link.type === 'schema') {
             return this.schemasMap.get(link.entityId) || '';
         }
@@ -320,7 +329,7 @@ export class FormulaConfigurationComponent implements OnInit {
         return '';
     }
 
-    public getFieldName(link: FormulaLink): string {
+    public getFieldName(link: IFormulaLink): string {
         if (link.type === 'schema') {
             return this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';
         }
@@ -334,7 +343,7 @@ export class FormulaConfigurationComponent implements OnInit {
         return '';
     }
 
-    public deleteLink(item: FormulaItem, $event: any) {
+    public deleteLink(item: IFormulaItem, $event: any) {
         $event.preventDefault();
         $event.stopPropagation();
         item.link = null;

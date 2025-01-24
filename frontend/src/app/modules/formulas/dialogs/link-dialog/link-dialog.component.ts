@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
 import { FieldData } from 'src/app/modules/common/models/schema-node';
-import { FormulaLink } from '../../formula-configuration/formulas';
+import { IFormulaLink } from '@guardian/interfaces';
 
 @Component({
     selector: 'link-dialog',
@@ -33,7 +33,7 @@ export class LinkDialog {
         } else {
             this.type = 'schema';
         }
-        const link: FormulaLink = this.config.data?.link;
+        const link: IFormulaLink = this.config.data?.link;
         if (link) {
             this.type = link.type;
             this.entityId = link.entityId;
@@ -109,7 +109,7 @@ export class LinkDialog {
 
     public onSubmit(): void {
         if (this.itemId) {
-            const result: FormulaLink = {
+            const result: IFormulaLink = {
                 type: this.type,
                 entityId: this.entityId,
                 item: this.itemId
