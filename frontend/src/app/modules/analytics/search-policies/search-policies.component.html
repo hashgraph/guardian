@@ -33,7 +33,9 @@
                             id="tagsDropdown"
                             formControlName="tag"
                             [options]="getTagOptions()"
-                            placeholder="Select a Tag">
+                            placeholder="Select a Tag"
+                            [appendTo]="'body'"
+                        >
                         </p-dropdown>
                     </div>
                 </div>

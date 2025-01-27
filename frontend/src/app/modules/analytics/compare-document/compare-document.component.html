@@ -55,31 +55,116 @@
                         </div>
                     </div>
 
-                    <div *ngIf="type === 'tree'" [attr.open]="_panelOpenState" class="merge-tree">
-                        <div *ngFor="let row of treeContext" class="report-item report-item-number">
+                    <div *ngIf="type==='tree'" [attr.open]="_panelOpenState"
+                         [attr.tree-size]="size"
+                         [attr.type-2]="_type2"
+                         [attr.type-1]="_type1"
+                         [attr.type-3]="_type3"
+                         class="merge-tree"
+                         [attr.type-4]="_type4">
+
+                        <div *ngFor="let row of treeContext" class="report-item report-item-number"
+                             [attr.hidden]="row.hidden"
+                             [style.grid-template-columns]="_gridStyle">
+
                             <div class="report-number">{{ row.number }}</div>
-                            <div class="report-collapse" (click)="onCollapse(row)">
-                                <i class="pi pi-minus open-icon"></i>
-                                <i class="pi pi-plus collapse-icon"></i>
+                            <div class="report-collapse" [attr.collapse]="row.collapse" (click)="onCollapse(row)">
+                                <i class="pi pi-minus icon open-icon" *ngIf="row.collapse === 1"></i>
+                                <i class="pi pi-plus icon collapse-icon" *ngIf="row.collapse !== 1"></i>
                             </div>
 
                             <ng-container *ngFor="let treeItemContext of row.contexts">
-                                <div [style.padding-left.px]="row.offset"
-                                     [ngClass]="{
-                                     'left-tree': treeItemContext.left,
-                                     'right-tree': treeItemContext.right
-                                 }">
+                                <div
+                                    [attr.offset]="row.lvl"
+                                    [attr.rate]="treeItemContext.rate"
+                                    [attr.type]="treeItemContext.type"
+                                    [style.padding-left.px]="row.offset"
+                                    [style.grid-column-start]="2 * treeItemContext.index + 1"
+                                    [ngClass]="{
+                                        'left-tree': treeItemContext.left,
+                                        'right-tree': treeItemContext.right,
+                                        'hidden-item': true,
+                                        'fantom-tree': treeItemContext.fantom
+                                    }">
                                     <div class="block-tree" (click)="row.open = !row.open">
-                                        <div class="block-index">{{ treeItemContext.data.docIndex }}</div>
+                                        <div class="block-index">
+                                            {{ treeItemContext.data.docIndex }}
+                                        </div>
                                         <div class="block-icon">
-                                            <i class="pi" [ngClass]="treeItemContext.data.docIcon"></i>
+                                            <i [ngClass]="'pi pi-' + (icons[treeItemContext.data.docIcon] ? icons[treeItemContext.data.docIcon] : 'file')"></i>
                                         </div>
                                         <div class="block-type">{{ treeItemContext.data.docName }}</div>
                                     </div>
                                 </div>
+
+                                <div *ngIf="treeItemContext.right" class="middle-tree"
+                                     [style.grid-column-start]="2 * treeItemContext.index">
+                                    <div class="compare-btn" (click)="row.open = !row.open">
+                                        <i *ngIf="!row.open"
+                                           class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
+                                        <i *ngIf="row.open"
+                                           class="pi pi-arrow-down-left-and-arrow-up-right-to-center"></i>
+                                    </div>
+                                </div>
+                            </ng-container>
+
+                            <ng-container *ngIf="row.open">
+                                <ng-container *ngFor="let treeDetailContext of row.detailContexts">
+                                    <div [attr.open]="row.open"
+                                         [style.padding-left.px]="row.offset"
+                                         [style.grid-column-start]="2 * treeDetailContext.index + 1"
+                                         [ngClass]="{
+                                            'left-compare-result': treeDetailContext.left,
+                                            'right-compare-result': treeDetailContext.right,
+                                            'fantom-block': treeDetailContext.fantom,
+                                            'hidden-item': true,
+                                            'compare-result': true
+                                        }">
+                                        <ng-container
+                                            *ngTemplateOutlet="resultDetails; context: treeDetailContext"></ng-container>
+                                    </div>
+                                    <div [style.grid-column-start]="2 * treeDetailContext.index"
+                                         *ngIf="treeDetailContext.right"
+                                         class="middle-compare-result compare-result"
+                                         [attr.open]="row.open"></div>
+                                </ng-container>
                             </ng-container>
                         </div>
                     </div>
+
+                    <div *ngIf="type === 'table'" class="merge-table" [attr.open]="_panelOpenState">
+                        <div class="merge-table-content">
+                            <p-table *ngIf="treeContext" [value]="treeContext" class="table mat-table">
+                                <ng-template pTemplate="header">
+                                    <tr class="mat-header-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
+                                                {{ column.label }}
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+
+                                <ng-template pTemplate="body" let-row>
+                                    <tr class="mat-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
+                                                <ng-container *ngIf="!isObject(row.data[column.name])">
+                                <span [attr.value]="row.data[column.name]"
+                                      [title]="row.data[column.name]"
+                                      class="table-value"
+                                      [attr.display-type]="column.display">
+                                    {{ row.data[column.name] }}
+                                </span>
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </div>
+
                 </div>
             </p-accordionTab>
         </p-accordion>
