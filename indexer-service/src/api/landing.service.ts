@@ -43,11 +43,13 @@ export class LandingService {
     }
 
     @MessagePattern(IndexerMessageAPI.GET_PROJECTS_COORDINATES)
-    async getProjects(): Promise<AnyResponse<any>> {
+    async getProjects(): Promise<AnyResponse<IProjectCoordinates[]>> {
         const em = DataBaseHelper.getEntityManager();
-        return new MessageResponse<IProjectCoordinates[]>(
-            await em.findAll(ProjectCoordinates)
-        );
+        const coordinates: IProjectCoordinates[] = (await em.find(
+            ProjectCoordinates,
+            {}
+        )) as any;
+        return new MessageResponse<IProjectCoordinates[]>(coordinates);
     }
 
     @MessagePattern(IndexerMessageAPI.GET_DATA_LOADING_PROGRESS)
