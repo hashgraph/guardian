@@ -4,6 +4,7 @@ const API = {
     //Accounts
     Accounts: "accounts/",
     AccountsLogin: "accounts/login/",
+    ChangePassword: "accounts/change-password/",
     AccessToken: "accounts/access-token/",
     RootAuthorities: "accounts/root-authorities",
     Installer: "accounts/installer",
@@ -135,6 +136,8 @@ const API = {
     Preview: "preview/",
     Validate: "validate/",
     Users: "users/",
-    Assign: "assign/"
+    Assign: "assign/",
+    Test: "test/",
+    Start: "start/",
 };
 export default API;
