@@ -275,23 +275,31 @@
 
                     <div *ngIf="type === 'table'" class="merge-table" [attr.open]="panelOpenState">
                         <div class="merge-table-content">
-                            <p-table *ngIf="blocks" [value]="blocks" class="table">
-                                <ng-container *ngFor="let column of columns">
-                                    <ng-template pTemplate="header">
-                                        <th>{{ column.label }}</th>
-                                    </ng-template>
+                            <p-table *ngIf="blocks" [value]="blocks" class="table mat-table">
+                                <ng-template pTemplate="header">
+                                    <tr class="mat-header-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
+                                                {{ column.label }}
+                                            </th>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
 
-                                    <ng-template pTemplate="body" let-row>
-                                        <td>
-                                    <span class="table-value"
-                                          [title]="row.data[column.name]"
-                                          [attr.value]="row.data[column.name]"
-                                          [attr.display-type]="column.display">
-                                        {{ row.data[column.name] }}
-                                    </span>
-                                        </td>
-                                    </ng-template>
-                                </ng-container>
+                                <ng-template pTemplate="body" let-row>
+                                    <tr class="mat-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
+                                                <span class="table-value"
+                                                      [title]="row.data[column.name]"
+                                                      [attr.value]="row.data[column.name]"
+                                                      [attr.display-type]="column.display">
+                                                    {{ row.data[column.name] }}
+                                                </span>
+                                            </td>
+                                        </ng-container>
+                                    </tr>
+                                </ng-template>
                             </p-table>
                         </div>
                     </div>
