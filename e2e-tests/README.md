@@ -3,7 +3,7 @@
 ## Description
 The `/e2e-tests` folder comprises the Guardian Cypress test automation framework and automated UI and API tests.
 
-When running API tests, it's important to remember that the tests are dependent on each other, and it is recommended to run them sequentially, following the order in the `/e2e-tests` folder.
+When running API tests, remember that they depend on each other. It is recommended to run them sequentially, following the order specified in the `/e2e-tests` folder.
 
 - [Software Requirements](#software-requirements)
 - [Installation](#installation)
@@ -40,27 +40,27 @@ For a single test, use:
 
 `npx cypress run --spec "path/to/file.cy.js"`
 
-### Run by tag
+### Run By Tag
 To run only the specs that have any tests tagged "tag":
 
 `npx cypress run --env "grepTags=tag,grepFilterSpecs=true"`
 
-where tag can be:
+where `tag` can be:
 - accounts - all tests for accounts operations
+- analytics - all tests for analytics operations
+- artifacts - - all tests for artifacts operations
+- contracs - all tests for contracs operations
 - demo - all tests for demo operations
 - external - all tests for external operations
 - ipfs - all tests for IPFS operations
 - logs - - all tests for log operations
-- profilies - all tests for profilies operations
-- settings - - all tests for settings operations
 - modules - - all tests for modules operations
-- artifacts - - all tests for artifacts operations
 - policies - all tests for policies operations
-- tokens - all tests for tokens operations
+- profilies - all tests for profilies operations
 - schemas - all tests for schemas operations
-- analytics - all tests for analytics operations
-- contracs - all tests for contracs operations
+- settings - - all tests for settings operations
 - tags - all tests for tags operations
+- tokens - all tests for tokens operations
 - trustchains - all tests for trustchains operations
 
 ### UI Tests (Policies)
