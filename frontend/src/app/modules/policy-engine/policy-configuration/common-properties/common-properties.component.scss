@@ -109,3 +109,15 @@
     font-family: 'Roboto', sans-serif;
     font-weight: 500;
 }
+
+::ng-deep .propRowCell input.prop-input {
+    min-height: 38px;
+    font-size: 16px !important;
+    color: var(--color-grey-6);
+    font-family: "Roboto", sans-serif;
+}
+
+::ng-deep p-dropdown .p-dropdown,
+::ng-deep p-multiselect .p-multiselect {
+    width: 100% !important;
+}
