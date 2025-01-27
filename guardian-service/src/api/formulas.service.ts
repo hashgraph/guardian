@@ -10,6 +10,7 @@ import {
     PolicyImportExport
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
+import { getFormulasData } from './helpers/formulas-helpers.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -324,12 +325,12 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
 
-                const { schemas, toolSchemas } = await PolicyImportExport.loadAllSchemas(policy);
+                const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
                 const all = [].concat(schemas, toolSchemas);
 
-                const formulas = await DatabaseServer.getFormulas({ 
+                const formulas = await DatabaseServer.getFormulas({
                     id: { $ne: formulaId },
-                    policyId: policy.id 
+                    policyId: policy.id
                 });
 
                 return new MessageResponse({
@@ -343,4 +344,53 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    /**
+     * Get Formulas data
+     *
+     * @param {any} msg - options
+     *
+     * @returns {any} - Formulas data
+     */
+    ApiResponse(MessageAPI.GET_FORMULAS_DATA,
+        async (msg: {
+            options: {
+                policyId: string,
+                schemaId: string,
+                documentId: string,
+                parentId: string
+            }
+            owner: IOwner
+        }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { options, owner } = msg;
+                const { policyId } = options;
+
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageResponse(null);
+                }
+
+                const formulas = await DatabaseServer.getFormulas({ policyTopicId: policy.topicId });
+
+                if (!formulas.length) {
+                    return new MessageResponse(null);
+                }
+
+                const { document, relationships } = await getFormulasData(options, owner);
+                const { schemas, toolSchemas } = await PolicyImportExport.fastLoadSchemas(policy);
+                const all = [].concat(schemas, toolSchemas).filter((s) => s.status === SchemaStatus.PUBLISHED);
+                return new MessageResponse({
+                    formulas,
+                    document,
+                    relationships,
+                    schemas: all
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

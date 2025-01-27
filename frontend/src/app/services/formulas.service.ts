@@ -90,4 +90,14 @@ export class FormulasService {
             }
         });
     }
+
+    public getFormulasData(options: {
+        policyId?: string,
+        schemaId?: string,
+        documentId?: string,
+        parentId?: string,
+        fullData?: boolean,
+    }): Observable<any> {
+        return this.http.post<any>(`${this.url}/data`, options);
+    }
 }

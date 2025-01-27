@@ -99,6 +99,11 @@ div.guardian-button[disabled="true"] {
     &.big:hover {
         box-shadow: 0px 0px 0px 6px var(--guardian-primary-background);
     }
+
+    &-secondary {
+        background-color: var(--guardian-secondary-color);
+        border: 1px solid var(--guardian-primary-color);
+    }
 }
 
 button.guardian-icon-button[disabled],

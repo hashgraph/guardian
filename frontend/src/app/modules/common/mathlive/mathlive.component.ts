@@ -10,6 +10,7 @@ import { mathKeyboard } from './keyboards/math-keyboard';
 })
 export class MathLiveComponent implements OnInit, OnDestroy {
     @ViewChild('mathLiveContent', { static: true }) mathLiveContent: ElementRef;
+    @Input('readonly') readonly: boolean = false;
     @Input('value') value!: string;
     @Output('valueChange') valueChange = new EventEmitter<string>();
     @Output('keyboard') keyboard = new EventEmitter<boolean>();
@@ -48,6 +49,7 @@ export class MathLiveComponent implements OnInit, OnDestroy {
             this.valueChange.emit(this.value);
         });
         this.mfe.value = this.value || '';
+        this.mfe.readonly = this.readonly;
     }
 
     ngAfterViewInit() {

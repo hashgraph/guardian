@@ -374,4 +374,18 @@ export class PolicyImportExport {
         return policyCategoryIds;
     }
 
+    /**
+     * Load all schemas (deep find)
+     * @param policy policy
+     *
+     * @returns schemas
+     */
+    public static async fastLoadSchemas(policy: Policy) {
+        const topicId = policy.topicId;
+        const tools: any[] = policy.tools || [];
+        const toolsTopicMap = tools.map((t) => t.topicId);
+        const schemas = await new DatabaseServer().find(Schema, { topicId, readonly: false });
+        const toolSchemas = await DatabaseServer.getSchemas({ topicId: { $in: toolsTopicMap } });
+        return { schemas, toolSchemas };
+    }
 }

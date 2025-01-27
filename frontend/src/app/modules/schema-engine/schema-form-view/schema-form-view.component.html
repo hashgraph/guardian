@@ -67,6 +67,18 @@
                     <div class="form-field-postfix" *ngIf="isPostfix(item)">{{item.unit}}</div>
 
                     <div
+                        *ngIf="isFormulas(item) as formulas"
+                        class="form-field-formula">
+                        <button 
+                            class="guardian-icon-button guardian-icon-button-secondary" 
+                            (click)="showFormulas(formulas)">
+                            <svg-icon
+                                src="/assets/images/icons/info.svg"
+                                svgClass="icon-color-primary"></svg-icon>
+                        </button>
+                    </div>
+
+                    <div
                         *ngIf="isRules(item) as rule"
                         class="form-field-rule"
                         [pTooltip]="rule.tooltip"
@@ -75,11 +87,11 @@
                         <svg-icon
                                 *ngIf="rule.status === 'Failure' || rule.status === 'Error'"
                                 src="/assets/images/icons/warning-2.svg"
-                            svgClass="icon-color-warning"></svg-icon>
+                                svgClass="icon-color-warning"></svg-icon>
                         <svg-icon
                                 *ngIf="rule.status === 'Success'"
                                 src="/assets/images/icons/check.svg"
-                            svgClass="icon-color-success"></svg-icon>
+                                svgClass="icon-color-success"></svg-icon>
                     </div>
                 </div>
             </div>
@@ -93,7 +105,7 @@
                 </div>
 
                 <div
-                        *ngFor="let listItem of getItemsPage(item)"
+                    *ngFor="let listItem of getItemsPage(item)"
                     class="form-field-array-item-container"
                     [attr.index]="item.list.indexOf(listItem)"
                 >
@@ -184,11 +196,12 @@
                             <app-schema-form-view
                                     *ngSwitchDefault
                                     [dryRun]="dryRun"
-                                [private-fields]="hide"
-                                [delimiter-hide]="true"
+                                    [private-fields]="hide"
+                                    [delimiter-hide]="true"
                                     [fields]="item.fields"
-                                [values]="this.values && this.values[item.name]"
-                                [rules]="rules">
+                                    [values]="this.values && this.values[item.name]"
+                                    [rules]="rules"
+                                    [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>
@@ -211,11 +224,12 @@
                             <app-schema-form-view
                                     *ngSwitchDefault
                                     [delimiter-hide]="true"
-                                [private-fields]="hide"
+                                    [private-fields]="hide"
                                     [dryRun]="dryRun"
                                     [fields]="item.fields"
-                                [values]="listItem"
-                                [rules]="rules">
+                                    [values]="listItem"
+                                    [rules]="rules"
+                                    [formulas]="formulas">
                             </app-schema-form-view>
                         </ng-container>
                     </div>

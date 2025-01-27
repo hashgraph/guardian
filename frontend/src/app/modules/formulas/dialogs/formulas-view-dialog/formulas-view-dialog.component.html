@@ -1,0 +1,206 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">View Formula</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+
+
+    <div class="nav-container">
+
+
+        <div *ngIf="nav" class="field-tree">
+            <div *ngFor="let item of nav.data.items" class="field-item" [attr.selected]="item.selected">
+                <div class="field-offset"
+                    [style.width.px]="24*item.lvl"
+                    [style.min-width.px]="24*item.lvl"></div>
+                <div class="field-collapse">
+                    <div
+                        *ngIf="item.expandable"
+                        class="guardian-collapse collapse-24"
+                        [attr.collapsed]="item.collapsed"
+                        (click)="onCollapseNav(item)"
+                    >
+                    </div>
+                </div>
+                <div class="field-container" (click)="onSelectNav(item)">
+                    <div class="field-container__view">{{item.data.view}}</div>
+                    <div class="field-container__entity" *ngIf="item.data.entity">{{item.data.entity}}</div>
+                    <div class="field-container__header">
+                        <span class="field-container__header-type">{{item.data.type}}: </span>
+                        <span class="field-container__header-name">{{item.data.name}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="context">
+
+        <ng-container *ngIf="current && current.type === 'constant'">
+            <div class="current-item-name">Constant</div>
+            <div class="current-item">
+                
+                <div class="guardian-input-container">
+                    <label class="form-label">Name</label>
+                    <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Description</label>
+                    <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div class="guardian-input-container">
+                    <label class="form-label">Value</label>
+                    <input [(ngModel)]="current.value" pInputText type="text" [readonly]="true"/>
+                </div>
+            </div>
+        </ng-container>
+
+
+
+        <ng-container *ngIf="current && current.type === 'variable'">
+            <div class="current-item-name">Variable</div>
+            <div class="current-item">
+                <div class="guardian-input-container">
+                    <label class="form-label">Name</label>
+                    <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Description</label>
+                    <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div *ngIf="current.hasLink" class="guardian-input-container">
+                    <label class="form-label">Link (Input)</label>
+                    <div class="formula-link" (click)="onLink(current)">
+                        <div class="formula-link-value">
+                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+
+
+
+        <ng-container *ngIf="current && current.type === 'formula'">
+            <div class="current-item-name">Formula</div>
+            <div class="current-item">
+                <div class="guardian-input-container">
+                    <label class="form-label">Name</label>
+                    <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Description</label>
+                    <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div *ngIf="current.hasLink" class="guardian-input-container">
+                    <label class="form-label">Link (Output)</label>
+                    <div class="formula-link" (click)="onLink(current)">
+                        <div class="formula-link-value">
+                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Relationships</label>
+                    <div class="formula-relationships">
+                        <div 
+                            *ngFor="let relationship of current.relationshipItems" 
+                            class="formula-relationship" 
+                            (click)="onRelationship(relationship)">
+                            {{relationship.name}}
+                        </div>
+                    </div>
+                </div>
+                <div class="guardian-input-container" style="height: auto">
+                    <label class="form-label">Formula</label>
+                    <math-live 
+                        [(value)]="current.value"
+                        [readonly]="true"
+                    ></math-live>
+                </div>
+            </div>
+        </ng-container>
+
+
+
+        <ng-container *ngIf="current && current.type === 'text'">
+            <div class="current-item-name">Text</div>
+            <div class="current-item">
+                <div class="guardian-input-container">
+                    <label class="form-label">Name</label>
+                    <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Description</label>
+                    <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div *ngIf="current.hasLink" class="guardian-input-container">
+                    <label class="form-label">Link (Output)</label>
+                    <div class="formula-link" (click)="onLink(current)">
+                        <div class="formula-link-value">
+                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Relationships</label>
+                    <div class="formula-relationships">
+                        <div 
+                            *ngFor="let relationship of current.relationshipItems" 
+                            class="formula-relationship"
+                            (click)="onRelationship(relationship)">
+                            {{relationship.name}}
+                        </div>
+                    </div>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Text</label>
+                    <textarea [(ngModel)]="current.value" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+            </div>
+        </ng-container>
+
+
+
+        <ng-container *ngIf="current && current.type === 'schema'">
+            <div class="current-item-name">Schema</div>
+            <div class="current-item">
+                <div class="guardian-input-container">
+                    <label class="form-label">Name</label>
+                    <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Description</label>
+                    <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Field</label>
+                    <textarea [(ngModel)]="current.field" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div class="guardian-input-container">
+                    <label class="form-label">Value</label>
+                    <input [(ngModel)]="current.value" pInputText type="text" [readonly]="true"/>
+                </div>
+            </div>
+        </ng-container>
+
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>

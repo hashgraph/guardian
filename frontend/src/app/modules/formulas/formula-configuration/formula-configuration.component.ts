@@ -10,7 +10,6 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas } from '../models/formulas';
-import { FormulasTree } from '../models/formula-tree';
 
 @Component({
     selector: 'app-formula-configuration',
@@ -209,14 +208,6 @@ export class FormulaConfigurationComponent implements OnInit {
             description: value.description,
             config
         };
-
-
-        const test = new FormulasTree();
-        test.setFormulas([item]);
-        test.setSchemas(this.schemas);
-        test.update();
-        debugger;
-
         this.formulasService
             .updateFormula(item)
             .subscribe((data) => {

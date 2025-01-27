@@ -1,8 +1,8 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { Permissions } from '@guardian/interfaces';
+import { Permissions, UserPermissions } from '@guardian/interfaces';
 import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, FormulaDTO, FormulaRelationshipsDTO, pageHeader } from '#middlewares';
+import { Examples, InternalServerErrorDTO, FormulaDTO, FormulaRelationshipsDTO, pageHeader, FormulasOptionsDTO, FormulasDataDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -409,6 +409,50 @@ export class FormulasApi {
             const owner = new EntityOwner(user);
             const guardian = new Guardians();
             return await guardian.previewFormula(body, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get rules and data
+     */
+    @Post('/data')
+    @Auth()
+    @ApiOperation({
+        summary: '',
+        description: '',
+    })
+    @ApiBody({
+        description: 'Options.',
+        type: FormulasOptionsDTO,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: FormulasDataDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(FormulasDataDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.CREATED)
+    async getSchemaRuleData(
+        @AuthUser() user: IAuthUser,
+        @Body() options: FormulasOptionsDTO
+    ): Promise<FormulasDataDTO> {
+        try {
+            if (!options) {
+                throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            if (!UserPermissions.has(user, Permissions.SCHEMAS_RULE_EXECUTE)) {
+                return null;
+            } else {
+                const owner = new EntityOwner(user);
+                const guardian = new Guardians();
+                return await guardian.getFormulasData(options, owner);
+            }
         } catch (error) {
             await InternalException(error, this.logger);
         }

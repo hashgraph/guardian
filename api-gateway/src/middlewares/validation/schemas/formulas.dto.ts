@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { Examples } from '../examples.js';
-import { IsObject, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
 import { EntityStatus } from '@guardian/interfaces';
+import { VcDocumentDTO } from './document.dto.js';
+import { SchemaDTO } from './schemas.dto.js';
 
 export class FormulaDTO {
     @ApiProperty({
@@ -86,4 +88,80 @@ export class FormulaDTO {
 
 export class FormulaRelationshipsDTO {
 
+}
+
+export class FormulasOptionsDTO {
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    schemaId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    documentId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @IsOptional()
+    @IsString()
+    parentId?: string;
+}
+
+@ApiExtraModels(FormulaDTO, SchemaDTO, VcDocumentDTO)
+export class FormulasDataDTO {
+    @ApiProperty({
+        type: () => FormulaDTO,
+        required: false,
+        isArray: true
+    })
+    @IsOptional()
+    @IsArray()
+    formulas?: FormulaDTO[];
+
+    @ApiProperty({
+        type: () => VcDocumentDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    document?: VcDocumentDTO;
+
+    @ApiProperty({
+        type: () => VcDocumentDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    relationships?: VcDocumentDTO[];
+
+    @ApiProperty({
+        type: () => SchemaDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: SchemaDTO[];
 }

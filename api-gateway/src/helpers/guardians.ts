@@ -50,7 +50,10 @@ import {
     PolicyLabelDocumentRelationshipsDTO,
     PolicyLabelComponentsDTO,
     PolicyLabelFiltersDTO,
-    FormulaDTO
+    FormulaDTO,
+    SchemaRuleOptionsDTO,
+    FormulasOptionsDTO,
+    FormulasDataDTO
 } from '#middlewares';
 
 /**
@@ -3191,7 +3194,7 @@ export class Guardians extends NatsService {
      *
      * @returns Schema Rule Data
      */
-    public async getSchemaRuleData(options: any, owner: IOwner): Promise<SchemaRuleDataDTO> {
+    public async getSchemaRuleData(options: SchemaRuleOptionsDTO, owner: IOwner): Promise<SchemaRuleDataDTO[]> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_RULE_DATA, { options, owner });
     }
 
@@ -3584,5 +3587,17 @@ export class Guardians extends NatsService {
      */
     public async getFormulaRelationships(formulaId: string, owner: IOwner): Promise<boolean> {
         return await this.sendMessage(MessageAPI.GET_FORMULA_RELATIONSHIPS, { formulaId, owner });
+    }
+
+    /**
+     * Get Formulas Data
+     *
+     * @param options
+     * @param owner
+     *
+     * @returns Formulas Data
+     */
+    public async getFormulasData(options: FormulasOptionsDTO, owner: IOwner): Promise<FormulasDataDTO> {
+        return await this.sendMessage(MessageAPI.GET_FORMULAS_DATA, { options, owner });
     }
 }

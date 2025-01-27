@@ -474,4 +474,16 @@ export class Schema implements ISchema {
         }
         return null;
     }
+
+    /**
+     * Create Schema
+     */
+    public static from(response: ISchema): Schema | null {
+        try {
+            return new Schema(response);
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
 }
