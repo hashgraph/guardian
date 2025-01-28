@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, UserPermissions } from '@guardian/interfaces';
+import { IFormulaItem, FormulaItemType, IFormulaLink, Schema, UserPermissions, EntityStatus } from '@guardian/interfaces';
 import { forkJoin, Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { FormulasService } from 'src/app/services/formulas.service';
@@ -135,6 +135,7 @@ export class FormulaConfigurationComponent implements OnInit {
             this.formulasService.getRelationships(this.formulaId),
         ]).subscribe(([item, relationships]) => {
             this.item = item;
+            this.readonly = this.item?.status === EntityStatus.PUBLISHED;
             this.updateRelationships(relationships);
 
             this.overviewForm.setValue({
@@ -290,6 +291,9 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public onLink(item: IFormulaItem) {
+        if (this.readonly) {
+            return;
+        }
         const dialogRef = this.dialogService.open(LinkDialog, {
             showHeader: false,
             width: '800px',
@@ -335,6 +339,9 @@ export class FormulaConfigurationComponent implements OnInit {
     }
 
     public deleteLink(item: IFormulaItem, $event: any) {
+        if (this.readonly) {
+            return;
+        }
         $event.preventDefault();
         $event.stopPropagation();
         item.link = null;

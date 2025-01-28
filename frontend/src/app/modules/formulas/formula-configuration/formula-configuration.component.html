@@ -165,6 +165,7 @@
                                     <label class="form-label">Formula</label>
                                     <math-live 
                                         [(value)]="item.value" 
+                                        [readonly]="readonly"
                                         (keyboard)="onKeyboard($event)"
                                         (focus)="onKeyboardFocus($event)"
                                     ></math-live>
@@ -267,7 +268,7 @@
         <ng-container *ngIf="isActionStep(0)">
             <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
         </ng-container>
-        <ng-container *ngIf="isActionStep(1)">
+        <ng-container *ngIf="isActionStep(1) && !readonly">
             <menu-button [options]="options" [immediately]="false" (action)="addItem($event)"></menu-button>
             <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
         </ng-container>

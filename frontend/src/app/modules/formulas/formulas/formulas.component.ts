@@ -319,7 +319,7 @@ export class FormulasComponent implements OnInit {
     }
 
     public onDelete(item: any) {
-        if (item.status === EntityStatus.ACTIVE) {
+        if (item.status === EntityStatus.PUBLISHED) {
             return;
         }
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {

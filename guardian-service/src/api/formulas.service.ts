@@ -163,8 +163,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.ACTIVE) {
-                    return new MessageError('Item is active.');
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is published.');
                 }
 
                 item.name = formula.name;
@@ -196,8 +196,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.ACTIVE) {
-                    return new MessageError('Item is active.');
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is published.');
                 }
                 await DatabaseServer.removeFormula(item);
                 return new MessageResponse(true);

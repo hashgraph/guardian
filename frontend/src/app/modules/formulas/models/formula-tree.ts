@@ -328,7 +328,7 @@ export class FormulaItem {
         }
     }
 
-    public createNav(): any {
+    public createNav(list: Set<FormulaItem>): any {
         const item: any = {
             view: 'component',
             type: this.type,
@@ -357,7 +357,11 @@ export class FormulaItem {
             });
         }
         for (const ref of this._relationshipItems) {
-            item.children.push(ref.createNav());
+            if (!list.has(ref)) {
+                list.add(ref);
+                const nav = ref.createNav(list);
+                item.children.push(nav);
+            }
         }
         return item;
     }
@@ -569,11 +573,19 @@ export class FormulasTree {
         return tree;
     }
 
-    public static createNav(items: any[]): any {
-        const root = {
+    public static createNav(items: FormulaItem[]): any {
+        const list = new Set<FormulaItem>();
+        const root: any = {
             view: 'root',
             type: 'root',
-            children: items.map((e) => e.createNav())
+            children: []
+        }
+        for (const item of items) {
+            if (!list.has(item)) {
+                list.add(item);
+                const nav = item.createNav(list);
+                root.children.push(nav);
+            }
         }
         return root;
     }
