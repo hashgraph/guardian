@@ -18,7 +18,6 @@ import {
     IToken,
     ITokenInfo,
     IUser,
-    IVC,
     IVCDocument,
     IVPDocument,
     MessageAPI,
@@ -3226,7 +3225,6 @@ export class Guardians extends NatsService {
     public async previewSchemaRule(zip: any, owner: IOwner) {
         return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_RULE_FILE, { zip, owner });
     }
-
 
     /**
      * Get Indexer availability

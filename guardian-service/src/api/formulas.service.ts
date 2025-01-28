@@ -340,7 +340,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse({
                     policy,
                     schemas: all,
-                    formulas: formulas
+                    formulas
                 });
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);

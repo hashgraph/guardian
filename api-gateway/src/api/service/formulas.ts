@@ -250,7 +250,6 @@ export class FormulasApi {
         }
     }
 
-
     /**
      * Get relationships by id
      */

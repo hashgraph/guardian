@@ -1,4 +1,4 @@
-import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, PinoLogger, TopicConfig, VcDocument } from '@guardian/common';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, TopicConfig, VcDocument } from '@guardian/common';
 import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
 import { INotifier } from '../../helpers/notifier.js';
 
@@ -112,7 +112,6 @@ export async function publishFormula(
         .sendMessage(publishMessage);
 
     item.messageId = statMessageResult.getId();
-
 
     const result = await DatabaseServer.updateFormula(item);
     return result;
