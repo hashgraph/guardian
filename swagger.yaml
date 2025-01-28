@@ -17715,9 +17715,18 @@ components:
           type: string
           example: >-
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
         policyId:
           type: string
           example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
         status:
           type: string
           enum:
