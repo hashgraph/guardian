@@ -68,6 +68,13 @@ export class EntitiesService {
             `${this.url}/${entity}/${messageId}`
         ) as any;
     }
+
+    public getRegistryRelationships(messageId: string): Observable<Relationships> {
+        const entity = 'registries';
+        return this.http.get<Relationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
+        ) as any;
+    }
     //#endregion
     //#region REGISTRY USERS
     public getRegistryUsers(
@@ -105,6 +112,13 @@ export class EntitiesService {
         const entity = 'policies';
         return this.http.get<PolicyDetails>(
             `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getPolicyRelationships(messageId: string): Observable<Relationships> {
+        const entity = 'policies';
+        return this.http.get<Relationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
         ) as any;
     }
     //#endregion

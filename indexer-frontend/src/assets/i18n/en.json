@@ -8,7 +8,7 @@
         "registries": "Registries",
         "methodologies": "Methodologies",
         "projects": "Total Documents",
-        "total_issuance": "Total Issuance",
+        "projects_issuance": "Projects Issuance",
         "x": "Date and time",
         "y": "Count"
     },

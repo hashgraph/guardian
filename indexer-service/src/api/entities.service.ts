@@ -397,6 +397,40 @@ export class EntityService {
         }
     }
 
+    @MessagePattern(IndexerMessageAPI.GET_REGISTRY_RELATIONSHIPS)
+    async getRegistryRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.STANDARD_REGISTRY,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
     //#endregion
     //#region REGISTRY USERS
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY_USERS)
@@ -628,6 +662,42 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_POLICY_RELATIONSHIPS)
+    async getPolicyRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
             return new MessageError(error, error.code);
         }
     }
