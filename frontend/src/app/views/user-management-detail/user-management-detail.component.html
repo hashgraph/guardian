@@ -155,6 +155,7 @@
                 <div class="filters-container">
                     <div class="filter-container">
                         <p-dropdown [(ngModel)]="statusFilterValue"
+                                    [appendTo]="'body'"
                                     [options]="statusFilterOption"
                                     (onChange)="onFilter()">
                             <ng-template pTemplate="selectedItem">
