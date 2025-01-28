@@ -12972,18 +12972,20 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Configuration.
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SchemaRuleDataDTO'
+              $ref: '#/components/schemas/SchemaRuleOptionsDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaRuleDataDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaRuleDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13414,6 +13416,39 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/data:
+    post:
+      operationId: FormulasApi_getSchemaRuleData
+      summary: ''
+      description: ''
+      parameters: []
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormulasOptionsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulasDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -17598,6 +17633,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SchemaDTO'
+    SchemaRuleOptionsDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        schemaId:
+          type: string
+          example: '000000000000000000000001'
+        documentId:
+          type: string
+          example: '000000000000000000000001'
+        parentId:
+          type: string
+          example: '000000000000000000000001'
     SchemaRuleDataDTO:
       type: object
       properties:
@@ -17651,6 +17701,38 @@ components:
     FormulaRelationshipsDTO:
       type: object
       properties: {}
+    FormulasDataDTO:
+      type: object
+      properties:
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormulaDTO'
+        document:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    FormulasOptionsDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        schemaId:
+          type: string
+          example: '000000000000000000000001'
+        documentId:
+          type: string
+          example: '000000000000000000000001'
+        parentId:
+          type: string
+          example: '000000000000000000000001'
     PolicyLabelDTO:
       type: object
       properties:
