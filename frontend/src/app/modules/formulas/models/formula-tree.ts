@@ -356,10 +356,12 @@ export class FormulaItem {
                 children: []
             });
         }
+
         for (const ref of this._relationshipItems) {
             if (!list.has(ref)) {
-                list.add(ref);
-                const nav = ref.createNav(list);
+                const newList = new Set<FormulaItem>(list);
+                newList.add(ref);
+                const nav = ref.createNav(newList);
                 item.children.push(nav);
             }
         }
@@ -574,18 +576,16 @@ export class FormulasTree {
     }
 
     public static createNav(items: FormulaItem[]): any {
-        const list = new Set<FormulaItem>();
         const root: any = {
             view: 'root',
             type: 'root',
             children: []
         }
         for (const item of items) {
-            if (!list.has(item)) {
-                list.add(item);
-                const nav = item.createNav(list);
-                root.children.push(nav);
-            }
+            const list = new Set<FormulaItem>();
+            list.add(item);
+            const nav = item.createNav(list);
+            root.children.push(nav);
         }
         return root;
     }
