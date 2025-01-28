@@ -446,7 +446,7 @@ export class MessagesReportBlockComponent implements OnInit {
             message.__issuer = this.getIssuer(message);
             message.__documents = this.getVPDocuments(message);
         }
-        if (message.type === 'VC-Document') {
+        if (['EVC-Document', 'VC-Document'].includes(message.type)) {
             message.__schema = this.searchSchema(message);
             message.__issuer = this.getIssuer(message);
         }
@@ -700,7 +700,10 @@ export class MessagesReportBlockComponent implements OnInit {
     }
 
     private ifVCMessage(message: any): boolean {
-        return message.type === 'VC-Document' && message.__schemaName !== 'MintToken';
+        return (
+            ['EVC-Document', 'VC-Document'].includes(message.type) &&
+            message.__schemaName !== 'MintToken'
+        );
     }
 
     private ifMintMessage(message: any): boolean {
