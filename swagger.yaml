@@ -13429,6 +13429,39 @@ paths:
       tags: *ref_29
       security:
         - bearer: []
+  /formulas/{formulaId}/publish:
+    put:
+      operationId: FormulasApi_publishPolicyLabel
+      summary: Publishes formula.
+      description: Publishes formula for the specified formula ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
   /formulas/data:
     post:
       operationId: FormulasApi_getSchemaRuleData
@@ -17700,7 +17733,17 @@ components:
         - name
     FormulaRelationshipsDTO:
       type: object
-      properties: {}
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormulaDTO'
     FormulasDataDTO:
       type: object
       properties:
