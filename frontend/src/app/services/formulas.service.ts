@@ -100,4 +100,8 @@ export class FormulasService {
     }): Observable<any> {
         return this.http.post<any>(`${this.url}/data`, options);
     }
+
+    public publish(item: any): Observable<any> {
+        return this.http.put<boolean>(`${this.url}/${item.id}/publish`, item);
+    }
 }

@@ -104,8 +104,11 @@ export class FormulasComponent implements OnInit {
         label: 'Published',
         value: EntityStatus.PUBLISHED,
         description: 'Release version into public domain.',
-        disable: (value: string): boolean => {
-            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
+        disable: (value: string, item?: any): boolean => {
+            return (
+                (value !== EntityStatus.DRAFT && value !== EntityStatus.ERROR) ||
+                (item?.policyStatus !== PolicyType.PUBLISH)
+            );
         }
     }, {
         label: 'Error',
@@ -141,7 +144,7 @@ export class FormulasComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
-            this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
+            // this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
                 instanceTopicId: null
@@ -182,7 +185,9 @@ export class FormulasComponent implements OnInit {
                 this.page = page;
                 this.pageCount = count;
                 for (const item of this.page) {
-                    item.policy = this.allPolicies.find((p) => p.id && p.id === item.policyId)?.name;
+                    const policy = this.allPolicies.find((p) => p.id && p.id === item.policyId);
+                    item.policy = policy?.name;
+                    item.policyStatus = policy?.status;
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -345,5 +350,41 @@ export class FormulasComponent implements OnInit {
                     });
             }
         });
+    }
+
+    public onChangeStatus($event: string, row: any): void {
+        this.publish(row)
+    }
+
+    private publish(row: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Publish Formula',
+                text: `Are you sure want to publish formula  (${row.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Publish',
+                    class: 'primary'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Publish') {
+                this.loading = true;
+                this.formulasService
+                    .publish(row)
+                    .subscribe((response) => {
+                        this.loadData();
+                    }, (e) => {
+                        this.loading = false;
+                    });
+            }
+        });
+
     }
 }

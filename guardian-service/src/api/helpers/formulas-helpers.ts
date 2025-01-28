@@ -1,5 +1,6 @@
-import { DatabaseServer, VcDocument } from '@guardian/common';
-import { IOwner } from '@guardian/interfaces';
+import { DatabaseServer, Formula, FormulaImportExport, FormulaMessage, MessageAction, MessageServer, PinoLogger, TopicConfig, VcDocument } from '@guardian/common';
+import { EntityStatus, IOwner, IRootConfig } from '@guardian/interfaces';
+import { INotifier } from '../../helpers/notifier.js';
 
 async function findRelationships(target: VcDocument): Promise<VcDocument[]> {
     if (!target) {
@@ -79,5 +80,40 @@ export async function getFormulasData(
         result.relationships = result.relationships.filter((doc) => checkDocument(doc, policyId, owner));
     }
 
+    return result;
+}
+
+export async function publishFormula(
+    item: Formula,
+    owner: IOwner,
+    root: IRootConfig,
+    notifier: INotifier
+): Promise<Formula> {
+    item.status = EntityStatus.PUBLISHED;
+
+    notifier.completedAndStart('Resolve topic');
+    const topic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(item.policyTopicId), true);
+    const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
+        .setTopicObject(topic);
+
+    notifier.completedAndStart('Publish formula');
+    const zip = await FormulaImportExport.generate(item);
+    const buffer = await zip.generateAsync({
+        type: 'arraybuffer',
+        compression: 'DEFLATE',
+        compressionOptions: {
+            level: 3
+        }
+    });
+
+    const publishMessage = new FormulaMessage(MessageAction.PublishFormula);
+    publishMessage.setDocument(item, buffer);
+    const statMessageResult = await messageServer
+        .sendMessage(publishMessage);
+
+    item.messageId = statMessageResult.getId();
+
+
+    const result = await DatabaseServer.updateFormula(item);
     return result;
 }

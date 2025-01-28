@@ -7,10 +7,12 @@ import {
     PinoLogger,
     Formula,
     FormulaImportExport,
-    PolicyImportExport
+    PolicyImportExport,
+    Users
 } from '@guardian/common';
 import { EntityStatus, IOwner, MessageAPI, PolicyType, SchemaStatus } from '@guardian/interfaces';
-import { getFormulasData } from './helpers/formulas-helpers.js';
+import { getFormulasData, publishFormula } from './helpers/formulas-helpers.js';
+import { emptyNotifier } from '../helpers/notifier.js';
 
 /**
  * Connect to the message broker methods of working with formula.
@@ -37,7 +39,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = formula.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -49,6 +51,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 formula.owner = owner.owner;
                 formula.policyId = policy.id;
                 formula.policyTopicId = policy.topicId;
+                formula.policyInstanceTopicId = policy.instanceTopicId;
                 formula.status = EntityStatus.DRAFT;
                 formula.config = FormulaImportExport.validateConfig(formula.config);
                 const row = await DatabaseServer.createFormula(formula);
@@ -95,6 +98,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     'status',
                     'policyId',
                     'policyTopicId',
+                    'policyInstanceTopicId',
                     'config'
                 ];
                 const query: any = {
@@ -255,7 +259,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -321,7 +325,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
 
                 const policyId = item.policyId;
                 const policy = await DatabaseServer.getPolicyById(policyId);
-                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                if (!policy) {
                     return new MessageError('Item does not exist.');
                 }
 
@@ -417,14 +421,15 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError(`Item is already published.`);
                 }
 
+                const policyId = item.policyId;
+                const policy = await DatabaseServer.getPolicyById(policyId);
+                if (!policy || policy.status !== PolicyType.PUBLISH) {
+                    return new MessageError('The policy has not published yet.');
+                }
 
-
-
-
-
-                
-                return new MessageResponse(item);
-
+                const root = await (new Users()).getHederaAccount(owner.creator);
+                const result = await publishFormula(item, owner, root, emptyNotifier());
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE']);
                 return new MessageError(error);

@@ -61,11 +61,38 @@ export class FormulaDTO {
     @ApiProperty({
         type: 'string',
         required: false,
+        example: Examples.MESSAGE_ID
+    })
+    @IsOptional()
+    @IsString()
+    messageId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
         example: Examples.DB_ID
     })
     @IsOptional()
     @IsString()
     policyId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyTopicId?: string;
+
+    @ApiProperty({
+        type: 'string',
+        required: false,
+        example: Examples.ACCOUNT_ID
+    })
+    @IsOptional()
+    @IsString()
+    policyInstanceTopicId?: string;
 
     @ApiProperty({
         type: 'string',

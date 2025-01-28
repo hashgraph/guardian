@@ -1,4 +1,4 @@
-import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { AccessType, AssignedEntityType, EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DatabaseServer,
@@ -43,6 +43,7 @@ import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from 
 import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { FilterObject } from '@mikro-orm/core';
+import { publishFormula } from '../api/helpers/formulas-helpers.js';
 
 /**
  * Result of publishing
@@ -656,7 +657,8 @@ export class PolicyEngine extends NatsService {
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier
+        notifier: INotifier,
+        schemaMap: Map<string, string>
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
@@ -676,12 +678,8 @@ export class PolicyEngine extends NatsService {
                 root,
                 emptyNotifier()
             );
-            replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
-            replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
-            if (model.projectSchema === schemaIRI) {
-                model.projectSchema = newSchema.iri;
-            }
+            schemaMap.set(schemaIRI, newSchema.iri);
 
             const name = newSchema.name;
             num++;
@@ -690,6 +688,75 @@ export class PolicyEngine extends NatsService {
 
         if (skipped) {
             notifier.info(`Skip published ${skipped}`);
+        }
+        return model;
+    }
+
+    /**
+     * Policy Formulas
+     * @param model
+     * @param user
+     * @param root
+     * @param notifier
+     */
+    public async publishFormulas(
+        model: Policy,
+        user: IOwner,
+        root: IRootConfig,
+        notifier: INotifier,
+        schemaMap: Map<string, string>
+    ): Promise<Policy> {
+        const formulas = await DatabaseServer.getFormulas({ policyTopicId: model.topicId });
+        notifier.info(`Found ${formulas.length} formulas`);
+
+        let num: number = 0;
+        let skipped: number = 0;
+        for (const formula of formulas) {
+            if (formula.status === EntityStatus.PUBLISHED) {
+                skipped++;
+                continue;
+            }
+
+            for (const [oldId, newId] of schemaMap.entries()) {
+                replaceAllEntities(formula.config, ['entityId'], oldId, newId);
+            }
+
+            const newFormula = await publishFormula(
+                formula,
+                user,
+                root,
+                emptyNotifier()
+            );
+
+            const name = newFormula.name;
+            num++;
+            notifier.info(`Schema ${num} (${name || '-'}) published`);
+        }
+
+        if (skipped) {
+            notifier.info(`Skip published ${skipped}`);
+        }
+        return model;
+    }
+
+    /**
+     * Policy Formulas
+     * @param model
+     * @param user
+     * @param root
+     * @param notifier
+     */
+    public async updateSchemaId(
+        model: Policy,
+        schemaMap: Map<string, string>
+    ): Promise<Policy> {
+        for (const [oldId, newId] of schemaMap.entries()) {
+            replaceAllEntities(model.config, SchemaFields, oldId, newId);
+            replaceAllVariables(model.config, 'Schema', oldId, newId);
+
+            if (model.projectSchema === oldId) {
+                model.projectSchema = newId;
+            }
         }
         return model;
     }
@@ -740,9 +807,32 @@ export class PolicyEngine extends NatsService {
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
+        const schemaMap = new Map<string, string>();
         notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier);
+            model = await this.publishSchemas(model, user, root, notifier, schemaMap);
+        } catch (error) {
+            model.status = PolicyType.PUBLISH_ERROR;
+            model.version = '';
+            model.hash = '';
+            model = await DatabaseServer.updatePolicy(model);
+            throw error;
+        }
+
+        notifier.completedAndStart('Update UUID');
+        try {
+            model = await this.updateSchemaId(model, schemaMap);
+        } catch (error) {
+            model.status = PolicyType.PUBLISH_ERROR;
+            model.version = '';
+            model.hash = '';
+            model = await DatabaseServer.updatePolicy(model);
+            throw error;
+        }
+
+        notifier.completedAndStart('Publish formulas');
+        try {
+            model = await this.publishFormulas(model, user, root, notifier, schemaMap);
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';

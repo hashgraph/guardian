@@ -47,6 +47,12 @@ export class Formula extends BaseEntity implements IFormula {
     status?: EntityStatus;
 
     /**
+     * Message id
+     */
+    @Property({ nullable: true })
+    messageId?: string;
+
+    /**
      * Policy id
      */
     @Property({
@@ -63,6 +69,15 @@ export class Formula extends BaseEntity implements IFormula {
         index: true
     })
     policyTopicId?: string;
+
+    /**
+     * Policy Instance Topic id
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    policyInstanceTopicId?: string;
 
     /**
      * Config
