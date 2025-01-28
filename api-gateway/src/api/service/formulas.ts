@@ -255,7 +255,7 @@ export class FormulasApi {
      * Get relationships by id
      */
     @Get('/:formulaId/relationships')
-    @Auth(Permissions.SCHEMAS_RULE_READ)
+    @Auth(Permissions.FORMULAS_FORMULA_CREATE)
     @ApiOperation({
         summary: 'Retrieves Formula relationships.',
         description: 'Retrieves Formula relationships for the specified ID.'
@@ -415,7 +415,53 @@ export class FormulasApi {
     }
 
     /**
-     * Get rules and data
+     * Publish formula
+     */
+    @Put('/:formulaId/publish')
+    @Auth(Permissions.FORMULAS_FORMULA_CREATE)
+    @ApiOperation({
+        summary: 'Publishes formula.',
+        description: 'Publishes formula for the specified formula ID.',
+    })
+    @ApiParam({
+        name: 'formulaId',
+        type: String,
+        description: 'Formula Identifier',
+        required: true,
+        example: Examples.DB_ID
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        type: FormulaDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(FormulaDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async publishPolicyLabel(
+        @AuthUser() user: IAuthUser,
+        @Param('formulaId') formulaId: string
+    ): Promise<FormulaDTO> {
+        try {
+            if (!formulaId) {
+                throw new HttpException('Invalid ID.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            const guardians = new Guardians();
+            const oldItem = await guardians.getFormulaById(formulaId, owner);
+            if (!oldItem) {
+                throw new HttpException('Item not found.', HttpStatus.NOT_FOUND);
+            }
+            return await guardians.publishFormula(formulaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger);
+        }
+    }
+
+    /**
+     * Get formulas and data
      */
     @Post('/data')
     @Auth()
@@ -446,7 +492,7 @@ export class FormulasApi {
             if (!options) {
                 throw new HttpException('Invalid config.', HttpStatus.UNPROCESSABLE_ENTITY);
             }
-            if (!UserPermissions.has(user, Permissions.SCHEMAS_RULE_EXECUTE)) {
+            if (!UserPermissions.has(user, [Permissions.POLICIES_POLICY_EXECUTE, Permissions.POLICIES_POLICY_MANAGE])) {
                 return null;
             } else {
                 const owner = new EntityOwner(user);

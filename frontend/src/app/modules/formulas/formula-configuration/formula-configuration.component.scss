@@ -349,6 +349,46 @@
     padding: 4px 8px !important;
 }
 
+.not-exist {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 56px;
+    top: 50%;
+    transform: translate(0px, -50%);
+    color: var(--color-grey-black-2);
+    font-family: Inter, serif;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 8px;
+    justify-content: center;
+
+    .info-text {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 400;
+        line-height: normal;
+    }
+    
+    .info-text-strong {
+        color: var(--color-grey-5, #848fa9);
+        text-align: center;
+        font-family: Inter, sans-serif;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+}
+
 @media (max-height: 767px) {
     .guardian-page[keyboard="true"] {
         .body-container {

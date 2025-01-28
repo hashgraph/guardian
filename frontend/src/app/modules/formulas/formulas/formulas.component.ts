@@ -104,7 +104,9 @@ export class FormulasComponent implements OnInit {
         label: 'Published',
         value: EntityStatus.PUBLISHED,
         description: 'Release version into public domain.',
-        disable: true
+        disable: (value: string): boolean => {
+            return !(value === EntityStatus.DRAFT || value === EntityStatus.ERROR);
+        }
     }, {
         label: 'Error',
         value: EntityStatus.ERROR,

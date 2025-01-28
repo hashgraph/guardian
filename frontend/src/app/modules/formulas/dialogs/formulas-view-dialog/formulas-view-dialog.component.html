@@ -91,6 +91,13 @@
         <ng-container *ngIf="current && current.type === 'formula'">
             <div class="current-item-name">Formula</div>
             <div class="current-item">
+                <div class="guardian-input-container" style="height: auto">
+                    <label class="form-label">Formula</label>
+                    <math-live 
+                        [(value)]="current.value"
+                        [readonly]="true"
+                    ></math-live>
+                </div>
                 <div class="guardian-input-container">
                     <label class="form-label">Name</label>
                     <input [(ngModel)]="current.name" pInputText type="text" [readonly]="true"/>
@@ -119,13 +126,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="guardian-input-container" style="height: auto">
-                    <label class="form-label">Formula</label>
-                    <math-live 
-                        [(value)]="current.value"
-                        [readonly]="true"
-                    ></math-live>
-                </div>
             </div>
         </ng-container>
 
@@ -141,6 +141,10 @@
                 <div class="guardian-textarea-container">
                     <label class="form-label">Description</label>
                     <textarea [(ngModel)]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                </div>
+                <div class="guardian-textarea-container">
+                    <label class="form-label">Text</label>
+                    <textarea [(ngModel)]="current.value" pTextarea rows="3" [readonly]="true"></textarea>
                 </div>
                 <div *ngIf="current.hasLink" class="guardian-input-container">
                     <label class="form-label">Link (Output)</label>
@@ -161,10 +165,6 @@
                             {{relationship.name}}
                         </div>
                     </div>
-                </div>
-                <div class="guardian-textarea-container">
-                    <label class="form-label">Text</label>
-                    <textarea [(ngModel)]="current.value" pTextarea rows="3" [readonly]="true"></textarea>
                 </div>
             </div>
         </ng-container>

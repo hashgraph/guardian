@@ -4,6 +4,7 @@ import { IsArray, IsBoolean, IsObject, IsOptional, IsString } from 'class-valida
 import { EntityStatus } from '@guardian/interfaces';
 import { VcDocumentDTO } from './document.dto.js';
 import { SchemaDTO } from './schemas.dto.js';
+import { PolicyDTO } from './policies.dto.js';
 
 export class FormulaDTO {
     @ApiProperty({
@@ -86,8 +87,33 @@ export class FormulaDTO {
     config?: any;
 }
 
+@ApiExtraModels(PolicyDTO, SchemaDTO, FormulaDTO)
 export class FormulaRelationshipsDTO {
+    @ApiProperty({
+        type: () => PolicyDTO,
+        required: false,
+    })
+    @IsOptional()
+    @IsObject()
+    policy?: PolicyDTO;
 
+    @ApiProperty({
+        type: () => SchemaDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsArray()
+    schemas?: SchemaDTO[];
+
+    @ApiProperty({
+        type: () => FormulaDTO,
+        required: false,
+        isArray: true,
+    })
+    @IsOptional()
+    @IsObject()
+    formulas?: FormulaDTO[];
 }
 
 export class FormulasOptionsDTO {

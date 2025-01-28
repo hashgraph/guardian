@@ -393,4 +393,41 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 return new MessageError(error);
             }
         });
+
+    /**
+     * Publish Formula
+     *
+     * @param {any} msg - Formula id
+     *
+     * @returns {any} - Formula
+     */
+    ApiResponse(MessageAPI.PUBLISH_FORMULA,
+        async (msg: { formulaId: string, owner: IOwner }) => {
+            try {
+                if (!msg) {
+                    return new MessageError('Invalid parameters.');
+                }
+                const { formulaId, owner } = msg;
+
+                const item = await DatabaseServer.getFormulaById(formulaId);
+                if (!item || item.owner !== owner.owner) {
+                    return new MessageError('Item does not exist.');
+                }
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError(`Item is already published.`);
+                }
+
+
+
+
+
+
+                
+                return new MessageResponse(item);
+
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE']);
+                return new MessageError(error);
+            }
+        });
 }

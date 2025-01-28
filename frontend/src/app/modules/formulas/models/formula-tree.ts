@@ -1,9 +1,128 @@
-import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema } from "@guardian/interfaces";
+import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject } from "@guardian/interfaces";
 
 export interface Link {
     schema: string;
     path: string;
     item: FormulaItem;
+}
+
+export class DocumentItem {
+    private _type: Set<string>;
+    private _map: Map<string, any>;
+
+    constructor(document: IVCDocument | IVPDocument) {
+        this._type = new Set<string>();
+        this._map = new Map<string, any>();
+        this.parsDoc(document);
+    }
+
+    private parsDoc(document: IVCDocument | IVPDocument) {
+        try {
+            if (!document || !document.document) {
+                return;
+            }
+            const json = document.document;
+            if ((json as IVC).credentialSubject) {
+                this.parsVC(json as IVC);
+            } else if ((json as IVP).verifiableCredential) {
+                this.parsVP(json as IVP);
+            } else {
+                return;
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    private addValue(key: string, value: any, prev?: string) {
+        if (value) {
+            const path = prev ? `${prev}.${key}` : key;
+            switch (typeof value) {
+                case 'boolean':
+                case 'number':
+                case 'string': {
+                    const old = this._map.get(path);
+                    if (old) {
+                        if (Array.isArray(old)) {
+                            old.push(value);
+                            this._map.set(path, old);
+                        } else {
+                            this._map.set(path, [old, value]);
+                        }
+                    } else {
+                        this._map.set(path, value);
+                    }
+                    break;
+                }
+                case 'object': {
+                    if (Array.isArray(value)) {
+                        for (const e of value) {
+                            this.parsFields(e, path);
+                        }
+                    } else {
+                        this.parsFields(value, path);
+                    }
+                    break;
+                }
+                default: {
+                    return;
+                }
+            }
+        }
+    }
+
+    private parsFields(json: any, prev?: string) {
+        if (json) {
+            for (const [key, value] of Object.entries(json)) {
+                this.addValue(key, value, prev);
+            }
+        }
+    }
+
+    private parsCredentialSubject(cs: any) {
+        if (cs) {
+            this._type.add(cs.type);
+            this.parsFields(cs);
+        }
+    }
+
+    private parsVC(vc: IVC) {
+        if (vc && vc.credentialSubject) {
+            if (Array.isArray(vc.credentialSubject)) {
+                for (const cs of vc.credentialSubject) {
+                    this.parsCredentialSubject(cs);
+                }
+            } else {
+                this.parsCredentialSubject(vc.credentialSubject);
+            }
+        }
+    }
+
+    private parsVP(vp: IVP) {
+        if (vp && vp.verifiableCredential) {
+            if (Array.isArray(vp.verifiableCredential)) {
+                for (const vc of vp.verifiableCredential) {
+                    this.parsVC(vc);
+                }
+            } else {
+                this.parsVC(vp.verifiableCredential);
+            }
+        }
+    }
+
+    public has(type?: string): boolean {
+        if (type) {
+            return this._type.has(type);
+        }
+        return false;
+    }
+
+    public get(path?: string): any {
+        if (path) {
+            return this._map.get(path);
+        }
+        return null;
+    }
 }
 
 export class SchemaItem {
@@ -12,10 +131,14 @@ export class SchemaItem {
     private _value: any;
     private _schema: Schema;
     private _field: SchemaField;
+    private _type: string | undefined;
+    private _path: string | undefined;
 
     constructor(schema: Schema, field: SchemaField) {
         this._schema = schema;
         this._field = field;
+        this._type = schema.type;
+        this._path = field.path;
     }
 
     public get name() {
@@ -32,6 +155,17 @@ export class SchemaItem {
 
     public get value() {
         return this._value;
+    }
+
+    public setDocuments(documents: DocumentItem[]) {
+        for (const doc of documents) {
+            if (doc.has(this._type)) {
+                this._value = doc.get(this._path);
+                if (Array.isArray(this._value)) {
+                    this._value = `[${this._value.join(',')}]`;
+                }
+            }
+        }
     }
 }
 
@@ -175,8 +309,10 @@ export class FormulaItem {
         }
     }
 
-    public setDocuments(documents: any[]) {
-
+    public setDocuments(documents: DocumentItem[]) {
+        if (this._schemaLink && this._linkItem) {
+            (this._linkItem as SchemaItem).setDocuments(documents);
+        }
     }
 
     public createNav(): any {
@@ -268,7 +404,7 @@ export class FormulaTree {
         }
     }
 
-    public setDocuments(documents: any[]) {
+    public setDocuments(documents: DocumentItem[]) {
         for (const item of this._items) {
             item.setDocuments(documents);
         }
@@ -332,9 +468,20 @@ export class FormulasTree {
         }
     }
 
-    public setDocuments(documents: any[]) {
+    public setDocuments(documents: (IVCDocument | IVPDocument) | (IVCDocument | IVPDocument)[]) {
+        const _documents: DocumentItem[] = [];
+        if (Array.isArray(documents)) {
+            for (const doc of documents) {
+                const _doc = new DocumentItem(doc);
+                _documents.push(_doc);
+            }
+        } else if (documents) {
+            const _doc = new DocumentItem(documents);
+            _documents.push(_doc);
+        }
+
         for (const item of this.items) {
-            item.setDocuments(documents);
+            item.setDocuments(_documents);
         }
     }
 

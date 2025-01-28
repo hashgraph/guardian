@@ -163,6 +163,7 @@ export class DocumentViewComponent implements OnInit {
             this.rules = new DocumentValidators(rules);
             this.rulesResults = this.rules.validateVC(this.schemaId, this.document);
             this.formulas = FormulasTree.from(formulas);
+            this.formulas?.setDocuments(this.document);
             this.formulasResults = this.formulas?.getFields(this.schemaId);
 
             setTimeout(() => {

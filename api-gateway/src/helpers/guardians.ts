@@ -53,7 +53,8 @@ import {
     FormulaDTO,
     SchemaRuleOptionsDTO,
     FormulasOptionsDTO,
-    FormulasDataDTO
+    FormulasDataDTO,
+    FormulaRelationshipsDTO
 } from '#middlewares';
 
 /**
@@ -3585,7 +3586,7 @@ export class Guardians extends NatsService {
      *
      * @returns Operation Success
      */
-    public async getFormulaRelationships(formulaId: string, owner: IOwner): Promise<boolean> {
+    public async getFormulaRelationships(formulaId: string, owner: IOwner): Promise<FormulaRelationshipsDTO> {
         return await this.sendMessage(MessageAPI.GET_FORMULA_RELATIONSHIPS, { formulaId, owner });
     }
 
@@ -3599,5 +3600,17 @@ export class Guardians extends NatsService {
      */
     public async getFormulasData(options: FormulasOptionsDTO, owner: IOwner): Promise<FormulasDataDTO> {
         return await this.sendMessage(MessageAPI.GET_FORMULAS_DATA, { options, owner });
+    }
+
+    /**
+     * Publish Formula
+     *
+     * @param formulaId
+     * @param owner
+     *
+     * @returns statistic
+     */
+    public async publishFormula(formulaId: string, owner: IOwner): Promise<FormulaDTO> {
+        return await this.sendMessage(MessageAPI.PUBLISH_FORMULA, { formulaId, owner });
     }
 }

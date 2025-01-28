@@ -161,6 +161,14 @@
                             </ng-container>
     
                             <ng-container *ngIf="item.type === 'formula'">
+                                <div class="guardian-input-container" style="height: auto">
+                                    <label class="form-label">Formula</label>
+                                    <math-live 
+                                        [(value)]="item.value" 
+                                        (keyboard)="onKeyboard($event)"
+                                        (focus)="onKeyboardFocus($event)"
+                                    ></math-live>
+                                </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label">Link (Output)</label>
                                     <div class="formula-link" (click)="onLink(item)">
@@ -179,7 +187,7 @@
                                     <label class="form-label">Relationships</label>
                                     <p-multiSelect
                                         [(ngModel)]="item.relationships"
-                                        [options]="config.data"
+                                        [options]="config.all"
                                         class="guardian-multiselect relationships-multiselect"
                                         appendTo="body"
                                         optionLabel="name"
@@ -199,17 +207,12 @@
                                         </ng-template>
                                     </p-multiSelect>
                                 </div>
-
-                                <div class="guardian-input-container" style="height: auto">
-                                    <label class="form-label">Formula</label>
-                                    <math-live 
-                                        [(value)]="item.value" 
-                                        (keyboard)="onKeyboard($event)"
-                                        (focus)="onKeyboardFocus($event)"
-                                    ></math-live>
-                                </div>
                             </ng-container>
                             <ng-container *ngIf="item.type === 'text'">
+                                <div class="guardian-textarea-container">
+                                    <label class="form-label">Text</label>
+                                    <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
+                                </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label">Link (Output)</label>
                                     <div class="formula-link" (click)="onLink(item)">
@@ -226,15 +229,36 @@
                                 </div>
                                 <div class="guardian-input-container">
                                     <label class="form-label">Relationships</label>
-                                    <input [(ngModel)]="item.relationships" pInputText type="text" [readonly]="readonly"/>
-                                </div>
-                                <div class="guardian-textarea-container">
-                                    <label class="form-label">Text</label>
-                                    <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
+                                    <p-multiSelect
+                                        [(ngModel)]="item.relationships"
+                                        [options]="config.all"
+                                        class="guardian-multiselect relationships-multiselect"
+                                        appendTo="body"
+                                        optionLabel="name"
+                                        optionValue="uuid"
+                                        panelStyleClass="guardian-multiselect-panel"
+                                        [readonly]="readonly">
+                                        <ng-template let-value pTemplate="selectedItems">
+                                            <div *ngFor="let option of value" class="multiselect-selected-value">
+                                                {{ option.name || 'N/A' }}
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div class="multiselect-option-value">
+                                                <span>{{ option.name || 'N/A' }}</span>
+                                                <span *ngIf="option.description"> - {{ option.description }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
                                 </div>
                             </ng-container>
                         </div>
                     </div>
+                </div>
+                <div *ngIf="!config.data.length" class="not-exist">
+                    <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="icon-color-close"></svg-icon>
+                    <span class="info-text-strong">There are no components added yet</span>
+                    <span class="info-text">Please add a new component to see the data</span>
                 </div>
             </div>
         </ng-container>

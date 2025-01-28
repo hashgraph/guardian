@@ -15,6 +15,10 @@ export class Formulas {
         this.filterMap.set(FormulaItemType.Text, true);
     }
 
+    public get all() {
+        return this.items;
+    }
+
     private create(type: FormulaItemType): IFormulaItem {
         const item: IFormulaItem = {
             uuid: GenerateUUIDv4(),

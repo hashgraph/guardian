@@ -681,6 +681,10 @@ svg-icon.svg-icon-32 {
 }
 
 .ML__keyboard {
+    // --_keycap-background: #E1E7EF !important;
+    // --_keycap-background-hover: #d6dbe3 !important;
+    // --_background: #f4f8fc !important;
+
     &::before {
         position: absolute;
         content: "";
@@ -695,5 +699,11 @@ svg-icon.svg-icon-32 {
     .MLK__backdrop {
         width: calc(100% - var(--header-width));
         margin-left: var(--header-width);
+
+        // background: #EFF3F7;
+    }
+
+    .MLK__keycap {
+        border: 1px solid #cbcbcb;
     }
 }
