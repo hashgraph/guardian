@@ -36,7 +36,20 @@ export class DocumentItem {
 
     private addValue(key: string, value: any, prev?: string) {
         if (value) {
-            const path = prev ? `${prev}.${key}` : key;
+            let path: string;
+            if (prev) {
+                if (key) {
+                    path = `${prev}.${key}`;
+                } else {
+                    path = `${prev}`;
+                }
+            } else {
+                if (key) {
+                    path = `${key}`;
+                } else {
+                    path = '';
+                }
+            }
             switch (typeof value) {
                 case 'boolean':
                 case 'number':
@@ -57,7 +70,7 @@ export class DocumentItem {
                 case 'object': {
                     if (Array.isArray(value)) {
                         for (const e of value) {
-                            this.parsFields(e, path);
+                            this.addValue('', e, path);
                         }
                     } else {
                         this.parsFields(value, path);
