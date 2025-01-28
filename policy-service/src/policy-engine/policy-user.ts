@@ -277,7 +277,7 @@ export class UserCredentials {
         return await this.loadSubDidDocument(ref, this._did);
     }
 
-    public async loadSubDidDocument(ref: AnyBlockType, subDid: string): Promise<HederaDidDocument> {
+    public async loadSubDidDocument(ref: AnyBlockType, subDid: string, force: boolean = false): Promise<HederaDidDocument> {
         const virtualUser = this._dryRun && subDid !== this._owner;
 
         let row: DidDocument;
@@ -321,7 +321,7 @@ export class UserCredentials {
             const hederaPrivateKey = await wallet.getUserKey(walletToken, KeyType.KEY, subDid);
             //Ed25519Signature2018
             if (Ed25519Signature2018) {
-                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018);
+                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, Ed25519Signature2018, force);
                 document.setPrivateKey(Ed25519Signature2018, privateKey);
             } else {
                 const { id, privateKey } = await HederaEd25519Method.generateKeyPair(subDid, hederaPrivateKey);
@@ -329,7 +329,7 @@ export class UserCredentials {
             }
             //BbsBlsSignature2020
             if (BbsBlsSignature2020) {
-                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020);
+                const privateKey = await wallet.getUserKey(walletToken, KeyType.DID_KEYS, BbsBlsSignature2020, force);
                 document.setPrivateKey(BbsBlsSignature2020, privateKey);
             } else {
                 const { id, privateKey } = await HederaBBSMethod.generateKeyPair(subDid, hederaPrivateKey);
