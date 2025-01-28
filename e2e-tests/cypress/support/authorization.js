@@ -1,4 +1,3 @@
-const optionKey = "option";
 import { METHOD } from "../support/api/api-const";
 import API from "../support/ApiUrls";
 let refreshToken;

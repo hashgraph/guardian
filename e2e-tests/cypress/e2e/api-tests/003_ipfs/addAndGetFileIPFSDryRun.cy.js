@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
+context("IPFS", { tags: ['ipfs', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let cid, policyId;
 
@@ -36,7 +36,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
             cy.fixture("testJsonDR.json").then((file) => {
                 cy.request({
                     method: METHOD.POST,
-                    url: API.ApiServer + API.IPFSFile + API.DryRun + "/" + policyId,
+                    url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
                     body: file,
                     headers: {
                         "content-type": "binary/octet-stream",
@@ -58,7 +58,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
     it("Add file from ipfs for dry run mode without auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + "/" + policyId,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNAUTHORIZED);
@@ -68,7 +68,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
     it("Add file from ipfs for dry run mode with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + "/" + policyId,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             headers: {
                 authorization: "Bearer wqe",
             },
@@ -81,7 +81,7 @@ context("IPFS", { tags: ['ipfs', 'secondPool'] }, () => {
     it("Add file from ipfs for dry run mode with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.POST,
-            url: API.ApiServer + API.IPFSFile + API.DryRun + "/" + policyId,
+            url: API.ApiServer + API.IPFSFile + API.DryRun + policyId,
             headers: {
                 authorization: "",
             },

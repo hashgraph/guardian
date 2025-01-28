@@ -3,7 +3,7 @@ import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
 
-context('Profiles', { tags: ['profiles', 'thirdPool'] }, () => {
+context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let did
 
