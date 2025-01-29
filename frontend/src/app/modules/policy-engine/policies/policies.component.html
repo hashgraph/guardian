@@ -27,7 +27,9 @@
                     appendTo="body"
                     class="tags-dropdown"
                     formControlName="tag"
-                    placeholder="Tags"></p-dropdown>
+                    placeholder="Tags"
+                    [appendTo]="'body'"
+                ></p-dropdown>
                 <button (click)="applyFilters()"
                         class="button ml-8"
                         label="Apply Filters"

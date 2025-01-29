@@ -1,9 +1,9 @@
-import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { API_BASE_URL } from './api';
+import { Injectable } from '@angular/core';
 import { MigrationConfig, PolicyToolMetadata } from '@guardian/interfaces';
+import { Observable } from 'rxjs';
 import { headersV2 } from '../constants';
+import { API_BASE_URL } from './api';
 
 /**
  * Services for working from policy and separate blocks.
@@ -223,6 +223,18 @@ export class PolicyEngineService {
 
     public restartDryRun(policyId: string): Observable<any> {
         return this.http.post<any>(`${this.url}/${policyId}/dry-run/restart`, null);
+    }
+
+    public createSavepoint(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/savepoint/create`, null);
+    }
+
+    public deleteSavepoint(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/savepoint/delete`, null);
+    }
+
+    public restoreSavepoint(policyId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/${policyId}/savepoint/restore`, null);
     }
 
     public loadDocuments(

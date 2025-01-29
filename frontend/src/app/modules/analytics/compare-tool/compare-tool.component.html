@@ -120,7 +120,7 @@
             </div>
         </p-accordionTab>
 
-        <p-accordionTab header="Tool Blocks" *ngIf="blocks">
+        <p-accordionTab header="Tool Blocks" *ngIf="blocks" [selected]="true">
             <div class="merge-container">
                 <div class="legend"
                      [attr.type-1]="_type1"
@@ -230,27 +230,36 @@
                     </div>
                 </div>
 
-                <div *ngIf="type==='table'" class="merge-table" [attr.open]="_panelOpenState">
+                <div *ngIf="type === 'table'" class="merge-table" [attr.open]="_panelOpenState">
                     <div class="merge-table-content">
-                        <table *ngIf="blocks" class="custom-table">
-                            <thead>
-                            <tr>
-                                <th *ngFor="let column of columns">{{ column.label }}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr *ngFor="let row of blocks">
-                                <td *ngFor="let column of columns">
-                <span class="table-value"
-                      [title]="row.data[column.name]"
-                      [attr.value]="row.data[column.name]"
-                      [attr.display-type]="column.display">
-                    {{ row.data[column.name] }}
-                </span>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                        <p-table *ngIf="blocks" [value]="blocks" class="table mat-table">
+                            <ng-template pTemplate="header">
+                                <tr class="mat-header-row">
+                                    <ng-container *ngFor="let column of columns">
+                                        <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
+                                            {{ column.label }}
+                                        </th>
+                                    </ng-container>
+                                </tr>
+                            </ng-template>
+
+                            <ng-template pTemplate="body" let-row>
+                                <tr class="mat-row" [attr.type]="row.data.type" [attr.rate]="row.data.total_rate">
+                                    <ng-container *ngFor="let column of columns">
+                                        <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
+                                            <ng-container *ngIf="!isObject(row.data[column.name])">
+                                <span class="table-value"
+                                      [title]="row.data[column.name]"
+                                      [attr.value]="row.data[column.name]"
+                                      [attr.display-type]="column.display">
+                                    {{ row.data[column.name] }}
+                                </span>
+                                            </ng-container>
+                                        </td>
+                                    </ng-container>
+                                </tr>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </div>
 

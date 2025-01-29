@@ -20,7 +20,8 @@
         <label class="p-field-label">* Token Type</label>
         <p-dropdown formControlName="tokenType" [disabled]="readonly"
                     [options]="tokenTypes" optionLabel="name" optionValue="value"
-                    (onChange)="onChangeType()">
+                    (onChange)="onChangeType()"
+                    [appendTo]="'body'">
             <ng-template let-tokenType pTemplate="item">
                 <div class="dropdown-item">{{ tokenType.name }}</div>
             </ng-template>
@@ -61,7 +62,7 @@
             <div class="key-description">
                 The contract which can call wipe for token. If empty, wipe key will be used.
             </div>
-            <p-dropdown class="wipe-contract-dropdown" [disabled]="readonly" formControlName="wipeContractId"
+            <p-dropdown class="wipe-contract-dropdown" [appendTo]="'body'" [disabled]="readonly" formControlName="wipeContractId"
                         [options]="displayContracts" optionLabel="contractId" optionValue="contractId"
                         [showClear]="true" placeholder="Select wipe contract" emptyMessage="There are no wipe contracts">
             </p-dropdown>

@@ -24,7 +24,9 @@
                         class="policy-dropdown"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Policy"></p-dropdown>
+                        placeholder="Policy"
+                        [appendTo]="'body'"
+                    ></p-dropdown>
                 </ng-container>
                 <ng-container *ngIf="isTool">
                     <p-dropdown
@@ -35,7 +37,9 @@
                         class="policy-dropdown"
                         optionLabel="name"
                         optionValue="topicId"
-                        placeholder="Tool"></p-dropdown>
+                        placeholder="Tool"
+                        [appendTo]="'body'"
+                    ></p-dropdown>
                 </ng-container>
             </div>
             <div class="schema-actions-buttons-container">

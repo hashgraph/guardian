@@ -122,6 +122,7 @@
                             [showClear]="false"
                             appendTo="body"
                             placeholder="Not selected"
+                            [appendTo]="'body'"
                             panelStyleClass="guardian-dropdown-panel">
                             <ng-template pTemplate="footer">
                                 <div *ngIf="item.fileUploading" class="guardian-loading">
@@ -266,6 +267,7 @@
                                     [options]="item.enumValues"
                                     [showClear]="false"
                                     appendTo="body"
+                                    [appendTo]="'body'"
                                     placeholder="Not selected"
                                     panelStyleClass="guardian-dropdown-panel">
                                     <ng-template pTemplate="footer">
