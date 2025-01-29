@@ -1,5 +1,6 @@
 import { DetailsActivity } from './details.interface.js';
 import { Message } from '../message.interface.js';
+import { ISchema } from './schema.details.js';
 
 /**
  * Formula options
@@ -52,6 +53,29 @@ export interface FormulaAnalytics {
      */
     config?: any;
 }
+
+/**
+ * Formula Relationships
+ */
+export interface FormulaRelationships {
+    /**
+     * Message ID
+     */
+    id: string;
+    /**
+     * Formula
+     */
+    item?: Formula;
+    /**
+     * Schemas
+     */
+    schemas?: ISchema[];
+    /**
+     * Formulas
+     */
+    formulas?: Formula[];
+}
+
 
 /**
  * Formula activity

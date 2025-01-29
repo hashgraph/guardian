@@ -57,7 +57,8 @@ import {
     LabelDetails,
     LabelDocumentDetails,
     Formula,
-    FormulaDetails
+    FormulaDetails,
+    FormulaRelationships
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -139,6 +140,20 @@ async function loadDocuments(
                 result.documents.push(file);
             }
         }
+        return result;
+    } catch (error) {
+        return row;
+    }
+}
+
+async function loadSchemaDocument(row: Message): Promise<Message> {
+    try {
+        const result = { ...row };
+        if (!result?.files?.length) {
+            return result;
+        }
+        const file = await DataBaseHelper.loadFile(result.files[0]);
+        result.documents = [file];
         return result;
     } catch (error) {
         return row;
@@ -1309,6 +1324,63 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_FORMULA_RELATIONSHIPS)
+    async getFormulaRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<FormulaRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const schemas = await em.find(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+
+            for (let i = 0; i < schemas.length; i++) {
+                schemas[i] = await loadSchemaDocument(schemas[i]);
+            }
+  
+            const formulas = await em.find(Message, {
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula,
+                topicId: row.topicId,
+            } as any);
+
+            if (!item) {
+                return new MessageResponse<FormulaRelationships>({
+                    id: messageId,
+                    schemas,
+                    formulas
+                });
+            }
+
+            return new MessageResponse<FormulaRelationships>({
+                id: messageId,
+                item,
+                schemas,
+                formulas
+            });
+        } catch (error) {
+            console.log(error);
             return new MessageError(error, error.code);
         }
     }

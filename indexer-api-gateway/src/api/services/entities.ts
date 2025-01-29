@@ -60,7 +60,8 @@ import {
     LabelDetailsDTO,
     LabelDocumentDetailsDTO,
     FormulaDetailsDTO,
-    FormulaDTO
+    FormulaDTO,
+    FormulaRelationshipsDTO
 } from '#dto';
 
 @Controller('entities')
@@ -1125,6 +1126,7 @@ export class EntityApi extends ApiClient {
 
 
     //#region FORMULAS
+    @Get('/formulas')
     @ApiOperation({
         summary: 'Get formulas',
         description: 'Returns formulas',
@@ -1135,7 +1137,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/formulas')
     @ApiQuery({
         name: 'keywords',
         description: 'Keywords to search',
@@ -1181,6 +1182,7 @@ export class EntityApi extends ApiClient {
         });
     }
 
+    @Get('/formulas/:messageId')
     @ApiOperation({
         summary: 'Get formula',
         description: 'Returns formula',
@@ -1193,7 +1195,6 @@ export class EntityApi extends ApiClient {
         description: 'Internal server error',
         type: InternalServerErrorDTO
     })
-    @Get('/formulas/:messageId')
     @ApiParam({
         name: 'messageId',
         description: 'Message identifier',
@@ -1202,6 +1203,31 @@ export class EntityApi extends ApiClient {
     @HttpCode(HttpStatus.OK)
     async getFormula(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_FORMULA, {
+            messageId,
+        });
+    }
+
+    @Get('/formulas/:messageId/relationships')
+    @ApiOperation({
+        summary: 'Get formula relationships',
+        description: 'Returns formula relationships',
+    })
+    @ApiOkResponse({
+        description: 'Formula relationships',
+        type: FormulaRelationshipsDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getFormulaRelationships(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_FORMULA_RELATIONSHIPS, {
             messageId,
         });
     }

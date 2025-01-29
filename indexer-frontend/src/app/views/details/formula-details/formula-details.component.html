@@ -3,7 +3,7 @@
         <div class="header">
             <h1>{{ 'details.formula.header' | transloco }} {{id}}</h1>
         </div>
-        @if (loading) {
+        @if (loading || subLoading) {
             <div class="loading">
                 <p-progressSpinner styleClass="custom-spinner" ariaLabel="loading" />
             </div>
@@ -16,7 +16,11 @@
                         </p-tabPanel>
 
                         <p-tabPanel [header]="'details.formula.tabs.view' | transloco">
-                            <app-formula-view [data]="target.analytics?.config"></app-formula-view>
+                            @if (formulaData) {
+                                <app-formula-view 
+                                    [data]="formulaData"
+                                ></app-formula-view>
+                            }
                         </p-tabPanel>
 
                         <p-tabPanel [header]="'details.formula.tabs.document' | transloco">

@@ -42,6 +42,7 @@ import {
     LabelDetails,
     Formula,
     FormulaDetails,
+    FormulaRelationships,
 } from '@indexer/interfaces';
 
 /**
@@ -395,6 +396,13 @@ export class EntitiesService {
         const entity = 'formulas';
         return this.http.get<FormulaDetails>(
             `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
+
+    public getFormulaRelationships(messageId: string): Observable<FormulaRelationships> {
+        const entity = 'formulas';
+        return this.http.get<FormulaRelationships>(
+            `${this.url}/${entity}/${messageId}/relationships`
         ) as any;
     }
     //#endregion

@@ -136,3 +136,28 @@ export class FormulaDetailsDTO
     })
     declare activity?: FormulaActivityDTO;
 }
+
+export class FormulaRelationshipsDTO {
+    @ApiProperty({
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    id: string;
+
+    @ApiProperty({
+        type: MessageDTO,
+    })
+    item?: MessageDTO;
+
+    @ApiProperty({
+        type: MessageDTO,
+        isArray: true
+    })
+    schemas?: MessageDTO[];
+
+    @ApiProperty({
+        type: MessageDTO,
+        isArray: true
+    })
+    formulas?: MessageDTO[];
+}

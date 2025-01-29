@@ -47,6 +47,8 @@ import { FormulaViewComponent } from '@components/formula-view/formula-view.comp
     ],
 })
 export class FormulaDetailsComponent extends BaseDetailsComponent {
+    public subLoading: boolean = false;
+
     tabs: any[] = ['overview', 'view', 'document', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
@@ -72,6 +74,7 @@ export class FormulaDetailsComponent extends BaseDetailsComponent {
             link: '/policies',
         },
     ];
+    formulaData: any;
 
     constructor(
         entitiesService: EntitiesService,
@@ -127,6 +130,19 @@ export class FormulaDetailsComponent extends BaseDetailsComponent {
         }
     }
 
+    protected override onNavigate(): void {
+        if (this.id && this.tab === 'view') {
+            this.subLoading = true;
+            this.entitiesService.getFormulaRelationships(this.id).subscribe({
+                next: (result) => {
+                    this.formulaData = result;
+                },
+                complete: () => (this.subLoading = false),
+            });
+        }
+    }
+
+
     protected getJson(item: any): string {
         try {
             return JSON.stringify(item, null, 4);
@@ -152,6 +168,4 @@ export class FormulaDetailsComponent extends BaseDetailsComponent {
             return 'raw';
         }
     }
-
-    protected override onNavigate(): void { }
 }

@@ -4,12 +4,13 @@ import { CheckboxButton } from '@components/checkbox-button/checkbox-button.comp
 import { MathLiveComponent } from '@components/math-live/math-live.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { Formulas } from '../../models/formulas';
+import { Schema } from '@indexer/interfaces';
 
 @Component({
     selector: 'app-formula-view',
     standalone: true,
     imports: [
-        TranslocoModule, 
+        TranslocoModule,
         RouterModule,
         CheckboxButton,
         MathLiveComponent
@@ -33,9 +34,63 @@ export class FormulaViewComponent {
     private schemasFieldMap: Map<string, string> = new Map<string, string>();
     private formulasMap: Map<string, string> = new Map<string, string>();
     private formulasFieldMap: Map<string, string> = new Map<string, string>();
+    private variableMap: Map<string, string> = new Map<string, string>();
 
     ngOnChanges() {
-        this.config.fromData(this.data?.config);
+        const item = this.data.item;
+        const schemas = this.data.schemas;
+        const formulas = this.data.formulas;
+
+        if (item?.analytics?.config) {
+            this.config.fromData(item.analytics.config.config);
+        }
+        if (schemas) {
+            this.schemasMap.clear();
+            this.schemasFieldMap.clear();
+            for (const message of schemas) {
+                const schema = this.getSchemaDocument(message);
+                if (schema) {
+                    this.schemasMap.set(String(schema.iri), String(schema.name));
+                    const fields = schema.getFields();
+                    for (const field of fields) {
+                        this.schemasFieldMap.set(`${schema.iri}.${field.path}`, String(field.description));
+                    }
+                }
+            }
+        }
+        if (formulas) {
+            for (const message of formulas) {
+                const formula = this.getFormulaDocument(message);
+                if (formula) {
+                    this.formulasMap.set(String(formula.uuid), String(formula.name));
+                    const fields = formula?.config?.formulas || [];
+                    for (const field of fields) {
+                        this.formulasFieldMap.set(`${formula.uuid}.${field.uuid}`, String(field.name));
+                    }
+                }
+            }
+        }
+        this.variableMap.clear();
+        for (const v of this.config.all) {
+            this.variableMap.set(v.uuid, v.name);
+        }
+    }
+
+    public getSchemaDocument(message: any) {
+        try {
+            const schema = new Schema(message.documents[0], '');
+            return schema;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    public getFormulaDocument(message: any) {
+        try {
+            return message?.analytics?.config;
+        } catch (error) {
+            return null;
+        }
     }
 
     public onFilter() {
@@ -43,8 +98,6 @@ export class FormulaViewComponent {
     }
 
     public getEntityName(link: any): string {
-        return link.entityId;
-
         if (link.type === 'schema') {
             return this.schemasMap.get(link.entityId) || '';
         }
@@ -55,8 +108,6 @@ export class FormulaViewComponent {
     }
 
     public getFieldName(link: any): string {
-        return link.item;
-
         if (link.type === 'schema') {
             return this.schemasFieldMap.get(`${link.entityId}.${link.item}`) || '';
         }
@@ -71,6 +122,6 @@ export class FormulaViewComponent {
     }
 
     public getRelationshipName(relationship: any) {
-        return relationship;
+        return this.variableMap.get(relationship);
     }
 }
