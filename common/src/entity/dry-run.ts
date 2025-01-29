@@ -1,10 +1,10 @@
 import { ApproveStatus, DocumentSignature, DocumentStatus, GenerateUUIDv4, GroupAccessType, GroupRelationshipType, SchemaEntity } from '@guardian/interfaces';
-import { Entity, Property, BeforeCreate, BeforeUpdate, OnLoad, AfterDelete, AfterCreate, AfterUpdate, Index } from '@mikro-orm/core';
-import { BaseEntity } from '../models/index.js';
+import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, Index, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { DataBaseHelper } from '../helpers/index.js';
 import ObjGet from 'lodash.get';
 import ObjSet from 'lodash.set';
+import { DataBaseHelper } from '../helpers/index.js';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * DryRun document
@@ -36,6 +36,13 @@ export class DryRun extends BaseEntity {
      */
     @Property({ nullable: true })
     dryRunId?: string;
+
+    /**
+     * Savepoint
+     * @type {boolean}
+     */
+    @Property({nullable: true})
+    savepoint?: boolean;
 
     /**
      * Class
