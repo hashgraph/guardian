@@ -81,17 +81,20 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param dryRunId
      * @param dryRunClass
      * @param systemMode
+     * @param markForSavepoint
      */
     private static addDryRunId(
         item: unknown | unknown[],
         dryRunId: string,
         dryRunClass: string,
-        systemMode: boolean
+        systemMode: boolean,
+        markForSavepoint?: boolean
     ): unknown | unknown[] {
         const getExtendedItem = (extendedItem: unknown & IAddDryRunIdItem) => {
             extendedItem.systemMode = systemMode;
             extendedItem.dryRunId = dryRunId;
             extendedItem.dryRunClass = dryRunClass;
+            extendedItem.savepoint = markForSavepoint;
         };
 
         if (Array.isArray(item)) {
@@ -1003,6 +1006,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @param hederaAccountKey
      * @param active
      *
+     * @param systemMode
+     * @param markedForSavepoint
      * @virtual
      */
     public static async createVirtualUser(
@@ -1012,14 +1017,15 @@ export class DatabaseServer extends AbstractDatabaseServer {
         hederaAccountId: string,
         hederaAccountKey: string,
         active: boolean,
-        systemMode?: boolean
+        systemMode?: boolean,
+        markedForSavepoint?: boolean
     ): Promise<void> {
         await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
                                                                              did,
                                                                              username,
                                                                              hederaAccountId,
                                                                              active
-                                                                         }, policyId, 'VirtualUsers', !!systemMode));
+                                                                         }, policyId, 'VirtualUsers', !!systemMode, markedForSavepoint));
 
         if (hederaAccountKey) {
             await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
@@ -1032,13 +1038,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
 
     /**
      * Create Virtual User
-     * @param policyId
      * @param username
      * @param did
      * @param hederaAccountId
      * @param hederaAccountKey
      * @param active
      *
+     * @param markedForSavepoint
      * @virtual
      */
     public async createVirtualUser(
@@ -1046,7 +1052,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         did: string,
         hederaAccountId: string,
         hederaAccountKey: string,
-        active: boolean = false
+        active: boolean = false,
+        markedForSavepoint: boolean = false
     ): Promise<void> {
         await DatabaseServer.createVirtualUser(
             this.dryRun,
@@ -1055,7 +1062,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
             hederaAccountId,
             hederaAccountKey,
             active,
-            this.systemMode
+            this.systemMode,
+            markedForSavepoint
         );
     }
 

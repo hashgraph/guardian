@@ -1,4 +1,3 @@
-import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DatabaseServer,
@@ -9,13 +8,15 @@ import {
     MessageType,
     MultiPolicy,
     NatsService,
-    NotificationHelper, PinoLogger,
+    NotificationHelper,
+    PinoLogger,
     Policy,
     PolicyImportExport,
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
-    replaceArtifactProperties, Schema as SchemaCollection,
+    replaceArtifactProperties,
+    Schema as SchemaCollection,
     SchemaFields,
     Singleton,
     SynchronizationMessage,
@@ -26,22 +27,23 @@ import {
     TopicConfig,
     TopicHelper,
     Users,
-    VcHelper,
+    VcHelper
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
-import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
+import { FilterObject } from '@mikro-orm/core';
+import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
+import { importTag } from '../api/helpers/tag-import-export-helper.js';
+import { publishPolicyTags } from '../api/tag.service.js';
+import { createHederaToken } from '../api/token.service.js';
+import { AISuggestionsService } from '../helpers/ai-suggestions.js';
+import { GuardiansService } from '../helpers/guardians.js';
 import { emptyNotifier, INotifier } from '../helpers/notifier.js';
-import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { PolicyValidator } from '../policy-engine/block-validators/index.js';
-import { publishPolicyTags } from '../api/tag.service.js';
-import { importTag } from '../api/helpers/tag-import-export-helper.js';
-import { createHederaToken } from '../api/token.service.js';
-import { GuardiansService } from '../helpers/guardians.js';
-import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
-import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
-import { AISuggestionsService } from '../helpers/ai-suggestions.js';
-import { FilterObject } from '@mikro-orm/core';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { ISerializedErrors } from './policy-validation-results-container.js';
 
 /**
  * Result of publishing
@@ -66,10 +68,6 @@ interface IPublishResult {
  */
 @Singleton
 export class PolicyEngine extends NatsService {
-    constructor(private readonly logger: PinoLogger) {
-        super();
-    }
-
     /**
      * Run ready event
      * @param policyId
@@ -82,34 +80,37 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Message queue name
-     */
-    public messageQueueName = 'policy-service-queue';
-
-    /**
-     * Reply subject
-     * @private
-     */
-    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
-
-    /**
      * Users helper
      * @private
      */
     // @Inject()
     private users: Users;
-
     /**
      * Policy ready callbacks
      * @private
      */
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
-
     /**
      * Policy initialization errors container
      * @private
      */
     private readonly policyInitializationErrors: Map<string, string> = new Map();
+
+    constructor(private readonly logger: PinoLogger) {
+        super();
+    }
+
+    /**
+     * Run ready event
+     * @param policyId
+     * @param data
+     * @param error
+     */
+    private runReadyEvent(policyId: string, data?: any, error?: any): void {
+        if (this.policyReadyCallbacks.has(policyId)) {
+            this.policyReadyCallbacks.get(policyId)(data, error);
+        }
+    }
 
     /**
      * Initialization
@@ -142,16 +143,14 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Run ready event
-     * @param policyId
-     * @param data
-     * @param error
+     * Message queue name
      */
-    private runReadyEvent(policyId: string, data?: any, error?: any): void {
-        if (this.policyReadyCallbacks.has(policyId)) {
-            this.policyReadyCallbacks.get(policyId)(data, error);
-        }
-    }
+    public messageQueueName = 'policy-service-queue';
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
 
     /**
      * Check access
@@ -1014,6 +1013,7 @@ export class PolicyEngine extends NatsService {
             root.did,
             root.hederaAccountId,
             root.hederaAccountKey,
+            true,
             true
         );
 
@@ -1167,7 +1167,7 @@ export class PolicyEngine extends NatsService {
                     });
                 }
             }
-            ;
+
         }
 
         // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);
