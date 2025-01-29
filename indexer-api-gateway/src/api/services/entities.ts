@@ -108,6 +108,12 @@ export class EntityApi extends ApiClient {
         example: '0.0.4481265',
         required: false,
     })
+    @ApiQuery({
+        name: 'options.attributes.OrganizationName',
+        description: 'Registry organization name',
+        example: 'Example',
+        required: false,
+    })
     @HttpCode(HttpStatus.OK)
     async getRegistries(
         @Query('pageIndex') pageIndex?: number,
@@ -117,7 +123,8 @@ export class EntityApi extends ApiClient {
         @Query('keywords') keywords?: string,
         @Query('topicId') topicId?: string,
         @Query('options.did') did?: string,
-        @Query('options.registrantTopicId') registrantTopicId?: string
+        @Query('options.registrantTopicId') registrantTopicId?: string,
+        @Query('options.attributes.OrganizationName') organizationName?: string
     ) {
         return await this.send(IndexerMessageAPI.GET_REGISTRIES, {
             pageIndex,
@@ -128,6 +135,7 @@ export class EntityApi extends ApiClient {
             topicId,
             'options.did': did,
             'options.registrantTopicId': registrantTopicId,
+            'options.attributes.OrganizationName': organizationName,
         });
     }
 

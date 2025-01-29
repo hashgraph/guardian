@@ -145,6 +145,11 @@ export class RegistriesComponent extends BaseGridComponent {
                 label: 'grid.did',
                 type: 'input',
                 field: 'options.did',
+            }),
+            new Filter({
+                label: 'grid.name',
+                type: 'input',
+                field: 'options.attributes.OrganizationName',
             })
         );
     }
