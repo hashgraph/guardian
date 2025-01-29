@@ -16,6 +16,15 @@ export class BlockState extends BaseEntity {
     policyId?: string;
 
     /**
+     * Saved state
+     * @type {string}
+     */
+    @Property({
+                  nullable: true
+              })
+    savedState?: string;
+
+    /**
      * Block id
      */
     @Property({
