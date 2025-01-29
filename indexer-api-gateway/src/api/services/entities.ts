@@ -58,7 +58,9 @@ import {
     StatisticDetailsDTO,
     LabelDTO,
     LabelDetailsDTO,
-    LabelDocumentDetailsDTO
+    LabelDocumentDetailsDTO,
+    FormulaDetailsDTO,
+    FormulaDTO
 } from '#dto';
 
 @Controller('entities')
@@ -1120,6 +1122,91 @@ export class EntityApi extends ApiClient {
         });
     }
     //#endregion
+
+
+    //#region FORMULAS
+    @ApiOperation({
+        summary: 'Get formulas',
+        description: 'Returns formulas',
+    })
+    @ApiPaginatedRequest
+    @ApiPaginatedResponse('formulas', FormulaDTO)
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/formulas')
+    @ApiQuery({
+        name: 'keywords',
+        description: 'Keywords to search',
+        examples: {
+            '0.0.1960': {
+                description:
+                    'Search formulas, which are related to specific topic identifier',
+                value: '["0.0.1960"]',
+            },
+        },
+        required: false,
+    })
+    @ApiQuery({
+        name: 'topicId',
+        description: 'Policy topic identifier',
+        example: '0.0.1960',
+        required: false,
+    })
+    @ApiQuery({
+        name: 'options.owner',
+        description: 'formula owner',
+        example: 'did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265',
+        required: false,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getFormulas(
+        @Query('pageIndex') pageIndex?: string,
+        @Query('pageSize') pageSize?: string,
+        @Query('orderField') orderField?: string,
+        @Query('orderDir') orderDir?: string,
+        @Query('keywords') keywords?: string,
+        @Query('topicId') topicId?: string,
+        @Query('options.owner') owner?: string
+    ) {
+        return await this.send(IndexerMessageAPI.GET_FORMULAS, {
+            pageIndex,
+            pageSize,
+            orderField,
+            orderDir,
+            keywords,
+            topicId,
+            'options.owner': owner,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get formula',
+        description: 'Returns formula',
+    })
+    @ApiOkResponse({
+        description: 'Formula details',
+        type: FormulaDetailsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/formulas/:messageId')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getFormula(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_FORMULA, {
+            messageId,
+        });
+    }
+    //#endregion
+
     //#endregion
 
     //#region DOCUMENTS

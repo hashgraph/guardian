@@ -40,6 +40,8 @@ import {
     StatisticDetails,
     Label,
     LabelDetails,
+    Formula,
+    FormulaDetails,
 } from '@indexer/interfaces';
 
 /**
@@ -377,6 +379,24 @@ export class EntitiesService {
         return this.http.get<Page<VC>>(`${this.url}/${entity}`, options) as any;
     }
     //#endregion
+    //#endregion
+
+    //#region FORMULAS
+    public getFormulas(filters: PageFilters): Observable<Page<Formula>> {
+        const entity = 'formulas';
+        const options = ApiUtils.getOptions(filters);
+        return this.http.get<Page<Formula>>(
+            `${this.url}/${entity}`,
+            options
+        ) as any;
+    }
+
+    public getFormula(messageId: string): Observable<FormulaDetails> {
+        const entity = 'formulas';
+        return this.http.get<FormulaDetails>(
+            `${this.url}/${entity}/${messageId}`
+        ) as any;
+    }
     //#endregion
 
     public updateFiles<T>(messageId: string): Observable<T> {

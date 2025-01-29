@@ -1,0 +1,66 @@
+.icon-color {
+    &-primary {
+        fill: var(--guardian-primary-color);
+        color: var(--guardian-primary-color);
+    }
+
+    &-secondary {
+        fill: var(--guardian-secondary-color);
+        color: var(--guardian-secondary-color);
+    }
+
+    &-disabled {
+        fill: var(--guardian-disabled-icon);
+        color: var(--guardian-disabled-icon);
+    }
+
+    &-delete {
+        fill: var(--guardian-delete-color);
+        color: var(--guardian-delete-color);
+    }
+
+    &-success {
+        fill: var(--guardian-success-color);
+        color: var(--guardian-success-color);
+    }
+
+    &-failure {
+        fill: var(--guardian-failure-color);
+        color: var(--guardian-failure-color);
+    }
+
+    &-warning {
+        fill: var(--guardian-warning-color);
+        color: var(--guardian-warning-color);
+    }
+
+    &-close {
+        fill: var(--guardian-close-color);
+        color: var(--guardian-close-color);
+    }
+
+    &-font {
+        fill: var(--guardian-font-color);
+        color: var(--guardian-font-color);
+    }
+
+    &-constant {
+        fill: var(--formula-constant-color);
+        color: var(--formula-constant-color);
+    }
+
+    &-variable {
+        fill: var(--formula-variable-color);
+        color: var(--formula-variable-color);
+    }
+
+    &-function {
+        fill: var(--formula-function-color);
+        color: var(--formula-function-color);
+    }
+
+    &-text {
+        fill: var(--formula-text-color);
+        color: var(--formula-text-color);
+    }
+}

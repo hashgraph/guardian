@@ -1,0 +1,134 @@
+<div class="formula-container">
+    <div class="item-filters">
+        <div class="item-filters-header">Select Type</div>
+        <checkbox-button [(value)]="filters.constant" class="item-filter constant-filter" (change)="onFilter()">Constant</checkbox-button>
+        <checkbox-button [(value)]="filters.variable" class="item-filter variable-filter" (change)="onFilter()">Variable</checkbox-button>
+        <checkbox-button [(value)]="filters.formula" class="item-filter formula-filter" (change)="onFilter()">Formula</checkbox-button>
+        <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
+    </div>
+    <div class="formula-items">
+        @for (item of config.data; track item.uuid) {
+            <div class="formula-item" [attr.type]="item.type" [attr.readonly]="true">
+                <div class="formula-item-icon"></div>
+                <div class="formula-item-container">
+                    <div class="formula-item-header">
+                        @if (item.type === 'constant') {
+                            <div class="formula-item-header__icon">
+                                <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M 3.9373895,3.8995 H 20.369555 v 1.7999515 h -5.048973 c -0.205334,2.3172049 -0.329668,4.6408625 -0.372598,6.9667345 -0.0216,1.340962 -0.0054,2.564938 0.06291,3.509913 0.03483,0.474649 0.07979,0.853721 0.134999,1.137618 0.04955,0.255548 0.0918,0.344646 0.09004,0.346401 0.576042,0.728982 2.289588,1.179061 4.124633,-0.629084 l 0.640842,-0.631785 1.263593,1.282469 -0.641652,0.631784 c -2.331032,2.296834 -5.389171,2.31749 -6.834608,0.41849 -0.235802,-0.310492 -0.344707,-0.738837 -0.410397,-1.074573 -0.07381,-0.3815 -0.126009,-0.844135 -0.162904,-1.352667 -0.07381,-1.01963 -0.09,-2.303893 -0.0675,-3.667361 0.04274,-2.316138 0.164618,-4.6301304 0.365402,-6.9379395 H 10.393955 C 10.24725,7.9160973 9.8404571,10.822131 9.025966,13.387068 8.5651595,14.844087 7.9576628,16.237254 7.1575761,17.338016 6.3574759,18.440399 5.3107861,19.320579 3.9661933,19.585172 L 3.0832981,19.758912 2.735,17.993155 3.6178952,17.819414 C 4.3639822,17.672808 5.0587829,17.166031 5.7013795,16.280452 6.343976,15.39582 6.8803686,14.201545 7.3105708,12.842586 8.0557668,10.496343 8.4436602,7.7964093 8.5903639,5.6994515 H 3.9364985 Z" />
+                                </svg>                                
+                            </div>
+                            <div class="formula-item-header__name">Constant</div>
+                        }
+                        @if (item.type === 'variable') {
+                            <div class="formula-item-header__icon">
+                                <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="m 21.156976,2 c 1.51365,3.011115 2.11245,6.488895 1.73145,10.000005 -0.2178,3.511081 -1.4157,6.98883 -3.4518,9.999929 l -1.66605,-1.11105 c 1.75305,-2.7 2.77665,-5.777699 2.94,-8.888879 C 21.080776,8.8889 20.590726,5.81111 19.295026,3.11111 Z M 4.5622815,2 6.2282865,3.11111 c -1.753125,2.7 -2.77668,5.77779 -2.940015,8.888895 -0.37023,3.11118 0.130665,6.188879 1.415565,8.88888 l -1.84023,1.11105 C 1.339152,18.988835 0.72937196,15.522186 1.1104845,12.000005 1.3282635,8.488895 2.5260465,5.011115 4.5622815,2 Z m 7.5242545,8.533335 2.526225,-3.588885 h 2.754916 L 13.251646,12.5 l 2.395531,5.466735 h -2.460856 l -1.502685,-3.744509 -2.6459995,3.69996 H 6.2936115 L 10.540307,12.233345 8.2209615,6.94445 h 2.4717905 z" />
+                                </svg>                                
+                            </div>
+                            <div class="formula-item-header__name">Variable</div>
+                        }
+                        @if (item.type === 'formula') {
+                            <div class="formula-item-header__icon">
+                                <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M 9.9454857,2 C 8.8846136,2 7.8672114,2.421425 7.1170635,3.171575 6.3669156,3.921725 5.9454917,4.939145 5.9454917,6.000005 v 3 H 2.9455 V 11 h 2.9999917 v 7.000036 c 0,0.5304 -0.2107194,1.039049 -0.5857784,1.414199 -0.3750739,0.375 -0.8837825,0.585749 -1.4142111,0.585749 H 2.9455 v 1.99995 h 1.0000022 c 1.0608571,0 2.0782743,-0.42135 2.8284072,-1.1715 0.750148,-0.75015 1.1715718,-1.767599 1.1715718,-2.828399 V 11 H 10.945473 V 9.000005 H 7.9454812 v -3 c 0,-0.53043 0.2107194,-1.03914 0.5857934,-1.414215 C 8.9063485,4.210715 9.4150571,4.00001 9.9454857,4.00001 H 10.945473 V 2 Z m 5.2020303,14.996986 -3.311046,4.003049 h 2.594993 l 2.014,-2.43405 2.014044,2.43405 H 21.0545 L 17.743409,16.996986 21.05045,13.00001 h -2.596043 l -2.008944,2.427975 -2.00899,-2.427975 H 11.84148 Z" />
+                                </svg>
+                            </div>
+                            <div class="formula-item-header__name">Formula</div>
+                        }
+                        @if (item.type === 'text') {
+                            <div class="formula-item-header__icon">
+                                <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M 2,4.99999 C 2,4.447705 2.44772,4 3.000005,4 H 15.99998 c 0.5523,0 1.00005,0.447705 1.00005,0.99999 V 7 c 0,0.552285 -0.44775,0.99999 -1.00005,0.99999 -0.5523,0 -0.9999,-0.447705 -0.9999,-0.99999 V 5.999995 H 11 v 11.999971 h 1.000005 c 0.552285,0 1.000005,0.447749 1.000005,1.00005 0,0.5523 -0.44772,1.00005 -1.000005,1.00005 H 8 c -0.552285,0 -0.99999,-0.44775 -0.99999,-1.00005 0,-0.552301 0.447705,-1.00005 0.99999,-1.00005 H 9.000005 V 5.999995 H 4.00001 V 7 c 0,0.552285 -0.44772,0.99999 -1.000005,0.99999 C 2.44772,7.99999 2,7.552285 2,7 Z m 12,7.000005 c 0,-0.552285 0.44772,-1.000005 1.00008,-1.000005 h 6 c 0.55215,0 0.9999,0.44772 0.9999,1.000005 V 13 c 0,0.552285 -0.44775,0.99999 -0.9999,0.99999 -0.5523,0 -1.00005,-0.447705 -1.00005,-0.99999 h -1.00005 v 4.999965 c 0.5523,0 1.00005,0.447749 1.00005,1.00005 0,0.5523 -0.44775,1.00005 -1.00005,1.00005 h -1.99995 c -0.5523,0 -1.00005,-0.44775 -1.00005,-1.00005 0,-0.552301 0.44775,-1.00005 1.00005,-1.00005 V 13 h -1.00005 c 0,0.552285 -0.44775,0.99999 -0.9999,0.99999 C 14.44772,13.99999 14,13.552285 14,13 Z" clip-rule="evenodd" fill-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="formula-item-header__name">Text</div>
+                        } 
+                    </div>
+                    <div class="formula-item-body">
+                        <div class="guardian-input-container">
+                            <label class="form-label">Name</label>
+                            <input [value]="item.name" pInputText type="text" [readonly]="true"/>
+                        </div>
+                        <div class="guardian-textarea-container">
+                            <label class="form-label">Description</label>
+                            <textarea [value]="item.description" pTextarea rows="3" [readonly]="true"></textarea>
+                        </div>
+
+                        @if (item.type === 'constant') {
+                            <div class="guardian-input-container">
+                                <label class="form-label">Value</label>
+                                <input [value]="item.value" pInputText type="text" [readonly]="true"/>
+                            </div>
+                        }
+
+                        @if (item.type === 'variable') {
+                            <div class="guardian-input-container">
+                                <label class="form-label">Link (Input)</label>
+                                <div class="formula-link">
+                                    @if (item.link) {
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        @if (item.type === 'formula') {
+                            <div class="guardian-input-container" style="height: auto">
+                                <label class="form-label">Formula</label>
+                                <math-live [value]="item.value" [readonly]="true"></math-live>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">Link (Output)</label>
+                                <div class="formula-link">
+                                    @if (item.link) {
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Relationships</label>
+                                <div class="formula-relationships">
+                                    @for (relationship of item.relationships; track relationship) {
+                                        <div class="formula-relationship">{{getRelationshipName(relationship)}}</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        @if (item.type === 'text') {
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Text</label>
+                                <textarea [value]="item.value" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">Link (Output)</label>
+                                <div class="formula-link">
+                                    @if (item.link) {
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Relationships</label>
+                                <div class="formula-relationships">
+                                    @for (relationship of item.relationships; track relationship) {
+                                        <div class="formula-relationship">{{getRelationshipName(relationship)}}</div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

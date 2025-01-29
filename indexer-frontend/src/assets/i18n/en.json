@@ -41,7 +41,8 @@
         "others": "Others",
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
-        "labels": "Labels"
+        "labels": "Labels",
+        "formula": "Formulas"
     },
     "home": {
         "header": "Indexer"
@@ -112,6 +113,7 @@
         "relationships": "Relationships",
         "raw_data": "Raw data",
         "labels": "Labels",
+        "formulas": "Formulas",
         "tabs": {
             "activity": "Activity"
         },
@@ -233,6 +235,22 @@
             "header": "Label",
             "tabs": {
                 "overview": "Overview",
+                "raw_data": "Raw data"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner"
+            }
+        },
+        "formula": {
+            "header": "Formula",
+            "tabs": {
+                "overview": "Overview",
+                "view": "View",
+                "document": "Document",
                 "raw_data": "Raw data"
             },
             "overview": {

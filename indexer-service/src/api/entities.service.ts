@@ -55,7 +55,9 @@ import {
     StatisticDetails,
     Label,
     LabelDetails,
-    LabelDocumentDetails
+    LabelDocumentDetails,
+    Formula,
+    FormulaDetails
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -112,7 +114,11 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message, tryLoad: boolean): Promise<Message> {
+async function loadDocuments(
+    row: Message,
+    tryLoad: boolean,
+    prepare?: (file: string) => string
+): Promise<Message> {
     try {
         const result = { ...row };
         if (!result?.files?.length) {
@@ -127,7 +133,11 @@ async function loadDocuments(row: Message, tryLoad: boolean): Promise<Message> {
         result.documents = [];
         for (const fileName of result.files) {
             const file = await DataBaseHelper.loadFile(fileName);
-            result.documents.push(file);
+            if (prepare) {
+                result.documents.push(prepare(file));
+            } else {
+                result.documents.push(file);
+            }
         }
         return result;
     } catch (error) {
@@ -1222,6 +1232,76 @@ export class EntityService {
                 });
             }
             return new MessageResponse<LabelDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
+    //#region FORMULAS
+    @MessagePattern(IndexerMessageAPI.GET_FORMULAS)
+    async getFormulas(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Formula>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.FORMULA;
+            filters.action = MessageAction.PublishFormula;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Formula[], number];
+            const result = {
+                items: rows.map((item) => {
+                    delete item.analytics;
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Formula>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_FORMULA)
+    async getFormula(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<FormulaDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            let item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const activity: any = {};
+
+            if (!item) {
+                return new MessageResponse<FormulaDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+
+            return new MessageResponse<FormulaDetails>({
                 id: messageId,
                 uuid: item.uuid,
                 item,

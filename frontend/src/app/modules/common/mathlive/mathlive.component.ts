@@ -1,5 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { MathfieldElement, Mathfield } from 'mathlive';
+import { MathfieldElement } from 'mathlive';
 import { matrixKeyboard } from './keyboards/matrix-keyboard';
 import { mathKeyboard } from './keyboards/math-keyboard';
 
