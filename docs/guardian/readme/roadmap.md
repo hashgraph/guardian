@@ -1,6 +1,6 @@
 # 🛣️ Roadmap
 
-<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="roadmap.md#development-of-ams-i.e-and-mass-comparison-on-cookstove-methodologies-for-the-webinar">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#indexer-api">Indexer API</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#development-of-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications-v1.2v">Development of VMR0006</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#filtering-data-for-blocks-is-stateful-api-introduce-stateless-data-filters-for-api-usage">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#auto-testing-community-submitted-policies">Auto-testing community submitted policies</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#code-audit-support-and-resolution-of-issues">Code audit: support and resolution of issues</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#ghg-scorecards-research">GHG Scorecards Research</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#token-action-block-to-work-with-token-templates">Token action block to work with token templates</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#different-token-ids-for-different-projects-by-the-same-policy">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#enhance-mongodb-integration-by-incorporating-seamless-support-for-popular-third-party-services-such">Enhance MongoDB Integration</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#leverage-the-pre-built-images-as-the-default-way-to-start-guardian-locally">Leverage the pre-built images as the default way to start Guardian locall</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#global-carbon-council-gcc-gccm001-methodology-for-renewable-energy-generation-projects-supplying-ele">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#default-values-for-schema-defined-fields">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#rationalize-api-and-ui-return-error-codes">Rationalize API and UI return error codes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#simplify-default-sr-schema-to-take-out-optional-properties">Simplify default SR schema to take out optional properties</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-bottom-up-data-traceability">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#api-versioning-and-support-deprecation-schedule">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#data-parameterization-and-conditional-review-logic">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#calculation-logic-for-values-in-automatic-fields-in-schemas">Calculation logic for values in 'automatic fields' in schemas</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#verify-and-fix-the-features-that-got-affected-by-mirror-node-changes">Verify and Fix the features that got affected by Mirror node changes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#climate-action-reserves-u.s.-landfill-protocol">Climate Action Reserve's U.S. Landfill Protocol</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#scope-3-pcf-referencing-demo-methodology-breakdown">Scope 3/PCF Referencing Demo (Methodology Breakdown)</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#development-of-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-facilities-to-retrieve-unique-references-ids-of-results-for-api-triggered-operations">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-labels-and-top-down-data-way-points">Guardian analytics: labels and top down data way points</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#trustchain-support-for-contract-based-issuance-and-retirement-implementation">Trustchain support for contract-based issuance and retirement implementation</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#american-carbon-registry-acr-acr-methodology-for-quantifying-monitoring-reporting-and-verifying-gree">American Carbon Registry (ACR) Methodology Webinar</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#ghgp-version-3">GHGP Version 3</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancements-and-bugs-of-indexer">Enhancements and Bugs of Indexer</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#formula-linked-definitions-and-schema-tree-enhancement">Formula Linked Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#dry-run-policy-execution-savepoints-restart-policy-dry-run-from-the-list-of-saved-places">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#standardize-ui-on-angular-material-remove-replace-primeng">Standardize UI on Angular Material, remove/replace PrimeNG</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancing-research-on-indexer-and-analytics-use-cases">Enhancing Research on Indexer and Analytics Use Cases</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr></tbody></table>
+<table><thead><tr><th width="188" align="center">Feature</th><th align="center">Release month</th><th width="152">Develop branch?</th><th align="center">Released?</th><th align="center">Release Version</th></tr></thead><tbody><tr><td align="center"><a href="roadmap.md#development-of-ams-i.e-and-mass-comparison-on-cookstove-methodologies-for-the-webinar">Development of AMS-I.E and Mass Comparison on Cookstove</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#indexer-api">Indexer API</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#development-of-vmr0006-energy-efficiency-and-fuel-switch-measures-in-thermal-applications-v1.2v">Development of VMR0006</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#filtering-data-for-blocks-is-stateful-api-introduce-stateless-data-filters-for-api-usage">Filtering data for blocks is stateful API, introduce stateless data filters for API usage.</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#auto-testing-community-submitted-policies">Auto-testing community submitted policies</a></td><td align="center">July 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">2.27</td></tr><tr><td align="center"><a href="roadmap.md#code-audit-support-and-resolution-of-issues">Code audit: support and resolution of issues</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#ghg-scorecards-research">GHG Scorecards Research</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#token-action-block-to-work-with-token-templates">Token action block to work with token templates</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#different-token-ids-for-different-projects-by-the-same-policy">Different token IDs for different projects by the same policy</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#enhance-mongodb-integration-by-incorporating-seamless-support-for-popular-third-party-services-such">Enhance MongoDB Integration</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#leverage-the-pre-built-images-as-the-default-way-to-start-guardian-locally">Leverage the pre-built images as the default way to start Guardian locall</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#global-carbon-council-gcc-gccm001-methodology-for-renewable-energy-generation-projects-supplying-ele">Global Carbon Council (GCC) GCCM001</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#default-values-for-schema-defined-fields">Default values for schema-defined fields</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#rationalize-api-and-ui-return-error-codes">Rationalize API and UI return error codes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#simplify-default-sr-schema-to-take-out-optional-properties">Simplify default SR schema to take out optional properties</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-bottom-up-data-traceability">Guardian analytics: bottom-up data traceability</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#api-versioning-and-support-deprecation-schedule">API versioning and support/deprecation schedule</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#data-parameterization-and-conditional-review-logic">Data Parameterization and Conditional Review Logic</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#calculation-logic-for-values-in-automatic-fields-in-schemas">Calculation logic for values in 'automatic fields' in schemas</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#verify-and-fix-the-features-that-got-affected-by-mirror-node-changes">Verify and Fix the features that got affected by Mirror node changes</a></td><td align="center">October 2024</td><td>Yes</td><td align="center">Yes</td><td align="center">3.0</td></tr><tr><td align="center"><a href="roadmap.md#climate-action-reserves-u.s.-landfill-protocol">Climate Action Reserve's U.S. Landfill Protocol</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#scope-3-pcf-referencing-demo-methodology-breakdown">Scope 3/PCF Referencing Demo (Methodology Breakdown)</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#development-of-ams-i.c.-thermal-energy-production-with-or-without-electricity">Development of AMS-I.C</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#api-facilities-to-retrieve-unique-references-ids-of-results-for-api-triggered-operations">API facilities to retrieve unique references (IDs) of results for API-triggered operations</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-analytics-labels-and-top-down-data-way-points">Guardian analytics: labels and top down data way points</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#trustchain-support-for-contract-based-issuance-and-retirement-implementation">Trustchain support for contract-based issuance and retirement implementation</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#american-carbon-registry-acr-acr-methodology-for-quantifying-monitoring-reporting-and-verifying-gree">American Carbon Registry (ACR) Methodology Webinar</a></td><td align="center">January 2025</td><td>Yes</td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#ghgp-version-3">GHGP Version 3</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancements-and-bugs-of-indexer">Enhancements and Bugs of Indexer</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#formula-linked-definitions-and-schema-tree-enhancement">Formula Linked Definitions &#x26; Schema Tree Enhancement</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#dry-run-policy-execution-savepoints-restart-policy-dry-run-from-the-list-of-saved-places">Dry-run policy execution 'savepoints' - restart policy dry-run from the list of 'saved' places</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#standardize-ui-on-angular-material-remove-replace-primeng">Standardize UI on Angular Material, remove/replace PrimeNG</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancing-research-on-indexer-and-analytics-use-cases">Enhancing Research on Indexer and Analytics Use Cases</a></td><td align="center">January 2025</td><td></td><td align="center">No</td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#add-policy-support-for-more-than-one-external-data-block">Add policy support for more than one external data block</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#firing-external-event-when-minting-process-is-finished">Firing external event when minting process is finished</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#establish-deprecation-policy-for-architectural-apis">Establish deprecation policy for architectural APIs</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#cross-context-apiui-refresh-token-invalidation-regression-from-v2.18.0">Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#business-usecase-for-emissions-reduction-removals-errs-calculation-pre-calculator-in-guardian">Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#add-capabilities-to-display-complex-geojson-shapes-superimposed-on-maps">Add capabilities to display complex geoJSON shapes superimposed on maps</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#on-demand-state-proof-generation-for-critical-guardian-operations">On-demand state proof generation for critical Guardian operations</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#weak-default-configuration">Weak Default configuration</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#system-logs-accessible-by-all-registries">System Logs Accessible by All Registries</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#development-of-vm0042-v2.1-improved-agricultural-land-management">Development of VM0042 v2.1: Improved Agricultural Land Management</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#article-6.4-forms-research">Article 6.4 Forms Research</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#accessing-a-guardian-policy-from-a-guardian-instance-other-than-the-publishing-instance">Accessing a Guardian policy from a Guardian instance other than the publishing instance</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#server-side-request-forgery-ssrf-in-request-data-module">Server-Side Request Forgery (SSRF) in Request Data module</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#clean-cooking-and-climate-consortium-comprehensive-lowered-emissions-assessment-and-reporting-clear">Clean Cooking and Climate Consortium Comprehensive Lowered Emissions Assessment and Reporting (CLEAR) Methodology for Cooking Energy Transitions</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#detailed-research-on-indexer-enhancements">Detailed Research on Indexer Enhancements</a></td><td align="center">April 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#architecture-for-redd-transactions-art-the-redd-environmental-excellence-standard-trees-version-2">Architecture for REDD+ Transactions (ART) The REDD+ Environmental Excellence Standard (TREES) - Version 2.0</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#exporting-project-data-in-csv-format">Exporting Project Data in CSV format</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#missing-authentication-between-services">Missing Authentication between Services</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#session-token-in-url">Session Token in URL</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#manual-trigger-of-re-indexing-for-specific-policy-sr-token">Manual trigger of re-indexing for specific policy, SR, token</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#guardian-policy-embedded-code-testing-debugging-facility-for-custom-logic-calculate-etc-blocks">Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#no-password-policy">No Password Policy</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#outdated-software-libraries">Outdated Software/Libraries</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#identifying-implementing-and-integrating-3rd-party-data-resources">Identifying, Implementing and Integrating 3rd Party data resources</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#substitute-google-maps-api-in-guardian-ui-with-an-oss-alternative">Substitute Google maps API in Guardian UI with an OSS alternative</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#authorization-headers-potentially-leaked-through-ipfs-in-request-data-module">Authorization Headers Potentially Leaked through IPFS in Request Data Modul</a>e</td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#enhancements-of-indexer">Enhancements of Indexer</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#capitals-coalitions-digital-sustainability-disclosures-project-dsd">Capitals Coalition’s Digital Sustainability Disclosures Project (DSD)</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr><tr><td align="center"><a href="roadmap.md#verra-sdvm001-sd-vista-methodology-for-time-savings-from-improved-cookstoves">Verra SDVM001 SD Vista Methodology for Time Savings from Improved Cookstoves</a></td><td align="center">July 2025</td><td></td><td align="center"></td><td align="center"></td></tr></tbody></table>
 
 {% tabs %}
 {% tab title="Upcoming Releases" %}
@@ -138,6 +138,257 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3730](https://githu
 Referral Link : [https://github.com/hashgraph/guardian/issues/2873](https://github.com/hashgraph/guardian/issues/2873)
 
 Documentation Link : [https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity](https://docs.hedera.com/guardian/guardian/demo-guide/carbon-offsets/cdm-ams-i.c.-thermal-energy-production-with-or-without-electricity)
+
+## ---- February 2025----
+
+### Add policy support for more than one external data block
+
+Allow more than one external data block per policy. Each external data block should be able to handle a different schema, enabling multiple types of data to be sent from external sources as needed.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3992](https://github.com/hashgraph/guardian/issues/3992)
+
+### Firing external event when minting process is finished
+
+* Add another external event when the minting process is completed (i.e. external-events.token\_minting\_process\_completed)
+* Include in the event payload, among other details like tokenID, minted tokens, etc, the consensus timestamp of the last mint transaction
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4090](https://github.com/hashgraph/guardian/issues/4090)
+
+### Establish deprecation policy for architectural APIs
+
+* Identify and enumerate all architectural APIs significant to end users
+* Extend API deprecation policy coverage to include the above APIs
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/1794](https://github.com/hashgraph/guardian/issues/1794)
+
+### Cross-context (API+UI) refresh token invalidation (regression from v2.18.0)
+
+Looking into the code, it seems that the refresh token should last for a year, this is fine as it is configurable, but losing login context (or a user potentially feeling they lost all their data) isn't great UX.
+
+In terms of code behaviour, I would presume that this change would fix the issue:
+
+```
+const user = await new DataBaseHelper(User).findOne({refreshToken: decryptedToken.id, username: decryptedToken.name});
+```
+
+to
+
+```
+const user = await new DataBaseHelper(User).findOne({username: decryptedToken.name});
+```
+
+The reason why this _**might**_ be okay, is that the _expire at_ decoding happens on the line above, so a refresh token, would last for the period of time by default.
+
+As this is authentication related, it requires review from more people.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3525](https://github.com/hashgraph/guardian/issues/3525)
+
+### Business UseCase for Emissions Reduction/Removals (ERRs)Calculation Pre-Calculator in Guardian
+
+We are in the process of creating a few approaches to this ticket from the business use case perspective. One is essentially an “estimator” with a simplified workflow that can be used to estimate emission reductions, token issuance, etc. upfront to help the user better anticipate issuances and the impacts of various project activities and methodological choices. The other is more of a “summary preview” of the actual calculation results, that can be implemented just before validation (or anytime thereafter) to see summary KPIs based on the actual inputs and methodological choices made by the user, and they can then interact with the data like the Nerd Wallet retirement calculator to see how changes to the project activities could impact issuances. To be discussed further with the team.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4562](https://github.com/hashgraph/guardian/issues/4562)
+
+### Add capabilities to display complex geoJSON shapes superimposed on maps
+
+* Introduce capability for geometric shapes display for geoJSON in Guardian UI (both Indexer and Guardian itself).
+* Shapes display must be correctly superimposed on maps wherever possible
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4375](https://github.com/hashgraph/guardian/issues/4375)
+
+## ---- March 2025----
+
+### On-demand state proof generation for critical Guardian operations
+
+* Introduce the ability to trigger [Hedera State Proof ](https://hedera.com/blog/state-proofs-on-hedera)generation from Guardian interface for particular actions/operations or the general status of the Policy.
+* State proofs are to be generated and presented to users for download. Guardian will not keep any registry or store them on the system.
+* Introduce UI and the backend functionality to verify Hedera State Proofs generated by Guardian, ensure the long-term compatibility of this functionality.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/2846](https://github.com/hashgraph/guardian/issues/2846)
+
+### Weak Default configuration
+
+Change the password to a strong, random value, or create additional setup steps were the deployer is required to set this secrets. Additionally, set the most secure configuration as the default in the repository. This ensures that any user deploying the repository will benefit from enhanced security by default. In addition, as highlighted on the issue finding "Lack of Security Hardening Guides", a security guideline is recommened so that users can configure securely their environment before deploying it.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4109](https://github.com/hashgraph/guardian/issues/4109)
+
+### System Logs Accessible by All Registries
+
+It is recommended to separate the system functionality from the registry functionality specifically for log management. Additionally, it would be appropriate to restrict access to system logs to a different admin role, who would only review the system logs. For registry logs, it is recommended to ensure that one registry can only view its logs, without seeing the logs of other registry users.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4058](https://github.com/hashgraph/guardian/issues/4058)
+
+### Development of VM0042 v2.1: Improved Agricultural Land Management
+
+1. Flexible Quantification Approaches:
+2. Support for three primary quantification approaches:\
+   \- Measure and Model\
+   \- Measure and Remeasure\
+   \- Default Factors
+3. Document and Template Integration:
+4. Capture key documents/templates:\
+   \- Project Description Template, v4.4\
+   \- Monitoring Report Template, v4.4\
+   \- Validation Report Template, v4.4\
+   \- Verification Report Template, v4.4\
+   \- User Registration Forms\
+   \- Emission Calculation Form
+5. CDM Tools and Modules Integration:
+6. AR-TOOL14: Tool for Testing Significance of GHG Emissions in A/R CDM Project Activities
+7. A/R Methodological Tool for the Identification of Degraded or Degrading Lands in CDM A/R Project Activities
+8. VMD0053 Module: This module will be treated as a tool within Guardian.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4559](https://github.com/hashgraph/guardian/issues/4559)
+
+### Article 6.4 Forms Research
+
+o Identify the additional requirements of Article 6 in comparison to one (or more) of the main voluntary standards.&#x20;
+
+o Determine functionality requirements to implement a “label-type” feature discussed above
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4560](https://github.com/hashgraph/guardian/issues/4560)
+
+## ---- April 2025----
+
+### Accessing a Guardian policy from a Guardian instance other than the publishing instance
+
+A Guardian user should be able to access a policy published by another Guardian instance from their own Guardian instance. This access should be based on a request-grant model.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3951](https://github.com/hashgraph/guardian/issues/3951)
+
+### Server-Side Request Forgery (SSRF) in Request Data module
+
+If the functionality is important enough to keep despite the risk, then all URLs should be requested through a secure proxy server. This is a significant effort, and to be secure the proxy must ensure that:
+
+1. The URL does not resolve to a private or local IP address 2. Redirects are not followed
+2. Only HTTP(S) protocol schemes are supported\
+   Additionally, the application server should define and enforce rate limits to discourage abuse of the functionality as a web scanner.\
+   If the application is hosted on AWS servers, enforce usage of AWS “Instance Metadata Service Version 2” with token usage required. This is a new AWS metadata API which severely curtails the ability of attackers to abuse SSRF to access the AWS metadata API. However, this will not prevent attacks against other internal services.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4110](https://github.com/hashgraph/guardian/issues/4110)
+
+### Detailed Research on Indexer Enhancements
+
+Identify and implement indexer enhancements based on example use cases and community feedback.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4561](https://github.com/hashgraph/guardian/issues/4561)
+
+### Clean Cooking and Climate Consortium Comprehensive Lowered Emissions Assessment and Reporting (CLEAR) Methodology for Cooking Energy Transitions
+
+1. Creating Schema design for this methodology.
+2. Development of the schema and policy.
+3. Testing the policy development through Guardian UI and configurator.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3711](https://github.com/hashgraph/guardian/issues/3711)
+
+## ---- May 2025----
+
+### Architecture for REDD+ Transactions (ART) The REDD+ Environmental Excellence Standard (TREES) - Version 2.0
+
+1. Creating Schema design for this methodology.
+2. Development of the schema and policy.
+3. Testing the policy development through Guardian UI and configurator.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3707](https://github.com/hashgraph/guardian/issues/3707)
+
+### Exporting Project Data in CSV format
+
+1. We should be able to export the complete project data of any policy in CSV format through Guardian.
+2. We should also be able to apply filters to the project data, which should be included in the export file.
+3. When we export the data in csv format, it should follow proper naming convention such as saving the exported file by its respective policy name\_version.csv
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3680](https://github.com/hashgraph/guardian/issues/3680)
+
+### Missing Authentication between Services
+
+It is recommended to implement mutual authentication for all internal microservice communications to ensure that each service can verify the identity of the other. It is recommended to ensure that each service is properly authenticated, using authorization roles and permissions to ensure that each service can only publish or consume messages in the queues relevant to its designated function. Moreover, messages could be digitally signed, ensuring they originate from the correct service. At each step in the process, the signatures can be verified to ensure that the message has not been tampered with. Where applicable, integrate these recommendations into the security hardening guide to ensure organizations deploying the application can implement these best practices effectively.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4107](https://github.com/hashgraph/guardian/issues/4107)
+
+### Session Token in URL
+
+The application should use an alternative mechanism for transmitting session tokens, for example, the Authorization header, as it is done by the rest of the web application.22
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4059](https://github.com/hashgraph/guardian/issues/4059)
+
+### Manual trigger of re-indexing for specific policy, SR, token
+
+* Introduce a new capability into the indexer to trigger manual re-indexing for a specific 'vertical', starting at a specific topic and navigating (only) down the hierarchy for immediate availability of data.
+* Develop a UI for users to provide a Topic ID for one of the specific items below as an entry point into the 'vertical':
+  * Policy
+  * Standard registry
+  * Token
+* When manual re-indexing is scheduled it must take priority, or the rest should gets postponed until the manually-triggered update is finished.
+* The user who triggered the update must be notified when the update is finished.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4373](https://github.com/hashgraph/guardian/issues/4373)
+
+## ---- June 2025----
+
+### Guardian policy embedded code testing/debugging facility for Custom Logic, Calculate, etc blocks
+
+* Introduce the 'Test' button to all places where **source** or **math** code can be inputted in Guardian policy which would trigger the 'in place' execution of the code based on the execution context and defined inputs/outputs of the block. This tool could prompt the user for input data when required.
+* Add ability to 'print' (i.e. log) data and variable values somewhere when test-running policy (e.g. in Dry-run mode). This way policy authors would be able to examine the data structures passed into the functions and identify unexpected behaviour in this area.
+* Add recommendations to the documentation wrt running this code in an separate developer environment, i.e. all the needed execution context such as imported libraries etc so those developers who prefer to use their code editors can replicate the execution of the code there.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4304](https://github.com/hashgraph/guardian/issues/4304)
+
+### No Password Policy
+
+It is recommended to create a password policy, that can be configured by the organizations using the application. It should also be noted that recent guidance from NCSC promotes password policies which are designed to decrease the burden on the user. This can include relaxing controls requiring users to change their passwords at regular intervals in favor of the use of suitably complex passwords. The NCSC password guidance21 should be reviewed to determine if this new guidance can be applied to the environment reviewed.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4057](https://github.com/hashgraph/guardian/issues/4057)
+
+### Outdated Software/Libraries
+
+Ensure the Guardian code is covered by an effective patching policy that allows the latest server software upgrades, updates, or patches to be tested and applied within a short time frame following their release by the vendor.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4056](https://github.com/hashgraph/guardian/issues/4056)
+
+## ---- July 2025----
+
+### Identifying, Implementing and Integrating 3rd Party data resources
+
+* Identify and shortlist 2-3 key Environmental-related data sources to be used as reference data and/or
+* Implement integration with these 3rd party data providers (may be similar to IPFS/Hedera integration), such as:
+* policy can easily add such 'integration' to their policy - potentially using the new policy modules functionality [Linkable policy modules for constructing end-to-end Policy workflows #1657](https://github.com/hashgraph/guardian/issues/1657)
+* the data can be defined as mandatory or optional (by the policy author)
+* data imported into Policy artifacts is stored and displayed in its native format, preserving 'mime type' and/or any other indication of the nature of the data as well as the identity/credentials of the source, time/date and other identifying information as appropriate
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/1690](https://github.com/hashgraph/guardian/issues/1690)
+
+### Substitute Google maps API in Guardian UI with an OSS alternative
+
+Substitute currently used Google Maps for the same open maps as used in the Indexer.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3959](https://github.com/hashgraph/guardian/issues/3959)
+
+### Authorization Headers Potentially Leaked through IPFS in Request Data Module
+
+Implement a secure method to handle secrets in the Request Data module that ensures sensitive information, such as authorization headers, is not published with the policy. A possibility may be to include encrypted headers with the public key that only the private key of the policy owner can decrypt. Other possibility may be to store the secrets headers in the vault and fetch them at runtime using appropriate access controls. Update the documentation to explicitly warn policy creators about the risks of including sensitive information in the policies and recommend using the module only for public HTTP methods. Provide guidelines on securely configuring policies to avoid the leakage of sensitive data.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4049](https://github.com/hashgraph/guardian/issues/4049)
+
+### Enhancements of Indexer
+
+1. We need to enhance Indexer UI for consumers "Tree API," project/tonnage API, and other consumer projects for the purpose of eCommerce supportive transactions.
+2. As Max have performed detailed analysis on the Indexer use cases, we need to incorporate all of them as it sounds great ideas. Please check the link to get the list of usecases: [https://docs.google.com/spreadsheets/d/1LwxkCnTqHiLDFQVnggw\_owZwzJjLEgKAlpRZFdH3jQ8/edit?gid=1732024412#gid=1732024412](https://docs.google.com/spreadsheets/d/1LwxkCnTqHiLDFQVnggw_owZwzJjLEgKAlpRZFdH3jQ8/edit?gid=1732024412#gid=1732024412)
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4509](https://github.com/hashgraph/guardian/issues/4509)
+
+### Capitals Coalition’s Digital Sustainability Disclosures Project (DSD)
+
+Work together with Capitals Coalition to create a Guardian policy in alignment with CSRD’s European Sustainability Reporting Standards (ESRS).
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/4563](https://github.com/hashgraph/guardian/issues/4563)
+
+### Verra SDVM001 SD Vista Methodology for Time Savings from Improved Cookstoves
+
+1. Creating Schema design for this methodology.
+2. Development of the schema and policy.
+3. Testing the policy development through Guardian UI and configurator.
+
+Referral Link: [https://github.com/hashgraph/guardian/issues/3706](https://github.com/hashgraph/guardian/issues/3706)
 {% endtab %}
 
 {% tab title="Previous Releases" %}
@@ -755,3 +1006,4 @@ Documentation Link: https://docs.hedera.com/guardian/guardian/standard-registry/
 Referral Link: [https://github.com/hashgraph/guardian/issues/4204](https://github.com/hashgraph/guardian/issues/4204)
 {% endtab %}
 {% endtabs %}
+
