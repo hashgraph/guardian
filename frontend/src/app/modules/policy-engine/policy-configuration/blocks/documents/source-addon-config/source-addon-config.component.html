@@ -122,6 +122,7 @@
                     [(ngModel)]="field.type"
                     [disabled]="readonly"
                     (onChange)="onSave()"
+                    [appendTo]="'body'"
                     placeholder="Select a condition"
                     [options]="fieldTypeOptions"
                     appendTo="body"

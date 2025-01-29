@@ -42,7 +42,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an ID type"
-                [options]="idTypeOptions">
+                [options]="idTypeOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -107,6 +109,7 @@
                         placeholder="Select a value"
                         [options]="getPresetOptions()"
                         optionLabel="label"
+                        optionValue="value"
                         [appendTo]="'body'"
                     >
                     </p-dropdown>

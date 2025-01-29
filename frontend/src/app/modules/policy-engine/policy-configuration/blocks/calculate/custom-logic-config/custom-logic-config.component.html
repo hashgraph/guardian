@@ -22,7 +22,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select a document signer"
-                [options]="documentSignerOptions">
+                [options]="documentSignerOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -36,7 +38,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an ID type"
-                [options]="idTypeOptions">
+                [options]="idTypeOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>

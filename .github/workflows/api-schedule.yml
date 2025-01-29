@@ -1,8 +1,7 @@
-name: Guardian CI API Tests
+name: Guardian CI API Tests daily
 on:
-    push:
-        branches-ignore:
-            - 'dependabot/**'
+    schedule:
+        - cron: '0 1 * * *'
 
 jobs:
     buildAndTest:
@@ -43,8 +42,8 @@ jobs:
 
             - name: Build packages
               run: |
-                  sudo apt-get update
-                  sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+                  # sudo apt-get update
+                  # sudo apt-get install -y libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb
                   pushd interfaces
                   yarn run build
                   popd
@@ -142,7 +141,7 @@ jobs:
               run: |
                   pushd e2e-tests
                   npm install
-                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=smoke,grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome            
+                  npx cypress run --env "portApi=3002,operatorId=${{ secrets.CI_HEDERA_ACCOUNT }},operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }},grepTags=all,grepFilterSpecs=true" --spec "cypress/e2e/api-tests/**/*.cy.js" --browser chrome            
                   popd
 
             - name: Publish API Test Results

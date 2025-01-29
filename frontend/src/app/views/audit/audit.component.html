@@ -12,7 +12,9 @@
                     optionLabel="username"
                     optionValue="did"
                     [showClear]="true"
-                    placeholder="All">
+                    placeholder="All"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
             </div>
         </div>
@@ -27,6 +29,7 @@
                     optionLabel="name"
                     optionValue="id"
                     [filter]="true"
+                    [appendTo]="'body'"
                     [showClear]="true"
                     placeholder="All policies">
                     <ng-template let-policy pTemplate="item">

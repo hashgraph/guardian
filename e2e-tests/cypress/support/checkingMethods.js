@@ -19,7 +19,7 @@ export const whileWipeRequestCreating = (dataToCompare, request, attempts) => {
 }
 
 export const whileRetireRequestCreating = (dataToCompare, authorization, attempts) => {
-    let request  = {
+    let request = {
         method: METHOD.GET,
         url: API.ApiServer + API.WipeRequests,
         headers: {
@@ -46,7 +46,7 @@ export const whileRetireRequestCreating = (dataToCompare, authorization, attempt
 
 export const whileRetireRRequestCreating = (dataToCompare, authorization, attempts) => {
 
-    let request  = {
+    let request = {
         method: METHOD.GET,
         url: API.ApiServer + API.RetireRequests,
         headers: {
@@ -184,6 +184,19 @@ export const whileBalanceVerifying = (dataToCompare, request, attempts, tokenId)
                 if (balance !== dataToCompare)
                     whileBalanceVerifying(dataToCompare, request, attempts)
             }
+        })
+    }
+}
+
+export const whilePolicyTestExecuting = (request, attempts = 0) => {
+    if (attempts < 100) {
+        attempts++
+        let test
+        cy.wait(3000)
+        cy.request(request).then((response) => {
+            test = response.body.tests.at(0)
+            if (test.progress != null || test.result == null)
+                whilePolicyTestExecuting(request, attempts)
         })
     }
 }

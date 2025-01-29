@@ -209,6 +209,7 @@
                                     [formControl]="selectedTokenId"
                                     optionLabel="topicId"
                                     optionValue="topicId"
+                                    [appendTo]="'body'"
                                     placeholder="Select a Topic ID"
                                     class="full-width">
                                     <ng-template let-topic pTemplate="item">
@@ -289,6 +290,7 @@
                                 [formControl]="item.keyNameControl"
                                 optionLabel="name"
                                 optionValue="id"
+                                [appendTo]="'body'"
                                 placeholder="Select a method"
                                 class="full-width">
                             </p-dropdown>

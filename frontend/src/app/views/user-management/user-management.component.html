@@ -23,6 +23,7 @@
                 <div class="filter-container">
                     <p-dropdown
                         (onChange)="onFilter()"
+                        [appendTo]="'body'"
                         [(ngModel)]="roleFilterValue"
                         [options]="roleFilterOption">
                         <ng-template pTemplate="selectedItem">
@@ -41,6 +42,7 @@
                 <div class="filter-container">
                     <p-dropdown
                         (onChange)="onFilter()"
+                        [appendTo]="'body'"
                         [(ngModel)]="statusFilterValue"
                         [options]="statusFilterOption">
                         <ng-template pTemplate="selectedItem">
