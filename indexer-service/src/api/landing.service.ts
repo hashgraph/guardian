@@ -35,6 +35,8 @@ export class LandingService {
                     'methodologies',
                     'projects',
                     'totalIssuance',
+                    'totalSerialized',
+                    'totalFungible',
                     'date',
                 ],
             }

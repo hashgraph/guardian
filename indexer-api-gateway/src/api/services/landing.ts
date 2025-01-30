@@ -11,7 +11,7 @@ export class LandingApi extends ApiClient {
     @ApiOperation({
         summary: 'Get landing page analytics',
         description:
-            'Returns count of registries, methodologies, projects, totalIssuance, date',
+            'Returns count of registries, methodologies, projects, totalIssuance, totalSerialized, totalFungible, date',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error',

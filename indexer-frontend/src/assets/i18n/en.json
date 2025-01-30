@@ -9,6 +9,8 @@
         "methodologies": "Methodologies",
         "projects": "Total Documents",
         "projects_issuance": "Projects Issuance",
+        "total_serialized": "Total Serialized",
+        "total_fungible": "Total Fungible",
         "x": "Date and time",
         "y": "Count"
     },
