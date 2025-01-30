@@ -1138,10 +1138,9 @@ export class PoliciesComponent implements OnInit {
 
     public createMultiPolicy(element: any) {
         const dialogRef = this.dialogService.open(MultiPolicyDialogComponent, {
+            showHeader: false,
             width: '650px',
-            styleClass: 'g-dialog',
-            closable: false,
-            autoZIndex: true,
+            styleClass: 'guardian-dialog',
             data: {
                 policyId: element.id
             }
