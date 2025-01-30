@@ -28,10 +28,11 @@ export class NewFormulaDialog {
         this.title = this.config.data?.title || '';
         this.action = this.config.data?.action || '';
         this.policies = this.config.data?.policies || [];
-        this.policies = this.policies.filter((p) => p.instanceTopicId);
+        this.policies = this.policies.filter((p) => p.topicId);
+
         const formula = this.config.data?.formula;
-        const instanceTopicId = this.config.data?.policy?.instanceTopicId;
-        this.policy = this.policies.find((p) => p.instanceTopicId === instanceTopicId) || null;
+        const id = this.config.data?.policy?.id;
+        this.policy = this.policies.find((p) => p.id === id) || null;
         if (formula) {
             this.readonly = true;
             this.dataForm.setValue({
@@ -71,7 +72,8 @@ export class NewFormulaDialog {
                 name,
                 description,
                 policyId: policy?.id,
-                instanceTopicId: policy?.instanceTopicId,
+                policyTopicId: policy?.topicId,
+                policyInstanceTopicId: policy?.instanceTopicId,
             });
         }
     }

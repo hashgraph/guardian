@@ -144,17 +144,20 @@ export class FormulasComponent implements OnInit {
             this.user = new UserPermissions(profile);
             this.owner = this.user.did;
             this.allPolicies = policies || [];
-            // this.allPolicies = this.allPolicies.filter((p) => p.status === PolicyType.PUBLISH);
             this.allPolicies.unshift({
                 name: 'All',
-                instanceTopicId: null
+                id: null
             });
             this.allPolicies.forEach((p: any) => p.label = p.name);
 
-            const topic = this.route.snapshot.queryParams['topic'];
-            this.currentPolicy =
-                this.allPolicies.find((p) => p.instanceTopicId === topic) ||
-                this.allPolicies[0];
+            const policy = this.route.snapshot.queryParams['policy'];
+            if(policy) {
+                this.currentPolicy = this.allPolicies.find((p) => p.id === policy);
+            }
+
+            if(!this.currentPolicy) {
+                this.currentPolicy = this.allPolicies[0];
+            }
 
             if (this.isConfirmed) {
                 this.loadData();
@@ -170,8 +173,8 @@ export class FormulasComponent implements OnInit {
 
     private loadData() {
         const filters: any = {};
-        if (this.currentPolicy?.instanceTopicId) {
-            filters.policyInstanceTopicId = this.currentPolicy?.instanceTopicId;
+        if (this.currentPolicy?.id) {
+            filters.policyId = this.currentPolicy?.id;
         }
         this.loading = true;
         this.formulasService
@@ -217,8 +220,8 @@ export class FormulasComponent implements OnInit {
             this.currentPolicy = this.allPolicies[0];
         }
         this.pageIndex = 0;
-        const topic = this.currentPolicy?.instanceTopicId || 'all'
-        this.router.navigate(['/formulas'], { queryParams: { topic } });
+        const policy = this.currentPolicy?.id || 'all'
+        this.router.navigate(['/formulas'], { queryParams: { policy } });
         this.loadData();
     }
 

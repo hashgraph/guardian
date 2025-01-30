@@ -76,7 +76,7 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Invalid parameters.');
                 }
                 const { filters, owner } = msg;
-                const { policyInstanceTopicId, pageIndex, pageSize } = filters;
+                const { policyId, pageIndex, pageSize } = filters;
 
                 const otherOptions: any = {};
                 const _pageSize = parseInt(pageSize, 10);
@@ -104,8 +104,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 const query: any = {
                     owner: owner.owner
                 };
-                if (policyInstanceTopicId) {
-                    query.policyInstanceTopicId = policyInstanceTopicId;
+                if (policyId) {
+                    query.policyId = policyId;
                 }
                 const [items, count] = await DatabaseServer.getFormulasAndCount(query, otherOptions);
                 return new MessageResponse({ items, count });

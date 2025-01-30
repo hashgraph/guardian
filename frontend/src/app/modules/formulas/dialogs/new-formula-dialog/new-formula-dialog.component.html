@@ -33,18 +33,15 @@
                     placeholder="Not selected"
                     panelStyleClass="guardian-dropdown-panel">
                     <ng-template pTemplate="selectedItem">
-                        <div *ngIf="currentPolicy && currentPolicy.instanceTopicId" class="guardian-dropdown-selected">
+                        <div *ngIf="currentPolicy" class="guardian-dropdown-selected">
                             <span class="guardian-dropdown-label">Policy</span> 
                             <span class="guardian-dropdown-item">{{ currentPolicy.name }}</span>
                         </div>
                     </ng-template>
                     <ng-template let-policy pTemplate="item">
-                        <div *ngIf="policy.instanceTopicId" class="guardian-dropdown-item">
+                        <div class="guardian-dropdown-item">
                             <span>{{policy.name}}</span>
-                            <span class="dropdown-policy-version">({{policy.version}})</span> 
-                        </div>
-                        <div *ngIf="!policy.instanceTopicId" class="guardian-dropdown-item">
-                            <span></span>
+                            <span *ngIf="policy.version" class="dropdown-policy-version">({{policy.version}})</span> 
                         </div>
                     </ng-template>
                 </p-dropdown>

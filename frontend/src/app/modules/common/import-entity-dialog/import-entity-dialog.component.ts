@@ -546,7 +546,7 @@ export class ImportEntityDialog {
                 this.setResult({
                     type: 'file',
                     data: arrayBuffer,
-                    label: result
+                    formula: result
                 });
             }, (e) => {
                 this.loading = false;

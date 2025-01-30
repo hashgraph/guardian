@@ -731,7 +731,7 @@ export class PolicyEngine extends NatsService {
 
             const name = newFormula.name;
             num++;
-            notifier.info(`Schema ${num} (${name || '-'}) published`);
+            notifier.info(`Formula ${num} (${name || '-'}) published`);
         }
 
         if (skipped) {
