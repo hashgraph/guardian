@@ -120,107 +120,6 @@
                 --checkbox-button-on-second-color: var(--formula-text-background, #d7f5e2);
             }
         }
-
-        .formula-item {
-            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
-            background: var(--guardian-background, #FFFFFF);
-            border-radius: 8px;
-            margin-bottom: 16px;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
-
-            .formula-item-icon {
-                width: 32px;
-                min-width: 32px;
-                width: 32px;
-                min-width: 32px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                cursor: move;
-
-                * {
-                    pointer-events: none;
-                }
-            }
-
-            .formula-item-container {
-                width: 100%;
-                padding: 16px;
-
-                .formula-item-header {
-                    height: 24px;
-                    width: 100%;
-                    margin-bottom: 16px;
-                    position: relative;
-                    display: flex;
-
-                    &__icon {
-                        margin-right: 8px;
-                    }
-
-                    &__name {
-                        font-family: Poppins;
-                        font-size: 16px;
-                        font-weight: 600;
-                        height: 24px;
-                        line-height: 24px;
-                    }
-
-                    &__delete {
-                        position: absolute;
-                        top: 0px;
-                        right: 0px;
-                        width: 24px;
-                        height: 24px;
-
-                        .guardian-icon-button {
-                            width: 24px;
-                            height: 24px;
-                        }
-                    }
-                }
-
-                .formula-item-body {}
-            }
-
-            &[type="constant"] {
-                border: 1px solid var(--formula-constant-color, #4169E2);
-
-                .formula-item-icon {
-                    background: var(--formula-constant-background, #e1e7fa);
-                    border-right: 1px solid #E1E7EF;
-                }
-            }
-
-            &[type="variable"] {
-                border: 1px solid var(--formula-variable-color, #DA9B22);
-
-                .formula-item-icon {
-                    background: var(--formula-variable-background, #FFF6E3);
-                    border-right: 1px solid #E1E7EF;
-                }
-            }
-
-            &[type="formula"] {
-                border: 1px solid var(--formula-function-color, #E50299);
-
-                .formula-item-icon {
-                    background: var(--formula-function-background, #fbd9ef);
-                    border-right: 1px solid #E1E7EF;
-                }
-            }
-
-            &[type="text"] {
-                border: 1px solid var(--formula-text-color, #19BE47);
-
-                .formula-item-icon {
-                    background: var(--formula-text-background, #d7f5e2);
-                    border-right: 1px solid #E1E7EF;
-                }
-            }
-        }
     }
 
     &[keyboard="true"] {
@@ -377,7 +276,7 @@
         font-weight: 400;
         line-height: normal;
     }
-    
+
     .info-text-strong {
         color: var(--color-grey-5, #848fa9);
         text-align: center;
@@ -396,4 +295,117 @@
             margin-bottom: 190px;
         }
     }
+}
+
+.formula-item {
+    box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
+    background: var(--guardian-background, #FFFFFF);
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+
+    .formula-item-icon {
+        width: 32px;
+        min-width: 32px;
+        width: 32px;
+        min-width: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: move;
+
+        * {
+            pointer-events: none;
+        }
+
+        &[readonly="true"] {
+            cursor: default;
+        }
+    }
+
+    .formula-item-container {
+        width: 100%;
+        padding: 16px;
+
+        .formula-item-header {
+            height: 24px;
+            width: 100%;
+            margin-bottom: 16px;
+            position: relative;
+            display: flex;
+
+            &__icon {
+                margin-right: 8px;
+            }
+
+            &__name {
+                font-family: Poppins;
+                font-size: 16px;
+                font-weight: 600;
+                height: 24px;
+                line-height: 24px;
+            }
+
+            &__delete {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                width: 24px;
+                height: 24px;
+
+                .guardian-icon-button {
+                    width: 24px;
+                    height: 24px;
+                }
+            }
+        }
+
+        .formula-item-body {}
+    }
+
+    &[type="constant"] {
+        border: 1px solid var(--formula-constant-color, #4169E2);
+
+        .formula-item-icon {
+            background: var(--formula-constant-background, #e1e7fa);
+            border-right: 1px solid #E1E7EF;
+        }
+    }
+
+    &[type="variable"] {
+        border: 1px solid var(--formula-variable-color, #DA9B22);
+
+        .formula-item-icon {
+            background: var(--formula-variable-background, #FFF6E3);
+            border-right: 1px solid #E1E7EF;
+        }
+    }
+
+    &[type="formula"] {
+        border: 1px solid var(--formula-function-color, #E50299);
+
+        .formula-item-icon {
+            background: var(--formula-function-background, #fbd9ef);
+            border-right: 1px solid #E1E7EF;
+        }
+    }
+
+    &[type="text"] {
+        border: 1px solid var(--formula-text-color, #19BE47);
+
+        .formula-item-icon {
+            background: var(--formula-text-background, #d7f5e2);
+            border-right: 1px solid #E1E7EF;
+        }
+    }
+}
+
+.cdk-drag.formula-item.cdk-drag-preview {
+
+}
+
+.formula-item.cdk-drag-placeholder {
+    opacity: 0.5;
 }

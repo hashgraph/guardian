@@ -1,3 +1,4 @@
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
 
 export class Formulas {
@@ -98,5 +99,16 @@ export class Formulas {
             }
         }
         return null;
+    }
+
+    public reorder(previousIndex: number, currentIndex: number) {
+        if (previousIndex !== currentIndex) {
+            const prevItem = this.data[previousIndex];
+            const currentItem = this.data[currentIndex];
+            const originalPreviousIndex = this.items.findIndex((e) => e === prevItem);
+            const originalCurrentIndex = this.items.findIndex((e) => e === currentItem);
+            moveItemInArray(this.items, originalPreviousIndex, originalCurrentIndex);
+            this.update();
+        }
     }
 }

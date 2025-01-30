@@ -10,6 +10,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas } from '../models/formulas';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-formula-configuration',
@@ -345,5 +346,9 @@ export class FormulaConfigurationComponent implements OnInit {
         $event.preventDefault();
         $event.stopPropagation();
         item.link = null;
+    }
+
+    public drop(event: CdkDragDrop<any[]>) {
+        this.config.reorder(event.previousIndex, event.currentIndex);
     }
 }

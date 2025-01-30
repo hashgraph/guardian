@@ -86,9 +86,23 @@
                 <checkbox-button [(value)]="filters.formula" class="item-filter formula-filter" (change)="onFilter()">Formula</checkbox-button>
                 <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
             </div>
-            <div class="formula-items">
-                <div *ngFor="let item of config.data" class="formula-item" [attr.type]="item.type" [attr.readonly]="readonly">
-                    <div class="formula-item-icon">
+            <div 
+                class="formula-items"
+                cdkDropList
+                [cdkDropListData]="config.data"
+                (cdkDropListDropped)="drop($event)"
+            >
+                <div 
+                    *ngFor="let item of config.data" 
+                    class="formula-item" 
+                    [attr.type]="item.type" 
+                    [attr.readonly]="readonly"
+                    cdkDrag
+                    cdkDragLockAxis="y"
+                    [cdkDragDisabled]="readonly"
+
+                >
+                    <div cdkDragHandle class="formula-item-icon" [attr.readonly]="readonly">
                         <svg-icon *ngIf="!readonly" class="icon-btn svg-icon"
                             src="/assets/images/icons/equal.svg"
                             svgClass="icon-color-close">

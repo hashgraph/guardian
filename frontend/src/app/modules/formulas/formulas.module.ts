@@ -38,7 +38,6 @@ import { FormulasViewDialog } from './dialogs/formulas-view-dialog/formulas-view
         FormsModule,
         MaterialModule,
         CommonComponentsModule,
-
         AppRoutingModule,
         DynamicDialogModule,
         TableModule,
