@@ -475,3 +475,7 @@ body {
 ::ng-deep .propRow .propRowCell .remove-prop {
     top: 10px !important;
 }
+
+::ng-deep p-progressspinner svg circle {
+    stroke: var(--button-primary-color) !important;
+}
