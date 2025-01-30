@@ -114,18 +114,30 @@
                         </div>
                     </div>
 
-                    <div *ngIf="type === 'table'" class="merge-table">
+                    <div *ngIf="type === 'table'" class="merge-table" [attr.open]="panelOpenState">
                         <div class="merge-table-content">
-                            <p-table [value]="report" class="table">
+                            <p-table *ngIf="report" [value]="report" class="table mat-table">
+                                <!-- Шапка таблицы -->
                                 <ng-template pTemplate="header">
-                                    <tr>
-                                        <th *ngFor="let column of columns">{{ column.label }}</th>
+                                    <tr class="mat-header-row">
+                                        <ng-container *ngFor="let column of columns">
+                                            <th *ngIf="displayedColumns.includes(column.name)" class="mat-header-cell">
+                                                {{ column.label }}
+                                            </th>
+                                        </ng-container>
                                     </tr>
                                 </ng-template>
 
+                                <!-- Тело таблицы -->
                                 <ng-template pTemplate="body" let-row>
-                                    <tr>
-                                        <td *ngFor="let column of columns">{{ row[column.name] }}</td>
+                                    <tr class="mat-row" [attr.type]="row.type" [attr.rate]="row.total_rate">
+                                        <ng-container *ngFor="let column of columns">
+                                            <td *ngIf="displayedColumns.includes(column.name)" class="mat-cell">
+                                                <ng-container *ngIf="!isObject(row[column.name])">
+                                                    {{ row[column.name] }}
+                                                </ng-container>
+                                            </td>
+                                        </ng-container>
                                     </tr>
                                 </ng-template>
                             </p-table>

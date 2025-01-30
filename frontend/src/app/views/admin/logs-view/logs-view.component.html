@@ -48,10 +48,17 @@
                         placeholder="Message"
                     />
                 </span>
-                <p-dropdown [formControlName]="'type'" [options]="types" class="message-type-container">
+                <p-dropdown
+                    [formControlName]="'type'"
+                    [appendTo]="'body'"
+                    [options]="types"
+                    placeholder="Message Type"
+                    class="message-type-container">
                     <ng-template let-item pTemplate="selectedItem">
                         <div class="selected-type-value">
-                            <span class="grey-6">Message Type {{ item?.label }}</span>
+                            <span class="grey-6">
+                                Message Type {{ item?.label }}
+                            </span>
                         </div>
                     </ng-template>
                     <ng-template let-item pTemplate="item">

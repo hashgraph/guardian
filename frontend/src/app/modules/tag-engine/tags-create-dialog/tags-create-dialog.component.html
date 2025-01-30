@@ -11,7 +11,7 @@
     </form>
 
     <div *ngIf="schemas && schemas.length" class="artifact-container">
-        <p-dropdown *ngIf="canAddDocument" [(ngModel)]="schema" [options]="schemas" optionLabel="name">
+        <p-dropdown *ngIf="canAddDocument" [appendTo]="'body'" [(ngModel)]="schema" [options]="schemas" optionLabel="name">
             <ng-template pTemplate="selectedItem">
                 <div *ngIf="schema" class="country-item country-item-value">
                     <div>{{ schema.name }}</div>
@@ -99,7 +99,9 @@
                     (onChange)="onSelectSchema()"
                     [options]="schemas"
                     optionLabel="name"
-                    placeholder="Select a schema">
+                    placeholder="Select a schema"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
                 <div *ngIf="schema" class="artifact-form">
                     <div class="artifact-form-label">

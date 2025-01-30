@@ -101,13 +101,20 @@
                         <td class="propRowCell">
                             <p-dropdown
                                 [(ngModel)]="sectoralScopeSelected"
-                                [options]="allCategories?.sectoralScopeOptions"
+                                [options]="allCategories.sectoralScopeOptions"
                                 optionLabel="name"
-                                [disabled]="!allCategories"
-                                placeholder="Select a sectoral scope"
                                 (onChange)="onCategoriesChanged()"
+                                [disabled]="!allCategories"
                                 [appendTo]="'body'"
+                                placeholder="Select a sectoral scope"
                             >
+
+                                <ng-template pTemplate="selectedItem" let-selectedItem>
+                                    <span *ngIf="selectedItem">
+                                        {{ selectedItem.name }}
+                                    </span>
+                                    <span *ngIf="!selectedItem">Select a sectoral scope</span>
+                                </ng-template>
                             </p-dropdown>
                         </td>
                     </tr>
@@ -117,13 +124,20 @@
                         <td class="propRowCell">
                             <p-dropdown
                                 [(ngModel)]="sectoralScopeSelected"
-                                [options]="allCategories?.sectoralScopeOptions"
+                                [options]="allCategories?.projectScaleOptions"
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select a sectoral scope"
                                 (onChange)="onCategoriesChanged()"
                                 [appendTo]="'body'"
                             >
+
+                                <ng-template pTemplate="selectedItem" let-selectedItem>
+                                    <span *ngIf="selectedItem">
+                                        {{ selectedItem.name }}
+                                    </span>
+                                    <span *ngIf="!selectedItem">Select a sectoral scope</span>
+                                </ng-template>
                             </p-dropdown>
                         </td>
                     </tr>
@@ -137,9 +151,15 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select a technology type"
-                                (onChange)="onCategoriesChanged()"
                                 [appendTo]="'body'"
                             >
+
+                                <ng-template pTemplate="selectedItem" let-selectedItem>
+                                    <span *ngIf="selectedItem">
+                                        {{ selectedItem.name }}
+                                    </span>
+                                    <span *ngIf="!selectedItem">Select a technology type</span>
+                                </ng-template>
                             </p-dropdown>
                         </td>
                     </tr>
@@ -153,8 +173,8 @@
                                 optionLabel="name"
                                 [disabled]="!allCategories"
                                 placeholder="Select migration activity types"
-                                (onChange)="onCategoriesChanged()"
                                 [appendTo]="'body'"
+                                (onChange)="onCategoriesChanged()"
                             >
                             </p-multiSelect>
                         </td>
@@ -164,13 +184,13 @@
                         <td class="propRowCell cellName">Sub Type</td>
                         <td class="propRowCell">
                             <p-multiSelect
-                                [(ngModel)]="migrationActivityTypeSelected"
-                                [options]="allCategories?.migrationActivityTypeOptions"
+                                [(ngModel)]="subTypeSelected"
+                                [options]="allCategories?.subTypeOptions"
                                 optionLabel="name"
                                 [disabled]="!allCategories"
-                                placeholder="Select migration activity types"
-                                (onChange)="onCategoriesChanged()"
+                                placeholder="Select sub types"
                                 [appendTo]="'body'"
+                                (onChange)="onCategoriesChanged()"
                             >
                             </p-multiSelect>
                         </td>

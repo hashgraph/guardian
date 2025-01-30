@@ -102,7 +102,9 @@
                 optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select a role"
-                (onChange)="onSave()">
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
             <p-dropdown
                 *ngSwitchDefault
@@ -112,7 +114,9 @@
                 optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select an option"
-                (onChange)="onSave()">
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -133,7 +137,9 @@
                 optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select schemas"
-                (onChange)="onSave()">
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+            >
                 <ng-template let-schema pTemplate="item">
                     <div
                         class="schema-variable"
@@ -155,7 +161,9 @@
                 optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select blocks"
-                (onChange)="onSave()">
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+            >
 
                 <ng-template pTemplate="selectedItems" let-selectedItems>
                     <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
@@ -178,7 +186,9 @@
                 optionValue="value"
                 [disabled]="readonly"
                 placeholder="Select children blocks"
-                (onChange)="onSave()">
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+            >
 
                 <ng-template pTemplate="selectedItems" let-selectedItems>
                     <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
@@ -200,7 +210,9 @@
                            (onChange)="onSave()"
                            optionLabel="name"
                            optionValue="value"
-                           placeholder="Select Roles">
+                           placeholder="Select Roles"
+                           [appendTo]="'body'"
+            >
             </p-multiSelect>
             <p-multiSelect *ngSwitchDefault
                            [(ngModel)]="value"
@@ -209,7 +221,9 @@
                            (onChange)="onSave()"
                            optionLabel="label"
                            optionValue="value"
-                           placeholder="Select Items">
+                           placeholder="Select Items"
+                           [appendTo]="'body'"
+            >
             </p-multiSelect>
         </td>
     </tr>

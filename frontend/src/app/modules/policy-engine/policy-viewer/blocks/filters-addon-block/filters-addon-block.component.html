@@ -13,6 +13,7 @@
                 optionLabel="name"
                 optionValue="value"
                 [(ngModel)]="currentType"
+                [appendTo]="'body'"
                 [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
                 class="w-full"
                 (onChange)="onFilters($event)">
@@ -42,6 +43,7 @@
                 [options]="options"
                 optionLabel="name"
                 optionValue="value"
+                [appendTo]="'body'"
                 (onChange)="onFilters($event)"
                 [style]="{'width':'100%', 'height': '100%'}"
                 class="w-full filter-dropdown"

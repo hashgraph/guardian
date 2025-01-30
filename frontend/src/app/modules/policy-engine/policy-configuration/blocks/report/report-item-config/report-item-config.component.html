@@ -48,6 +48,7 @@
                         [options]="iconTypeOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
+                        [appendTo]="'body'"
                         placeholder="Select Icon Type"
                         optionLabel="label"
                         optionValue="value">
@@ -129,6 +130,7 @@
                                 [options]="filterTypeOptions"
                                 [disabled]="readonly"
                                 (onChange)="onSave()"
+                                [appendTo]="'body'"
                                 placeholder="Select Filter Type"
                                 optionLabel="label"
                                 optionValue="value">
@@ -291,6 +293,7 @@
                             (onChange)="onSave()"
                             placeholder="Select Filter Type"
                             optionLabel="label"
+                            appendTo="body"
                             optionValue="value">
                 </p-dropdown>
             </td>
@@ -305,6 +308,7 @@
                             (onChange)="onSave()"
                             placeholder="Select Type Value"
                             optionLabel="label"
+                            appendTo="body"
                             optionValue="value">
                 </p-dropdown>
             </td>

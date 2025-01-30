@@ -15,7 +15,7 @@
             >
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>
+                        <th *ngIf="hasHistory()">
                             History
                         </th>
                         <ng-container *ngFor="let field of fields">
@@ -38,10 +38,10 @@
                             'has-history-row': element.history,
                             revoked: element.option?.status === 'Revoked'
                         }"
-                        (click)="statusDetailed = statusDetailed === element ? null : element"
+                        (click)="onRowClick(element)"
                     >
-                        <td>
-                            <div *ngIf="element.history && element.history.length">
+                        <td *ngIf="element.history && element.history.length">
+                            <div>
                                 <i [ngClass]="statusDetailed === element ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
                             </div>
                         </td>

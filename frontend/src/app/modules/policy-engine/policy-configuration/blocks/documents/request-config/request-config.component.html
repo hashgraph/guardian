@@ -22,7 +22,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select an ID type"
-                [options]="idTypeOptions">
+                [options]="idTypeOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>
@@ -52,6 +54,7 @@
                 [(ngModel)]="properties.uiMetaData.type"
                 [disabled]="readonly"
                 (onChange)="onSave()"
+                [appendTo]="'body'"
                 placeholder="Select a UI type"
                 [options]="uiMetaDataTypeOptions">
             </p-dropdown>
@@ -181,7 +184,10 @@
                     (onChange)="onSave()"
                     placeholder="Select a value"
                     [options]="getPresetOptions()"
-                    optionLabel="label">
+                    optionLabel="label"
+                    optionValue="value"
+                    [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
         </tr>

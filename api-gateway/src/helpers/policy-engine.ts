@@ -1,8 +1,8 @@
-import { Singleton } from '../helpers/decorators/singleton.js';
-import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
-import { IAuthUser, NatsService } from '@guardian/common';
-import { NewTask } from './task-manager.js';
 import { ExportMessageDTO, PoliciesValidationDTO, PolicyDTO, PolicyPreviewDTO, PolicyValidationDTO } from '#middlewares';
+import { IAuthUser, NatsService } from '@guardian/common';
+import { DocumentType, GenerateUUIDv4, IOwner, MigrationConfig, PolicyEngineEvents, PolicyToolMetadata } from '@guardian/interfaces';
+import { Singleton } from '../helpers/decorators/singleton.js';
+import { NewTask } from './task-manager.js';
 
 /**
  * Policy engine service
@@ -619,6 +619,48 @@ export class PolicyEngine extends NatsService {
         policyId: string
     ) {
         return await this.sendMessage(PolicyEngineEvents.RESTART_DRY_RUN, { model, owner, policyId });
+    }
+
+    /**
+     * Create savepoint
+     * @param model
+     * @param owner
+     * @param policyId
+     */
+    public async createSavepoint(
+        model: any,
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.CREATE_SAVEPOINT, {model, owner, policyId});
+    }
+
+    /**
+     * Delete savepoint
+     * @param model
+     * @param owner
+     * @param policyId
+     */
+    public async deleteSavepoint(
+        model: any,
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.DELETE_SAVEPOINT, {model, owner, policyId});
+    }
+
+    /**
+     * Restore savepoint
+     * @param model
+     * @param owner
+     * @param policyId
+     */
+    public async restoreSavepoint(
+        model: any,
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.RESTORE_SAVEPOINT, {model, owner, policyId});
     }
 
     /**

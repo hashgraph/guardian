@@ -8,6 +8,7 @@
                 [(ngModel)]="properties.type"
                 [disabled]="readonly"
                 (onChange)="onSave()"
+                [appendTo]="'body'"
                 placeholder="Select an option"
                 [options]="dropdownOptions">
             </p-dropdown>
@@ -94,7 +95,9 @@
                         [disabled]="readonly"
                         (onChange)="onSave()"
                         placeholder="Select user"
-                        [options]="userOptions">
+                        [options]="userOptions"
+                        [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </td>
             </tr>

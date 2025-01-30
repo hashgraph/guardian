@@ -23,6 +23,7 @@
                         [options]="httpMethodsOptions"
                         [disabled]="readonly"
                         (onChange)="onSave()"
+                        [appendTo]="'body'"
                         placeholder="Select HTTP Method"
                         optionLabel="label"
                         optionValue="value">

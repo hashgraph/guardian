@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Logs", { tags: ['logs', 'thirdPool'] }, () => {
+context("Logs", { tags: ['logs', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let workerName, workersNumber;
 

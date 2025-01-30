@@ -115,7 +115,7 @@
 .link-btn svg {
     position: absolute;
     left: 10px;
-    top: 7px;
+    top: 10px;
 }
 
 .link-content {
@@ -125,7 +125,7 @@
 }
 
 .link-content .link-btn {
-    margin-left: 20px;
+    margin-left: 29px;
 }
 
 .link-content input {
@@ -140,17 +140,39 @@
     border-radius: 6px;
     width: 150px;
     position: relative;
-    padding: 16px 25px 16px 25px;
     box-sizing: border-box;
     -webkit-user-select: none;
     user-select: none;
     cursor: pointer;
     background: var(--button-primary-color);
     color: #fff;
-    margin-top: 4px;
-    margin-left: 20px;
+    padding: 15px 0 15px 20px;
+    font-size: 16px;
+    margin: 0 0 0 28px;
 }
 
 .generate-btn:hover {
     background: #0c69df;
+}
+
+.p-fluid {
+    position: relative;
+
+    label {
+        position: absolute;
+        z-index: 10;
+        top: -8px;
+        left: 10px;
+        font-size: 12px;
+        background: var(--color-grey-white);
+        padding: 2px;
+    }
+
+    p-dropdown ::ng-deep .p-dropdown-label {
+        padding: 16px;
+    }
+}
+
+.link-btn {
+    padding: 8px 0 10px 34px;
 }

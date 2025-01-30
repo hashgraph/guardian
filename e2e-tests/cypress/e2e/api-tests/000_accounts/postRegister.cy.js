@@ -1,11 +1,11 @@
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
-context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
+context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     const name = "TestUserRegistration";
     const SRUsername = Cypress.env('SRUser');
 
-    it("Register and login as new user", { tags: ['smoke', 'firstPool'] }, () => {
+    it("Register and login as new user", { tags: ['smoke'] }, () => {
         cy.request({
             method: METHOD.POST,
             url: API.ApiServer + API.AccountRegister,
@@ -20,19 +20,19 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             expect(response.body).to.have.property("username", name);
             expect(response.body).to.have.property("id");
         }).then(() => {
-                cy.request({
-                    method: METHOD.POST,
-                    url: API.ApiServer + API.AccountsLogin,
-                    body: {
-                        username: name,
-                        password: "test"
-                    }
-                }).then((response) => {
-                    expect(response.status).to.eq(STATUS_CODE.OK);
-                    expect(response.body).to.have.property("username", name);
-                    expect(response.body).to.have.property("role", "USER");
-                });
+            cy.request({
+                method: METHOD.POST,
+                url: API.ApiServer + API.AccountsLogin,
+                body: {
+                    username: name,
+                    password: "test"
+                }
+            }).then((response) => {
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                expect(response.body).to.have.property("username", name);
+                expect(response.body).to.have.property("role", "USER");
             });
+        });
     });
 
     it("Register without body - Negative", () => {
@@ -41,7 +41,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             url: API.ApiServer + API.AccountRegister,
             body: {
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then((response) => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -55,7 +55,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             body: {
                 password: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -68,7 +68,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             body: {
                 username: name,
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -82,7 +82,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 username: true,
                 password: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -97,7 +97,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 username: name,
                 name: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -112,7 +112,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 username: name,
                 password: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.NOT_FOUND);
         });
@@ -126,7 +126,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 username: name,
                 password: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.NOT_FOUND);
         });
@@ -141,7 +141,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 password: "test",
                 status: "Draft",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -155,7 +155,7 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
                 username: 'select * from users where id = 1 or 1=1',
                 password: "test",
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).should(response => {
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);
         });
@@ -168,10 +168,10 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             body: {
                 username: SRUsername,
                 password: "test",
-                password_confirmation : "test",
-                role:"USER"
+                password_confirmation: "test",
+                role: "USER"
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             expect(response.status).eql(STATUS_CODE.CONFLICT);
             expect(response.body.message).eql("An account with the same name already exists.");
@@ -185,10 +185,10 @@ context("Accounts", { tags: ['accounts', 'firstPool'] }, () => {
             body: {
                 username: name,
                 password: "test",
-                password_confirmation : "testtest",
-                role:"USER"
+                password_confirmation: "testtest",
+                role: "USER"
             },
-            failOnStatusCode:false,
+            failOnStatusCode: false,
         }).then(response => {
             cy.log(response)
             expect(response.status).eql(STATUS_CODE.UNPROCESSABLE);

@@ -2,15 +2,20 @@
     [(ngModel)]="value"
     [disabled]="disabled"
     placeholder="Select a schema"
-    [options]="getSchemaOptions()"
-    optionLabel="label">
+    [options]="schemas"
+    optionLabel="displayName"
+    optionValue="value"
+    [appendTo]="'body'"
+    (ngModelChange)="onChange()"
+>
     <ng-template let-item pTemplate="item">
         <div
             pTooltip="{{ item.tooltip }}"
-            tooltipPosition="below"
+            tooltipPosition="top"
             class="schema-variable"
+            [attr.status]="item.status"
         >
-            {{ item.label }}
+            {{ item.displayName }}
         </div>
     </ng-template>
 </p-dropdown>

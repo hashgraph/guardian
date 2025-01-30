@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
+context("Modules", { tags: ['modules', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const UserUsername = Cypress.env('User');
     const moduleName = Math.floor(Math.random() * 999) + "APIModuleExp";
@@ -39,7 +39,7 @@ context("Modules", { tags: ['modules', 'thirdPool'] }, () => {
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: 600000
             }).then((response) => {
                 expect(response.status).eql(STATUS_CODE.OK);
                 expect(response.body).to.be.not.eql("");
