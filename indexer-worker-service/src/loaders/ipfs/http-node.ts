@@ -6,10 +6,6 @@ export class HttpNode implements BaseNode {
     private readonly LOAD_TIMEOUT: number = 60 * 1000;
     private readonly CHECK_TIMEOUT: number = 15 * 1000;
 
-    constructor() {
-
-    }
-
     private parseCID(cid: string): string {
         return new CID(cid).toV1().toString('base32');
     }
@@ -24,7 +20,7 @@ export class HttpNode implements BaseNode {
     }
 
     public async stop() {
-
+        return;
     }
 
     public async get(cid: string, timeout?: number): Promise<Buffer> {

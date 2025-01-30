@@ -76,12 +76,11 @@ export interface FormulaRelationships {
     formulas?: Formula[];
 }
 
-
 /**
  * Formula activity
  */
-export interface FormulaActivity {
-}
+// tslint:disable-next-line:no-empty-interface
+export interface FormulaActivity {}
 
 /**
  * Formula

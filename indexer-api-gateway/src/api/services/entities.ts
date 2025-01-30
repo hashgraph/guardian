@@ -1124,7 +1124,6 @@ export class EntityApi extends ApiClient {
     }
     //#endregion
 
-
     //#region FORMULAS
     @Get('/formulas')
     @ApiOperation({

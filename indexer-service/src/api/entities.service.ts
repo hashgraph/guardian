@@ -1410,7 +1410,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            let item = await em.findOne(Message, {
+            const item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.FORMULA,
                 action: MessageAction.PublishFormula
@@ -1448,7 +1448,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            let item = await em.findOne(Message, {
+            const item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.FORMULA,
                 action: MessageAction.PublishFormula
@@ -1786,8 +1786,6 @@ export class EntityService {
                     row,
                 });
             }
-
-
 
             item = await loadDocuments(item, true);
 

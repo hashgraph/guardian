@@ -217,4 +217,9 @@ export class VCDetailsDTO
         },
     })
     schema?: any;
+
+    @ApiProperty({
+        description: 'Formulas data',
+    })
+    formulasData?: any;
 }

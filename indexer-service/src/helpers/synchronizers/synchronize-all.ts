@@ -98,9 +98,9 @@ export class SynchronizationAll extends SynchronizationTask {
 
     public static createAllTasks() {
         if (process.env.SYNC_ALL_MASK) {
-            this.createSyncTasks();
+            SynchronizationAll.createSyncTasks();
         } else {
-            this.createAsyncTasks();
+            SynchronizationAll.createAsyncTasks();
         }
     }
 

@@ -90,7 +90,6 @@ export class SynchronizationFormulas extends SynchronizationTask {
         }
         analytics.config = formulaData.formula;
 
-
         const policyMessage = policyMap.get(document.options?.policyInstanceTopicId);
         if (policyMessage) {
             analytics.policyId = policyMessage.consensusTimestamp;

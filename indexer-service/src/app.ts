@@ -10,24 +10,7 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
-import {
-    SynchronizationAnalytics,
-    SynchronizationContracts,
-    SynchronizationDid,
-    SynchronizationModules,
-    SynchronizationPolicy,
-    SynchronizationProjects,
-    SynchronizationRegistries,
-    SynchronizationRoles,
-    SynchronizationSchemas,
-    SynchronizationTools,
-    SynchronizationTopics,
-    SynchronizationVCs,
-    SynchronizationVPs,
-    SynchronizationLabels,
-    SynchronizationFormulas,
-    SynchronizationAll
-} from './helpers/synchronizers/index.js';
+import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 
 const channelName = (
