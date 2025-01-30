@@ -85,4 +85,23 @@ export class FormulaImportExport {
     public static validateConfig(data?: IFormulaConfig): IFormulaConfig {
         return data;
     }
+
+    /**
+     * Replace Ids
+     *
+     * @param data config
+     */
+    public static replaceIds(data: IFormulaConfig, oldId: string, newId: string): IFormulaConfig {
+        if (data) {
+            const formulas = data.formulas;
+            if (Array.isArray(formulas)) {
+                for (const component of formulas) {
+                    if (component.link && component.link.entityId === oldId) {
+                        component.link.entityId = newId;
+                    }
+                }
+            }
+        }
+        return data;
+    }
 }

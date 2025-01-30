@@ -29,6 +29,7 @@ export class PreviewPolicyDialog {
     public toolForm!: UntypedFormGroup;
     public isFile?: boolean;
     public mode: string = 'new';
+    public formulas!: string;
 
     public get inValid(): boolean {
         if(!(this.policy || this.module || this.tool || this.xlsx)) {
@@ -73,6 +74,9 @@ export class PreviewPolicyDialog {
                 })
                 .join(', ');
             this.tokens = tokens.map((s: any) => s.tokenName).join(', ');
+
+            const formulas = importFile.formulas || [];
+            this.formulas = formulas.map((s: any) => s.name).join(', ');
 
             const similar = importFile.similar || [];
             this.similar = similar

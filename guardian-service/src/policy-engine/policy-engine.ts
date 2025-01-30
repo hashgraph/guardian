@@ -3,6 +3,7 @@ import {
     Artifact,
     DatabaseServer,
     findAllEntities,
+    FormulaImportExport,
     getArtifactType,
     IPolicyComponents,
     MessageAction,
@@ -718,7 +719,7 @@ export class PolicyEngine extends NatsService {
             }
 
             for (const [oldId, newId] of schemaMap.entries()) {
-                replaceAllEntities(formula.config, ['entityId'], oldId, newId);
+                FormulaImportExport.replaceIds(formula.config, oldId, newId);
             }
 
             const newFormula = await publishFormula(

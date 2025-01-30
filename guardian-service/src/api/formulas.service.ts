@@ -273,6 +273,8 @@ export async function formulasAPI(logger: PinoLogger): Promise<void> {
                 formula.creator = owner.creator;
                 formula.owner = owner.owner;
                 formula.policyId = policyId;
+                formula.policyTopicId = policy.topicId;
+                formula.policyInstanceTopicId = policy.instanceTopicId;
                 formula.status = EntityStatus.DRAFT;
                 formula.config = FormulaImportExport.validateConfig(formula.config);
                 const row = await DatabaseServer.createFormula(formula);

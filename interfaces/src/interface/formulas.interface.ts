@@ -1,3 +1,5 @@
+import { EntityStatus } from '../type';
+
 export enum FormulaItemType {
     Constant = 'constant',
     Variable = 'variable',
@@ -32,7 +34,9 @@ export interface IFormula {
     description?: string;
     policyId?: string;
     policyTopicId?: string;
+    policyInstanceTopicId?: string;
     owner?: string;
-    status?: string;
+    creator?: string;
+    status?: EntityStatus;
     config?: IFormulaConfig;
 }
