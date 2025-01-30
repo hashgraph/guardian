@@ -35,7 +35,7 @@
                 <ng-template let-policy pTemplate="item">
                     <div *ngIf="policy" class="guardian-dropdown-item">
                         <span>{{policy.name}}</span>
-                        <span class="dropdown-policy-version">({{policy.version}})</span> 
+                        <span *ngIf="policy.version" class="dropdown-policy-version">({{policy.version}})</span> 
                     </div>
                     <div *ngIf="!policy" class="guardian-dropdown-item">
                         <span>All</span>

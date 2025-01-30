@@ -75,11 +75,11 @@ export class FormulasApi {
         example: 20
     })
     @ApiQuery({
-        name: 'policyInstanceTopicId',
+        name: 'policyId',
         type: String,
-        description: 'Policy Instance Topic Id',
+        description: 'Policy Id',
         required: false,
-        example: Examples.ACCOUNT_ID
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -98,13 +98,13 @@ export class FormulasApi {
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
-        @Query('policyInstanceTopicId') policyInstanceTopicId?: string
+        @Query('policyId') policyId?: string
     ): Promise<FormulaDTO[]> {
         try {
             const owner = new EntityOwner(user);
             const guardians = new Guardians();
             const { items, count } = await guardians.getFormulas({
-                policyInstanceTopicId,
+                policyId,
                 pageIndex,
                 pageSize
             }, owner);
