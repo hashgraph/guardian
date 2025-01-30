@@ -259,7 +259,8 @@
                 "policy_topic_id": "Policy Topic Id",
                 "name": "Name",
                 "description": "Description",
-                "owner": "Owner"
+                "owner": "Owner",
+                "policy": "Policy"
             }
         },
         "statistic": {
