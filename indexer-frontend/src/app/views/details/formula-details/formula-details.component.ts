@@ -131,7 +131,7 @@ export class FormulaDetailsComponent extends BaseDetailsComponent {
     }
 
     protected override onNavigate(): void {
-        if (this.id && this.tab === 'view') {
+        if (this.id && this.tab === 'view' && !this.formulaData) {
             this.subLoading = true;
             this.entitiesService.getFormulaRelationships(this.id).subscribe({
                 next: (result) => {

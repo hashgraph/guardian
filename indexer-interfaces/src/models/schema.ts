@@ -14,6 +14,14 @@ export class Schema {
      */
     public name?: string;
     /**
+     * Description
+     */
+    public description?: string;
+    /**
+     * Type
+     */
+    public type?: string;
+    /**
      * Document
      */
     public document?: ISchemaDocument;
@@ -44,6 +52,8 @@ export class Schema {
         if (this.document) {
             this.iri = this.document.$id || '';
             this.name = this.document.title || '';
+            this.type = this.iri.replace(/^\#/, '');
+            this.description = this.document.description || '';
             this.parseDocument();
         }
     }
@@ -67,6 +77,21 @@ export class Schema {
             this.fields,
             schemaCache
         );
+        this.setPaths(this.fields, '', this.iri + '/');
+    }
+
+    /**
+     * Parse document
+     * @private
+     */
+    private setPaths(fields: SchemaField[], path: string, fullPath: string): void {
+        for (const f of fields) {
+            f.path = path + f.name;
+            f.fullPath = fullPath + f.name;
+            if (Array.isArray(f.fields)) {
+                this.setPaths(f.fields, f.path + '.', f.fullPath + '.');
+            }
+        }
     }
 
     /**

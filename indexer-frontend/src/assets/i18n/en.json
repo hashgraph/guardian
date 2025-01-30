@@ -42,7 +42,7 @@
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
         "labels": "Labels",
-        "formula": "Formulas"
+        "formulas": "Formulas"
     },
     "home": {
         "header": "Indexer"
@@ -130,7 +130,8 @@
             "tools": "Tools",
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
-            "vps": "Verifiable Presentations"
+            "vps": "Verifiable Presentations",
+            "formulas": "Formulas"  
         },
         "hedera": {
             "topic_id": "Topic Id",

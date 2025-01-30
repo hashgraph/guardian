@@ -43,12 +43,12 @@ export class MathLiveComponent {
         this.mfe.addEventListener("focusin", () => {
             this.keyboard.emit(true);
             this.focus.emit(this);
-            return mathVirtualKeyboard.show();
+            // return mathVirtualKeyboard.show();
         });
         this.mfe.addEventListener("focusout", () => {
             this.keyboard.emit(false);
             this.focus.emit(this);
-            return mathVirtualKeyboard.hide();
+            // return mathVirtualKeyboard.hide();
         });
         this.mfe.addEventListener('input', (ev: any) => {
             this.value = ev?.target?.value;

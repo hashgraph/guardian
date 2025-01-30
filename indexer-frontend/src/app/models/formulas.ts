@@ -1,4 +1,4 @@
-import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
+import { FormulaItemType, IFormulaConfig, IFormulaItem } from "@indexer/interfaces";
 
 export class Formulas {
     private items: IFormulaItem[];
@@ -18,46 +18,6 @@ export class Formulas {
 
     public get all() {
         return this.items;
-    }
-
-    private create(type: FormulaItemType): IFormulaItem {
-        const item: IFormulaItem = {
-            uuid: GenerateUUIDv4(),
-            name: '',
-            description: '',
-            type: type,
-        };
-        if (type === FormulaItemType.Constant) {
-            item.value = '';
-            return item;
-        } else if (type === FormulaItemType.Variable) {
-            item.value = '';
-            item.link = null;
-            return item;
-        } else if (type === FormulaItemType.Formula) {
-            item.value = '';
-            item.link = null;
-            item.relationships = [];
-            return item;
-        } else if (type === FormulaItemType.Text) {
-            item.value = '';
-            item.link = null;
-            item.relationships = [];
-            return item;
-        } else {
-            return item;
-        }
-    }
-
-    public add(type: FormulaItemType): void {
-        const item = this.create(type);
-        this.items.push(item);
-        this.update();
-    }
-
-    public delete(item: IFormulaItem): void {
-        this.items = this.items.filter((e) => e.uuid !== item?.uuid);
-        this.update();
     }
 
     public setFilters(filter: any): void {

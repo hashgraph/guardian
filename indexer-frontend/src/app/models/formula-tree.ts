@@ -1,4 +1,4 @@
-import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject } from "@guardian/interfaces";
+import { FormulaItemType, IFormula, IFormulaItem, IFormulaLink, Message, Schema, SchemaField } from "@indexer/interfaces";
 
 export interface Link {
     schema: string;
@@ -10,22 +10,22 @@ export class DocumentItem {
     private _type: Set<string>;
     private _map: Map<string, any>;
 
-    constructor(document: IVCDocument | IVPDocument) {
+    constructor(document: any) {
         this._type = new Set<string>();
         this._map = new Map<string, any>();
         this.parsDoc(document);
     }
 
-    private parsDoc(document: IVCDocument | IVPDocument) {
+    private parsDoc(document: any) {
         try {
             if (!document || !document.document) {
                 return;
             }
             const json = document.document;
-            if ((json as IVC).credentialSubject) {
-                this.parsVC(json as IVC);
-            } else if ((json as IVP).verifiableCredential) {
-                this.parsVP(json as IVP);
+            if ((json).credentialSubject) {
+                this.parsVC(json);
+            } else if ((json).verifiableCredential) {
+                this.parsVP(json);
             } else {
                 return;
             }
@@ -99,7 +99,7 @@ export class DocumentItem {
         }
     }
 
-    private parsVC(vc: IVC) {
+    private parsVC(vc: any) {
         if (vc && vc.credentialSubject) {
             if (Array.isArray(vc.credentialSubject)) {
                 for (const cs of vc.credentialSubject) {
@@ -111,7 +111,7 @@ export class DocumentItem {
         }
     }
 
-    private parsVP(vp: IVP) {
+    private parsVP(vp: any) {
         if (vp && vp.verifiableCredential) {
             if (Array.isArray(vp.verifiableCredential)) {
                 for (const vc of vp.verifiableCredential) {
@@ -142,32 +142,32 @@ export class SchemaItem {
     public readonly type = 'schema';
 
     private _value: any;
-    private _schema: Schema;
-    private _field: SchemaField;
+    private _schema: Schema | null;
+    private _field: SchemaField | null;
     private _type: string | undefined;
     private _path: string | undefined;
 
-    constructor(schema: Schema, field: SchemaField) {
+    constructor(schema: Schema | null, field: SchemaField | null) {
         this._schema = schema;
         this._field = field;
-        this._type = schema.type;
-        this._path = field.path;
+        this._type = schema?.type;
+        this._path = field?.path;
     }
 
     public get name() {
-        return this._schema?.name;
+        return this._schema?.name || '';
     }
 
     public get description() {
-        return this._schema?.description;
+        return this._schema?.description || '';
     }
 
     public get field() {
-        return this._field?.description;
+        return this._field?.description || '';
     }
 
     public get value() {
-        return this._value;
+        return this._value || '';
     }
 
     public setDocuments(documents: DocumentItem[]) {
@@ -179,6 +179,10 @@ export class SchemaItem {
                 }
             }
         }
+    }
+
+    public static empty() {
+        return new SchemaItem(null, null);
     }
 }
 
@@ -194,7 +198,7 @@ export class FormulaItem {
 
     private _schemaLink: { schema: string, path: string } | null;
     private _formulaLink: { formula: string, variable: string } | null;
-    private _parent: FormulaTree;
+    private _parent: FormulaTree | null;
 
     private _relationshipItems: FormulaItem[];
     private _parentItems: FormulaItem[];
@@ -228,9 +232,11 @@ export class FormulaItem {
             }
         }
 
+        this._parent = null;
         this._relationshipItems = [];
         this._parentItems = [];
         this._linkItem = null;
+        this._linkEntity = null;
     }
 
     public get value() {
@@ -318,6 +324,8 @@ export class FormulaItem {
                 if (field) {
                     this._linkItem = new SchemaItem(schema, field);
                 }
+            } else {
+                this._linkItem = SchemaItem.empty();
             }
         }
     }
@@ -383,6 +391,7 @@ export class FormulaTree {
         this.description = formula.description || '';
 
         this._links = new Map<string, Map<string, FormulaItem[]>>();
+        this._items = [];
         this.parse(formula?.config?.formulas)
     }
 
@@ -468,6 +477,7 @@ export class FormulasTree {
 
     constructor() {
         this._links = new Map<string, Map<string, FormulaItem[]>>();
+        this.items = [];
     }
 
     public setFormulas(formulas: IFormula[]) {
@@ -487,7 +497,7 @@ export class FormulasTree {
         }
     }
 
-    public setDocuments(documents: (IVCDocument | IVPDocument) | (IVCDocument | IVPDocument)[]) {
+    public setDocuments(documents: (any) | (any)[]) {
         const _documents: DocumentItem[] = [];
         if (Array.isArray(documents)) {
             for (const doc of documents) {
@@ -536,11 +546,38 @@ export class FormulasTree {
         return result;
     }
 
+    private static getSchema(message: Message) {
+        try {
+            const schema = new Schema(message.documents[0], '');
+            return schema;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private static getDocument(message: Message) {
+        try {
+            return {
+                document: JSON.parse(message.documents[0])
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private static getFormula(message: Message): IFormula | null {
+        try {
+            return message.analytics.config;
+        } catch (error) {
+            return null;
+        }
+    }
+
     public static from(response?: {
-        formulas: IFormula[],
-        schemas: ISchema[],
-        document: IVCDocument,
-        relationships: IVCDocument[]
+        formulas: Message[],
+        schemas: Message[],
+        document: Message,
+        relationships: Message[]
     }) {
         if (!response) {
             return null;
@@ -548,26 +585,36 @@ export class FormulasTree {
 
         const documents = [];
         if (response.document) {
-            documents.push(response.document);
+            documents.push(FormulasTree.getDocument(response.document));
         }
         if (response.relationships) {
             for (const document of response.relationships) {
-                documents.push(document);
+                documents.push(FormulasTree.getDocument(document));
             }
         }
 
         const schemas = [];
         if (response.schemas) {
             for (const s of response.schemas) {
-                const schema = Schema.from(s);
+                const schema = FormulasTree.getSchema(s);
                 if (schema) {
                     schemas.push(schema);
                 }
             }
         }
 
+        const formulas = [];
+        if (response.formulas) {
+            for (const f of response.formulas) {
+                const formula = FormulasTree.getFormula(f);
+                if (formula) {
+                    formulas.push(formula);
+                }
+            }
+        }
+
         const tree = new FormulasTree();
-        tree.setFormulas(response.formulas);
+        tree.setFormulas(formulas);
         tree.setSchemas(schemas);
         tree.setDocuments(documents);
         tree.update();
