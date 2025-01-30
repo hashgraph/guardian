@@ -1576,6 +1576,33 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/formulas/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getFormulaRelationships
+      summary: Get formula relationships
+      description: Returns formula relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /entities/did-documents:
     get:
       operationId: EntityApi_getDidDocuments
@@ -6251,6 +6278,107 @@ components:
         - item
         - row
         - activity
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+      required:
+        - id
+        - item
+        - schemas
+        - formulas
     DIDOptionsDTO:
       type: object
       properties:
@@ -6625,85 +6753,6 @@ components:
         - item
         - row
         - history
-    MessageDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_4
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_5
-          type: array
-          items:
-            type: string
-        sequenceNumber:
-          type: number
-          description: SequenceNumber
-          example: 0
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-        - sequenceNumber
     RelationshipDTO:
       type: object
       properties:
