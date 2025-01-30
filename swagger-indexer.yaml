@@ -3630,11 +3630,16 @@ components:
           type: number
           description: Roles
           example: 10
+        formulas:
+          type: number
+          description: Formulas
+          example: 10
       required:
         - schemas
         - vcs
         - vps
         - roles
+        - formulas
     PolicyDetailsDTO:
       type: object
       properties:
@@ -7127,6 +7132,9 @@ components:
               - law
               - tags
             additionalProperties: false
+        formulasData:
+          type: object
+          description: Formulas data
       required:
         - id
         - uuid
@@ -7134,6 +7142,7 @@ components:
         - row
         - history
         - schema
+        - formulasData
     NFTDTO:
       type: object
       properties:
