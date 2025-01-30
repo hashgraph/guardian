@@ -13270,11 +13270,11 @@ paths:
           example: 20
           schema:
             type: number
-        - name: policyInstanceTopicId
+        - name: policyId
           required: false
           in: query
-          description: Policy Instance Topic Id
-          example: 0.0.1
+          description: Policy Id
+          example: '000000000000000000000001'
           schema:
             type: string
       responses:
