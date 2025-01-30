@@ -59,6 +59,7 @@ export class HomeComponent {
                 (item: { date: string | number | Date }) => {
                     const date = new Date(item.date);
                     const formattedDate = date.toLocaleDateString('ru-RU', {
+                        year: '2-digit',
                         month: '2-digit',
                         day: '2-digit',
                     });
@@ -119,42 +120,66 @@ export class HomeComponent {
                     link: '/vc-documents',
                 }]
             });
-            this.stats.push({
-                statData: [
-                    {
-                        label: 'stat.projects_issuance',
-                        chartData: {
-                            labels,
-                            data: result.filter(item => item.totalFungible).map(
-                                (item: { totalFungible: any }) => item.totalFungible
-                            ),
+
+            if (result.some(item => item.totalFungible)) {
+                this.stats.push({
+                    statData: [
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalFungible).map(
+                                    (item: { totalFungible: any }) => item.totalFungible
+                                ),
+                            },
+                            count: result[result.length - 1].totalFungible,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalFungible -
+                                result[result.length - 2].totalFungible
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_fungible',
                         },
-                        count: result[result.length - 1].totalFungible,
-                        upcount: hasUpcount
-                            ? result[result.length - 1].totalFungible -
-                            result[result.length - 2].totalFungible
-                            : 0,
-                        link: '/tokens',
-                        tabLabel: 'stat.total_fungible',
-                    },
-                    {
-                        label: 'stat.projects_issuance',
-                        chartData: {
-                            labels,
-                            data: result.filter(item => item.totalSerialized).map(
-                                (item: { totalSerialized: any }) => item.totalSerialized
-                            ),
-                        },
-                        count: result[result.length - 1].totalSerialized,
-                        upcount: hasUpcount
-                            ? result[result.length - 1].totalSerialized -
-                            result[result.length - 2].totalSerialized
-                            : 0,
-                        link: '/tokens',
-                        tabLabel: 'stat.total_serialized',
-                    }
-                ]
-            });
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalSerialized).map(
+                                    (item: { totalSerialized: any }) => item.totalSerialized
+                                ),
+                            },
+                            count: result[result.length - 1].totalSerialized,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalSerialized -
+                                result[result.length - 2].totalSerialized
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_serialized',
+                        }
+                    ]
+                });
+            } else if (result.some(item => item.totalIssuance)) {
+                this.stats.push({
+                    statData: [
+                        {
+                            label: 'stat.projects_issuance',
+                            chartData: {
+                                labels,
+                                data: result.filter(item => item.totalIssuance).map(
+                                    (item: { totalIssuance: any }) => item.totalIssuance
+                                ),
+                            },
+                            count: result[result.length - 1].totalIssuance,
+                            upcount: hasUpcount
+                                ? result[result.length - 1].totalIssuance -
+                                result[result.length - 2].totalIssuance
+                                : 0,
+                            link: '/tokens',
+                            tabLabel: 'stat.total_fungible',
+                        }
+                    ]
+                });
+            }
         });
         this.landingService
             .getProjectsCoordinates()

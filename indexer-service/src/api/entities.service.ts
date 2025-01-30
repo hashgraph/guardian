@@ -1822,9 +1822,21 @@ export class EntityService {
                 action: MessageAction.CreateLabelDocument,
                 'options.target': row?.metadata
             } as any));
+
+            const message = await em.findOne(Message, {
+                consensusTimestamp: row.metadata,
+            });
+
+            const analytics = {
+                policyId: message.analytics.policyId,
+                sr: message.analytics.issuer,
+            }
+
+            var newRow = {...row, analytics};
+
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
-                row,
+                row: newRow,
                 labels,
                 history: nftHistory.data?.transactions || [],
             });

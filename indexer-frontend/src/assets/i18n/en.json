@@ -323,7 +323,9 @@
             "overview": {
                 "token_id": "Token Id",
                 "serial_number": "Serial Number",
-                "metadata": "Metadata"
+                "metadata": "Metadata",
+                "policy": "Policy",
+                "sr": "Standard Registry"
             }
         },
         "token": {
