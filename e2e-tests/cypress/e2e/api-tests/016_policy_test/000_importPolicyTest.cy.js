@@ -6,25 +6,34 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
     const SRUsername = Cypress.env('SRUser');
     let policyId;
 
-    before('Get policy id', () => {
+
+    before('Import policy and dry-run it', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + API.Policies,
+                method: METHOD.POST,
+                url: API.ApiServer + API.PolicisImportMsg,
+                body: { messageId: "1707125414.999819805" }, //iRec2
                 headers: {
                     authorization,
                 },
-                timeout: 180000
+                timeout: 600000,
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.OK);
-                response.body.forEach(element => {
-                    if (element.name == "iRec_2") {
-                        policyId = element.id
-                    }
-                })
-            })
+                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
+                policyId = response.body.at(0).id;
+                cy.request({
+                    method: METHOD.PUT,
+                    url:
+                        API.ApiServer + API.Policies + policyId + "/" + API.DryRun,
+                    headers: {
+                        authorization,
+                    },
+                    timeout: 180000,
+                }).then((response) => {
+                    expect(response.status).to.eq(STATUS_CODE.OK);
+                });
+            });
         })
-    })
+    });
 
     it('Import a new policy test', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

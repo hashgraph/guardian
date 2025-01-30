@@ -38,7 +38,7 @@ context("Delete policy test", { tags: ['policies', 'secondPool', 'all'] }, () =>
         })
     });
 
-    it("Deletes the policy with the provided ID by user - Negative", () => {
+    it("Deletes the policy test by User - Negative", () => {
         Authorization.getAccessToken(UserUsername).then((authorization) => {
             cy.request({
                 method: METHOD.DELETE,
@@ -53,7 +53,7 @@ context("Delete policy test", { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Deletes the policy with the provided ID without auth token - Negative", () => {
+    it("Deletes the policy test without auth token - Negative", () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId,
@@ -63,7 +63,7 @@ context("Delete policy test", { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Deletes the policy with the provided ID with invalid auth token - Negative", () => {
+    it("Deletes the policy test with invalid auth token - Negative", () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId,
@@ -76,7 +76,7 @@ context("Delete policy test", { tags: ['policies', 'secondPool', 'all'] }, () =>
         });
     });
 
-    it("Deletes the policy with the provided ID with empty auth token - Negative", () => {
+    it("Deletes the policy test with empty auth token - Negative", () => {
         cy.request({
             method: METHOD.DELETE,
             url: API.ApiServer + API.Policies + policyId + "/" + API.Test + testId,
