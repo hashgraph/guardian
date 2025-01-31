@@ -24,6 +24,7 @@ import { IStep } from '../../structures';
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     private subscription = new Subscription();
+    public savePointState: boolean = false;
     public policyId!: string;
     public policy: any | null;
     public policyInfo: any | null;
@@ -105,6 +106,15 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             document.__type = '';
         }
         return document;
+    }
+
+    private getSavepointState() {
+        this.policyEngineService.getSavepointState(this.policyInfo.id).subscribe((value) => {
+            this.savePointState = value.state;
+            console.log(value);
+        }, (e) => {
+            this.savePointState = false;
+        });
     }
 
     ngOnInit() {
@@ -207,6 +217,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         }
                     })
                 })
+                this.getSavepointState();
             }, (e) => {
                 this.loading = false;
             });
@@ -289,7 +300,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     public createSavepoint() {
         this.loading = true;
         this.policyEngineService.createSavepoint(this.policyInfo.id).subscribe(() => {
-                                                                                   this.loadPolicyById(this.policyId);
+            this.loadPolicyById(this.policyId);
+            this.getSavepointState();
                                                                                }, (e) => {
                                                                                    this.loading = false;
                                                                                }
