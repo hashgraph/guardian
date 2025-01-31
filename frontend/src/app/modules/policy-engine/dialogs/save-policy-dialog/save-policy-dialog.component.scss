@@ -80,18 +80,49 @@ form {
 
 .form-field {
     margin-bottom: 1em;
+    width: 100% !important
 }
 
 .custom-form-field {
     position: relative;
-    padding: 0.5em;
-    border: 1px solid var(--color-grey-2);
+    border: 2px solid var(--color-grey-2);
     border-radius: 4px;
     transition: border-color 0.3s;
+    margin-bottom: 10px;
+}
+
+.custom-form-field input {
+  width: 100%;
+  height: 50px !important;
+  border: none;
+    &:focus {
+        box-shadow: none;
+    }
+}
+
+.custom-form-field textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.custom-form-field input,
+.custom-form-field textarea{
+    width: 100%;
+    border: none;
+    &:focus {
+        box-shadow: none;
+    }
 }
 
 .custom-form-field:focus-within {
     border: 2px solid var(--primary-color);
+}
+
+.form-field.ng-invalid .ng-invalid {
+    border: 2px solid var(--color-accent-red-1);
+    &:focus {
+        border: none;
+    }
 }
 
 .dialog-actions {
@@ -121,3 +152,5 @@ form {
 :host ::ng-deep .p-dialog .p-button-ok:hover {
     background-color: var(--blue-700);
 }
+
+
