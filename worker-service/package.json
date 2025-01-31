@@ -27,7 +27,7 @@
         "reflect-metadata": "^0.1.13",
         "rxjs": "^7.8.1",
         "fireblocks-sdk": "^5.20.0",
-        "undici": "^7.1.0"
+        "undici": "^7.3.0"
     },
     "description": "",
     "devDependencies": {
