@@ -96,6 +96,7 @@ export class ComparePolicyComponent implements OnInit {
         this.displayedColumns = this.columns
             .filter(c => c.label)
             .map(c => c.name);
+
         this.onRender();
     }
 
@@ -155,5 +156,9 @@ export class ComparePolicyComponent implements OnInit {
             return this.compareStorage.getFile(policy.id)?.name || policy.id;
         }
         return policy.id;
+    }
+
+    isObject(value: any): boolean {
+        return value !== null && typeof value === 'object';
     }
 }

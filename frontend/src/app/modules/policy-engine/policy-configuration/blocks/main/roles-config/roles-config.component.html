@@ -11,6 +11,7 @@
                            placeholder="Select Roles"
                            optionLabel="name"
                            optionValue="value"
+                           [appendTo]="'body'"
             >
             </p-multiSelect>
         </td>
@@ -25,7 +26,9 @@
                            (onChange)="onSave()"
                            placeholder="Select Groups"
                            optionLabel="name"
-                           optionValue="value">
+                           optionValue="value"
+                           [appendTo]="'body'"
+            >
             </p-multiSelect>
         </td>
     </tr>

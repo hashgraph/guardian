@@ -46,7 +46,9 @@
                             (onChange)="onSave()"
                             placeholder="Select Button Type"
                             optionLabel="label"
-                            optionValue="value">
+                            optionValue="value"
+                            [appendTo]="'body'"
+                >
                 </p-dropdown>
             </td>
         </tr>
@@ -154,7 +156,9 @@
                                 (onChange)="onSave()"
                                 placeholder="Select Filter Type"
                                 optionLabel="label"
-                                optionValue="value">
+                                optionValue="value"
+                                [appendTo]="'body'"
+                    >
                     </p-dropdown>
                 </td>
             </tr>

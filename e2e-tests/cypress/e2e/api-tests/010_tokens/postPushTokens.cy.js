@@ -2,7 +2,7 @@ import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
 
-context("Tokens", { tags: ['tokens', 'thirdPool'] }, () => {
+context("Tokens", { tags: ['tokens', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
 
     it("Push create a new token", () => {

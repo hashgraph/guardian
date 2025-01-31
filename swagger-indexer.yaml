@@ -124,6 +124,13 @@ paths:
           example: 0.0.4481265
           schema:
             type: string
+        - name: options.attributes.OrganizationName
+          required: false
+          in: query
+          description: Registry organization name
+          example: Example
+          schema:
+            type: string
       responses:
         '200':
           description: Registries
@@ -165,6 +172,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistryDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/registries/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getRegistriesRelationships
+      summary: Get registry relationships
+      description: Returns registry relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Registry relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
         '500':
           description: Internal server error
           content:
@@ -392,6 +426,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/policies/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getPolicyRelationships
+      summary: Get policy relationships
+      description: Returns policy relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
         '500':
           description: Internal server error
           content:
@@ -926,6 +987,16 @@ paths:
             did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
           schema:
             type: string
+        - name: options.role
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.sr
+          required: true
+          in: query
+          schema:
+            type: string
         - name: topicId
           required: false
           in: query
@@ -1456,6 +1527,146 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/VPGridDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/formulas:
+    get:
+      operationId: EntityApi_getFormulas
+      summary: Get formulas
+      description: Returns formulas
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search formulas, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: formula owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+      responses:
+        '200':
+          description: formulas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FormulaDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/formulas/{messageId}:
+    get:
+      operationId: EntityApi_getFormula
+      summary: Get formula
+      description: Returns formula
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/formulas/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getFormulaRelationships
+      summary: Get formula relationships
+      description: Returns formula relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
         '500':
           description: Internal server error
           content:
@@ -2270,7 +2481,7 @@ paths:
       summary: Get landing page analytics
       description: >-
         Returns count of registries, methodologies, projects, totalIssuance,
-        date
+        totalSerialized, totalFungible, date
       parameters: []
       responses:
         '200':
@@ -2311,6 +2522,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_1
+  /landing/data-loading-progress:
+    get:
+      operationId: LandingApi_getDataLoadingProgress
+      summary: Get data loading progress
+      description: Returns the number of messages loaded and the total number of messages
+      parameters: []
+      responses:
+        '200':
+          description: Data loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataLoadingProgress'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
   /analytics/search/policy:
     post:
       operationId: AnalyticsApi_search
@@ -2341,8 +2574,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags:
+      tags: &ref_2
         - analytics
+  /analytics/search/retire:
+    post:
+      operationId: AnalyticsApi_getRetireDocuments
+      summary: Search contract retirements
+      description: Returns contract retirements result
+      parameters: []
+      requestBody:
+        required: true
+        description: Search policy parameters
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RawMessageDTO'
+      responses:
+        '200':
+          description: Search policy result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MessageDTO'
+        '422':
+          description: Unprocessable entity
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+  /analytics/checkAvailability:
+    get:
+      operationId: AnalyticsApi_getIndexerAvailability
+      summary: Get indexer availability
+      description: Returns indexer availability
+      parameters: []
+      responses:
+        '200':
+          description: Indexer availability result
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_2
+  /settings/network:
+    get:
+      operationId: SettingsApi_getNetworkEnvironment
+      summary: Get Hedera network
+      description: Returns Hedera network
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_3
+        - settings
+  /settings/networkExplorer:
+    get:
+      operationId: SettingsApi_getNetworkExplorer
+      summary: Get Hedera network explorer settings
+      description: Returns Hedera network explorer settings
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network explorer settings result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
 info:
   title: Guardian
   description: >-
@@ -2493,25 +2818,29 @@ components:
           description: Status message
         files:
           description: Files
-          example: &ref_2
+          example: &ref_4
             - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: &ref_3
+          example: &ref_5
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_4
+          example: &ref_6
             - 0.0.4481265
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2537,6 +2866,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Standard Registry
         action:
           type: string
@@ -2579,6 +2909,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
@@ -2598,6 +2929,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2746,6 +3078,189 @@ components:
         - item
         - row
         - activity
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_6
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    RelationshipDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+        category:
+          type: number
+          description: Category
+          example: 1
+        name:
+          type: string
+          description: Name
+          example: Monitoring Report Document
+      required:
+        - id
+        - uuid
+        - type
+        - category
+        - name
+    RelationshipLinkDTO:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source message identifier
+          example: '1706823227.586179534'
+        target:
+          type: string
+          description: Target message identifier
+          example: '1706823227.586179534'
+      required:
+        - source
+        - target
+    RelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        target:
+          $ref: '#/components/schemas/RelationshipDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipDTO'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipLinkDTO'
+        categories:
+          description: Categories
+          example:
+            - name: Registry
+            - name: Policy
+            - name: Schema
+            - name: Role
+            - name: VC
+            - name: VP
+            - name: Token
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - item
+        - target
+        - relationships
+        - links
+        - categories
     RegistryUserOptionsDTO:
       type: object
       properties:
@@ -2808,22 +3323,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2849,6 +3368,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -2891,6 +3411,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -2910,6 +3431,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -2958,22 +3480,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -2999,6 +3525,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -3041,6 +3568,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3068,6 +3596,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3286,22 +3815,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3327,6 +3860,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy
         action:
           type: string
@@ -3369,6 +3903,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
@@ -3388,6 +3923,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3411,11 +3947,16 @@ components:
           type: number
           description: Roles
           example: 10
+        formulas:
+          type: number
+          description: Formulas
+          example: 10
       required:
         - schemas
         - vcs
         - vps
         - roles
+        - formulas
     PolicyDetailsDTO:
       type: object
       properties:
@@ -3531,22 +4072,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3572,6 +4117,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Tool
         action:
           type: string
@@ -3614,6 +4160,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
@@ -3633,6 +4180,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3756,22 +4304,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -3797,6 +4349,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Module
         action:
           type: string
@@ -3839,6 +4392,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
@@ -3858,6 +4412,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -3974,22 +4529,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4015,6 +4574,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4057,6 +4617,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4074,6 +4635,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4162,22 +4724,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4203,6 +4769,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4245,6 +4812,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4277,6 +4845,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4553,22 +5122,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4594,6 +5167,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -4636,6 +5210,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -4663,6 +5238,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4762,22 +5338,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -4803,6 +5383,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Role-Document
         action:
           type: string
@@ -4845,6 +5426,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
@@ -4864,6 +5446,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -4982,22 +5565,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5023,6 +5610,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5065,6 +5653,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/StatisticOptionsDTO'
@@ -5084,6 +5673,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5219,22 +5809,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5260,6 +5854,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -5302,6 +5897,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -5321,6 +5917,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5422,22 +6019,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5463,6 +6064,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5505,6 +6107,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/LabelOptionsDTO'
@@ -5524,6 +6127,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5639,22 +6243,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5680,6 +6288,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -5722,6 +6331,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -5739,9 +6349,279 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
+    FormulaOptionsDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        name:
+          type: string
+          description: Name
+          example: Formula Name
+        description:
+          type: string
+          description: Description
+          example: Formula Description
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        policyTopicId:
+          type: string
+          description: Policy topic identifier
+          example: 0.0.4481265
+        policyInstanceTopicId:
+          type: string
+          description: Policy instance topic identifier
+          example: 0.0.4481265
+      required:
+        - uuid
+        - name
+        - description
+        - owner
+        - policyTopicId
+        - policyInstanceTopicId
+    FormulaAnalyticsDTO:
+      type: object
+      properties:
+        textSearch:
+          type: string
+          description: Text search
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        config:
+          type: object
+          description: Formula Config
+      required:
+        - textSearch
+        - owner
+        - config
+    FormulaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_6
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+          example: Formula
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
+            - publish-formula
+          example: publish-formula
+        options:
+          $ref: '#/components/schemas/FormulaOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/FormulaAnalyticsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+        - type
+        - action
+        - options
+        - analytics
+    FormulaActivityDTO:
+      type: object
+      properties:
+        schemas:
+          type: number
+          description: Schemas
+          example: 10
+        vps:
+          type: number
+          description: VPs
+          example: 10
+      required:
+        - schemas
+        - vps
+    FormulaDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/FormulaDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+        activity:
+          $ref: '#/components/schemas/FormulaActivityDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
+        - activity
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+      required:
+        - id
+        - item
+        - schemas
+        - formulas
     DIDOptionsDTO:
       type: object
       properties:
@@ -5812,22 +6692,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -5853,6 +6737,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -5895,6 +6780,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -5914,6 +6800,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -5962,22 +6849,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6003,6 +6894,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -6045,6 +6937,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -6072,6 +6965,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -6102,182 +6996,6 @@ components:
         - item
         - row
         - history
-    MessageDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_2
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_4
-          type: array
-          items:
-            type: string
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-    RelationshipDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        type:
-          type: string
-          description: Type
-          enum:
-            - EVC-Document
-            - VC-Document
-            - DID-Document
-            - Schema
-            - schema-document
-            - Policy
-            - Instance-Policy
-            - VP-Document
-            - Standard Registry
-            - Topic
-            - Token
-            - Module
-            - Tool
-            - Tag
-            - Role-Document
-            - Synchronization Event
-            - Contract
-            - Guardian-Role-Document
-            - User-Permissions
-            - Policy-Statistic
-            - Policy-Label
-        category:
-          type: number
-          description: Category
-          example: 1
-        name:
-          type: string
-          description: Name
-          example: Monitoring Report Document
-      required:
-        - id
-        - uuid
-        - type
-        - category
-        - name
-    RelationshipLinkDTO:
-      type: object
-      properties:
-        source:
-          type: string
-          description: Source message identifier
-          example: '1706823227.586179534'
-        target:
-          type: string
-          description: Target message identifier
-          example: '1706823227.586179534'
-      required:
-        - source
-        - target
-    RelationshipsDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        item:
-          $ref: '#/components/schemas/MessageDTO'
-        target:
-          $ref: '#/components/schemas/RelationshipDTO'
-        relationships:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipDTO'
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipLinkDTO'
-        categories:
-          description: Categories
-          example:
-            - name: Registry
-            - name: Policy
-            - name: Schema
-            - name: Role
-            - name: VC
-            - name: VP
-          type: array
-          items:
-            type: string
-      required:
-        - id
-        - item
-        - target
-        - relationships
-        - links
-        - categories
     VPDetailsDTO:
       type: object
       properties:
@@ -6352,22 +7070,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6393,6 +7115,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -6435,6 +7158,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -6462,6 +7186,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -6542,6 +7267,9 @@ components:
               - law
               - tags
             additionalProperties: false
+        formulasData:
+          type: object
+          description: Formulas data
       required:
         - id
         - uuid
@@ -6549,6 +7277,7 @@ components:
         - row
         - history
         - schema
+        - formulasData
     NFTDTO:
       type: object
       properties:
@@ -6720,22 +7449,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -6761,6 +7494,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Topic
         action:
           type: string
@@ -6803,6 +7537,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
@@ -6822,6 +7557,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -7021,22 +7757,26 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_2
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_3
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_4
+          example: *ref_6
           type: array
           items:
             type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
         type:
           type: string
           description: Type
@@ -7062,6 +7802,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Contract
         action:
           type: string
@@ -7104,6 +7845,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'
@@ -7123,6 +7865,7 @@ components:
         - files
         - topics
         - tokens
+        - sequenceNumber
         - type
         - action
         - options
@@ -7184,6 +7927,14 @@ components:
           type: number
           description: Total issuance
           example: '10'
+        totalSerialized:
+          type: number
+          description: Total serialized
+          example: '10'
+        totalFungible:
+          type: number
+          description: Total fungible
+          example: '10'
         date:
           format: date-time
           type: string
@@ -7194,6 +7945,8 @@ components:
         - methodologies
         - projects
         - totalIssuance
+        - totalSerialized
+        - totalFungible
         - date
     ProjectCoordinatesDTO:
       type: object
@@ -7209,6 +7962,9 @@ components:
       required:
         - coordinates
         - projectId
+    DataLoadingProgress:
+      type: object
+      properties: {}
     SearchPolicyBlocksDTO:
       type: object
       properties:

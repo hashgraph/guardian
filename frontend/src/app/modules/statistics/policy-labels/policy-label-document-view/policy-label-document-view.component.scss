@@ -236,16 +236,8 @@
 
             border-radius: 6px;
 
-            &:not([disabled]) {
-                cursor: pointer;
-            }
-
-            &:not([disabled]):hover {
-                background: var(--guardian-hover, #F0F3FC);
-            }
-
             .option-checkbox {
-                cursor: pointer;
+                cursor: default;
                 min-height: 40px;
                 width: 42px;
                 min-width: 42px;
@@ -256,7 +248,7 @@
             }
 
             .option-name {
-                cursor: pointer;
+                cursor: default;
                 min-height: 40px;
                 width: 100%;
                 display: flex;

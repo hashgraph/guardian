@@ -1,4 +1,4 @@
-import { Controller, HttpCode, HttpStatus, Body, Post } from '@nestjs/common';
+import { Controller, HttpCode, HttpStatus, Body, Post, Get } from '@nestjs/common';
 import {
     ApiBody,
     ApiInternalServerErrorResponse,
@@ -11,8 +11,10 @@ import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
+    RawMessageDTO,
     SearchPolicyParamsDTO,
     SearchPolicyResultDTO,
+    MessageDTO,
 } from '#dto';
 
 @Controller('analytics')
@@ -44,5 +46,51 @@ export class AnalyticsApi extends ApiClient {
             IndexerMessageAPI.GET_ANALYTICS_SEARCH_POLICY,
             body
         );
+    }
+
+    @ApiOperation({
+        summary: 'Search contract retirements',
+        description: 'Returns contract retirements result',
+    })
+    @ApiBody({
+        description: 'Search policy parameters',
+        type: RawMessageDTO,
+    })
+    @ApiOkResponse({
+        description: 'Search policy result',
+        type: [MessageDTO],
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity',
+    })
+    @Post('/search/retire')
+    @HttpCode(HttpStatus.OK)
+    async getRetireDocuments(@Body() body: RawMessageDTO) {
+        return await this.send(
+            IndexerMessageAPI.GET_RETIRE_DOCUMENTS,
+            body
+        );
+    }
+
+    @Get('/checkAvailability')
+    @ApiOperation({
+        summary: 'Get indexer availability',
+        description: 'Returns indexer availability',
+    })
+    @ApiOkResponse({
+        description: 'Indexer availability result',
+        type: Boolean,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @HttpCode(HttpStatus.OK)
+    async getIndexerAvailability(): Promise<boolean> {
+        return await this.send(IndexerMessageAPI.GET_INDEXER_AVAILABILITY, {});
     }
 }

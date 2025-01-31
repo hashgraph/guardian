@@ -17,7 +17,7 @@ import { SchemaRulesPreviewDialog } from '../dialogs/schema-rules-preview-dialog
 import { ConditionRule, FormulaRule, RangeRule } from '../../../common/models/conditions';
 import { FieldRule, FieldRules } from "src/app/modules/common/models/field-rule";
 import { EnumValue, SchemaRuleConfigDialog } from '../dialogs/schema-rule-config-dialog/schema-rule-config-dialog.component';
-import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 
 @Component({
@@ -571,7 +571,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
     }
 
     public onDeleteVariable(variable: FieldRule) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',

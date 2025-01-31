@@ -9,6 +9,7 @@
                 [(ngModel)]="properties.type"
                 [disabled]="readonly"
                 (onChange)="onSave()"
+                appendTo="body"
                 placeholder="Select a type"
             >
             </p-dropdown>
@@ -23,6 +24,7 @@
                 [(ngModel)]="properties.queryType"
                 [disabled]="readonly"
                 (onChange)="onSave()"
+                appendTo="body"
             >
                 <ng-template pTemplate="item" let-item>
                     <span>{{item.label}}</span>

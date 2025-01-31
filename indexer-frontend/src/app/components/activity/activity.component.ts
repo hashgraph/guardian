@@ -17,6 +17,7 @@ export enum Activity {
     VPs = 'vps',
     Contracts = 'contracts',
     Users = 'users',
+    Formulas = 'formulas',
 }
 
 @Component({
@@ -41,6 +42,7 @@ export class ActivityComponent {
         [Activity.VCs, '#17becf'],
         [Activity.VPs, '#ffbb78'],
         [Activity.Contracts, '#98df8a'],
+        [Activity.Formulas, '#98df8a'],
     ]);
     activityIcons: Map<Activity, string> = new Map([
         [Activity.Registries, 'pi pi-database'],
@@ -56,6 +58,7 @@ export class ActivityComponent {
         [Activity.VCs, 'pi pi-file'],
         [Activity.VPs, 'pi pi-file'],
         [Activity.Contracts, 'pi pi-pencil'],
+        [Activity.Formulas, 'pi pi-file'],
     ]);
 
     @Input() activity!: MeterItem[];

@@ -1,0 +1,361 @@
+<div class="guardian-page" [attr.readonly]="readonly" [attr.keyboard]="keyboard">
+    <div *ngIf="loading" class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+    </div>
+
+    <div *ngIf="!isConfirmed" class="guardian-user-not-registered">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+    </div>
+
+    <div class="header-container">
+        <div class="guardian-user-back-button">
+            <button 
+                (click)="onBack()" 
+                class="guardian-button guardian-button-primary">
+                <div class="guardian-button-icon">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/left-arrow.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                </div>
+                <div class="guardian-button-label">Back to Policies</div>
+            </button>
+        </div>
+    
+        <div class="guardian-user-page-header">
+            <span>{{item?.name}}</span>
+            <div *ngIf="policy" class="policy-name">
+                <span>Policy Name: {{policy.name}}</span>
+                <span class="policy-version">Version: {{policy.version}}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-container">
+        <div class="guardian-step-container">
+            <div class="guardian-stepper horizontal-stepper">
+                <div class="guardian-step" [attr.action]="isActionStep(0)" (click)="onStep(0)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file-fill.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Overview</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="isActionStep(1)" (click)="onStep(1)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/edit.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Edit Formula</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="isActionStep(2)" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Attach Files</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div #body class="body-container">
+        <ng-container *ngIf="isActionStep(0)">
+            <div class="overview-viewer">
+                <form [formGroup]="overviewForm">
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Name</label>
+                        <input formControlName="name" id="name" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">Description</label>
+                        <input formControlName="description" id="description" pInputText type="text" [readonly]="readonly"/>
+                    </div>
+        
+                    <div class="guardian-input-container">
+                        <label class="form-label" htmlFor="version">* Policy</label>
+                        <input formControlName="policy" id="policy" pInputText type="text" readonly/>
+                    </div>
+                </form>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(1)">
+            <div class="item-filters">
+                <div class="item-filters-header">Select Type</div>
+                <checkbox-button [(value)]="filters.constant" class="item-filter constant-filter" (change)="onFilter()">Constant</checkbox-button>
+                <checkbox-button [(value)]="filters.variable" class="item-filter variable-filter" (change)="onFilter()">Variable</checkbox-button>
+                <checkbox-button [(value)]="filters.formula" class="item-filter formula-filter" (change)="onFilter()">Formula</checkbox-button>
+                <checkbox-button [(value)]="filters.text" class="item-filter text-filter" (change)="onFilter()">Text</checkbox-button>
+            </div>
+            <div 
+                class="formula-items"
+                cdkDropList
+                [cdkDropListData]="config.data"
+                (cdkDropListDropped)="drop($event)"
+            >
+                <div 
+                    *ngFor="let item of config.data" 
+                    class="formula-item" 
+                    [attr.type]="item.type" 
+                    [attr.readonly]="readonly"
+                    cdkDrag
+                    cdkDragLockAxis="y"
+                    [cdkDragDisabled]="readonly"
+
+                >
+                    <div cdkDragHandle class="formula-item-icon" [attr.readonly]="readonly">
+                        <svg-icon *ngIf="!readonly" class="icon-btn svg-icon"
+                            src="/assets/images/icons/equal.svg"
+                            svgClass="icon-color-close">
+                        </svg-icon>
+                    </div>
+                    <div class="formula-item-container">
+                        <div class="formula-item-header">
+                            <div *ngIf="item.type === 'constant'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/const.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'variable'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/variable.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'formula'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/function.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+                            <div *ngIf="item.type === 'text'" class="formula-item-header__icon">
+                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/text.svg" svgClass="icon-color-font"></svg-icon>
+                            </div>
+
+                            <div *ngIf="item.type === 'constant'" class="formula-item-header__name">Constant</div>
+                            <div *ngIf="item.type === 'variable'" class="formula-item-header__name">Variable</div>
+                            <div *ngIf="item.type === 'formula'" class="formula-item-header__name">Formula</div>
+                            <div *ngIf="item.type === 'text'" class="formula-item-header__name">Text</div>
+                            <div *ngIf="!readonly" class="formula-item-header__delete">
+                                <button
+                                    class="guardian-icon-button big"
+                                    (click)="deleteItem(item)"
+                                    [disabled]="readonly">
+                                    <svg-icon
+                                        class="icon-btn svg-icon"
+                                        src="/assets/images/icons/delete.svg"
+                                        [svgClass]="readonly ? 'icon-color-disabled' : 'icon-color-delete'">
+                                    </svg-icon>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="formula-item-body">
+                            <div class="guardian-input-container">
+                                <label class="form-label">* Name</label>
+                                <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
+                            </div>
+
+                            <ng-container *ngIf="item.type === 'constant'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Value</label>
+                                    <input [(ngModel)]="item.value" pInputText type="text" [readonly]="readonly"/>
+                                </div>
+                            </ng-container>
+    
+                            <ng-container *ngIf="item.type === 'variable'">
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Input)</label>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-container>
+    
+                            <ng-container *ngIf="item.type === 'formula'">
+                                <div class="guardian-input-container" style="height: auto">
+                                    <label class="form-label">Formula</label>
+                                    <math-live 
+                                        [(value)]="item.value" 
+                                        [readonly]="readonly"
+                                        (keyboard)="onKeyboard($event)"
+                                        (focus)="onKeyboardFocus($event)"
+                                    ></math-live>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Relationships</label>
+                                    <p-multiSelect
+                                        [(ngModel)]="item.relationships"
+                                        [options]="config.all"
+                                        class="guardian-multiselect relationships-multiselect"
+                                        appendTo="body"
+                                        optionLabel="name"
+                                        optionValue="uuid"
+                                        panelStyleClass="guardian-multiselect-panel"
+                                        [readonly]="readonly">
+                                        <ng-template let-value pTemplate="selectedItems">
+                                            <div *ngFor="let option of value" class="multiselect-selected-value">
+                                                {{ option.name || 'N/A' }}
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div class="multiselect-option-value">
+                                                <span>{{ option.name || 'N/A' }}</span>
+                                                <span *ngIf="option.description"> - {{ option.description }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </ng-container>
+                            <ng-container *ngIf="item.type === 'text'">
+                                <div class="guardian-textarea-container">
+                                    <label class="form-label">Text</label>
+                                    <textarea [(ngModel)]="item.value" pTextarea rows="3" [readonly]="readonly"></textarea>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(item)">
+                                        <div *ngIf="item.link" class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{getEntityName(item.link)}}:</div>
+                                            <div class="formula-link-value__item">{{getFieldName(item.link)}}</div>
+                                        </div>
+                                        <div *ngIf="item.link && !readonly" class="formula-link-remove">
+                                            <button class="guardian-icon-button" (click)="deleteLink(item, $event)">
+                                                <svg-icon class="icon-btn svg-icon" src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Relationships</label>
+                                    <p-multiSelect
+                                        [(ngModel)]="item.relationships"
+                                        [options]="config.all"
+                                        class="guardian-multiselect relationships-multiselect"
+                                        appendTo="body"
+                                        optionLabel="name"
+                                        optionValue="uuid"
+                                        panelStyleClass="guardian-multiselect-panel"
+                                        [readonly]="readonly">
+                                        <ng-template let-value pTemplate="selectedItems">
+                                            <div *ngFor="let option of value" class="multiselect-selected-value">
+                                                {{ option.name || 'N/A' }}
+                                            </div>
+                                        </ng-template>
+                                        <ng-template let-option pTemplate="item">
+                                            <div class="multiselect-option-value">
+                                                <span>{{ option.name || 'N/A' }}</span>
+                                                <span *ngIf="option.description"> - {{ option.description }}</span>
+                                            </div>
+                                        </ng-template>
+                                    </p-multiSelect>
+                                </div>
+                            </ng-container>
+
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [(ngModel)]="item.description" pTextarea rows="3" [readonly]="readonly"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div *ngIf="!config.data.length" class="not-exist">
+                    <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="icon-color-close"></svg-icon>
+                    <span class="info-text-strong">There are no components added yet</span>
+                    <span class="info-text">Please add a new component to see the data</span>
+                </div>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(2)">
+
+            <div *ngIf="!readonly" class="file-menu">
+                <button 
+                    (click)="uploadFile()" 
+                    class="guardian-button guardian-button-primary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/cloud-upload.svg"
+                            svgClass="icon-color-secondary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Upload file</div>
+                </button>
+            </div>
+            <div class="files-viewer">
+                <div class="variables-container">
+                    <div *ngIf="config.files.length" class="variables-grid">
+                        <div class="variables-grid-header">
+                            <div class="variables-grid-cell cell-300">NAME</div>
+                            <div class="variables-grid-cell cell-max">URL</div>
+                            <div class="variables-grid-cell cell-64"></div>
+                        </div>
+                        <div class="variables-grid-body">
+                            <div *ngFor="let file of config.files" class="variables-grid-row">
+                                <div class="variables-grid-cell cell-300">
+                                    {{file.name}}
+                                </div>
+                                <div class="variables-grid-cell cell-max">
+                                    <ipfs-link [url]="file.url"></ipfs-link>
+                                </div>
+                                <div class="variables-grid-cell cell-64 cell-btn">
+                                    <button 
+                                        *ngIf="!readonly"
+                                        class="guardian-icon-button big" 
+                                        (click)="deleteFile(file)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            svgClass="icon-color-delete">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!config.files.length" class="variables-empty-grid">
+                        <div>
+                            <svg-icon
+                                class="icon-btn"
+                                src="/assets/images/icons/list.svg"
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                        </div>
+                        <div>There were no files attached yet.</div>
+                    </div>
+                </div>
+            </div>
+
+        </ng-container>
+    </div>
+    <div class="action-container">
+        <ng-container *ngIf="isActionStep(0)">
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(1) && !readonly">
+            <menu-button [options]="options" [immediately]="false" (action)="addItem($event)"></menu-button>
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(2)">
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
+    </div>
+</div>

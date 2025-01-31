@@ -1,89 +1,65 @@
-import {TopicId} from '@hashgraph/sdk';
-
 //entities
-import {
-    AssignedEntityType,
-    IVC,
-    MintTransactionStatus,
-    PolicyTestStatus,
-    SchemaEntity,
-    TopicType
-} from '@guardian/interfaces';
-import { BaseEntity } from '../models/index.js';
+import { AssignedEntityType, IVC, MintTransactionStatus, PolicyTestStatus, SchemaEntity, TopicType } from '@guardian/interfaces';
+import { TopicId } from '@hashgraph/sdk';
+import { FilterQuery } from '@mikro-orm/core';
 import {
     AggregateVC,
     ApprovalDocument as ApprovalDocumentCollection,
     Artifact as ArtifactCollection,
+    AssignEntity,
     BlockCache,
     BlockState,
+    Contract as ContractCollection,
     DidDocument as DidDocumentCollection,
     DocumentState,
     DryRun,
     ExternalDocument,
+    Message,
     MintRequest,
     MintTransaction,
     MultiDocuments,
+    MultiPolicy,
     MultiPolicyTransaction,
     Policy,
+    PolicyCache,
+    PolicyCacheData,
     PolicyCategory,
     PolicyInvitations,
     PolicyModule,
+    PolicyProperty,
     PolicyRoles as PolicyRolesCollection,
+    PolicyTest,
+    PolicyTool,
+    Record,
+    RetirePool,
     Schema as SchemaCollection,
     SplitDocuments,
+    SuggestionsConfig,
     Tag,
     TagCache,
+    Theme,
     Token as TokenCollection,
     Topic as TopicCollection,
     VcDocument as VcDocumentCollection,
     VpDocument,
-    VpDocument as VpDocumentCollection,
-    Message,
-    PolicyProperty,
-    PolicyTool,
-    PolicyCache,
-    PolicyCacheData,
-    MultiPolicy,
-    RetirePool,
-    Contract as ContractCollection,
-    Theme,
-    SuggestionsConfig,
-    Record,
-    AssignEntity,
-    PolicyTest,
+    VpDocument as VpDocumentCollection
 } from '../index.js';
+import { BaseEntity } from '../models/index.js';
 
 //interfaces
-import {IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION} from './index.js';
-import { FilterQuery } from '@mikro-orm/core';
+import { IAuthUser, IGetDocumentAggregationFilters, IOrmConnection, STATUS_IMPLEMENTATION } from './index.js';
 
 export interface IAddDryRunIdItem {
     dryRunId: string,
     dryRunClass: string,
     systemMode: boolean
+    savepoint?: boolean
 }
 
 /**
  * Abstract database server
  */
 export abstract class AbstractDatabaseServer {
-    /**
-     * Set Dry Run id
-     * @param id
-     */
-    public abstract setDryRun(id: string): void;
-
-    /**
-     * Get Dry Run id
-     * @returns Dry Run id
-     */
-    public abstract getDryRun(): string;
-    /**
-     * Set System Mode
-     * @param systemMode
-     */
-    public abstract setSystemMode(systemMode: boolean): void;
-
     /**
      * Set MongoDriver
      * @param db
@@ -94,145 +70,12 @@ export abstract class AbstractDatabaseServer {
 
     /**
      * Clear Dry Run table
-     * @param all
-     */
-    public abstract clear(all: boolean): Promise<void>;
-
-    /**
-     * Clear Dry Run table
      * @param dryRunId
      * @param all
      */
     public static clearDryRun(dryRunId: string, all: boolean): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.clearDryRun.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Overriding the findOne method
-     * @param entityClass
-     * @param filters
-     * @param options
-     */
-    public abstract findOne<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T>, options: unknown): Promise<T>;
-
-    /**
-     * Overriding the find method
-     * @param entityClass
-     * @param filters
-     * @param options
-     */
-    public abstract find<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T> | unknown, options?: unknown): Promise<T[]>;
-
-    /**
-     * Overriding the create method
-     * @param entityClass
-     * @param item
-     */
-    public abstract create<T extends BaseEntity>(entityClass: new () => T, item: Partial<T>): T;
-
-    /**
-     * Overriding the update method
-     * @param entityClass
-     * @param criteria
-     * @param row
-     */
-    public abstract update<T extends BaseEntity>(entityClass: new () => T, criteria: Partial<T>, row: unknown | unknown[]): Promise<T>;
-
-    /**
-     * Update many method
-     * @param entityClass
-     * @param entities
-     * @param filter
-     */
-    public abstract updateMany<T extends BaseEntity>(entityClass: new () => T, entities: T[], filter: FilterQuery<T>): Promise<DryRun[] | T[]>;
-
-    /**
-     * Overriding the remove method
-     * @param entityClass
-     * @param entities
-     */
-    public abstract remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void>;
-
-    /**
-     * Overriding the count method
-     * @param entityClass
-     * @param filters
-     * @param options
-     */
-    public abstract count<T extends BaseEntity>(entityClass: new () => T, filters:  Partial<T>, options?: unknown): Promise<number>;
-
-    /**
-     * Overriding the findAndCount method
-     * @param entityClass
-     * @param filters
-     * @param options
-     */
-    public abstract findAndCount<T extends BaseEntity>(entityClass: new () => T, filters:  Partial<T> | unknown, options?: unknown): Promise<[T[], number]>;
-
-    /**
-     * Overriding the findAll method
-     * @param entityClass
-     * @param options
-     */
-    public abstract findAll<T extends BaseEntity>(entityClass: new () => T, options?: unknown): Promise<T[]>;
-
-    /**
-     * Find data by aggregation
-     * @param entityClass Entity class
-     * @param aggregation aggregate filter
-     * @returns
-     */
-    public abstract aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: Partial<T>[]): Promise<T[]>;
-
-    /**
-     * Overriding the save method
-     * @param entityClass
-     * @param item
-     * @param filter
-     */
-    public abstract save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: Partial<T>): Promise<T>
-
-    /**
-     * Save many
-     * @param entityClass
-     * @param item
-     * @param filter
-     */
-    public abstract saveMany<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: Partial<T>): Promise<T[]>
-
-    /**
-     * Save Block State
-     * @param policyId
-     * @param uuid
-     * @param state
-     *
-     * @virtual
-     */
-    public abstract saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void>;
-
-    /**
-     * Get Block State
-     * @param policyId
-     * @param uuid
-     *
-     * @virtual
-     */
-    public abstract getBlockState(policyId: string, uuid: string): Promise<BlockState | null>;
-
-    /**
-     * Get block states
-     * @param policyId Policy identifier
-     * @returns Block states
-     */
-    public abstract getBlockStates(policyId: string): Promise<BlockState[]>;
-
-    /**
-     * Get Virtual User
-     * @param did
-     *
-     * @virtual
-     */
-    public abstract getVirtualUser(did: string): Promise<IAuthUser | null>;
 
     /**
      * Get Current Virtual User
@@ -303,181 +146,6 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Get Key from Virtual User
-     * @param did
-     * @param keyName
-     *
-     * @virtual
-     */
-    public abstract getVirtualKey(did: string, keyName: string): Promise<string | null>;
-
-    /**
-     * Get virtual keys
-     * @param filters Filters
-     * @returns Virtual keys
-     */
-    public abstract getVirtualKeys(filters: Partial<DryRun>): Promise<DryRun[]>;
-
-    /**
-     * Set Key from Virtual User
-     * @param did
-     * @param keyName
-     * @param key
-     *
-     * @virtual
-     */
-    public abstract setVirtualKey(did: string, keyName: string, key: string): Promise<void>;
-
-    /**
-     * Get Virtual Hedera Account
-     * @param hederaAccountId
-     *
-     * @virtual
-     */
-    public abstract getVirtualHederaAccountInfo(hederaAccountId: string): Promise<DryRun>;
-
-    /**
-     * Virtual Associate Token
-     * @param hederaAccountId
-     * @param token
-     *
-     * @virtual
-     */
-    public abstract virtualAssociate(hederaAccountId: string, token: TokenCollection): Promise<boolean>;
-
-    /**
-     * Virtual Dissociate Token
-     * @param hederaAccountId
-     * @param tokenId
-     *
-     * @virtual
-     */
-    public abstract virtualDissociate(hederaAccountId: string, tokenId: string): Promise<boolean>;
-
-    /**
-     * Virtual Freeze Token
-     * @param hederaAccountId
-     * @param tokenId
-     *
-     * @virtual
-     */
-    public abstract virtualFreeze(hederaAccountId: string, tokenId: string): Promise<boolean>;
-
-    /**
-     * Virtual Unfreeze Token
-     * @param hederaAccountId
-     * @param tokenId
-     *
-     * @virtual
-     */
-    public abstract virtualUnfreeze(hederaAccountId: string, tokenId: string): Promise<boolean>;
-
-    /**
-     * Virtual GrantKyc Token
-     * @param hederaAccountId
-     * @param tokenId
-     *
-     * @virtual
-     */
-    public abstract virtualGrantKyc(hederaAccountId: string, tokenId: string): Promise<boolean>;
-
-    /**
-     * Virtual RevokeKyc Token
-     * @param hederaAccountId
-     * @param tokenId
-     *
-     * @virtual
-     */
-    public abstract virtualRevokeKyc(hederaAccountId: string, tokenId: string): Promise<boolean>;
-
-    /**
-     * Save Block State
-     * @param {string} policyId - policy ID
-     * @param {string} blockId - block UUID
-     * @param {string} did - user DID
-     * @param {string} name - variable name
-     * @param {unknown} value - variable value
-     * @param {boolean} isLongValue - if long value
-     * @virtual
-     */
-    public abstract saveBlockCache(policyId: string, blockId: string, did: string, name: string, value: unknown, isLongValue: boolean): Promise<void>;
-
-    /**
-     * Get Block State
-     * @param {string} policyId - policy ID
-     * @param {string} blockId - block UUID
-     * @param {string} did - user DID
-     * @param {string} name - variable name
-     *
-     * @returns {BlockCache | null} - variable value
-     * @virtual
-     */
-    public abstract getBlockCache(policyId: string, blockId: string, did: string, name: string): Promise<BlockCache | null>;
-
-    /**
-     * Save Document State
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract saveDocumentState(row: Partial<DocumentState>): Promise<DocumentState>;
-
-    /**
-     * Create Token
-     * @param token
-     * @returns
-     */
-    public abstract createToken(token: unknown): Promise<TokenCollection>;
-
-    /**
-     * Update Approval VC
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract updateApproval(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection>;
-
-    /**
-     * Update VC
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract updateVC(row: VcDocumentCollection): Promise<VcDocumentCollection>;
-
-    /**
-     * Update VP
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract updateVP(row: VpDocumentCollection): Promise<VpDocumentCollection>;
-
-    /**
-     * Update Did
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract updateDid(row: DidDocumentCollection): Promise<DidDocumentCollection>;
-
-    /**
-     * Save Approval VC
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract saveApproval(row: Partial<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection>;
-
-    /**
-     * Save VC
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection>;
-
-    /**
      * Get VC
      * @param id
      */
@@ -536,22 +204,6 @@ export abstract class AbstractDatabaseServer {
     public static async saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.saveVC.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Save VP
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract saveVP(row: Partial<VpDocumentCollection>): Promise<VpDocumentCollection>;
-
-    /**
-     * Save Did
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract saveDid(row: Partial<DidDocumentCollection>): Promise<DidDocumentCollection>;
 
     /**
      * Get policy
@@ -669,14 +321,6 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Get Policy
-     * @param policyId
-     *
-     * @virtual
-     */
-    public abstract getPolicy(policyId: string): Promise<Policy | null>;
-
-    /**
      * Get Publish Policies
      *
      * @virtual
@@ -715,227 +359,6 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Get Aggregate Documents
-     * @param policyId
-     * @param blockId
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getAggregateDocuments(policyId: string, blockId: string, filters: unknown): Promise<AggregateVC[]>;
-
-    /**
-     * Get aggregate document by policy identifier
-     * @param policyId Policy identifier
-     * @returns Aggregate documents
-     */
-    public abstract getAggregateDocumentsByPolicy(policyId: string): Promise<AggregateVC[]>;
-
-    /**
-     * Remove Aggregate Documents
-     * @param removeMsp
-     *
-     * @virtual
-     */
-    public abstract removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void>;
-
-    /**
-     * Remove Aggregate Document
-     * @param hash
-     * @param blockId
-     *
-     * @virtual
-     */
-    public abstract removeAggregateDocument(hash: string, blockId: string): Promise<void>;
-
-    /**
-     * Create Aggregate Documents
-     * @param item
-     * @param blockId
-     *
-     * @virtual
-     */
-    public abstract createAggregateDocuments(item: VcDocumentCollection & { blockId: string }, blockId: string): Promise<void>;
-
-    /**
-     * Get Vc Document
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getVcDocument(filters: Partial<VcDocumentCollection>): Promise<VcDocumentCollection | null>;
-
-    /**
-     * Get Vp Document
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getVpDocument(filters: Partial<VpDocumentCollection>): Promise<VpDocumentCollection | null>;
-
-    /**
-     * Get Approval Document
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getApprovalDocument(filters: Partial<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection | null>;
-
-    /**
-     * Get Vc Documents
-     * @param aggregation
-     * @virtual
-     */
-    public abstract getVcDocumentsByAggregation(aggregation: Partial<VcDocumentCollection>[]): Promise<VcDocumentCollection[]>;
-
-    /**
-     * Get Vp Documents
-     * @param aggregation
-     * @virtual
-     */
-    public abstract getVpDocumentsByAggregation(aggregation: Partial<VpDocumentCollection>[]): Promise<VpDocumentCollection[]>;
-
-    /**
-     * Get Did Documents
-     * @param aggregation
-     * @virtual
-     */
-    public abstract getDidDocumentsByAggregation(aggregation: Partial<DidDocumentCollection>[]): Promise<DidDocumentCollection[]>;
-
-    /**
-     * Get Approval Documents
-     * @param aggregation
-     * @virtual
-     */
-    public abstract getApprovalDocumentsByAggregation(aggregation: Partial<DidDocumentCollection>[]): Promise<ApprovalDocumentCollection[]>;
-
-    /**
-     * Get Vc Documents
-     * @param filters
-     * @param options
-     * @param countResult
-     * @virtual
-     */
-    public abstract getVcDocuments<T extends VcDocumentCollection | number>(filters: Partial<T>, options?: unknown, countResult?: boolean): Promise<T[] | number>;
-
-    /**
-     * Get Vp Documents
-     * @param filters
-     *
-     * @param options
-     * @param countResult
-     * @virtual
-     */
-    public abstract getVpDocuments<T extends VpDocumentCollection | number>(filters: Partial<T>, options?: unknown, countResult?: boolean): Promise<T[] | number>;
-
-    /**
-     * Get Did Documents
-     * @param filters
-     *
-     * @param options
-     * @param countResult
-     * @virtual
-     */
-    public abstract getDidDocuments(filters: Partial<DidDocumentCollection>, options?: unknown, countResult?: boolean): Promise<DidDocumentCollection[] | number>;
-
-    /**
-     * Get Did Document
-     * @param did
-     */
-    public abstract getDidDocument(did: string): Promise<DidDocumentCollection | null>;
-
-    /**
-     * Get Approval Documents
-     * @param filters
-     * @param options
-     * @param countResult
-     * @virtual
-     */
-    public abstract getApprovalDocuments(filters: Partial<ApprovalDocumentCollection>, options?: unknown, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number>;
-
-    /**
-     * Get Document States
-     * @param filters
-     * @param options
-     *
-     * @virtual
-     */
-    public abstract getDocumentStates(filters: Partial<DocumentState>, options?: unknown): Promise<DocumentState[]>;
-
-    /**
-     * Get Topic
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getTopic(
-        filters: {
-        /**
-         * policyId
-         */
-        policyId?: string,
-        /**
-         * type
-         */
-        type?: TopicType,
-        /**
-         * name
-         */
-        name?: string,
-        /**
-         * owner
-         */
-        owner?: string,
-        /**
-         * topicId
-         */
-        topicId?: string
-    }): Promise<TopicCollection | null>;
-
-    /**
-     * Get Topics
-     * @param filters
-     *
-     * @virtual
-     */
-    public abstract getTopics(
-        filters: {
-        /**
-         * policyId
-         */
-        policyId?: string,
-        /**
-         * type
-         */
-        type?: TopicType,
-        /**
-         * name
-         */
-        name?: string,
-        /**
-         * owner
-         */
-        owner?: string,
-        /**
-         * topicId
-         */
-        topicId?: string
-    }): Promise<TopicCollection[]>;
-
-    /**
-     * Get topic by id
-     * @param topicId
-     */
-    public abstract getTopicById(topicId: string): Promise<TopicCollection | null>;
-
-    /**
-     * Get Token
-     * @param tokenId
-     * @param dryRun
-     */
-    public abstract getToken(tokenId: string, dryRun?: string): Promise<TokenCollection | null>;
-
-    /**
      * Save topic
      * @param row
      */
@@ -944,27 +367,12 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Save Topic
-     * @param topic
-     *
-     * @virtual
-     */
-    public abstract saveTopic(topic: TopicCollection): Promise<TopicCollection>;
-
-    /**
      * Update topic
      * @param row
      */
     public static async updateTopic(row: TopicCollection): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateTopic.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Get schema
-     * @param iri
-     * @param topicId
-     */
-    public abstract getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null>;
 
     /**
      * Get schema
@@ -1066,124 +474,6 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Get schema
-     * @param topicId
-     * @param entity
-     */
-    public abstract getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null>;
-
-    /**
-     * Set user in group
-     *
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract setUserInGroup(group: unknown): Promise<PolicyRolesCollection>;
-
-    /**
-     * Set Active Group
-     *
-     * @param policyId
-     * @param did
-     * @param uuid
-     *
-     * @virtual
-     */
-    public abstract setActiveGroup(policyId: string, did: string, uuid: string): Promise<void>;
-
-    /**
-     * Get Group By UUID
-     * @param policyId
-     * @param uuid
-     *
-     * @virtual
-     */
-    public abstract getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null>;
-
-    /**
-     * Get Group By Name
-     * @param policyId
-     * @param groupName
-     *
-     * @virtual
-     */
-    public abstract getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection | null>;
-
-    /**
-     * Get User In Group
-     * @param policyId
-     * @param did
-     * @param uuid
-     *
-     * @virtual
-     */
-    public abstract getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection | null>;
-
-    /**
-     * Check User In Group
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract checkUserInGroup(group: { policyId: string, did: string, owner: string, uuid: string }): Promise<PolicyRolesCollection | null>;
-
-    /**
-     * Get Groups By User
-     * @param policyId
-     * @param did
-     * @param options
-     *
-     * @virtual
-     */
-    public abstract getGroupsByUser(policyId: string, did: string, options?: unknown): Promise<PolicyRolesCollection[]>;
-
-    /**
-     * Get Active Group By User
-     * @param policyId
-     * @param did
-     *
-     * @virtual
-     */
-    public abstract getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection | null>;
-
-    /**
-     * Get members
-     *
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract getAllMembersByGroup(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]>;
-
-    /**
-     * Get all policy users
-     * @param policyId
-     *
-     * @virtual
-     */
-    public abstract getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]>;
-
-    /**
-     * Get all policy users
-     * @param policyId
-     * @param uuid
-     * @param role
-     *
-     * @virtual
-     */
-    public abstract getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]>;
-
-    /**
-     * Get all policy users by role
-     * @param policyId
-     * @param role
-     *
-     * @virtual
-     */
-    public abstract getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]>;
-
-    /**
      * Get user role in policy
      * @param policyId
      * @param did
@@ -1191,308 +481,6 @@ export abstract class AbstractDatabaseServer {
     public static async getUserRole(policyId: string, did: string): Promise<PolicyRolesCollection[]> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.getUserRole.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Get user roles
-     * @param policyId
-     * @param did
-     * @returns
-     *
-     * @virtual
-     */
-    public abstract getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]>;
-
-    /**
-     * Delete user
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract deleteGroup(group: PolicyRolesCollection): Promise<void>;
-
-    /**
-     * Create invite token
-     * @param policyId
-     * @param uuid
-     * @param owner
-     * @param role
-     *
-     * @virtual
-     */
-    public abstract createInviteToken(policyId: string, uuid: string, owner: string, role: string): Promise<string>;
-
-    /**
-     * Parse invite token
-     * @param policyId
-     * @param invitationId
-     *
-     * @virtual
-     */
-    public abstract parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations | null>;
-
-    /**
-     * Get MultiSign Status by document or user
-     * @param uuid
-     * @param documentId
-     * @param userId
-     *
-     * @virtual
-     */
-    public abstract getMultiSignStatus(uuid: string, documentId: string, userId: string): Promise<MultiDocuments>;
-
-    /**
-     * Get MultiSign Statuses
-     * @param uuid
-     * @param documentId
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract getMultiSignDocuments(uuid: string, documentId: string, group: string): Promise<MultiDocuments[]>
-
-    /**
-     * Get multi sign documents by document identifiers
-     * @param documentIds Document identifiers
-     * @returns Multi sign documents
-     */
-    public abstract getMultiSignDocumentsByDocumentIds(documentIds: string[]): Promise<MultiDocuments[]>
-
-    /**
-     * Get MultiSign Statuses by group
-     * @param uuid
-     * @param group
-     *
-     * @virtual
-     */
-    public abstract getMultiSignDocumentsByGroup(uuid: string, group: string): Promise<MultiDocuments[]>
-
-    /**
-     * Set MultiSign Status by document
-     * @param uuid
-     * @param documentId
-     * @param group
-     * @param status
-     *
-     * @virtual
-     */
-    public abstract setMultiSigStatus(uuid: string, documentId: string, group: string, status: string): Promise<MultiDocuments>
-
-    /**
-     * Save mint request
-     * @param data Mint request
-     * @returns Saved mint request
-     */
-    public abstract saveMintRequest(data: Partial<MintRequest>): Promise<MintRequest>;
-
-    /**
-     * Create Residue object
-     * @param policyId
-     * @param blockId
-     * @param userId
-     * @param value
-     * @param document
-     */
-    public abstract createResidue(
-        policyId: string,
-        blockId: string,
-        userId: string,
-        value: unknown,
-        document: unknown
-    ): SplitDocuments;
-
-    /**
-     * Get Residue objects
-     * @param policyId
-     * @param blockId
-     * @param userId
-     */
-    public abstract getResidue(policyId: string, blockId: string, userId: string): Promise<SplitDocuments[]>;
-
-    /**
-     * Get External Topic
-     * @param policyId
-     * @param blockId
-     * @param userId
-     *
-     * @virtual
-     */
-    public abstract getExternalTopic(policyId: string, blockId: string, userId: string): Promise<ExternalDocument | null>
-
-    /**
-     * Get split documents in policy
-     * @param policyId Policy identifier
-     * @returns Split documents
-     */
-    public abstract getSplitDocumentsByPolicy(policyId: string): Promise<SplitDocuments[]>
-
-    /**
-     * Set Residue objects
-     * @param residue
-     */
-    public abstract setResidue(residue: SplitDocuments[]): Promise<void>
-
-    /**
-     * Remove Residue objects
-     * @param residue
-     */
-    public abstract removeResidue(residue: SplitDocuments[]): Promise<void>;
-
-    /**
-     * Create tag
-     * @param tag
-     */
-    public abstract createTag(tag: Tag): Promise<Tag>;
-
-    /**
-     * Get tags
-     * @param filters
-     * @param options
-     */
-    public abstract getTags(filters?: Partial<Tag>, options?: unknown): Promise<Tag[]>
-
-    /**
-     * Get tags
-     * @param filters
-     * @param options
-     */
-    public abstract getTagCache(filters?: Partial<TagCache>, options?: unknown): Promise<TagCache[]>
-
-    /**
-     * Delete tag
-     * @param tag
-     */
-    public abstract removeTag(tag: Tag): Promise<void>
-
-    /**
-     * Update tag
-     * @param tag
-     */
-    public abstract updateTag(tag: Tag): Promise<Tag>
-
-    /**
-     * Update tags
-     * @param tags
-     */
-    public abstract updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]>
-
-    /**
-     * Get tag By UUID
-     * @param uuid
-     */
-    public abstract getTagById(uuid: string): Promise<Tag | null>
-
-    /**
-     * Create tag cache
-     * @param tag
-     */
-    public abstract createTagCache(tag: Partial<TagCache>): Promise<TagCache>;
-
-    /**
-     * Update tag cache
-     * @param row
-     */
-    public abstract updateTagCache(row: TagCache): Promise<TagCache>
-
-    /**
-     * Get VP mint information
-     * @param vpDocument VP
-     * @returns Serials and amount
-     */
-    public abstract getVPMintInformation(
-        vpDocument: VpDocument
-    ): Promise<
-        [
-            serials: { serial: number; tokenId: string }[],
-            amount: number,
-            error: string,
-            wasTransferNeeded: boolean,
-            transferSerials: number[],
-            transferAmount: number,
-            tokenIds: string[]
-        ]
-    >
-
-    /**
-     * Set MultiSign Status by user
-     * @param uuid
-     * @param documentId
-     * @param user
-     * @param status
-     * @param document
-     *
-     * @virtual
-     */
-    public abstract setMultiSigDocument(
-        uuid: string,
-        documentId: string,
-        user: { id: string, did: string, group: string, username: string },
-        status: string,
-        document: IVC
-    ): Promise<MultiDocuments>
-
-    /**
-     * Get Active External Topic
-     * @param policyId
-     * @param blockId
-     *
-     * @virtual
-     */
-    public abstract getActiveExternalTopics(
-        policyId: string,
-        blockId: string
-    ): Promise<ExternalDocument[]>
-
-    /**
-     * Create External Topic
-     * @param row
-     *
-     * @virtual
-     */
-    public abstract createExternalTopic(row: unknown): Promise<ExternalDocument>
-
-    /**
-     * Update External Topic
-     * @param item
-     *
-     * @virtual
-     */
-    public abstract updateExternalTopic(item: ExternalDocument): Promise<ExternalDocument>
-
-    /**
-     * get document aggregation filters for analytics
-     * @param nameFilterMap
-     * @param nameFilterAttributes
-     * @param existingAttributes
-     *
-     * @returns Result
-     */
-    public abstract getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[]
-
-    /**
-     * get tasks aggregation filters
-     * @param nameFilter
-     * @param processTimeout
-     *
-     * @returns Result
-     */
-    public abstract getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[]
-
-    /**
-     * get document aggregation filters
-     * @param props
-     *
-     * @returns Result
-     */
-    public abstract getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void
-
-    /**
-     * get document aggregation filters for analytics
-     * @param nameFilter
-     * @param uuid
-     *
-     * @returns Result
-     */
-    public abstract getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[]
 
     /**
      * Update policy
@@ -1526,19 +514,6 @@ export abstract class AbstractDatabaseServer {
     ): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.createVirtualUser.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Create Virtual User
-     * @param policyId
-     * @param username
-     * @param did
-     * @param hederaAccountId
-     * @param hederaAccountKey
-     * @param active
-     *
-     * @virtual
-     */
-    public abstract createVirtualUser(username: string, did: string, hederaAccountId: string, hederaAccountKey: string, active: boolean): Promise<void>
 
     /**
      * Save Virtual Message
@@ -2014,37 +989,6 @@ export abstract class AbstractDatabaseServer {
     }
 
     /**
-     * Save mint transaction
-     * @param transaction Transaction
-     * @returns Saved transaction
-     */
-    public abstract saveMintTransaction(transaction: Partial<MintTransaction>): Promise<MintTransaction>
-
-    /**
-     * Get mint transactions
-     * @param filters Filters
-     * @param options Options
-     * @returns Mint transactions
-     */
-    public abstract getMintTransactions(filters: Partial<MintTransaction>, options?: unknown): Promise<MintTransaction[]>
-
-    /**
-     * Get mint transactions
-     * @param filters Filters
-     * @returns Mint transaction
-     */
-    public abstract getMintTransaction(filters: Partial<MintTransaction>): Promise<MintTransaction>
-
-    /**
-     * Get transactions serials count
-     * @param mintRequestId Mint request identifier
-     * @param transferStatus Transfer status
-     *
-     * @returns Serials count
-     */
-    public abstract getTransactionsSerialsCount(mintRequestId: string, transferStatus?: MintTransactionStatus | unknown): Promise<number>
-
-    /**
      * Update MultiPolicyTransaction
      * @param item
      */
@@ -2068,29 +1012,6 @@ export abstract class AbstractDatabaseServer {
     public static async updateSchemas(items: SchemaCollection[]): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.updateSchemas.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Get transactions count
-     * @param filters Mint request identifier
-     * @returns Transactions count
-     */
-    public abstract getTransactionsCount(filters: Partial<MintTransaction>): Promise<number>
-
-    /**
-     * Get mint request minted serials
-     * @param mintRequestId Mint request identifier
-     * @returns Serials
-     */
-    public abstract getMintRequestSerials(mintRequestId: string): Promise<number[]>
-
-    /**
-     * Get transactions serials
-     * @param mintRequestId Mint request identifier
-     * @param transferStatus Transfer status
-     *
-     * @returns Serials
-     */
-    public abstract getTransactionsSerials(mintRequestId: string, transferStatus?: MintTransactionStatus | unknown): Promise<number[]>
 
     /**
      * Get policy caches
@@ -2163,20 +1084,6 @@ export abstract class AbstractDatabaseServer {
     public static async clearPolicyCacheData(cachePolicyId: string) {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.clearPolicyCacheData.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
-
-    /**
-     * Create mint transactions
-     * @param transaction Transaction
-     * @param amount Amount
-     */
-    public abstract createMintTransactions(transaction: Partial<MintTransaction>, amount: number): Promise<void>
-
-    /**
-     * Get mint request transfer serials
-     * @param mintRequestId Mint request identifier
-     * @returns Serials
-     */
-    public abstract getMintRequestTransferSerials(mintRequestId: string): Promise<number[]>
 
     /**
      * Update VP Documents
@@ -2406,6 +1313,1094 @@ export abstract class AbstractDatabaseServer {
     public static async removePolicyTests(tests: PolicyTest[]): Promise<void> {
         throw new Error(`${AbstractDatabaseServer.name}.${AbstractDatabaseServer.removePolicyTests.name}: ${STATUS_IMPLEMENTATION.METHOD_IS_NOT_IMPLEMENTED}`);
     }
+
+    /**
+     * Set Dry Run id
+     * @param id
+     */
+    public abstract setDryRun(id: string): void;
+
+    /**
+     * Get Dry Run id
+     * @returns Dry Run id
+     */
+    public abstract getDryRun(): string;
+
+    /**
+     * Set System Mode
+     * @param systemMode
+     */
+    public abstract setSystemMode(systemMode: boolean): void;
+
+    /**
+     * Clear Dry Run table
+     * @param all
+     */
+    public abstract clear(all: boolean): Promise<void>;
+
+    /**
+     * Overriding the findOne method
+     * @param entityClass
+     * @param filters
+     * @param options
+     */
+    public abstract findOne<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T>, options: unknown): Promise<T>;
+
+    /**
+     * Overriding the find method
+     * @param entityClass
+     * @param filters
+     * @param options
+     */
+    public abstract find<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T> | unknown, options?: unknown): Promise<T[]>;
+
+    /**
+     * Overriding the create method
+     * @param entityClass
+     * @param item
+     */
+    public abstract create<T extends BaseEntity>(entityClass: new () => T, item: Partial<T>): T;
+
+    /**
+     * Overriding the update method
+     * @param entityClass
+     * @param criteria
+     * @param row
+     */
+    public abstract update<T extends BaseEntity>(entityClass: new () => T, criteria: Partial<T>, row: unknown | unknown[]): Promise<T>;
+
+    /**
+     * Update many method
+     * @param entityClass
+     * @param entities
+     * @param filter
+     */
+    public abstract updateMany<T extends BaseEntity>(entityClass: new () => T, entities: T[], filter: FilterQuery<T>): Promise<DryRun[] | T[]>;
+
+    /**
+     * Overriding the remove method
+     * @param entityClass
+     * @param entities
+     */
+    public abstract remove<T extends BaseEntity>(entityClass: new () => T, entities: T | T[]): Promise<void>;
+
+    /**
+     * Overriding the count method
+     * @param entityClass
+     * @param filters
+     * @param options
+     */
+    public abstract count<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T>, options?: unknown): Promise<number>;
+
+    /**
+     * Overriding the findAndCount method
+     * @param entityClass
+     * @param filters
+     * @param options
+     */
+    public abstract findAndCount<T extends BaseEntity>(entityClass: new () => T, filters: Partial<T> | unknown, options?: unknown): Promise<[T[], number]>;
+
+    /**
+     * Overriding the findAll method
+     * @param entityClass
+     * @param options
+     */
+    public abstract findAll<T extends BaseEntity>(entityClass: new () => T, options?: unknown): Promise<T[]>;
+
+    /**
+     * Find data by aggregation
+     * @param entityClass Entity class
+     * @param aggregation aggregate filter
+     * @returns
+     */
+    public abstract aggregate<T extends BaseEntity>(entityClass: new () => T, aggregation: Partial<T>[]): Promise<T[]>;
+
+    /**
+     * Overriding the save method
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    public abstract save<T extends BaseEntity>(entityClass: new () => T, item: unknown | unknown[], filter?: Partial<T>): Promise<T>
+
+    /**
+     * Save many
+     * @param entityClass
+     * @param item
+     * @param filter
+     */
+    public abstract saveMany<T extends BaseEntity>(entityClass: new () => T, item: unknown[], filter?: Partial<T>): Promise<T[]>
+
+    /**
+     * Save Block State
+     * @param policyId
+     * @param uuid
+     * @param state
+     *
+     * @virtual
+     */
+    public abstract saveBlockState(policyId: string, uuid: string, state: unknown): Promise<void>;
+
+    /**
+     * Get Block State
+     * @param policyId
+     * @param uuid
+     *
+     * @virtual
+     */
+    public abstract getBlockState(policyId: string, uuid: string): Promise<BlockState | null>;
+
+    /**
+     * Get block states
+     * @param policyId Policy identifier
+     * @returns Block states
+     */
+    public abstract getBlockStates(policyId: string): Promise<BlockState[]>;
+
+    /**
+     * Get Virtual User
+     * @param did
+     *
+     * @virtual
+     */
+    public abstract getVirtualUser(did: string): Promise<IAuthUser | null>;
+
+    /**
+     * Get Key from Virtual User
+     * @param did
+     * @param keyName
+     *
+     * @virtual
+     */
+    public abstract getVirtualKey(did: string, keyName: string): Promise<string | null>;
+
+    /**
+     * Get virtual keys
+     * @param filters Filters
+     * @returns Virtual keys
+     */
+    public abstract getVirtualKeys(filters: Partial<DryRun>): Promise<DryRun[]>;
+
+    /**
+     * Set Key from Virtual User
+     * @param did
+     * @param keyName
+     * @param key
+     *
+     * @virtual
+     */
+    public abstract setVirtualKey(did: string, keyName: string, key: string): Promise<void>;
+
+    /**
+     * Get Virtual Hedera Account
+     * @param hederaAccountId
+     *
+     * @virtual
+     */
+    public abstract getVirtualHederaAccountInfo(hederaAccountId: string): Promise<DryRun>;
+
+    /**
+     * Virtual Associate Token
+     * @param hederaAccountId
+     * @param token
+     *
+     * @virtual
+     */
+    public abstract virtualAssociate(hederaAccountId: string, token: TokenCollection): Promise<boolean>;
+
+    /**
+     * Virtual Dissociate Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public abstract virtualDissociate(hederaAccountId: string, tokenId: string): Promise<boolean>;
+
+    /**
+     * Virtual Freeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public abstract virtualFreeze(hederaAccountId: string, tokenId: string): Promise<boolean>;
+
+    /**
+     * Virtual Unfreeze Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public abstract virtualUnfreeze(hederaAccountId: string, tokenId: string): Promise<boolean>;
+
+    /**
+     * Virtual GrantKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public abstract virtualGrantKyc(hederaAccountId: string, tokenId: string): Promise<boolean>;
+
+    /**
+     * Virtual RevokeKyc Token
+     * @param hederaAccountId
+     * @param tokenId
+     *
+     * @virtual
+     */
+    public abstract virtualRevokeKyc(hederaAccountId: string, tokenId: string): Promise<boolean>;
+
+    /**
+     * Save Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     * @param {unknown} value - variable value
+     * @param {boolean} isLongValue - if long value
+     * @virtual
+     */
+    public abstract saveBlockCache(policyId: string, blockId: string, did: string, name: string, value: unknown, isLongValue: boolean): Promise<void>;
+
+    /**
+     * Get Block State
+     * @param {string} policyId - policy ID
+     * @param {string} blockId - block UUID
+     * @param {string} did - user DID
+     * @param {string} name - variable name
+     *
+     * @returns {BlockCache | null} - variable value
+     * @virtual
+     */
+    public abstract getBlockCache(policyId: string, blockId: string, did: string, name: string): Promise<BlockCache | null>;
+
+    /**
+     * Save Document State
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract saveDocumentState(row: Partial<DocumentState>): Promise<DocumentState>;
+
+    /**
+     * Create Token
+     * @param token
+     * @returns
+     */
+    public abstract createToken(token: unknown): Promise<TokenCollection>;
+
+    /**
+     * Update Approval VC
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract updateApproval(row: ApprovalDocumentCollection): Promise<ApprovalDocumentCollection>;
+
+    /**
+     * Update VC
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract updateVC(row: VcDocumentCollection): Promise<VcDocumentCollection>;
+
+    /**
+     * Update VP
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract updateVP(row: VpDocumentCollection): Promise<VpDocumentCollection>;
+
+    /**
+     * Update Did
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract updateDid(row: DidDocumentCollection): Promise<DidDocumentCollection>;
+
+    /**
+     * Save Approval VC
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract saveApproval(row: Partial<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection>;
+
+    /**
+     * Save VC
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract saveVC(row: Partial<VcDocumentCollection>): Promise<VcDocumentCollection>;
+
+    /**
+     * Save VP
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract saveVP(row: Partial<VpDocumentCollection>): Promise<VpDocumentCollection>;
+
+    /**
+     * Save Did
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract saveDid(row: Partial<DidDocumentCollection>): Promise<DidDocumentCollection>;
+
+    /**
+     * Get Policy
+     * @param policyId
+     *
+     * @virtual
+     */
+    public abstract getPolicy(policyId: string): Promise<Policy | null>;
+
+    /**
+     * Get Aggregate Documents
+     * @param policyId
+     * @param blockId
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getAggregateDocuments(policyId: string, blockId: string, filters: unknown): Promise<AggregateVC[]>;
+
+    /**
+     * Get aggregate document by policy identifier
+     * @param policyId Policy identifier
+     * @returns Aggregate documents
+     */
+    public abstract getAggregateDocumentsByPolicy(policyId: string): Promise<AggregateVC[]>;
+
+    /**
+     * Remove Aggregate Documents
+     * @param removeMsp
+     *
+     * @virtual
+     */
+    public abstract removeAggregateDocuments(removeMsp: AggregateVC[]): Promise<void>;
+
+    /**
+     * Remove Aggregate Document
+     * @param hash
+     * @param blockId
+     *
+     * @virtual
+     */
+    public abstract removeAggregateDocument(hash: string, blockId: string): Promise<void>;
+
+    /**
+     * Create Aggregate Documents
+     * @param item
+     * @param blockId
+     *
+     * @virtual
+     */
+    public abstract createAggregateDocuments(item: VcDocumentCollection & {blockId: string}, blockId: string): Promise<void>;
+
+    /**
+     * Get Vc Document
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getVcDocument(filters: Partial<VcDocumentCollection>): Promise<VcDocumentCollection | null>;
+
+    /**
+     * Get Vp Document
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getVpDocument(filters: Partial<VpDocumentCollection>): Promise<VpDocumentCollection | null>;
+
+    /**
+     * Get Approval Document
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getApprovalDocument(filters: Partial<ApprovalDocumentCollection>): Promise<ApprovalDocumentCollection | null>;
+
+    /**
+     * Get Vc Documents
+     * @param aggregation
+     * @virtual
+     */
+    public abstract getVcDocumentsByAggregation(aggregation: Partial<VcDocumentCollection>[]): Promise<VcDocumentCollection[]>;
+
+    /**
+     * Get Vp Documents
+     * @param aggregation
+     * @virtual
+     */
+    public abstract getVpDocumentsByAggregation(aggregation: Partial<VpDocumentCollection>[]): Promise<VpDocumentCollection[]>;
+
+    /**
+     * Get Did Documents
+     * @param aggregation
+     * @virtual
+     */
+    public abstract getDidDocumentsByAggregation(aggregation: Partial<DidDocumentCollection>[]): Promise<DidDocumentCollection[]>;
+
+    /**
+     * Get Approval Documents
+     * @param aggregation
+     * @virtual
+     */
+    public abstract getApprovalDocumentsByAggregation(aggregation: Partial<DidDocumentCollection>[]): Promise<ApprovalDocumentCollection[]>;
+
+    /**
+     * Get Vc Documents
+     * @param filters
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public abstract getVcDocuments<T extends VcDocumentCollection | number>(filters: Partial<T>, options?: unknown, countResult?: boolean): Promise<T[] | number>;
+
+    /**
+     * Get Vp Documents
+     * @param filters
+     *
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public abstract getVpDocuments<T extends VpDocumentCollection | number>(filters: Partial<T>, options?: unknown, countResult?: boolean): Promise<T[] | number>;
+
+    /**
+     * Get Did Documents
+     * @param filters
+     *
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public abstract getDidDocuments(filters: Partial<DidDocumentCollection>, options?: unknown, countResult?: boolean): Promise<DidDocumentCollection[] | number>;
+
+    /**
+     * Get Did Document
+     * @param did
+     */
+    public abstract getDidDocument(did: string): Promise<DidDocumentCollection | null>;
+
+    /**
+     * Get Approval Documents
+     * @param filters
+     * @param options
+     * @param countResult
+     * @virtual
+     */
+    public abstract getApprovalDocuments(filters: Partial<ApprovalDocumentCollection>, options?: unknown, countResult?: boolean): Promise<ApprovalDocumentCollection[] | number>;
+
+    /**
+     * Get Document States
+     * @param filters
+     * @param options
+     *
+     * @virtual
+     */
+    public abstract getDocumentStates(filters: Partial<DocumentState>, options?: unknown): Promise<DocumentState[]>;
+
+    /**
+     * Get Topic
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getTopic(
+        filters: {
+            /**
+             * policyId
+             */
+            policyId?: string,
+            /**
+             * type
+             */
+            type?: TopicType,
+            /**
+             * name
+             */
+            name?: string,
+            /**
+             * owner
+             */
+            owner?: string,
+            /**
+             * topicId
+             */
+            topicId?: string
+        }): Promise<TopicCollection | null>;
+
+    /**
+     * Get Topics
+     * @param filters
+     *
+     * @virtual
+     */
+    public abstract getTopics(
+        filters: {
+            /**
+             * policyId
+             */
+            policyId?: string,
+            /**
+             * type
+             */
+            type?: TopicType,
+            /**
+             * name
+             */
+            name?: string,
+            /**
+             * owner
+             */
+            owner?: string,
+            /**
+             * topicId
+             */
+            topicId?: string
+        }): Promise<TopicCollection[]>;
+
+    /**
+     * Get topic by id
+     * @param topicId
+     */
+    public abstract getTopicById(topicId: string): Promise<TopicCollection | null>;
+
+    /**
+     * Get Token
+     * @param tokenId
+     * @param dryRun
+     */
+    public abstract getToken(tokenId: string, dryRun?: string): Promise<TokenCollection | null>;
+
+    /**
+     * Save Topic
+     * @param topic
+     *
+     * @virtual
+     */
+    public abstract saveTopic(topic: TopicCollection): Promise<TopicCollection>;
+
+    /**
+     * Get schema
+     * @param iri
+     * @param topicId
+     */
+    public abstract getSchemaByIRI(iri: string, topicId?: string): Promise<SchemaCollection | null>;
+
+    /**
+     * Get schema
+     * @param topicId
+     * @param entity
+     */
+    public abstract getSchemaByType(topicId: string, entity: SchemaEntity): Promise<SchemaCollection | null>;
+
+    /**
+     * Set user in group
+     *
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract setUserInGroup(group: unknown): Promise<PolicyRolesCollection>;
+
+    /**
+     * Set Active Group
+     *
+     * @param policyId
+     * @param did
+     * @param uuid
+     *
+     * @virtual
+     */
+    public abstract setActiveGroup(policyId: string, did: string, uuid: string): Promise<void>;
+
+    /**
+     * Get Group By UUID
+     * @param policyId
+     * @param uuid
+     *
+     * @virtual
+     */
+    public abstract getGroupByID(policyId: string, uuid: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get Group By Name
+     * @param policyId
+     * @param groupName
+     *
+     * @virtual
+     */
+    public abstract getGlobalGroup(policyId: string, groupName: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get User In Group
+     * @param policyId
+     * @param did
+     * @param uuid
+     *
+     * @virtual
+     */
+    public abstract getUserInGroup(policyId: string, did: string, uuid: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Check User In Group
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract checkUserInGroup(group: {policyId: string, did: string, owner: string, uuid: string}): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get Groups By User
+     * @param policyId
+     * @param did
+     * @param options
+     *
+     * @virtual
+     */
+    public abstract getGroupsByUser(policyId: string, did: string, options?: unknown): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get Active Group By User
+     * @param policyId
+     * @param did
+     *
+     * @virtual
+     */
+    public abstract getActiveGroupByUser(policyId: string, did: string): Promise<PolicyRolesCollection | null>;
+
+    /**
+     * Get members
+     *
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract getAllMembersByGroup(group: PolicyRolesCollection): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users
+     * @param policyId
+     *
+     * @virtual
+     */
+    public abstract getAllPolicyUsers(policyId: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users
+     * @param policyId
+     * @param uuid
+     * @param role
+     *
+     * @virtual
+     */
+    public abstract getAllUsersByRole(policyId: string, uuid: string, role: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get all policy users by role
+     * @param policyId
+     * @param role
+     *
+     * @virtual
+     */
+    public abstract getUsersByRole(policyId: string, role: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Get user roles
+     * @param policyId
+     * @param did
+     * @returns
+     *
+     * @virtual
+     */
+    public abstract getUserRoles(policyId: string, did: string): Promise<PolicyRolesCollection[]>;
+
+    /**
+     * Delete user
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract deleteGroup(group: PolicyRolesCollection): Promise<void>;
+
+    /**
+     * Create invite token
+     * @param policyId
+     * @param uuid
+     * @param owner
+     * @param role
+     *
+     * @virtual
+     */
+    public abstract createInviteToken(policyId: string, uuid: string, owner: string, role: string): Promise<string>;
+
+    /**
+     * Parse invite token
+     * @param policyId
+     * @param invitationId
+     *
+     * @virtual
+     */
+    public abstract parseInviteToken(policyId: string, invitationId: string): Promise<PolicyInvitations | null>;
+
+    /**
+     * Get MultiSign Status by document or user
+     * @param uuid
+     * @param documentId
+     * @param userId
+     *
+     * @virtual
+     */
+    public abstract getMultiSignStatus(uuid: string, documentId: string, userId: string): Promise<MultiDocuments>;
+
+    /**
+     * Get MultiSign Statuses
+     * @param uuid
+     * @param documentId
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract getMultiSignDocuments(uuid: string, documentId: string, group: string): Promise<MultiDocuments[]>
+
+    /**
+     * Get multi sign documents by document identifiers
+     * @param documentIds Document identifiers
+     * @returns Multi sign documents
+     */
+    public abstract getMultiSignDocumentsByDocumentIds(documentIds: string[]): Promise<MultiDocuments[]>
+
+    /**
+     * Get MultiSign Statuses by group
+     * @param uuid
+     * @param group
+     *
+     * @virtual
+     */
+    public abstract getMultiSignDocumentsByGroup(uuid: string, group: string): Promise<MultiDocuments[]>
+
+    /**
+     * Set MultiSign Status by document
+     * @param uuid
+     * @param documentId
+     * @param group
+     * @param status
+     *
+     * @virtual
+     */
+    public abstract setMultiSigStatus(uuid: string, documentId: string, group: string, status: string): Promise<MultiDocuments>
+
+    /**
+     * Save mint request
+     * @param data Mint request
+     * @returns Saved mint request
+     */
+    public abstract saveMintRequest(data: Partial<MintRequest>): Promise<MintRequest>;
+
+    /**
+     * Create Residue object
+     * @param policyId
+     * @param blockId
+     * @param userId
+     * @param value
+     * @param document
+     */
+    public abstract createResidue(
+        policyId: string,
+        blockId: string,
+        userId: string,
+        value: unknown,
+        document: unknown
+    ): SplitDocuments;
+
+    /**
+     * Get Residue objects
+     * @param policyId
+     * @param blockId
+     * @param userId
+     */
+    public abstract getResidue(policyId: string, blockId: string, userId: string): Promise<SplitDocuments[]>;
+
+    /**
+     * Get External Topic
+     * @param policyId
+     * @param blockId
+     * @param userId
+     *
+     * @virtual
+     */
+    public abstract getExternalTopic(policyId: string, blockId: string, userId: string): Promise<ExternalDocument | null>
+
+    /**
+     * Get split documents in policy
+     * @param policyId Policy identifier
+     * @returns Split documents
+     */
+    public abstract getSplitDocumentsByPolicy(policyId: string): Promise<SplitDocuments[]>
+
+    /**
+     * Set Residue objects
+     * @param residue
+     */
+    public abstract setResidue(residue: SplitDocuments[]): Promise<void>
+
+    /**
+     * Remove Residue objects
+     * @param residue
+     */
+    public abstract removeResidue(residue: SplitDocuments[]): Promise<void>;
+
+    /**
+     * Create tag
+     * @param tag
+     */
+    public abstract createTag(tag: Tag): Promise<Tag>;
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public abstract getTags(filters?: Partial<Tag>, options?: unknown): Promise<Tag[]>
+
+    /**
+     * Get tags
+     * @param filters
+     * @param options
+     */
+    public abstract getTagCache(filters?: Partial<TagCache>, options?: unknown): Promise<TagCache[]>
+
+    /**
+     * Delete tag
+     * @param tag
+     */
+    public abstract removeTag(tag: Tag): Promise<void>
+
+    /**
+     * Update tag
+     * @param tag
+     */
+    public abstract updateTag(tag: Tag): Promise<Tag>
+
+    /**
+     * Update tags
+     * @param tags
+     */
+    public abstract updateTags(tags: Tag[]): Promise<DryRun[] | Tag[]>
+
+    /**
+     * Get tag By UUID
+     * @param uuid
+     */
+    public abstract getTagById(uuid: string): Promise<Tag | null>
+
+    /**
+     * Create tag cache
+     * @param tag
+     */
+    public abstract createTagCache(tag: Partial<TagCache>): Promise<TagCache>;
+
+    /**
+     * Update tag cache
+     * @param row
+     */
+    public abstract updateTagCache(row: TagCache): Promise<TagCache>
+
+    /**
+     * Get VP mint information
+     * @param vpDocument VP
+     * @returns Serials and amount
+     */
+    public abstract getVPMintInformation(
+        vpDocument: VpDocument
+    ): Promise<
+        [
+            serials: {serial: number; tokenId: string}[],
+            amount: number,
+            error: string,
+            wasTransferNeeded: boolean,
+            transferSerials: number[],
+            transferAmount: number,
+            tokenIds: string[],
+            target: string,
+        ]
+    >
+
+    /**
+     * Set MultiSign Status by user
+     * @param uuid
+     * @param documentId
+     * @param user
+     * @param status
+     * @param document
+     *
+     * @virtual
+     */
+    public abstract setMultiSigDocument(
+        uuid: string,
+        documentId: string,
+        user: {id: string, did: string, group: string, username: string},
+        status: string,
+        document: IVC
+    ): Promise<MultiDocuments>
+
+    /**
+     * Get Active External Topic
+     * @param policyId
+     * @param blockId
+     *
+     * @virtual
+     */
+    public abstract getActiveExternalTopics(
+        policyId: string,
+        blockId: string
+    ): Promise<ExternalDocument[]>
+
+    /**
+     * Create External Topic
+     * @param row
+     *
+     * @virtual
+     */
+    public abstract createExternalTopic(row: unknown): Promise<ExternalDocument>
+
+    /**
+     * Update External Topic
+     * @param item
+     *
+     * @virtual
+     */
+    public abstract updateExternalTopic(item: ExternalDocument): Promise<ExternalDocument>
+
+    /**
+     * get document aggregation filters for analytics
+     * @param nameFilterMap
+     * @param nameFilterAttributes
+     * @param existingAttributes
+     *
+     * @returns Result
+     */
+    public abstract getAttributesAggregationFilters(nameFilterMap: string, nameFilterAttributes: string, existingAttributes: string[] | []): unknown[]
+
+    /**
+     * get tasks aggregation filters
+     * @param nameFilter
+     * @param processTimeout
+     *
+     * @returns Result
+     */
+    public abstract getTasksAggregationFilters(nameFilter: string, processTimeout: number): unknown[]
+
+    /**
+     * get document aggregation filters
+     * @param props
+     *
+     * @returns Result
+     */
+    public abstract getDocumentAggregationFilters(props: IGetDocumentAggregationFilters): void
+
+    /**
+     * get document aggregation filters for analytics
+     * @param nameFilter
+     * @param uuid
+     *
+     * @returns Result
+     */
+    public abstract getAnalyticsDocAggregationFilters(nameFilter: string, uuid: string): unknown[]
+
+    /**
+     * Create Virtual User
+     * @param policyId
+     * @param username
+     * @param did
+     * @param hederaAccountId
+     * @param hederaAccountKey
+     * @param active
+     *
+     * @virtual
+     */
+    public abstract createVirtualUser(username: string, did: string, hederaAccountId: string, hederaAccountKey: string, active: boolean): Promise<void>
+
+    /**
+     * Save mint transaction
+     * @param transaction Transaction
+     * @returns Saved transaction
+     */
+    public abstract saveMintTransaction(transaction: Partial<MintTransaction>): Promise<MintTransaction>
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @param options Options
+     * @returns Mint transactions
+     */
+    public abstract getMintTransactions(filters: Partial<MintTransaction>, options?: unknown): Promise<MintTransaction[]>
+
+    /**
+     * Get mint transactions
+     * @param filters Filters
+     * @returns Mint transaction
+     */
+    public abstract getMintTransaction(filters: Partial<MintTransaction>): Promise<MintTransaction>
+
+    /**
+     * Get transactions serials count
+     * @param mintRequestId Mint request identifier
+     * @param transferStatus Transfer status
+     *
+     * @returns Serials count
+     */
+    public abstract getTransactionsSerialsCount(mintRequestId: string, transferStatus?: MintTransactionStatus | unknown): Promise<number>
+
+    /**
+     * Get transactions count
+     * @param filters Mint request identifier
+     * @returns Transactions count
+     */
+    public abstract getTransactionsCount(filters: Partial<MintTransaction>): Promise<number>
+
+    /**
+     * Get mint request minted serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public abstract getMintRequestSerials(mintRequestId: string): Promise<number[]>
+
+    /**
+     * Get transactions serials
+     * @param mintRequestId Mint request identifier
+     * @param transferStatus Transfer status
+     *
+     * @returns Serials
+     */
+    public abstract getTransactionsSerials(mintRequestId: string, transferStatus?: MintTransactionStatus | unknown): Promise<number[]>
+
+    /**
+     * Create mint transactions
+     * @param transaction Transaction
+     * @param amount Amount
+     */
+    public abstract createMintTransactions(transaction: Partial<MintTransaction>, amount: number): Promise<void>
+
+    /**
+     * Get mint request transfer serials
+     * @param mintRequestId Mint request identifier
+     * @returns Serials
+     */
+    public abstract getMintRequestTransferSerials(mintRequestId: string): Promise<number[]>
 
     /**
      * Overriding the create method

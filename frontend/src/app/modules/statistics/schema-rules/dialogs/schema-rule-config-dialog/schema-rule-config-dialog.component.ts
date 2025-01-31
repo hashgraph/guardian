@@ -109,6 +109,8 @@ export class SchemaRuleConfigDialog {
     }];
 
     public variables: any[] = [];
+    public scores: any[] = [];
+    public formulas: any[] = [];
     public enumVariables: any[] = [];
     public enums: { [x: string]: EnumValue } = {};
     public readonly: boolean = false;
@@ -140,6 +142,8 @@ export class SchemaRuleConfigDialog {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig<{
             variables: any[],
+            scores?: any[],
+            formulas?: any[],
             enums: { [x: string]: EnumValue }
             item: FieldRule,
             readonly?: boolean
@@ -149,6 +153,8 @@ export class SchemaRuleConfigDialog {
         this.item = this.config.data?.item || new FieldRule();
         this.rule = this.item.rule;
         this.variables = this.config.data?.variables || [];
+        this.scores = this.config.data?.scores || [];
+        this.formulas = this.config.data?.formulas || [];
         this.enums = this.config.data?.enums || {};
         this.readonly = !!this.config.data?.readonly;
 
@@ -171,7 +177,10 @@ export class SchemaRuleConfigDialog {
             this.range = new RangeRule(this.item);
         }
 
-        const all = this.variables.map((o) => o.value);
+        const variables = this.variables.map((o) => o.value);
+        const scores = this.scores.map((o) => o.value);
+        const formulas = this.formulas.map((o) => o.value);
+        const all = [...variables, ...scores, ...formulas];
         this.codeMirrorOptions = {
             ...this.codeMirrorOptions,
             variables: all,

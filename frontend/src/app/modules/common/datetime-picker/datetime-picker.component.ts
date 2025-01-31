@@ -12,8 +12,9 @@ import moment from 'moment';
 export class DatetimePicker {
     @Input() placeholder!: string;
     @Input() readonly!: boolean;
-    @Input() value!: Date;
+    @Input() value!: string;
     @Input() format!: any;
+    @Input() appendTo: string | null = null;
     @Output() valueChange = new EventEmitter<string>();
 
     private _currentValue!: string;
@@ -27,17 +28,22 @@ export class DatetimePicker {
     public stepMinute = 5;
     public stepSecond = 1;
     public defaultTime = [new Date().getHours(), 0, 0]
+    public currentDate: Date
 
     constructor() {
     }
 
     ngOnInit() {
         this.placeholder = this.placeholder || 'Choose a date & time';
+        if (this.value) {
+            this.currentDate = new Date(this.value);
+        }
     }
 
     onValue(event: Date) {
         const utcValue = moment(event).utc().toISOString();
-        if (this.value !== event) {
+
+        if (this.value !== utcValue) {
             this.valueChange.emit(utcValue);
         }
     }

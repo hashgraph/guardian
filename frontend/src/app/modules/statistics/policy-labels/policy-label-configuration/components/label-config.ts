@@ -1,9 +1,9 @@
 import { FormGroup, FormControl, Validators } from "@angular/forms";
-import { IPolicyLabel, GenerateUUIDv4, IPolicyLabelConfig, IGroupItemConfig, NavItemType, IRulesItemConfig, ILabelItemConfig, IStatisticItemConfig } from "@guardian/interfaces";
+import { IPolicyLabel, GenerateUUIDv4, IPolicyLabelConfig, IGroupItemConfig, NavItemType, IRulesItemConfig, ILabelItemConfig, IStatisticItemConfig, EntityStatus } from "@guardian/interfaces";
 import { TreeDragDropService } from "primeng/api";
 import { DialogService } from "primeng/dynamicdialog";
 import { Subject } from "rxjs";
-import { CustomCustomDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
+import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
 import { NavMenu, NavItem, NavTree } from "./nav-item";
 
 export class LabelConfig {
@@ -51,6 +51,8 @@ export class LabelConfig {
         this.navigationTree = NavTree.from(item);
         this.navigationTree.update();
         this.updateSelected();
+
+        this.readonly = item?.status === EntityStatus.PUBLISHED;
     }
 
     public setPolicy(relationships: any) {
@@ -135,7 +137,7 @@ export class LabelConfig {
     }
 
     public onDeleteNavItem(node: NavItem) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',

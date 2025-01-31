@@ -262,8 +262,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.ACTIVE) {
-                    return new MessageError('Item is active.');
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is published.');
                 }
 
                 item.name = label.name;
@@ -295,8 +295,8 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                 if (!item || item.owner !== owner.owner) {
                     return new MessageError('Item does not exist.');
                 }
-                if (item.status === EntityStatus.ACTIVE) {
-                    return new MessageError('Item is active.');
+                if (item.status === EntityStatus.PUBLISHED) {
+                    return new MessageError('Item is published.');
                 }
                 await DatabaseServer.removePolicyLabel(item);
                 return new MessageResponse(true);
@@ -326,7 +326,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
-                    return new MessageError(`Item is already active.`);
+                    return new MessageError(`Item is already published.`);
                 }
 
                 const result = await publishPolicyLabel(item, owner, emptyNotifier(), logger);
@@ -358,7 +358,7 @@ export async function policyLabelsAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Item does not exist.');
                 }
                 if (item.status === EntityStatus.PUBLISHED) {
-                    return new MessageError(`Item is already active.`);
+                    return new MessageError(`Item is already published.`);
                 }
 
                 const notifier = await initNotifier(task);

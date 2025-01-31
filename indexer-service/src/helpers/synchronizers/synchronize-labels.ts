@@ -48,7 +48,7 @@ export class SynchronizationLabels extends SynchronizationTask {
         const labels = collection.find({
             type: MessageType.POLICY_LABEL,
             action: MessageAction.PublishPolicyLabel,
-            ...this.filter(),
+            ...this.filter1(),
         });
         const allDocuments: Message[] = [];
         while (await labels.hasNext()) {
@@ -63,7 +63,7 @@ export class SynchronizationLabels extends SynchronizationTask {
         console.log(`Sync labels: load documents`)
         const documents = collection.find({
             action: MessageAction.CreateLabelDocument,
-            ...this.filter(),
+            ...this.filter2(),
         });
         const allDocuments: Message[] = [];
         while (await documents.hasNext()) {
@@ -146,7 +146,7 @@ export class SynchronizationLabels extends SynchronizationTask {
         return analytics;
     }
 
-    private filter() {
+    private filter1() {
         return {
             $or: [
                 {
@@ -157,6 +157,31 @@ export class SynchronizationLabels extends SynchronizationTask {
                 },
                 {
                     analytics: undefined,
+                },
+                {
+                    'analytics.config': null,
+                },
+            ],
+        };
+    }
+
+    private filter2() {
+        return {
+            $or: [
+                {
+                    analytics: { $exists: false },
+                },
+                {
+                    analytics: null,
+                },
+                {
+                    analytics: undefined,
+                },
+                {
+                    'analytics.textSearch': undefined,
+                },
+                {
+                    'analytics.tokenId': undefined,
                 },
             ],
         };

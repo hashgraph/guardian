@@ -1,22 +1,12 @@
-import {Component, Input, OnInit} from '@angular/core';
-import {UntypedFormBuilder, Validators} from '@angular/forms';
-import {
-    IImpactReport,
-    IconType,
-    IPolicyReport,
-    IReport,
-    IReportItem,
-    ITokenReport,
-    IVCReport,
-    IVPReport,
-} from '@guardian/interfaces';
-import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
-import {IPFSService} from 'src/app/services/ipfs.service';
-import {PolicyEngineService} from 'src/app/services/policy-engine.service';
-import {WebSocketService} from 'src/app/services/web-socket.service';
-import {IconsArray} from './iconsArray';
-import {DialogService} from 'primeng/dynamicdialog';
-import {HttpErrorResponse} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, Input, OnInit } from '@angular/core';
+import { UntypedFormBuilder, Validators } from '@angular/forms';
+import { IconType, IImpactReport, IPolicyReport, IReport, IReportItem, ITokenReport, IVCReport, IVPReport } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
+import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
 
 interface IAdditionalDocument {
     vpDocument?: IVPReport | undefined;
@@ -32,7 +22,7 @@ interface IAdditionalDocument {
 @Component({
     selector: 'app-report-block',
     templateUrl: './report-block.component.html',
-    styleUrls: ['./report-block.component.scss'],
+    styleUrls: ['./report-block.component.scss']
 })
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -49,7 +39,7 @@ export class ReportBlockComponent implements OnInit {
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
-        value: ['', Validators.required],
+        value: ['', Validators.required]
     });
 
     constructor(
@@ -59,6 +49,22 @@ export class ReportBlockComponent implements OnInit {
         private dialogService: DialogService,
         private ipfs: IPFSService
     ) {
+    }
+
+    private _onSuccess(data: any) {
+        this.setData(data);
+        setTimeout(() => {
+            this.loading = false;
+        }, 500);
+    }
+
+    private _onError(e: HttpErrorResponse) {
+        console.error(e.error);
+        if (e.status === 503) {
+            this._onSuccess(null);
+        } else {
+            this.loading = false;
+        }
     }
 
     ngOnInit(): void {
@@ -97,22 +103,6 @@ export class ReportBlockComponent implements OnInit {
         }
     }
 
-    private _onSuccess(data: any) {
-        this.setData(data);
-        setTimeout(() => {
-            this.loading = false;
-        }, 500);
-    }
-
-    private _onError(e: HttpErrorResponse) {
-        console.error(e.error);
-        if (e.status === 503) {
-            this._onSuccess(null);
-        } else {
-            this.loading = false;
-        }
-    }
-
     setData(data: any) {
         if (data && data.data) {
             this.chainVisible = true;
@@ -131,7 +121,7 @@ export class ReportBlockComponent implements OnInit {
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
-            value: this.hash,
+            value: this.hash
         });
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
@@ -163,7 +153,7 @@ export class ReportBlockComponent implements OnInit {
                 visible: true,
                 issuer: this.policyDocument.issuer,
                 username: this.policyDocument.username,
-                document: this.policyDocument.document,
+                document: this.policyDocument.document
             });
         }
         if (this.policyCreatorDocument) {
@@ -222,16 +212,17 @@ export class ReportBlockComponent implements OnInit {
         document?: any
     ) {
         const title = `${item.type?.toUpperCase()} Document`;
+        const row = Array.isArray(item.document) ? item.document[0].document : item.document.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
-                id: item.document.id,
-                row: item,
-                dryRun: !!item.document.dryRunId,
+                id: row.id,
+                row: row,
+                dryRun: !!row.dryRunId,
                 viewDocument: true,
-                document: document || item.document.document,
+                document: document || row,
                 title: title,
                 type: 'VC',
             }
@@ -242,16 +233,17 @@ export class ReportBlockComponent implements OnInit {
 
     openVPDocument(item: any) {
         const title = `${item.type?.toUpperCase()} Document`;
+        const row = Array.isArray(item.document) ? item.document[0] : item.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
-                id: item.document.id,
-                row: item,
-                dryRun: !!item.document.dryRunId,
+                id: row.id,
+                row: row,
+                dryRun: !!row.dryRunId,
                 viewDocument: true,
-                document: item.document.document,
+                document: row.document,
                 title: title,
                 type: 'VP',
             }
@@ -290,7 +282,7 @@ export class ReportBlockComponent implements OnInit {
     onScrollButtonPress(target: HTMLDivElement, amount: number = 0) {
         target.scrollBy({
             behavior: 'smooth',
-            left: amount,
+            left: amount
         });
     }
 
@@ -314,7 +306,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {filterValue: null})
+            .setBlockData(this.id, this.policyId, { filterValue: null })
             .subscribe(
                 () => {
                     this.loadData();

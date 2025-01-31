@@ -250,11 +250,11 @@
                                         [queryParams]="{toolId: tool.id}"
                                         [routerLink]="['/tool-configuration']"
                                         class="btn-icon-edit"
-                                        matTooltip="Edit"
-                                        matTooltipClass="guardian-tooltip"
-                                        matTooltipHideDelay="100"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="500"
+                                        pTooltip="Edit"
+                                        tooltipStyleClass="guardian-tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="500"
+                                        [hideDelay]="100"
                                     >
                                         <svg-icon class="opacity-icon"
                                                   src="/assets/images/icons/edit.svg"
@@ -264,11 +264,11 @@
                                         *ngIf="user.TOOLS_TOOL_READ"
                                         (click)="exportTool(tool)"
                                         class="operations-icon-container"
-                                        matTooltip="Export"
-                                        matTooltipClass="guardian-tooltip"
-                                        matTooltipHideDelay="100"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="500"
+                                        pTooltip="Export"
+                                        tooltipStyleClass="guardian-tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="500"
+                                        [hideDelay]="100"
                                     >
                                         <svg-icon
                                             class="opacity-icon"
@@ -279,11 +279,11 @@
                                         *ngIf="user.TOOLS_TOOL_DELETE"
                                         (click)="tool.status ==='DRAFT' ? deleteTool(tool) : null"
                                         class="operations-icon-container"
-                                        matTooltip="Delete"
-                                        matTooltipClass="guardian-tooltip"
-                                        matTooltipHideDelay="100"
-                                        matTooltipPosition="above"
-                                        matTooltipShowDelay="500"
+                                        pTooltip="Delete"
+                                        tooltipStyleClass="guardian-tooltip"
+                                        tooltipPosition="top"
+                                        [showDelay]="500"
+                                        [hideDelay]="100"
                                     >
                                         <svg-icon class="opacity-icon"
                                                   src="/assets/images/icons/delete.svg"
@@ -311,8 +311,8 @@
     <div class="not-exist">
         <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
         </svg-icon>
-        <span class="info-text-strong">There were no Tool created yet</span>
-        <span class="info-text">Please create new tool to see the data</span>
+        <span class="info-text-strong">There are no tools created yet</span>
+        <span class="info-text">Please create a new tool to see the data</span>
     </div>
 </ng-template>
 

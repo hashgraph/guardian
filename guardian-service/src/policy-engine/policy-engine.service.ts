@@ -1,20 +1,4 @@
 import {
-    DocumentCategoryType,
-    DocumentType,
-    EntityOwner,
-    ExternalMessageEvents,
-    GenerateUUIDv4,
-    IOwner,
-    PolicyEngineEvents,
-    PolicyEvents,
-    PolicyType,
-    Schema,
-    SchemaField,
-    TopicType,
-    PolicyTestStatus,
-    PolicyHelper
-} from '@guardian/interfaces';
-import {
     BinaryMessageResponse,
     DatabaseServer,
     findAllEntities,
@@ -27,7 +11,8 @@ import {
     MessageResponse,
     MessageServer,
     MessageType,
-    NatsService, PinoLogger,
+    NatsService,
+    PinoLogger,
     Policy,
     PolicyImportExport,
     PolicyMessage,
@@ -38,24 +23,25 @@ import {
     TopicConfig,
     Users,
     VcHelper,
-    XlsxToJson,
+    XlsxToJson
 } from '@guardian/common';
-import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
-import { PolicyComponentsUtils } from './policy-components-utils.js';
-import { IPolicyUser } from './policy-user.js';
-import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
-import { PolicyEngine } from './policy-engine.js';
+import { DocumentCategoryType, DocumentType, EntityOwner, ExternalMessageEvents, GenerateUUIDv4, IOwner, PolicyEngineEvents, PolicyEvents, PolicyHelper, PolicyTestStatus, PolicyType, Schema, SchemaField, TopicType } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hashgraph/sdk';
 import { NatsConnection } from 'nats';
-import { GuardiansService } from '../helpers/guardians.js';
-import { BlockAboutString } from './block-about.js';
 import { HashComparator } from '../analytics/index.js';
-import { getSchemaCategory, SchemaImportExportHelper, importSubTools, previewToolByMessage } from '../api/helpers/index.js';
-import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
-import { Inject } from '../helpers/decorators/inject.js';
-import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
-import { VpDocumentLoader, VcDocumentLoader, PolicyDataLoader } from './helpers/policy-data/loaders/index.js';
+import { getSchemaCategory, importSubTools, previewToolByMessage, SchemaImportExportHelper } from '../api/helpers/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
+import { Inject } from '../helpers/decorators/inject.js';
+import { GuardiansService } from '../helpers/guardians.js';
+import { emptyNotifier, initNotifier } from '../helpers/notifier.js';
+import { BlockAboutString } from './block-about.js';
+import { PolicyDataMigrator } from './helpers/policy-data-migrator.js';
+import { PolicyDataLoader, VcDocumentLoader, VpDocumentLoader } from './helpers/policy-data/loaders/index.js';
+import { PolicyDataImportExport } from './helpers/policy-data/policy-data-import-export.js';
+import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
+import { PolicyComponentsUtils } from './policy-components-utils.js';
+import { PolicyEngine } from './policy-engine.js';
+import { IPolicyUser } from './policy-user.js';
 
 /**
  * PolicyEngineChannel
@@ -89,35 +75,26 @@ export class PolicyEngineChannel extends NatsService {
 
 export class PolicyEngineService {
     /**
+     * Message broker service
+     * @private
+     */
+    private readonly channel: PolicyEngineChannel;
+    /**
+     * Policy Engine
+     * @private
+     */
+    private readonly policyEngine: PolicyEngine;
+    /**
      * Users helper
      * @private
      */
     @Inject()
     declare private readonly users: Users;
 
-    /**
-     * Message broker service
-     * @private
-     */
-    private readonly channel: PolicyEngineChannel;
-
-    /**
-     * Policy Engine
-     * @private
-     */
-    private readonly policyEngine: PolicyEngine;
-
     constructor(cn: NatsConnection, logger: PinoLogger) {
         this.channel = new PolicyEngineChannel();
         this.channel.setConnection(cn)
         this.policyEngine = new PolicyEngine(logger)
-    }
-
-    /**
-     * Init
-     */
-    public async init(): Promise<void> {
-        await this.channel.init();
     }
 
     /**
@@ -195,6 +172,13 @@ export class PolicyEngineService {
             await logger.error(error, ['GUARDIAN_SERVICE, HASH']);
             return null;
         }
+    }
+
+    /**
+     * Init
+     */
+    public async init(): Promise<void> {
+        await this.channel.init();
     }
 
     /**
@@ -1658,6 +1642,112 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.CREATE_SAVEPOINT,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    await DatabaseServer.createSavepoint(policyId);
+                    await DatabaseServer.copyStates(policyId);
+                    // const users = await DatabaseServer.getVirtualUsers(policyId);
+                    // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    // const filters = await this.policyEngine.addAccessFilters({}, owner);
+                    // const policies = (await DatabaseServer.getListOfPolicies(filters));
+                    console.log('Create savepoint');
+                    return new MessageResponse({});
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.DELETE_SAVEPOINT,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    await DatabaseServer.restoreSavepoint(policyId);
+                    // const users = await DatabaseServer.getVirtualUsers(policyId);
+                    // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    // const filters = await this.policyEngine.addAccessFilters({}, owner);
+                    // const policies = (await DatabaseServer.getListOfPolicies(filters));
+                    console.log('Delete savepoint');
+                    return new MessageResponse({});
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.RESTORE_SAVEPOINT,
+            async (msg: { policyId: string, owner: IOwner }) => {
+                try {
+                    const { policyId, owner } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    await this.policyEngine.accessPolicy(policy, owner, 'read');
+                    if (!policy.config) {
+                        throw new Error('The policy is empty');
+                    }
+                    if (!PolicyHelper.isDryRunMode(policy)) {
+                        throw new Error(`Policy is not in Dry Run`);
+                    }
+
+                    await DatabaseServer.restoreSavepoint(policyId);
+                    await DatabaseServer.restoreStates(policyId);
+                    // const users = await DatabaseServer.getVirtualUsers(policyId);
+                    // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    // const filters = await this.policyEngine.addAccessFilters({}, owner);
+                    // const policies = (await DatabaseServer.getListOfPolicies(filters));
+                    console.log('Restore savepoint');
+                    return new MessageResponse({});
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE']);
+                    return new MessageError(error);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_SAVEPOINT,
+                                           async (msg: {policyId: string, owner: IOwner}) => {
+                                               try {
+                                                   const {policyId, owner} = msg;
+                                                   const policy = await DatabaseServer.getPolicyById(policyId);
+                                                   await this.policyEngine.accessPolicy(policy, owner, 'read');
+                                                   if (!policy.config) {
+                                                       throw new Error('The policy is empty');
+                                                   }
+                                                   if (!PolicyHelper.isDryRunMode(policy)) {
+                                                       throw new Error(`Policy is not in Dry Run`);
+                                                   }
+
+                                                   const state = await DatabaseServer.getSavepointSate(policyId);
+                                                   // const users = await DatabaseServer.getVirtualUsers(policyId);
+                                                   // await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                                                   // const filters = await this.policyEngine.addAccessFilters({}, owner);
+                                                   // const policies = (await DatabaseServer.getListOfPolicies(filters));
+                                                   console.log('Restore savepoint');
+                                                   return new MessageResponse({state});
+                                               } catch (error) {
+                                                   await logger.error(error, ['GUARDIAN_SERVICE']);
+                                                   return new MessageError(error);
+                                               }
+                                           });
 
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_VIRTUAL_DOCUMENTS,
             async (msg: {

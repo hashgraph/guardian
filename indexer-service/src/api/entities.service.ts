@@ -55,7 +55,11 @@ import {
     StatisticDetails,
     Label,
     LabelDetails,
-    LabelDocumentDetails
+    LabelDocumentDetails,
+    Formula,
+    FormulaDetails,
+    FormulaRelationships,
+    PolicyActivity
 } from '@indexer/interfaces';
 import { parsePageParams } from '../utils/parse-page-params.js';
 import axios from 'axios';
@@ -112,22 +116,55 @@ function parseKeywordFilter(keywordsString: string) {
     return filter;
 }
 
-async function loadDocuments(row: Message, tryLoad: boolean): Promise<IMessage> {
+async function getPolicy(row: Message): Promise<Message> {
+    const em = DataBaseHelper.getEntityManager();
+    const policyMessage = await em.findOne(Message, {
+        type: MessageType.INSTANCE_POLICY,
+        consensusTimestamp: row.analytics?.policyId,
+    } as any);
+    return policyMessage;
+}
+
+async function loadDocuments(
+    row: Message,
+    tryLoad: boolean,
+    prepare?: (file: string) => string
+): Promise<Message> {
     try {
-        if (!row?.files?.length) {
-            return row;
+        const result = { ...row };
+        if (!result?.files?.length) {
+            return result;
         }
 
         if (tryLoad) {
-            await checkDocuments(row, 20 * 1000);
-            await saveDocuments(row);
+            await checkDocuments(result, 20 * 1000);
+            await saveDocuments(result);
         }
 
-        row.documents = [];
-        for (const fileName of row.files) {
+        result.documents = [];
+        for (const fileName of result.files) {
             const file = await DataBaseHelper.loadFile(fileName);
-            row.documents.push(file);
+            if (prepare) {
+                result.documents.push(prepare(file));
+            } else {
+                result.documents.push(file);
+            }
         }
+        return result;
+    } catch (error) {
+        return row;
+    }
+}
+
+async function loadSchemaDocument(row: Message): Promise<Message> {
+    try {
+        const result = { ...row };
+        if (!result?.files?.length) {
+            return result;
+        }
+        const file = await DataBaseHelper.loadFile(result.files[0]);
+        result.documents = [file];
+        return result;
     } catch (error) {
         return row;
     }
@@ -180,6 +217,50 @@ async function loadSchema(
         }
     } catch (error) {
         return null;
+    }
+}
+
+async function loadFormulas(
+    row: Message,
+): Promise<IMessage[]> {
+    try {
+        const policyId = row.analytics.policyId;
+        if (!policyId) {
+            return null;
+        }
+
+        const em = DataBaseHelper.getEntityManager();
+        const formulasMessages = await em.find(Message, {
+            type: MessageType.FORMULA,
+            'analytics.policyId': policyId,
+        } as any);
+
+        return formulasMessages;
+    } catch (error) {
+        return null;
+    }
+}
+
+async function loadSchemas(topicId: string,): Promise<IMessage[]> {
+    try {
+        const em = DataBaseHelper.getEntityManager();
+        const schemas = await em.find(Message, {
+            type: MessageType.SCHEMA,
+            action: {
+                $in: [
+                    MessageAction.PublishSchema,
+                    MessageAction.PublishSystemSchema,
+                ],
+            },
+            topicId,
+        } as any);
+
+        for (let i = 0; i < schemas.length; i++) {
+            schemas[i] = await loadSchemaDocument(schemas[i]);
+        }
+        return schemas;
+    } catch (error) {
+        return [];
     }
 }
 
@@ -265,6 +346,59 @@ function getContext(file: string): any {
     } catch (error) {
         return null;
     }
+}
+
+async function findRelationships(target: Message): Promise<Message[]> {
+    if (!target) {
+        return [];
+    }
+
+    const em = DataBaseHelper.getEntityManager();
+    const map = new Map<string, Message>();
+    map.set(target.consensusTimestamp, target);
+
+    await addRelationships(target, map, em);
+
+    const documents = [];
+    for (const message of map.values()) {
+        if (message) {
+            const document = await loadDocuments(message, false);
+            if (document) {
+                documents.push(document)
+            }
+        }
+    }
+    return documents;
+}
+
+async function addRelationships(
+    doc: Message,
+    relationships: Map<string, Message>,
+    em: any
+) {
+    if (Array.isArray(doc?.options?.relationships)) {
+        for (const id of doc.options.relationships) {
+            await addRelationship(id, relationships, em);
+        }
+    }
+}
+
+async function addRelationship(
+    messageId: string,
+    relationships: Map<string, Message>,
+    em: any
+) {
+    if (!messageId || relationships.has(messageId)) {
+        return;
+    }
+
+    const doc = (await em.findOne(Message, {
+        consensusTimestamp: messageId,
+        type: MessageType.VC_DOCUMENT,
+    }));
+
+    relationships.set(messageId, doc);
+    await addRelationships(doc, relationships, em);
 }
 //#endregion
 
@@ -395,6 +529,40 @@ export class EntityService {
         }
     }
 
+    @MessagePattern(IndexerMessageAPI.GET_REGISTRY_RELATIONSHIPS)
+    async getRegistryRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.STANDARD_REGISTRY,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
     //#endregion
     //#region REGISTRY USERS
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY_USERS)
@@ -474,7 +642,7 @@ export class EntityService {
                     fields: ['options'],
                 }
             );
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 topicId: {
                     $in: registryOptions.map(
                         (reg) => reg.options.registrantTopicId
@@ -497,7 +665,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, false);
+            item = await loadDocuments(item, false);
 
             const vcs = await em.count(Message, {
                 type: MessageType.VC_DOCUMENT,
@@ -604,11 +772,17 @@ export class EntityService {
                 type: MessageType.ROLE_DOCUMENT,
                 'analytics.policyId': row.consensusTimestamp,
             } as any);
-            const activity: any = {
+            const formulas = await em.count(Message, {
+                type: MessageType.FORMULA,
+                topicId: row.topicId,
+            } as any);
+
+            const activity: PolicyActivity = {
                 schemas,
                 vcs,
                 vps,
                 roles,
+                formulas
             };
             if (!item) {
                 return new MessageResponse<PolicyDetails>({
@@ -626,6 +800,42 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_POLICY_RELATIONSHIPS)
+    async getPolicyRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
             return new MessageError(error, error.code);
         }
     }
@@ -817,7 +1027,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.SCHEMA,
                 action: {
@@ -854,7 +1064,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             return new MessageResponse<SchemaDetails>({
                 id: messageId,
@@ -995,7 +1205,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.ROLE_DOCUMENT,
             });
@@ -1020,7 +1230,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             return new MessageResponse<RoleDetails>({
                 id: messageId,
@@ -1231,6 +1441,133 @@ export class EntityService {
         }
     }
     //#endregion
+    //#region FORMULAS
+    @MessagePattern(IndexerMessageAPI.GET_FORMULAS)
+    async getFormulas(
+        @Payload() msg: PageFilters
+    ): Promise<AnyResponse<Page<Formula>>> {
+        try {
+            const options = parsePageParams(msg);
+            const filters = parsePageFilters(msg);
+            filters.type = MessageType.FORMULA;
+            filters.action = MessageAction.PublishFormula;
+            const em = DataBaseHelper.getEntityManager();
+            const [rows, count] = (await em.findAndCount(
+                Message,
+                filters,
+                options
+            )) as [Formula[], number];
+            const result = {
+                items: rows.map((item) => {
+                    delete item.analytics;
+                    return item;
+                }),
+                pageIndex: options.offset / options.limit,
+                pageSize: options.limit,
+                total: count,
+                order: options.orderBy,
+            };
+            return new MessageResponse<Page<Formula>>(result);
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_FORMULA)
+    async getFormula(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<FormulaDetails>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const activity: any = {};
+
+            if (!item) {
+                return new MessageResponse<FormulaDetails>({
+                    id: messageId,
+                    row,
+                    activity,
+                });
+            }
+
+            return new MessageResponse<FormulaDetails>({
+                id: messageId,
+                uuid: item.uuid,
+                item,
+                row,
+                activity,
+            });
+        } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_FORMULA_RELATIONSHIPS)
+    async getFormulaRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<FormulaRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula
+            });
+            const row = await em.findOne(MessageCache, {
+                consensusTimestamp: messageId,
+            });
+
+            const schemas = await em.find(Message, {
+                type: MessageType.SCHEMA,
+                action: {
+                    $in: [
+                        MessageAction.PublishSchema,
+                        MessageAction.PublishSystemSchema,
+                    ],
+                },
+                topicId: row.topicId,
+            } as any);
+
+            for (let i = 0; i < schemas.length; i++) {
+                schemas[i] = await loadSchemaDocument(schemas[i]);
+            }
+
+            const formulas = await em.find(Message, {
+                type: MessageType.FORMULA,
+                action: MessageAction.PublishFormula,
+                topicId: row.topicId,
+            } as any);
+
+            if (!item) {
+                return new MessageResponse<FormulaRelationships>({
+                    id: messageId,
+                    schemas,
+                    formulas
+                });
+            }
+
+            return new MessageResponse<FormulaRelationships>({
+                id: messageId,
+                item,
+                schemas,
+                formulas
+            });
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
+    //#endregion
     //#endregion
 
     //#region DOCUMENTS
@@ -1268,7 +1605,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.DID_DOCUMENT,
             });
@@ -1283,7 +1620,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1296,8 +1633,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
             return new MessageResponse<DIDDetails>({
                 id: messageId,
@@ -1378,7 +1715,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VP_DOCUMENT,
             });
@@ -1393,7 +1730,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1406,8 +1743,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
 
             const labels = (await em.find(Message, {
@@ -1415,8 +1752,6 @@ export class EntityService {
                 action: MessageAction.CreateLabelDocument,
                 'options.target': messageId
             } as any));
-
-            console.log()
 
             return new MessageResponse<VPDetails>({
                 id: messageId,
@@ -1507,7 +1842,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VC_DOCUMENT,
             });
@@ -1522,10 +1857,9 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
 
             const schema = await loadSchema(item, true);
-
             const history = await em.find(
                 Message,
                 {
@@ -1538,9 +1872,27 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
+
+            //formulas
+            let formulasData:any = null;
+            const formulas = await loadFormulas(item);
+            if(formulas && formulas.length) {
+                const policy = await getPolicy(item);
+                const relationships = await findRelationships(item);
+                const schemas = await loadSchemas(policy?.topicId);
+                const document = item;
+                formulasData = {
+                    policy,
+                    formulas,
+                    relationships,
+                    schemas,
+                    document
+                }
+            }
+
             return new MessageResponse<VCDetails>({
                 id: messageId,
                 uuid: item.uuid,
@@ -1548,6 +1900,7 @@ export class EntityService {
                 history,
                 row,
                 schema,
+                formulasData
             });
         } catch (error) {
             return new MessageError(error, error.code);
@@ -1624,7 +1977,7 @@ export class EntityService {
         try {
             const { messageId } = msg;
             const em = DataBaseHelper.getEntityManager();
-            const item = await em.findOne(Message, {
+            let item = await em.findOne(Message, {
                 consensusTimestamp: messageId,
                 type: MessageType.VP_DOCUMENT,
             });
@@ -1639,7 +1992,7 @@ export class EntityService {
                 });
             }
 
-            await loadDocuments(item, true);
+            item = await loadDocuments(item, true);
             const history = await em.find(
                 Message,
                 {
@@ -1652,8 +2005,8 @@ export class EntityService {
                     },
                 }
             );
-            for (const historyItem of history) {
-                await loadDocuments(historyItem, false);
+            for (let i = 0; i < history.length; i++) {
+                history[i] = await loadDocuments(history[i], false);
             }
 
             const label = (await em.findOne(Message, {
@@ -1692,8 +2045,34 @@ export class EntityService {
                 filters,
                 options
             );
+
+            const nftsConsensusTimestamps = rows.map((row) => row.metadata);
+
+            let messagesMap = new Map();
+
+            if (nftsConsensusTimestamps.length > 0) {
+                const messagesRows = await em.find(Message, {
+                    consensusTimestamp: { $in: nftsConsensusTimestamps },
+                });
+
+                messagesMap = new Map(
+                    messagesRows.map((message) => [
+                        message.consensusTimestamp,
+                        {
+                            policyId: message.analytics.policyId,
+                            sr: message.analytics.issuer,
+                        },
+                    ])
+                );
+            }
+
+            const newRows = rows.map((row) => ({
+                ...row,
+                analytics: messagesMap.get(row.metadata),
+            }));
+
             const result = {
-                items: rows,
+                items: newRows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
@@ -1725,9 +2104,21 @@ export class EntityService {
                 action: MessageAction.CreateLabelDocument,
                 'options.target': row?.metadata
             } as any));
+
+            const message = await em.findOne(Message, {
+                consensusTimestamp: row.metadata,
+            });
+
+            const analytics = {
+                policyId: message.analytics.policyId,
+                sr: message.analytics.issuer,
+            }
+
+            var newRow = {...row, analytics};
+
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
-                row,
+                row: newRow,
                 labels,
                 history: nftHistory.data?.transactions || [],
             });

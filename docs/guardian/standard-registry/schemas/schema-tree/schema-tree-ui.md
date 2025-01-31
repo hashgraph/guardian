@@ -12,7 +12,7 @@ We can move the image by holding and moving the mouse.&#x20;
 
 Each schema and its child schemas are represented by same color in parent to child fashion.
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Downloading Tree
 
@@ -22,4 +22,4 @@ Schema Tree hierarchy can be downloaded by clicking on Download icon:
 
 ## 3. Demo Video
 
-[Youtube](https://youtu.be/8FxSSO0ttoQ?si=HjrV-8r\_zkHWQAWD\&t=100)
+[Youtube](https://youtu.be/8FxSSO0ttoQ?si=HjrV-8r_zkHWQAWD\&t=100)

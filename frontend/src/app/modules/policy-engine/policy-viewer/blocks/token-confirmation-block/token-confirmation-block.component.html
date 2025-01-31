@@ -13,7 +13,6 @@
         </div>
         <form class="form" [formGroup]="dataForm">
             <div class="form-group">
-                <label for="privateKeyInput" class="form-label">* Private Key</label>
                 <div class="input-group">
                     <input
                         pInputText
@@ -27,13 +26,13 @@
                         type="button"
                         (click)="togglePasswordVisibility(privateKeyInput)"
                         aria-label="Toggle password visibility"
-                        class="p-button p-button-text p-button-icon-only">
+                        class="p-button-icon-only">
                         <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
                     </button>
                 </div>
             </div>
 
-            <div style="margin-top: 15px; margin-left: auto;">
+            <div style="margin-top: 30px; margin-left: auto;">
                 <p-button
                     (click)="onSkip()"
                     [label]="

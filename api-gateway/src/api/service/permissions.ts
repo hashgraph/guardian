@@ -1,16 +1,31 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { AssignedEntityType, Permissions, PolicyType, UserPermissions } from '@guardian/interfaces';
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Req,
+    Response
+} from '@nestjs/common';
 import { ApiTags, ApiInternalServerErrorResponse, ApiExtraModels, ApiOperation, ApiBody, ApiOkResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { AssignPolicyDTO, Examples, InternalServerErrorDTO, PermissionsDTO, PolicyDTO, RoleDTO, UserDTO, pageHeader } from '#middlewares';
 import { AuthUser, Auth } from '#auth';
-import { EntityOwner, Guardians, InternalException, Users } from '#helpers';
+import {CacheService, EntityOwner, getCacheKey, Guardians, InternalException, Users} from '#helpers';
 import { WebSocketsService } from './websockets.js';
+import {CACHE_PREFIXES, PREFIXES} from '#constants';
 
 @Controller('permissions')
 @ApiTags('permissions')
 export class PermissionsApi {
-    constructor(private readonly logger: PinoLogger) {
+    constructor(private readonly cacheService: CacheService, private readonly logger: PinoLogger) {
     }
 
     /**
@@ -208,6 +223,13 @@ export class PermissionsApi {
             await (new Guardians()).updateRole(result, owner);
             const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(users);
+
+            const prefixInvalidatedCacheTags = [
+                `${CACHE_PREFIXES.TAG}/${PREFIXES.PROFILES}`,
+                `${CACHE_PREFIXES.TAG}/${PREFIXES.ACCOUNTS}`,
+            ];
+            await this.cacheService.invalidateAllTagsByPrefixes([...prefixInvalidatedCacheTags])
+
             return result;
         } catch (error) {
             await InternalException(error, this.logger);
@@ -498,7 +520,8 @@ export class PermissionsApi {
     async updateUser(
         @AuthUser() user: IAuthUser,
         @Param('username') username: string,
-        @Body() body: string[]
+        @Body() body: string[],
+        @Req() req
     ): Promise<UserDTO> {
         let row: any;
         const users = new Users();
@@ -516,6 +539,13 @@ export class PermissionsApi {
             await (new Guardians()).setRole(result, owner);
             const wsService = new WebSocketsService(this.logger);
             wsService.updatePermissions(result);
+
+            const invalidedCacheTags = [
+                `/${PREFIXES.PROFILES}/${username}`,
+                `/${PREFIXES.ACCOUNTS}/session`
+            ];
+            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheTags], result))
+
             return result;
         } catch (error) {
             await InternalException(error, this.logger);

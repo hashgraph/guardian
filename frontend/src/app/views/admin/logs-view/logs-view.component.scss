@@ -69,8 +69,8 @@
     row-gap: 10px;
 }
 
-:host ::ng-deep .message-type-container div span span.ng-star-inserted {
-    display: none;
+:host ::ng-deep .message-type-container span.p-placeholder {
+    height: 38px;
 }
 
 :host ::ng-deep .message-type-container .selected-type-value {

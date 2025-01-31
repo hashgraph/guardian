@@ -18,6 +18,7 @@ import {
     OverviewFormField,
 } from '@components/overview-form/overview-form.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'registry-details',
@@ -42,12 +43,15 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
     ],
 })
 export class RegistryDetailsComponent extends BaseDetailsComponent {
+    
+    public chartOption: EChartsOption = createChart();
 
-    tabs: any[] = ['overview', 'activity', 'raw'];
+    tabs: any[] = ['overview', 'activity', 'relationships', 'raw'];
     overviewFields: OverviewFormField[] = [
         {
             label: 'details.registry.overview.account_id',
             path: 'owner',
+            hederaExplorerType: HederaType.ACCOUNT,
         },
         {
             label: 'details.registry.overview.topic_id',
@@ -98,7 +102,24 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
         }
     }
 
-    protected override onNavigate(): void {}
+    protected override onNavigate(): void {
+        if (this.id && this.tab === 'relationships') {
+            this.loading = true;
+            this.entitiesService.getRegistryRelationships(this.id).subscribe({
+                next: (result) => {
+                    this.setRelationships(result);
+                    this.setChartData();
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 500);
+                },
+                error: ({ message }) => {
+                    this.loading = false;
+                    console.error(message);
+                },
+            });
+        }
+    }
 
     protected override getTabIndex(name: string): number {
         if (this.target) {
@@ -116,10 +137,18 @@ export class RegistryDetailsComponent extends BaseDetailsComponent {
             return 'raw';
         }
     }
+    
+    private setChartData() {
+        this.chartOption = createChart(this.relationships);
+    }
 
-    public onSelect(event: ECElementEvent) {
+    public onSelect(event: any) {
         if (event.dataType === 'node') {
-            this.toEntity(String(event.value), event.name, 'relationships');
+            this.toEntity(
+                String(event.data?.entityType),
+                event.name,
+                'relationships'
+            );
         }
     }
 

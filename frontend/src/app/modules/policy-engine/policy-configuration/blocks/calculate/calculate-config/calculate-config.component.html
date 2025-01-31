@@ -8,7 +8,9 @@
                 [disabled]="readonly"
                 (onChange)="onSave()"
                 placeholder="Select input document type"
-                [options]="inputDocumentsOptions">
+                [options]="inputDocumentsOptions"
+                [appendTo]="'body'"
+            >
             </p-dropdown>
         </td>
     </tr>

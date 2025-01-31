@@ -124,3 +124,20 @@
     background-color: #ddd;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
+
+.actions {
+    display: grid;
+    margin: 20px;
+
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        width: 300px;
+        justify-self: end;
+        column-gap: 10px;
+    }
+
+    .p-button {
+        border-radius: 10px
+    }
+}

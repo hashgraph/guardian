@@ -12,6 +12,7 @@
                         [options]="roles"
                         formControlName="roleOrGroup"
                         id="role"
+                        [appendTo]="'body'"
                         placeholder="Not selected"
                     >
                     </p-dropdown>
@@ -22,25 +23,28 @@
                             <p-radioButton
                                 name="type"
                                 [value]="'new'"
-                                [(ngModel)]="type"
-                                (onClick)="onChange($event)">
+                                formControlName="type"
+                                (onClick)="onChange($event)"
+                            >
                             </p-radioButton>
                             <label>Create new group</label>
                         </div>
-                        <div class="group-value" [ngClass]="{'disabled': type !== 'new'}">
-                            <div class="form-group">
+                        <div class="group-value" [attr.disabled]="type !== 'new'">
+                            <div class="form-group groups-container">
                                 <label for="groupDropdown" class="form-label">Group Template</label>
                                 <p-dropdown
                                     id="groupDropdown"
-                                    formControlName="roleOrGroup"
                                     [options]="groups"
+                                    [appendTo]="'body'"
+                                    formControlName="roleOrGroup"
+                                    placeholder="Select a group"
                                     optionLabel="label"
                                     optionValue="value"
-                                    placeholder="Select a group"
-                                    class="full-width">
+                                    class="full-width"
+                                >
                                 </p-dropdown>
                             </div>
-                            <div *ngIf="ifPrivateGroup()" class="form-group">
+                            <div *ngIf="ifPrivateGroup()" class="form-group group-label-container">
                                 <label for="groupLabelInput" class="form-label">Group Label</label>
                                 <input
                                     pInputText
@@ -56,12 +60,13 @@
                             <p-radioButton
                                 name="type"
                                 [value]="'invite'"
-                                [(ngModel)]="type"
-                                (onClick)="onChange($event)">
+                                formControlName="type"
+                                (onClick)="onChange($event)"
+                            >
                             </p-radioButton>
                             <label>Accept invitation</label>
                         </div>
-                        <div class="group-value" [ngClass]="{'disabled': type !== 'invite'}">
+                        <div class="group-value" [attr.disabled]="type!=='invite'">
                             <div *ngIf="policyName" style="margin-bottom: 15px;color: #707070">
                                 <span>Policy: </span>
                                 <span>{{ policyName }}</span>
@@ -78,7 +83,7 @@
                                 <span>Role: </span>
                                 <span>{{ inviteRole }}</span>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group invite-container">
                                 <label for="invitationInput" class="form-label">Invite</label>
                                 <input
                                     pInputText
@@ -93,6 +98,7 @@
                 </div>
             </div>
         </form>
+
     </div>
 </div>
 

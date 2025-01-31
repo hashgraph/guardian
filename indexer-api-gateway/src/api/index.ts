@@ -6,3 +6,4 @@ export * from './services/entities.js';
 export * from './api-client.js';
 export * from './services/landing.js';
 export * from './services/analytics.js';
+export * from './services/settings.js';

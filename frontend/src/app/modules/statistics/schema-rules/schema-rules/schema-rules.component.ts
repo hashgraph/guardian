@@ -6,7 +6,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
-import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { NewSchemaRuleDialog } from '../dialogs/new-schema-rule-dialog/new-schema-rule-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../../common/import-entity-dialog/import-entity-dialog.component';
 
@@ -292,7 +292,7 @@ export class SchemaRulesComponent implements OnInit {
         if (item.status === EntityStatus.ACTIVE) {
             return;
         }
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',

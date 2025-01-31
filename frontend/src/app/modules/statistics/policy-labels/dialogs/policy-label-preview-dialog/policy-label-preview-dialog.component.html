@@ -18,6 +18,9 @@
                     class="preview-menu-item" 
                     [attr.highlighted]="isSelected(item)"
                     [attr.last]="last"
+                    [pTooltip]="item.name"
+                    [tooltipOptions]="{showDelay: 300}"
+                    tooltipPosition="top"
                 >
                     <div class="preview-menu-item-status" [attr.status]="item.item.status"></div>
                     <div class="preview-menu-item-icon">
