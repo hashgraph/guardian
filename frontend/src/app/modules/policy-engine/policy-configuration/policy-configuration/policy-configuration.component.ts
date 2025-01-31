@@ -1053,7 +1053,8 @@ export class PolicyConfigurationComponent implements OnInit {
         this.currentBlock = this.openFolder.getBlock(block);
         this.selectType = this.currentBlock?.isModule ? 'Module' : 'Block';
         this.openFolder.checkChange();
-        this.changeDetector.detectChanges();
+        //TODO:
+        // this.changeDetector.detectChanges();
         this.findSuggestedBlocks(this.currentBlock);
         this.updateMenuStatus();
         return false;
