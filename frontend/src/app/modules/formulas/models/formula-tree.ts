@@ -379,6 +379,10 @@ export class FormulaItem {
         }
         return item;
     }
+
+    public getFiles(): FormulaFiles[] {
+        return this._parent?.getFiles() || [];
+    }
 }
 
 export class FormulaTree {
@@ -485,6 +489,10 @@ export class FormulaTree {
             links.set(schema, fullMap);
         }
     }
+
+    public getFiles(): FormulaFiles[] {
+        return this._files;
+    }
 }
 
 export class FormulasTree {
@@ -543,6 +551,16 @@ export class FormulasTree {
 
     public get(schema: string, path: string): FormulaItem[] {
         return this._links.get(schema)?.get(path) || [];
+    }
+
+    public getFiles(items: FormulaItem[]): FormulaFiles[] {
+        const result = new Set<any>();
+        for (const item of items) {
+            for (const files of item.getFiles()) {
+                result.add(files);
+            }
+        }
+        return Array.from(result);
     }
 
     public getFields(schema?: string) {

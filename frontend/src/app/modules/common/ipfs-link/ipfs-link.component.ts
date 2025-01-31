@@ -17,7 +17,6 @@ export class IPFSLinkComponent {
     ngOnChanges(changes: SimpleChanges): void {
         this.link = '';
         if(this.url) {
-            debugger;
             if(this.url.startsWith(IPFS_SCHEMA)) {
                 this.link = API_IPFS_GATEWAY_URL + this.url.replace(IPFS_SCHEMA, '');
             } else {

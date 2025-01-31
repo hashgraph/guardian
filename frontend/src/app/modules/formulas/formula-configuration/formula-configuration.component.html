@@ -152,11 +152,7 @@
                                 <label class="form-label">* Name</label>
                                 <input [(ngModel)]="item.name" pInputText type="text" [readonly]="readonly"/>
                             </div>
-                            <div class="guardian-textarea-container">
-                                <label class="form-label">Description</label>
-                                <textarea [(ngModel)]="item.description" pTextarea rows="3" [readonly]="readonly"></textarea>
-                            </div>
-    
+
                             <ng-container *ngIf="item.type === 'constant'">
                                 <div class="guardian-input-container">
                                     <label class="form-label">Value</label>
@@ -274,6 +270,11 @@
                                     </p-multiSelect>
                                 </div>
                             </ng-container>
+
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [(ngModel)]="item.description" pTextarea rows="3" [readonly]="readonly"></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -286,7 +287,7 @@
         </ng-container>
         <ng-container *ngIf="isActionStep(2)">
 
-            <div class="file-menu">
+            <div *ngIf="!readonly" class="file-menu">
                 <button 
                     (click)="uploadFile()" 
                     class="guardian-button guardian-button-primary">
@@ -317,6 +318,7 @@
                                 </div>
                                 <div class="variables-grid-cell cell-64 cell-btn">
                                     <button 
+                                        *ngIf="!readonly"
                                         class="guardian-icon-button big" 
                                         (click)="deleteFile(file)">
                                         <svg-icon
