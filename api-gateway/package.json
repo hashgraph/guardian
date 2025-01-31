@@ -88,5 +88,5 @@
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },
     "type": "module",
-    "version": "3.0.0"
+    "version": "3.1.0-rc"
 }
