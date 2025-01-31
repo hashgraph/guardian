@@ -1,9 +1,21 @@
-import { FormulaItemType, IFormula, IFormulaItem, IFormulaLink, Message, Schema, SchemaField } from "@indexer/interfaces";
+import { FormulaItemType, IFormula, IFormulaItem, IFormulaFile, IFormulaLink, Message, Schema, SchemaField } from "@indexer/interfaces";
 
 export interface Link {
     schema: string;
     path: string;
     item: FormulaItem;
+}
+
+export class FormulaFiles {
+    public readonly name: string;
+    public readonly type: string;
+    public readonly url: string;
+
+    constructor(config: IFormulaFile) {
+        this.name = config.name || '';
+        this.type = config.type || '';
+        this.url = config.url || '';
+    }
 }
 
 export class DocumentItem {
@@ -375,6 +387,10 @@ export class FormulaItem {
         }
         return item;
     }
+
+    public getFiles(): FormulaFiles[] {
+        return this._parent?.getFiles() || [];
+    }
 }
 
 export class FormulaTree {
@@ -384,6 +400,7 @@ export class FormulaTree {
 
     private _links: Map<string, Map<string, FormulaItem[]>>;
     private _items: FormulaItem[];
+    private _files: FormulaFiles[];
 
     constructor(formula: IFormula) {
         this.uuid = formula.uuid || '';
@@ -392,7 +409,9 @@ export class FormulaTree {
 
         this._links = new Map<string, Map<string, FormulaItem[]>>();
         this._items = [];
-        this.parse(formula?.config?.formulas)
+        this._files = [];
+        this.parse(formula?.config?.formulas);
+        this.parseFiles(formula?.config?.files);
     }
 
     private parse(items?: IFormulaItem[]) {
@@ -417,6 +436,18 @@ export class FormulaTree {
 
         for (const item of this._items) {
             item.setRelationship(this._items);
+        }
+    }
+
+    private parseFiles(files?: IFormulaFile[]) {
+        if (!files) {
+            return;
+        }
+
+        this._files = [];
+        for (const config of files) {
+            const file = new FormulaFiles(config);
+            this._files.push(file);
         }
     }
 
@@ -467,6 +498,10 @@ export class FormulaTree {
             }
             links.set(schema, fullMap);
         }
+    }
+
+    public getFiles(): FormulaFiles[] {
+        return this._files;
     }
 }
 
@@ -527,6 +562,16 @@ export class FormulasTree {
 
     public get(schema: string, path: string): FormulaItem[] {
         return this._links.get(schema)?.get(path) || [];
+    }
+
+    public getFiles(items: FormulaItem[]): FormulaFiles[] {
+        const result = new Set<any>();
+        for (const item of items) {
+            for (const files of item.getFiles()) {
+                result.add(files);
+            }
+        }
+        return Array.from(result);
     }
 
     public getFields(schema?: string) {

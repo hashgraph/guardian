@@ -252,7 +252,9 @@
                 "overview": "Overview",
                 "view": "View",
                 "document": "Document",
-                "raw_data": "Raw data"
+                "raw_data": "Raw data",
+                "formulas": "Formulas",
+                "files": "Files"
             },
             "overview": {
                 "topic_id": "Topic Id",

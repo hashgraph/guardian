@@ -9,23 +9,15 @@
 <div class="dialog-body">
 
     <div class="view-bar">
-        <p-selectButton 
-            class="guardian-select-button"
-            [options]="viewDocumentOptions" 
-            [(ngModel)]="viewFormulas" 
-            optionLabel="label"
-            optionValue="value"
-            [unselectable]="true"
-        >
-            <ng-template let-item pTemplate>
-                <div class="guardian-select-button-item">
-                    <svg-icon 
-                        class="svg-icon-16"
-                        src="/assets/images/icons/16/{{item.icon}}.svg"></svg-icon>
-                    <span>{{item.label}}</span>
-                </div>
-            </ng-template>
-        </p-selectButton>
+        <p-tabView class="guardian-tabs action-tabs" (onChange)="setTab($event)">
+            <p-tabPanel *ngFor="let tab of viewDocumentOptions; let i = index">
+                <ng-template pTemplate="header">
+                    <div class="tabview-label">
+                        {{ tab.label }}
+                    </div>
+                </ng-template>
+            </p-tabPanel>
+        </p-tabView>
     </div>
     <div *ngIf="viewFormulas" class="view-body">
         <div class="nav-container">
@@ -222,6 +214,9 @@
                     <label class="form-label">URL</label>
                     <ipfs-link [url]="file.url" class="guardian-input"></ipfs-link>
                 </div>
+            </div>
+            <div *ngIf="!files?.length" class="no-files">
+                <div>There were no files attached.</div>
             </div>
         </div>
     </div>

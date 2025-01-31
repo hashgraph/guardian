@@ -1,13 +1,14 @@
-import { FormulaItemType, IFormulaConfig, IFormulaItem } from "@indexer/interfaces";
+import { FormulaItemType, IFormulaConfig, IFormulaFile, IFormulaItem } from "@indexer/interfaces";
 
 export class Formulas {
     private items: IFormulaItem[];
     private filterMap: Map<FormulaItemType, boolean>;
-
+    public files: IFormulaFile[];
     public data: IFormulaItem[];
 
     constructor() {
         this.items = [];
+        this.files = [];
         this.data = [];
         this.filterMap = new Map<FormulaItemType, boolean>();
         this.filterMap.set(FormulaItemType.Constant, true);
@@ -34,21 +35,32 @@ export class Formulas {
 
     public fromData(config: IFormulaConfig) {
         const items: IFormulaItem[] = config?.formulas || [];
-        this.items = items.map((e) => this._fromJson(e));
+        const files: IFormulaFile[] = config?.files || [];
+        this.items = items.map((e) => this._fromItemJson(e));
+        this.files = files.map((e) => this._fromFileJson(e));
         this.update();
     }
 
     public getJson(): IFormulaConfig {
         return {
-            formulas: this.items.map((e) => this._toJson(e))
+            formulas: this.items.map((e) => this._toItemJson(e)),
+            files: this.files.map((e) => this._toFileJson(e)),
         };
     }
 
-    private _fromJson(item: IFormulaItem): IFormulaItem {
+    private _fromItemJson(item: IFormulaItem): IFormulaItem {
         return item;
     }
 
-    private _toJson(item: IFormulaItem): IFormulaItem {
+    private _toItemJson(item: IFormulaItem): IFormulaItem {
+        return item;
+    }
+
+    private _fromFileJson(item: IFormulaFile): IFormulaFile {
+        return item;
+    }
+
+    private _toFileJson(item: IFormulaFile): IFormulaFile {
         return item;
     }
 

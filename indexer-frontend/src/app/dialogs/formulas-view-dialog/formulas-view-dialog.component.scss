@@ -21,10 +21,16 @@
 
 .dialog-body {
     display: flex;
+    flex-direction: column;
+    min-height: 600px;
+    padding-bottom: 24px;
+}
+
+.view-body {
+    display: flex;
     flex-direction: row;
     min-height: 600px;
     height: 600px;
-    padding-bottom: 24px;
 }
 
 .action-buttons {
@@ -262,5 +268,34 @@
         &[selected="true"] {
             background: var(--guardian-primary-background, #e1e7fa);
         }
+    }
+}
+
+p-tabpanel::ng-deep .p-tabview-panels {
+    margin-top: 24px;
+}
+
+
+.files-container {
+    width: 100%;
+
+    .file-item {
+        width: 100%;
+        border: 1px solid #E1E7EF;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .no-files {
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--guardian-disabled-color, #848FA9);
+        height: 87px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
     }
 }

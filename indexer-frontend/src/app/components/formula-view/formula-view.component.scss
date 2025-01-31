@@ -5,9 +5,10 @@
     height: 100%;
     user-select: none;
     position: relative;
-    padding: 32px 48px 16px 48px;
+    padding: 24px;
     overflow: auto;
     background: #fff;
+    border-radius: 6px;
 
     .item-filters {
         display: flex;
@@ -256,4 +257,16 @@
             }
         }
     }    
+}
+
+.files-container {
+    width: 100%;
+
+    .file-item {
+        width: 100%;
+        border: 1px solid #E1E7EF;
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
 }

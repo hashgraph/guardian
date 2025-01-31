@@ -78,4 +78,8 @@ export class FormulasViewDialog {
         this.nav.updateHidden();
         this.nav.updateSelected();
     }
+
+    public setTab(event: any): void {
+        this.viewFormulas = event.index === 0;
+    }
 }

@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
+import { FormulaFiles, FormulaItem, FormulasTree, SchemaItem } from '../../models/formula-tree';
 import { TreeListData, TreeListItem, TreeListView } from '../../models/tree-list';
 import { MathLiveComponent } from '@components/math-live/math-live.component';
+import { TabViewModule } from 'primeng/tabview';
+import { TranslocoModule } from '@jsverse/transloco';
 
 @Component({
     standalone: true,
@@ -10,7 +12,9 @@ import { MathLiveComponent } from '@components/math-live/math-live.component';
     templateUrl: './formulas-view-dialog.component.html',
     styleUrls: ['./formulas-view-dialog.component.scss'],
     imports: [
-        MathLiveComponent
+        TranslocoModule,
+        MathLiveComponent,
+        TabViewModule
     ]
 })
 export class FormulasViewDialog {
@@ -21,6 +25,7 @@ export class FormulasViewDialog {
     public items: FormulaItem[];
     public current: FormulaItem | SchemaItem | null;
     public nav: TreeListView<any> | null;
+    public files: FormulaFiles[];
 
     constructor(
         public ref: DynamicDialogRef,
@@ -31,6 +36,7 @@ export class FormulasViewDialog {
         this.schema = this.config.data?.schema;
         this.path = this.config.data?.path;
         this.items = [];
+        this.files = [];
         this.current = null;
         this.nav = null;
     }
@@ -38,6 +44,7 @@ export class FormulasViewDialog {
     ngOnInit() {
         this.loading = false;
         this.items = this.tree?.get(this.schema, this.path) || [];
+        this.files = this.tree?.getFiles(this.items) || [];
         const navTree = FormulasTree.createNav(this.items)
         const fields = TreeListData.fromObject<any>(navTree, 'children');
         this.nav = TreeListView.createView(fields, (s) => { return !s.parent });

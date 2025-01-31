@@ -286,4 +286,16 @@
         padding: 24px;
         margin-bottom: 24px;
     }
+
+    .no-files {
+        font-family: Inter;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--guardian-disabled-color, #848FA9);
+        height: 87px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
 }

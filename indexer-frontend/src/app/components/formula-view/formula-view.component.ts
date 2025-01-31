@@ -5,6 +5,7 @@ import { MathLiveComponent } from '@components/math-live/math-live.component';
 import { TranslocoModule } from '@jsverse/transloco';
 import { Formulas } from '../../models/formulas';
 import { Schema } from '@indexer/interfaces';
+import { TabViewModule } from 'primeng/tabview';
 
 @Component({
     selector: 'app-formula-view',
@@ -13,7 +14,8 @@ import { Schema } from '@indexer/interfaces';
         TranslocoModule,
         RouterModule,
         CheckboxButton,
-        MathLiveComponent
+        MathLiveComponent,
+        TabViewModule
     ],
     templateUrl: './formula-view.component.html',
     styleUrl: './formula-view.component.scss'
@@ -36,10 +38,18 @@ export class FormulaViewComponent {
     private formulasFieldMap: Map<string, string> = new Map<string, string>();
     private variableMap: Map<string, string> = new Map<string, string>();
 
+    public isDocument: boolean = false;
+
     ngOnChanges() {
         const item = this.data.item;
         const schemas = this.data.schemas;
         const formulas = this.data.formulas;
+
+        this.isDocument = false;
+        if (!(item && item.analytics && item.analytics.config)) {
+            return;
+        }
+        this.isDocument = true;
 
         if (item?.analytics?.config) {
             this.config.fromData(item.analytics.config.config);
