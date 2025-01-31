@@ -55,11 +55,7 @@
                                         <label class="form-label">Name</label>
                                         <input [value]="item.name" pInputText type="text" [readonly]="true"/>
                                     </div>
-                                    <div class="guardian-textarea-container">
-                                        <label class="form-label">Description</label>
-                                        <textarea [value]="item.description" pTextarea rows="3" [readonly]="true"></textarea>
-                                    </div>
-        
+
                                     @if (item.type === 'constant') {
                                         <div class="guardian-input-container">
                                             <label class="form-label">Value</label>
@@ -131,6 +127,11 @@
                                             </div>
                                         </div>
                                     }
+
+                                    <div class="guardian-textarea-container">
+                                        <label class="form-label">Description</label>
+                                        <textarea [value]="item.description" pTextarea rows="3" [readonly]="true"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>

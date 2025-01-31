@@ -59,13 +59,13 @@
                                 <label class="form-label">Name</label>
                                 <input [value]="current.name" pInputText type="text" [readonly]="true"/>
                             </div>
-                            <div class="guardian-textarea-container">
-                                <label class="form-label">Description</label>
-                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
-                            </div>
                             <div class="guardian-input-container">
                                 <label class="form-label">Value</label>
                                 <input [value]="current.value" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
                             </div>
                         </div>
                     }
@@ -76,10 +76,6 @@
                             <div class="guardian-input-container">
                                 <label class="form-label">Name</label>
                                 <input [value]="current.name" pInputText type="text" [readonly]="true"/>
-                            </div>
-                            <div class="guardian-textarea-container">
-                                <label class="form-label">Description</label>
-                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
                             </div>
                             @if (current.hasLink) {
                                 <div class="guardian-input-container">
@@ -92,26 +88,26 @@
                                     </div>
                                 </div>
                             }
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
                         </div>
                     }
         
                     @if (current && current.type === 'formula') {
                         <div class="current-item-name">Formula</div>
                         <div class="current-item">
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
                             <div class="guardian-input-container" style="height: auto">
                                 <label class="form-label">Formula</label>
                                 <math-live 
                                     [value]="current.value"
                                     [readonly]="true"
                                 ></math-live>
-                            </div>
-                            <div class="guardian-input-container">
-                                <label class="form-label">Name</label>
-                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
-                            </div>
-                            <div class="guardian-textarea-container">
-                                <label class="form-label">Description</label>
-                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
                             </div>
                             @if (current.hasLink) {
                                 <div class="guardian-input-container">
@@ -136,6 +132,10 @@
                                     }
                                 </div>
                             </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
                         </div>
                     }
                     @if (current && current.type === 'text') {
@@ -144,10 +144,6 @@
                             <div class="guardian-input-container">
                                 <label class="form-label">Name</label>
                                 <input [value]="current.name" pInputText type="text" [readonly]="true"/>
-                            </div>
-                            <div class="guardian-textarea-container">
-                                <label class="form-label">Description</label>
-                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
                             </div>
                             <div class="guardian-textarea-container">
                                 <label class="form-label">Text</label>
@@ -175,6 +171,10 @@
                                         </div>
                                     }
                                 </div>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
                             </div>
                         </div>
                     }
