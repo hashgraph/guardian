@@ -16,8 +16,8 @@
     "image-size": "1.0.2"
   },
   "dependencies": {
-    "@guardian/common": "^3.0.0",
-    "@guardian/interfaces": "^3.0.0",
+    "@guardian/common": "^3.1.0-rc",
+    "@guardian/interfaces": "^3.1.0-rc",
     "@hashgraph/sdk": "2.52.0",
     "@mattrglobal/jsonld-signatures-bbs": "^1.1.2",
     "@meeco/cryppo": "^2.0.2",
