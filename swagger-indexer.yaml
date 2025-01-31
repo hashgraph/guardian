@@ -1534,6 +1534,146 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_0
+  /entities/formulas:
+    get:
+      operationId: EntityApi_getFormulas
+      summary: Get formulas
+      description: Returns formulas
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: Page index
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: Page size
+          example: 10
+          schema:
+            type: number
+            maximum: 100
+        - name: orderField
+          required: false
+          in: query
+          description: Order field
+          example: consensusTimestamp
+          schema:
+            type: string
+        - name: orderDir
+          required: false
+          in: query
+          description: Order direction
+          examples:
+            ASC:
+              value: ASC
+              description: Ascending ordering
+            DESC:
+              value: DESC
+              description: Descending ordering
+          schema:
+            type: string
+        - name: keywords
+          required: false
+          in: query
+          description: Keywords to search
+          examples:
+            0.0.1960:
+              description: Search formulas, which are related to specific topic identifier
+              value: '["0.0.1960"]'
+          schema:
+            type: string
+        - name: topicId
+          required: false
+          in: query
+          description: Policy topic identifier
+          example: 0.0.1960
+          schema:
+            type: string
+        - name: options.owner
+          required: false
+          in: query
+          description: formula owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+      responses:
+        '200':
+          description: formulas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PageDTO'
+                  - properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FormulaDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/formulas/{messageId}:
+    get:
+      operationId: EntityApi_getFormula
+      summary: Get formula
+      description: Returns formula
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/formulas/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getFormulaRelationships
+      summary: Get formula relationships
+      description: Returns formula relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Formula relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
   /entities/did-documents:
     get:
       operationId: EntityApi_getDidDocuments
@@ -2726,6 +2866,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Standard Registry
         action:
           type: string
@@ -2768,6 +2909,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: Init
         options:
           $ref: '#/components/schemas/RegistryOptionsDTO'
@@ -3225,6 +3367,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -3267,6 +3410,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3380,6 +3524,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -3422,6 +3567,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/RegistryUserOptionsDTO'
@@ -3713,6 +3859,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy
         action:
           type: string
@@ -3755,6 +3902,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy
         options:
           $ref: '#/components/schemas/PolicyOptionsDTO'
@@ -3798,11 +3946,16 @@ components:
           type: number
           description: Roles
           example: 10
+        formulas:
+          type: number
+          description: Formulas
+          example: 10
       required:
         - schemas
         - vcs
         - vps
         - roles
+        - formulas
     PolicyDetailsDTO:
       type: object
       properties:
@@ -3963,6 +4116,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Tool
         action:
           type: string
@@ -4005,6 +4159,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-tool
         options:
           $ref: '#/components/schemas/ToolOptionsDTO'
@@ -4193,6 +4348,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Module
         action:
           type: string
@@ -4235,6 +4391,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-module
         options:
           $ref: '#/components/schemas/ModuleOptionsDTO'
@@ -4416,6 +4573,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4458,6 +4616,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -4609,6 +4768,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Schema
         action:
           type: string
@@ -4651,6 +4811,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-schema
         options:
           $ref: '#/components/schemas/SchemaOptionsDTO'
@@ -5005,6 +5166,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -5047,6 +5209,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -5219,6 +5382,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Role-Document
         action:
           type: string
@@ -5261,6 +5425,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/RoleOptionsDTO'
@@ -5444,6 +5609,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5486,6 +5652,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/StatisticOptionsDTO'
@@ -5686,6 +5853,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -5728,6 +5896,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -5894,6 +6063,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Policy-Label
         action:
           type: string
@@ -5936,6 +6106,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: publish-policy-label
         options:
           $ref: '#/components/schemas/LabelOptionsDTO'
@@ -6116,6 +6287,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VP-Document
         action:
           type: string
@@ -6158,6 +6330,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vp-document
         options:
           $ref: '#/components/schemas/VPOptionsDTO'
@@ -6179,6 +6352,481 @@ components:
         - type
         - action
         - options
+    FormulaOptionsDTO:
+      type: object
+      properties:
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        name:
+          type: string
+          description: Name
+          example: Formula Name
+        description:
+          type: string
+          description: Description
+          example: Formula Description
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        policyTopicId:
+          type: string
+          description: Policy topic identifier
+          example: 0.0.4481265
+        policyInstanceTopicId:
+          type: string
+          description: Policy instance topic identifier
+          example: 0.0.4481265
+      required:
+        - uuid
+        - name
+        - description
+        - owner
+        - policyTopicId
+        - policyInstanceTopicId
+    FormulaAnalyticsDTO:
+      type: object
+      properties:
+        textSearch:
+          type: string
+          description: Text search
+        owner:
+          type: string
+          description: Owner
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+        config:
+          type: object
+          description: Formula Config
+      required:
+        - textSearch
+        - owner
+        - config
+    FormulaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_6
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+          example: Formula
+        action:
+          type: string
+          description: Action
+          enum:
+            - create-did-document
+            - create-vc-document
+            - create-policy
+            - publish-policy
+            - delete-policy
+            - create-schema
+            - publish-schema
+            - delete-schema
+            - create-topic
+            - create-vp-document
+            - publish-system-schema
+            - Init
+            - change-message-status
+            - revoke-document
+            - delete-document
+            - token-issue
+            - create-token
+            - create-multi-policy
+            - mint
+            - publish-module
+            - publish-tag
+            - delete-tag
+            - publish-tool
+            - create-tool
+            - create-contract
+            - discontinue-policy
+            - deferred-discontinue-policy
+            - migrate-vc-document
+            - migrate-vp-document
+            - create-role
+            - update-role
+            - delete-role
+            - set-role
+            - publish-policy-statistic
+            - create-assessment-document
+            - publish-policy-label
+            - create-label-document
+            - publish-formula
+          example: publish-formula
+        options:
+          $ref: '#/components/schemas/FormulaOptionsDTO'
+        analytics:
+          $ref: '#/components/schemas/FormulaAnalyticsDTO'
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+        - type
+        - action
+        - options
+        - analytics
+    FormulaActivityDTO:
+      type: object
+      properties:
+        schemas:
+          type: number
+          description: Schemas
+          example: 10
+        vps:
+          type: number
+          description: VPs
+          example: 10
+      required:
+        - schemas
+        - vps
+    FormulaDetailsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        item:
+          $ref: '#/components/schemas/FormulaDTO'
+        row:
+          $ref: '#/components/schemas/RawMessageDTO'
+        activity:
+          $ref: '#/components/schemas/FormulaActivityDTO'
+      required:
+        - id
+        - uuid
+        - item
+        - row
+        - activity
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+      required:
+        - id
+        - item
+        - schemas
+        - formulas
+    DIDOptionsDTO:
+      type: object
+      properties:
+        relationships:
+          description: Relationships
+          example:
+            - '1706823227.586179534'
+          type: array
+          items:
+            type: string
+        did:
+          type: string
+          description: DID
+          example: >-
+            did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+      required:
+        - relationships
+        - did
+    DIDAnalyticsDTO:
+      type: object
+      properties:
+        textSearch:
+          type: string
+          description: Text search
+      required:
+        - textSearch
+    DIDGridDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_3
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/MessageDTO'
+      required:
+        - id
+        - item
+        - schemas
+        - formulas
     DIDOptionsDTO:
       type: object
       properties:
@@ -6294,6 +6942,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -6336,6 +6985,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -6404,19 +7054,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_4
+          example: *ref_3
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_5
+          example: *ref_4
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_6
+          example: *ref_5
           type: array
           items:
             type: string
@@ -6449,6 +7099,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: DID-Document
         action:
           type: string
@@ -6491,6 +7142,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-did-document
         options:
           $ref: '#/components/schemas/DIDOptionsDTO'
@@ -6549,6 +7201,109 @@ components:
         - item
         - row
         - history
+    RelationshipDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+        category:
+          type: number
+          description: Category
+          example: 1
+        name:
+          type: string
+          description: Name
+          example: Monitoring Report Document
+      required:
+        - id
+        - uuid
+        - type
+        - category
+        - name
+    RelationshipLinkDTO:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source message identifier
+          example: '1706823227.586179534'
+        target:
+          type: string
+          description: Target message identifier
+          example: '1706823227.586179534'
+      required:
+        - source
+        - target
+    RelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        target:
+          $ref: '#/components/schemas/RelationshipDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipDTO'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipLinkDTO'
+        categories:
+          description: Categories
+          example:
+            - name: Registry
+            - name: Policy
+            - name: Schema
+            - name: Role
+            - name: VC
+            - name: VP
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - item
+        - target
+        - relationships
+        - links
+        - categories
     VPDetailsDTO:
       type: object
       properties:
@@ -6668,6 +7423,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: VC-Document
         action:
           type: string
@@ -6710,6 +7466,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-vc-document
         options:
           $ref: '#/components/schemas/VCOptionsDTO'
@@ -6818,6 +7575,9 @@ components:
               - law
               - tags
             additionalProperties: false
+        formulasData:
+          type: object
+          description: Formulas data
       required:
         - id
         - uuid
@@ -6825,6 +7585,7 @@ components:
         - row
         - history
         - schema
+        - formulasData
     NFTDTO:
       type: object
       properties:
@@ -7041,6 +7802,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Topic
         action:
           type: string
@@ -7083,6 +7845,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-topic
         options:
           $ref: '#/components/schemas/TopicOptionsDTO'
@@ -7347,6 +8110,7 @@ components:
             - User-Permissions
             - Policy-Statistic
             - Policy-Label
+            - Formula
           example: Contract
         action:
           type: string
@@ -7389,6 +8153,7 @@ components:
             - create-assessment-document
             - publish-policy-label
             - create-label-document
+            - publish-formula
           example: create-contract
         options:
           $ref: '#/components/schemas/ContractOptionsDTO'

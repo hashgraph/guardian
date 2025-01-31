@@ -101,6 +101,8 @@ export abstract class BaseDetailsComponent {
                 return () => this.onOpenContracts();
             case Activity.Users:
                 return () => this.onOpenUsers();
+            case Activity.Formulas:
+                return () => this.onOpenFormulas();
             default:
                 throw new Error(`Unknown activity: ${activity}`);
         }
@@ -157,6 +159,11 @@ export abstract class BaseDetailsComponent {
     protected onOpenUsers() {
         this.router.navigate(['/registry-users']);
     }
+
+    protected onOpenFormulas() {
+        this.router.navigate(['/formulas']);
+    }
+
 
     protected handleActivities(activity: any) {
         this.totalActivity = 0;

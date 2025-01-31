@@ -44,6 +44,7 @@
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
         "labels": "Labels",
+        "formulas": "Formulas",
         "loading_progress": "Loading data...",
         "left": "left"
     },
@@ -121,6 +122,7 @@
         "relationships": "Relationships",
         "raw_data": "Raw data",
         "labels": "Labels",
+        "formulas": "Formulas",
         "tabs": {
             "activity": "Activity"
         },
@@ -137,7 +139,8 @@
             "tools": "Tools",
             "modules": "Modules",
             "vcs": "Verifiable Credentials",
-            "vps": "Verifiable Presentations"
+            "vps": "Verifiable Presentations",
+            "formulas": "Formulas"  
         },
         "hedera": {
             "topic_id": "Topic Id",
@@ -250,6 +253,25 @@
                 "name": "Name",
                 "description": "Description",
                 "owner": "Owner"
+            }
+        },
+        "formula": {
+            "header": "Formula",
+            "tabs": {
+                "overview": "Overview",
+                "view": "View",
+                "document": "Document",
+                "raw_data": "Raw data",
+                "formulas": "Formulas",
+                "files": "Files"
+            },
+            "overview": {
+                "topic_id": "Topic Id",
+                "policy_topic_id": "Policy Topic Id",
+                "name": "Name",
+                "description": "Description",
+                "owner": "Owner",
+                "policy": "Policy"
             }
         },
         "statistic": {

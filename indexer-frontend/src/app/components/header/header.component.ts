@@ -93,6 +93,10 @@ export class HeaderComponent {
             label: 'header.labels',
             routerLink: '/labels',
         },
+        {
+            label: 'header.formulas',
+            routerLink: '/formulas',
+        },
     ];
 
     public documentsMenu: MenuItem[] = [

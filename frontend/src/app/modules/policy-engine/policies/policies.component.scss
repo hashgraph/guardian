@@ -221,7 +221,7 @@
     min-width: 25px;
     margin-left: 6px;
     border-radius: 6px;
-    padding: 1px;
+    padding: 2px;
 }
 
 .btn-icon-import,
@@ -259,8 +259,7 @@
     cursor: not-allowed;
 }
 
-.btn-icon-edit i,
-.btn-icon-edit svg {
+.btn-icon-edit i {
     font-size: 30px;
     position: absolute;
     left: 0;

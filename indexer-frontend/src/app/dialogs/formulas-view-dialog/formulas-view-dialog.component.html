@@ -1,0 +1,240 @@
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">View Formula</div>
+    </div>
+    <div class="header-icon" (click)="onClose()">
+        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+            <path clip-rule="evenodd"
+                d="M5.29289 5.29289C5.68342 4.90237 6.31658 4.90237 6.70711 5.29289L12 10.5858L17.2929 5.29289C17.6834 4.90237 18.3166 4.90237 18.7071 5.29289C19.0976 5.68342 19.0976 6.31658 18.7071 6.70711L13.4142 12L18.7071 17.2929C19.0976 17.6835 19.0976 18.3166 18.7071 18.7072C18.3166 19.0977 17.6834 19.0977 17.2929 18.7072L12 13.4142L6.70711 18.7072C6.31658 19.0977 5.68342 19.0977 5.29289 18.7072C4.90237 18.3166 4.90237 17.6835 5.29289 17.2929L10.5858 12L5.29289 6.70711C4.90237 6.31658 4.90237 5.68342 5.29289 5.29289Z"
+                fill-rule="evenodd" />
+        </svg>
+    </div>
+</div>
+<div class="dialog-body">
+
+    <p-tabView>
+        <p-tabPanel [header]="'details.formula.tabs.formulas' | transloco">
+            <div class="view-body">
+                <div class="nav-container">
+                    @if (nav) {
+                        <div class="field-tree">
+                            @for (item of nav.data.items; track $index) {
+                                <div class="field-item" [attr.selected]="item.selected">
+                                    <div class="field-offset"
+                                        [style.width.px]="24*item.lvl"
+                                        [style.min-width.px]="24*item.lvl"></div>
+                                    <div class="field-collapse">
+                                        @if (item.expandable) {
+                                            <div
+                                                class="guardian-collapse collapse-24"
+                                                [attr.collapsed]="item.collapsed"
+                                                (click)="onCollapseNav(item)"
+                                            ></div>
+                                        }
+                                    </div>
+                                    <div class="field-container" (click)="onSelectNav(item)">
+                                        <div class="field-container__view">{{item.data.view}}</div>
+                                        @if (item.data.entity) {
+                                            <div class="field-container__entity">{{item.data.entity}}</div>
+                                        }
+                                        <div class="field-container__header">
+                                            <span class="field-container__header-type">{{item.data.type}}: </span>
+                                            <span class="field-container__header-name">{{item.data.name}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+        
+                </div>
+        
+                <div class="context">
+        
+                    @if (current && current.type === 'constant') {
+                        <div class="current-item-name">Constant</div>
+                        <div class="current-item">
+                            
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">Value</label>
+                                <input [value]="current.value" pInputText type="text" [readonly]="true"/>
+                            </div>
+                        </div>
+                    }
+        
+                    @if (current && current.type === 'variable') {
+                        <div class="current-item-name">Variable</div>
+                        <div class="current-item">
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            @if (current.hasLink) {
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Input)</label>
+                                    <div class="formula-link" (click)="onLink(current)">
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+        
+                    @if (current && current.type === 'formula') {
+                        <div class="current-item-name">Formula</div>
+                        <div class="current-item">
+                            <div class="guardian-input-container" style="height: auto">
+                                <label class="form-label">Formula</label>
+                                <math-live 
+                                    [value]="current.value"
+                                    [readonly]="true"
+                                ></math-live>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            @if (current.hasLink) {
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(current)">
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Relationships</label>
+                                <div class="formula-relationships">
+                                    @for (relationship of current.relationshipItems; track $index) {
+                                        <div 
+                                            class="formula-relationship" 
+                                            (click)="onRelationship(relationship)">
+                                            {{relationship.name}}
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (current && current.type === 'text') {
+                        <div class="current-item-name">Text</div>
+                        <div class="current-item">
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Text</label>
+                                <textarea [value]="current.value" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            @if (current.hasLink) {
+                                <div class="guardian-input-container">
+                                    <label class="form-label">Link (Output)</label>
+                                    <div class="formula-link" (click)="onLink(current)">
+                                        <div class="formula-link-value">
+                                            <div class="formula-link-value__entity">{{current.linkEntityName}}:</div>
+                                            <div class="formula-link-value__item">{{current.linkItemName}}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Relationships</label>
+                                <div class="formula-relationships">
+                                    @for (relationship of current.relationshipItems; track $index) {
+                                        <div 
+                                            class="formula-relationship"
+                                            (click)="onRelationship(relationship)">
+                                            {{relationship.name}}
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+        
+                    @if (current && current.type === 'schema') {
+                        <div class="current-item-name">Schema</div>
+                        <div class="current-item">
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="current.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Description</label>
+                                <textarea [value]="current.description" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            <div class="guardian-textarea-container">
+                                <label class="form-label">Field</label>
+                                <textarea [value]="current.field" pTextarea rows="3" [readonly]="true"></textarea>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">Value</label>
+                                <input [value]="current.value" pInputText type="text" [readonly]="true"/>
+                            </div>
+                        </div>
+                    }
+        
+                </div>
+            </div>
+        </p-tabPanel>
+        <p-tabPanel [header]="'details.formula.tabs.files' | transloco">
+            <div class="view-body">
+                <div class="files-container">
+                    @for (file of files; track file) {
+                        <div class="file-item">
+                            <div class="guardian-input-container">
+                                <label class="form-label">Name</label>
+                                <input [value]="file.name" pInputText type="text" [readonly]="true"/>
+                            </div>
+                            <div class="guardian-input-container">
+                                <label class="form-label">URL</label>
+                                <input [value]="file.url" pInputText type="text" [readonly]="true"/>
+                            </div>
+                        </div>
+                    }
+                    @if (!files.length) {
+                        <div class="no-files">
+                            <div>There were no files attached.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </p-tabPanel>
+    </p-tabView>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button 
+                (click)="onClose()" 
+                class="guardian-button guardian-button-secondary">Close</button>
+        </div>
+    </div>
+</div>

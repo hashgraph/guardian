@@ -25,6 +25,7 @@ import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
 import { StatisticMessage } from './statistic-message.js';
 import { LabelMessage } from './label-message.js';
+import { FormulaMessage } from './formula-message.js';
 
 /**
  * Message server
@@ -314,6 +315,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyLabel:
                 message = LabelMessage.fromMessageObject(json);
+                break;
+            case MessageType.Formula:
+                message = FormulaMessage.fromMessageObject(json);
                 break;
             // Default schemas
             case 'schema-document':

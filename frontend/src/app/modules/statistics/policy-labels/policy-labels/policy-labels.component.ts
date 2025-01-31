@@ -5,7 +5,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { DialogService } from 'primeng/dynamicdialog';
-import { CustomCustomDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { CustomConfirmDialogComponent } from '../../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from '../../../common/import-entity-dialog/import-entity-dialog.component';
 import { NewPolicyLabelDialog } from '../dialogs/new-policy-label-dialog/new-policy-label-dialog.component';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
@@ -323,7 +323,7 @@ export class PolicyLabelsComponent implements OnInit {
         if (item.status === EntityStatus.ACTIVE) {
             return;
         }
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
@@ -358,7 +358,7 @@ export class PolicyLabelsComponent implements OnInit {
     }
 
     private publish(row: any) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',

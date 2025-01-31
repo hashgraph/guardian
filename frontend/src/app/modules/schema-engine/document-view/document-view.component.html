@@ -107,7 +107,8 @@
                             [delimiter-hide]="true" 
                             [dryRun]="dryRun" 
                             [values]="item"
-                            [rules]="rulesResults">
+                            [rules]="rulesResults"
+                            [formulas]="formulasResults">
                         </app-schema-form-view>
                     </p-accordionTab>
                 </p-accordion>
@@ -127,7 +128,8 @@
             <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
                 <p-accordion [multiple]="true" [activeIndex]="[0]" class="guardian-accordion">
                     <p-accordionTab header="{{getVerifiableCredential(item)}}">
-                        <app-document-view 
+                        <app-document-view
+                            [policyId]="policyId" 
                             [document]="item"
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"

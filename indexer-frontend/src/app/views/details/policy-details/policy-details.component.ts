@@ -196,4 +196,12 @@ export class PolicyDetailsComponent extends BaseDetailsComponent {
             },
         });
     }
+
+    public override onOpenFormulas() {
+        this.router.navigate(['/formulas'], {
+            queryParams: {
+                topicId: this.row.topicId,
+            },
+        });
+    }
 }
