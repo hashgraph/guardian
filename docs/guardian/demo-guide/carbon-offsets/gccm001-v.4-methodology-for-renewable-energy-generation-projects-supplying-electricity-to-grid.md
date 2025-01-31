@@ -214,7 +214,7 @@ Approved Carbon Credit (ACC), each equivalent to one tonne of CO2.
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 11. The administrator must review the report for completeness and choose to approve, reject, or forward with comments. These comments will be visible to the Steering Committee to assist in their decision-making.
 
