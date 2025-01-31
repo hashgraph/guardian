@@ -128,7 +128,8 @@
             <div *ngFor="let item of getItemsPage(subjects)" class="guardian-accordion-container">
                 <p-accordion [multiple]="true" [activeIndex]="[0]" class="guardian-accordion">
                     <p-accordionTab header="{{getVerifiableCredential(item)}}">
-                        <app-document-view 
+                        <app-document-view
+                            [policyId]="policyId" 
                             [document]="item"
                             [dryRun]="dryRun" 
                             [hide-fields]="hideFields"

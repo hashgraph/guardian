@@ -102,6 +102,9 @@ export class DocumentViewComponent implements OnInit {
             if (!this.schemaMap[type]) {
                 this.schemaMap[type] = null;
             }
+            if(!this.schemaId) {
+                this.schemaId = `#${type}`;
+            }
         }
         const requests: any[] = [];
         for (const [type, schema] of Object.entries(this.schemaMap)) {
