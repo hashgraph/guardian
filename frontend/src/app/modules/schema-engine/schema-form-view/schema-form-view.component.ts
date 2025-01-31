@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, SimpleChanges } from '@angular/core';
 import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 interface IFieldControl extends SchemaField {
     fullPath: string;
@@ -39,11 +41,16 @@ export class SchemaFormViewComponent implements OnInit {
     @Input('values') values: any;
     @Input() dryRun?: boolean = false;
     @Input() rules?: SchemaRuleValidateResult;
+    @Input() formulas?: any;
 
     public fields: IFieldControl[] | undefined = [];
     private pageSize: number = 25;
 
-    constructor(private ipfs: IPFSService, private changeDetector: ChangeDetectorRef) { }
+    constructor(
+        private ipfs: IPFSService,
+        private dialogService: DialogService,
+        private changeDetector: ChangeDetectorRef
+    ) { }
 
     ngOnInit(): void {
         this.init();
@@ -339,5 +346,19 @@ export class SchemaFormViewComponent implements OnInit {
 
     public isRulesStatus(item: IFieldControl) {
         return this.rules?.[item.fullPath]?.status;
+    }
+
+    public isFormulas(item: IFieldControl) {
+        return this.formulas ? this.formulas[item.fullPath] : undefined;
+    }
+
+    public showFormulas(formulas: any) {
+        const dialogRef = this.dialogService.open(FormulasViewDialog, {
+            showHeader: false,
+            width: '950px',
+            styleClass: 'guardian-dialog',
+            data: formulas,
+        });
+        dialogRef.onClose.subscribe((result: any) => { });
     }
 }

@@ -1,22 +1,23 @@
+import { AccessType, AssignedEntityType, EntityStatus, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import {
     Artifact,
     DatabaseServer,
     findAllEntities,
+    FormulaImportExport,
     getArtifactType,
+    IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
     MultiPolicy,
     NatsService,
-    NotificationHelper,
-    PinoLogger,
+    NotificationHelper, PinoLogger,
     Policy,
     PolicyImportExport,
     PolicyMessage,
     replaceAllEntities,
     replaceAllVariables,
-    replaceArtifactProperties,
-    Schema as SchemaCollection,
+    replaceArtifactProperties, Schema as SchemaCollection,
     SchemaFields,
     Singleton,
     SynchronizationMessage,
@@ -27,23 +28,23 @@ import {
     TopicConfig,
     TopicHelper,
     Users,
-    VcHelper
+    VcHelper,
 } from '@guardian/common';
-import { AccessType, AssignedEntityType, GenerateUUIDv4, IOwner, IRootConfig, ModelHelper, NotificationAction, PolicyEvents, PolicyToolMetadata, PolicyType, Schema, SchemaEntity, SchemaHelper, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
-import { FilterObject } from '@mikro-orm/core';
-import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
-import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
-import { importTag } from '../api/helpers/tag-import-export-helper.js';
-import { publishPolicyTags } from '../api/tag.service.js';
-import { createHederaToken } from '../api/token.service.js';
-import { AISuggestionsService } from '../helpers/ai-suggestions.js';
-import { GuardiansService } from '../helpers/guardians.js';
-import { emptyNotifier, INotifier } from '../helpers/notifier.js';
-import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
-import { PolicyValidator } from '../policy-engine/block-validators/index.js';
 import { PolicyImportExportHelper } from './helpers/policy-import-export-helper.js';
 import { PolicyConverterUtils } from './policy-converter-utils.js';
+import { emptyNotifier, INotifier } from '../helpers/notifier.js';
 import { ISerializedErrors } from './policy-validation-results-container.js';
+import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
+import { PolicyValidator } from '../policy-engine/block-validators/index.js';
+import { publishPolicyTags } from '../api/tag.service.js';
+import { importTag } from '../api/helpers/tag-import-export-helper.js';
+import { createHederaToken } from '../api/token.service.js';
+import { GuardiansService } from '../helpers/guardians.js';
+import { findAndDryRunSchema, findAndPublishSchema, publishSystemSchemas } from '../api/helpers/schema-publish-helper.js';
+import { deleteDemoSchema, deleteSchema, incrementSchemaVersion, sendSchemaMessage } from '../api/helpers/schema-helper.js';
+import { AISuggestionsService } from '../helpers/ai-suggestions.js';
+import { FilterObject } from '@mikro-orm/core';
+import { publishFormula } from '../api/helpers/formulas-helpers.js';
 
 /**
  * Result of publishing
@@ -68,6 +69,10 @@ interface IPublishResult {
  */
 @Singleton
 export class PolicyEngine extends NatsService {
+    constructor(private readonly logger: PinoLogger) {
+        super();
+    }
+
     /**
      * Run ready event
      * @param policyId
@@ -80,37 +85,34 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Message queue name
+     */
+    public messageQueueName = 'policy-service-queue';
+
+    /**
+     * Reply subject
+     * @private
+     */
+    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
+
+    /**
      * Users helper
      * @private
      */
     // @Inject()
     private users: Users;
+
     /**
      * Policy ready callbacks
      * @private
      */
     private readonly policyReadyCallbacks: Map<string, (data: any, error?: any) => void> = new Map();
+
     /**
      * Policy initialization errors container
      * @private
      */
     private readonly policyInitializationErrors: Map<string, string> = new Map();
-
-    constructor(private readonly logger: PinoLogger) {
-        super();
-    }
-
-    /**
-     * Run ready event
-     * @param policyId
-     * @param data
-     * @param error
-     */
-    private runReadyEvent(policyId: string, data?: any, error?: any): void {
-        if (this.policyReadyCallbacks.has(policyId)) {
-            this.policyReadyCallbacks.get(policyId)(data, error);
-        }
-    }
 
     /**
      * Initialization
@@ -143,14 +145,16 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
-     * Message queue name
+     * Run ready event
+     * @param policyId
+     * @param data
+     * @param error
      */
-    public messageQueueName = 'policy-service-queue';
-    /**
-     * Reply subject
-     * @private
-     */
-    public replySubject = 'policy-service-reply-' + GenerateUUIDv4();
+    private runReadyEvent(policyId: string, data?: any, error?: any): void {
+        if (this.policyReadyCallbacks.has(policyId)) {
+            this.policyReadyCallbacks.get(policyId)(data, error);
+        }
+    }
 
     /**
      * Check access
@@ -511,14 +515,15 @@ export class PolicyEngine extends NatsService {
 
         const tools = [];
 
-        const dataToCreate = {
+        const dataToCreate: IPolicyComponents = {
             policy,
             schemas,
             tokens,
             artifacts,
             tools,
             tags,
-            tests: []
+            tests: [],
+            formulas: []
         };
         return await PolicyImportExportHelper.importPolicy(
             dataToCreate,
@@ -653,7 +658,8 @@ export class PolicyEngine extends NatsService {
         model: Policy,
         user: IOwner,
         root: IRootConfig,
-        notifier: INotifier
+        notifier: INotifier,
+        schemaMap: Map<string, string>
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
         notifier.info(`Found ${schemas.length} schemas`);
@@ -673,12 +679,8 @@ export class PolicyEngine extends NatsService {
                 root,
                 emptyNotifier()
             );
-            replaceAllEntities(model.config, SchemaFields, schemaIRI, newSchema.iri);
-            replaceAllVariables(model.config, 'Schema', schemaIRI, newSchema.iri);
 
-            if (model.projectSchema === schemaIRI) {
-                model.projectSchema = newSchema.iri;
-            }
+            schemaMap.set(schemaIRI, newSchema.iri);
 
             const name = newSchema.name;
             num++;
@@ -687,6 +689,75 @@ export class PolicyEngine extends NatsService {
 
         if (skipped) {
             notifier.info(`Skip published ${skipped}`);
+        }
+        return model;
+    }
+
+    /**
+     * Policy Formulas
+     * @param model
+     * @param user
+     * @param root
+     * @param notifier
+     */
+    public async publishFormulas(
+        model: Policy,
+        user: IOwner,
+        root: IRootConfig,
+        notifier: INotifier,
+        schemaMap: Map<string, string>
+    ): Promise<Policy> {
+        const formulas = await DatabaseServer.getFormulas({ policyTopicId: model.topicId });
+        notifier.info(`Found ${formulas.length} formulas`);
+
+        let num: number = 0;
+        let skipped: number = 0;
+        for (const formula of formulas) {
+            if (formula.status === EntityStatus.PUBLISHED) {
+                skipped++;
+                continue;
+            }
+
+            for (const [oldId, newId] of schemaMap.entries()) {
+                FormulaImportExport.replaceIds(formula.config, oldId, newId);
+            }
+
+            const newFormula = await publishFormula(
+                formula,
+                user,
+                root,
+                emptyNotifier()
+            );
+
+            const name = newFormula.name;
+            num++;
+            notifier.info(`Formula ${num} (${name || '-'}) published`);
+        }
+
+        if (skipped) {
+            notifier.info(`Skip published ${skipped}`);
+        }
+        return model;
+    }
+
+    /**
+     * Policy Formulas
+     * @param model
+     * @param user
+     * @param root
+     * @param notifier
+     */
+    public async updateSchemaId(
+        model: Policy,
+        schemaMap: Map<string, string>
+    ): Promise<Policy> {
+        for (const [oldId, newId] of schemaMap.entries()) {
+            replaceAllEntities(model.config, SchemaFields, oldId, newId);
+            replaceAllVariables(model.config, 'Schema', oldId, newId);
+
+            if (model.projectSchema === oldId) {
+                model.projectSchema = newId;
+            }
         }
         return model;
     }
@@ -737,9 +808,32 @@ export class PolicyEngine extends NatsService {
         const messageServer = new MessageServer(root.hederaAccountId, root.hederaAccountKey, root.signOptions)
             .setTopicObject(topic);
 
+        const schemaMap = new Map<string, string>();
         notifier.completedAndStart('Publish schemas');
         try {
-            model = await this.publishSchemas(model, user, root, notifier);
+            model = await this.publishSchemas(model, user, root, notifier, schemaMap);
+        } catch (error) {
+            model.status = PolicyType.PUBLISH_ERROR;
+            model.version = '';
+            model.hash = '';
+            model = await DatabaseServer.updatePolicy(model);
+            throw error;
+        }
+
+        notifier.completedAndStart('Update UUID');
+        try {
+            model = await this.updateSchemaId(model, schemaMap);
+        } catch (error) {
+            model.status = PolicyType.PUBLISH_ERROR;
+            model.version = '';
+            model.hash = '';
+            model = await DatabaseServer.updatePolicy(model);
+            throw error;
+        }
+
+        notifier.completedAndStart('Publish formulas');
+        try {
+            model = await this.publishFormulas(model, user, root, notifier, schemaMap);
         } catch (error) {
             model.status = PolicyType.PUBLISH_ERROR;
             model.version = '';
@@ -1166,7 +1260,7 @@ export class PolicyEngine extends NatsService {
                     });
                 }
             }
-
+            ;
         }
 
         // const tagMessages = await messageServer.getMessages<TagMessage>(message.policyTopicId, MessageType.Tag, MessageAction.PublishTag);

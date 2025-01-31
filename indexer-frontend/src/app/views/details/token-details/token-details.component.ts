@@ -20,6 +20,7 @@ import { TagModule } from 'primeng/tag';
 import { ActivityComponent } from '@components/activity/activity.component';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ColumnType, TableComponent } from '@components/table/table.component';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum TokenType {
     FT = 'FUNGIBLE_COMMON',
@@ -60,6 +61,7 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.token.overview.token_id',
             path: 'tokenId',
+            hederaExplorerType: HederaType.TOKEN,
         },
         {
             label: 'details.token.overview.name',
@@ -72,6 +74,10 @@ export class TokenDetailsComponent extends BaseDetailsComponent {
         {
             label: 'details.token.overview.treasury',
             path: 'treasury',
+            link: '/tokens',
+            filters: {
+                treasury: 'treasury',
+            },
         },
         {
             label: 'details.token.overview.type',

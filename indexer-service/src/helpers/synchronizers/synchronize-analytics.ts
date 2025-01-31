@@ -1,5 +1,5 @@
 import { DataBaseHelper, Message, Analytics } from '@indexer/common';
-import { MessageType, MessageAction } from '@indexer/interfaces';
+import { MessageType, MessageAction, TokenType } from '@indexer/interfaces';
 import { SynchronizationTask } from '../synchronization-task.js';
 
 export class SynchronizationAnalytics extends SynchronizationTask {
@@ -24,7 +24,7 @@ export class SynchronizationAnalytics extends SynchronizationTask {
             action: MessageAction.CreateVC
         });
 
-        const totalIssuance = await this.getTotalIssuance();
+        const [totalIssuance, totalSerialized, totalFungible] = await this.getTotalIssuance();
         const date = new Date();
         await em.persistAndFlush(
             em.create(Analytics, {
@@ -32,6 +32,8 @@ export class SynchronizationAnalytics extends SynchronizationTask {
                 methodologies,
                 projects,
                 totalIssuance,
+                totalSerialized,
+                totalFungible,
                 date,
             })
         );
@@ -41,17 +43,26 @@ export class SynchronizationAnalytics extends SynchronizationTask {
         const em = DataBaseHelper.getEntityManager();
         const tokens = em.getCollection('token_cache').find();
         let totalSupply = 0;
+        let totalSerialized = 0;
+        let totalFungible = 0;
         while (await tokens.hasNext()) {
             const token = await tokens.next();
             const decimals = parseInt(token.decimals, 10);
             const tokenTotalSupply = parseInt(token.totalSupply, 10);
+            let tokenSupply = 0;
             if (decimals > 0) {
-                totalSupply += tokenTotalSupply / decimals;
+                tokenSupply = tokenTotalSupply / decimals;
             } else {
-                totalSupply += tokenTotalSupply;
+                tokenSupply = tokenTotalSupply;
+            }
+            totalSupply += tokenSupply;
+
+            if (token.type == TokenType.FT) {
+                totalFungible += tokenSupply;
+            } else if (token.type == TokenType.NFT) {
+                totalSerialized += tokenSupply;
             }
         }
-        return totalSupply;
+        return [totalSupply, totalSerialized, totalFungible];
     }
-
 }

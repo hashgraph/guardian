@@ -74,7 +74,7 @@
                         </p-tabPanel>
 
                         <p-tabPanel [header]="'details.relationships' | transloco">
-                            <div echarts [options]="chartOption" class="relationships-chart" (chartDblClick)="onSelect($event)">
+                            <div echarts [options]="chartOption" class="relationships-chart" (chartClick)="onSelect($event)">
                             </div>
                         </p-tabPanel>
                         

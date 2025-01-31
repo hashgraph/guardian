@@ -7,7 +7,10 @@
     [attr.error]="!!error"
 >
     <div cdkDragHandle class="left-side-panel">
-        <img alt="" class="equal-icon" src="assets/images/icons/equal.svg"/>
+        <svg-icon class="icon-btn svg-icon"
+            src="/assets/images/icons/equal.svg"
+            svgClass="icon-color-close">
+        </svg-icon>
     </div>
     <div class="fields-main-container">
         <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">

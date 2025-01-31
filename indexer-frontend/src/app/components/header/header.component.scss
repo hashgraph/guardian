@@ -127,3 +127,15 @@
     width: 100%;
     text-align: right;
 }
+
+.progress-bar {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 24px;
+    align-items: center;
+    margin: auto;
+    background-color: var(--color-primary, #4169E2);
+    z-index: 999;
+}

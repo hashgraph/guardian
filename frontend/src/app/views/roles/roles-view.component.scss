@@ -175,7 +175,8 @@
             padding: 10px 76px 10px 16px;
         }
 
-        i, svg {
+        i,
+        svg {
             padding-right: 16px;
             color: #B0B5BA;
         }
@@ -227,7 +228,7 @@
 }
 
 .new-role-container {
-    padding: 56px 48px 48px 48px;
+    padding: 56px 16px 48px 48px;
 
     .page-title {
         margin-top: 24px;
@@ -246,8 +247,10 @@
 .role-content {
     display: grid;
     grid-template-columns: 300px auto;
-    width: 100%;
+    height: calc(100vh - 270px);
     margin-top: 24px;
+    overflow: auto;
+    padding-right: 32px;
 
     .role-nav {
         width: 270px;

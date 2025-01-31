@@ -1,0 +1,13 @@
+<div class="progress-container">
+    <div class="progress-icon" [ngClass]="{ loading }">
+        <svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9.5 1V4.2M9.5 13.8V17M3.844 3.344L6.108 5.608M12.892 12.392L15.156 14.656M1.5 9H4.7M14.3 9H17.5M3.844 14.656L6.108 12.392M12.892 5.608L15.156 3.344" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+    <div>
+        <div class="progress-text">
+            <span class="progress-title">{{ title }}</span>
+            {{ progressText }}
+        </div>
+    </div>
+</div>

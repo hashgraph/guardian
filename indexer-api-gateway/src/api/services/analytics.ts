@@ -7,7 +7,7 @@ import {
     ApiTags,
     ApiUnprocessableEntityResponse,
 } from '@nestjs/swagger';
-import { IndexerMessageAPI, Message } from '@indexer/common';
+import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import {
     InternalServerErrorDTO,
@@ -47,7 +47,7 @@ export class AnalyticsApi extends ApiClient {
             body
         );
     }
-    
+
     @ApiOperation({
         summary: 'Search contract retirements',
         description: 'Returns contract retirements result',
@@ -75,7 +75,7 @@ export class AnalyticsApi extends ApiClient {
             body
         );
     }
-    
+
     @Get('/checkAvailability')
     @ApiOperation({
         summary: 'Get indexer availability',

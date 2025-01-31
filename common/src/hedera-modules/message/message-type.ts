@@ -21,5 +21,6 @@ export enum MessageType {
     Contract = 'Contract',
     UserPermissions = 'User-Permissions',
     PolicyStatistic = 'Policy-Statistic',
-    PolicyLabel = 'Policy-Label'
+    PolicyLabel = 'Policy-Label',
+    Formula = 'Formula'
 }
