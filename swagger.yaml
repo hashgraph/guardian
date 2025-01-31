@@ -6601,9 +6601,9 @@ paths:
   /policies/{policyId}/savepoint/create:
     post:
       operationId: PolicyApi_createSavepoint
-      summary: Create dru-run savepoint.
+      summary: Create dry-run savepoint.
       description: >-
-        Create dru-run savepoint. Only users with the Standard Registry role are
+        Create dry-run savepoint. Only users with the Standard Registry role are
         allowed to make the request.
       parameters:
         - name: policyId
@@ -6639,9 +6639,9 @@ paths:
   /policies/{policyId}/savepoint/delete:
     post:
       operationId: PolicyApi_deleteSavepoint
-      summary: Delete dru-run savepoint.
+      summary: Delete dry-run savepoint.
       description: >-
-        Delete dru-run savepoint. Only users with the Standard Registry role are
+        Delete dry-run savepoint. Only users with the Standard Registry role are
         allowed to make the request.
       parameters:
         - name: policyId
@@ -6675,11 +6675,48 @@ paths:
       security:
         - bearer: []
   /policies/{policyId}/savepoint/restore:
+    get:
+      operationId: PolicyApi_getSavepointState
+      summary: Get savepoint state.
+      description: >-
+        Get savepoint state. Only users with the Standard Registry role are
+        allowed to make the request.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: .
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: .
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_11
+      security:
+        - bearer: []
     post:
       operationId: PolicyApi_restoreSavepoint
-      summary: Restore dru-run savepoint.
+      summary: Restore dry-run savepoint.
       description: >-
-        Restore dru-run savepoint. Only users with the Standard Registry role
+        Restore dry-run savepoint. Only users with the Standard Registry role
         are allowed to make the request.
       parameters:
         - name: policyId
