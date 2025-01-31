@@ -46,7 +46,7 @@
           <!--              <span>Delete Savepoint</span>-->
           <!--            </div>-->
 
-          <div (click)="restoreSavepoint()" class="dry-run-action-btn">
+          <div (click)="restoreSavepoint()" [attr.disabled]="!savePointState" class="dry-run-action-btn">
             <i class="pi pi-undo"></i>
             <span>Restore</span>
           </div>

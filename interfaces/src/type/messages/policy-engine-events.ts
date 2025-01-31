@@ -72,4 +72,5 @@ export enum PolicyEngineEvents {
     CREATE_SAVEPOINT = 'policy-engine-event-create-savepoint',
     DELETE_SAVEPOINT = 'policy-engine-event-delete-savepoint',
     RESTORE_SAVEPOINT = 'policy-engine-event-restore-savepoint',
+    GET_SAVEPOINT = 'policy-engine-event-get-savepoint'
 }

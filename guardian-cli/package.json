@@ -17,11 +17,11 @@
   "author": "IntellectEU <info@intellecteu.com>",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/node": "^18.15.3",
+    "@types/node": "^22.10.10",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@hashgraph/sdk": "^2.46.0",
+    "@hashgraph/sdk": "^2.52.0",
     "axios": "^1.6.7",
     "commander": "^10.0.0",
     "solc": "0.8.11",

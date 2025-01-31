@@ -174,6 +174,18 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Get savepoint state
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async getSavepointSate(dryRunId: string): Promise<DryRun> {
+        return await new DataBaseHelper(DryRun).findOne({dryRunId, savepoint: true});
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+    }
+
+    /**
      * Get schemas
      * @param filters
      */

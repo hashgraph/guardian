@@ -1013,7 +1013,6 @@ export class PolicyEngine extends NatsService {
             root.did,
             root.hederaAccountId,
             root.hederaAccountKey,
-            true,
             true
         );
 
