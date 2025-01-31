@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { AboutInterface, CommonSettings } from '@guardian/interfaces';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter, shareReplay } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
@@ -32,12 +31,12 @@ export class SettingsService {
         });
     }
 
-    public updateSettings(settings: CommonSettings): Observable<void> {
+    public updateSettings(settings: any): Observable<void> {
         return this.http.post<void>(`${this.url}`, settings);
     }
 
-    public getSettings(): Observable<CommonSettings> {
-        return this.http.get<CommonSettings>(`${this.url}`);
+    public getSettings(): Observable<any> {
+        return this.http.get<any>(`${this.url}`);
     }
 
     public getHederaNet(): Observable<string> {
@@ -60,8 +59,8 @@ export class SettingsService {
         });
     }
 
-    public getAbout(): Observable<AboutInterface> {
-        return this.http.get<AboutInterface>(`${this.url}/about`).pipe(
+    public getAbout(): Observable<any> {
+        return this.http.get<any>(`${this.url}/about`).pipe(
             shareReplay(1)
         );
     }
