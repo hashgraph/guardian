@@ -435,6 +435,8 @@
         * [Retrieve a list of created Label documents](guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels/retrieve-a-list-of-created-label-documents.md)
         * [Retrieve Label document by ID](guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels/retrieve-label-document-by-id.md)
         * [Retrieve linked Label documents by ID](guardian/standard-registry/policies/policy-labels/apis-related-to-policy-labels/retrieve-linked-label-documents-by-id.md)
+    * [Formula Linked Definitions](guardian/standard-registry/policies/formula-linked-definitions/README.md)
+      * [Formula Linked Definitions using UI](guardian/standard-registry/policies/formula-linked-definitions/formula-linked-definitions-using-ui.md)
   * [🔑 Bring your own DIDs](guardian/standard-registry/bring-your-own-dids/README.md)
     * [💻 Bring your own (BYO) DIDs UI](guardian/standard-registry/bring-your-own-dids/bring-your-own-byo-dids-ui.md)
     * [⚙️ APIs](guardian/standard-registry/bring-your-own-dids/apis/README.md)
