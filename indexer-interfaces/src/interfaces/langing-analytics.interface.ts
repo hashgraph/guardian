@@ -19,6 +19,14 @@ export interface LandingAnalytics {
      */
     totalIssuance: number;
     /**
+     * Total Serialized
+     */
+    totalSerialized: number;
+    /**
+     * Total Fungible
+     */
+    totalFungible: number;
+    /**
      * Date
      */
     date: Date;

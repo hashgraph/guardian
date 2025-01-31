@@ -20,6 +20,7 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ChipsModule } from 'primeng/chips';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'statistic-documents',
@@ -53,11 +54,25 @@ import { ChipsModule } from 'primeng/chips';
 export class StatisticDocumentsComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
             width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
         },
         {
             type: ColumnType.TEXT,

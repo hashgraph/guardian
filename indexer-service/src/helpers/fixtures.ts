@@ -12,6 +12,8 @@ export async function fixtures(): Promise<void> {
                 methodologies: 0,
                 projects: 0,
                 totalIssuance: 0,
+                totalSerialized: 0,
+                totalFungible: 0,
                 date: new Date(),
             })
         );

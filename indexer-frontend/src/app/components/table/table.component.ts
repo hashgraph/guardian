@@ -4,15 +4,17 @@ import { PaginatorModule } from 'primeng/paginator';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ButtonModule } from 'primeng/button';
-import { NgStyle, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, NgStyle, NgTemplateOutlet } from '@angular/common';
 import { PaginatorComponent } from '@components/paginator/paginator.component';
 import { TagModule } from 'primeng/tag';
 import { RouterModule } from '@angular/router';
+import { HederaExplorer, HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 export enum ColumnType {
     TEXT = 'text',
     BUTTON = 'button',
     CHIP = 'chip',
+    HEDERA = 'hedera',
 }
 
 export interface BaseColumn {
@@ -28,6 +30,7 @@ export interface TextColumn extends BaseColumn {
         field: string;
         url: string;
     };
+    formatValue: (value: any) => string;
 }
 
 export interface ChipColumn extends BaseColumn {
@@ -43,6 +46,12 @@ export interface ButtonColumn extends BaseColumn {
     btn_label: string;
 }
 
+export interface HederaTimestampColumn extends BaseColumn {
+    type: ColumnType.HEDERA;
+    field: string;
+    hederaType: HederaType;
+}
+
 @Component({
     selector: 'app-table',
     standalone: true,
@@ -55,6 +64,8 @@ export interface ButtonColumn extends BaseColumn {
         NgStyle,
         NgTemplateOutlet,
         PaginatorComponent,
+        HederaExplorer,
+        DatePipe,
         TagModule,
         RouterModule,
     ],
@@ -62,7 +73,7 @@ export interface ButtonColumn extends BaseColumn {
     styleUrl: './table.component.scss',
 })
 export class TableComponent {
-    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[];
+    @Input() columns!: TextColumn[] | ButtonColumn[] | ChipColumn[] | HederaTimestampColumn[];
     @Input() data!: any[];
     @Input() pageIndex: number = 0;
     @Input() pageSize: number = 5;
@@ -128,5 +139,27 @@ export class TableComponent {
             result = result[pathList[i]];
         }
         return result;
+    }
+
+    getLink(column: any, obj: any): string[] {
+        if (column.link?.filters) {
+            return [column.link.url];
+        } else if (column.link?.url) {
+            return [column.link.url, this.getFieldValue(column.link.field, obj)];
+        }
+        return [];
+    }
+
+    getFilterParams(column: any, obj: any) {
+        if (column.link?.filters) {
+            const queryParams: any = {};
+            for (const [key, path] of Object.entries(column.link.filters)) {
+              const value = this.getFieldValue(path as string, obj);
+              if (value !== null && value !== undefined) {
+                queryParams[key] = value;
+              }
+            }
+            return queryParams;
+        }
     }
 }

@@ -18,6 +18,11 @@
             <p-tabPanel [header]="'details.registry.tabs.activity' | transloco">
                 <app-activity [activity]="activityItems" [total]="totalActivity"></app-activity>
             </p-tabPanel>
+            
+            <p-tabPanel [header]="'details.relationships' | transloco">
+                <div echarts [options]="chartOption" class="relationships-chart" (chartClick)="onSelect($event)">
+                </div>
+            </p-tabPanel>
             }
             <p-tabPanel [header]="'details.registry.tabs.raw_data' | transloco">
                 <div class="text-area-container">

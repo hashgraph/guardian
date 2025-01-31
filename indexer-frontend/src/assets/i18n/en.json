@@ -8,7 +8,9 @@
         "registries": "Registries",
         "methodologies": "Methodologies",
         "projects": "Total Documents",
-        "total_issuance": "Total Issuance",
+        "projects_issuance": "Projects Issuance",
+        "total_serialized": "Total Serialized",
+        "total_fungible": "Total Fungible",
         "x": "Date and time",
         "y": "Count"
     },
@@ -42,7 +44,9 @@
         "search_placeholder": "Search by keyword",
         "statistics": "Statistics",
         "labels": "Labels",
-        "formulas": "Formulas"
+        "formulas": "Formulas",
+        "loading_progress": "Loading data...",
+        "left": "left"
     },
     "home": {
         "header": "Indexer"
@@ -83,6 +87,11 @@
         "registrantTopicId": "User Topic Id",
         "open": "Open",
         "target": "Target",
+        "sr": "Registry",
+        "policy": "Policy",
+        "date": "Date",
+        "createdTimestamp": "Created Date",
+        "modifiedTimestamp": "Modified Date",
         "filter": {
             "policy": "Policy",
             "schema": "Schema",
@@ -336,7 +345,9 @@
             "overview": {
                 "token_id": "Token Id",
                 "serial_number": "Serial Number",
-                "metadata": "Metadata"
+                "metadata": "Metadata",
+                "policy": "Policy",
+                "sr": "Standard Registry"
             }
         },
         "token": {

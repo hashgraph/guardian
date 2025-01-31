@@ -15,6 +15,7 @@ import { SearchService } from '@services/search.service';
 import { EntitiesService } from '@services/entities.service';
 import { FiltersService } from '@services/filters.service';
 import { LandingService } from '@services/landing.service';
+import { SettingsService } from '@services/settings.service';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -24,6 +25,7 @@ export const appConfig: ApplicationConfig = {
         EntitiesService,
         FiltersService,
         LandingService,
+        SettingsService,
         provideHttpClient(),
         provideRouter(routes),
         provideAnimationsAsync(),

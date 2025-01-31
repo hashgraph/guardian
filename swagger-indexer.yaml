@@ -124,6 +124,13 @@ paths:
           example: 0.0.4481265
           schema:
             type: string
+        - name: options.attributes.OrganizationName
+          required: false
+          in: query
+          description: Registry organization name
+          example: Example
+          schema:
+            type: string
       responses:
         '200':
           description: Registries
@@ -165,6 +172,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RegistryDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/registries/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getRegistriesRelationships
+      summary: Get registry relationships
+      description: Returns registry relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Registry relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
         '500':
           description: Internal server error
           content:
@@ -392,6 +426,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyDetailsDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_0
+  /entities/policies/{messageId}/relationships:
+    get:
+      operationId: EntityApi_getPolicyRelationships
+      summary: Get policy relationships
+      description: Returns policy relationships
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          description: Message identifier
+          example: '1706823227.586179534'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy relationships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelationshipsDTO'
         '500':
           description: Internal server error
           content:
@@ -924,6 +985,16 @@ paths:
           description: Issuer
           example: >-
             did:hedera:testnet:8Go53QCUXZ4nzSQMyoWovWCxseogGTMLDiHg14Fkz4VN_0.0.4481265
+          schema:
+            type: string
+        - name: options.role
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: analytics.sr
+          required: true
+          in: query
           schema:
             type: string
         - name: topicId
@@ -2410,7 +2481,7 @@ paths:
       summary: Get landing page analytics
       description: >-
         Returns count of registries, methodologies, projects, totalIssuance,
-        date
+        totalSerialized, totalFungible, date
       parameters: []
       responses:
         '200':
@@ -2444,6 +2515,28 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectCoordinatesDTO'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_1
+  /landing/data-loading-progress:
+    get:
+      operationId: LandingApi_getDataLoadingProgress
+      summary: Get data loading progress
+      description: Returns the number of messages loaded and the total number of messages
+      parameters: []
+      responses:
+        '200':
+          description: Data loading progress result
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DataLoadingProgress'
         '500':
           description: Internal server error
           content:
@@ -2534,6 +2627,47 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
       tags: *ref_2
+  /settings/network:
+    get:
+      operationId: SettingsApi_getNetworkEnvironment
+      summary: Get Hedera network
+      description: Returns Hedera network
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_3
+        - settings
+  /settings/networkExplorer:
+    get:
+      operationId: SettingsApi_getNetworkExplorer
+      summary: Get Hedera network explorer settings
+      description: Returns Hedera network explorer settings
+      parameters: []
+      responses:
+        '200':
+          description: Hedera network explorer settings result
+          content:
+            application/json:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_3
 info:
   title: Guardian
   description: >-
@@ -2684,21 +2818,21 @@ components:
           description: Status message
         files:
           description: Files
-          example: &ref_3
+          example: &ref_4
             - QmYtKEVfpbDwn7XLHjnjap224ESi3vLiYpkbWoabnxs6cX
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: &ref_4
+          example: &ref_5
             - 0.0.4481265
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: &ref_5
+          example: &ref_6
             - 0.0.4481265
           type: array
           items:
@@ -2944,6 +3078,189 @@ components:
         - item
         - row
         - activity
+    MessageDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identifier
+          example: 667c240639282050117a1985
+        topicId:
+          type: string
+          description: Topic identifier
+          example: 0.0.4481265
+        consensusTimestamp:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        owner:
+          type: string
+          description: Owner
+          example: 0.0.1
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        status:
+          type: string
+          description: Status
+          example: NEW
+        statusReason:
+          type: string
+          description: Status
+          example: Revoked
+        lang:
+          type: string
+          description: Lang
+          example: en-US
+        responseType:
+          type: string
+          description: Response type
+          example: str
+        statusMessage:
+          type: string
+          description: Status message
+        files:
+          description: Files
+          example: *ref_4
+          type: array
+          items:
+            type: string
+        topics:
+          description: Topics
+          example: *ref_5
+          type: array
+          items:
+            type: string
+        tokens:
+          description: Tokens
+          example: *ref_6
+          type: array
+          items:
+            type: string
+        sequenceNumber:
+          type: number
+          description: SequenceNumber
+          example: 0
+      required:
+        - id
+        - topicId
+        - consensusTimestamp
+        - owner
+        - uuid
+        - status
+        - statusReason
+        - lang
+        - responseType
+        - statusMessage
+        - files
+        - topics
+        - tokens
+        - sequenceNumber
+    RelationshipDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        uuid:
+          type: string
+          description: UUID
+          example: 93938a10-d032-4a9b-9425-092e58bffbf7
+        type:
+          type: string
+          description: Type
+          enum:
+            - EVC-Document
+            - VC-Document
+            - DID-Document
+            - Schema
+            - schema-document
+            - Policy
+            - Instance-Policy
+            - VP-Document
+            - Standard Registry
+            - Topic
+            - Token
+            - Module
+            - Tool
+            - Tag
+            - Role-Document
+            - Synchronization Event
+            - Contract
+            - Guardian-Role-Document
+            - User-Permissions
+            - Policy-Statistic
+            - Policy-Label
+            - Formula
+        category:
+          type: number
+          description: Category
+          example: 1
+        name:
+          type: string
+          description: Name
+          example: Monitoring Report Document
+      required:
+        - id
+        - uuid
+        - type
+        - category
+        - name
+    RelationshipLinkDTO:
+      type: object
+      properties:
+        source:
+          type: string
+          description: Source message identifier
+          example: '1706823227.586179534'
+        target:
+          type: string
+          description: Target message identifier
+          example: '1706823227.586179534'
+      required:
+        - source
+        - target
+    RelationshipsDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Message identifier
+          example: '1706823227.586179534'
+        item:
+          $ref: '#/components/schemas/MessageDTO'
+        target:
+          $ref: '#/components/schemas/RelationshipDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipDTO'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelationshipLinkDTO'
+        categories:
+          description: Categories
+          example:
+            - name: Registry
+            - name: Policy
+            - name: Schema
+            - name: Role
+            - name: VC
+            - name: VP
+            - name: Token
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - item
+        - target
+        - relationships
+        - links
+        - categories
     RegistryUserOptionsDTO:
       type: object
       properties:
@@ -3006,19 +3323,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3163,19 +3480,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3498,19 +3815,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3755,19 +4072,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -3987,19 +4304,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4212,19 +4529,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4407,19 +4724,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -4805,19 +5122,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5021,19 +5338,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5248,19 +5565,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5492,19 +5809,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5702,19 +6019,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -5926,19 +6243,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6133,19 +6450,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6283,85 +6600,6 @@ components:
         - item
         - row
         - activity
-    MessageDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Identifier
-          example: 667c240639282050117a1985
-        topicId:
-          type: string
-          description: Topic identifier
-          example: 0.0.4481265
-        consensusTimestamp:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        owner:
-          type: string
-          description: Owner
-          example: 0.0.1
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        status:
-          type: string
-          description: Status
-          example: NEW
-        statusReason:
-          type: string
-          description: Status
-          example: Revoked
-        lang:
-          type: string
-          description: Lang
-          example: en-US
-        responseType:
-          type: string
-          description: Response type
-          example: str
-        statusMessage:
-          type: string
-          description: Status message
-        files:
-          description: Files
-          example: *ref_3
-          type: array
-          items:
-            type: string
-        topics:
-          description: Topics
-          example: *ref_4
-          type: array
-          items:
-            type: string
-        tokens:
-          description: Tokens
-          example: *ref_5
-          type: array
-          items:
-            type: string
-        sequenceNumber:
-          type: number
-          description: SequenceNumber
-          example: 0
-      required:
-        - id
-        - topicId
-        - consensusTimestamp
-        - owner
-        - uuid
-        - status
-        - statusReason
-        - lang
-        - responseType
-        - statusMessage
-        - files
-        - topics
-        - tokens
-        - sequenceNumber
     FormulaRelationshipsDTO:
       type: object
       properties:
@@ -6454,19 +6692,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6611,19 +6849,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -6758,109 +6996,6 @@ components:
         - item
         - row
         - history
-    RelationshipDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        uuid:
-          type: string
-          description: UUID
-          example: 93938a10-d032-4a9b-9425-092e58bffbf7
-        type:
-          type: string
-          description: Type
-          enum:
-            - EVC-Document
-            - VC-Document
-            - DID-Document
-            - Schema
-            - schema-document
-            - Policy
-            - Instance-Policy
-            - VP-Document
-            - Standard Registry
-            - Topic
-            - Token
-            - Module
-            - Tool
-            - Tag
-            - Role-Document
-            - Synchronization Event
-            - Contract
-            - Guardian-Role-Document
-            - User-Permissions
-            - Policy-Statistic
-            - Policy-Label
-            - Formula
-        category:
-          type: number
-          description: Category
-          example: 1
-        name:
-          type: string
-          description: Name
-          example: Monitoring Report Document
-      required:
-        - id
-        - uuid
-        - type
-        - category
-        - name
-    RelationshipLinkDTO:
-      type: object
-      properties:
-        source:
-          type: string
-          description: Source message identifier
-          example: '1706823227.586179534'
-        target:
-          type: string
-          description: Target message identifier
-          example: '1706823227.586179534'
-      required:
-        - source
-        - target
-    RelationshipsDTO:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Message identifier
-          example: '1706823227.586179534'
-        item:
-          $ref: '#/components/schemas/MessageDTO'
-        target:
-          $ref: '#/components/schemas/RelationshipDTO'
-        relationships:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipDTO'
-        links:
-          type: array
-          items:
-            $ref: '#/components/schemas/RelationshipLinkDTO'
-        categories:
-          description: Categories
-          example:
-            - name: Registry
-            - name: Policy
-            - name: Schema
-            - name: Role
-            - name: VC
-            - name: VP
-          type: array
-          items:
-            type: string
-      required:
-        - id
-        - item
-        - target
-        - relationships
-        - links
-        - categories
     VPDetailsDTO:
       type: object
       properties:
@@ -6935,19 +7070,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -7314,19 +7449,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -7622,19 +7757,19 @@ components:
           description: Status message
         files:
           description: Files
-          example: *ref_3
+          example: *ref_4
           type: array
           items:
             type: string
         topics:
           description: Topics
-          example: *ref_4
+          example: *ref_5
           type: array
           items:
             type: string
         tokens:
           description: Tokens
-          example: *ref_5
+          example: *ref_6
           type: array
           items:
             type: string
@@ -7792,6 +7927,14 @@ components:
           type: number
           description: Total issuance
           example: '10'
+        totalSerialized:
+          type: number
+          description: Total serialized
+          example: '10'
+        totalFungible:
+          type: number
+          description: Total fungible
+          example: '10'
         date:
           format: date-time
           type: string
@@ -7802,6 +7945,8 @@ components:
         - methodologies
         - projects
         - totalIssuance
+        - totalSerialized
+        - totalFungible
         - date
     ProjectCoordinatesDTO:
       type: object
@@ -7817,6 +7962,9 @@ components:
       required:
         - coordinates
         - projectId
+    DataLoadingProgress:
+      type: object
+      properties: {}
     SearchPolicyBlocksDTO:
       type: object
       properties:

@@ -11,6 +11,7 @@ export enum RelationshipCategory {
     Role = 'Role',
     VC = 'VC',
     VP = 'VP',
+    TOKEN = 'Token',
 }
 
 /**
@@ -34,6 +35,9 @@ export const RELATIONSHIP_CATEGORIES = [
     },
     {
         name: RelationshipCategory.VP,
+    },
+    {
+        name: RelationshipCategory.TOKEN,
     },
 ];
 

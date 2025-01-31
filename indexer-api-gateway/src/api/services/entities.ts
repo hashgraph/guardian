@@ -111,6 +111,12 @@ export class EntityApi extends ApiClient {
         example: '0.0.4481265',
         required: false,
     })
+    @ApiQuery({
+        name: 'options.attributes.OrganizationName',
+        description: 'Registry organization name',
+        example: 'Example',
+        required: false,
+    })
     @HttpCode(HttpStatus.OK)
     async getRegistries(
         @Query('pageIndex') pageIndex?: number,
@@ -120,7 +126,8 @@ export class EntityApi extends ApiClient {
         @Query('keywords') keywords?: string,
         @Query('topicId') topicId?: string,
         @Query('options.did') did?: string,
-        @Query('options.registrantTopicId') registrantTopicId?: string
+        @Query('options.registrantTopicId') registrantTopicId?: string,
+        @Query('options.attributes.OrganizationName') organizationName?: string
     ) {
         return await this.send(IndexerMessageAPI.GET_REGISTRIES, {
             pageIndex,
@@ -131,6 +138,7 @@ export class EntityApi extends ApiClient {
             topicId,
             'options.did': did,
             'options.registrantTopicId': registrantTopicId,
+            'options.attributes.OrganizationName': organizationName,
         });
     }
 
@@ -157,6 +165,31 @@ export class EntityApi extends ApiClient {
         @Param('messageId') messageId: string
     ): Promise<RegistryDTO> {
         return await this.send(IndexerMessageAPI.GET_REGISTRY, {
+            messageId,
+        });
+    }
+    
+    @ApiOperation({
+        summary: 'Get registry relationships',
+        description: 'Returns registry relationships',
+    })
+    @ApiOkResponse({
+        description: 'Registry relationships',
+        type: RelationshipsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/registries/:messageId/relationships')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getRegistriesRelationships(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_REGISTRY_RELATIONSHIPS, {
             messageId,
         });
     }
@@ -325,6 +358,31 @@ export class EntityApi extends ApiClient {
     @HttpCode(HttpStatus.OK)
     async getPolicy(@Param('messageId') messageId: string) {
         return await this.send(IndexerMessageAPI.GET_POLICY, {
+            messageId,
+        });
+    }
+
+    @ApiOperation({
+        summary: 'Get policy relationships',
+        description: 'Returns policy relationships',
+    })
+    @ApiOkResponse({
+        description: 'Policy relationships',
+        type: RelationshipsDTO,
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO
+    })
+    @Get('/policies/:messageId/relationships')
+    @ApiParam({
+        name: 'messageId',
+        description: 'Message identifier',
+        example: '1706823227.586179534',
+    })
+    @HttpCode(HttpStatus.OK)
+    async getPolicyRelationships(@Param('messageId') messageId: string) {
+        return await this.send(IndexerMessageAPI.GET_POLICY_RELATIONSHIPS, {
             messageId,
         });
     }
@@ -634,7 +692,7 @@ export class EntityApi extends ApiClient {
         @Query('orderField') orderField?: string,
         @Query('orderDir') orderDir?: string,
         @Query('tokenId') tokenId?: string,
-        @Query('treasury') treasury?: string
+        @Query('treasury') treasury?: string,
     ) {
         return await this.send(IndexerMessageAPI.GET_TOKENS, {
             pageIndex,
@@ -722,6 +780,8 @@ export class EntityApi extends ApiClient {
         @Query('orderDir') orderDir?: string,
         @Query('keywords') keywords?: string,
         @Query('options.issuer') issuer?: string,
+        @Query('options.role') role?: string,
+        @Query('analytics.sr') sr?: string,
         @Query('topicId') topicId?: string,
         @Query('analytics.policyId') policyId?: string
     ) {
@@ -733,6 +793,8 @@ export class EntityApi extends ApiClient {
             keywords,
             topicId,
             'options.issuer': issuer,
+            'options.role': role,
+            'analytics.sr': sr,
             'analytics.policyId': policyId,
         });
     }

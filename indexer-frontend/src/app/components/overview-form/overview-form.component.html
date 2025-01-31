@@ -8,6 +8,10 @@
                         <a 
                             [routerLink]="field._link" 
                             [queryParams]="field.queryParams">{{field.value}}</a>
+                    } @else if (field.hederaExplorerType) {
+                        <hedera-explorer [params]="field.value" [type]="field.hederaExplorerType">
+                            {{ field.value }}
+                        </hedera-explorer>
                     } @else {
                         {{field.value}}
                     }

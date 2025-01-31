@@ -20,6 +20,7 @@ import { ColumnType, TableComponent } from '@components/table/table.component';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { InputTextModule } from 'primeng/inputtext';
+import { HederaType } from '@components/hedera-explorer/hedera-explorer.component';
 
 @Component({
     selector: 'registries',
@@ -53,11 +54,25 @@ import { InputTextModule } from 'primeng/inputtext';
 export class RegistriesComponent extends BaseGridComponent {
     columns: any[] = [
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'consensusTimestamp',
             title: 'grid.consensus_timestamp',
-            width: '225px',
+            width: '250px',
             sort: true,
+            hederaType: HederaType.TRANSACTION,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'consensusTimestamp',
+            title: 'grid.date',
+            width: '250px',
+            sort: true,
+            formatValue: (value: any) => {
+                const fixedTimestamp = Math.floor(value * 1000);
+                value = new Date(fixedTimestamp);
+                const formattedDate = value.toLocaleString();
+                return formattedDate;
+            }
         },
         {
             type: ColumnType.TEXT,
@@ -70,9 +85,16 @@ export class RegistriesComponent extends BaseGridComponent {
             },
         },
         {
-            type: ColumnType.TEXT,
+            type: ColumnType.HEDERA,
             field: 'owner',
             title: 'grid.account_id',
+            width: '150px',
+            hederaType: HederaType.ACCOUNT,
+        },
+        {
+            type: ColumnType.TEXT,
+            field: 'options.attributes.OrganizationName',
+            title: 'grid.name',
             width: '150px',
         },
         {
@@ -123,6 +145,11 @@ export class RegistriesComponent extends BaseGridComponent {
                 label: 'grid.did',
                 type: 'input',
                 field: 'options.did',
+            }),
+            new Filter({
+                label: 'grid.name',
+                type: 'input',
+                field: 'options.attributes.OrganizationName',
             })
         );
     }

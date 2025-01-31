@@ -529,6 +529,40 @@ export class EntityService {
         }
     }
 
+    @MessagePattern(IndexerMessageAPI.GET_REGISTRY_RELATIONSHIPS)
+    async getRegistryRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.STANDARD_REGISTRY,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
+            return new MessageError(error, error.code);
+        }
+    }
     //#endregion
     //#region REGISTRY USERS
     @MessagePattern(IndexerMessageAPI.GET_REGISTRY_USERS)
@@ -766,6 +800,42 @@ export class EntityService {
                 activity,
             });
         } catch (error) {
+            return new MessageError(error, error.code);
+        }
+    }
+
+    @MessagePattern(IndexerMessageAPI.GET_POLICY_RELATIONSHIPS)
+    async getPolicyRelationships(
+        @Payload() msg: { messageId: string }
+    ): Promise<AnyResponse<IRelationships>> {
+        try {
+            const { messageId } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const item = await em.findOne(Message, {
+                consensusTimestamp: messageId,
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            });
+            if (!item) {
+                return new MessageResponse<IRelationships>({
+                    id: messageId,
+                });
+            }
+
+            const utils = new Relationships(item);
+            const { target, relationships, links, categories } =
+                await utils.load();
+
+            return new MessageResponse<IRelationships>({
+                id: messageId,
+                item,
+                target,
+                relationships,
+                links,
+                categories,
+            });
+        } catch (error) {
+            console.log(error);
             return new MessageError(error, error.code);
         }
     }
@@ -1975,8 +2045,34 @@ export class EntityService {
                 filters,
                 options
             );
+
+            const nftsConsensusTimestamps = rows.map((row) => row.metadata);
+
+            let messagesMap = new Map();
+
+            if (nftsConsensusTimestamps.length > 0) {
+                const messagesRows = await em.find(Message, {
+                    consensusTimestamp: { $in: nftsConsensusTimestamps },
+                });
+
+                messagesMap = new Map(
+                    messagesRows.map((message) => [
+                        message.consensusTimestamp,
+                        {
+                            policyId: message.analytics.policyId,
+                            sr: message.analytics.issuer,
+                        },
+                    ])
+                );
+            }
+
+            const newRows = rows.map((row) => ({
+                ...row,
+                analytics: messagesMap.get(row.metadata),
+            }));
+
             const result = {
-                items: rows,
+                items: newRows,
                 pageIndex: options.offset / options.limit,
                 pageSize: options.limit,
                 total: count,
@@ -2008,9 +2104,21 @@ export class EntityService {
                 action: MessageAction.CreateLabelDocument,
                 'options.target': row?.metadata
             } as any));
+
+            const message = await em.findOne(Message, {
+                consensusTimestamp: row.metadata,
+            });
+
+            const analytics = {
+                policyId: message.analytics.policyId,
+                sr: message.analytics.issuer,
+            }
+
+            var newRow = {...row, analytics};
+
             return new MessageResponse<NFTDetails>({
                 id: tokenId,
-                row,
+                row: newRow,
                 labels,
                 history: nftHistory.data?.transactions || [],
             });

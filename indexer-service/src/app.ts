@@ -10,6 +10,7 @@ import { EntityService } from './api/entities.service.js';
 import { FiltersService } from './api/filters.service.js';
 import { LandingService } from './api/landing.service.js';
 import { AnalyticsService } from './api/analytics.service.js';
+import { SettingsService } from './api/settings.service.js';
 import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 
@@ -78,7 +79,8 @@ async function updateIndexes() {
         EntityService,
         FiltersService,
         LandingService,
-        AnalyticsService
+        AnalyticsService,
+        SettingsService,
     ],
 })
 class AppModule { }

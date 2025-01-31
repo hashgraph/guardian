@@ -12,3 +12,5 @@ export * from './raw-token.interface.js';
 export * from './raw-topic.interface.js';
 export * from './search-policy.interface.js';
 export * from './formulas.interface.js';
+export * from './network-explorer-settings.interface.js';
+export * from './data-loading-progress.interface.js';
