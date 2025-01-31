@@ -109,6 +109,9 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     }
 
     private getSavepointState() {
+        if (!this.isDryRun) {
+            return;
+        }
         this.policyEngineService.getSavepointState(this.policyInfo.id).subscribe((value) => {
             this.savePointState = value.state;
             console.log(value);
