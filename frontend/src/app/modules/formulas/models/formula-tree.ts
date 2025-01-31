@@ -1,9 +1,21 @@
-import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject } from "@guardian/interfaces";
+import { IFormulaItem, IFormula, IFormulaLink, FormulaItemType, Schema, SchemaField, IVCDocument, ISchema, IVPDocument, IVC, IVP, ICredentialSubject, IFormulaFile } from "@guardian/interfaces";
 
 export interface Link {
     schema: string;
     path: string;
     item: FormulaItem;
+}
+
+export class FormulaFiles {
+    public readonly name: string;
+    public readonly type: string;
+    public readonly url: string;
+
+    constructor(config: IFormulaFile) {
+        this.name = config.name || '';
+        this.type = config.type || '';
+        this.url = config.url || '';
+    }
 }
 
 export class DocumentItem {
@@ -376,6 +388,7 @@ export class FormulaTree {
 
     private _links: Map<string, Map<string, FormulaItem[]>>;
     private _items: FormulaItem[];
+    private _files: FormulaFiles[];
 
     constructor(formula: IFormula) {
         this.uuid = formula.uuid || '';
@@ -383,7 +396,8 @@ export class FormulaTree {
         this.description = formula.description || '';
 
         this._links = new Map<string, Map<string, FormulaItem[]>>();
-        this.parse(formula?.config?.formulas)
+        this.parse(formula?.config?.formulas);
+        this.parseFiles(formula?.config?.files);
     }
 
     private parse(items?: IFormulaItem[]) {
@@ -408,6 +422,18 @@ export class FormulaTree {
 
         for (const item of this._items) {
             item.setRelationship(this._items);
+        }
+    }
+
+    private parseFiles(files?: IFormulaFile[]) {
+        if (!files) {
+            return;
+        }
+
+        this._files = [];
+        for (const config of files) {
+            const file = new FormulaFiles(config);
+            this._files.push(file);
         }
     }
 

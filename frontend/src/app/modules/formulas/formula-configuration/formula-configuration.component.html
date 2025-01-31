@@ -35,8 +35,7 @@
     <div class="step-container">
         <div class="guardian-step-container">
             <div class="guardian-stepper horizontal-stepper">
-                <div class="guardian-step" [attr.action]="isActionStep(0)"
-                    (click)="onStep(0)">
+                <div class="guardian-step" [attr.action]="isActionStep(0)" (click)="onStep(0)">
                     <div class="guardian-step-icon">
                         <svg-icon class="icon-btn svg-icon-16"
                             src="/assets/images/icons/16/file-fill.svg">
@@ -45,14 +44,22 @@
                     <div class="guardian-step-name">Overview</div>
                 </div>
                 <div class="guardian-step-separator"></div>
-                <div class="guardian-step" [attr.action]="isActionStep(1)"
-                    (click)="onStep(1)">
+                <div class="guardian-step" [attr.action]="isActionStep(1)" (click)="onStep(1)">
                     <div class="guardian-step-icon">
                         <svg-icon class="icon-btn svg-icon-16"
                             src="/assets/images/icons/16/edit.svg">
                         </svg-icon>
                     </div>
                     <div class="guardian-step-name">Edit Formula</div>
+                </div>
+                <div class="guardian-step-separator"></div>
+                <div class="guardian-step" [attr.action]="isActionStep(2)" (click)="onStep(2)">
+                    <div class="guardian-step-icon">
+                        <svg-icon class="icon-btn svg-icon-16"
+                            src="/assets/images/icons/16/file.svg">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-step-name">Attach Files</div>
                 </div>
             </div>
         </div>
@@ -277,6 +284,65 @@
                 </div>
             </div>
         </ng-container>
+        <ng-container *ngIf="isActionStep(2)">
+
+            <div class="file-menu">
+                <button 
+                    (click)="uploadFile()" 
+                    class="guardian-button guardian-button-primary">
+                    <div class="guardian-button-icon">
+                        <svg-icon class="icon-btn svg-icon"
+                            src="/assets/images/icons/cloud-upload.svg"
+                            svgClass="icon-color-secondary">
+                        </svg-icon>
+                    </div>
+                    <div class="guardian-button-label">Upload file</div>
+                </button>
+            </div>
+            <div class="files-viewer">
+                <div class="variables-container">
+                    <div *ngIf="config.files.length" class="variables-grid">
+                        <div class="variables-grid-header">
+                            <div class="variables-grid-cell cell-300">NAME</div>
+                            <div class="variables-grid-cell cell-max">URL</div>
+                            <div class="variables-grid-cell cell-64"></div>
+                        </div>
+                        <div class="variables-grid-body">
+                            <div *ngFor="let file of config.files" class="variables-grid-row">
+                                <div class="variables-grid-cell cell-300">
+                                    {{file.name}}
+                                </div>
+                                <div class="variables-grid-cell cell-max">
+                                    <ipfs-link [url]="file.url"></ipfs-link>
+                                </div>
+                                <div class="variables-grid-cell cell-64 cell-btn">
+                                    <button 
+                                        class="guardian-icon-button big" 
+                                        (click)="deleteFile(file)">
+                                        <svg-icon
+                                            class="icon-btn svg-icon"
+                                            src="/assets/images/icons/delete.svg"
+                                            svgClass="icon-color-delete">
+                                        </svg-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="!config.files.length" class="variables-empty-grid">
+                        <div>
+                            <svg-icon
+                                class="icon-btn"
+                                src="/assets/images/icons/list.svg"
+                                svgClass="icon-color-disabled">
+                            </svg-icon>
+                        </div>
+                        <div>There were no files attached yet.</div>
+                    </div>
+                </div>
+            </div>
+
+        </ng-container>
     </div>
     <div class="action-container">
         <ng-container *ngIf="isActionStep(0)">
@@ -284,6 +350,9 @@
         </ng-container>
         <ng-container *ngIf="isActionStep(1) && !readonly">
             <menu-button [options]="options" [immediately]="false" (action)="addItem($event)"></menu-button>
+            <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
+        </ng-container>
+        <ng-container *ngIf="isActionStep(2)">
             <button (click)="onSave()" class="guardian-button guardian-button-primary save-button">Save Changes</button>
         </ng-container>
     </div>

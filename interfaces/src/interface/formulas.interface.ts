@@ -23,8 +23,15 @@ export interface IFormulaItem {
     relationships?: string[];
 }
 
+export interface IFormulaFile {
+    name?: string;
+    url?: string;
+    type?: string;
+}
+
 export interface IFormulaConfig {
     formulas?: IFormulaItem[];
+    files?: IFormulaFile[];
 }
 
 export interface IFormula {

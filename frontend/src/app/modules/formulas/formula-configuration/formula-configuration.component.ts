@@ -11,6 +11,7 @@ import { MathLiveComponent } from '../../common/mathlive/mathlive.component';
 import { LinkDialog } from '../dialogs/link-dialog/link-dialog.component';
 import { Formulas } from '../models/formulas';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { UploadFormulaFileDialog } from '../dialogs/upload-formula-file-dialog/upload-formula-file-dialog.component';
 
 @Component({
     selector: 'app-formula-configuration',
@@ -252,6 +253,30 @@ export class FormulaConfigurationComponent implements OnInit {
         });
     }
 
+    public deleteFile(file: any) {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete file',
+                text: 'Are you sure want to delete file?',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        });
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.config.deleteFile(file);
+            }
+        });
+    }
+
     public onFilter() {
         this.config.setFilters(this.filters);
     }
@@ -350,5 +375,19 @@ export class FormulaConfigurationComponent implements OnInit {
 
     public drop(event: CdkDragDrop<any[]>) {
         this.config.reorder(event.previousIndex, event.currentIndex);
+    }
+
+    public uploadFile() {
+        const dialogRef = this.dialogService.open(UploadFormulaFileDialog, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {},
+        });
+        dialogRef.onClose.subscribe((result: any) => {
+            if(result) {
+                this.config.addFile(result);
+            }
+        });
     }
 }

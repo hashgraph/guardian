@@ -1,14 +1,16 @@
 import { moveItemInArray } from '@angular/cdk/drag-drop';
-import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig } from '@guardian/interfaces';
+import { IFormulaItem, FormulaItemType, GenerateUUIDv4, IFormulaConfig, IFormulaFile } from '@guardian/interfaces';
 
 export class Formulas {
     private items: IFormulaItem[];
     private filterMap: Map<FormulaItemType, boolean>;
-
+    public files: IFormulaFile[];
     public data: IFormulaItem[];
 
     constructor() {
         this.items = [];
+        this.files = [];
+        this.data = [];
         this.filterMap = new Map<FormulaItemType, boolean>();
         this.filterMap.set(FormulaItemType.Constant, true);
         this.filterMap.set(FormulaItemType.Variable, true);
@@ -60,6 +62,16 @@ export class Formulas {
         this.update();
     }
 
+    public addFile(file: IFormulaFile): void {
+        if (file) {
+            this.files.push(file);
+        }
+    }
+
+    public deleteFile(file: IFormulaFile): void {
+        this.files = this.files.filter((e) => e !== file);
+    }
+
     public setFilters(filter: any): void {
         this.filterMap.set(FormulaItemType.Constant, filter.constant);
         this.filterMap.set(FormulaItemType.Variable, filter.variable);
@@ -74,21 +86,32 @@ export class Formulas {
 
     public fromData(config: IFormulaConfig) {
         const items: IFormulaItem[] = config?.formulas || [];
-        this.items = items.map((e) => this._fromJson(e));
+        const files: IFormulaFile[] = config?.files || [];
+        this.items = items.map((e) => this._fromItemJson(e));
+        this.files = files.map((e) => this._fromFileJson(e));
         this.update();
     }
 
     public getJson(): IFormulaConfig {
         return {
-            formulas: this.items.map((e) => this._toJson(e))
+            formulas: this.items.map((e) => this._toItemJson(e)),
+            files: this.files.map((e) => this._toFileJson(e)),
         };
     }
 
-    private _fromJson(item: IFormulaItem): IFormulaItem {
+    private _fromItemJson(item: IFormulaItem): IFormulaItem {
         return item;
     }
 
-    private _toJson(item: IFormulaItem): IFormulaItem {
+    private _toItemJson(item: IFormulaItem): IFormulaItem {
+        return item;
+    }
+
+    private _fromFileJson(item: IFormulaFile): IFormulaFile {
+        return item;
+    }
+
+    private _toFileJson(item: IFormulaFile): IFormulaFile {
         return item;
     }
 

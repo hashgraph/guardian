@@ -42,6 +42,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
 import { CheckboxButton } from './checkbox-button/checkbox-button.component';
+import { IPFSLinkComponent } from './ipfs-link/ipfs-link.component';
 
 @NgModule({
     declarations: [
@@ -72,7 +73,8 @@ import { CheckboxButton } from './checkbox-button/checkbox-button.component';
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
-        CheckboxButton
+        CheckboxButton,
+        IPFSLinkComponent
     ],
     imports: [
         CommonModule,
@@ -123,7 +125,8 @@ import { CheckboxButton } from './checkbox-button/checkbox-button.component';
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
-        CheckboxButton
+        CheckboxButton,
+        IPFSLinkComponent
     ]
 })
 export class CommonComponentsModule {
