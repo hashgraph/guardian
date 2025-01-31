@@ -20,10 +20,10 @@ interface IAdditionalDocument {
  * Component for display block of 'ReportBlock' types.
  */
 @Component({
-               selector: 'app-report-block',
-               templateUrl: './report-block.component.html',
-               styleUrls: ['./report-block.component.scss']
-           })
+    selector: 'app-report-block',
+    templateUrl: './report-block.component.html',
+    styleUrls: ['./report-block.component.scss']
+})
 export class ReportBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
@@ -39,8 +39,8 @@ export class ReportBlockComponent implements OnInit {
     documents: any;
     policyCreatorDocument: IReportItem | undefined;
     searchForm = this.fb.group({
-                                   value: ['', Validators.required]
-                               });
+        value: ['', Validators.required]
+    });
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -121,8 +121,8 @@ export class ReportBlockComponent implements OnInit {
         const report = data.data as IReport;
         this.hash = data.hash;
         this.searchForm.patchValue({
-                                       value: this.hash
-                                   });
+            value: this.hash
+        });
         this.policyDocument = report.policyDocument;
         this.policyCreatorDocument = report.policyCreatorDocument;
         this.documents = report.documents || [];
@@ -146,15 +146,15 @@ export class ReportBlockComponent implements OnInit {
 
         if (this.policyDocument) {
             this.documents.push({
-                                    type: this.policyDocument.type,
-                                    title: 'Policy',
-                                    description: this.policyDocument.tag,
-                                    tag: this.policyDocument.tag,
-                                    visible: true,
-                                    issuer: this.policyDocument.issuer,
-                                    username: this.policyDocument.username,
-                                    document: this.policyDocument.document
-                                });
+                type: this.policyDocument.type,
+                title: 'Policy',
+                description: this.policyDocument.tag,
+                tag: this.policyDocument.tag,
+                visible: true,
+                issuer: this.policyDocument.issuer,
+                username: this.policyDocument.username,
+                document: this.policyDocument.document
+            });
         }
         if (this.policyCreatorDocument) {
             this.documents.push(this.policyCreatorDocument);
@@ -212,16 +212,17 @@ export class ReportBlockComponent implements OnInit {
         document?: any
     ) {
         const title = `${item.type?.toUpperCase()} Document`;
+        const row = Array.isArray(item.document) ? item.document[0].document : item.document.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
-                id: item.document.id,
-                row: item,
-                dryRun: !!item.document.dryRunId,
+                id: row.id,
+                row: row,
+                dryRun: !!row.dryRunId,
                 viewDocument: true,
-                document: document || item.document.document,
+                document: document || row,
                 title: title,
                 type: 'VC',
             }
@@ -232,16 +233,17 @@ export class ReportBlockComponent implements OnInit {
 
     openVPDocument(item: any) {
         const title = `${item.type?.toUpperCase()} Document`;
+        const row = Array.isArray(item.document) ? item.document[0] : item.document;
         const dialogRef = this.dialogService.open(VCViewerDialog, {
             showHeader: false,
             width: '1000px',
             styleClass: 'guardian-dialog',
             data: {
-                id: item.document.id,
-                row: item,
-                dryRun: !!item.document.dryRunId,
+                id: row.id,
+                row: row,
+                dryRun: !!row.dryRunId,
                 viewDocument: true,
-                document: item.document.document,
+                document: row.document,
                 title: title,
                 type: 'VP',
             }
@@ -279,9 +281,9 @@ export class ReportBlockComponent implements OnInit {
 
     onScrollButtonPress(target: HTMLDivElement, amount: number = 0) {
         target.scrollBy({
-                            behavior: 'smooth',
-                            left: amount
-                        });
+            behavior: 'smooth',
+            left: amount
+        });
     }
 
     updateFilter() {
@@ -304,7 +306,7 @@ export class ReportBlockComponent implements OnInit {
     onBackClick() {
         this.loading = true;
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {filterValue: null})
+            .setBlockData(this.id, this.policyId, { filterValue: null })
             .subscribe(
                 () => {
                     this.loadData();
@@ -437,8 +439,8 @@ export class ReportBlockComponent implements OnInit {
         const indexDocument = itemDocuments.indexOf(document);
         const secondDocumentIndex =
             indexDocument - 1 < 0
-            ? itemDocuments.length + (indexDocument - 1)
-            : indexDocument - 1;
+                ? itemDocuments.length + (indexDocument - 1)
+                : indexDocument - 1;
         this.onMultipleDocumentClick(itemDocuments[secondDocumentIndex], item);
     }
 }
