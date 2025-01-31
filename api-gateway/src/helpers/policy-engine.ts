@@ -664,6 +664,18 @@ export class PolicyEngine extends NatsService {
     }
 
     /**
+     * Get savepoint state
+     * @param owner
+     * @param policyId
+     */
+    public async getSavepointState(
+        owner: IOwner,
+        policyId: string
+    ) {
+        return await this.sendMessage(PolicyEngineEvents.GET_SAVEPOINT, {owner, policyId});
+    }
+
+    /**
      * Get Virtual Documents
      * @param policyId
      * @param type

@@ -75,6 +75,499 @@ export class DatabaseServer extends AbstractDatabaseServer {
         : 500;
 
     /**
+     * Add dry run id
+     * @param item
+     * @param dryRunId
+     * @param dryRunClass
+     * @param systemMode
+     */
+    private static addDryRunId(
+        item: unknown | unknown[],
+        dryRunId: string,
+        dryRunClass: string,
+        systemMode: boolean
+    ): unknown | unknown[] {
+        const getExtendedItem = (extendedItem: unknown & IAddDryRunIdItem) => {
+            extendedItem.systemMode = systemMode;
+            extendedItem.dryRunId = dryRunId;
+            extendedItem.dryRunClass = dryRunClass;
+        };
+
+        if (Array.isArray(item)) {
+            for (const i of item) {
+                getExtendedItem(i);
+            }
+        } else {
+            getExtendedItem(item as unknown & IAddDryRunIdItem);
+        }
+
+        return item;
+    }
+
+    /**
+     * Grid fs connect
+     */
+    public static connectGridFS() {
+        DataBaseHelper.connectGridFS();
+    }
+
+    /**
+     * Set Dry Run id
+     * @param id
+     */
+    public static async setSystemMode(dryRunId: string, systemMode: boolean): Promise<void> {
+        const items = await new DataBaseHelper(DryRun).find({dryRunId});
+        for (const item of items) {
+            item.systemMode = systemMode;
+        }
+        await new DataBaseHelper(DryRun).update(items);
+    }
+
+    /**
+     * Create savepoint
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async createSavepoint(dryRunId: string): Promise<void> {
+        const limit = {limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE};
+        const amount = await new DataBaseHelper(DryRun).count({dryRunId});
+        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+        for (let i = 0; i < naturalCount; i++) {
+            const items = await new DataBaseHelper(DryRun).find({dryRunId}, limit);
+            for (const item of items) {
+                item.savepoint = true;
+            }
+            await new DataBaseHelper(DryRun).update(items);
+        }
+        const restItems = await new DataBaseHelper(DryRun).find({dryRunId});
+        for (const item of restItems) {
+            item.savepoint = true;
+        }
+        await new DataBaseHelper(DryRun).update(restItems);
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+    }
+
+    /**
+     * Restore savepoint
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async restoreSavepoint(dryRunId: string): Promise<void> {
+        const limit = {limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE};
+        const amount = await new DataBaseHelper(DryRun).count({dryRunId, savepoint: {$exists: false}});
+        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
+        for (let i = 0; i < naturalCount; i++) {
+            const items = await new DataBaseHelper(DryRun).find({dryRunId, savepoint: {$exists: false}}, limit);
+            await new DataBaseHelper(DryRun).remove(items);
+        }
+        const restItems = await new DataBaseHelper(DryRun).find({dryRunId, savepoint: {$exists: false}});
+        await new DataBaseHelper(DryRun).remove(restItems);
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+    }
+
+    /**
+     * Get savepoint state
+     * @param dryRunId
+     * @param systemMode
+     */
+    public static async getSavepointSate(dryRunId: string): Promise<DryRun> {
+        return await new DataBaseHelper(DryRun).findOne({dryRunId, savepoint: true});
+
+        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
+        // await new DataBaseHelper(DryRunFiles).remove(files);
+    }
+
+    /**
+     * Get schemas
+     * @param filters
+     */
+    public static async getSchema(filters?: FilterObject<SchemaCollection> | string): Promise<SchemaCollection | null> {
+        return await new DataBaseHelper(SchemaCollection).findOne(filters);
+    }
+
+    /**
+     * Create Statistic
+     * @param statistic
+     */
+    public static async createStatistic(
+        statistic: FilterObject<PolicyStatistic>
+    ): Promise<PolicyStatistic> {
+        const item = new DataBaseHelper(PolicyStatistic).create(statistic);
+        return await new DataBaseHelper(PolicyStatistic).save(item);
+    }
+
+    /**
+     * Get Statistics
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticsAndCount(
+        filters?: FilterObject<PolicyStatistic>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyStatistic[], number]> {
+        return await new DataBaseHelper(PolicyStatistic).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Statistic By ID
+     * @param id
+     */
+    public static async getStatisticById(id: string): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(id);
+    }
+
+    /**
+     * Get Statistic
+     * @param filters
+     */
+    public static async getStatistic(filters: FilterQuery<PolicyStatistic>): Promise<PolicyStatistic | null> {
+        return await new DataBaseHelper(PolicyStatistic).findOne(filters);
+    }
+
+    /**
+     * Delete Statistic
+     * @param statistic
+     */
+    public static async removeStatistic(statistic: PolicyStatistic): Promise<void> {
+        return await new DataBaseHelper(PolicyStatistic).remove(statistic);
+    }
+
+    /**
+     * Get Statistics
+     * @param filters
+     * @param options
+     */
+    public static async getStatistics(
+        filters?: FilterQuery<PolicyStatistic>,
+        options?: unknown
+    ): Promise<PolicyStatistic[]> {
+        return await new DataBaseHelper(PolicyStatistic).find(filters, options);
+    }
+
+    /**
+     * Update Statistic
+     * @param row
+     */
+    public static async updateStatistic(row: PolicyStatistic): Promise<PolicyStatistic> {
+        return await new DataBaseHelper(PolicyStatistic).update(row);
+    }
+
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocumentsAndCount(
+        filters?: FilterObject<VcDocumentCollection>,
+        options?: FindOptions<unknown>
+    ): Promise<[VcDocumentCollection[], number]> {
+        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
+    }
+
+    /**
+     * Get documents
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocuments(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection[]> {
+        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
+    }
+
+    /**
+     * Get document
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticDocument(
+        filters?: FilterQuery<VcDocumentCollection>,
+        options?: unknown
+    ): Promise<VcDocumentCollection> {
+        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
+    }
+
+    /**
+     * Create Statistic
+     * @param assessment
+     */
+    public static async createStatisticAssessment(
+        assessment: FilterObject<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument> {
+        const item = new DataBaseHelper(PolicyStatisticDocument).create(assessment);
+        return await new DataBaseHelper(PolicyStatisticDocument).save(item);
+    }
+
+    /**
+     * Get statistic assessment
+     * @param filters
+     */
+    public static async getStatisticAssessment(
+        filters: FilterQuery<PolicyStatisticDocument>
+    ): Promise<PolicyStatisticDocument | null> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findOne(filters);
+    }
+
+    /**
+     * Get statistic assessments
+     * @param filters
+     * @param options
+     */
+    public static async getStatisticAssessmentsAndCount(
+        filters?: FilterObject<PolicyStatisticDocument>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyStatisticDocument[], number]> {
+        return await new DataBaseHelper(PolicyStatisticDocument).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic assessment count
+     * @param filters
+     */
+    public static async getStatisticAssessmentCount(
+        filters?: FilterObject<PolicyStatisticDocument>
+    ): Promise<number> {
+        return await new DataBaseHelper(PolicyStatisticDocument).count(filters);
+    }
+
+    /**
+     * Create Schema Rule
+     * @param rule
+     */
+    public static async createSchemaRule(
+        rule: FilterObject<SchemaRule>
+    ): Promise<SchemaRule> {
+        const item = new DataBaseHelper(SchemaRule).create(rule);
+        return await new DataBaseHelper(SchemaRule).save(item);
+    }
+
+    /**
+     * Get Schema Rule
+     * @param filters
+     * @param options
+     */
+    public static async getSchemaRulesAndCount(
+        filters?: FilterObject<SchemaRule>,
+        options?: FindOptions<unknown>
+    ): Promise<[SchemaRule[], number]> {
+        return await new DataBaseHelper(SchemaRule).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Schema Rule
+     * @param filters
+     * @param options
+     */
+    public static async getSchemaRules(
+        filters?: FilterObject<SchemaRule>,
+        options?: unknown
+    ): Promise<SchemaRule[]> {
+        return await new DataBaseHelper(SchemaRule).find(filters, options);
+    }
+
+    /**
+     * Get Schema Rule By ID
+     * @param id
+     */
+    public static async getSchemaRuleById(id: string): Promise<SchemaRule | null> {
+        return await new DataBaseHelper(SchemaRule).findOne(id);
+    }
+
+    /**
+     * Update Schema Rule
+     * @param rule
+     */
+    public static async updateSchemaRule(rule: SchemaRule): Promise<SchemaRule> {
+        return await new DataBaseHelper(SchemaRule).update(rule);
+    }
+
+    /**
+     * Delete Schema Rule
+     * @param rule
+     */
+    public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
+        return await new DataBaseHelper(SchemaRule).remove(rule);
+    }
+
+    /**
+     * Create Policy Label
+     * @param label
+     */
+    public static async createPolicyLabel(
+        label: FilterObject<PolicyLabel>
+    ): Promise<PolicyLabel> {
+        const item = new DataBaseHelper(PolicyLabel).create(label);
+        return await new DataBaseHelper(PolicyLabel).save(item);
+    }
+
+    /**
+     * Get Policy Label
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyLabelsAndCount(
+        filters?: FilterObject<PolicyLabel>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyLabel[], number]> {
+        return await new DataBaseHelper(PolicyLabel).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Policy Label
+     * @param filters
+     * @param options
+     */
+    public static async getPolicyLabels(
+        filters?: FilterObject<PolicyLabel>,
+        options?: unknown
+    ): Promise<PolicyLabel[]> {
+        return await new DataBaseHelper(PolicyLabel).find(filters, options);
+    }
+
+    /**
+     * Get Policy Label By ID
+     * @param id
+     */
+    public static async getPolicyLabelById(id: string): Promise<PolicyLabel | null> {
+        return await new DataBaseHelper(PolicyLabel).findOne(id);
+    }
+
+    /**
+     * Update Policy Label
+     * @param label
+     */
+    public static async updatePolicyLabel(label: PolicyLabel): Promise<PolicyLabel> {
+        return await new DataBaseHelper(PolicyLabel).update(label);
+    }
+
+    /**
+     * Delete Policy Label
+     * @param label
+     */
+    public static async removePolicyLabel(label: PolicyLabel): Promise<void> {
+        return await new DataBaseHelper(PolicyLabel).remove(label);
+    }
+
+    /**
+     * Create Label Document
+     * @param document
+     */
+    public static async createLabelDocument(
+        document: FilterObject<PolicyLabelDocument>
+    ): Promise<PolicyLabelDocument> {
+        const item = new DataBaseHelper(PolicyLabelDocument).create(document);
+        return await new DataBaseHelper(PolicyLabelDocument).save(item);
+    }
+
+    /**
+     * Get statistic assessments
+     * @param filters
+     * @param options
+     */
+    public static async getLabelDocumentsAndCount(
+        filters?: FilterObject<PolicyLabelDocument>,
+        options?: FindOptions<unknown>
+    ): Promise<[PolicyLabelDocument[], number]> {
+        return await new DataBaseHelper(PolicyLabelDocument).findAndCount(filters, options);
+    }
+
+    /**
+     * Get statistic assessment
+     * @param filters
+     */
+    public static async getLabelDocument(
+        filters: FilterQuery<PolicyLabelDocument>
+    ): Promise<PolicyLabelDocument | null> {
+        return await new DataBaseHelper(PolicyLabelDocument).findOne(filters);
+    }
+
+    /**
+     * Restore States
+     */
+    public static async restoreStates(policyId: string): Promise<void> {
+        const states = await new DataBaseHelper(BlockState).find({policyId});
+        for (const state of states) {
+            state.blockState = state.savedState;
+            await new DataBaseHelper(BlockState).save(state);
+        }
+    }
+
+    /**
+     * Copy States
+     */
+    public static async copyStates(policyId: string): Promise<void> {
+        const states = await new DataBaseHelper(BlockState).find({policyId});
+        for (const state of states) {
+            state.savedState = state.blockState;
+            await new DataBaseHelper(BlockState).save(state);
+        }
+    }
+
+    /**
+     * Create Formula
+     * @param formula
+     */
+    public static async createFormula(
+        formula: FilterObject<Formula>
+    ): Promise<Formula> {
+        const item = new DataBaseHelper(Formula).create(formula);
+        return await new DataBaseHelper(Formula).save(item);
+    }
+
+    /**
+     * Get Formulas
+     * @param filters
+     * @param options
+     */
+    public static async getFormulasAndCount(
+        filters?: FilterObject<Formula>,
+        options?: FindOptions<unknown>
+    ): Promise<[Formula[], number]> {
+        return await new DataBaseHelper(Formula).findAndCount(filters, options);
+    }
+
+    /**
+     * Get Formulas
+     * @param filters
+     * @param options
+     */
+    public static async getFormulas(
+        filters?: FilterObject<Formula>,
+        options?: unknown
+    ): Promise<Formula[]> {
+        return await new DataBaseHelper(Formula).find(filters, options);
+    }
+
+    /**
+     * Get Formula By ID
+     * @param id
+     */
+    public static async getFormulaById(id: string): Promise<Formula | null> {
+        return await new DataBaseHelper(Formula).findOne(id);
+    }
+
+    /**
+     * Update Formula
+     * @param formula
+     */
+    public static async updateFormula(formula: Formula): Promise<Formula> {
+        return await new DataBaseHelper(Formula).update(formula);
+    }
+
+    /**
+     * Delete Formula
+     * @param formula
+     */
+    public static async removeFormula(formula: Formula): Promise<void> {
+        return await new DataBaseHelper(Formula).remove(formula);
+    }
+
+    /**
      * Dry-run
      * @private
      */
@@ -118,36 +611,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
         this.classMap.set(PolicyProperty, 'PolicyProperties');
         this.classMap.set(MintRequest, 'MintRequest');
         this.classMap.set(MintTransaction, 'MintTransaction');
-    }
-
-    /**
-     * Add dry run id
-     * @param item
-     * @param dryRunId
-     * @param dryRunClass
-     * @param systemMode
-     */
-    private static addDryRunId(
-        item: unknown | unknown[],
-        dryRunId: string,
-        dryRunClass: string,
-        systemMode: boolean
-    ): unknown | unknown[] {
-        const getExtendedItem = (extendedItem: unknown & IAddDryRunIdItem) => {
-            extendedItem.systemMode = systemMode;
-            extendedItem.dryRunId = dryRunId;
-            extendedItem.dryRunClass = dryRunClass;
-        };
-
-        if (Array.isArray(item)) {
-            for (const i of item) {
-                getExtendedItem(i);
-            }
-        } else {
-            getExtendedItem(item as unknown & IAddDryRunIdItem);
-        }
-
-        return item;
     }
 
     /**
@@ -952,6 +1415,8 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await new DataBaseHelper(ArtifactCollection).findOne(filters);
     }
 
+    //Static
+
     /**
      * Get Artifact File By UUID
      * @param uuid File UUID
@@ -1454,8 +1919,6 @@ export class DatabaseServer extends AbstractDatabaseServer {
     public async getPolicy(policyId: string | null): Promise<Policy | null> {
         return await new DataBaseHelper(Policy).findOne(policyId);
     }
-
-    //Static
 
     /**
      * Get policy
@@ -3739,456 +4202,5 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public async getMintRequests(filters: FilterObject<MintRequest>): Promise<MintRequest[]> {
         return await this.find(MintRequest, filters);
-    }
-
-    /**
-     * Grid fs connect
-     */
-    public static connectGridFS() {
-        DataBaseHelper.connectGridFS();
-    }
-
-    /**
-     * Set Dry Run id
-     * @param id
-     */
-    public static async setSystemMode(dryRunId: string, systemMode: boolean): Promise<void> {
-        const items = await new DataBaseHelper(DryRun).find({ dryRunId });
-        for (const item of items) {
-            item.systemMode = systemMode;
-        }
-        await new DataBaseHelper(DryRun).update(items);
-    }
-
-    /**
-     * Create savepoint
-     * @param dryRunId
-     * @param systemMode
-     */
-    public static async createSavepoint(dryRunId: string): Promise<void> {
-        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
-        const amount = await new DataBaseHelper(DryRun).count({ dryRunId });
-        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
-        for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({ dryRunId }, limit);
-            for (const item of items) {
-                item.savepoint = true;
-            }
-            await new DataBaseHelper(DryRun).update(items);
-        }
-        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId });
-        for (const item of restItems) {
-            item.savepoint = true;
-        }
-        await new DataBaseHelper(DryRun).update(restItems);
-
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
-    }
-
-    /**
-     * Restore savepoint
-     * @param dryRunId
-     * @param systemMode
-     */
-    public static async restoreSavepoint(dryRunId: string): Promise<void> {
-        const limit = { limit: DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE };
-        const amount = await new DataBaseHelper(DryRun).count({ dryRunId, savepoint: { $exists: false } });
-        const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
-        for (let i = 0; i < naturalCount; i++) {
-            const items = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } }, limit);
-            await new DataBaseHelper(DryRun).remove(items);
-        }
-        const restItems = await new DataBaseHelper(DryRun).find({ dryRunId, savepoint: { $exists: false } });
-        await new DataBaseHelper(DryRun).remove(restItems);
-
-        // const files = await new DataBaseHelper(DryRunFiles).find({ policyId: dryRunId });
-        // await new DataBaseHelper(DryRunFiles).remove(files);
-    }
-
-    /**
-     * Get schemas
-     * @param filters
-     */
-    public static async getSchema(filters?: FilterObject<SchemaCollection> | string): Promise<SchemaCollection | null> {
-        return await new DataBaseHelper(SchemaCollection).findOne(filters);
-    }
-
-    /**
-     * Create Statistic
-     * @param statistic
-     */
-    public static async createStatistic(
-        statistic: FilterObject<PolicyStatistic>
-    ): Promise<PolicyStatistic> {
-        const item = new DataBaseHelper(PolicyStatistic).create(statistic);
-        return await new DataBaseHelper(PolicyStatistic).save(item);
-    }
-
-    /**
-     * Get Statistics
-     * @param filters
-     * @param options
-     */
-    public static async getStatisticsAndCount(
-        filters?: FilterObject<PolicyStatistic>,
-        options?: FindOptions<unknown>
-    ): Promise<[PolicyStatistic[], number]> {
-        return await new DataBaseHelper(PolicyStatistic).findAndCount(filters, options);
-    }
-
-    /**
-     * Get Statistic By ID
-     * @param id
-     */
-    public static async getStatisticById(id: string): Promise<PolicyStatistic | null> {
-        return await new DataBaseHelper(PolicyStatistic).findOne(id);
-    }
-
-    /**
-     * Get Statistic
-     * @param filters
-     */
-    public static async getStatistic(filters: FilterQuery<PolicyStatistic>): Promise<PolicyStatistic | null> {
-        return await new DataBaseHelper(PolicyStatistic).findOne(filters);
-    }
-
-    /**
-     * Delete Statistic
-     * @param statistic
-     */
-    public static async removeStatistic(statistic: PolicyStatistic): Promise<void> {
-        return await new DataBaseHelper(PolicyStatistic).remove(statistic);
-    }
-
-    /**
-     * Get Statistics
-     * @param filters
-     * @param options
-     */
-    public static async getStatistics(
-        filters?: FilterQuery<PolicyStatistic>,
-        options?: unknown
-    ): Promise<PolicyStatistic[]> {
-        return await new DataBaseHelper(PolicyStatistic).find(filters, options);
-    }
-
-    /**
-     * Update Statistic
-     * @param row
-     */
-    public static async updateStatistic(row: PolicyStatistic): Promise<PolicyStatistic> {
-        return await new DataBaseHelper(PolicyStatistic).update(row);
-    }
-
-    /**
-     * Get documents
-     * @param filters
-     * @param options
-     */
-    public static async getStatisticDocumentsAndCount(
-        filters?: FilterObject<VcDocumentCollection>,
-        options?: FindOptions<unknown>
-    ): Promise<[VcDocumentCollection[], number]> {
-        return await new DataBaseHelper(VcDocumentCollection).findAndCount(filters, options);
-    }
-
-    /**
-     * Get documents
-     * @param filters
-     * @param options
-     */
-    public static async getStatisticDocuments(
-        filters?: FilterQuery<VcDocumentCollection>,
-        options?: unknown
-    ): Promise<VcDocumentCollection[]> {
-        return await new DataBaseHelper(VcDocumentCollection).find(filters, options);
-    }
-
-    /**
-     * Get document
-     * @param filters
-     * @param options
-     */
-    public static async getStatisticDocument(
-        filters?: FilterQuery<VcDocumentCollection>,
-        options?: unknown
-    ): Promise<VcDocumentCollection> {
-        return await new DataBaseHelper(VcDocumentCollection).findOne(filters, options);
-    }
-
-    /**
-     * Create Statistic
-     * @param assessment
-     */
-    public static async createStatisticAssessment(
-        assessment: FilterObject<PolicyStatisticDocument>
-    ): Promise<PolicyStatisticDocument> {
-        const item = new DataBaseHelper(PolicyStatisticDocument).create(assessment);
-        return await new DataBaseHelper(PolicyStatisticDocument).save(item);
-    }
-
-    /**
-     * Get statistic assessment
-     * @param filters
-     */
-    public static async getStatisticAssessment(
-        filters: FilterQuery<PolicyStatisticDocument>
-    ): Promise<PolicyStatisticDocument | null> {
-        return await new DataBaseHelper(PolicyStatisticDocument).findOne(filters);
-    }
-
-    /**
-     * Get statistic assessments
-     * @param filters
-     * @param options
-     */
-    public static async getStatisticAssessmentsAndCount(
-        filters?: FilterObject<PolicyStatisticDocument>,
-        options?: FindOptions<unknown>
-    ): Promise<[PolicyStatisticDocument[], number]> {
-        return await new DataBaseHelper(PolicyStatisticDocument).findAndCount(filters, options);
-    }
-
-    /**
-     * Get statistic assessment count
-     * @param filters
-     */
-    public static async getStatisticAssessmentCount(
-        filters?: FilterObject<PolicyStatisticDocument>
-    ): Promise<number> {
-        return await new DataBaseHelper(PolicyStatisticDocument).count(filters);
-    }
-
-    /**
-     * Create Schema Rule
-     * @param rule
-     */
-    public static async createSchemaRule(
-        rule: FilterObject<SchemaRule>
-    ): Promise<SchemaRule> {
-        const item = new DataBaseHelper(SchemaRule).create(rule);
-        return await new DataBaseHelper(SchemaRule).save(item);
-    }
-
-    /**
-     * Get Schema Rule
-     * @param filters
-     * @param options
-     */
-    public static async getSchemaRulesAndCount(
-        filters?: FilterObject<SchemaRule>,
-        options?: FindOptions<unknown>
-    ): Promise<[SchemaRule[], number]> {
-        return await new DataBaseHelper(SchemaRule).findAndCount(filters, options);
-    }
-
-    /**
-     * Get Schema Rule
-     * @param filters
-     * @param options
-     */
-    public static async getSchemaRules(
-        filters?: FilterObject<SchemaRule>,
-        options?: unknown
-    ): Promise<SchemaRule[]> {
-        return await new DataBaseHelper(SchemaRule).find(filters, options);
-    }
-
-    /**
-     * Get Schema Rule By ID
-     * @param id
-     */
-    public static async getSchemaRuleById(id: string): Promise<SchemaRule | null> {
-        return await new DataBaseHelper(SchemaRule).findOne(id);
-    }
-
-    /**
-     * Update Schema Rule
-     * @param rule
-     */
-    public static async updateSchemaRule(rule: SchemaRule): Promise<SchemaRule> {
-        return await new DataBaseHelper(SchemaRule).update(rule);
-    }
-
-    /**
-     * Delete Schema Rule
-     * @param rule
-     */
-    public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
-        return await new DataBaseHelper(SchemaRule).remove(rule);
-    }
-
-    /**
-     * Create Policy Label
-     * @param label
-     */
-    public static async createPolicyLabel(
-        label: FilterObject<PolicyLabel>
-    ): Promise<PolicyLabel> {
-        const item = new DataBaseHelper(PolicyLabel).create(label);
-        return await new DataBaseHelper(PolicyLabel).save(item);
-    }
-
-    /**
-     * Get Policy Label
-     * @param filters
-     * @param options
-     */
-    public static async getPolicyLabelsAndCount(
-        filters?: FilterObject<PolicyLabel>,
-        options?: FindOptions<unknown>
-    ): Promise<[PolicyLabel[], number]> {
-        return await new DataBaseHelper(PolicyLabel).findAndCount(filters, options);
-    }
-
-    /**
-     * Get Policy Label
-     * @param filters
-     * @param options
-     */
-    public static async getPolicyLabels(
-        filters?: FilterObject<PolicyLabel>,
-        options?: unknown
-    ): Promise<PolicyLabel[]> {
-        return await new DataBaseHelper(PolicyLabel).find(filters, options);
-    }
-
-    /**
-     * Get Policy Label By ID
-     * @param id
-     */
-    public static async getPolicyLabelById(id: string): Promise<PolicyLabel | null> {
-        return await new DataBaseHelper(PolicyLabel).findOne(id);
-    }
-
-    /**
-     * Update Policy Label
-     * @param label
-     */
-    public static async updatePolicyLabel(label: PolicyLabel): Promise<PolicyLabel> {
-        return await new DataBaseHelper(PolicyLabel).update(label);
-    }
-
-    /**
-     * Delete Policy Label
-     * @param label
-     */
-    public static async removePolicyLabel(label: PolicyLabel): Promise<void> {
-        return await new DataBaseHelper(PolicyLabel).remove(label);
-    }
-
-    /**
-     * Create Label Document
-     * @param document
-     */
-    public static async createLabelDocument(
-        document: FilterObject<PolicyLabelDocument>
-    ): Promise<PolicyLabelDocument> {
-        const item = new DataBaseHelper(PolicyLabelDocument).create(document);
-        return await new DataBaseHelper(PolicyLabelDocument).save(item);
-    }
-
-    /**
-     * Get statistic assessments
-     * @param filters
-     * @param options
-     */
-    public static async getLabelDocumentsAndCount(
-        filters?: FilterObject<PolicyLabelDocument>,
-        options?: FindOptions<unknown>
-    ): Promise<[PolicyLabelDocument[], number]> {
-        return await new DataBaseHelper(PolicyLabelDocument).findAndCount(filters, options);
-    }
-
-    /**
-     * Get statistic assessment
-     * @param filters
-     */
-    public static async getLabelDocument(
-        filters: FilterQuery<PolicyLabelDocument>
-    ): Promise<PolicyLabelDocument | null> {
-        return await new DataBaseHelper(PolicyLabelDocument).findOne(filters);
-    }
-
-    /**
-     * Restore States
-     */
-    public static async restoreStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({ policyId });
-        for (const state of states) {
-            state.blockState = state.savedState;
-            await new DataBaseHelper(BlockState).save(state);
-        }
-    }
-
-    /**
-     * Copy States
-     */
-    public static async copyStates(policyId: string): Promise<void> {
-        const states = await new DataBaseHelper(BlockState).find({ policyId });
-        for (const state of states) {
-            state.savedState = state.blockState;
-            await new DataBaseHelper(BlockState).save(state);
-        }
-    }
-
-    /**
-     * Create Formula
-     * @param formula
-     */
-    public static async createFormula(
-        formula: FilterObject<Formula>
-    ): Promise<Formula> {
-        const item = new DataBaseHelper(Formula).create(formula);
-        return await new DataBaseHelper(Formula).save(item);
-    }
-
-    /**
-     * Get Formulas
-     * @param filters
-     * @param options
-     */
-    public static async getFormulasAndCount(
-        filters?: FilterObject<Formula>,
-        options?: FindOptions<unknown>
-    ): Promise<[Formula[], number]> {
-        return await new DataBaseHelper(Formula).findAndCount(filters, options);
-    }
-
-    /**
-     * Get Formulas
-     * @param filters
-     * @param options
-     */
-    public static async getFormulas(
-        filters?: FilterObject<Formula>,
-        options?: unknown
-    ): Promise<Formula[]> {
-        return await new DataBaseHelper(Formula).find(filters, options);
-    }
-
-    /**
-     * Get Formula By ID
-     * @param id
-     */
-    public static async getFormulaById(id: string): Promise<Formula | null> {
-        return await new DataBaseHelper(Formula).findOne(id);
-    }
-
-    /**
-     * Update Formula
-     * @param formula
-     */
-    public static async updateFormula(formula: Formula): Promise<Formula> {
-        return await new DataBaseHelper(Formula).update(formula);
-    }
-
-    /**
-     * Delete Formula
-     * @param formula
-     */
-    public static async removeFormula(formula: Formula): Promise<void> {
-        return await new DataBaseHelper(Formula).remove(formula);
     }
 }
