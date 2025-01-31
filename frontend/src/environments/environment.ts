@@ -21,7 +21,6 @@ export const environment = {
         'messages': 'messages',
         'serials': 'nfts',
         'contracts': 'contracts',
-        'transactions': 'transactions',
     }
   }
 };

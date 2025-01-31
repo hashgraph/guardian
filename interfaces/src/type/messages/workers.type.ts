@@ -138,10 +138,6 @@ export interface ITaskResult {
      * Is timeout error
      */
     isTimeoutError?: boolean;
-    /**
-     * Metadata
-     */
-    metadata?: any;
 }
 
 /**

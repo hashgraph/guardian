@@ -1,12 +1,12 @@
 import { Entity, Enum, Property } from '@mikro-orm/core';
-import { MetadataEntity } from '../models/index.js';
+import { BaseEntity } from '../models/index.js';
 import { ContractType, IContract } from '@guardian/interfaces';
 
 /**
  * Contract collection
  */
 @Entity()
-export class Contract extends MetadataEntity implements IContract{
+export class Contract extends BaseEntity implements IContract {
     /**
      * Hedera Contract Id
      */

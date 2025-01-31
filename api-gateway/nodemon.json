@@ -1,6 +1,0 @@
-{
-    "watch": ["./dist", "../interfaces/dist", "../common/dist"],
-    "delay": 2500,
-    "ext": "ts, js",
-    "exec": "node dist/index.js"
-}

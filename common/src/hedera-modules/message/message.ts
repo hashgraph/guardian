@@ -1,11 +1,10 @@
-import { TopicId } from '@hashgraph/sdk';
-import { IURL, UrlType } from './url.interface.js';
-import { MessageAction } from './message-action.js';
-import { MessageType } from './message-type.js';
-import { MessageBody } from './message-body.interface.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
+import { TopicId } from '@hashgraph/sdk';
 import { Hashing } from '../hashing.js';
-import { MetadataClass } from './metadata-class.js';
+import { MessageAction } from './message-action.js';
+import { MessageBody } from './message-body.interface.js';
+import { MessageType } from './message-type.js';
+import { IURL, UrlType } from './url.interface.js';
 
 /**
  * Message status
@@ -28,7 +27,7 @@ export enum RevokeReason {
 /**
  * Message
  */
-export abstract class Message extends MetadataClass{
+export abstract class Message {
     /**
      * Id
      */
@@ -101,8 +100,7 @@ export abstract class Message extends MetadataClass{
         return this._responseType;
     }
 
-    protected constructor(action: MessageAction, type: MessageType) {
-        super();
+  constructor(action: MessageAction, type: MessageType) {
         this.type = type;
         this.lang = 'en-US';
         this._action = action;
@@ -136,13 +134,12 @@ export abstract class Message extends MetadataClass{
 
     /**
      * Set URLs
-     * @param iurls
+     * @param url
      */
-    public setUrls(iurls: IURL[]): void {
-        this.urls = iurls?.filter(u => {
+    public setUrls(url: IURL[]): void {
+      this.urls = url?.filter(u => {
             return !!u.cid
         });
-        this.setMetadata({urls: this.urls.map(url => url.cid)});
     }
 
     /**

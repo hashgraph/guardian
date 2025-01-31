@@ -1,13 +1,13 @@
 import { TopicType } from '@guardian/interfaces';
-import { Entity, Enum, Property, Unique } from '@mikro-orm/core';
-import { MetadataEntity } from '../models/index.js';
+import { Entity, Property, Enum, Unique } from '@mikro-orm/core';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * Topics collection
  */
 @Entity()
 @Unique({ properties: ['topicId'], options: { partialFilterExpression: { topicId: { $type: 'string' } } } })
-export class Topic extends MetadataEntity{
+export class Topic extends BaseEntity {
     /**
      * Topic id
      */

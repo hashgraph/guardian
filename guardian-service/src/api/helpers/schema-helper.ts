@@ -183,7 +183,7 @@ export async function sendSchemaMessage(
     topic: TopicConfig,
     action: MessageAction,
     schema: SchemaCollection,
-): Promise<SchemaMessage> {
+) {
     const messageServer = new MessageServer(
         root.hederaAccountId,
         root.hederaAccountKey,
@@ -191,7 +191,7 @@ export async function sendSchemaMessage(
     );
     const message = new SchemaMessage(action);
     message.setDocument(schema);
-    return await messageServer
+    await messageServer
         .setTopicObject(topic)
         .sendMessage(message, true, null, owner.id);
 }
@@ -366,7 +366,6 @@ export async function createSchema(
             policyUUID: null
         });
         await topic.saveKeys();
-        schemaObject.addMetadata(topic.getMetadata());
         await DatabaseServer.saveTopic(topic.toObject());
         await topicHelper.twoWayLink(topic, null, null, user.id);
     }
@@ -401,19 +400,17 @@ export async function createSchema(
     }
     notifier.completedAndStart('Save to IPFS & Hedera');
     if (topic) {
-        const message = await sendSchemaMessage(
+        await sendSchemaMessage(
             user,
             root,
             topic,
             MessageAction.CreateSchema,
             schemaObject
         );
-        schemaObject.addMetadata(message.getMetadata());
     }
     notifier.completedAndStart('Update schema in DB');
     const savedSchema = await DatabaseServer.saveSchema(schemaObject);
     notifier.completed();
-    console.log(schemaObject.metadata);
     return savedSchema;
 }
 

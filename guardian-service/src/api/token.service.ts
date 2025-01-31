@@ -10,7 +10,7 @@ import { FilterObject } from '@mikro-orm/core';
  * @param token
  * @param user
  */
-export async function createHederaToken(token: Partial<Token>, user: IRootConfig) {
+export async function createHederaToken(token: any, user: IRootConfig) {
     const topicHelper = new TopicHelper(user.hederaAccountId, user.hederaAccountKey, user.signOptions);
     const topic = await topicHelper.create({
         type: TopicType.TokenTopic,
@@ -27,7 +27,7 @@ export async function createHederaToken(token: Partial<Token>, user: IRootConfig
     await DatabaseServer.saveTopic(topic.toObject());
 
     const workers = new Workers();
-    const {data, metadata} = await workers.addNonRetryableTask({
+    const tokenData = await workers.addNonRetryableTask({
         type: WorkerTaskType.CREATE_TOKEN,
         data: {
             operatorId: user.hederaAccountId,
@@ -42,60 +42,59 @@ export async function createHederaToken(token: Partial<Token>, user: IRootConfig
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_TREASURY_KEY,
-            data.tokenId,
-            data.treasuryKey
+            tokenData.tokenId,
+            tokenData.treasuryKey
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_ADMIN_KEY,
-            data.tokenId,
-            data.adminKey
+            tokenData.tokenId,
+            tokenData.adminKey
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_FREEZE_KEY,
-            data.tokenId,
-            data.freezeKey
+            tokenData.tokenId,
+            tokenData.freezeKey
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_KYC_KEY,
-            data.tokenId,
-            data.kycKey
+            tokenData.tokenId,
+            tokenData.kycKey
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_SUPPLY_KEY,
-            data.tokenId,
-            data.supplyKey
+            tokenData.tokenId,
+            tokenData.supplyKey
         ),
         wallet.setUserKey(
             user.did,
             KeyType.TOKEN_WIPE_KEY,
-            data.tokenId,
-            data.wipeKey
+            tokenData.tokenId,
+            tokenData.wipeKey
         )
     ]);
 
     return {
-        tokenId: data.tokenId,
-        tokenName: data.tokenName,
-        tokenSymbol: data.tokenSymbol,
-        tokenType: data.tokenType,
-        decimals: data.decimals,
-        initialSupply: data.initialSupply,
-        adminId: data.treasuryId,
-        changeSupply: !!data.supplyKey,
-        enableAdmin: !!data.adminKey,
-        enableKYC: !!data.kycKey,
-        enableFreeze: !!data.freezeKey,
-        enableWipe: !!data.wipeKey || !!data.wipeContractId,
+        tokenId: tokenData.tokenId,
+        tokenName: tokenData.tokenName,
+        tokenSymbol: tokenData.tokenSymbol,
+        tokenType: tokenData.tokenType,
+        decimals: tokenData.decimals,
+        initialSupply: tokenData.initialSupply,
+        adminId: tokenData.treasuryId,
+        changeSupply: !!tokenData.supplyKey,
+        enableAdmin: !!tokenData.adminKey,
+        enableKYC: !!tokenData.kycKey,
+        enableFreeze: !!tokenData.freezeKey,
+        enableWipe: !!tokenData.wipeKey || !!tokenData.wipeContractId,
         owner: user.did,
         policyId: null,
         draftToken: false,
         topicId: topic.topicId,
-        wipeContractId: data.wipeContractId,
-        metadata: [metadata]
+        wipeContractId: tokenData.wipeContractId,
     };
 }
 
@@ -287,7 +286,6 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
 
         oldToken.tokenName = newToken.tokenName;
         oldToken.tokenSymbol = newToken.tokenSymbol;
-        oldToken.addMetadata(tokenData.metadata)
 
         const result = await dataBaseServer.update(Token, oldToken?.id, oldToken);
 
@@ -296,24 +294,24 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
             saveKeys.push(wallet.setUserKey(
                 user.owner,
                 KeyType.TOKEN_FREEZE_KEY,
-                tokenData.data.tokenId,
-                tokenData.data.freezeKey
+                tokenData.tokenId,
+                tokenData.freezeKey
             ));
         }
         if (changes.enableKYC) {
             saveKeys.push(wallet.setUserKey(
                 user.owner,
                 KeyType.TOKEN_KYC_KEY,
-                tokenData.data.tokenId,
-                tokenData.data.kycKey
+                tokenData.tokenId,
+                tokenData.kycKey
             ));
         }
         if (changes.enableWipe) {
             saveKeys.push(wallet.setUserKey(
                 user.owner,
                 KeyType.TOKEN_WIPE_KEY,
-                tokenData.data.tokenId,
-                tokenData.data.wipeKey
+                tokenData.tokenId,
+                tokenData.wipeKey
             ));
         }
         await Promise.all(saveKeys);

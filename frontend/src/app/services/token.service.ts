@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { IToken, ITokenInfo } from '@guardian/interfaces';
+import { IToken, ITokenInfo, IUser } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { headersV2 } from '../constants';
@@ -128,9 +128,5 @@ export class TokenService {
 
     public menuList(): Observable<any[]> {
         return this.http.get<any[]>(`${this.url}/menu/all`);
-    }
-
-    public getTokenTransactions(id: string) {
-        return this.http.get<any[]>(`${this.url}/${id}/transactions`);
     }
 }

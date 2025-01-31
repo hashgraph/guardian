@@ -1,14 +1,14 @@
-import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus, } from '@guardian/interfaces';
-import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, Enum, OnLoad, Property, } from '@mikro-orm/core';
-import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
+import { GenerateUUIDv4, ISchema, ISchemaDocument, SchemaCategory, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
+import { AfterDelete, BeforeCreate, BeforeUpdate, Entity, Enum, OnLoad, Property } from '@mikro-orm/core';
 import { ObjectId } from '@mikro-orm/mongodb';
-import { MetadataEntity } from '../models/metadata-entity.js';
+import { DataBaseHelper, SchemaConverterUtils } from '../helpers/index.js';
+import { BaseEntity } from '../models/index.js';
 
 /**
  * Schema collection
  */
 @Entity()
-export class Schema extends MetadataEntity implements ISchema{
+export class Schema extends BaseEntity implements ISchema {
     /**
      * Schema uuid
      */

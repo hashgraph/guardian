@@ -32,12 +32,9 @@ export async function publishSchemaTags(
         await publishTag(tag, messageServer, owner);
 
         tagObjects.push(tag);
-        topic.addMetadata(tag.metadata);
     }
-    await Promise.all([
-        new DatabaseServer().updateTags(tagObjects),
-        new DatabaseServer().saveTopic(topic)
-    ]);
+
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -70,13 +67,9 @@ export async function publishPolicyTags(
         await publishTag(tag, messageServer, owner);
 
         tagObjects.push(tag);
-        topic.addMetadata(tag.metadata);
     }
 
-    await Promise.all([
-        new DatabaseServer().updateTags(tagObjects),
-        new DatabaseServer().saveTopic(topic)
-    ]);
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -109,13 +102,9 @@ export async function publishTokenTags(
         await publishTag(tag, messageServer, owner);
 
         tagObjects.push(tag);
-        topic.addMetadata(tag.metadata)
     }
 
-    await Promise.all([
-        new DatabaseServer().updateTags(tagObjects),
-        new DatabaseServer().saveTopic(topic)
-    ]);
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -147,13 +136,9 @@ export async function publishToolTags(
         await publishTag(tag, messageServer, owner);
 
         tagObjects.push(tag);
-        topic.addMetadata(tag.metadata);
     }
 
-    await Promise.all([
-        new DatabaseServer().updateTags(tagObjects),
-        new DatabaseServer().saveTopic(topic)
-    ]);
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -186,13 +171,9 @@ export async function publishModuleTags(
         await publishTag(tag, messageServer, owner);
 
         tagObjects.push(tag);
-        topic.addMetadata(tag.metadata);
     }
 
-    await Promise.all([
-        new DatabaseServer().updateTags(tagObjects),
-        new DatabaseServer().saveTopic(topic)
-    ]);
+    await new DatabaseServer().updateTags(tagObjects);
 }
 
 /**
@@ -218,10 +199,6 @@ export async function publishTag(
     item.messageId = messageId;
     item.topicId = topicId;
     item.uri = result.getDocumentUrl(UrlType.url);
-    if (!item.metadata || !Array.isArray(item.metadata)) {
-        item.metadata = [];
-    }
-    item.metadata.push(result.getMetadata());
     return item;
 }
 
@@ -247,11 +224,6 @@ export async function deleteTag(
     const topicId = result.getTopicId();
     item.messageId = messageId;
     item.topicId = topicId;
-    if (!item.metadata || !Array.isArray(item.metadata)) {
-        item.metadata = [];
-    }
-    item.metadata.push(result.getMetadata());
-
     return item;
 }
 

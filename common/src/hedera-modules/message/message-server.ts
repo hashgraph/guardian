@@ -429,7 +429,7 @@ export class MessageServer {
         message.setLang(MessageServer.lang);
         const time = await this.messageStartLog('Hedera');
         const buffer = message.toMessage();
-        const result = await new Workers().addRetryableTask({
+      const timestamp = await new Workers().addRetryableTask({
             type: WorkerTaskType.SEND_HEDERA,
             data: {
                 topicId: this.topicId,
@@ -445,9 +445,8 @@ export class MessageServer {
             }
         }, 10, 0, userId);
         await this.messageEndLog(time, 'Hedera');
-        message.setId(result.data);
+      message.setId(timestamp);
         message.setTopicId(this.topicId);
-        message.setMetadata(result.metadata);
         return message;
     }
 

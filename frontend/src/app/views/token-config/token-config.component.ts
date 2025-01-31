@@ -3,7 +3,7 @@ import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ContractType, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
+import { ContractType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import { InformService } from 'src/app/services/inform.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin } from 'rxjs';
@@ -13,7 +13,6 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { UntypedFormGroup } from '@angular/forms';
 import { ContractService } from 'src/app/services/contract.service';
 import { TokenDialogComponent } from 'src/app/components/token-dialog/token-dialog.component';
-import { TransactionDialogComponent } from '../../modules/common/transaction-dialog/transaction-dialog';
 
 enum OperationMode {
     None, Kyc, Freeze
@@ -497,21 +496,5 @@ export class TokenConfigComponent implements OnInit {
             this.pageSize = event.pageSize;
         }
         this.loadTokens();
-    }
-
-    onShowTransactions(element: Schema): void {
-        this.tokenService.getTokenTransactions(element.id).subscribe((res) => {
-            const dialogRef = this.dialog.open(TransactionDialogComponent, {
-                showHeader: false,
-                width: '1000px',
-                styleClass: 'guardian-dialog',
-                data: {
-                    transactions: res
-                }
-            });
-            dialogRef.onClose.subscribe(async (result) => {
-            });
-        });
-
     }
 }

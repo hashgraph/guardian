@@ -4,14 +4,6 @@ import { TopicMemo } from './memo-mappings/topic-memo.js';
 import { Workers } from '../helpers/index.js';
 
 /**
- * Two way link result interface
- */
-export interface ITwoWayLinkResultInterface{
-    message1: TopicMessage;
-    message2?: TopicMessage;
-}
-
-/**
  * Topic Helper
  */
 export class TopicHelper {
@@ -116,7 +108,7 @@ export class TopicHelper {
         }
     ): Promise<TopicConfig> {
         const workers = new Workers();
-        const result = await workers.addRetryableTask({
+        const topicId = await workers.addRetryableTask({
             type: WorkerTaskType.NEW_TOPIC,
             data: {
                 hederaAccountId: this.hederaAccountId,
@@ -126,7 +118,6 @@ export class TopicHelper {
                 keys
             }
         }, 10);
-        const topicId = result.data;
         let adminKey: any = null;
         let submitKey: any = null;
         if (keys) {
@@ -140,7 +131,7 @@ export class TopicHelper {
             adminKey = this.hederaAccountKey;
             submitKey = this.hederaAccountKey;
         }
-        const topicConfig = new TopicConfig({
+        return new TopicConfig({
             topicId,
             name: config.name,
             description: config.description,
@@ -151,8 +142,6 @@ export class TopicHelper {
             targetId: config.targetId,
             targetUUID: config.targetUUID,
         }, adminKey, submitKey);
-        topicConfig.setMetadata(result.metadata);
-        return topicConfig;
     }
 
     /**
@@ -162,7 +151,8 @@ export class TopicHelper {
      * @param rationale
      * @param userId
      */
-    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId: string = null): Promise<TopicMessage> {
+    // tslint:disable-next-line:completed-docs
+    public async oneWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId: string = null) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
@@ -176,7 +166,7 @@ export class TopicHelper {
             rationale
         });
 
-        return await messageServer
+        await messageServer
             .setTopicObject(topic)
             .sendMessage(message1, true, null, userId);
     }
@@ -188,10 +178,8 @@ export class TopicHelper {
      * @param rationale
      * @param userId
      */
-    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId?: string): Promise<ITwoWayLinkResultInterface> {
+    public async twoWayLink(topic: TopicConfig, parent: TopicConfig, rationale: string, userId?: string) {
         const messageServer = new MessageServer(this.hederaAccountId, this.hederaAccountKey, this.signOptions, this.dryRun);
-
-        const result: ITwoWayLinkResultInterface = {message1: undefined};
 
         const message1 = new TopicMessage(MessageAction.CreateTopic);
         message1.setDocument({
@@ -203,7 +191,7 @@ export class TopicHelper {
             parentId: parent?.topicId,
             rationale
         });
-        result.message1 = await messageServer
+        await messageServer
             .setTopicObject(topic)
             .sendMessage(message1, true, null, userId);
 
@@ -218,10 +206,9 @@ export class TopicHelper {
                 parentId: null,
                 rationale
             });
-            result.message1 = await messageServer
+            await messageServer
                 .setTopicObject(parent)
                 .sendMessage(message2);
         }
-        return result;
     }
 }
