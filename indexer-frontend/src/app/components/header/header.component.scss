@@ -128,7 +128,7 @@
     text-align: right;
 }
 
-.progress-bar {
+.header-progress-bar {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -137,5 +137,6 @@
     align-items: center;
     margin: auto;
     background-color: var(--color-primary, #4169E2);
+    border-radius: 0;
     z-index: 999;
 }

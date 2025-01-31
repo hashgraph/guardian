@@ -116,7 +116,7 @@
         </div>
     </div>
 
-    <div class="progress-bar" *ngIf="(messagesTotal - loadedMessagesCount) > 0">
+    <div class="header-progress-bar" *ngIf="(messagesTotal - loadedMessagesCount) > 0">
         <app-progress-bar [loading]="true" [title]="'header.loading_progress' | transloco" [progressText]="(messagesTotal - loadedMessagesCount) + ' ' + ('header.left' | transloco)"></app-progress-bar>
     </div>
 </main>
