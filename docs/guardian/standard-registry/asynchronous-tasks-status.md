@@ -2,7 +2,7 @@
 
 Worker Tasks tab displays active user's jobs performed asynchronously by the ‘worker’.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Tasks can have the following status:
   * &#x20;IN QUEUE - for task which are queued pending activation
