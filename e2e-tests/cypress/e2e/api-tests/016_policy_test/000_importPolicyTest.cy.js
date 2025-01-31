@@ -10,16 +10,19 @@ context('Import policy test', { tags: ['policies', 'secondPool', 'all'] }, () =>
     before('Import policy and dry-run it', () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
             cy.request({
-                method: METHOD.POST,
-                url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: "1707125414.999819805" }, //iRec2
+                method: METHOD.GET,
+                url: API.ApiServer + API.Policies,
                 headers: {
                     authorization,
                 },
-                timeout: 600000,
+                timeout: 180000
             }).then((response) => {
-                expect(response.status).to.eq(STATUS_CODE.SUCCESS);
-                policyId = response.body.at(0).id;
+                expect(response.status).to.eq(STATUS_CODE.OK);
+                response.body.forEach(element => {
+                    if (element.name == "iRec_2") {
+                        policyId = element.id
+                    }
+                })
                 cy.request({
                     method: METHOD.PUT,
                     url:
