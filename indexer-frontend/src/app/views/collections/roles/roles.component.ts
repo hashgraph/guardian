@@ -103,6 +103,12 @@ export class RolesComponent extends BaseGridComponent {
             width: '650px',
         },
         {
+            type: ColumnType.TEXT,
+            field: 'analytics.sr',
+            title: 'grid.sr',
+            width: '250px',
+        },
+        {
             type: ColumnType.BUTTON,
             title: 'grid.open',
             btn_label: 'grid.open',
