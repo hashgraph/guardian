@@ -39,6 +39,8 @@
                             (onChange)="onSelectTheme()"
                             id="themeDropdown"
                             [style]="{ 'outline': 'none', 'box-shadow': 'none' }"
+                            class="guardian-dropdown"
+                            appendTo="body"
                         >
                             <ng-template let-option pTemplate="selectedItem">
                                 {{ option.name }}
@@ -108,7 +110,9 @@
                                         placeholder="Type"
                                         [(ngModel)]="rule.type"
                                         [options]="dropdownTypesOptions"
-                                        optionLabel="label">
+                                        optionLabel="label"
+                                        class="guardian-dropdown guardian-dropdown-cell"
+                                        appendTo="body">
                                     </p-dropdown>
                                 </div>
 
@@ -123,7 +127,9 @@
                                         [(ngModel)]="rule.multipleValue"
                                         [options]="allBlocks"
                                         optionLabel="name"
-                                        optionValue="type">
+                                        optionValue="type"
+                                        class="guardian-multiselect guardian-multiselect-cell"
+                                        appendTo="body">
                                     </p-multiSelect>
                                 </div>
 
@@ -133,7 +139,9 @@
                                         [(ngModel)]="rule.singleValue"
                                         [options]="dropdownAccessesOptions"
                                         optionLabel="label"
-                                        optionValue="value">
+                                        optionValue="value"
+                                        class="guardian-dropdown guardian-dropdown-cell"
+                                        appendTo="body">
                                     </p-dropdown>
                                 </div>
 
@@ -143,7 +151,9 @@
                                         [(ngModel)]="rule.singleValue"
                                         [options]="dropdownRolesOptions"
                                         optionLabel="label"
-                                        optionValue="value">
+                                        optionValue="value"
+                                        class="guardian-dropdown guardian-dropdown-cell"
+                                        appendTo="body">
                                     </p-dropdown>
                                 </div>
 
@@ -187,7 +197,9 @@
                                             placeholder="Type"
                                             [(ngModel)]="rule.shape"
                                             [options]="dropdownShapeOptions"
-                                            optionValue="value">
+                                            optionValue="value"
+                                            class="guardian-dropdown guardian-dropdown-cell"
+                                            appendTo="body">
                                             <ng-template pTemplate="item" let-shape>
                                                 <div [ngClass]="'shape-' + shape.value"></div>
                                             </ng-template>
@@ -206,7 +218,8 @@
                                             [options]="dropdownBorderWidthOptions"
                                             optionLabel="label"
                                             optionValue="value"
-                                            [appendTo]="'body'"
+                                            class="guardian-dropdown guardian-dropdown-cell"
+                                            appendTo="body"
                                         >
                                         </p-dropdown>
                                     </div>
@@ -251,21 +264,6 @@
                                             [palette]="colorPalette"
                                             [(ngModel)]="theme.default.text">
                                         </ngx-colors>
-
-                                        <p-dropdown
-                                            placeholder="Type"
-                                            [(ngModel)]="theme.default.shape"
-                                            [options]="dropdownThemeShapeOptions"
-                                            optionValue="value">
-
-                                            <ng-template pTemplate="item" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-
-                                            <ng-template pTemplate="selectedItem" let-shape>
-                                                <div [ngClass]="'shape-' + shape.value"></div>
-                                            </ng-template>
-                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Text</div>
                                 </div>
@@ -288,7 +286,22 @@
 
                                 <div class="rule-color-prop">
                                     <div class="rule-color-prop-select">
+                                        <p-dropdown
+                                            placeholder="Type"
+                                            [(ngModel)]="theme.default.shape"
+                                            [options]="dropdownThemeShapeOptions"
+                                            optionValue="value"
+                                            class="guardian-dropdown guardian-dropdown-cell"
+                                            appendTo="body">
 
+                                            <ng-template pTemplate="item" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+
+                                            <ng-template pTemplate="selectedItem" let-shape>
+                                                <div [ngClass]="'shape-' + shape.value"></div>
+                                            </ng-template>
+                                        </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Shape</div>
                                 </div>
@@ -299,7 +312,9 @@
                                             [(ngModel)]="theme.default.borderWidth"
                                             [options]="dropdownBorderWidthOptions"
                                             optionLabel="label"
-                                            optionValue="value">
+                                            optionValue="value"
+                                            class="guardian-dropdown guardian-dropdown-cell"
+                                            appendTo="body">
                                         </p-dropdown>
                                     </div>
                                     <div class="rule-color-prop-name">Border Width</div>
