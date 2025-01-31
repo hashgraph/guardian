@@ -10,12 +10,12 @@ export class HederaService {
     public static readonly REST_API_MAX_LIMIT: number = 100;
 
     public static async init() {
-        this.mirrorNodeUrl = Environment.mirrorNode;
+        HederaService.mirrorNodeUrl = Environment.mirrorNode;
     }
 
     public static async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
         try {
-            const url = this.mirrorNodeUrl + 'topics/' + topicId + '/messages';
+            const url = HederaService.mirrorNodeUrl + 'topics/' + topicId + '/messages';
             const option: any = {
                 params: {
                     limit: HederaService.REST_API_MAX_LIMIT
@@ -44,7 +44,7 @@ export class HederaService {
 
     public static async getToken(tokenId: string): Promise<TokenInfo | null> {
         try {
-            const url = this.mirrorNodeUrl + 'tokens/' + tokenId;
+            const url = HederaService.mirrorNodeUrl + 'tokens/' + tokenId;
             const option: any = {
                 responseType: 'json',
                 timeout: 2 * 60 * 1000,
@@ -63,7 +63,7 @@ export class HederaService {
     }
 
     public static async getSerials(tokenId: string, lastNumber: number): Promise<TokenInstances | null> {
-        const url = this.mirrorNodeUrl + 'tokens/' + tokenId + '/nfts';
+        const url = HederaService.mirrorNodeUrl + 'tokens/' + tokenId + '/nfts';
         const option: any = {
             params: {
                 order: 'asc',

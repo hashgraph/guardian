@@ -23,6 +23,7 @@ import {
     OverviewFormField,
 } from '@components/overview-form/overview-form.component';
 import { ButtonModule } from 'primeng/button';
+import { FormulasTree } from '../../../models/formula-tree';
 
 @Component({
     selector: 'vc-document-details',
@@ -128,6 +129,8 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
         'policyId': true,
         'ref': true
     };
+    formulas?: FormulasTree | null;
+    formulasResults?: any | null;
 
     constructor(
         entitiesService: EntitiesService,
@@ -145,6 +148,14 @@ export class VcDocumentDetailsComponent extends BaseDetailsComponent {
                 this.documentViewOption = 'document';
             } else {
                 this.documentViewOption = 'json';
+            }
+        } catch (error) {
+            console.log(error);
+        }
+        try {
+            if (result?.formulasData) {
+                this.formulas = FormulasTree.from(result.formulasData);
+                this.formulasResults = this.formulas?.getFields(this.schema?.iri);
             }
         } catch (error) {
             console.log(error);

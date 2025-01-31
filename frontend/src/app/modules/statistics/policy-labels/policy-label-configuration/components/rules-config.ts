@@ -1,7 +1,7 @@
 import { Schema, SchemaField, IRulesItemConfig, IStatisticItemConfig, LabelValidators } from "@guardian/interfaces";
 import { DialogService } from "primeng/dynamicdialog";
 import { Subject } from "rxjs";
-import { CustomCustomDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
+import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
 import { FormulaRule, ConditionRule, RangeRule } from "src/app/modules/common/models/conditions";
 import { createAutocomplete } from "src/app/modules/common/models/lang-modes/autocomplete";
 import { SchemaFormulas, SchemaFormula } from "src/app/modules/common/models/schema-formulas";
@@ -531,7 +531,7 @@ export class RulesConfig {
     }
 
     public onDeleteScore(score: SchemaScore) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
@@ -561,7 +561,7 @@ export class RulesConfig {
     }
 
     public onDeleteFormula(formula: SchemaFormula) {
-        const dialogRef = this.dialogService.open(CustomCustomDialogComponent, {
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',

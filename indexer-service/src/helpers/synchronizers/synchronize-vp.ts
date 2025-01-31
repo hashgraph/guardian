@@ -82,6 +82,8 @@ export class SynchronizationVPs extends SynchronizationTask {
         const documents = collection.find({
             type: { $in: [MessageType.VP_DOCUMENT] },
             ...this.filter(),
+        }, {
+            limit: 100000
         });
         const allDocuments: Message[] = [];
         while (await documents.hasNext()) {

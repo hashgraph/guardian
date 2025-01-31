@@ -1,0 +1,20 @@
+.mathlive-content {
+    display: flex;
+    flex-flow: column;
+}
+
+.mathlive-content::ng-deep {
+    math-field::part(virtual-keyboard-toggle) {
+        display: none;
+    }
+
+    math-field {
+        min-height: 40px;
+        border-radius: 8px;
+        outline: none;
+        border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+        padding-left: 12px;
+        font-size: 24px;
+        user-select: all;
+    }
+}

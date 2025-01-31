@@ -42,6 +42,8 @@ export class SynchronizationVCs extends SynchronizationTask {
         const documents = collection.find({
             type: { $in: [MessageType.VC_DOCUMENT] },
             ...this.filter(),
+        }, {
+            limit: 100000
         });
         const allDocuments: Message[] = [];
         const fileIds: Set<string> = new Set<string>();

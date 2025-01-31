@@ -57,6 +57,9 @@ import { SchemaRulesComponent } from './modules/statistics/schema-rules/schema-r
 import { PolicyLabelDocumentConfigurationComponent } from './modules/statistics/policy-labels/policy-label-document-configuration/policy-label-document-configuration.component';
 import { PolicyLabelDocumentsComponent } from './modules/statistics/policy-labels/policy-label-documents/policy-label-documents.component';
 import { PolicyLabelDocumentViewComponent } from './modules/statistics/policy-labels/policy-label-document-view/policy-label-document-view.component';
+import { FormulasComponent } from './modules/formulas/formulas/formulas.component';
+import { FormulaConfigurationComponent } from './modules/formulas/formula-configuration/formula-configuration.component';
+
 
 @Injectable({
     providedIn: 'root'
@@ -573,7 +576,6 @@ const routes: Routes = [
             ]
         }
     },
-
     {
         path: 'schema-rules',
         component: SchemaRulesComponent,
@@ -602,9 +604,6 @@ const routes: Routes = [
             ]
         }
     },
-
-
-
     {
         path: 'policy-labels',
         component: PolicyLabelsComponent,
@@ -675,9 +674,34 @@ const routes: Routes = [
             ]
         }
     },
-
-
-
+    {
+        path: 'formulas',
+        component: FormulasComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.FORMULAS_FORMULA_READ
+            ]
+        }
+    },
+    {
+        path: 'formulas/:formulaId',
+        component: FormulaConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.FORMULAS_FORMULA_READ
+            ]
+        }
+    },
 
     { path: '', component: HomeComponent },
     { path: 'info', component: InfoComponent },

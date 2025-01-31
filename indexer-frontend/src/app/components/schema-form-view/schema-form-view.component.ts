@@ -16,6 +16,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { FormsModule } from '@angular/forms';
 import { SchemaField, Schema } from '@indexer/interfaces';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { DialogService } from 'primeng/dynamicdialog';
+import { FormulasViewDialog } from '../../dialogs/formulas-view-dialog/formulas-view-dialog.component';
 
 /**
  * Form view by schema
@@ -23,7 +25,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 @Component({
     selector: 'app-schema-form-view',
     templateUrl: './schema-form-view.component.html',
-    styleUrls: ['./schema-form-view.component.css'],
+    styleUrls: ['./schema-form-view.component.scss'],
     standalone: true,
     imports: [
         InputTextModule,
@@ -36,7 +38,9 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
         CheckboxModule,
         FormsModule,
         InputTextareaModule,
+        FormulasViewDialog
     ],
+    providers: [DialogService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SchemaFormViewComponent {
@@ -45,9 +49,14 @@ export class SchemaFormViewComponent {
     @Input('fields') schemaFields!: SchemaField[];
     @Input('delimiter-hide') delimiterHide: boolean = false;
     @Input('values') values: any;
+    @Input() formulas?: any;
 
     fields: any[] | undefined = [];
     pageSize: number = 20;
+
+    constructor(
+        private dialogService: DialogService
+    ) { }
 
     isBooleanView(item: boolean | any): string {
         return typeof item === 'boolean' ? String(item) : 'Unset';
@@ -77,14 +86,15 @@ export class SchemaFormViewComponent {
             }
             const item: any = {
                 ...field,
+                fullPath: field.fullPath || '',
                 hide: false,
                 isInvalidType: false,
             };
             if (!field.isArray && !field.isRef) {
                 item.value =
                     !this.values ||
-                    this.values[item.name] === null ||
-                    this.values[item.name] === undefined
+                        this.values[item.name] === null ||
+                        this.values[item.name] === undefined
                         ? ''
                         : this.values[item.name];
             }
@@ -173,5 +183,19 @@ export class SchemaFormViewComponent {
 
     isPostfix(item: SchemaField): boolean {
         return item.unitSystem === 'postfix';
+    }
+
+    public isFormulas(item: any) {
+        return this.formulas ? this.formulas[item.fullPath] : undefined;
+    }
+
+    public showFormulas(formulas: any) {
+        const dialogRef = this.dialogService.open(FormulasViewDialog, {
+            showHeader: false,
+            width: '950px',
+            styleClass: 'guardian-dialog',
+            data: formulas,
+        });
+        dialogRef.onClose.subscribe((result: any) => { });
     }
 }

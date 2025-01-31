@@ -1,0 +1,15 @@
+.guardian-menu {
+    margin-top: 6px;
+
+    &.p-overlaypanel:after {
+        display: none;
+    }
+
+    &.p-overlaypanel::before {
+        display: none;
+    }
+
+    .p-overlaypanel-content {
+        padding: 0px;
+    }
+}

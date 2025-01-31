@@ -16,3 +16,4 @@ export * from './token.details.js';
 export * from './update-file.js';
 export * from './label.details.js';
 export * from './statistic.details.js';
+export * from './formula.details.js';

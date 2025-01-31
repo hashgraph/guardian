@@ -13086,18 +13086,20 @@ paths:
       parameters: []
       requestBody:
         required: true
-        description: Configuration.
+        description: Options.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SchemaRuleDataDTO'
+              $ref: '#/components/schemas/SchemaRuleOptionsDTO'
       responses:
         '200':
           description: Successful operation.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SchemaRuleDataDTO'
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchemaRuleDataDTO'
         '401':
           description: Unauthorized.
         '403':
@@ -13213,6 +13215,400 @@ paths:
       tags: *ref_28
       security:
         - bearer: []
+  /formulas:
+    post:
+      operationId: FormulasApi_createFormula
+      summary: Creates a new formula.
+      description: Creates a new formula.
+      parameters: []
+      requestBody:
+        required: true
+        description: Configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormulaDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: &ref_29
+        - formulas
+      security:
+        - bearer: []
+    get:
+      operationId: FormulasApi_getFormulas
+      summary: Return a list of all formulas.
+      description: Returns all formulas.
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          example: 0
+          schema:
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          example: 20
+          schema:
+            type: number
+        - name: policyId
+          required: false
+          in: query
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/{formulaId}:
+    get:
+      operationId: FormulasApi_getFormulaById
+      summary: Retrieves formula.
+      description: Retrieves formula for the specified ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    put:
+      operationId: FormulasApi_updateFormula
+      summary: Updates formula.
+      description: Updates formula configuration for the specified formula ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Object that contains a configuration.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormulaDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+    delete:
+      operationId: FormulasApi_deleteFormula
+      summary: Deletes the formula.
+      description: Deletes the formula with the provided ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/{formulaId}/relationships:
+    get:
+      operationId: FormulasApi_getSchemaRuleRelationships
+      summary: Retrieves Formula relationships.
+      description: Retrieves Formula relationships for the specified ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaRelationshipsDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/{policyId}/import/file:
+    post:
+      operationId: FormulasApi_importFormula
+      summary: Imports new formula from a zip file.
+      description: Imports new formula from the provided zip file into the local DB.
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: A zip file containing formula to be imported.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/{formulaId}/export/file:
+    get:
+      operationId: FormulasApi_exportFormula
+      summary: Returns a zip file containing formula.
+      description: Returns a zip file containing formula.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation. Response zip file.
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/import/file/preview:
+    post:
+      operationId: FormulasApi_previewFormula
+      summary: Imports a zip file containing formula.
+      description: Imports a zip file containing formula.
+      parameters: []
+      requestBody:
+        required: true
+        description: File.
+        content:
+          application/json:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Formula preview.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/{formulaId}/publish:
+    put:
+      operationId: FormulasApi_publishPolicyLabel
+      summary: Publishes formula.
+      description: Publishes formula for the specified formula ID.
+      parameters:
+        - name: formulaId
+          required: true
+          in: path
+          description: Formula Identifier
+          example: '000000000000000000000001'
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulaDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
+  /formulas/data:
+    post:
+      operationId: FormulasApi_getSchemaRuleData
+      summary: ''
+      description: ''
+      parameters: []
+      requestBody:
+        required: true
+        description: Options.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FormulasOptionsDTO'
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FormulasDataDTO'
+        '401':
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      tags: *ref_29
+      security:
+        - bearer: []
   /policy-labels:
     post:
       operationId: PolicyLabelsApi_createPolicyLabel
@@ -13243,7 +13639,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_29
+      tags: &ref_30
         - policy-labels
       security:
         - bearer: []
@@ -13299,7 +13695,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}:
@@ -13332,7 +13728,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     put:
@@ -13371,7 +13767,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     delete:
@@ -13403,7 +13799,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/publish:
@@ -13436,7 +13832,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/push/{definitionId}/publish:
@@ -13469,7 +13865,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/relationships:
@@ -13502,7 +13898,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{policyId}/import/file:
@@ -13542,7 +13938,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/export/file:
@@ -13571,7 +13967,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/import/file/preview:
@@ -13604,7 +14000,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/components:
@@ -13633,7 +14029,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens:
@@ -13689,7 +14085,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/tokens/{documentId}:
@@ -13736,7 +14132,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents:
@@ -13776,7 +14172,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
     get:
@@ -13831,7 +14227,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}:
@@ -13871,7 +14267,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /policy-labels/{definitionId}/documents/{documentId}/relationships:
@@ -13911,7 +14307,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_29
+      tags: *ref_30
       security:
         - bearer: []
   /worker-tasks:
@@ -13960,7 +14356,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: &ref_30
+      tags: &ref_31
         - worker-tasks
       security:
         - bearer: []
@@ -13983,7 +14379,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_30
+      tags: *ref_31
       security:
         - bearer: []
   /worker-tasks/delete/{taskId}:
@@ -14012,7 +14408,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalServerErrorDTO'
-      tags: *ref_30
+      tags: *ref_31
       security:
         - bearer: []
 info:
@@ -14497,19 +14893,19 @@ components:
           example: username
         role:
           type: string
-          enum: &ref_39
+          enum: &ref_40
             - STANDARD_REGISTRY
             - USER
             - AUDITOR
           example: USER
         permissionsGroup:
-          example: &ref_40
+          example: &ref_41
             - {}
           type: array
           items:
             type: string
         permissions:
-          example: &ref_41
+          example: &ref_42
             - POLICIES_POLICY_READ
           type: array
           items:
@@ -14694,35 +15090,35 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: &ref_31
+          oneOf: &ref_32
             - type: string
             - type: number
-          enum: &ref_32
+          enum: &ref_33
             - 0
             - 1
           example: 0
         eventsLvl:
-          oneOf: &ref_33
+          oneOf: &ref_34
             - type: string
             - type: number
-          enum: &ref_34
+          enum: &ref_35
             - 0
             - 1
           example: 0
         propLvl:
-          oneOf: &ref_35
+          oneOf: &ref_36
             - type: string
             - type: number
-          enum: &ref_36
+          enum: &ref_37
             - 0
             - 1
             - 2
           example: 0
         childrenLvl:
-          oneOf: &ref_37
+          oneOf: &ref_38
             - type: string
             - type: number
-          enum: &ref_38
+          enum: &ref_39
             - 0
             - 1
             - 2
@@ -14786,20 +15182,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         moduleId1:
           type: string
@@ -14913,20 +15309,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         documentId1:
           type: string
@@ -14961,20 +15357,20 @@ components:
       type: object
       properties:
         idLvl:
-          oneOf: *ref_31
-          enum: *ref_32
+          oneOf: *ref_32
+          enum: *ref_33
           example: 0
         eventsLvl:
-          oneOf: *ref_33
-          enum: *ref_34
+          oneOf: *ref_34
+          enum: *ref_35
           example: 0
         propLvl:
-          oneOf: *ref_35
-          enum: *ref_36
+          oneOf: *ref_36
+          enum: *ref_37
           example: 0
         childrenLvl:
-          oneOf: *ref_37
-          enum: *ref_38
+          oneOf: *ref_38
+          enum: *ref_39
           example: 0
         toolId1:
           type: string
@@ -15725,15 +16121,15 @@ components:
           example: username
         role:
           type: string
-          enum: *ref_39
+          enum: *ref_40
           example: USER
         permissionsGroup:
-          example: *ref_40
+          example: *ref_41
           type: array
           items:
             type: string
         permissions:
-          example: *ref_41
+          example: *ref_42
           type: array
           items:
             type: string
@@ -17022,7 +17418,7 @@ components:
             #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
         permissions:
           type: string
-          enum: &ref_42
+          enum: &ref_43
             - ANALYTIC_POLICY_READ
             - ANALYTIC_MODULE_READ
             - ANALYTIC_TOOL_READ
@@ -17077,6 +17473,8 @@ components:
             - SCHEMAS_RULE_READ
             - SCHEMAS_RULE_CREATE
             - SCHEMAS_RULE_EXECUTE
+            - FORMULAS_FORMULA_READ
+            - FORMULAS_FORMULA_CREATE
             - ACCESS_POLICY_ALL
             - ACCESS_POLICY_ASSIGNED
             - ACCESS_POLICY_PUBLISHED
@@ -17095,7 +17493,7 @@ components:
       properties:
         name:
           type: string
-          enum: *ref_42
+          enum: *ref_43
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -17123,6 +17521,7 @@ components:
             - ACCESS
             - DELEGATION
             - STATISTICS
+            - FORMULAS
           example: ANALYTIC
         entity:
           type: string
@@ -17163,6 +17562,7 @@ components:
             - STATISTIC
             - RULE
             - LABEL
+            - FORMULA
           example: POLICY
         action:
           type: string
@@ -17380,6 +17780,21 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SchemaDTO'
+    SchemaRuleOptionsDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        schemaId:
+          type: string
+          example: '000000000000000000000001'
+        documentId:
+          type: string
+          example: '000000000000000000000001'
+        parentId:
+          type: string
+          example: '000000000000000000000001'
     SchemaRuleDataDTO:
       type: object
       properties:
@@ -17391,6 +17806,99 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/VcDocumentDTO'
+    FormulaDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '000000000000000000000001'
+        uuid:
+          type: string
+          example: 00000000-0000-0000-0000-000000000000
+        name:
+          type: string
+          example: Tool name
+        description:
+          type: string
+          example: Description
+        creator:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        owner:
+          type: string
+          example: >-
+            #did:hedera:testnet:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA_0.0.0000001
+        messageId:
+          type: string
+          example: '0000000000.000000001'
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        policyTopicId:
+          type: string
+          example: 0.0.1
+        policyInstanceTopicId:
+          type: string
+          example: 0.0.1
+        status:
+          type: string
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - ERROR
+            - ACTIVE
+          example: DRAFT
+        config:
+          type: object
+          nullable: true
+      required:
+        - name
+    FormulaRelationshipsDTO:
+      type: object
+      properties:
+        policy:
+          $ref: '#/components/schemas/PolicyDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormulaDTO'
+    FormulasDataDTO:
+      type: object
+      properties:
+        formulas:
+          type: array
+          items:
+            $ref: '#/components/schemas/FormulaDTO'
+        document:
+          $ref: '#/components/schemas/VcDocumentDTO'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcDocumentDTO'
+        schemas:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchemaDTO'
+    FormulasOptionsDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: '000000000000000000000001'
+        schemaId:
+          type: string
+          example: '000000000000000000000001'
+        documentId:
+          type: string
+          example: '000000000000000000000001'
+        parentId:
+          type: string
+          example: '000000000000000000000001'
     PolicyLabelDTO:
       type: object
       properties:

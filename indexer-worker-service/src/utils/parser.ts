@@ -251,6 +251,17 @@ export class Parser {
                         message.files.push(json.cid);
                     }
                     break;
+                case MessageType.FORMULA:
+                    message.options.uuid = json.uuid;
+                    message.options.name = json.name;
+                    message.options.description = json.description;
+                    message.options.owner = json.owner;
+                    message.options.policyTopicId = json.policyTopicId;
+                    message.options.policyInstanceTopicId = json.policyInstanceTopicId;
+                    if (json.cid) {
+                        message.files.push(json.cid);
+                    }
+                    break;
                 default:
                     return null;
             }
