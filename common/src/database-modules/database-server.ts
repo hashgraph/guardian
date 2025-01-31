@@ -135,7 +135,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         const naturalCount = Math.floor(amount / DatabaseServer.DOCUMENTS_HANDLING_CHUNK_SIZE);
         for (let i = 0; i < naturalCount; i++) {
             const items = await new DataBaseHelper(DryRun).find({dryRunId}, limit);
-            for (let item of items) {
+            for (const item of items) {
                 item.savepoint = true;
             }
             await new DataBaseHelper(DryRun).update(items);
